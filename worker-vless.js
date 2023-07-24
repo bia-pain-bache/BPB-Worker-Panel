@@ -746,9 +746,13 @@ async function handleUDPOutBound(webSocket, vlessResponseHeader, log) {
  * @returns {string}
  */
 function getVLESSConfig(userID, hostName) {
-	const vlessws = `vless://${userID}@time.cloudflare.com:8880?encryption=none&type=ws&host=${hostName}&path=%2F%3Fed%3D2048#${hostName}`
-	const vlesswstls = `vless://${userID}@time.cloudflare.com:8443?encryption=none&security=tls&type=ws&host=兄弟，你的自定义域名呢？&path=%2F%3Fed%3D2048#${hostName}`
+	const vlessws = `vless://${userID}@time.cloudflare.com:8880?encryption=none&type=ws&host=${hostName}#${hostName}`
+	const vlesswstls = `vless://${userID}@time.cloudflare.com:8443?encryption=none&security=tls&type=ws&host=兄弟，你的自定义域名呢？#${hostName}`
 	return `
+
+==========================配置详解==============================
+
+
 ################################################################
 一、CF-workers-vless+ws节点，分享链接如下：
 
@@ -763,8 +767,6 @@ ${vlessws}
 用户ID（uuid）：自定义
 传输协议（network）：ws/websocket
 伪装域名（host）：workers地址
-路径（path）：留空 或者 / 或者 /?ed=2048（降低延时）
-
 ################################################################
 
 
@@ -782,10 +784,8 @@ ${vlesswstls}
 用户ID（uuid）：自定义
 传输协议（network）：ws/websocket
 伪装域名（host）：自定义域名
-路径（path）：留空 或者 / 或者 /?ed=2048（降低延时）
 传输安全（TLS）：开启
 跳过证书验证（allowlnsecure）：false
-
 ################################################################
 
 ################################################################
