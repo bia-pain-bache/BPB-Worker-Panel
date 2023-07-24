@@ -747,27 +747,46 @@ async function handleUDPOutBound(webSocket, vlessResponseHeader, log) {
  */
 function getVLESSConfig(userID, hostName) {
 	const vlessws = `vless://${userID}@time.cloudflare.com:8880?encryption=none&type=ws&host=${hostName}&path=%2F%3Fed%3D2048#${hostName}`
-	const vlesswstls = `vless://${userID}@time.cloudflare.com:8443?encryption=none&security=tls&type=ws&host=${hostName}&path=%2F%3Fed%3D2048#${hostName}`
+	const vlesswstls = `vless://${userID}@time.cloudflare.com:8443?encryption=none&security=tls&type=ws&host=兄弟，你的自定义域名呢？&path=%2F%3Fed%3D2048#${hostName}`
 	return `
 ################################################################
-当前CF-workers-vless+ws节点可直接使用，分享链接如下：
+一、CF-workers-vless+ws节点，分享链接如下：
+
 ${vlessws}
+
 ---------------------------------------------------------------
-注意：
-1、你要了解：当前节点无需域名，TLS选项已关闭
-2、7个http端口可任意选择(80、8080、8880、2052、2082、2086、2095)
-3、客户端地址可自定义为：自选域名、自选IP
+注意：当前节点无需域名，TLS选项关闭
 ---------------------------------------------------------------
+客户端必要文明参数如下：
+客户端地址（address）：自选域名 或者 自选IP
+端口(port)：7个http端口可任意选择(80、8080、8880、2052、2082、2086、2095)
+用户ID（uuid）：自定义
+传输协议（network）：ws/websocket
+伪装域名（host）：workers地址
+路径（path）：留空 或者 / 或者 /?ed=2048（降低延时）
 
 ################################################################
-CF-workers-vless+ws+tls节点，分享链接如下：
+
+
+################################################################
+二、CF-workers-vless+ws+tls节点，分享链接如下：
+
 ${vlesswstls}
+
 ---------------------------------------------------------------
-注意：
-1、你必须要改：客户端ws选项后的伪装域名host必须改为你自定义的域名
-2、6个https端口可任意选择(443、8443、2053、2083、2087、2096)
-3、客户端地址可自定义为：自选域名、自选IP
+注意：客户端ws选项后的伪装域名host必须改为你自定义的域名
 ---------------------------------------------------------------
+客户端必要文明参数如下：
+客户端地址（address）：自选域名 或者 自选IP
+端口(port)：6个https端口可任意选择(443、8443、2053、2083、2087、2096)
+用户ID（uuid）：自定义
+传输协议（network）：ws/websocket
+伪装域名（host）：自定义域名
+路径（path）：留空 或者 / 或者 /?ed=2048（降低延时）
+传输安全（TLS）：开启
+跳过证书验证（allowlnsecure）：false
+
+################################################################
 
 ################################################################
 clash-meta
