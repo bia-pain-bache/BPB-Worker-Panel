@@ -764,9 +764,9 @@ ${vlessws}
 客户端必要文明参数如下：
 客户端地址（address）：自选域名 或者 自选IP
 端口(port)：7个http端口可任意选择(80、8080、8880、2052、2082、2086、2095)
-用户ID（uuid）：自定义
+用户ID（uuid）：${userID}
 传输协议（network）：ws/websocket
-伪装域名（host）：workers地址
+伪装域名（host）：${hostName}
 路径（path）：/?ed=2048
 ################################################################
 
@@ -782,9 +782,9 @@ ${vlesswstls}
 客户端必要文明参数如下：
 客户端地址（address）：自选域名 或者 自选IP
 端口(port)：6个https端口可任意选择(443、8443、2053、2083、2087、2096)
-用户ID（uuid）：自定义
+用户ID（uuid）：${userID}
 传输协议（network）：ws/websocket
-伪装域名（host）：自定义域名
+伪装域名（host）：兄弟，你的自定义域名呢？
 路径（path）：/?ed=2048
 传输安全（TLS）：开启
 跳过证书验证（allowlnsecure）：false
