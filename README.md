@@ -5,6 +5,6 @@
 curl -sSL https://gitlab.com/rwkgyg/CFwarp/raw/main/point/CFcdnym.sh -o CFcdnym.sh && chmod +x CFcdnym.sh && bash CFcdnym.sh
 ```
 ------------------------------------------------------------------------
-### 已上传的CF-workers-vless代码，做了伪装网页与末尾配置说明的改动，代码取自[3Kmfi6HP](https://github.com/3Kmfi6HP/EDtunnel/blob/main/_worker.js)，
+### 已上传的CF-workers-vless代码，做了伪装网页与末尾配置说明的改动，代码取自[3Kmfi6HP](https://github.com/3Kmfi6HP/EDtunnel)，
 
 
