@@ -1,5 +1,5 @@
 
-### 相关教程请参考[甬哥博客及视频教程](https://ygkkk.blogspot.com/2023/07/cfworkers-vless.html)
+### 相关教程请参考[甬哥博客及视频教程](https://ygkkk.blogspot.com/2023/07/cfworkers-vless.html)，23.8.15将更新教程内容，敬请期待
 --------------------------------
 ### CF vless代码默认修改内容
 
