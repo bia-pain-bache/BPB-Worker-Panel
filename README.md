@@ -1,5 +1,8 @@
-### 相关教程请参考[甬哥博客及视频教程](https://ygkkk.blogspot.com/2023/07/cfworkers-vless.html)
 
+### 相关教程请参考[甬哥博客及视频教程](https://ygkkk.blogspot.com/2023/07/cfworkers-vless.html)
+--------------------------------
+### CF vless代码中的proxyIP为香港地区，伪装网页为央视海外频道global.cctv.com，对配置信息结果作了workers与pages优化显示
+---------------------------------
 ### CF-CDN优选域名一键脚本(请参考教程，在本地网络环境下运行)：
 ```
 curl -sSL https://gitlab.com/rwkgyg/CFwarp/raw/main/point/CFcdnym.sh -o CFcdnym.sh && chmod +x CFcdnym.sh && bash CFcdnym.sh
