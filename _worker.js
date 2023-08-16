@@ -752,10 +752,10 @@ function getVLESSConfig(userID, hostName) {
   } else {
     a = hostName;
   }
-  const wvlessws = `vless://${userID}@time.cloudflare.com:8880?encryption=none&type=ws&host=${hostName}&path=%2F%3Fed%3D2048#${hostName}`;
-  const wvlesswstls = `vless://${userID}@time.cloudflare.com:8443?encryption=none&security=tls&type=ws&host=${a}&path=%2F%3Fed%3D2048#${hostName}`;
-  const pvlesswstls = `vless://${userID}@time.cloudflare.com:8443?encryption=none&security=tls&type=ws&host=${hostName}&path=%2F%3Fed%3D2048#${hostName}`;
-
+  const wvlessws = `vless://${userID}@time.cloudflare.com:8880?encryption=none&security=none&type=ws&host=${hostName}&path=%2F%3Fed%3D2048#${hostName}`;
+  const wvlesswstls = `vless://${userID}@time.cloudflare.com:8443?encryption=none&security=tls&type=ws&host=${a}&sni=${hostName}&fp=random&path=%2F%3Fed%3D2048#${hostName}`;
+  const pvlesswstls = `vless://${userID}@time.cloudflare.com:8443?encryption=none&security=tls&type=ws&host=${hostName}&sni=${hostName}&fp=random&path=%2F%3Fed%3D2048#${hostName}`;
+  
   if (hostName.includes('pages.dev')) {
     return `
 ==========================配置详解==============================
