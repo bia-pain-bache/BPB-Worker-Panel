@@ -746,14 +746,7 @@ async function handleUDPOutBound(webSocket, vlessResponseHeader, log) {
  * @returns {string}
  */
 function getVLESSConfig(userID, hostName) {
-  let a;
-  if (hostName.includes('workers.dev')) {
-    a = '兄弟，你的自定义域名呢？';
-  } else {
-    a = hostName;
-  }
   const wvlessws = `vless://${userID}@time.cloudflare.com:8880?encryption=none&security=none&type=ws&host=${hostName}&path=%2F%3Fed%3D2048#${hostName}`;
-  const wvlesswstls = `vless://${userID}@time.cloudflare.com:8443?encryption=none&security=tls&type=ws&host=${a}&sni=${hostName}&fp=random&path=%2F%3Fed%3D2048#${hostName}`;
   const pvlesswstls = `vless://${userID}@time.cloudflare.com:8443?encryption=none&security=tls&type=ws&host=${hostName}&sni=${hostName}&fp=random&path=%2F%3Fed%3D2048#${hostName}`;
   
   if (hostName.includes('pages.dev')) {
@@ -778,6 +771,7 @@ ${pvlesswstls}
 路径(path)：/?ed=2048
 传输安全(TLS)：开启
 跳过证书验证(allowlnsecure)：false
+################################################################
 `;
 
   } else if (hostName.includes('workers.dev'))  {
@@ -803,22 +797,9 @@ ${wvlessws}
 
 
 ################################################################
-二、CF-workers-vless+ws+tls节点，分享链接如下：
 
-${wvlesswstls}
+查看CF-workers-vless+ws+tls节点配置信息，请在浏览器地址栏输入：自定义域名/UUID
 
----------------------------------------------------------------
-注意：客户端选项的伪装域名(host)必须改为你在CF解析完成的自定义域名
----------------------------------------------------------------
-客户端必要文明参数如下：
-客户端地址(address)：自定义的域名 或者 优选域名 或者 优选IP
-端口(port)：6个https端口可任意选择(443、8443、2053、2083、2087、2096)
-用户ID(uuid)：${userID}
-传输协议(network)：ws 或者 websocket
-伪装域名(host)：${a}
-路径(path)：/?ed=2048
-传输安全(TLS)：开启
-跳过证书验证(allowlnsecure)：false
 ################################################################
 `;
   } else {
@@ -826,28 +807,6 @@ ${wvlesswstls}
 ==========================配置详解==============================
 
 =====使用自定义域名查看配置，请确认使用的是workers还是pages=====
-
-################################################################
-CF-pages-vless+ws+tls节点，分享链接如下：
-
-${pvlesswstls}
-
----------------------------------------------------------------
-注意：如果 ${hostName} 在本地网络打不开（中国移动用户注意），客户端选项的伪装域名(host)必须改为你在CF解析完成的自定义域名
----------------------------------------------------------------
-客户端必要文明参数如下：
-客户端地址(address)：自定义的域名 或者 优选域名 或者 优选IP
-端口(port)：6个https端口可任意选择(443、8443、2053、2083、2087、2096)
-用户ID(uuid)：${userID}
-传输协议(network)：ws 或者 websocket
-伪装域名(host)：${hostName}
-路径(path)：/?ed=2048
-传输安全(TLS)：开启
-跳过证书验证(allowlnsecure)：false
-################################################################
-
-
-
 
 ################################################################
 一、CF-workers-vless+ws节点，分享链接如下：
@@ -867,9 +826,9 @@ ${wvlessws}
 ################################################################
 
 ################################################################
-二、CF-workers-vless+ws+tls节点，分享链接如下：
+二、CF-workers-vless+ws+tls 或者 CF-pages-vless+ws+tls节点，分享链接如下：
 
-${wvlesswstls}
+${pvlesswstls}
 
 ---------------------------------------------------------------
 注意：客户端选项的伪装域名(host)必须改为你在CF解析完成的自定义域名
@@ -879,7 +838,7 @@ ${wvlesswstls}
 端口(port)：6个https端口可任意选择(443、8443、2053、2083、2087、2096)
 用户ID(uuid)：${userID}
 传输协议(network)：ws 或者 websocket
-伪装域名(host)：${a}
+伪装域名(host)：${hostName}
 路径(path)：/?ed=2048
 传输安全(TLS)：开启
 跳过证书验证(allowlnsecure)：false
