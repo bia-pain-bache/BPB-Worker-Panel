@@ -1,5 +1,5 @@
 
-### 相关教程请参考[甬哥博客及视频教程](https://ygkkk.blogspot.com/2023/07/cfworkers-vless.html)，23.8.18将更新教程内容，敬请期待
+### 相关教程请参考[甬哥博客及视频教程](https://ygkkk.blogspot.com/2023/07/cfworkers-vless.html)
 --------------------------------
 ### CF vless代码默认修改内容
 
@@ -23,6 +23,6 @@ curl -sSL https://gitlab.com/rwkgyg/CFwarp/raw/main/point/cfip.sh -o cfip.sh && 
 ```
 
 ------------------------------------------------------------------------
-### 感谢：CF vless代码[3Kmfi6HP](https://github.com/3Kmfi6HP/EDtunnel) CF 优选反代IP程序[badafans](https://github.com/badafans/Cloudflare-IP-SpeedTest)、[XIU2](https://github.com/XIU2/CloudflareSpeedTest)
+### 感谢：CF-vless代码[3Kmfi6HP](https://github.com/3Kmfi6HP/EDtunnel) CF优选反代IP程序[badafans](https://github.com/badafans/Cloudflare-IP-SpeedTest)、[XIU2](https://github.com/XIU2/CloudflareSpeedTest)
 
 
