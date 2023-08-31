@@ -1,6 +1,10 @@
 ## Cloudflare代理脚本
 
-## 支持workers与pages两种形式部署，现实vless+ws+tls与vless+ws两种代理节点
+## 支持workers与pages两种形式部署
+
+## 现实vless+ws+tls与vless+ws两种代理节点
+
+## 详细说明教程请参考[甬哥博客及视频教程](https://ygkkk.blogspot.com/2023/07/cfworkers-vless.html)
 --------------------------------
 ### CF vless代码默认修改内容
 
@@ -10,9 +14,7 @@
 
 3、伪装网页默认为央视海外频道global.cctv.com，可自定义
 
-4、重点对workers与pages、有域名与无域名，这两种情况下的节点分享做了优化显示，方便小白们理解操作
-
-### 详细说明教程请参考[甬哥博客及视频教程](https://ygkkk.blogspot.com/2023/07/cfworkers-vless.html)
+4、重点对workers与pages、有域名与无域名，这4种情况下的节点分享做了优化显示，方便小白们理解操作
 
 ---------------------------------
 ### CF-CDN优选域名一键脚本(请参考教程，在本地网络环境下运行)：
