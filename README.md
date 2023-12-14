@@ -1,6 +1,6 @@
 ## Cloudflare代理脚本
 
-## 支持workers与pages两种形式部署
+## 支持workers(tls与非TLS)与pages(仅tls)两种形式部署
 
 ## 现实vless+ws+tls与vless+ws两种代理节点
 
