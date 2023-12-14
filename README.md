@@ -1,8 +1,8 @@
 ## Cloudflare代理脚本
 
-## 支持workers(tls与非tls)与pages(仅tls)两种形式部署
+## 方案一支持workers部署：实现vless+ws+tls与vless+ws两种代理节点
 
-## 现实vless+ws+tls与vless+ws两种代理节点
+## 方案二支持pages部署：仅实现vless+ws+tls代理节点
 
 ## 详细说明教程请参考[甬哥博客及视频教程](https://ygkkk.blogspot.com/2023/07/cfworkers-vless.html)
 --------------------------------
