@@ -10,7 +10,7 @@
 
 1、UUID必须自定义
 
-2、proxyIP已更新支持chatgpt的IP，可直接使用，可自定义
+2、proxyIP已更新支持chatgpt的IP，可直接使用（使用人数过多，不定时失效），可自定义
 
 3、伪装网页已更新为微软www.bing.com，可自定义
 
