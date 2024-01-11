@@ -1,15 +1,25 @@
+// @ts-nocheck
 // <!--GAMFC-->version base on commit 43fad05dcdae3b723c53c226f8181fc5bd47223e, time is 2023-06-22 15:20:02 UTC<!--GAMFC-END-->.
 // @ts-ignore
 import { connect } from 'cloudflare:sockets';
 
 // How to generate your own UUID:
-// [Windows] Press "Win + R", input cmd and run:  Powershell -NoExit -Command "[guid]::NewGuid()"
-let userID = '77a571fb-4fd2-4b37-8596-1b7d9728bb5c';
+// https://www.uuidgenerator.net/
+let userID = '55b58f6a-699f-47eb-b091-ed47c5a5e878';
 
-const proxyIPs = ["23.162.136.169"]; // ['cdn-all.xn--b6gac.eu.org', 'cdn.xn--b6gac.eu.org', 'cdn-b100.xn--b6gac.eu.org', 'edgetunnel.anycast.eu.org', 'cdn.anycast.eu.org'];
+const proxyIPs = [
+    "8.222.128.131",
+    "43.157.17.4",
+    "8.219.247.203",
+    "8.222.193.208",
+    "143.47.227.23",
+    "8.219.12.152",
+    "8.219.201.174",
+    "8.222.138.164",
+];
 let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 
-let dohURL = 'https://sky.rethinkdns.com/1:-Pf_____9_8A_AMAIgE8kMABVDDmKOHTAKg='; // https://cloudflare-dns.com/dns-query or https://dns.google/dns-query
+let dohURL = 'https://cloudflare-dns.com/dns-query';
 
 // v2board api environment variables
 let nodeId = ''; // 1
@@ -38,8 +48,15 @@ export default {
 			apiToken = env.API_TOKEN || apiToken;
 			apiHost = env.API_HOST || apiHost;
 			const upgradeHeader = request.headers.get('Upgrade');
+			const lengthRegex = /^(?:[1-9]|[1-9][0-9]|[1-4][0-9]{2}|500)-(?:[1-9]|[1-9][0-9]|[1-4][0-9]{2}|500)$/;
+			const intervalRegex = /^(?:[1-9]|[12][0-9]|30)-(?:[2-9]|[12][0-9]|30)$/;
 			if (!upgradeHeader || upgradeHeader !== 'websocket') {
 				const url = new URL(request.url);
+				const searchParams = new URLSearchParams(url.search);
+				const fragmentLength = searchParams.get('length');
+				const fragmentInterval = searchParams.get('interval');
+				const dnsAddress = searchParams.get('dns');
+
 				switch (url.pathname) {
 					case '/cf':
 						return new Response(JSON.stringify(request.cf, null, 4), {
@@ -90,12 +107,27 @@ export default {
 							return new Response(connectError.message, { status: 500 });
 						}
 					case `/${userID}`: {
-						const vlessConfig = getVLESSConfig(userID, request.headers.get('Host'));
+						let length, interval;
+						if (lengthRegex.test(fragmentLength) && Number(fragmentLength.split('-')[0]) < Number(fragmentLength.split('-')[1])) {
+							length = fragmentLength;
+						} else {
+							length = "100-200";
+						}
+
+						if (intervalRegex.test(fragmentInterval) && Number(fragmentInterval.split('-')[0]) < Number(fragmentInterval.split('-')[1])) {
+							interval = fragmentInterval;
+						} else {
+							interval = "10-20";
+						}
+
+						let dns = dnsAddress ? dnsAddress : false;
+						const vlessConfig = await getVLESSConfig(userID, request.headers.get('Host'), length, interval, dns);
+
 						return new Response(`${vlessConfig}`, {
 							status: 200,
 							headers: {
 								"Content-Type": "text/plain;charset=utf-8",
-							}
+							},
 						});
 					}
 					default:
@@ -745,107 +777,267 @@ async function handleUDPOutBound(webSocket, vlessResponseHeader, log) {
  * @param {string | null} hostName
  * @returns {string}
  */
-function getVLESSConfig(userID, hostName) {
-  const wvlessws = `vless://${userID}@www.visa.com:8880?encryption=none&security=none&type=ws&host=${hostName}&path=%2F%3Fed%3D2048#${hostName}`;
-  const pvlesswstls = `vless://${userID}@www.visa.com:8443?encryption=none&security=tls&type=ws&host=${hostName}&sni=${hostName}&fp=random&path=%2F%3Fed%3D2048#${hostName}`;
-  
-  if (hostName.includes('pages.dev')) {
-    return `
-==========================配置详解==============================
+async function getVLESSConfig(userID, hostName, fragmentLength, fragmentInterval, dns) {
 
-################################################################
-CF-pages-vless+ws+tls节点，分享链接如下：
+	let remoteDNS = dns ? `https://${dns}/dns-query` : 'https://94.140.14.14/dns-query';
+	let localDNS = dns ? dns : '1.1.1.1';
+	let Address = ['www.speedtest.net', hostName];
+	let vlessWsTls, fragConfig;
 
-${pvlesswstls}
+	await resolveDNS(hostName).then((addresses) => {
+		Address = [...Address, ...addresses.ipv4, ...addresses.ipv6.map(ip => `[${ip}]`)];
+		Address.forEach(addr => {
+			vlessWsTls += `vless://${userID}@${addr}:443?encryption=none&security=tls&type=ws&host=${randomUpperCase(hostName)}&sni=${randomUpperCase(hostName)}&fp=randomized&alpn=h2,http/1.1&path=%2F${getRandomPath(16)}%3Fed%3D2048#Worker-TLS - ${hostName}\n`;
+		});
 
----------------------------------------------------------------
-注意：如果 ${hostName} 在本地网络打不开（中国移动用户注意）
-       客户端选项的伪装域名(host)必须改为你在CF解析完成的自定义域名
----------------------------------------------------------------
-客户端必要文明参数如下：
-客户端地址(address)：自定义的域名 或者 优选域名 或者 优选IP（反代IP必须与反代端口对应）
-端口(port)：6个https端口可任意选择(443、8443、2053、2083、2087、2096)
-用户ID(uuid)：${userID}
-传输协议(network)：ws 或者 websocket
-伪装域名(host)：${hostName}
-路径(path)：/?ed=2048
-传输安全(TLS)：开启
-跳过证书验证(allowlnsecure)：false
-################################################################
-`;
+		Address.forEach(addr => {
+			fragConfig = `{
+				"dns": {
+					"hosts": {
+						"geosite:category-ads-all": "127.0.0.1",
+						"geosite:category-ads-ir": "127.0.0.1",
+						"domain:googleapis.cn": "googleapis.com"
+					},
+					"servers": [
+						"${remoteDNS}",
+						{
+							"address": "${localDNS}",
+							"domains": [
+								"geosite:private",
+								"geosite:category-ir",
+								"domain:.ir"
+							],
+							"expectIPs": [
+								"geoip:cn"
+							],
+							"port": 53
+						}
+					]
+				},
+				"fakedns": [
+					{
+						"ipPool": "198.18.0.0/15",
+						"poolSize": 10000
+					}
+				],
+				"inbounds": [
+					{
+						"port": 10808,
+						"protocol": "socks",
+						"settings": {
+							"auth": "noauth",
+							"udp": true,
+							"userLevel": 8
+						},
+						"sniffing": {
+							"destOverride": [
+								"http",
+								"tls",
+								"fakedns"
+							],
+							"enabled": true
+						},
+						"tag": "socks"
+					},
+					{
+						"port": 10809,
+						"protocol": "http",
+						"settings": {
+							"userLevel": 8
+						},
+						"tag": "http"
+					}
+				],
+				"log": {
+					"loglevel": "warning"
+				},
+				"outbounds": [
+					{
+						"protocol": "vless",
+						"settings": {
+							"vnext": [
+								{
+									"address": "${addr}",
+									"port": 443,
+									"users": [
+										{
+											"encryption": "none",
+											"flow": "",
+											"id": "${userID}",
+											"level": 8,
+											"security": "auto"
+										}
+									]
+								}
+							]
+						},
+						"streamSettings": {
+							"network": "ws",
+							"security": "tls",
+							"tlsSettings": {
+								"allowInsecure": false,
+								"alpn": [
+									"h2",
+									"http/1.1"
+								],
+								"fingerprint": "chrome",
+								"publicKey": "",
+								"serverName": "${randomUpperCase(hostName)}",
+								"shortId": "",
+								"show": false,
+								"spiderX": ""
+							},
+							"wsSettings": {
+								"headers": {
+									"Host": "${randomUpperCase(hostName)}"
+								},
+								"path": "/${getRandomPath(16)}?ed=2048"
+							},
+							"sockopt": {
+								"dialerProxy": "fragment",
+								"tcpKeepAliveIdle": 100,
+								"tcpNoDelay": true
+							}
+						},
+						"tag": "proxy"
+					},
+					{
+						"tag": "fragment",
+						"protocol": "freedom",
+						"settings": {
+							"domainStrategy": "AsIs",
+							"fragment": {
+								"packets": "tlshello",
+								"length": "${fragmentLength}",
+								"interval": "${fragmentInterval}"
+							}
+						},
+						"streamSettings": {
+							"sockopt": {
+								"TcpNoDelay": true
+							}
+						}
+					},
+					{
+						"protocol": "freedom",
+						"settings": {
+							"domainStrategy": "UseIP"
+						},
+						"tag": "direct"
+					},
+					{
+						"protocol": "blackhole",
+						"settings": {
+							"response": {
+								"type": "http"
+							}
+						},
+						"tag": "block"
+					}
+				],
+				"policy": {
+					"levels": {
+						"8": {
+							"connIdle": 300,
+							"downlinkOnly": 1,
+							"handshake": 4,
+							"uplinkOnly": 1
+						}
+					},
+					"system": {
+						"statsOutboundUplink": true,
+						"statsOutboundDownlink": true
+					}
+				},
+				"routing": {
+					"domainStrategy": "IPIfNonMatch",
+					"rules": [
+						{
+							"ip": [
+								"${localDNS}"
+							],
+							"outboundTag": "direct",
+							"port": "53",
+							"type": "field"
+						},
+						{
+							"domain": [
+								"geosite:private",
+								"geosite:category-ir",
+								"domain:.ir"
+							],
+							"outboundTag": "direct",
+							"type": "field"
+						},
+						{
+							"ip": [
+								"geoip:private",
+								"geoip:ir"
+							],
+							"outboundTag": "direct",
+							"type": "field"
+						},
+						{
+							"domain": [
+								"geosite:category-ads-all",
+								"geosite:category-ads-ir"
+							],
+							"outboundTag": "block",
+							"type": "field"
+						}
+					]
+				},
+				"stats": {}
+			}`;
 
-  } else if (hostName.includes('workers.dev'))  {
-    return `
-==========================配置详解==============================
+			vlessWsTls += `\n\n\n💥💥 Address: ${addr} 💥💥\n\n\n` + fragConfig.replace(/\s/g, "");
+		});
+	});
 
-################################################################
-一、CF-workers-vless+ws节点，分享链接如下：
+	return `${vlessWsTls}`;
+}
 
-${wvlessws}
+function randomUpperCase(str) {
 
----------------------------------------------------------------
-注意：当前节点无需使用CF解析完成的域名，客户端选项的TLS选项必须关闭
----------------------------------------------------------------
-客户端必要文明参数如下：
-客户端地址(address)：自定义的域名 或者 优选域名 或者 优选IP（反代IP必须与反代端口对应）
-端口(port)：7个http端口可任意选择(80、8080、8880、2052、2082、2086、2095)
-用户ID(uuid)：${userID}
-传输协议(network)：ws 或者 websocket
-伪装域名(host)：${hostName}
-路径(path)：/?ed=2048
-################################################################
+	let result = "";
+	for (let i = 0; i < str.length; i++) {
+		result += Math.random() < 0.5 ? str[i].toUpperCase() : str[i];
+	}
+	return result;
+}
 
+function getRandomPath(length) {
 
-################################################################
+	const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789---___';
+	let result = '';
 
-查看CF-workers-vless+ws+tls节点配置信息，请在浏览器地址栏输入：你设置的自定义域名/你设置的UUID
-防止小白过多的操作失误，必须设置自定义域名后才能使用Workers方式的TLS模式，否则，建议只使用vless+ws节点即可
-提示：使用pages方式部署，联通、电信用户大概率可以直接使用TLS模式，无需设置自定义域名
-pages方式部署可参考此视频教程：https://youtu.be/McdRoLZeTqg
+	for (let i = 0; i < length; i++) {
+		const randomIndex = Math.floor(Math.random() * characters.length);
+		result += characters.charAt(randomIndex);
+	}
 
-################################################################
-`;
-  } else {
-    return `
-==========================配置详解==============================
+	return result;
+}
 
-=====使用自定义域名查看配置，请确认使用的是workers还是pages=====
+async function resolveDNS(domain) {
 
-################################################################
-一、CF-workers-vless+ws节点，分享链接如下：
+	const dohURLv4 = `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=A`;
+	const dohURLv6 = `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=AAAA`;
 
-${wvlessws}
+	try {
+		const [ipv4Response, ipv6Response] = await Promise.all([
+			fetch(dohURLv4, { headers: { "accept": "application/dns-json" } }),
+			fetch(dohURLv6, { headers: { "accept": "application/dns-json" } }),
+		]);
 
----------------------------------------------------------------
-注意：当前节点无需使用CF解析完成的域名，客户端选项的TLS选项必须关闭
----------------------------------------------------------------
-客户端必要文明参数如下：
-客户端地址(address)：自定义的域名 或者 优选域名 或者 优选IP（反代IP必须与反代端口对应）
-端口(port)：7个http端口可任意选择(80、8080、8880、2052、2082、2086、2095)
-用户ID(uuid)：${userID}
-传输协议(network)：ws 或者 websocket
-伪装域名(host)：${hostName}
-路径(path)：/?ed=2048
-################################################################
+		const ipv4Addresses = await ipv4Response.json();
+		const ipv6Addresses = await ipv6Response.json();
 
-################################################################
-二、CF-workers-vless+ws+tls 或者 CF-pages-vless+ws+tls节点，分享链接如下：
+		const ipv4 = ipv4Addresses.Answer ? ipv4Addresses.Answer.map(record => record.data) : [];
+		const ipv6 = ipv6Addresses.Answer ? ipv6Addresses.Answer.map(record => record.data) : [];
 
-${pvlesswstls}
-
----------------------------------------------------------------
-注意：客户端选项的伪装域名(host)必须改为你在CF解析完成的自定义域名
----------------------------------------------------------------
-客户端必要文明参数如下：
-客户端地址(address)：自定义的域名 或者 优选域名 或者 优选IP（反代IP必须与反代端口对应）
-端口(port)：6个https端口可任意选择(443、8443、2053、2083、2087、2096)
-用户ID(uuid)：${userID}
-传输协议(network)：ws 或者 websocket
-伪装域名(host)：${hostName}
-路径(path)：/?ed=2048
-传输安全(TLS)：开启
-跳过证书验证(allowlnsecure)：false
-################################################################
-`;
-  }
+		return { ipv4, ipv6 };
+	} catch (error) {
+		console.error('Error resolving DNS:', error);
+	}
 }
