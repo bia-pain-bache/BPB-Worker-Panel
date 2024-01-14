@@ -56,6 +56,7 @@ export default {
 				const fragmentLength = searchParams.get('length');
 				const fragmentInterval = searchParams.get('interval');
 				const dnsAddress = searchParams.get('dns');
+                const client = searchParams.get('app');
 
 				switch (url.pathname) {
 					case '/cf':
@@ -107,7 +108,8 @@ export default {
 							return new Response(connectError.message, { status: 500 });
 						}
 					case `/${userID}`: {
-						let length, interval;
+						
+						let length = '', interval = '';
 						if (lengthRegex.test(fragmentLength) && Number(fragmentLength.split('-')[0]) < Number(fragmentLength.split('-')[1])) {
 							length = fragmentLength;
 						} else {
@@ -120,8 +122,7 @@ export default {
 							interval = "10-20";
 						}
 
-						let dns = dnsAddress ? dnsAddress : false;
-						const vlessConfig = await getVLESSConfig(userID, request.headers.get('Host'), length, interval, dns);
+						const vlessConfig = await getVLESSConfig(userID, request.headers.get('Host'), length, interval, dnsAddress ?? false, client);
 
 						return new Response(`${vlessConfig}`, {
 							status: 200,
@@ -447,10 +448,7 @@ function makeReadableWebSocketStream(webSocketServer, earlyDataHeader, log) {
  * @param {string} userID 
  * @returns 
  */
-async function processVlessHeader(
-	vlessBuffer,
-	userID
-) {
+async function processVlessHeader(vlessBuffer, userID) {
 	if (vlessBuffer.byteLength < 24) {
 		return {
 			hasError: true,
@@ -777,21 +775,26 @@ async function handleUDPOutBound(webSocket, vlessResponseHeader, log) {
  * @param {string | null} hostName
  * @returns {string}
  */
-async function getVLESSConfig(userID, hostName, fragmentLength, fragmentInterval, dns) {
+const getVLESSConfig = async (userID, hostName, fragmentLength, fragmentInterval, dns, client) => {
 
-	let remoteDNS = dns ? `https://${dns}/dns-query` : 'https://94.140.14.14/dns-query';
-	let localDNS = dns ? dns : '1.1.1.1';
-	let Address = ['www.speedtest.net', hostName];
-	let vlessWsTls, fragConfig;
+	const remoteDNS = dns ? `https://${dns}/dns-query` : 'https://94.140.14.14/dns-query';
+	const localDNS = dns ? dns : '1.1.1.1';
+  	const alpn = (client === 'nekobox') || (client === 'hiddify-next') ? 'http/1.1' : 'h2,http/1.1'; 
+	let vlessWsTls = '', fragConfig = '',fragConfigNekoray = '';
 
 	await resolveDNS(hostName).then((addresses) => {
-		Address = [...Address, ...addresses.ipv4, ...addresses.ipv6.map(ip => `[${ip}]`)];
+
+		const Address = ['www.speedtest.net', hostName, ...addresses.ipv4, ...addresses.ipv6.map(ip => `[${ip}]`)];
 		Address.forEach(addr => {
-			vlessWsTls += `vless://${userID}@${addr}:443?encryption=none&security=tls&type=ws&host=${randomUpperCase(hostName)}&sni=${randomUpperCase(hostName)}&fp=randomized&alpn=h2,http/1.1&path=%2F${getRandomPath(16)}%3Fed%3D2048#Worker-TLS - ${hostName}\n`;
+			vlessWsTls += `vless://${userID}@${addr}:443?encryption=none&security=tls&type=ws&host=${randomUpperCase(hostName)}&sni=${randomUpperCase(hostName)}&fp=randomized&alpn=${alpn}&path=%2F${getRandomPath(16)}%3Fed%3D2048#Worker - ${addr}\n`;
 		});
 
-		Address.forEach(addr => {
-			fragConfig = `{
+		if (client === 'nekobox' || client === 'hiddify-next') return vlessWsTls;
+
+		Address.forEach( addr => {
+            
+			fragConfig = 
+            `{
 				"dns": {
 					"hosts": {
 						"geosite:category-ads-all": "127.0.0.1",
@@ -990,14 +993,161 @@ async function getVLESSConfig(userID, hostName, fragmentLength, fragmentInterval
 				"stats": {}
 			}`;
 
-			vlessWsTls += `\n\n\n💥💥 Address: ${addr} 💥💥\n\n\n` + fragConfig.replace(/\s/g, "");
+
+            fragConfigNekoray = 
+            `{
+                "dns": {
+                "disableFallback": true,
+                "servers": [
+                    {
+                    "address": "${remoteDNS}",
+                    "domains": [],
+                    "queryStrategy": ""
+                    },
+                    {
+                    "address": "${localDNS}",
+                    "domains": [ "domain:.ir", "geosite:private", "geosite:category-ir"],
+                    "queryStrategy": ""
+                    }
+                ],
+                "tag": "dns"
+                },
+                "inbounds": [
+                {
+                    "listen": "127.0.0.1",
+                    "port": 2080,
+                    "protocol": "socks",
+                    "settings": { "udp": true },
+                    "sniffing": {
+                    "destOverride": ["http", "tls", "quic"],
+                    "enabled": true,
+                    "metadataOnly": false,
+                    "routeOnly": true
+                    },
+                    "tag": "socks-in"
+                },
+                {
+                    "listen": "127.0.0.1",
+                    "port": 2081,
+                    "protocol": "http",
+                    "sniffing": {
+                    "destOverride": ["http", "tls", "quic"],
+                    "enabled": true,
+                    "metadataOnly": false,
+                    "routeOnly": true
+                    },
+                    "tag": "http-in"
+                }
+                ],
+                "log": { "loglevel": "warning" },
+                "outbounds": [
+                {
+                    "domainStrategy": "AsIs",
+                    "flow": null,
+                    "protocol": "vless",
+                    "settings": {
+                    "vnext": [
+                        {
+                        "address": "${addr}",
+                        "port": 443,
+                        "users": [
+                            {
+                            "encryption": "none",
+                            "flow": "",
+                            "id": "${userID}"
+                            }
+                        ]
+                        }
+                    ]
+                    },
+                    "streamSettings": {
+                    "network": "ws",
+                    "security": "tls",
+                    "sockopt": { "dialerProxy": "fragment" },
+                    "tlsSettings": {
+                        "alpn": ["h2", "http/1.1"],
+                        "fingerprint": "chrome",
+                        "serverName": "${randomUpperCase(hostName)}"
+                    },
+                    "wsSettings": {
+                        "headers": {
+                        "Host": "${randomUpperCase(hostName)}"
+                        },
+                        "path": "${getRandomPath(16)}?ed=2048"
+                    }
+                    },
+                    "tag": "proxy"
+                },
+                {
+                    "protocol": "freedom",
+                    "settings": {
+                    "domainStrategy": "AsIs",
+                    "fragment": {
+                        "interval": "${fragmentInterval}",
+                        "length": "${fragmentLength}",
+                        "packets": "tlshello"
+                    }
+                    },
+                    "tag": "fragment"
+                },
+                { "domainStrategy": "", "protocol": "freedom", "tag": "bypass" },
+                { "protocol": "blackhole", "tag": "block" },
+                {
+                    "protocol": "dns",
+                    "proxySettings": { "tag": "proxy", "transportLayer": true },
+                    "settings": {
+                    "address": "${localDNS}",
+                    "network": "tcp",
+                    "port": 53,
+                    "userLevel": 1
+                    },
+                    "tag": "dns-out"
+                }
+                ],
+                "policy": {
+                "levels": { "1": { "connIdle": 30 } },
+                "system": { "statsOutboundDownlink": true, "statsOutboundUplink": true }
+                },
+                "routing": {
+                "domainStrategy": "IPIfNonMatch",
+                "rules": [
+                    { "ip": ["${localDNS}"], "outboundTag": "bypass", "type": "field" },
+                    {
+                    "inboundTag": ["socks-in", "http-in"],
+                    "outboundTag": "dns-out",
+                    "port": "53",
+                    "type": "field"
+                    },
+                    {
+                        "domain": ["geosite:category-ads-all", "geosite:category-ads-ir"],
+                        "outboundTag": "block",
+                        "type": "field"
+                    },
+                    {
+                        "ip": ["geoip:ir", "geoip:private"],
+                        "outboundTag": "bypass",
+                        "type": "field"
+                    },
+                    {
+                        "domain": ["geosite:private", "geosite:category-ir", "domain:.ir"],
+                        "outboundTag": "bypass",
+                        "type": "field"
+                    },
+                    { "outboundTag": "proxy", "port": "0-65535", "type": "field" }
+                ]
+                },
+                "stats": {}
+            }`;
+
+            vlessWsTls += `\n\n\n💥💥 Address: ${addr} 💥💥\n\n\n`;
+            vlessWsTls += client === 'nekoray' ? fragConfigNekoray.replace(/\s/g, "") : fragConfig.replace(/\s/g, "");
 		});
 	});
 
 	return `${vlessWsTls}`;
 }
 
-function randomUpperCase(str) {
+const randomUpperCase = (str) => {
 
 	let result = "";
 	for (let i = 0; i < str.length; i++) {
@@ -1006,7 +1156,7 @@ function randomUpperCase(str) {
 	return result;
 }
 
-function getRandomPath(length) {
+const getRandomPath = (length) => {
 
 	const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789---___';
 	let result = '';
@@ -1019,7 +1169,7 @@ function getRandomPath(length) {
 	return result;
 }
 
-async function resolveDNS(domain) {
+const resolveDNS = async (domain) => {
 
 	const dohURLv4 = `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=A`;
 	const dohURLv6 = `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=AAAA`;
@@ -1037,6 +1187,7 @@ async function resolveDNS(domain) {
 		const ipv6 = ipv6Addresses.Answer ? ipv6Addresses.Answer.map(record => record.data) : [];
 
 		return { ipv4, ipv6 };
+
 	} catch (error) {
 		console.error('Error resolving DNS:', error);
 	}
