@@ -1063,7 +1063,11 @@ const getVLESSConfig = async (userID, hostName, fragmentLength, fragmentInterval
                     "streamSettings": {
                     "network": "ws",
                     "security": "tls",
-                    "sockopt": { "dialerProxy": "fragment" },
+                    "sockopt": {
+			"dialerProxy": "fragment",
+			"tcpKeepAliveIdle": 100,
+			"tcpNoDelay": true
+		    },
                     "tlsSettings": {
                         "alpn": ["h2", "http/1.1"],
                         "fingerprint": "chrome",
@@ -1081,13 +1085,18 @@ const getVLESSConfig = async (userID, hostName, fragmentLength, fragmentInterval
                 {
                     "protocol": "freedom",
                     "settings": {
-                    "domainStrategy": "AsIs",
-                    "fragment": {
-                        "interval": "${fragmentInterval}",
-                        "length": "${fragmentLength}",
-                        "packets": "tlshello"
-                    }
+	                    "domainStrategy": "AsIs",
+	                    "fragment": {
+	                        "interval": "${fragmentInterval}",
+	                        "length": "${fragmentLength}",
+	                        "packets": "tlshello"
+	                    }
                     },
+		    "streamSettings": {
+    			"sockopt": {
+      				"TcpNoDelay": true
+    			}
+  		    },
                     "tag": "fragment"
                 },
                 { "domainStrategy": "", "protocol": "freedom", "tag": "bypass" },
