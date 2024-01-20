@@ -1282,10 +1282,10 @@ const getFragVLESSConfig = async (
             };
 
             let fragConfig = {...fragConfigTemp};
-            fragConfig.outbounds = [proxyOutbound, ...otherOutbounds];
+            fragConfig.outbounds = [{ ...proxyOutbound}, ...otherOutbounds];
 
             let fragConfigNekoray = { ...fragConfigNekorayTemp};
-            fragConfigNekoray.outbounds = [proxyOutbound, ...otherOutboundsNeko];
+            fragConfigNekoray.outbounds = [{ ...proxyOutbound}, ...otherOutboundsNeko];
 
             proxyOutbound.tag += `_${index + 1}`;
             outbounds.push({...proxyOutbound});
