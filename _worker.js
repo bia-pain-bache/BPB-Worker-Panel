@@ -944,10 +944,285 @@ const getFragVLESSConfig = async (
     const remoteDNS = dns
         ? `https://${dns}/dns-query`
         : "https://94.140.14.14/dns-query";
+
     const localDNS = dns ? dns : "1.1.1.1";
-    let fragConfig = "",
-        fragConfigNekoray = "";
-    const Configs = [];
+    let Configs = [];
+    let outbounds = [];
+
+    let fragConfigTemp = {
+        dns: {
+            hosts: {
+                "geosite:category-ads-all": "127.0.0.1",
+                "geosite:category-ads-ir": "127.0.0.1",
+                "domain:googleapis.cn": "googleapis.com",
+            },
+            servers: [
+                remoteDNS,
+                {
+                    address: localDNS,
+                    domains: ["geosite:private", "geosite:category-ir", "domain:.ir"],
+                    expectIPs: ["geoip:cn"],
+                    port: 53,
+                },
+            ],
+        },
+        fakedns: [
+            {
+                ipPool: "198.18.0.0/15",
+                poolSize: 10000,
+            },
+        ],
+        inbounds: [
+            {
+                port: 10808,
+                protocol: "socks",
+                settings: {
+                    auth: "noauth",
+                    udp: true,
+                    userLevel: 8,
+                },
+                sniffing: {
+                    destOverride: ["http", "tls", "fakedns"],
+                    enabled: true,
+                },
+                tag: "socks",
+            },
+            {
+                port: 10809,
+                protocol: "http",
+                settings: {
+                    userLevel: 8,
+                },
+                tag: "http",
+            },
+        ],
+        log: {
+            loglevel: "warning",
+        },
+        outbounds: [],
+        policy: {
+            levels: {
+                8: {
+                    connIdle: 300,
+                    downlinkOnly: 1,
+                    handshake: 4,
+                    uplinkOnly: 1,
+                },
+            },
+            system: {
+                statsOutboundUplink: true,
+                statsOutboundDownlink: true,
+            },
+        },
+        routing: {
+            domainStrategy: "IPIfNonMatch",
+            rules: [
+                {
+                    ip: ["1.1.1.1"],
+                    outboundTag: "direct",
+                    port: "53",
+                    type: "field",
+                },
+                {
+                    domain: ["geosite:private", "geosite:category-ir", "domain:.ir"],
+                    outboundTag: "direct",
+                    type: "field",
+                },
+                {
+                    ip: ["geoip:private", "geoip:ir"],
+                    outboundTag: "direct",
+                    type: "field",
+                },
+                {
+                    domain: ["geosite:category-ads-all", "geosite:category-ads-ir"],
+                    outboundTag: "block",
+                    type: "field",
+                },
+            ],
+            balancers: [],
+        },
+        observatory: {},
+        stats: {},
+    };
+
+    let fragConfigNekorayTemp = {
+        dns: {
+            disableFallback: true,
+            servers: [
+                {
+                    address: remoteDNS,
+                    domains: [],
+                    queryStrategy: "",
+                },
+                {
+                    address: localDNS,
+                    domains: ["domain:.ir", "geosite:private", "geosite:category-ir"],
+                    queryStrategy: "",
+                },
+            ],
+            tag: "dns",
+        },
+        inbounds: [
+            {
+                listen: "127.0.0.1",
+                port: 2080,
+                protocol: "socks",
+                settings: { udp: true },
+                sniffing: {
+                    destOverride: ["http", "tls", "quic"],
+                    enabled: true,
+                    metadataOnly: false,
+                    routeOnly: true,
+                },
+                tag: "socks-in",
+            },
+            {
+                listen: "127.0.0.1",
+                port: 2081,
+                protocol: "http",
+                sniffing: {
+                    destOverride: ["http", "tls", "quic"],
+                    enabled: true,
+                    metadataOnly: false,
+                    routeOnly: true,
+                },
+                tag: "http-in",
+            },
+        ],
+        log: { loglevel: "warning" },
+        outbounds: [],
+        policy: {
+            levels: { 1: { connIdle: 30 } },
+            system: { statsOutboundDownlink: true, statsOutboundUplink: true },
+        },
+        routing: {
+            domainStrategy: "IPIfNonMatch",
+            rules: [
+                { ip: [localDNS], outboundTag: "bypass", type: "field" },
+                {
+                    inboundTag: ["socks-in", "http-in"],
+                    outboundTag: "dns-out",
+                    port: "53",
+                    type: "field",
+                },
+                {
+                    domain: ["geosite:category-ads-all", "geosite:category-ads-ir"],
+                    outboundTag: "block",
+                    type: "field",
+                },
+                {
+                    ip: ["geoip:ir", "geoip:private"],
+                    outboundTag: "bypass",
+                    type: "field",
+                },
+                {
+                    domain: ["geosite:private", "geosite:category-ir", "domain:.ir"],
+                    outboundTag: "bypass",
+                    type: "field",
+                },
+                { outboundTag: "proxy", port: "0-65535", type: "field" },
+            ],
+            balancers: [],
+        },
+        observatory: {},
+        stats: {},
+    };
+
+
+
+    const otherOutbounds = [
+        {
+            tag: "fragment",
+            protocol: "freedom",
+            settings: {
+                domainStrategy: "AsIs",
+                fragment: {
+                    packets: "tlshello",
+                    length: fragmentLength,
+                    interval: fragmentInterval,
+                },
+            },
+            streamSettings: {
+                sockopt: {
+                    tcpKeepAliveIdle: 100,
+                    TcpNoDelay: true,
+                },
+            },
+        },
+        {
+            protocol: "freedom",
+            settings: {
+                domainStrategy: "UseIP",
+            },
+            tag: "direct",
+        },
+        {
+            protocol: "blackhole",
+            settings: {
+                response: {
+                    type: "http",
+                },
+            },
+            tag: "block",
+        },
+    ];
+
+    let otherOutboundsNeko = [
+        {
+            protocol: "freedom",
+            settings: {
+                domainStrategy: "AsIs",
+                fragment: {
+                    length: fragmentLength,
+                    interval: fragmentInterval,
+                    packets: "tlshello",
+                },
+            },
+            streamSettings: {
+                sockopt: {
+                    tcpKeepAliveIdle: 100,
+                    TcpNoDelay: true
+                },
+            },
+            tag: "fragment",
+        },
+        { domainStrategy: "", protocol: "freedom", tag: "bypass" },
+        { protocol: "blackhole", tag: "block" },
+        {
+            protocol: "dns",
+            proxySettings: { tag: "proxy", transportLayer: true },
+            settings: {
+                address: localDNS,
+                network: "tcp",
+                port: 53,
+                userLevel: 1,
+            },
+            tag: "dns-out",
+        },
+    ];
+
+    const balancerRule = {
+        balancerTag: "all",
+        type: "field",
+        network: "tcp,udp",
+    };
+
+    const balancers = [
+        {
+            tag: "all",
+            selector: ["proxy"],
+            strategy: {
+                type: "leastPing",
+            },
+        },
+    ];
+
+    const observatory = {
+        probeInterval: "5m",
+        probeURL: "https://api.github.com/_private/browser/stats",
+        subjectSelector: ["proxy"],
+        EnableConcurrency: true,
+    };
 
     await resolveDNS(hostName).then((addresses) => {
         const Address = [
@@ -957,1153 +1232,92 @@ const getFragVLESSConfig = async (
             ...addresses.ipv6.map((ip) => `[${ip}]`)
         ];
 
-        Address.forEach((addr) => {
-            fragConfig = {
-                dns: {
-                    hosts: {
-                        "geosite:category-ads-all": "127.0.0.1",
-                        "geosite:category-ads-ir": "127.0.0.1",
-                        "domain:googleapis.cn": "googleapis.com",
-                    },
-                    servers: [
-                        remoteDNS,
+        Address.forEach((addr, index) => {
+
+            let proxyOutbound = {
+                protocol: "vless",
+                settings: {
+                    vnext: [
                         {
-                            address: localDNS,
-                            domains: ["geosite:private", "geosite:category-ir", "domain:.ir"],
-                            expectIPs: ["geoip:cn"],
-                            port: 53,
-                        },
-                    ],
-                },
-                fakedns: [
-                    {
-                        ipPool: "198.18.0.0/15",
-                        poolSize: 10000,
-                    },
-                ],
-                inbounds: [
-                    {
-                        port: 10808,
-                        protocol: "socks",
-                        settings: {
-                            auth: "noauth",
-                            udp: true,
-                            userLevel: 8,
-                        },
-                        sniffing: {
-                            destOverride: ["http", "tls", "fakedns"],
-                            enabled: true,
-                        },
-                        tag: "socks",
-                    },
-                    {
-                        port: 10809,
-                        protocol: "http",
-                        settings: {
-                            userLevel: 8,
-                        },
-                        tag: "http",
-                    },
-                ],
-                log: {
-                    loglevel: "warning",
-                },
-                outbounds: [
-                    {
-                        protocol: "vless",
-                        settings: {
-                            vnext: [
+                            address: addr,
+                            port: 443,
+                            users: [
                                 {
-                                    address: addr,
-                                    port: 443,
-                                    users: [
-                                        {
-                                            encryption: "none",
-                                            flow: "",
-                                            id: userID,
-                                            level: 8,
-                                            security: "auto",
-                                        },
-                                    ],
+                                    encryption: "none",
+                                    flow: "",
+                                    id: userID,
+                                    level: 8,
+                                    security: "auto",
                                 },
                             ],
                         },
-                        streamSettings: {
-                            network: "ws",
-                            security: "tls",
-                            tlsSettings: {
-                                allowInsecure: false,
-                                alpn: ["h2", "http/1.1"],
-                                fingerprint: "chrome",
-                                publicKey: "",
-                                serverName: randomUpperCase(hostName),
-                                shortId: "",
-                                show: false,
-                                spiderX: "",
-                            },
-                            wsSettings: {
-                                headers: {
-                                    Host: randomUpperCase(hostName),
-                                },
-                                path: `/${getRandomPath(16)}?ed=2048`,
-                            },
-                            sockopt: {
-                                dialerProxy: "fragment",
-                                tcpKeepAliveIdle: 100,
-                                tcpNoDelay: true,
-                            },
-                        },
-                        tag: "proxy",
-                    },
-                    {
-                        tag: "fragment",
-                        protocol: "freedom",
-                        settings: {
-                            domainStrategy: "AsIs",
-                            fragment: {
-                                packets: "tlshello",
-                                length: fragmentLength,
-                                interval: fragmentInterval,
-                            },
-                        },
-                        streamSettings: {
-                            sockopt: {
-                                tcpKeepAliveIdle: 100,
-                                TcpNoDelay: true,
-                            },
-                        },
-                    },
-                    {
-                        protocol: "freedom",
-                        settings: {
-                            domainStrategy: "UseIP",
-                        },
-                        tag: "direct",
-                    },
-                    {
-                        protocol: "blackhole",
-                        settings: {
-                            response: {
-                                type: "http",
-                            },
-                        },
-                        tag: "block",
-                    },
-                ],
-                policy: {
-                    levels: {
-                        8: {
-                            connIdle: 300,
-                            downlinkOnly: 1,
-                            handshake: 4,
-                            uplinkOnly: 1,
-                        },
-                    },
-                    system: {
-                        statsOutboundUplink: true,
-                        statsOutboundDownlink: true,
-                    },
-                },
-                routing: {
-                    domainStrategy: "IPIfNonMatch",
-                    rules: [
-                        {
-                            ip: ["1.1.1.1"],
-                            outboundTag: "direct",
-                            port: "53",
-                            type: "field",
-                        },
-                        {
-                            domain: ["geosite:private", "geosite:category-ir", "domain:.ir"],
-                            outboundTag: "direct",
-                            type: "field",
-                        },
-                        {
-                            ip: ["geoip:private", "geoip:ir"],
-                            outboundTag: "direct",
-                            type: "field",
-                        },
-                        {
-                            domain: ["geosite:category-ads-all", "geosite:category-ads-ir"],
-                            outboundTag: "block",
-                            type: "field",
-                        },
                     ],
                 },
-                stats: {},
+                streamSettings: {
+                    network: "ws",
+                    security: "tls",
+                    tlsSettings: {
+                        allowInsecure: false,
+                        alpn: ["h2", "http/1.1"],
+                        fingerprint: "chrome",
+                        publicKey: "",
+                        serverName: randomUpperCase(hostName),
+                        shortId: "",
+                        show: false,
+                        spiderX: "",
+                    },
+                    wsSettings: {
+                        headers: {
+                            Host: randomUpperCase(hostName),
+                        },
+                        path: `/${getRandomPath(16)}?ed=2048`,
+                    },
+                    sockopt: {
+                        dialerProxy: "fragment",
+                        tcpKeepAliveIdle: 100,
+                        tcpNoDelay: true,
+                    },
+                },
+                tag: "proxy",
             };
 
-            fragConfigNekoray = {
-                dns: {
-                    disableFallback: true,
-                    servers: [
-                        {
-                            address: remoteDNS,
-                            domains: [],
-                            queryStrategy: "",
-                        },
-                        {
-                            address: localDNS,
-                            domains: ["domain:.ir", "geosite:private", "geosite:category-ir"],
-                            queryStrategy: "",
-                        },
-                    ],
-                    tag: "dns",
-                },
-                inbounds: [
-                    {
-                        listen: "127.0.0.1",
-                        port: 2080,
-                        protocol: "socks",
-                        settings: { udp: true },
-                        sniffing: {
-                            destOverride: ["http", "tls", "quic"],
-                            enabled: true,
-                            metadataOnly: false,
-                            routeOnly: true,
-                        },
-                        tag: "socks-in",
-                    },
-                    {
-                        listen: "127.0.0.1",
-                        port: 2081,
-                        protocol: "http",
-                        sniffing: {
-                            destOverride: ["http", "tls", "quic"],
-                            enabled: true,
-                            metadataOnly: false,
-                            routeOnly: true,
-                        },
-                        tag: "http-in",
-                    },
-                ],
-                log: { loglevel: "warning" },
-                outbounds: [
-                    {
-                        domainStrategy: "AsIs",
-                        flow: null,
-                        protocol: "vless",
-                        settings: {
-                            vnext: [
-                                {
-                                    address: addr,
-                                    port: 443,
-                                    users: [
-                                        {
-                                            encryption: "none",
-                                            flow: "",
-                                            id: userID,
-                                        },
-                                    ],
-                                },
-                            ],
-                        },
-                        streamSettings: {
-                            network: "ws",
-                            security: "tls",
-                            sockopt: {
-                                dialerProxy: "fragment",
-                                tcpKeepAliveIdle: 100,
-                                tcpNoDelay: true,
-                            },
-                            tlsSettings: {
-                                alpn: ["h2", "http/1.1"],
-                                fingerprint: "chrome",
-                                serverName: randomUpperCase(hostName),
-                            },
-                            wsSettings: {
-                                headers: {
-                                    Host: randomUpperCase(hostName),
-                                },
-                                path: `${getRandomPath(16)}?ed=2048`,
-                            },
-                        },
-                        tag: "proxy",
-                    },
-                    {
-                        protocol: "freedom",
-                        settings: {
-                            domainStrategy: "AsIs",
-                            fragment: {
-                                length: fragmentLength,
-                                interval: fragmentInterval,
-                                packets: "tlshello",
-                            },
-                        },
-                        streamSettings: {
-                            sockopt: {
-                                tcpKeepAliveIdle: 100,
-                                TcpNoDelay: true
-                            },
-                        },
-                        tag: "fragment",
-                    },
-                    { domainStrategy: "", protocol: "freedom", tag: "bypass" },
-                    { protocol: "blackhole", tag: "block" },
-                    {
-                        protocol: "dns",
-                        proxySettings: { tag: "proxy", transportLayer: true },
-                        settings: {
-                            address: localDNS,
-                            network: "tcp",
-                            port: 53,
-                            userLevel: 1,
-                        },
-                        tag: "dns-out",
-                    },
-                ],
-                policy: {
-                    levels: { 1: { connIdle: 30 } },
-                    system: { statsOutboundDownlink: true, statsOutboundUplink: true },
-                },
-                routing: {
-                    domainStrategy: "IPIfNonMatch",
-                    rules: [
-                        { ip: [localDNS], outboundTag: "bypass", type: "field" },
-                        {
-                            inboundTag: ["socks-in", "http-in"],
-                            outboundTag: "dns-out",
-                            port: "53",
-                            type: "field",
-                        },
-                        {
-                            domain: ["geosite:category-ads-all", "geosite:category-ads-ir"],
-                            outboundTag: "block",
-                            type: "field",
-                        },
-                        {
-                            ip: ["geoip:ir", "geoip:private"],
-                            outboundTag: "bypass",
-                            type: "field",
-                        },
-                        {
-                            domain: ["geosite:private", "geosite:category-ir", "domain:.ir"],
-                            outboundTag: "bypass",
-                            type: "field",
-                        },
-                        { outboundTag: "proxy", port: "0-65535", type: "field" },
-                    ],
-                },
-                stats: {},
-            };
+            let fragConfig = {...fragConfigTemp};
+            fragConfig.outbounds = [proxyOutbound, ...otherOutbounds];
 
-            const config = {
+            let fragConfigNekoray = { ...fragConfigNekorayTemp};
+            fragConfigNekoray.outbounds = [proxyOutbound, ...otherOutboundsNeko];
+
+            proxyOutbound.tag += `_${index + 1}`;
+            outbounds.push({...proxyOutbound});
+            
+            let config = {
                 address: addr,
                 fragConf: fragConfig,
                 fragConfNeko: fragConfigNekoray,
             };
 
-            Configs.push(config);
+            Configs.push({...config});
         });
 
-        /* ***************************************************** */
-        const bestPingConfig = {
-            dns: {
-                hosts: {
-                    "geosite:category-ads-all": "127.0.0.1",
-                    "geosite:category-ads-ir": "127.0.0.1",
-                    "domain:googleapis.cn": "googleapis.com",
-                },
-                servers: [
-                    remoteDNS,
-                    {
-                        address: localDNS,
-                        domains: ["geosite:private", "geosite:category-ir", "domain:.ir"],
-                        expectIPs: ["geoip:cn"],
-                        port: 53,
-                    },
-                ],
-            },
-            fakedns: [
-                {
-                    ipPool: "198.18.0.0/15",
-                    poolSize: 10000,
-                },
-            ],
-            inbounds: [
-                {
-                    port: 10808,
-                    protocol: "socks",
-                    settings: {
-                        auth: "noauth",
-                        udp: true,
-                        userLevel: 8,
-                    },
-                    sniffing: {
-                        destOverride: ["http", "tls", "fakedns"],
-                        enabled: true,
-                    },
-                    tag: "socks",
-                },
-                {
-                    port: 10809,
-                    protocol: "http",
-                    settings: {
-                        userLevel: 8,
-                    },
-                    tag: "http",
-                },
-            ],
-            log: {
-                loglevel: "warning",
-            },
-            outbounds: [
-                {
-                    protocol: "vless",
-                    settings: {
-                        vnext: [
-                            {
-                                address: Address[0],
-                                port: 443,
-                                users: [
-                                    {
-                                        encryption: "none",
-                                        flow: "",
-                                        id: userID,
-                                        level: 8,
-                                        security: "auto",
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                    streamSettings: {
-                        network: "ws",
-                        security: "tls",
-                        tlsSettings: {
-                            allowInsecure: false,
-                            alpn: ["h2", "http/1.1"],
-                            fingerprint: "chrome",
-                            publicKey: "",
-                            serverName: randomUpperCase(hostName),
-                            shortId: "",
-                            show: false,
-                            spiderX: "",
-                        },
-                        wsSettings: {
-                            headers: {
-                                Host: randomUpperCase(hostName),
-                            },
-                            path: `/${getRandomPath(16)}?ed=2048`,
-                        },
-                        sockopt: {
-                            dialerProxy: "fragment",
-                            tcpKeepAliveIdle: 100,
-                            tcpNoDelay: true,
-                        },
-                    },
-                    tag: "proxy_1",
-                },
-                {
-                    protocol: "vless",
-                    settings: {
-                        vnext: [
-                            {
-                                address: Address[1],
-                                port: 443,
-                                users: [
-                                    {
-                                        encryption: "none",
-                                        flow: "",
-                                        id: userID,
-                                        level: 8,
-                                        security: "auto",
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                    streamSettings: {
-                        network: "ws",
-                        security: "tls",
-                        tlsSettings: {
-                            allowInsecure: false,
-                            alpn: ["h2", "http/1.1"],
-                            fingerprint: "chrome",
-                            publicKey: "",
-                            serverName: randomUpperCase(hostName),
-                            shortId: "",
-                            show: false,
-                            spiderX: "",
-                        },
-                        wsSettings: {
-                            headers: {
-                                Host: randomUpperCase(hostName),
-                            },
-                            path: `/${getRandomPath(16)}?ed=2048`,
-                        },
-                        sockopt: {
-                            dialerProxy: "fragment",
-                            tcpKeepAliveIdle: 100,
-                            tcpNoDelay: true,
-                        },
-                    },
-                    tag: "proxy_2",
-                },
-                {
-                    protocol: "vless",
-                    settings: {
-                        vnext: [
-                            {
-                                address: Address[2],
-                                port: 443,
-                                users: [
-                                    {
-                                        encryption: "none",
-                                        flow: "",
-                                        id: userID,
-                                        level: 8,
-                                        security: "auto",
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                    streamSettings: {
-                        network: "ws",
-                        security: "tls",
-                        tlsSettings: {
-                            allowInsecure: false,
-                            alpn: ["h2", "http/1.1"],
-                            fingerprint: "chrome",
-                            publicKey: "",
-                            serverName: randomUpperCase(hostName),
-                            shortId: "",
-                            show: false,
-                            spiderX: "",
-                        },
-                        wsSettings: {
-                            headers: {
-                                Host: randomUpperCase(hostName),
-                            },
-                            path: `/${getRandomPath(16)}?ed=2048`,
-                        },
-                        sockopt: {
-                            dialerProxy: "fragment",
-                            tcpKeepAliveIdle: 100,
-                            tcpNoDelay: true,
-                        },
-                    },
-                    tag: "proxy_3",
-                },
-                {
-                    protocol: "vless",
-                    settings: {
-                        vnext: [
-                            {
-                                address: Address[3],
-                                port: 443,
-                                users: [
-                                    {
-                                        encryption: "none",
-                                        flow: "",
-                                        id: userID,
-                                        level: 8,
-                                        security: "auto",
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                    streamSettings: {
-                        network: "ws",
-                        security: "tls",
-                        tlsSettings: {
-                            allowInsecure: false,
-                            alpn: ["h2", "http/1.1"],
-                            fingerprint: "chrome",
-                            publicKey: "",
-                            serverName: randomUpperCase(hostName),
-                            shortId: "",
-                            show: false,
-                            spiderX: "",
-                        },
-                        wsSettings: {
-                            headers: {
-                                Host: randomUpperCase(hostName),
-                            },
-                            path: `/${getRandomPath(16)}?ed=2048`,
-                        },
-                        sockopt: {
-                            dialerProxy: "fragment",
-                            tcpKeepAliveIdle: 100,
-                            tcpNoDelay: true,
-                        },
-                    },
-                    tag: "proxy_4",
-                },
-                {
-                    protocol: "vless",
-                    settings: {
-                        vnext: [
-                            {
-                                address: Address[4],
-                                port: 443,
-                                users: [
-                                    {
-                                        encryption: "none",
-                                        flow: "",
-                                        id: userID,
-                                        level: 8,
-                                        security: "auto",
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                    streamSettings: {
-                        network: "ws",
-                        security: "tls",
-                        tlsSettings: {
-                            allowInsecure: false,
-                            alpn: ["h2", "http/1.1"],
-                            fingerprint: "chrome",
-                            publicKey: "",
-                            serverName: randomUpperCase(hostName),
-                            shortId: "",
-                            show: false,
-                            spiderX: "",
-                        },
-                        wsSettings: {
-                            headers: {
-                                Host: randomUpperCase(hostName),
-                            },
-                            path: `/${getRandomPath(16)}?ed=2048`,
-                        },
-                        sockopt: {
-                            dialerProxy: "fragment",
-                            tcpKeepAliveIdle: 100,
-                            tcpNoDelay: true,
-                        },
-                    },
-                    tag: "proxy_5",
-                },
-                {
-                    protocol: "vless",
-                    settings: {
-                        vnext: [
-                            {
-                                address: Address[5],
-                                port: 443,
-                                users: [
-                                    {
-                                        encryption: "none",
-                                        flow: "",
-                                        id: userID,
-                                        level: 8,
-                                        security: "auto",
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                    streamSettings: {
-                        network: "ws",
-                        security: "tls",
-                        tlsSettings: {
-                            allowInsecure: false,
-                            alpn: ["h2", "http/1.1"],
-                            fingerprint: "chrome",
-                            publicKey: "",
-                            serverName: randomUpperCase(hostName),
-                            shortId: "",
-                            show: false,
-                            spiderX: "",
-                        },
-                        wsSettings: {
-                            headers: {
-                                Host: randomUpperCase(hostName),
-                            },
-                            path: `/${getRandomPath(16)}?ed=2048`,
-                        },
-                        sockopt: {
-                            dialerProxy: "fragment",
-                            tcpKeepAliveIdle: 100,
-                            tcpNoDelay: true,
-                        },
-                    },
-                    tag: "proxy_6",
-                },
-                {
-                    tag: "fragment",
-                    protocol: "freedom",
-                    settings: {
-                        domainStrategy: "AsIs",
-                        fragment: {
-                            packets: "tlshello",
-                            length: fragmentLength,
-                            interval: fragmentInterval,
-                        },
-                    },
-                    streamSettings: {
-                        sockopt: {
-                            tcpKeepAliveIdle: 100,
-                            TcpNoDelay: true,
-                        },
-                    },
-                },
-                {
-                    protocol: "freedom",
-                    settings: {
-                        domainStrategy: "UseIP",
-                    },
-                    tag: "direct",
-                },
-                {
-                    protocol: "blackhole",
-                    settings: {
-                        response: {
-                            type: "http",
-                        },
-                    },
-                    tag: "block",
-                },
-            ],
-            policy: {
-                levels: {
-                    8: {
-                        connIdle: 300,
-                        downlinkOnly: 1,
-                        handshake: 4,
-                        uplinkOnly: 1,
-                    },
-                },
-                system: {
-                    statsOutboundUplink: true,
-                    statsOutboundDownlink: true,
-                },
-            },
-            routing: {
-                domainStrategy: "IPIfNonMatch",
-                rules: [
-                    {
-                        ip: ["1.1.1.1"],
-                        outboundTag: "direct",
-                        port: "53",
-                        type: "field",
-                    },
-                    {
-                        domain: ["geosite:private", "geosite:category-ir", "domain:.ir"],
-                        outboundTag: "direct",
-                        type: "field",
-                    },
-                    {
-                        ip: ["geoip:private", "geoip:ir"],
-                        outboundTag: "direct",
-                        type: "field",
-                    },
-                    {
-                        domain: ["geosite:category-ads-all", "geosite:category-ads-ir"],
-                        outboundTag: "block",
-                        type: "field",
-                    },
-                    {
-                        balancerTag: "all",
-                        type: "field",
-                        network: "tcp,udp",
-                    },
-                ],
-                balancers: [
-                    {
-                        tag: "all",
-                        selector: ["proxy"],
-                        strategy: {
-                            type: "leastPing",
-                        },
-                    },
-                ],
-            },
-            stats: {},
-            observatory: {
-                probeInterval: "5m",
-                probeURL: "https://api.github.com/_private/browser/stats",
-                subjectSelector: ["proxy"],
-                EnableConcurrency: true,
-            },
-        };
+        let bestPingConfig = { ...fragConfigTemp};
+        bestPingConfig.outbounds = [...outbounds, ...otherOutbounds];
+        bestPingConfig.routing.rules.push({ ...balancerRule});
+        bestPingConfig.routing.balancers = balancers;
+        bestPingConfig.observatory = observatory;
 
-        /* ***************************************************** */
-        const bestPingNeko = {
-            dns: {
-                disableFallback: true,
-                servers: [
-                    {
-                        address: remoteDNS,
-                        domains: [],
-                        queryStrategy: "",
-                    },
-                    {
-                        address: localDNS,
-                        domains: ["domain:.ir", "geosite:private", "geosite:category-ir"],
-                        queryStrategy: "",
-                    },
-                ],
-                tag: "dns",
-            },
-            inbounds: [
-                {
-                    listen: "127.0.0.1",
-                    port: 2080,
-                    protocol: "socks",
-                    settings: { udp: true },
-                    sniffing: {
-                        destOverride: ["http", "tls", "quic"],
-                        enabled: true,
-                        metadataOnly: false,
-                        routeOnly: true,
-                    },
-                    tag: "socks-in",
-                },
-                {
-                    listen: "127.0.0.1",
-                    port: 2081,
-                    protocol: "http",
-                    sniffing: {
-                        destOverride: ["http", "tls", "quic"],
-                        enabled: true,
-                        metadataOnly: false,
-                        routeOnly: true,
-                    },
-                    tag: "http-in",
-                },
-            ],
-            log: { loglevel: "warning" },
-            outbounds: [
-                {
-                    domainStrategy: "AsIs",
-                    flow: null,
-                    protocol: "vless",
-                    settings: {
-                        vnext: [
-                            {
-                                address: Address[0],
-                                port: 443,
-                                users: [
-                                    {
-                                        encryption: "none",
-                                        flow: "",
-                                        id: userID,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                    streamSettings: {
-                        network: "ws",
-                        security: "tls",
-                        sockopt: {
-                            dialerProxy: "fragment",
-                            tcpKeepAliveIdle: 100,
-                            tcpNoDelay: true,
-                        },
-                        tlsSettings: {
-                            alpn: ["h2", "http/1.1"],
-                            fingerprint: "chrome",
-                            serverName: randomUpperCase(hostName),
-                        },
-                        wsSettings: {
-                            headers: {
-                                Host: randomUpperCase(hostName),
-                            },
-                            path: `${getRandomPath(16)}?ed=2048`,
-                        },
-                    },
-                    tag: "proxy_1",
-                },
-                {
-                    domainStrategy: "AsIs",
-                    flow: null,
-                    protocol: "vless",
-                    settings: {
-                        vnext: [
-                            {
-                                address: Address[1],
-                                port: 443,
-                                users: [
-                                    {
-                                        encryption: "none",
-                                        flow: "",
-                                        id: userID,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                    streamSettings: {
-                        network: "ws",
-                        security: "tls",
-                        sockopt: {
-                            dialerProxy: "fragment",
-                            tcpKeepAliveIdle: 100,
-                            tcpNoDelay: true,
-                        },
-                        tlsSettings: {
-                            alpn: ["h2", "http/1.1"],
-                            fingerprint: "chrome",
-                            serverName: randomUpperCase(hostName),
-                        },
-                        wsSettings: {
-                            headers: {
-                                Host: randomUpperCase(hostName),
-                            },
-                            path: `${getRandomPath(16)}?ed=2048`,
-                        },
-                    },
-                    tag: "proxy_2",
-                },
-                {
-                    domainStrategy: "AsIs",
-                    flow: null,
-                    protocol: "vless",
-                    settings: {
-                        vnext: [
-                            {
-                                address: Address[2],
-                                port: 443,
-                                users: [
-                                    {
-                                        encryption: "none",
-                                        flow: "",
-                                        id: userID,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                    streamSettings: {
-                        network: "ws",
-                        security: "tls",
-                        sockopt: {
-                            dialerProxy: "fragment",
-                            tcpKeepAliveIdle: 100,
-                            tcpNoDelay: true,
-                        },
-                        tlsSettings: {
-                            alpn: ["h2", "http/1.1"],
-                            fingerprint: "chrome",
-                            serverName: randomUpperCase(hostName),
-                        },
-                        wsSettings: {
-                            headers: {
-                                Host: randomUpperCase(hostName),
-                            },
-                            path: `${getRandomPath(16)}?ed=2048`,
-                        },
-                    },
-                    tag: "proxy_3",
-                },
-                {
-                    domainStrategy: "AsIs",
-                    flow: null,
-                    protocol: "vless",
-                    settings: {
-                        vnext: [
-                            {
-                                address: Address[3],
-                                port: 443,
-                                users: [
-                                    {
-                                        encryption: "none",
-                                        flow: "",
-                                        id: userID,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                    streamSettings: {
-                        network: "ws",
-                        security: "tls",
-                        sockopt: {
-                            dialerProxy: "fragment",
-                            tcpKeepAliveIdle: 100,
-                            tcpNoDelay: true,
-                        },
-                        tlsSettings: {
-                            alpn: ["h2", "http/1.1"],
-                            fingerprint: "chrome",
-                            serverName: randomUpperCase(hostName),
-                        },
-                        wsSettings: {
-                            headers: {
-                                Host: randomUpperCase(hostName),
-                            },
-                            path: `${getRandomPath(16)}?ed=2048`,
-                        },
-                    },
-                    tag: "proxy_4",
-                },
-                {
-                    domainStrategy: "AsIs",
-                    flow: null,
-                    protocol: "vless",
-                    settings: {
-                        vnext: [
-                            {
-                                address: Address[4],
-                                port: 443,
-                                users: [
-                                    {
-                                        encryption: "none",
-                                        flow: "",
-                                        id: userID,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                    streamSettings: {
-                        network: "ws",
-                        security: "tls",
-                        sockopt: {
-                            dialerProxy: "fragment",
-                            tcpKeepAliveIdle: 100,
-                            tcpNoDelay: true,
-                        },
-                        tlsSettings: {
-                            alpn: ["h2", "http/1.1"],
-                            fingerprint: "chrome",
-                            serverName: randomUpperCase(hostName),
-                        },
-                        wsSettings: {
-                            headers: {
-                                Host: randomUpperCase(hostName),
-                            },
-                            path: `${getRandomPath(16)}?ed=2048`,
-                        },
-                    },
-                    tag: "proxy_5",
-                },
-                {
-                    domainStrategy: "AsIs",
-                    flow: null,
-                    protocol: "vless",
-                    settings: {
-                        vnext: [
-                            {
-                                address: Address[5],
-                                port: 443,
-                                users: [
-                                    {
-                                        encryption: "none",
-                                        flow: "",
-                                        id: userID,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                    streamSettings: {
-                        network: "ws",
-                        security: "tls",
-                        sockopt: {
-                            dialerProxy: "fragment",
-                            tcpKeepAliveIdle: 100,
-                            tcpNoDelay: true,
-                        },
-                        tlsSettings: {
-                            alpn: ["h2", "http/1.1"],
-                            fingerprint: "chrome",
-                            serverName: randomUpperCase(hostName),
-                        },
-                        wsSettings: {
-                            headers: {
-                                Host: randomUpperCase(hostName),
-                            },
-                            path: `${getRandomPath(16)}?ed=2048`,
-                        },
-                    },
-                    tag: "proxy_6",
-                },
-                {
-                    protocol: "freedom",
-                    settings: {
-                        domainStrategy: "AsIs",
-                        fragment: {
-                            length: fragmentLength,
-                            interval: fragmentInterval,
-                            packets: "tlshello",
-                        },
-                    },
-                    streamSettings: {
-                        sockopt: {
-                            tcpKeepAliveIdle: 100,
-                            TcpNoDelay: true
-                        },
-                    },
-                    tag: "fragment",
-                },
-                { domainStrategy: "", protocol: "freedom", tag: "bypass" },
-                { protocol: "blackhole", tag: "block" },
-                {
-                    protocol: "dns",
-                    proxySettings: { tag: "proxy", transportLayer: true },
-                    settings: {
-                        address: localDNS,
-                        network: "tcp",
-                        port: 53,
-                        userLevel: 1,
-                    },
-                    tag: "dns-out",
-                },
-            ],
-            policy: {
-                levels: { 1: { connIdle: 30 } },
-                system: { statsOutboundDownlink: true, statsOutboundUplink: true },
-            },
-            routing: {
-                domainStrategy: "IPIfNonMatch",
-                rules: [
-                    { ip: [localDNS], outboundTag: "bypass", type: "field" },
-                    {
-                        inboundTag: ["socks-in", "http-in"],
-                        outboundTag: "dns-out",
-                        port: "53",
-                        type: "field",
-                    },
-                    {
-                        domain: ["geosite:category-ads-all", "geosite:category-ads-ir"],
-                        outboundTag: "block",
-                        type: "field",
-                    },
-                    {
-                        ip: ["geoip:ir", "geoip:private"],
-                        outboundTag: "bypass",
-                        type: "field",
-                    },
-                    {
-                        domain: ["geosite:private", "geosite:category-ir", "domain:.ir"],
-                        outboundTag: "bypass",
-                        type: "field",
-                    },
-                    { outboundTag: "proxy", port: "0-65535", type: "field" },
-                ],
-                balancers: [
-                    {
-                        tag: "all",
-                        selector: ["proxy"],
-                        strategy: {
-                            type: "leastPing",
-                        },
-                    },
-                ],
-            },
-            stats: {},
-            observatory: {
-                probeInterval: "5m",
-                probeURL: "https://api.github.com/_private/browser/stats",
-                subjectSelector: ["proxy"],
-                EnableConcurrency: true,
-            },
-        };
-
+        let bestPingNeko = { ...fragConfigNekorayTemp};
+        bestPingNeko.outbounds = [ ...outbounds, ...otherOutboundsNeko];
+        bestPingNeko.routing.rules.push({ ...balancerRule});
+        bestPingNeko.routing.balancers = balancers;
+        bestPingNeko.observatory = observatory;
+          
         Configs.push({
             address: "Best Ping",
             fragConf: bestPingConfig,
             fragConfNeko: bestPingNeko,
         });
     });
-
+    
     return Configs;
 };
 
@@ -2174,6 +1388,27 @@ const renderPage = async (
         `${intervalMin}-${intervalMax}`,
         dns
     );
+
+    const genCustomConfRow = (config) => {
+
+        return `<td>${config.address}</td>
+                <td>
+                    <button onclick="copyToClipboard('${encodeURIComponent(JSON.stringify(config.fragConf))}', true)">
+                    Copy Config 
+                    <span class="material-symbols-outlined" style="margin-left: 5px;">copy_all</span>
+                    </button>
+                    <button onclick="copyToClipboard('https://${host}/frag/${uuid}?dns=${dns? dns : ''}&length=${lengthMin}-${lengthMax}&interval=${intervalMin}-${intervalMax}&addr=${config.address}')">
+                    Copy URL 
+                    <span class="material-symbols-outlined" style="margin-left: 5px;">link</span>
+                    </button>
+                </td>
+                <td>
+                    <button onclick="copyToClipboard('${encodeURIComponent(JSON.stringify(config.fragConfNeko))}', true)">
+                    Copy Config 
+                    <span class="material-symbols-outlined">copy_all</span>
+                    </button>
+                </td>`;
+    }
     // Serve the HTML form page
     const html = `
 	<html>
@@ -2347,7 +1582,7 @@ const renderPage = async (
 			<form method="POST" id="configForm">
 				<div class="form-control">
 					<label for="dns">🌏 DNS</label>
-					<input type="text" id="dns" name="dns" placeholder="${dns ? dns : "94.140.14.14 (Adguard DNS)"}"
+					<input type="text" id="dns" name="dns" placeholder="${dns? dns : "94.140.14.14 (Adguard DNS)"}"
 						pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
 						title="Please enter a valid DNS IP Address! 😑" required />
 				</div>
@@ -2356,29 +1591,29 @@ const renderPage = async (
 				<div class="form-control">
 					<label for="fragmentLength">📐 Length</label>
 					<div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;">
-						<input type="number" id="fragmentLengthMin" name="fragmentLengthMin" placeholder=${lengthMin ? lengthMin : "100"} min="10"
-							style="width: 100%;" required>
+						<input type="number" id="fragmentLengthMin" name="fragmentLengthMin" placeholder=${lengthMin? lengthMin : "100"} min="10"
+						 required>
 						<span style="text-align: center; white-space: pre;"> - </span>
-						<input type="number" id="fragmentLengthMax" name="fragmentLengthMax" placeholder=${lengthMax ? lengthMax : "100"} max="500"
-							style="width: 100%;" required>
+						<input type="number" id="fragmentLengthMax" name="fragmentLengthMax" placeholder=${lengthMax? lengthMax : "100"} max="500"
+						 required>
 					</div>
 				</div>
 	
 				<div class="form-control">
 					<label for="fragmentInterval">🕞 Interval</label>
 					<div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;">
-						<input type="number" id="fragmentIntervalMin" name="fragmentIntervalMin" style="width: 100%;"
-						placeholder=${intervalMin ? intervalMin : "100"} max="30" required>
+						<input type="number" id="fragmentIntervalMin" name="fragmentIntervalMin"
+						placeholder=${intervalMin? intervalMin : "100"} max="30" required>
 						<span style="text-align: center; white-space: pre;"> - </span>
-						<input type="number" id="fragmentIntervalMax" name="fragmentIntervalMax" style="width: 100%;"
-						placeholder=${intervalMax ? intervalMax : "100"} max="30" required>
+						<input type="number" id="fragmentIntervalMax" name="fragmentIntervalMax"
+						placeholder=${intervalMax? intervalMax : "100"} max="30" required>
 					</div>
 				</div>
 	
 	
 				<div class="form-control">
 					<div style="grid-column: 2; width: 100%;">
-						<input type="submit" class="button" value="APPLY 💥" form="configForm" style="width: 100%;">
+						<input type="submit" class="button" value="APPLY 💥" form="configForm">
 					</div>
 				</div>
 			</form>
@@ -2455,67 +1690,25 @@ const renderPage = async (
 						<th>Nekoray</th>
 					</tr>
 					<tr>
-						<td>${vlessConfig[0].address}</td>
-						<td>${genCustomConfRow(vlessConfig[0], host, uuid, dns, lengthMin, lengthMax, intervalMin, intervalMax)}</td>
-						<td><button onclick="copyToClipboard('${encodeURIComponent(JSON.stringify(vlessConfig[0].fragConfNeko))}', true)">
-                                Copy Config 
-                                <span class="material-symbols-outlined">copy_all</span>
-                            </button>
-                        </td>
+						${genCustomConfRow(vlessConfig[0])}
 					</tr>
 					<tr>
-						<td>${vlessConfig[1].address}</td>
-						<td>${genCustomConfRow(vlessConfig[1], host, uuid, dns, lengthMin, lengthMax, intervalMin, intervalMax)}</td>
-						<td><button onclick="copyToClipboard('${encodeURIComponent(JSON.stringify(vlessConfig[1].fragConfNeko))}', true)">
-                                Copy Config 
-                                <span class="material-symbols-outlined">copy_all</span>
-                            </button>
-                        </td>
+                        ${genCustomConfRow(vlessConfig[1])}
+                    </tr>
+					<tr>
+                        ${genCustomConfRow(vlessConfig[2])}
 					</tr>
 					<tr>
-						<td>${vlessConfig[2].address}</td>
-						<td>${genCustomConfRow(vlessConfig[2], host, uuid, dns, lengthMin, lengthMax, intervalMin, intervalMax)}</td>
-						<td><button onclick="copyToClipboard('${encodeURIComponent(JSON.stringify(vlessConfig[2].fragConfNeko))}', true)">
-                                Copy Config 
-                                <span class="material-symbols-outlined">copy_all</span>
-                            </button>
-                        </td>
+                        ${genCustomConfRow(vlessConfig[3])}
 					</tr>
 					<tr>
-						<td>${vlessConfig[3].address}</td>
-						<td>${genCustomConfRow(vlessConfig[3], host, uuid, dns, lengthMin, lengthMax, intervalMin, intervalMax)}</td>
-						<td><button onclick="copyToClipboard('${encodeURIComponent(JSON.stringify(vlessConfig[3].fragConfNeko))}', true)">
-                                Copy Config 
-                                <span class="material-symbols-outlined">copy_all</span>
-                            </button>
-                        </td>
+                        ${genCustomConfRow(vlessConfig[4])}
 					</tr>
 					<tr>
-						<td>${vlessConfig[4].address}</td>
-						<td>${genCustomConfRow(vlessConfig[4], host, uuid, dns, lengthMin, lengthMax, intervalMin, intervalMax)}</td>
-						<td><button onclick="copyToClipboard('${encodeURIComponent(JSON.stringify(vlessConfig[4].fragConfNeko))}', true)">
-                                Copy Config 
-                                <span class="material-symbols-outlined">copy_all</span>
-                            </button>
-                        </td>
+                        ${genCustomConfRow(vlessConfig[5])}
 					</tr>
 					<tr>
-						<td>${vlessConfig[5].address}</td>
-						<td>${genCustomConfRow(vlessConfig[5], host, uuid, dns, lengthMin, lengthMax, intervalMin, intervalMax)}</td>
-						<td><button onclick="copyToClipboard('${encodeURIComponent(JSON.stringify(vlessConfig[5].fragConfNeko))}', true)">
-                                Copy Config 
-                                <span class="material-symbols-outlined">copy_all</span>
-                            </button>
-                        </td>
-					</tr>
-					<tr>
-						<td>${vlessConfig[6].address}</td>
-						<td>${genCustomConfRow(vlessConfig[6], host, uuid, dns, lengthMin, lengthMax, intervalMin, intervalMax)}</td>
-						<td><button onclick="copyToClipboard('${encodeURIComponent(JSON.stringify(vlessConfig[6].fragConfNeko))}', true)">
-                                Copy Config 
-                                <span class="material-symbols-outlined">copy_all</span>
-                            </button>
-                        </td>
+                        ${genCustomConfRow(vlessConfig[6])}
 					</tr>
 				</table>
 			</div>
@@ -2555,19 +1748,7 @@ const renderPage = async (
 	</script>
 	</body>
 	
-	</html>
-	`;
+	</html>`;
+
     return html;
 };
-
-const genCustomConfRow = (config, host, uuid, dns, lengthMin, lengthMax, intervalMin, intervalMax) => {
-
-    return `<button onclick="copyToClipboard('${encodeURIComponent(JSON.stringify(config.fragConf))}', true)">
-            Copy Config 
-            <span class="material-symbols-outlined" style="margin-left: 5px;">copy_all</span>
-            </button>
-            <button onclick="copyToClipboard('https://${host}/frag/${uuid}?dns=${dns ? dns : ''}&length=${lengthMin}-${lengthMax}&interval=${intervalMin}-${intervalMax}&addr=${config.address}')">
-            Copy URL 
-            <span class="material-symbols-outlined" style="margin-left: 5px;">link</span>
-            </button>`;
-}
