@@ -949,7 +949,7 @@ const getFragVLESSConfig = async (
     let Configs = [];
     let outbounds = [];
 
-    let fragConfigTemp = {
+    const fragConfigTemp = {
         dns: {
             hosts: {
                 "geosite:category-ads-all": "127.0.0.1",
@@ -1045,7 +1045,7 @@ const getFragVLESSConfig = async (
         stats: {},
     };
 
-    let fragConfigNekorayTemp = {
+    const fragConfigNekorayTemp = {
         dns: {
             disableFallback: true,
             servers: [
@@ -1167,7 +1167,7 @@ const getFragVLESSConfig = async (
         },
     ];
 
-    let otherOutboundsNeko = [
+    const otherOutboundsNeko = [
         {
             protocol: "freedom",
             settings: {
@@ -1290,7 +1290,7 @@ const getFragVLESSConfig = async (
             proxyOutbound.tag += `_${index + 1}`;
             outbounds.push({...proxyOutbound});
             
-            let config = {
+            const config = {
                 address: addr,
                 fragConf: fragConfig,
                 fragConfNeko: fragConfigNekoray,
@@ -1490,6 +1490,7 @@ const renderPage = async (
 				display: flex;
                 align-items: center;
                 justify-content: center;
+                width: 100%;
 				white-space: nowrap;
 				padding: 10px 20px;
                 margin: 0px 5px;
