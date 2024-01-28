@@ -8,16 +8,7 @@ import { connect } from "cloudflare:sockets";
 // https://www.uuidgenerator.net/
 let userID = "XXXX";
 
-const proxyIPs = [
-    "8.222.128.131",
-    "43.157.17.4",
-    "8.219.247.203",
-    "8.222.193.208",
-    "143.47.227.23",
-    "8.219.12.152",
-    "8.219.201.174",
-    "8.222.138.164",
-];
+const proxyIPs = ["proxyip.fuck.cloudns.biz"]; //['cdn.xn--b6gac.eu.org', 'cdn-all.xn--b6gac.eu.org', 'edgetunnel.anycast.eu.org'];
 
 let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 
@@ -43,24 +34,35 @@ export default {
      */
     async fetch(request, env, ctx) {
         try {
+            
             userID = env.UUID || userID;
             proxyIP = env.PROXYIP || proxyIP;
             dohURL = env.DNS_RESOLVER_URL || dohURL;
             nodeId = env.NODE_ID || nodeId;
             apiToken = env.API_TOKEN || apiToken;
             apiHost = env.API_HOST || apiHost;
+            const url = new URL(request.url);
             const upgradeHeader = request.headers.get("Upgrade");
-
+            if (await env.bpb.get("remoteDNS") === null) await updateDataset(
+                env, 
+                "https://94.140.14.14/dns-query", 
+                "1.1.1.1", 
+                "100", 
+                "200", 
+                "10", 
+                "20", 
+                ""
+            );
+            
             if (!upgradeHeader || upgradeHeader !== "websocket") {
-                const url = new URL(request.url);
+                
+                const host = request.headers.get("Host");
                 const searchParams = new URLSearchParams(url.search);
-                const fragmentLength = searchParams.get("length");
-                const fragmentInterval = searchParams.get("interval");
-                const dnsAddress = searchParams.get("dns");
                 const client = searchParams.get("app");
                 const configAddr = searchParams.get("addr");
 
                 switch (url.pathname) {
+
                     case "/cf":
                         return new Response(JSON.stringify(request.cf, null, 4), {
                             status: 200,
@@ -68,6 +70,7 @@ export default {
                                 "Content-Type": "application/json;charset=utf-8",
                             },
                         });
+
                     case "/connect": // for test connect to cf socket
                         const [hostname, port] = ["cloudflare.com", "80"];
                         console.log(`Connecting to ${hostname}:${port}...`);
@@ -115,26 +118,22 @@ export default {
                         } catch (connectError) {
                             return new Response(connectError.message, { status: 500 });
                         }
-                    case `/sub/${userID}`: {
-                        const vlessConfigs = await getVLESSConfig(
-                            userID,
-                            request.headers.get("Host"),
-                            client
-                        );
+                        
+                    case `/sub/${userID}`: 
 
-                        return new Response(`${vlessConfigs}`, {
+                        const vlessConfigs = client === "singbox" ? await env.bpb.get("singbox-sub") : await env.bpb.get("xray-sub");
+                        return new Response(vlessConfigs, {
                             status: 200,
                             headers: {
                                 "Content-Type": "text/plain;charset=utf-8",
                             },
-                        });
-                    }
+                        });                        
+                    
                     case `/frag/${userID}`:
-
-                        const configs = await getFragVLESSConfig(userID, request.headers.get("Host"), fragmentLength, fragmentInterval, dnsAddress);
-                        const config = configs.filter(conf => conf.address == configAddr)[0].fragConf;
-
-                        return new Response(`${JSON.stringify(config)}`, {
+                            
+                        const configs = JSON.parse(await env.bpb.get("fragConfigs"));                        
+                        const fragConfig = configs.find(conf => conf.address === configAddr)?.fragConf;
+                        return new Response(`${JSON.stringify(fragConfig, null, 4)}`, {
                             status: 200,
                             headers: {
                                 "Content-Type": "text/plain;charset=utf-8",
@@ -142,52 +141,45 @@ export default {
                         });
 
                     case `/${userID}`:
+
                         if (request.method === "POST") {
                             const formData = await request.formData();
-                            const dns = formData.get("dns");
-                            const lengthMin = formData.get("fragmentLengthMin");
-                            const lengthMax = formData.get("fragmentLengthMax");
-                            const intervalMin = formData.get("fragmentIntervalMin");
-                            const intervalMax = formData.get("fragmentIntervalMax");
-
-                            const html = await renderPage(
-                                userID,
-                                request.headers.get("Host"),
-                                dns,
-                                lengthMin,
-                                lengthMax,
-                                intervalMin,
-                                intervalMax,
-                                url.pathname
+                            await updateDataset(
+                                env,
+                                formData.get("remoteDNS"),
+                                formData.get("localDNS"),
+                                formData.get("fragmentLengthMin"),
+                                formData.get("fragmentLengthMax"),
+                                formData.get("fragmentIntervalMin"),
+                                formData.get("fragmentIntervalMax"),
+                                formData.get("cleanIPs")
                             );
-
-                            return new Response(html, {
-                                status: 200,
-                                headers: {
-                                    "Content-Type": "text/html",
-                                },
-                            });
-                        } else {
-                            const html = await renderPage(
-                                userID,
-                                request.headers.get("Host"),
-                                false,
-                                "100",
-                                "200",
-                                "10",
-                                "20"
-                            );
-                            return new Response(html, {
-                                status: 200,
-                                headers: {
-                                    "Content-Type": "text/html",
-                                },
-                            });
                         }
+
+                        if (request.method === "POST" || await env.bpb.get("fragConfigs") === null) {
+                            await getVLESSConfig(env, userID, host);
+                            await getVLESSConfig(env, userID, host);
+                            await getFragVLESSConfig(env, userID, host);
+                        }
+
+                        const htmlPage = await renderPage(
+                            env,
+                            userID,
+                            host
+                        );
+                        
+                        return new Response(htmlPage, {
+                            status: 200,
+                            headers: {
+                                "Content-Type": "text/html",
+                                "Cache-Control": "no-cache, no-store, must-revalidate",
+                            },
+                        });
+
                     default:
                         // return new Response('Not found', { status: 404 });
                         // For any other path, reverse proxy to 'www.fmprc.gov.cn' and return the original response
-                        url.hostname = "www.bing.com";
+                        url.hostname = "www.speedtest.net";
                         url.protocol = "https:";
                         request = new Request(url, request);
                         return await fetch(request);
@@ -909,45 +901,47 @@ async function handleUDPOutBound(webSocket, vlessResponseHeader, log) {
  * @param {string | null} hostName
  * @returns {string}
  */
-const getVLESSConfig = async (userID, hostName, client) => {
-    const alpn = client === "singbox" ? "http/1.1" : "h2,http/1.1";
-    let vlessWsTls = "";
 
-    await resolveDNS(hostName).then((addresses) => {
-        const Address = [
-            "www.speedtest.net",
-            hostName,
-            ...addresses.ipv4,
-            ...addresses.ipv6.map((ip) => `[${ip}]`),
-        ];
-        Address.forEach((addr) => {
-            vlessWsTls += `vless://${userID}@${addr}:443?encryption=none&security=tls&type=ws&host=${randomUpperCase(
-                hostName
-            )}&sni=${randomUpperCase(
-                hostName
-            )}&fp=randomized&alpn=${alpn}&path=%2F${getRandomPath(
-                16
-            )}%3Fed%3D2048#Worker%20-%20${addr}\n`;
-        });
+const getVLESSConfig = async (env, userID, hostName) => {
+    let vlessWsTls = "";
+    const cleanIPs = await env.bpb.get("cleanIPs");
+    const resolved = await resolveDNS(hostName);
+    const Addresses = [
+        hostName,
+        "www.speedtest.net",
+        ...(cleanIPs === "" ? [] : cleanIPs.split(",")),
+        ...resolved.ipv4,
+        ...resolved.ipv6.map((ip) => `[${ip}]`),
+    ];
+
+    Addresses.forEach((addr) => {
+        vlessWsTls += `vless://${userID}@${addr}:443?encryption=none&security=tls&type=ws&host=${randomUpperCase(
+            hostName
+        )}&sni=${randomUpperCase(
+            hostName
+        )}&fp=randomized&alpn=http/1.1&path=%2F${getRandomPath(
+            16
+        )}%3Fed%3D2048#Worker%20-%20${addr}\n`;
     });
 
-    return `${btoa(vlessWsTls)}`;
+    const singboxSub = btoa(vlessWsTls);
+    const xraySub = btoa(vlessWsTls.replaceAll("http/1.1", "h2,http/1.1"));
+    await env.bpb.put("xray-sub", xraySub);
+    await env.bpb.put("singbox-sub", singboxSub);
 };
 
-const getFragVLESSConfig = async (
-    userID,
-    hostName,
-    fragmentLength,
-    fragmentInterval,
-    dns
-) => {
-    const remoteDNS = dns
-        ? `https://${dns}/dns-query`
-        : "https://94.140.14.14/dns-query";
-
-    const localDNS = dns ? dns : "1.1.1.1";
+const getFragVLESSConfig = async (env, userID, hostName) => {
     let Configs = [];
     let outbounds = [];
+    const {
+        remoteDNS, 
+        localDNS, 
+        lengthMin, 
+        lengthMax, 
+        intervalMin, 
+        intervalMax, 
+        cleanIPs
+    } = await getDataset(env);
 
     const fragConfigTemp = {
         dns: {
@@ -999,7 +993,42 @@ const getFragVLESSConfig = async (
         log: {
             loglevel: "warning",
         },
-        outbounds: [],
+        outbounds: [
+            {
+                tag: "fragment",
+                protocol: "freedom",
+                settings: {
+                    domainStrategy: "AsIs",
+                    fragment: {
+                        packets: "tlshello",
+                        length: `${lengthMin}-${lengthMax}`,
+                        interval: `${intervalMin}-${intervalMax}`,
+                    },
+                },
+                streamSettings: {
+                    sockopt: {
+                        tcpKeepAliveIdle: 100,
+                        TcpNoDelay: true,
+                    },
+                },
+            },
+            {
+                protocol: "freedom",
+                settings: {
+                    domainStrategy: "UseIP",
+                },
+                tag: "direct",
+            },
+            {
+                protocol: "blackhole",
+                settings: {
+                    response: {
+                        type: "http",
+                    },
+                },
+                tag: "block",
+            },
+        ],
         policy: {
             levels: {
                 8: {
@@ -1018,7 +1047,7 @@ const getFragVLESSConfig = async (
             domainStrategy: "IPIfNonMatch",
             rules: [
                 {
-                    ip: ["1.1.1.1"],
+                    ip: [localDNS],
                     outboundTag: "direct",
                     port: "53",
                     type: "field",
@@ -1038,10 +1067,28 @@ const getFragVLESSConfig = async (
                     outboundTag: "block",
                     type: "field",
                 },
+                {
+                    balancerTag: "all",
+                    type: "field",
+                    network: "tcp,udp",
+                }
             ],
-            balancers: [],
+            balancers: [
+                {
+                    tag: "all",
+                    selector: ["proxy"],
+                    strategy: {
+                        type: "leastPing",
+                    },
+                },
+            ],
         },
-        observatory: {},
+        observatory: {
+        probeInterval: "5m",
+        probeURL: "https://api.github.com/_private/browser/stats",
+        subjectSelector: ["proxy"],
+        EnableConcurrency: true,
+    },
         stats: {},
     };
 
@@ -1090,7 +1137,39 @@ const getFragVLESSConfig = async (
             },
         ],
         log: { loglevel: "warning" },
-        outbounds: [],
+        outbounds: [
+            {
+                protocol: "freedom",
+                settings: {
+                    domainStrategy: "AsIs",
+                    fragment: {
+                        length: `${lengthMin}-${lengthMax}`,
+                        interval: `${intervalMin}-${intervalMax}`,
+                        packets: "tlshello",
+                    },
+                },
+                streamSettings: {
+                    sockopt: {
+                        tcpKeepAliveIdle: 100,
+                        TcpNoDelay: true
+                    },
+                },
+                tag: "fragment",
+            },
+            { domainStrategy: "", protocol: "freedom", tag: "bypass" },
+            { protocol: "blackhole", tag: "block" },
+            {
+                protocol: "dns",
+                proxySettings: { tag: "proxy", transportLayer: true },
+                settings: {
+                    address: localDNS,
+                    network: "tcp",
+                    port: 53,
+                    userLevel: 1,
+                },
+                tag: "dns-out",
+            },
+        ],
         policy: {
             levels: { 1: { connIdle: 30 } },
             system: { statsOutboundDownlink: true, statsOutboundUplink: true },
@@ -1120,206 +1199,130 @@ const getFragVLESSConfig = async (
                     outboundTag: "bypass",
                     type: "field",
                 },
-                { outboundTag: "proxy", port: "0-65535", type: "field" },
+                {
+                    balancerTag: "all",
+                    type: "field",
+                    network: "tcp,udp",
+                }
             ],
-            balancers: [],
+            balancers: [
+                {
+                    tag: "all",
+                    selector: ["proxy"],
+                    strategy: {
+                        type: "leastPing",
+                    },
+                },
+            ],
         },
-        observatory: {},
+        observatory: {
+            probeInterval: "5m",
+            probeURL: "https://api.github.com/_private/browser/stats",
+            subjectSelector: ["proxy"],
+            EnableConcurrency: true,
+        },
         stats: {},
     };
 
+    const resolved = await resolveDNS(hostName);
+    const Addresses = [
+        hostName,
+        "www.speedtest.net",
+        ...(cleanIPs === "" ? [] : cleanIPs.split(",")),
+        ...resolved.ipv4,
+        ...resolved.ipv6.map((ip) => `[${ip}]`),
+    ];
 
+    Addresses.forEach((addr, index) => {
 
-    const otherOutbounds = [
-        {
-            tag: "fragment",
-            protocol: "freedom",
+        let proxyOutbound = {
+            protocol: "vless",
             settings: {
-                domainStrategy: "AsIs",
-                fragment: {
-                    packets: "tlshello",
-                    length: fragmentLength,
-                    interval: fragmentInterval,
-                },
+                vnext: [
+                    {
+                        address: addr,
+                        port: 443,
+                        users: [
+                            {
+                                encryption: "none",
+                                flow: "",
+                                id: userID,
+                                level: 8,
+                                security: "auto",
+                            },
+                        ],
+                    },
+                ],
             },
             streamSettings: {
+                network: "ws",
+                security: "tls",
+                tlsSettings: {
+                    allowInsecure: false,
+                    alpn: ["h2", "http/1.1"],
+                    fingerprint: "chrome",
+                    publicKey: "",
+                    serverName: randomUpperCase(hostName),
+                    shortId: "",
+                    show: false,
+                    spiderX: "",
+                },
+                wsSettings: {
+                    headers: {
+                        Host: randomUpperCase(hostName),
+                    },
+                    path: `/${getRandomPath(16)}?ed=2048`,
+                },
                 sockopt: {
+                    dialerProxy: "fragment",
                     tcpKeepAliveIdle: 100,
-                    TcpNoDelay: true,
+                    tcpNoDelay: true,
                 },
             },
-        },
-        {
-            protocol: "freedom",
-            settings: {
-                domainStrategy: "UseIP",
-            },
-            tag: "direct",
-        },
-        {
-            protocol: "blackhole",
-            settings: {
-                response: {
-                    type: "http",
-                },
-            },
-            tag: "block",
-        },
-    ];
+            tag: "proxy",
+        };
 
-    const otherOutboundsNeko = [
-        {
-            protocol: "freedom",
-            settings: {
-                domainStrategy: "AsIs",
-                fragment: {
-                    length: fragmentLength,
-                    interval: fragmentInterval,
-                    packets: "tlshello",
-                },
-            },
-            streamSettings: {
-                sockopt: {
-                    tcpKeepAliveIdle: 100,
-                    TcpNoDelay: true
-                },
-            },
-            tag: "fragment",
-        },
-        { domainStrategy: "", protocol: "freedom", tag: "bypass" },
-        { protocol: "blackhole", tag: "block" },
-        {
-            protocol: "dns",
-            proxySettings: { tag: "proxy", transportLayer: true },
-            settings: {
-                address: localDNS,
-                network: "tcp",
-                port: 53,
-                userLevel: 1,
-            },
-            tag: "dns-out",
-        },
-    ];
+        let fragConfig = clone(fragConfigTemp);
+        fragConfig.outbounds = [{ ...proxyOutbound}, ...fragConfig.outbounds];
+        delete fragConfig.observatory;
+        delete fragConfig.routing.balancers;
+        fragConfig.routing.rules.pop();
 
-    const balancerRule = {
-        balancerTag: "all",
-        type: "field",
-        network: "tcp,udp",
-    };
+        let fragConfigNekoray = clone(fragConfigNekorayTemp);
+        fragConfigNekoray.outbounds = [{ ...proxyOutbound}, ...fragConfigNekoray.outbounds];
+        delete fragConfigNekoray.observatory;
+        delete fragConfigNekoray.routing.balancers;
+        fragConfigNekoray.routing.rules.pop();
 
-    const balancers = [
-        {
-            tag: "all",
-            selector: ["proxy"],
-            strategy: {
-                type: "leastPing",
-            },
-        },
-    ];
+        proxyOutbound.tag += `_${index + 1}`;
+        outbounds.push({...proxyOutbound});
+        
+        const config = {
+            address: addr,
+            fragConf: fragConfig,
+            fragConfNeko: fragConfigNekoray,
+        };
 
-    const observatory = {
-        probeInterval: "5m",
-        probeURL: "https://api.github.com/_private/browser/stats",
-        subjectSelector: ["proxy"],
-        EnableConcurrency: true,
-    };
-
-    await resolveDNS(hostName).then((addresses) => {
-        const Address = [
-            "www.speedtest.net",
-            hostName,
-            ...addresses.ipv4,
-            ...addresses.ipv6.map((ip) => `[${ip}]`)
-        ];
-
-        Address.forEach((addr, index) => {
-
-            let proxyOutbound = {
-                protocol: "vless",
-                settings: {
-                    vnext: [
-                        {
-                            address: addr,
-                            port: 443,
-                            users: [
-                                {
-                                    encryption: "none",
-                                    flow: "",
-                                    id: userID,
-                                    level: 8,
-                                    security: "auto",
-                                },
-                            ],
-                        },
-                    ],
-                },
-                streamSettings: {
-                    network: "ws",
-                    security: "tls",
-                    tlsSettings: {
-                        allowInsecure: false,
-                        alpn: ["h2", "http/1.1"],
-                        fingerprint: "chrome",
-                        publicKey: "",
-                        serverName: randomUpperCase(hostName),
-                        shortId: "",
-                        show: false,
-                        spiderX: "",
-                    },
-                    wsSettings: {
-                        headers: {
-                            Host: randomUpperCase(hostName),
-                        },
-                        path: `/${getRandomPath(16)}?ed=2048`,
-                    },
-                    sockopt: {
-                        dialerProxy: "fragment",
-                        tcpKeepAliveIdle: 100,
-                        tcpNoDelay: true,
-                    },
-                },
-                tag: "proxy",
-            };
-
-            let fragConfig = {...fragConfigTemp};
-            fragConfig.outbounds = [{ ...proxyOutbound}, ...otherOutbounds];
-
-            let fragConfigNekoray = { ...fragConfigNekorayTemp};
-            fragConfigNekoray.outbounds = [{ ...proxyOutbound}, ...otherOutboundsNeko];
-
-            proxyOutbound.tag += `_${index + 1}`;
-            outbounds.push({...proxyOutbound});
-            
-            const config = {
-                address: addr,
-                fragConf: fragConfig,
-                fragConfNeko: fragConfigNekoray,
-            };
-
-            Configs.push({...config});
-        });
-
-        let bestPingConfig = { ...fragConfigTemp};
-        bestPingConfig.outbounds = [...outbounds, ...otherOutbounds];
-        bestPingConfig.routing.rules.push({ ...balancerRule});
-        bestPingConfig.routing.balancers = balancers;
-        bestPingConfig.observatory = observatory;
-
-        let bestPingNeko = { ...fragConfigNekorayTemp};
-        bestPingNeko.outbounds = [ ...outbounds, ...otherOutboundsNeko];
-        bestPingNeko.routing.rules.push({ ...balancerRule});
-        bestPingNeko.routing.balancers = balancers;
-        bestPingNeko.observatory = observatory;
-          
-        Configs.push({
-            address: "Best Ping",
-            fragConf: bestPingConfig,
-            fragConfNeko: bestPingNeko,
-        });
+        Configs.push({...config});
     });
-    
-    return Configs;
+
+    let bestPingConfig = clone(fragConfigTemp);
+    bestPingConfig.outbounds = [...outbounds, ...bestPingConfig.outbounds];
+    let bestPingNeko = clone(fragConfigNekorayTemp);
+    bestPingNeko.outbounds = [ ...outbounds, ...bestPingNeko.outbounds];
+      
+    Configs.push({
+        address: "Best-Ping",
+        fragConf: bestPingConfig,
+        fragConfNeko: bestPingNeko,
+    });
+        
+    await env.bpb.put("fragConfigs", JSON.stringify(Configs));
 };
+
+const clone = (obj) => {
+    return JSON.parse(JSON.stringify(obj));
+}
 
 const randomUpperCase = (str) => {
     let result = "";
@@ -1343,12 +1346,8 @@ const getRandomPath = (length) => {
 };
 
 const resolveDNS = async (domain) => {
-    const dohURLv4 = `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(
-        domain
-    )}&type=A`;
-    const dohURLv6 = `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(
-        domain
-    )}&type=AAAA`;
+    const dohURLv4 = `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=A`;
+    const dohURLv6 = `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=AAAA`;
 
     try {
         const [ipv4Response, ipv6Response] = await Promise.all([
@@ -1372,56 +1371,57 @@ const resolveDNS = async (domain) => {
     }
 };
 
-const renderPage = async (
-    uuid,
-    host,
-    dns,
-    lengthMin,
-    lengthMax,
-    intervalMin,
-    intervalMax
-) => {
-    const vlessConfig = await getFragVLESSConfig(
-        uuid,
-        host,
-        `${lengthMin}-${lengthMax}`,
-        `${intervalMin}-${intervalMax}`,
-        dns
-    );
+const renderPage = async (env, uuid, host) => {
+    const {
+        remoteDNS, 
+        localDNS, 
+        lengthMin, 
+        lengthMax, 
+        intervalMin, 
+        intervalMax, 
+        cleanIPs, 
+        fragConfigs
+    } = await getDataset(env);
 
-    const genCustomConfRow = (config) => {
-
-        return `<td>${config.address}</td>
+    const genCustomConfRow = (configs) => {
+        let tableBlock = "";
+        configs.forEach(config => {
+            tableBlock += `
+            <tr>
+                <td>${config.address}</td>
                 <td>
-                    <button onclick="copyToClipboard('${encodeURIComponent(JSON.stringify(config.fragConf))}', true)">
-                    Copy Config 
-                    <span class="material-symbols-outlined" style="margin-left: 5px;">copy_all</span>
+                    <button onclick="copyToClipboard('${encodeURIComponent(JSON.stringify(config.fragConf, null, 4))}')">
+                        Copy Config 
+                        <span class="material-symbols-outlined" style="margin-left: 5px;">copy_all</span>
                     </button>
-                    <button onclick="copyToClipboard('https://${host}/frag/${uuid}?dns=${dns? dns : ''}&length=${lengthMin}-${lengthMax}&interval=${intervalMin}-${intervalMax}&addr=${config.address}')">
-                    Copy URL 
-                    <span class="material-symbols-outlined" style="margin-left: 5px;">link</span>
+                    <button onclick="copyToClipboard(encodeURIComponent('https://${host}/frag/${uuid}?addr=${config.address}'))">
+                        Copy URL 
+                        <span class="material-symbols-outlined" style="margin-left: 5px;">link</span>
                     </button>
                 </td>
                 <td>
-                    <button onclick="copyToClipboard('${encodeURIComponent(JSON.stringify(config.fragConfNeko))}', true)">
-                    Copy Config 
-                    <span class="material-symbols-outlined">copy_all</span>
+                    <button onclick="copyToClipboard('${encodeURIComponent(JSON.stringify(config.fragConfNeko, null, 4))}')">
+                        Copy Config 
+                        <span class="material-symbols-outlined">copy_all</span>
                     </button>
-                </td>`;
+                </td>
+            </tr>`;
+        });
+
+        return tableBlock;
     }
-    // Serve the HTML form page
+
     const html = `
-	<html>
+    <!DOCTYPE html>
+    <html lang="en">
 
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 		<style>
-			body {
-				font-family: system-ui;
-			}
-
+			body { font-family: system-ui; }
             .material-symbols-outlined {
                 margin-left: 5px;
                 font-variation-settings:
@@ -1431,18 +1431,17 @@ const renderPage = async (
                 'opsz' 24
             }
 
-	
-			h2 {
-				margin-bottom: 30px;
-				text-align: center;
-				color: #3b3b3b;
-			}
-	
-			hr {
-				border: 1px solid #ddd;
-				margin: 20px 0;
-			}
-	
+			h2 { margin-bottom: 30px; text-align: center; color: #3b3b3b; }
+			hr { border: 1px solid #ddd; margin: 20px 0; }
+            .footer {
+                display: flex;
+                font-weight: 600;
+                margin: 10px auto 0 auto;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .form-control a, a.link { text-decoration: none; }
 			.form-control {
 				margin-bottom: 15px;
 				display: grid;
@@ -1451,7 +1450,17 @@ const renderPage = async (
 				justify-content: flex-end;
 				font-family: Arial, sans-serif;
 			}
-	
+
+            .form-control button {
+                background-color: white;
+                font-weight: 600;
+                color: #09639f;
+                border-color: #09639f;
+                border: 2px solid;
+            }
+
+            #apply {display: block; margin-top: 30px;}
+            input.button {font-weight: 600; padding: 15px 0; font-size: 1.1rem;}
 			label {
 				display: block;
 				margin-bottom: 5px;
@@ -1462,6 +1471,7 @@ const renderPage = async (
 	
 			input[type="text"],
 			input[type="number"],
+			input[type="url"],
 			textarea,
 			select {
 				width: 100%;
@@ -1479,12 +1489,9 @@ const renderPage = async (
 	
 			input[type="text"]:focus,
 			input[type="number"]:focus,
+			input[type="url"]:focus,
 			textarea:focus,
-			select:focus {
-				border-color: #3498db;
-				outline: none;
-            }
-	
+			select:focus { border-color: #3498db; outline: none; }
 			.button,
 			table button {
 				display: flex;
@@ -1493,7 +1500,6 @@ const renderPage = async (
                 width: 100%;
 				white-space: nowrap;
 				padding: 10px 20px;
-                margin: 0px 5px;
 				font-size: 16px;
 				letter-spacing: 1px;
 				border: none;
@@ -1505,7 +1511,8 @@ const renderPage = async (
 				box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 				transition: all 0.3s ease;
 			}
-	
+
+            table button { margin: 0px 5px; }
 			.button:hover,
 			.button:focus,
 			table button:hover,
@@ -1514,7 +1521,8 @@ const renderPage = async (
 				box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
 				transform: translateY(-2px);
 			}
-	
+
+            button.button:hover { color: white; }
 			.button:active,
 			table button:active {
 				transform: translateY(1px);
@@ -1530,104 +1538,85 @@ const renderPage = async (
 				border-radius: 10px;
 				box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 			}
-	
-			@media only screen and (min-width: 768px) {
-				.form-container {
-					max-width: 60%;
-				}
-			}
-	
-			.table-container {
-				margin-top: 20px;
-				overflow-x: auto;
-			}
-	
-			table {
-				width: 100%;
-				border-collapse: collapse;
-				margin-bottom: 20px;
-			}
-	
-			th,
-			td {
-				padding: 8px 15px;
-				text-align: center;
-				border-bottom: 1px solid #ddd;
-			}
-	
-			th {
-				background-color: #3498db;
-				color: white;
-				font-weight: bold;
-			}
-	
-			tr:nth-child(odd) {
-				background-color: #f2f2f2;
-			}
-	
-			tr:hover {
-				background-color: #f1f1f1;
-			}
-
-            #custom-configs-table td:nth-child(2) {
-                display: inline-flex;
-                text-wrap: nowrap;
+            
+			.table-container { margin-top: 20px; overflow-x: auto; }
+			table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+			th, td { padding: 8px 15px; text-align: center; border-bottom: 1px solid #ddd; }
+			th { background-color: #3498db; color: white; font-weight: bold; }
+			tr:nth-child(odd) { background-color: #f2f2f2; }
+			tr:hover { background-color: #f1f1f1; }
+            #custom-configs-table td:nth-child(2) { display: inline-flex; text-wrap: nowrap; }
+            @media only screen and (min-width: 768px) {
+                .form-container { max-width: 70%; }
+                #normal-configs-table button { max-width: 60%; margin-right: auto; margin-left: auto; }
+                #apply { display: block; margin: 30px auto 0 auto; max-width: 50%; }
             }
 		</style>
 	</head>
 	
 	<body>
-		<h1 style="text-align: center; color: #2980b9">BPB Panel 💦</h1>
+		<h1 style="text-align: center; color: #2980b9">BPB Panel <span style="font-size: smaller;">2.1</span> 💦</h1>
 		<div class="form-container">
-			<h2>FRAGMENT SETTINGS ⚙️</h2>
+            <h2>FRAGMENT SETTINGS ⚙️</h2>
 			<form method="POST" id="configForm">
 				<div class="form-control">
-					<label for="dns">🌏 DNS</label>
-					<input type="text" id="dns" name="dns" placeholder="${dns? dns : "94.140.14.14 (Adguard DNS)"}"
-						pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
-						title="Please enter a valid DNS IP Address! 😑" required />
+					<label for="remoteDNS">🌏 Remote DNS</label>
+					<input type="url" id="remoteDNS" name="remoteDNS" value="${remoteDNS}" required>
 				</div>
-	
-	
 				<div class="form-control">
-					<label for="fragmentLength">📐 Length</label>
+					<label for="localDNS">🏚️ Local DNS</label>
+					<input type="text" id="localDNS" name="localDNS" value="${localDNS}"
+						pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+						title="Please enter a valid DNS IP Address!"  required>
+				</div>	
+				<div class="form-control">
+					<label>📐 Length</label>
 					<div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;">
-						<input type="number" id="fragmentLengthMin" name="fragmentLengthMin" placeholder=${lengthMin? lengthMin : "100"} min="10"
-						 required>
+						<input type="number" id="fragmentLengthMin" name="fragmentLengthMin" value="${lengthMin}" min="10" required>
 						<span style="text-align: center; white-space: pre;"> - </span>
-						<input type="number" id="fragmentLengthMax" name="fragmentLengthMax" placeholder=${lengthMax? lengthMax : "100"} max="500"
-						 required>
+						<input type="number" id="fragmentLengthMax" name="fragmentLengthMax" value="${lengthMax}" max="500" required>
 					</div>
 				</div>
-	
 				<div class="form-control">
-					<label for="fragmentInterval">🕞 Interval</label>
+					<label>🕞 Interval</label>
 					<div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;">
 						<input type="number" id="fragmentIntervalMin" name="fragmentIntervalMin"
-						placeholder=${intervalMin? intervalMin : "100"} max="30" required>
+						value="${intervalMin}" max="30" required>
 						<span style="text-align: center; white-space: pre;"> - </span>
 						<input type="number" id="fragmentIntervalMax" name="fragmentIntervalMax"
-						placeholder=${intervalMax? intervalMax : "100"} max="30" required>
+						value="${intervalMax}" max="30" required>
 					</div>
 				</div>
-	
-	
+
+                <h2>CLEAN IP SETTINGS ⚙️</h2>
 				<div class="form-control">
+					<label>✨ Clean IPs</label>
+					<input type="text" id="cleanIPs" name="cleanIPs" value="${cleanIPs.replaceAll(",", " , ")}">
+				</div>
+                <div class="form-control">
+                    <label>🔎 Online Scanner</label>
+                    <a href="https://vfarid.github.io/cf-ip-scanner/" id="scanner" name="scanner" target="_blank">
+                        <button type="button" class="button">
+                            Scan now
+                            <span class="material-symbols-outlined" style="margin-left: 5px;">open_in_new</span>
+                        </button>
+                    </a>
+                </div>
+				<div id="apply" class="form-control">
 					<div style="grid-column: 2; width: 100%;">
-						<input type="submit" class="button" value="APPLY 💥" form="configForm">
+						<input type="submit" class="button" value="APPLY SETTINGS 💥" form="configForm">
 					</div>
 				</div>
 			</form>
-	
-			<hr>
-	
+
+            <hr>
+
 			<h2>NORMAL CONFIGS 🔗</h2>
 			<div class="table-container">
 				<table id="normal-configs-table">
 					<tr>
 						<th>Application</th>
 						<th>Subscription Link</th>
-						<th></th>
 					</tr>
 					<tr>
                         <td style="display: flex; flex-direction: column; text-wrap: nowrap;">
@@ -1652,9 +1641,11 @@ const renderPage = async (
                                 <span>Nekoray (Xray)</span>
                             </div>
                         </td>
-						<td>https://${host}/sub/${uuid}</td>
-						<td><button onclick="copyToClipboard('https://${host}/sub/${uuid}', false)">
-                            Copy <span class="material-symbols-outlined">format_list_bulleted</span></button>
+						<td>
+                            <button onclick="copyToClipboard('https://${host}/sub/${uuid}', false)">
+                                Copy 
+                                <span class="material-symbols-outlined">format_list_bulleted</span>
+                            </button>
                         </td>
 					</tr>
 					<tr>
@@ -1672,9 +1663,11 @@ const renderPage = async (
                                 <span>Nekoray (Sing-Box)</span>
                             </div>
                         </td>
-						<td>https://${host}/sub/${uuid}?app=singbox</td>
-						<td><button onclick="copyToClipboard('https://${host}/sub/${uuid}?app=singbox', false)">
-                            Copy <span class="material-symbols-outlined">format_list_bulleted</span></button>
+						<td>
+                            <button onclick="copyToClipboard('https://${host}/sub/${uuid}?app=singbox', false)">
+                                Copy 
+                                <span class="material-symbols-outlined">format_list_bulleted</span>
+                            </button>
 						</td>
 					</tr>
 				</table>
@@ -1689,56 +1682,55 @@ const renderPage = async (
 						<th>Config Address</th>
 						<th>v2rayNG - v2rayN</th>
 						<th>Nekoray</th>
-					</tr>
-					<tr>
-						${genCustomConfRow(vlessConfig[0])}
-					</tr>
-					<tr>
-                        ${genCustomConfRow(vlessConfig[1])}
-                    </tr>
-					<tr>
-                        ${genCustomConfRow(vlessConfig[2])}
-					</tr>
-					<tr>
-                        ${genCustomConfRow(vlessConfig[3])}
-					</tr>
-					<tr>
-                        ${genCustomConfRow(vlessConfig[4])}
-					</tr>
-					<tr>
-                        ${genCustomConfRow(vlessConfig[5])}
-					</tr>
-					<tr>
-                        ${genCustomConfRow(vlessConfig[6])}
-					</tr>
+					</tr>					
+					${genCustomConfRow(fragConfigs)}
 				</table>
 			</div>
+
+            <div class="footer">
+                <i class="fa fa-github" style="font-size:36px; margin-right: 10px;"></i>
+                <a class="link" href="https://github.com/bia-pain-bache/BPB-Worker-Panel" target="_blank">
+                    Visit Github Repository
+                </a>
+            </div>
 	
 	<script>
 		document.addEventListener('DOMContentLoaded', () => {
-			const configForm = document.getElementById('configForm');
-
+            const configForm = document.getElementById('configForm');
 			configForm.addEventListener('submit', (event) => {
-				const getValue = (id) => parseInt(document.getElementById(id).value, 10);
-
+                event.preventDefault();
+                event.stopPropagation();
+                const getValue = (id) => parseInt(document.getElementById(id).value, 10);              
                 const lengthMin = getValue('fragmentLengthMin');
                 const lengthMax = getValue('fragmentLengthMax');
                 const intervalMin = getValue('fragmentIntervalMin');
                 const intervalMax = getValue('fragmentIntervalMax');
+                const cleanIP = document.getElementById('cleanIPs');
+                const ips = cleanIP.value.split(',');                
+
+                const invalidIPs = ips.filter(ip => {
+                    const trimmedIP = ip.trim();
+                    return !/^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(trimmedIP);
+                });
+        
+                if (invalidIPs.length > 0 && cleanIP.value !== "") {
+                    alert('⛔ Invalid IPs or Domains 🫤\\n\\n' + invalidIPs.map(ip => '⚠️ ' + ip).join('\\n'));
+                    return false;
+                }
 
 				if (lengthMin >= lengthMax || intervalMin >= intervalMax) {
-					alert('Minimum should be smaller than Maximum! 🫤');
-					event.preventDefault();
+					alert('⛔ Minimum should be smaller than Maximum! 🫤');
+					
 					return false;
 				}
 
 				alert('Parameters applied successfully 😎');
-				return true;
+				configForm.submit();
 			});
 		});
 
-		function copyToClipboard(text, base64) {
-			const textarea = document.createElement('textarea');
+		const copyToClipboard = (text) => {
+            const textarea = document.createElement('textarea');
 			textarea.value = decodeURIComponent(text);
 			document.body.appendChild(textarea);
 			textarea.select();
@@ -1752,4 +1744,33 @@ const renderPage = async (
 	</html>`;
 
     return html;
+};
+
+const updateDataset = async (env, remoteDNS, localDNS, lengthMin, lengthMax, intervalMin, intervalMax, cleanIPs) => {
+    const initData = {
+        remoteDNS: remoteDNS,
+        localDNS: localDNS,
+        lengthMin: lengthMin,
+        lengthMax: lengthMax,
+        intervalMin: intervalMin,
+        intervalMax: intervalMax,
+        cleanIPs: cleanIPs === null ? "" : cleanIPs.replaceAll(" ", "")
+    };
+
+    for (const [key, value] of Object.entries(initData)) {
+        await env.bpb.put(key, value);
+    }
+};
+
+const getDataset = async (env) => {
+    const remoteDNS = await env.bpb.get("remoteDNS");
+    const localDNS = await env.bpb.get("localDNS");
+    const lengthMin = await env.bpb.get("lengthMin");
+    const lengthMax = await env.bpb.get("lengthMax");
+    const intervalMin = await env.bpb.get("intervalMin");
+    const intervalMax = await env.bpb.get("intervalMax");
+    const cleanIPs = await env.bpb.get("cleanIPs");
+    const fragConfigs = JSON.parse(await env.bpb.get("fragConfigs"));
+
+    return {remoteDNS, localDNS, lengthMin, lengthMax, intervalMin, intervalMax, cleanIPs, fragConfigs};
 };
