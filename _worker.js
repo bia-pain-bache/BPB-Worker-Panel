@@ -998,7 +998,7 @@ const getFragVLESSConfig = async (env, userID, hostName) => {
                 tag: "fragment",
                 protocol: "freedom",
                 settings: {
-                    domainStrategy: "AsIs",
+                    domainStrategy: "IPIfNonMatch",
                     fragment: {
                         packets: "tlshello",
                         length: `${lengthMin}-${lengthMax}`,
@@ -1141,7 +1141,7 @@ const getFragVLESSConfig = async (env, userID, hostName) => {
             {
                 protocol: "freedom",
                 settings: {
-                    domainStrategy: "AsIs",
+                    domainStrategy: "IPIfNonMatch",
                     fragment: {
                         length: `${lengthMin}-${lengthMax}`,
                         interval: `${intervalMin}-${intervalMax}`,
