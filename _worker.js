@@ -1453,6 +1453,7 @@ const renderPage = async (env, uuid, host) => {
 
             .form-control button {
                 background-color: white;
+                font-size: 1.1rem;
                 font-weight: 600;
                 color: #09639f;
                 border-color: #09639f;
@@ -1501,6 +1502,7 @@ const renderPage = async (env, uuid, host) => {
 				white-space: nowrap;
 				padding: 10px 20px;
 				font-size: 16px;
+                font-weight: 600;
 				letter-spacing: 1px;
 				border: none;
 				border-radius: 5px;
@@ -1542,7 +1544,7 @@ const renderPage = async (env, uuid, host) => {
 			.table-container { margin-top: 20px; overflow-x: auto; }
 			table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
 			th, td { padding: 8px 15px; text-align: center; border-bottom: 1px solid #ddd; }
-			th { background-color: #3498db; color: white; font-weight: bold; }
+			th { background-color: #3498db; color: white; font-weight: bold; font-size: 1.1rem; }
 			tr:nth-child(odd) { background-color: #f2f2f2; }
 			tr:hover { background-color: #f1f1f1; }
             #custom-configs-table td:nth-child(2) { display: inline-flex; text-wrap: nowrap; }
@@ -1616,7 +1618,7 @@ const renderPage = async (env, uuid, host) => {
 				<table id="normal-configs-table">
 					<tr>
 						<th>Application</th>
-						<th>Subscription Link</th>
+						<th>Subscription</th>
 					</tr>
 					<tr>
                         <td style="display: flex; flex-direction: column; text-wrap: nowrap;">
@@ -1736,7 +1738,7 @@ const renderPage = async (env, uuid, host) => {
 			textarea.select();
 			document.execCommand('copy');
 			document.body.removeChild(textarea);
-			alert('Text copied to clipboard: ' +  decodeURIComponent(text));
+			alert('📋 Copied to clipboard:\\n\\n' +  decodeURIComponent(text));
 		}
 	</script>
 	</body>
