@@ -8,7 +8,7 @@ import { connect } from "cloudflare:sockets";
 // https://www.uuidgenerator.net/
 let userID = "XXXX";
 
-const proxyIPs = ["proxyip.fuck.cloudns.biz"]; //['cdn.xn--b6gac.eu.org', 'cdn-all.xn--b6gac.eu.org', 'edgetunnel.anycast.eu.org'];
+const proxyIPs = ['cdn.xn--b6gac.eu.org', 'cdn-all.xn--b6gac.eu.org', 'edgetunnel.anycast.eu.org'];
 
 let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 
@@ -43,16 +43,6 @@ export default {
             apiHost = env.API_HOST || apiHost;
             const url = new URL(request.url);
             const upgradeHeader = request.headers.get("Upgrade");
-            if (await env.bpb.get("remoteDNS") === null) await updateDataset(
-                env, 
-                "https://94.140.14.14/dns-query", 
-                "1.1.1.1", 
-                "100", 
-                "200", 
-                "10", 
-                "20", 
-                ""
-            );
             
             if (!upgradeHeader || upgradeHeader !== "websocket") {
                 
@@ -60,6 +50,18 @@ export default {
                 const searchParams = new URLSearchParams(url.search);
                 const client = searchParams.get("app");
                 const configAddr = searchParams.get("addr");
+                const hostValue = await env.bpb.get("host");
+                if (!hostValue) await updateDataset(
+                    env,
+                    host, 
+                    "https://94.140.14.14/dns-query", 
+                    "1.1.1.1", 
+                    "100", 
+                    "200", 
+                    "10", 
+                    "20", 
+                    ""
+                );
 
                 switch (url.pathname) {
 
@@ -141,11 +143,12 @@ export default {
                         });
 
                     case `/${userID}`:
-
+                        
                         if (request.method === "POST") {
                             const formData = await request.formData();
                             await updateDataset(
                                 env,
+                                host,
                                 formData.get("remoteDNS"),
                                 formData.get("localDNS"),
                                 formData.get("fragmentLengthMin"),
@@ -155,11 +158,12 @@ export default {
                                 formData.get("cleanIPs")
                             );
                         }
-
-                        if (request.method === "POST" || await env.bpb.get("fragConfigs") === null) {
-                            await getVLESSConfig(env, userID, host);
-                            await getVLESSConfig(env, userID, host);
-                            await getFragVLESSConfig(env, userID, host);
+                            
+                        if (hostValue !== host) await env.bpb.put("host", host);
+                            
+                        if (request.method === "POST" || !await env.bpb.get("fragConfigs") || hostValue !== host) {
+                            await getVLESSConfig(env, userID);
+                            await getFragVLESSConfig(env, userID);
                         }
 
                         const htmlPage = await renderPage(
@@ -902,9 +906,10 @@ async function handleUDPOutBound(webSocket, vlessResponseHeader, log) {
  * @returns {string}
  */
 
-const getVLESSConfig = async (env, userID, hostName) => {
+const getVLESSConfig = async (env, userID) => {
     let vlessWsTls = "";
     const cleanIPs = await env.bpb.get("cleanIPs");
+    const hostName = await env.bpb.get("host");
     const resolved = await resolveDNS(hostName);
     const Addresses = [
         hostName,
@@ -930,10 +935,11 @@ const getVLESSConfig = async (env, userID, hostName) => {
     await env.bpb.put("singbox-sub", singboxSub);
 };
 
-const getFragVLESSConfig = async (env, userID, hostName) => {
+const getFragVLESSConfig = async (env, userID) => {
     let Configs = [];
     let outbounds = [];
     const {
+        hostName,
         remoteDNS, 
         localDNS, 
         lengthMin, 
@@ -1748,8 +1754,9 @@ const renderPage = async (env, uuid, host) => {
     return html;
 };
 
-const updateDataset = async (env, remoteDNS, localDNS, lengthMin, lengthMax, intervalMin, intervalMax, cleanIPs) => {
+const updateDataset = async (env, host, remoteDNS, localDNS, lengthMin, lengthMax, intervalMin, intervalMax, cleanIPs) => {
     const initData = {
+        host: host,
         remoteDNS: remoteDNS,
         localDNS: localDNS,
         lengthMin: lengthMin,
@@ -1765,6 +1772,7 @@ const updateDataset = async (env, remoteDNS, localDNS, lengthMin, lengthMax, int
 };
 
 const getDataset = async (env) => {
+    const hostName = await env.bpb.get("host");
     const remoteDNS = await env.bpb.get("remoteDNS");
     const localDNS = await env.bpb.get("localDNS");
     const lengthMin = await env.bpb.get("lengthMin");
@@ -1774,5 +1782,5 @@ const getDataset = async (env) => {
     const cleanIPs = await env.bpb.get("cleanIPs");
     const fragConfigs = JSON.parse(await env.bpb.get("fragConfigs"));
 
-    return {remoteDNS, localDNS, lengthMin, lengthMax, intervalMin, intervalMax, cleanIPs, fragConfigs};
+    return {hostName, remoteDNS, localDNS, lengthMin, lengthMax, intervalMin, intervalMax, cleanIPs, fragConfigs};
 };
