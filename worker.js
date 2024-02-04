@@ -6,7 +6,7 @@ import { connect } from "cloudflare:sockets";
 
 // How to generate your own UUID:
 // https://www.uuidgenerator.net/
-let userID = "XXXX";
+let userID = "55b58f6a-699f-47eb-b091-ed47c5a5e878";
 
 const proxyIPs = ['cdn.xn--b6gac.eu.org', 'cdn-all.xn--b6gac.eu.org', 'edgetunnel.anycast.eu.org'];
 
@@ -50,18 +50,6 @@ export default {
                 const searchParams = new URLSearchParams(url.search);
                 const client = searchParams.get("app");
                 const configAddr = searchParams.get("addr");
-                const hostValue = await env.bpb.get("host");
-                if (!hostValue) await updateDataset(
-                    env,
-                    host, 
-                    "https://94.140.14.14/dns-query", 
-                    "1.1.1.1", 
-                    "100", 
-                    "200", 
-                    "10", 
-                    "20", 
-                    ""
-                );
 
                 switch (url.pathname) {
 
@@ -143,7 +131,9 @@ export default {
                         });
 
                     case `/${userID}`:
-                        
+
+                        const hostValue = await env.bpb.get("host");
+
                         if (request.method === "POST") {
                             const formData = await request.formData();
                             await updateDataset(
@@ -159,6 +149,18 @@ export default {
                             );
                         }
                             
+                        if (!hostValue) await updateDataset(
+                            env,
+                            host, 
+                            "https://94.140.14.14/dns-query", 
+                            "1.1.1.1", 
+                            "100", 
+                            "200", 
+                            "10", 
+                            "20", 
+                            ""
+                        );
+
                         if (hostValue !== host) await env.bpb.put("host", host);
                             
                         if (request.method === "POST" || !await env.bpb.get("fragConfigs") || hostValue !== host) {
@@ -166,12 +168,7 @@ export default {
                             await getFragVLESSConfig(env, userID);
                         }
 
-                        const htmlPage = await renderPage(
-                            env,
-                            userID,
-                            host
-                        );
-                        
+                        const htmlPage = await renderPage(env, userID);
                         return new Response(htmlPage, {
                             status: 200,
                             headers: {
@@ -939,7 +936,7 @@ const getFragVLESSConfig = async (env, userID) => {
     let Configs = [];
     let outbounds = [];
     const {
-        hostName,
+        host,
         remoteDNS, 
         localDNS, 
         lengthMin, 
@@ -1230,9 +1227,9 @@ const getFragVLESSConfig = async (env, userID) => {
         stats: {},
     };
 
-    const resolved = await resolveDNS(hostName);
+    const resolved = await resolveDNS(host);
     const Addresses = [
-        hostName,
+        host,
         "www.speedtest.net",
         ...(cleanIPs === "" ? [] : cleanIPs.split(",")),
         ...resolved.ipv4,
@@ -1268,14 +1265,14 @@ const getFragVLESSConfig = async (env, userID) => {
                     alpn: ["h2", "http/1.1"],
                     fingerprint: "chrome",
                     publicKey: "",
-                    serverName: randomUpperCase(hostName),
+                    serverName: randomUpperCase(host),
                     shortId: "",
                     show: false,
                     spiderX: "",
                 },
                 wsSettings: {
                     headers: {
-                        Host: randomUpperCase(hostName),
+                        Host: randomUpperCase(host),
                     },
                     path: `/${getRandomPath(16)}?ed=2048`,
                 },
@@ -1377,8 +1374,9 @@ const resolveDNS = async (domain) => {
     }
 };
 
-const renderPage = async (env, uuid, host) => {
+const renderPage = async (env, uuid) => {
     const {
+        host,
         remoteDNS, 
         localDNS, 
         lengthMin, 
@@ -1436,7 +1434,6 @@ const renderPage = async (env, uuid, host) => {
                 'GRAD' 0,
                 'opsz' 24
             }
-
 			h2 { margin-bottom: 30px; text-align: center; color: #3b3b3b; }
 			hr { border: 1px solid #ddd; margin: 20px 0; }
             .footer {
@@ -1446,7 +1443,6 @@ const renderPage = async (env, uuid, host) => {
                 justify-content: center;
                 align-items: center;
             }
-
             .form-control a, a.link { text-decoration: none; }
 			.form-control {
 				margin-bottom: 15px;
@@ -1456,7 +1452,6 @@ const renderPage = async (env, uuid, host) => {
 				justify-content: flex-end;
 				font-family: Arial, sans-serif;
 			}
-
             .form-control button {
                 background-color: white;
                 font-size: 1.1rem;
@@ -1465,7 +1460,6 @@ const renderPage = async (env, uuid, host) => {
                 border-color: #09639f;
                 border: 2px solid;
             }
-
             #apply {display: block; margin-top: 30px;}
             input.button {font-weight: 600; padding: 15px 0; font-size: 1.1rem;}
 			label {
@@ -1475,7 +1469,6 @@ const renderPage = async (env, uuid, host) => {
 				font-weight: 600;
 				color: #333;
 			}
-	
 			input[type="text"],
 			input[type="number"],
 			input[type="url"],
@@ -1492,8 +1485,7 @@ const renderPage = async (env, uuid, host) => {
 				box-sizing: border-box;
 				margin-bottom: 15px;
 				transition: border-color 0.3s ease;
-			}
-	
+			}	
 			input[type="text"]:focus,
 			input[type="number"]:focus,
 			input[type="url"]:focus,
@@ -1519,7 +1511,6 @@ const renderPage = async (env, uuid, host) => {
 				box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 				transition: all 0.3s ease;
 			}
-
             table button { margin: 0px 5px; }
 			.button:hover,
 			.button:focus,
@@ -1529,14 +1520,12 @@ const renderPage = async (env, uuid, host) => {
 				box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
 				transform: translateY(-2px);
 			}
-
             button.button:hover { color: white; }
 			.button:active,
 			table button:active {
 				transform: translateY(1px);
 				box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
 			}
-	
 			.form-container {
 				max-width: 90%;
 				margin: 0 auto;
@@ -1546,7 +1535,6 @@ const renderPage = async (env, uuid, host) => {
 				border-radius: 10px;
 				box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 			}
-            
 			.table-container { margin-top: 20px; overflow-x: auto; }
 			table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
 			th, td { padding: 8px 15px; text-align: center; border-bottom: 1px solid #ddd; }
@@ -1595,7 +1583,6 @@ const renderPage = async (env, uuid, host) => {
 						value="${intervalMax}" max="30" required>
 					</div>
 				</div>
-
                 <h2>CLEAN IP SETTINGS ⚙️</h2>
 				<div class="form-control">
 					<label>✨ Clean IPs</label>
@@ -1616,9 +1603,7 @@ const renderPage = async (env, uuid, host) => {
 					</div>
 				</div>
 			</form>
-
             <hr>
-
 			<h2>NORMAL CONFIGS 🔗</h2>
 			<div class="table-container">
 				<table id="normal-configs-table">
@@ -1680,9 +1665,7 @@ const renderPage = async (env, uuid, host) => {
 					</tr>
 				</table>
 			</div>
-	
 			<hr>
-	
 			<h2>FRAGMENT CONFIGS ⛓️</h2>
 			<div class="table-container">
 				<table id="custom-configs-table">
@@ -1694,14 +1677,13 @@ const renderPage = async (env, uuid, host) => {
 					${genCustomConfRow(fragConfigs)}
 				</table>
 			</div>
-
             <div class="footer">
                 <i class="fa fa-github" style="font-size:36px; margin-right: 10px;"></i>
                 <a class="link" href="https://github.com/bia-pain-bache/BPB-Worker-Panel" target="_blank">
                     Visit Github Repository
                 </a>
             </div>
-	
+
 	<script>
 		document.addEventListener('DOMContentLoaded', () => {
             const configForm = document.getElementById('configForm');
@@ -1715,7 +1697,6 @@ const renderPage = async (env, uuid, host) => {
                 const intervalMax = getValue('fragmentIntervalMax');
                 const cleanIP = document.getElementById('cleanIPs');
                 const ips = cleanIP.value.split(',');                
-
                 const invalidIPs = ips.filter(ip => {
                     const trimmedIP = ip.trim();
                     return !/^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(trimmedIP);
@@ -1772,7 +1753,7 @@ const updateDataset = async (env, host, remoteDNS, localDNS, lengthMin, lengthMa
 };
 
 const getDataset = async (env) => {
-    const hostName = await env.bpb.get("host");
+    const host = await env.bpb.get("host");
     const remoteDNS = await env.bpb.get("remoteDNS");
     const localDNS = await env.bpb.get("localDNS");
     const lengthMin = await env.bpb.get("lengthMin");
@@ -1782,5 +1763,5 @@ const getDataset = async (env) => {
     const cleanIPs = await env.bpb.get("cleanIPs");
     const fragConfigs = JSON.parse(await env.bpb.get("fragConfigs"));
 
-    return {hostName, remoteDNS, localDNS, lengthMin, lengthMax, intervalMin, intervalMax, cleanIPs, fragConfigs};
+    return {host, remoteDNS, localDNS, lengthMin, lengthMax, intervalMin, intervalMax, cleanIPs, fragConfigs};
 };
