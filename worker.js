@@ -163,7 +163,7 @@ export default {
 
                         if (hostValue !== host) await env.bpb.put("host", host);
                             
-                        if (request.method === "POST" || !await env.bpb.get("fragConfigs") || hostValue !== host) {
+                        if (request.method === "POST" || await env.bpb.get("fragConfigs") === null || hostValue !== host) {
                             await getVLESSConfig(env, userID);
                             await getFragVLESSConfig(env, userID);
                         }
