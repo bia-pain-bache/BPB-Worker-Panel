@@ -6,8 +6,10 @@ import { connect } from "cloudflare:sockets";
 
 // How to generate your own UUID:
 // https://www.uuidgenerator.net/
-let userID = "XXXX";
+let userID = "89b3cbba-e6ac-485a-9481-976a0415eab9";
 
+//https://www.nslookup.io/domains/cdn.xn--b6gac.eu.org/dns-records/
+//https://www.nslookup.io/domains/cdn-all.xn--b6gac.eu.org/dns-records/
 const proxyIPs = ['cdn.xn--b6gac.eu.org', 'cdn-all.xn--b6gac.eu.org', 'edgetunnel.anycast.eu.org'];
 
 let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
@@ -109,7 +111,7 @@ export default {
                             return new Response(connectError.message, { status: 500 });
                         }
                         
-                    case `/sub/${userID}`: 
+                    case `/sub/${userID}`:
 
                         const vlessConfigs = client === "singbox" ? await env.bpb.get("singbox-sub") : await env.bpb.get("xray-sub");
                         return new Response(vlessConfigs, {
@@ -130,11 +132,27 @@ export default {
                             },
                         });
 
-                    case `/${userID}`:
+                    case `/fragsub/${userID}`:
 
-                        const hostValue = await env.bpb.get("host");
+                        const fragmentSub = await getJSONSub(env);
+                        return new Response(`${JSON.stringify(fragmentSub, null, 4)}`, {
+                            status: 200,
+                            headers: {
+                                "Content-Type": "text/plain;charset=utf-8",
+                            },
+                        });
 
-                        if (request.method === "POST") {
+                    case `/panel`:
+
+                        if (request.method === "POST") {                           
+                            if (!(await verifyJWTToken(request, env))) {                            
+                                return new Response('Unauthorized', {
+                                    status: 401,
+                                    headers: {
+                                        'Content-Type': 'text/plain'
+                                    }
+                                });  
+                            }
                             const formData = await request.formData();
                             await updateDataset(
                                 env,
@@ -146,10 +164,16 @@ export default {
                                 formData.get("fragmentIntervalMin"),
                                 formData.get("fragmentIntervalMax"),
                                 formData.get("cleanIPs")
-                            );
+                                );
                         }
                             
-                        if (!hostValue) await updateDataset(
+                        if (!(await verifyJWTToken(request, env))) {
+                            return Response.redirect(`${url.origin}/login`, 302);        
+                        }
+                        
+                        const hostValue = await env.bpb.get("host");                        
+                        if (!hostValue) {
+                            await updateDataset(
                             env,
                             host, 
                             "https://94.140.14.14/dns-query", 
@@ -158,22 +182,106 @@ export default {
                             "200", 
                             "10", 
                             "20", 
-                            ""
-                        );
-
-                        if (hostValue !== host) await env.bpb.put("host", host);
+                            "");
+                        }
                             
-                        if (request.method === "POST" || await env.bpb.get("fragConfigs") === null || hostValue !== host) {
+                        if (hostValue !== host) await env.bpb.put("host", host);
+                        
+                        if (request.method === "POST" || !await env.bpb.get("fragConfigs") || hostValue !== host) {
                             await getVLESSConfig(env, userID);
                             await getFragVLESSConfig(env, userID);
                         }
-
+                        
                         const htmlPage = await renderPage(env, userID);
                         return new Response(htmlPage, {
                             status: 200,
                             headers: {
+                                "Content-Type": "text/html"
+                            },
+                        });
+                                                      
+                    case `/login`:
+
+                        let secretKey = await env.bpb.get("secretKey");
+                        let pwd = await env.bpb.get("pwd");
+
+                        if (!pwd) {
+                            await env.bpb.put("pwd", 'admin');
+                        }
+
+                        if (!secretKey) {
+                            secretKey = generateSecretKey();
+                            await env.bpb.put("secretKey", secretKey);
+                        }
+
+                        if (await verifyJWTToken(request, env)) {
+                            return Response.redirect(`${url.origin}/panel`, 302);       
+                        }
+
+                        if (request.method === 'POST') {
+                            const password = await request.text();
+                            const savedPass = await env.bpb.get("pwd");
+                            if (password === savedPass) {
+                                const jwtToken = generateJWTToken(secretKey, password, 300);
+                                const cookieHeader = `jwtToken=${jwtToken}; HttpOnly; Secure; Max-Age=${7 * 24 * 60 * 60}; Path=/; SameSite=Strict`;
+                                
+                                return new Response('Success', {
+                                    status: 200,
+                                    headers: {
+                                      'Set-Cookie': cookieHeader,
+                                      'Content-Type': 'text/plain',
+                                    },
+                                });        
+                            } else {
+                                return new Response('Method Not Allowed', { status: 405 });
+                            }
+                        }
+                        
+                        const loginPage = await renderLoginPage();
+                        return new Response(loginPage, {
+                            status: 200,
+                            headers: {
                                 "Content-Type": "text/html",
-                                "Cache-Control": "no-cache, no-store, must-revalidate",
+                            },
+                        });
+                    
+                    case `/logout`:
+                                    
+                        return new Response('Success', {
+                            status: 200,
+                            headers: {
+                                'Set-Cookie': 'jwtToken=; Secure; SameSite=None; Expires=Thu, 01 Jan 1970 00:00:00 GMT',
+                                'Content-Type': 'text/plain'
+                            },
+                        });        
+
+                    case `/panel/password`:
+
+                        // await authenticate(request, env);
+                        if (!(await verifyJWTToken(request, env))) {                            
+                            return new Response('Unauthorized!', {
+                                status: 401,
+                                headers: {
+                                    'Content-Type': 'text/plain'
+                                }
+                            });  
+                        }
+                        const newPwd = await request.text();
+                        const oldPwd = await env.bpb.get("pwd");
+                        if (newPwd === oldPwd) {
+                            return new Response('Please enter a new Password!', {
+                                status: 400,
+                                headers: {
+                                    'Content-Type': 'text/plain'
+                                },
+                            });
+                        }
+                        await env.bpb.put("pwd", newPwd);
+                        return new Response('Success', {
+                            status: 200,
+                            headers: {
+                                'Set-Cookie': 'jwtToken=; Path=/; Secure; SameSite=None; Expires=Thu, 01 Jan 1970 00:00:00 GMT',
+                                'Content-Type': 'text/plain'
                             },
                         });
 
@@ -921,9 +1029,11 @@ const getVLESSConfig = async (env, userID) => {
             hostName
         )}&sni=${randomUpperCase(
             hostName
-        )}&fp=randomized&alpn=http/1.1&path=%2F${getRandomPath(
-            16
-        )}%3Fed%3D2048#Worker%20-%20${addr}\n`;
+        )}&fp=randomized&alpn=http/1.1&path=/${encodeURIComponent(
+            `${getRandomPath(16)}?ed=2048`
+        )}#${encodeURIComponent(
+            `💦 BPB - ${addr}`
+        )}\n`;
     });
 
     const singboxSub = btoa(vlessWsTls);
@@ -947,6 +1057,7 @@ const getFragVLESSConfig = async (env, userID) => {
     } = await getDataset(env);
 
     const fragConfigTemp = {
+        remarks: "",
         dns: {
             hosts: {
                 "geosite:category-ads-all": "127.0.0.1",
@@ -1286,6 +1397,7 @@ const getFragVLESSConfig = async (env, userID) => {
         };
 
         let fragConfig = clone(fragConfigTemp);
+        fragConfig.remarks = `💦 BPB Frag - ${addr}`;
         fragConfig.outbounds = [{ ...proxyOutbound}, ...fragConfig.outbounds];
         delete fragConfig.observatory;
         delete fragConfig.routing.balancers;
@@ -1310,6 +1422,7 @@ const getFragVLESSConfig = async (env, userID) => {
     });
 
     let bestPingConfig = clone(fragConfigTemp);
+    bestPingConfig.remarks = '💦 BPB Frag - Best Ping 💥';
     bestPingConfig.outbounds = [...outbounds, ...bestPingConfig.outbounds];
     let bestPingNeko = clone(fragConfigNekorayTemp);
     bestPingNeko.outbounds = [ ...outbounds, ...bestPingNeko.outbounds];
@@ -1321,57 +1434,6 @@ const getFragVLESSConfig = async (env, userID) => {
     });
         
     await env.bpb.put("fragConfigs", JSON.stringify(Configs));
-};
-
-const clone = (obj) => {
-    return JSON.parse(JSON.stringify(obj));
-}
-
-const randomUpperCase = (str) => {
-    let result = "";
-    for (let i = 0; i < str.length; i++) {
-        result += Math.random() < 0.5 ? str[i].toUpperCase() : str[i];
-    }
-    return result;
-};
-
-const getRandomPath = (length) => {
-    const characters =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789---___";
-    let result = "";
-
-    for (let i = 0; i < length; i++) {
-        const randomIndex = Math.floor(Math.random() * characters.length);
-        result += characters.charAt(randomIndex);
-    }
-
-    return result;
-};
-
-const resolveDNS = async (domain) => {
-    const dohURLv4 = `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=A`;
-    const dohURLv6 = `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=AAAA`;
-
-    try {
-        const [ipv4Response, ipv6Response] = await Promise.all([
-            fetch(dohURLv4, { headers: { accept: "application/dns-json" } }),
-            fetch(dohURLv6, { headers: { accept: "application/dns-json" } }),
-        ]);
-
-        const ipv4Addresses = await ipv4Response.json();
-        const ipv6Addresses = await ipv6Response.json();
-
-        const ipv4 = ipv4Addresses.Answer
-            ? ipv4Addresses.Answer.map((record) => record.data)
-            : [];
-        const ipv6 = ipv6Addresses.Answer
-            ? ipv6Addresses.Answer.map((record) => record.data)
-            : [];
-
-        return { ipv4, ipv6 };
-    } catch (error) {
-        console.error("Error resolving DNS:", error);
-    }
 };
 
 const renderPage = async (env, uuid) => {
@@ -1387,19 +1449,26 @@ const renderPage = async (env, uuid) => {
         fragConfigs
     } = await getDataset(env);
 
+    const pwd = await env.bpb.get("bpb");
+
     const genCustomConfRow = (configs) => {
         let tableBlock = "";
         configs.forEach(config => {
             tableBlock += `
             <tr>
-                <td>${config.address}</td>
+                <td>
+                    ${config.address === 'Best-Ping' 
+                        ? `<div  style="display: flex; align-items: center; justify-content: center;"><span class="material-symbols-outlined">speed</span><span>&nbsp;<b>${config.address}</b></span></div>` 
+                        : config.address
+                    }
+                </td>
                 <td>
                     <button onclick="copyToClipboard('${encodeURIComponent(JSON.stringify(config.fragConf, null, 4))}')">
                         Copy Config 
                         <span class="material-symbols-outlined" style="margin-left: 5px;">copy_all</span>
                     </button>
                     <button onclick="copyToClipboard(encodeURIComponent('https://${host}/frag/${uuid}?addr=${config.address}'))">
-                        Copy URL 
+                        Copy Sub
                         <span class="material-symbols-outlined" style="margin-left: 5px;">link</span>
                     </button>
                 </td>
@@ -1443,6 +1512,8 @@ const renderPage = async (env, uuid) => {
                 justify-content: center;
                 align-items: center;
             }
+            .footer button {margin: 0 20px; background: #212121; max-width: fit-content;}
+            .footer button:hover, .footer button:focus { background: #3b3b3b;}
             .form-control a, a.link { text-decoration: none; }
 			.form-control {
 				margin-bottom: 15px;
@@ -1541,20 +1612,84 @@ const renderPage = async (env, uuid) => {
 			th { background-color: #3498db; color: white; font-weight: bold; font-size: 1.1rem; }
 			tr:nth-child(odd) { background-color: #f2f2f2; }
 			tr:hover { background-color: #f1f1f1; }
-            #custom-configs-table td:nth-child(2) { display: inline-flex; text-wrap: nowrap; }
+            #custom-configs-table td:nth-child(2) { display: flex; justify-content: center; }
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 1;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                overflow: auto;
+                background-color: rgba(0, 0, 0, 0.4);
+            }
+            .modal-content {
+                background-color: #f9f9f9;
+                margin: auto;
+                padding: 20px;
+                border: 1px solid #eaeaea;
+                border-radius: 10px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                width: 80%;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+            .close {
+                color: #aaa;
+                float: right;
+                font-size: 28px;
+                font-weight: bold;
+            }
+            .close:hover,
+            .close:focus {
+                color: black;
+                text-decoration: none;
+                cursor: pointer;
+            }
+            .form-control label {
+                display: block;
+                margin-bottom: 5px;
+                font-size: 110%;
+                font-weight: 600;
+                color: #333;
+            }
+            .form-control input[type="password"] {
+                width: 100%;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                font-size: 16px;
+                color: #333;
+                background-color: #fff;
+                box-sizing: border-box;
+                margin-bottom: 15px;
+                transition: border-color 0.3s ease;
+            }
+            .form-control input[type="password"]:focus {
+                border-color: #3498db;
+                outline: none;
+            }
+            #passwordError {
+                color: red;
+                margin-bottom: 10px;
+            }
             @media only screen and (min-width: 768px) {
                 .form-container { max-width: 70%; }
                 #normal-configs-table button { max-width: 60%; margin-right: auto; margin-left: auto; }
                 #apply { display: block; margin: 30px auto 0 auto; max-width: 50%; }
+                .modal-content { width: 30% }
             }
 		</style>
 	</head>
 	
 	<body>
-		<h1 style="text-align: center; color: #2980b9">BPB Panel <span style="font-size: smaller;">2.1</span> 💦</h1>
+		<h1 style="text-align: center; color: #2980b9">BPB Panel <span style="font-size: smaller;">2.2</span> 💦</h1>
 		<div class="form-container">
             <h2>FRAGMENT SETTINGS ⚙️</h2>
-			<form method="POST" id="configForm">
+			<form id="configForm">
 				<div class="form-control">
 					<label for="remoteDNS">🌏 Remote DNS</label>
 					<input type="url" id="remoteDNS" name="remoteDNS" value="${remoteDNS}" required>
@@ -1590,7 +1725,7 @@ const renderPage = async (env, uuid) => {
 				</div>
                 <div class="form-control">
                     <label>🔎 Online Scanner</label>
-                    <a href="https://vfarid.github.io/cf-ip-scanner/" id="scanner" name="scanner" target="_blank">
+                    <a href="https://scanner.github1.cloud/" id="scanner" name="scanner" target="_blank">
                         <button type="button" class="button">
                             Scan now
                             <span class="material-symbols-outlined" style="margin-left: 5px;">open_in_new</span>
@@ -1599,11 +1734,12 @@ const renderPage = async (env, uuid) => {
                 </div>
 				<div id="apply" class="form-control">
 					<div style="grid-column: 2; width: 100%;">
-						<input type="submit" class="button" value="APPLY SETTINGS 💥" form="configForm">
+						<input type="submit" id="applyButton" class="button" value="APPLY SETTINGS 💥" form="configForm">
 					</div>
 				</div>
 			</form>
             <hr>
+            
 			<h2>NORMAL CONFIGS 🔗</h2>
 			<div class="table-container">
 				<table id="normal-configs-table">
@@ -1635,7 +1771,7 @@ const renderPage = async (env, uuid) => {
                             </div>
                         </td>
 						<td>
-                            <button onclick="copyToClipboard('https://${host}/sub/${uuid}', false)">
+                            <button onclick="copyToClipboard('https://${host}/sub/${uuid}#BPB%20Normal', false)">
                                 Copy 
                                 <span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
@@ -1657,7 +1793,7 @@ const renderPage = async (env, uuid) => {
                             </div>
                         </td>
 						<td>
-                            <button onclick="copyToClipboard('https://${host}/sub/${uuid}?app=singbox', false)">
+                            <button onclick="copyToClipboard('https://${host}/sub/${uuid}?app=singbox#BPB-Normal', false)">
                                 Copy 
                                 <span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
@@ -1666,56 +1802,104 @@ const renderPage = async (env, uuid) => {
 				</table>
 			</div>
 			<hr>
-			<h2>FRAGMENT CONFIGS ⛓️</h2>
+			<h2>MOBILE FRAGMENT ⛓️</h2>
 			<div class="table-container">
+                <table id="normal-configs-table">
+                    <tr>
+                        <th style="text-wrap: nowrap;">v2rayNG - Streisand</th>
+                        <th style="text-wrap: nowrap;">Fragment Subscription</th>
+                    </tr>
+                    <tr>
+                        <td style="text-wrap: nowrap;">
+                            <div style="display: flex; align-items: center;">
+                                <span class="material-symbols-outlined" style="margin-right: 8px;">apps</span>
+                                <span>All configs</span>
+                            </div>
+                        </td>
+                        <td>
+                            <button onclick="copyToClipboard('https://${host}/fragsub/${uuid}#BPB Fragment', false)">
+                                Copy Sub
+                                <span class="material-symbols-outlined">format_list_bulleted</span>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-wrap: nowrap;">
+                            <div style="display: flex; align-items: center;">
+                                <span class="material-symbols-outlined" style="margin-right: 8px;">bolt</span>
+                                <span>Best-Ping config</span>
+                            </div>
+                        </td>
+                        <td>
+                            <button onclick="copyToClipboard('https://${host}/frag/${uuid}?addr=Best-Ping#BPB Fragment Best Ping', false)">
+                                Copy Sub
+                                <span class="material-symbols-outlined">format_list_bulleted</span>
+                            </button>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <h2>DESKTOP FRAGMENT ⛓️</h2>
+            <div class="table-container">
 				<table id="custom-configs-table">
 					<tr style="text-wrap: nowrap;">
 						<th>Config Address</th>
-						<th>v2rayNG - v2rayN</th>
+						<th>v2rayN</th>
 						<th>Nekoray</th>
 					</tr>					
 					${genCustomConfRow(fragConfigs)}
 				</table>
 			</div>
+            <div id="myModal" class="modal">
+                <div class="modal-content">
+                <span class="close">&times;</span>
+                <form id="passwordChangeForm">
+                    <h2>Change Password</h2>
+                    <div class="form-control">
+                        <label for="newPassword">New Password</label>
+                        <input type="password" id="newPassword" name="newPassword" required>
+                        </div>
+                    <div class="form-control">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" required>
+                    </div>
+                    <div id="passwordError" style="color: red; margin-bottom: 10px;"></div>
+                    <button id="changePasswordBtn" type="submit" class="button">Change Password</button>
+                </form>
+                </div>
+            </div>
             <div class="footer">
                 <i class="fa fa-github" style="font-size:36px; margin-right: 10px;"></i>
                 <a class="link" href="https://github.com/bia-pain-bache/BPB-Worker-Panel" target="_blank">
-                    Visit Github Repository
+                    Github
                 </a>
+                <button id="openModalBtn" class="button">Change Password</button>
+                <button type="button" id="logout" style="background: none; margin: 0; border: none; cursor: pointer;">
+                    <i class="fa fa-power-off fa-2x" aria-hidden="true"></i>
+                </button>
             </div>
-
+        </div>
 	<script>
 		document.addEventListener('DOMContentLoaded', () => {
-            const configForm = document.getElementById('configForm');
-			configForm.addEventListener('submit', (event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                const getValue = (id) => parseInt(document.getElementById(id).value, 10);              
-                const lengthMin = getValue('fragmentLengthMin');
-                const lengthMax = getValue('fragmentLengthMax');
-                const intervalMin = getValue('fragmentIntervalMin');
-                const intervalMax = getValue('fragmentIntervalMax');
-                const cleanIP = document.getElementById('cleanIPs');
-                const ips = cleanIP.value.split(',');                
-                const invalidIPs = ips.filter(ip => {
-                    const trimmedIP = ip.trim();
-                    return !/^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(trimmedIP);
-                });
+            const configForm = document.getElementById('configForm');            
+            const modal = document.getElementById('myModal');
+            const btn = document.getElementById("openModalBtn");
+            const closeBtn = document.querySelector(".close");
+            const passwordChangeForm = document.getElementById('passwordChangeForm');
+
+            passwordChangeForm.addEventListener('submit', event => resetPassword(event));
+            document.getElementById('logout').addEventListener('click', event => logout(event));
+			configForm.addEventListener('submit', (event) => applySettings(event, configForm));
         
-                if (invalidIPs.length > 0 && cleanIP.value !== "") {
-                    alert('⛔ Invalid IPs or Domains 🫤\\n\\n' + invalidIPs.map(ip => '⚠️ ' + ip).join('\\n'));
-                    return false;
-                }
-
-				if (lengthMin >= lengthMax || intervalMin >= intervalMax) {
-					alert('⛔ Minimum should be smaller than Maximum! 🫤');
-					
-					return false;
-				}
-
-				alert('Parameters applied successfully 😎');
-				configForm.submit();
-			});
+            btn.onclick = function() {
+                modal.style.display = "block";
+                document.body.style.overflow = "hidden";
+            }
+        
+            closeBtn.onclick = function() {
+                modal.style.display = "none";
+                document.body.style.overflow = "";
+            }           
 		});
 
 		const copyToClipboard = (text) => {
@@ -1727,13 +1911,257 @@ const renderPage = async (env, uuid) => {
 			document.body.removeChild(textarea);
 			alert('📋 Copied to clipboard:\\n\\n' +  decodeURIComponent(text));
 		}
+
+        const applySettings = async (event, configForm) => {
+            event.preventDefault();
+            event.stopPropagation();
+            const applyButton = document.getElementById('applyButton');
+            const getValue = (id) => parseInt(document.getElementById(id).value, 10);              
+            const lengthMin = getValue('fragmentLengthMin');
+            const lengthMax = getValue('fragmentLengthMax');
+            const intervalMin = getValue('fragmentIntervalMin');
+            const intervalMax = getValue('fragmentIntervalMax');
+            const cleanIP = document.getElementById('cleanIPs');
+            const ips = cleanIP.value.split(',');                
+            const invalidIPs = ips.filter(ip => {
+                const trimmedIP = ip.trim();
+                return !/^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(trimmedIP);
+            });
+    
+            if (invalidIPs.length > 0 && cleanIP.value !== "") {
+                alert('⛔ Invalid IPs or Domains 🫤\\n\\n' + invalidIPs.map(ip => '⚠️ ' + ip).join('\\n'));
+                return false;
+            }
+
+            if (lengthMin >= lengthMax || intervalMin >= intervalMax) {
+                alert('⛔ Minimum should be smaller than Maximum! 🫤');
+                
+                return false;
+            }
+
+            const formData = new FormData(configForm);
+
+            try {
+                document.body.style.cursor = 'wait';
+                const applyButtonVal = applyButton.value;
+                applyButton.value = '⌛ Loading...';
+
+                const response = await fetch('/panel', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                });
+
+                document.body.style.cursor = 'default';
+                applyButton.value = applyButtonVal;
+
+                if (response.ok) {
+                    alert('Parameters applied successfully 😎');
+                    window.location.reload();
+                } else {
+                    const errorMessage = await response.text();
+                    console.error(errorMessage, response.status);
+                    return false;
+                }           
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        const logout = async (event) => {
+            event.preventDefault();
+
+            try {
+                const response = await fetch('/logout', {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                });
+            
+                if (response.ok) {
+                    window.location.href = '/login';
+                } else {
+                    console.error('Failed to log out:', response.status);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        const resetPassword = async (event) => {
+            event.preventDefault();
+            const modal = document.getElementById('myModal');
+            const newPasswordInput = document.getElementById('newPassword');
+            const confirmPasswordInput = document.getElementById('confirmPassword');
+            const passwordError = document.getElementById('passwordError');             
+            const newPassword = newPasswordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+    
+            if (newPassword !== confirmPassword) {
+                passwordError.textContent = "Passwords do not match";
+                return false;
+            }
+
+            const hasCapitalLetter = /[A-Z]/.test(newPassword);
+            const hasNumber = /[0-9]/.test(newPassword);
+            const isLongEnough = newPassword.length >= 8;
+
+            if (!(hasCapitalLetter && hasNumber && isLongEnough)) {
+                passwordError.textContent = '⚠️ Password must contain at least one capital letter, one number, and be at least 8 characters long.';
+                return false;
+            }
+                    
+            try {
+                const response = await fetch('/panel/password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
+                    body: newPassword,
+                    credentials: 'same-origin'
+                });
+            
+                if (response.ok) {
+                    modal.style.display = "none";
+                    document.body.style.overflow = "";
+                    alert("Password changed successfully! 👍");
+                    window.location.href = '/login';
+                } else {
+                    const errorMessage = await response.text();
+                    passwordError.textContent = '⚠️ ' + errorMessage;
+                    console.error(errorMessage, response.status);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
 	</script>
-	</body>
-	
+	</body>	
 	</html>`;
 
     return html;
 };
+
+const renderLoginPage = async () => {
+    const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Login</title>
+    <style>
+
+        html, body { height: 100%; margin: 0; }
+        body {
+            font-family: system-ui;
+            background-color: #f9f9f9;
+            position: relative;
+            overflow: hidden;
+        }
+        .container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+        }        
+        h1 {
+            text-align: center;
+            color: #2980b9;
+            margin-bottom: 30px;
+            margin-top: 0px;
+        }
+        h2 {text-align: center;}
+        .form-container {
+            background: #f9f9f9;
+            border: 1px solid #eaeaea;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .form-control { margin-bottom: 15px; display: flex; align-items: center; }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            padding-right: 20px;
+            font-size: 110%;
+            font-weight: 600;
+            color: #333;
+        }
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            color: #333;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            background-color: #09639f;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {background-color: #2980b9;}
+        @media only screen and (min-width: 768px) {
+            .container { width: 30%; }
+        }
+    </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>BPB Panel <span style="font-size: smaller;">2.2</span> 💦</h1>
+            <div class="form-container">
+                <h2>User Login</h2>
+                <form id="loginForm">
+                    <div class="form-control">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <div id="passwordError" style="color: red; margin-bottom: 10px;"></div>
+                    <button type="submit" class="button">Login</button>
+                </form>
+            </div>
+        </div>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
+                    body: password
+                });
+            
+                if (response.ok) {
+                    window.location.href = '/panel';
+                } else {
+                    passwordError.textContent = '⚠️ Wrong Password!';
+                    const errorMessage = await response.text();
+                    console.error('Login failed:', errorMessage);
+                }
+            } catch (error) {
+                console.error('Error during login:', error);
+            }
+        });
+    </script>
+    </body>
+    </html>`;
+
+    return html;
+}
 
 const updateDataset = async (env, host, remoteDNS, localDNS, lengthMin, lengthMax, intervalMin, intervalMax, cleanIPs) => {
     const initData = {
@@ -1765,3 +2193,110 @@ const getDataset = async (env) => {
 
     return {host, remoteDNS, localDNS, lengthMin, lengthMax, intervalMin, intervalMax, cleanIPs, fragConfigs};
 };
+
+const clone = (obj) => {
+    return JSON.parse(JSON.stringify(obj));
+}
+
+const randomUpperCase = (str) => {
+    let result = "";
+    for (let i = 0; i < str.length; i++) {
+        result += Math.random() < 0.5 ? str[i].toUpperCase() : str[i];
+    }
+    return result;
+};
+
+const getRandomPath = (length) => {
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+};
+
+const resolveDNS = async (domain) => {
+    const dohURLv4 = `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=A`;
+    const dohURLv6 = `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=AAAA`;
+
+    try {
+        const [ipv4Response, ipv6Response] = await Promise.all([
+            fetch(dohURLv4, { headers: { accept: "application/dns-json" } }),
+            fetch(dohURLv6, { headers: { accept: "application/dns-json" } }),
+        ]);
+
+        const ipv4Addresses = await ipv4Response.json();
+        const ipv6Addresses = await ipv6Response.json();
+
+        const ipv4 = ipv4Addresses.Answer
+            ? ipv4Addresses.Answer.map((record) => record.data)
+            : [];
+        const ipv6 = ipv6Addresses.Answer
+            ? ipv6Addresses.Answer.map((record) => record.data)
+            : [];
+
+        return { ipv4, ipv6 };
+    } catch (error) {
+        console.error("Error resolving DNS:", error);
+    }
+};
+
+const generateJWTToken = (password, secretKey) => {
+    const header = {
+        alg: 'HS256',
+        typ: 'JWT'
+    };
+
+    const payload = {
+        exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60),
+        data: { password }
+    };
+    const encodedHeader = btoa(JSON.stringify(header));
+    const encodedPayload = btoa(JSON.stringify(payload));
+
+    const signature = btoa(crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${encodedHeader}.${encodedPayload}.${secretKey}`)));
+
+    return `Bearer ${encodedHeader}.${encodedPayload}.${signature}`;
+}
+
+const generateSecretKey = () => {
+    const bytes = new Uint8Array(32);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+}
+  
+const verifyJWTToken = async (request, env) => {
+    const secretKey = await env.bpb.get("secretKey");
+
+    try {
+        const cookie = request.headers.get('Cookie');
+        const cookieMatch = cookie ? cookie.match(/(^|;\s*)jwtToken=([^;]*)/) : null;
+        const token = cookieMatch ? cookieMatch.pop() : null;
+
+        if (!token) return false;
+
+        const tokenWithoutBearer = token.startsWith('Bearer ') ? token.slice(7) : token;
+        const [encodedHeader, encodedPayload, signature] = tokenWithoutBearer.split('.');
+        const payload = JSON.parse(atob(encodedPayload));
+
+        const expectedSignature = btoa(crypto.subtle.digest(
+            'SHA-256',
+            new TextEncoder().encode(`${encodedHeader}.${encodedPayload}.${secretKey}`)
+        ));
+
+        if (signature !== expectedSignature) return false;
+
+        const now = Math.floor(Date.now() / 1000);
+        if (payload.exp < now) return false;
+
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
+const getJSONSub = async (env) => {
+    const fragConfigs = JSON.parse(await env.bpb.get("fragConfigs"));
+    return fragConfigs.filter(config => config.address !== 'Best-Ping').map(config => config.fragConf);
+}
