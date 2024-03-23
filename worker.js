@@ -196,7 +196,13 @@ export default {
                         return new Response(htmlPage, {
                             status: 200,
                             headers: {
-                                "Content-Type": "text/html"
+                                "Content-Type": "text/html",
+                                "Access-Control-Allow-Origin": url.origin,
+                                "Access-Control-Allow-Methods": "GET, POST",
+                                "Access-Control-Allow-Headers": "Content-Type, Authorization",
+                                "X-Content-Type-Options": "nosniff",
+                                "X-Frame-Options": "DENY",
+                                "Referrer-Policy": "strict-origin-when-cross-origin"
                             },
                         });
                                                       
@@ -242,6 +248,12 @@ export default {
                             status: 200,
                             headers: {
                                 "Content-Type": "text/html",
+                                "Access-Control-Allow-Origin": url.origin,
+                                "Access-Control-Allow-Methods": "GET, POST",
+                                "Access-Control-Allow-Headers": "Content-Type, Authorization",
+                                "X-Content-Type-Options": "nosniff",
+                                "X-Frame-Options": "DENY",
+                                "Referrer-Policy": "strict-origin-when-cross-origin"
                             },
                         });
                     
@@ -281,7 +293,7 @@ export default {
                             status: 200,
                             headers: {
                                 'Set-Cookie': 'jwtToken=; Path=/; Secure; SameSite=None; Expires=Thu, 01 Jan 1970 00:00:00 GMT',
-                                'Content-Type': 'text/plain'
+                                'Content-Type': 'text/plain',
                             },
                         });
 
@@ -1122,7 +1134,6 @@ const getFragVLESSConfig = async (env, userID) => {
                 streamSettings: {
                     sockopt: {
                         tcpKeepAliveIdle: 100,
-                        TcpNoDelay: true,
                     },
                 },
             },
@@ -1265,7 +1276,6 @@ const getFragVLESSConfig = async (env, userID) => {
                 streamSettings: {
                     sockopt: {
                         tcpKeepAliveIdle: 100,
-                        TcpNoDelay: true
                     },
                 },
                 tag: "fragment",
@@ -1389,8 +1399,6 @@ const getFragVLESSConfig = async (env, userID) => {
                 },
                 sockopt: {
                     dialerProxy: "fragment",
-                    tcpKeepAliveIdle: 100,
-                    tcpNoDelay: true,
                 },
             },
             tag: "proxy",
