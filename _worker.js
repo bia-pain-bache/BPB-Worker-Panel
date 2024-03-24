@@ -1,6 +1,7 @@
 // @ts-nocheck
 // <!--GAMFC-->version base on commit 43fad05dcdae3b723c53c226f8181fc5bd47223e, time is 2023-06-22 15:20:02 UTC<!--GAMFC-END-->.
 // @ts-ignore
+// https://github.com/bia-pain-bache/BPB-Worker-Panel
 
 import { connect } from "cloudflare:sockets";
 
@@ -187,16 +188,18 @@ export default {
                             
                         if (hostValue !== host) await env.bpb.put("host", host);
                         
-                        if (request.method === "POST" || !await env.bpb.get("fragConfigs") || hostValue !== host) {
-                            await getVLESSConfig(env, userID);
-                            await getFragVLESSConfig(env, userID);
+
+                        if (request.method === "POST" || !hostValue || hostValue !== host) {
+                            await getVLESSConfig(env);
+                            await getFragVLESSConfig(env);
                         }
                         
-                        const htmlPage = await renderPage(env, userID);
+                        const htmlPage = await renderPage(env);
                         return new Response(htmlPage, {
                             status: 200,
                             headers: {
                                 "Content-Type": "text/html",
+                                "Clear-Site-Data": "cache",
                                 "Access-Control-Allow-Origin": url.origin,
                                 "Access-Control-Allow-Methods": "GET, POST",
                                 "Access-Control-Allow-Headers": "Content-Type, Authorization",
@@ -248,6 +251,7 @@ export default {
                             status: 200,
                             headers: {
                                 "Content-Type": "text/html",
+                                "Clear-Site-Data": "cache",
                                 "Access-Control-Allow-Origin": url.origin,
                                 "Access-Control-Allow-Methods": "GET, POST",
                                 "Access-Control-Allow-Headers": "Content-Type, Authorization",
@@ -1023,7 +1027,7 @@ async function handleUDPOutBound(webSocket, vlessResponseHeader, log) {
  * @returns {string}
  */
 
-const getVLESSConfig = async (env, userID) => {
+const getVLESSConfig = async (env) => {
     let vlessWsTls = "";
     const cleanIPs = await env.bpb.get("cleanIPs");
     const hostName = await env.bpb.get("host");
@@ -1052,9 +1056,9 @@ const getVLESSConfig = async (env, userID) => {
     const xraySub = btoa(vlessWsTls.replaceAll("http/1.1", "h2,http/1.1"));
     await env.bpb.put("xray-sub", xraySub);
     await env.bpb.put("singbox-sub", singboxSub);
-};
+}
 
-const getFragVLESSConfig = async (env, userID) => {
+const getFragVLESSConfig = async (env) => {
     let Configs = [];
     let outbounds = [];
     const {
@@ -1444,7 +1448,7 @@ const getFragVLESSConfig = async (env, userID) => {
     await env.bpb.put("fragConfigs", JSON.stringify(Configs));
 };
 
-const renderPage = async (env, uuid) => {
+const renderPage = async (env) => {
     const {
         host,
         remoteDNS, 
@@ -1456,8 +1460,6 @@ const renderPage = async (env, uuid) => {
         cleanIPs, 
         fragConfigs
     } = await getDataset(env);
-
-    const pwd = await env.bpb.get("bpb");
 
     const genCustomConfRow = (configs) => {
         let tableBlock = "";
@@ -1475,7 +1477,7 @@ const renderPage = async (env, uuid) => {
                         Copy Config 
                         <span class="material-symbols-outlined" style="margin-left: 5px;">copy_all</span>
                     </button>
-                    <button onclick="copyToClipboard(encodeURIComponent('https://${host}/frag/${uuid}?addr=${config.address}'))">
+                    <button onclick="copyToClipboard(encodeURIComponent('https://${host}/frag/${userID}?addr=${config.address}'))">
                         Copy Sub
                         <span class="material-symbols-outlined" style="margin-left: 5px;">link</span>
                     </button>
@@ -1779,7 +1781,7 @@ const renderPage = async (env, uuid) => {
                             </div>
                         </td>
 						<td>
-                            <button onclick="copyToClipboard('https://${host}/sub/${uuid}#BPB%20Normal', false)">
+                            <button onclick="copyToClipboard('https://${host}/sub/${userID}#BPB%20Normal', false)">
                                 Copy 
                                 <span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
@@ -1801,7 +1803,7 @@ const renderPage = async (env, uuid) => {
                             </div>
                         </td>
 						<td>
-                            <button onclick="copyToClipboard('https://${host}/sub/${uuid}?app=singbox#BPB-Normal', false)">
+                            <button onclick="copyToClipboard('https://${host}/sub/${userID}?app=singbox#BPB-Normal', false)">
                                 Copy 
                                 <span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
@@ -1825,7 +1827,7 @@ const renderPage = async (env, uuid) => {
                             </div>
                         </td>
                         <td>
-                            <button onclick="copyToClipboard('https://${host}/fragsub/${uuid}#BPB Fragment', false)">
+                            <button onclick="copyToClipboard('https://${host}/fragsub/${userID}#BPB Fragment', false)">
                                 Copy Sub
                                 <span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
@@ -1839,7 +1841,7 @@ const renderPage = async (env, uuid) => {
                             </div>
                         </td>
                         <td>
-                            <button onclick="copyToClipboard('https://${host}/frag/${uuid}?addr=Best-Ping#BPB Fragment Best Ping', false)">
+                            <button onclick="copyToClipboard('https://${host}/frag/${userID}?addr=Best-Ping#BPB Fragment Best Ping', false)">
                                 Copy Sub
                                 <span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
