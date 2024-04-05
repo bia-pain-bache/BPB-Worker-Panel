@@ -104,62 +104,41 @@ export default {
                         
                     case `/sub/${userID}`:
 
-                        const normalConfigs = await getVLESSConfig(env, client);
+                        const normalConfigs = await getVLESSConfig(env, host, client);
 
-                        return new Response(normalConfigs, {
-                            status: 200,
-                            headers: {
-                                'Content-Type': 'text/plain;charset=utf-8'
-                            },
-                        });                        
+                        return new Response(normalConfigs, { status: 200 });                        
 
                     case `/fragsub/${userID}`:
 
-                        let fragConfigs = await getFragVLESSConfig(env, 'v2ray');
+                        let fragConfigs = await getFragVLESSConfig(env, host, 'v2ray');
                         fragConfigs = fragConfigs.map(config => config.config);
 
-                        return new Response(`${JSON.stringify(fragConfigs, null, 4)}`, {
-                            status: 200,
-                            headers: {
-                                'Content-Type': 'text/plain;charset=utf-8'
-                            },
-                        });
+                        return new Response(`${JSON.stringify(fragConfigs, null, 4)}`, { status: 200 });
 
                     case '/panel':
 
-                        if (request.method === 'POST') {                           
+                        if (request.method === 'POST') {    
+
                             if (!(await verifyJWTToken(request, env))) {                            
-                                return new Response('Unauthorized', {
-                                    status: 401,
-                                    headers: {
-                                        'Content-Type': 'text/plain'
-                                    }
-                                });  
+                                return new Response('Unauthorized', { status: 401 });  
                             }
                             
                             const formData = await request.formData();
-                            await updateDataset(env, host, formData);
+                            await updateDataset(env, formData);
 
-                            return new Response('Success', {
-                                status: 200,
-                                headers: {
-                                    'Content-Type': 'text/plain;charset=utf-8'
-                                },
-                            });
+                            return new Response('Success', { status: 200 });
                         }
                             
                         if (!(await verifyJWTToken(request, env))) {
                             return Response.redirect(`${url.origin}/login`, 302);        
                         }
-                        
-                        const hostValue = await env.bpb.get('host');                        
-                        if (!hostValue) {
-                            await updateDataset(env, host);
+
+                        if (! await env.bpb.get('proxySettings')) {
+                            await updateDataset(env);
                         }
 
-                        if (hostValue !== host) await env.bpb.put('host', host);
-                        const fragConfs = await getFragVLESSConfig(env, 'nekoray');                        
-                        const htmlPage = await renderPage(env, fragConfs);
+                        const fragConfs = await getFragVLESSConfig(env, host, 'nekoray');                        
+                        const htmlPage = await renderPage(env, host, fragConfs);
 
                         return new Response(htmlPage, {
                             status: 200,
@@ -197,6 +176,7 @@ export default {
                         if (request.method === 'POST') {
                             const password = await request.text();
                             const savedPass = await env.bpb.get('pwd');
+
                             if (password === savedPass) {
                                 const jwtToken = generateJWTToken(secretKey, password);
                                 const cookieHeader = `jwtToken=${jwtToken}; HttpOnly; Secure; Max-Age=${7 * 24 * 60 * 60}; Path=/; SameSite=Strict`;
@@ -241,24 +221,14 @@ export default {
                     case '/panel/password':
 
                         if (!(await verifyJWTToken(request, env))) {                            
-                            return new Response('Unauthorized!', {
-                                status: 401,
-                                headers: {
-                                    'Content-Type': 'text/plain'
-                                }
-                            });  
+                            return new Response('Unauthorized!', { status: 401 });  
                         }
                         
                         const newPwd = await request.text();
                         const oldPwd = await env.bpb.get('pwd');
 
                         if (newPwd === oldPwd) {
-                            return new Response('Please enter a new Password!', {
-                                status: 400,
-                                headers: {
-                                    'Content-Type': 'text/plain'
-                                },
-                            });
+                            return new Response('Please enter a new Password!', { status: 400 });
                         }
 
                         await env.bpb.put('pwd', newPwd);
@@ -847,10 +817,9 @@ async function handleUDPOutBound(webSocket, vlessResponseHeader, log) {
  * @returns {string}
  */
 
-const getVLESSConfig = async (env, client) => {
+const getVLESSConfig = async (env, hostName, client) => {
     let vlessWsTls = '';
-    const cleanIPs = await env.bpb.get('cleanIPs');
-    const hostName = await env.bpb.get('host');
+    const { cleanIPs } = await env.bpb.get("proxySettings", {type: 'json'});
     const resolved = await resolveDNS(hostName);
     const Addresses = [
         hostName,
@@ -871,62 +840,13 @@ const getVLESSConfig = async (env, client) => {
     });
 
     const subscription = client === 'singbox' ? btoa(vlessWsTls) : btoa(vlessWsTls.replaceAll('http/1.1', 'h2,http/1.1'));
-    
     return subscription;
 }
 
-const extractVlessParams = async (vlessConfig) => {
-
-    const url = new URL(vlessConfig.replace('vless', 'http'));
-    const uuid = url.username;
-    const hostName = url.hostname;
-    const port = url.port;
-    const params = new URLSearchParams(url.search);
-    const security = params.get('security') || '';
-    const encryption = params.get('encryption') || '';
-    const host = params.get('host') || '';
-    const sni = params.get('sni') || '';
-    const path = params.get('path') || '';
-    const alpn = params.get('alpn') || '';
-    const fp = params.get('fp') || '';
-    const type = params.get('type') || '';
-    const mode = params.get('mode') || '';
-    const authority = params.get('authority') || '';
-    const serviceName = params.get('serviceName') || '';
-    const flow = params.get('flow') || '';
-    const pbk = params.get('pbk') || '';
-    const sid = params.get('sid') || '';
-    const spx = params.get('spx') || '';
-    const headerType = params.get('headerType') || '';
-
-    return JSON.stringify({
-        uuid: uuid,
-        hostName: hostName,
-        port: port,
-        path: path,
-        security: security,
-        encryption: encryption,
-        alpn: alpn,
-        host: host,
-        fp: fp,
-        type: type,
-        sni: sni,
-        mode: mode,
-        authority: authority,
-        serviceName: serviceName,
-        flow: flow,
-        pbk: pbk,
-        sid: sid,
-        spx: spx,
-        headerType: headerType
-    });
-}
-
-const getFragVLESSConfig = async (env, client) => {
+const getFragVLESSConfig = async (env, hostName, client) => {
     let Configs = [];
     let outbounds = [];
     const {
-        host,
         remoteDNS, 
         localDNS, 
         lengthMin, 
@@ -938,12 +858,12 @@ const getFragVLESSConfig = async (env, client) => {
         cleanIPs,
         outProxy,
         outProxyParams
-    } = await getDataset(env);
+    } = await env.bpb.get("proxySettings", {type: 'json'});
 
     let proxyOutbound;
-    const resolved = await resolveDNS(host);
+    const resolved = await resolveDNS(hostName);
     const Addresses = [
-        host,
+        hostName,
         "www.speedtest.net",
         ...(cleanIPs ? cleanIPs.split(",") : []),
         ...resolved.ipv4,
@@ -1033,7 +953,6 @@ const getFragVLESSConfig = async (env, client) => {
 
     Addresses.forEach((addr, index) => {
 
-        let proxyOut;
         let outbound = structuredClone(vlessOutbound);
         delete outbound.mux;
         delete outbound.streamSettings.grpcSettings;
@@ -1042,8 +961,8 @@ const getFragVLESSConfig = async (env, client) => {
         outbound.settings.vnext[0].address = addr;
         outbound.settings.vnext[0].port = 443;
         outbound.settings.vnext[0].users[0].id = userID;
-        outbound.streamSettings.tlsSettings.serverName = randomUpperCase(host);
-        outbound.streamSettings.wsSettings.headers.Host = randomUpperCase(host);
+        outbound.streamSettings.tlsSettings.serverName = randomUpperCase(hostName);
+        outbound.streamSettings.wsSettings.headers.Host = randomUpperCase(hostName);
         outbound.streamSettings.wsSettings.path = `/${getRandomPath(16)}?ed=2048`;
 
         if (client === 'v2ray') {
@@ -1056,7 +975,6 @@ const getFragVLESSConfig = async (env, client) => {
             fragConfig.routing.rules[0].ip = [localDNS];
 
             if (proxyOutbound) {
-                proxyOut = structuredClone(proxyOutbound);
                 fragConfig.outbounds = [{...proxyOutbound}, { ...outbound}, ...fragConfig.outbounds];
             } else {
                 fragConfig.outbounds = [{ ...outbound}, ...fragConfig.outbounds];
@@ -1092,7 +1010,6 @@ const getFragVLESSConfig = async (env, client) => {
             fragConfig.routing.rules[0].ip = [localDNS];
 
             if (proxyOutbound) {
-                proxyOut = structuredClone(proxyOutbound);
                 fragConfig.outbounds = [{...proxyOutbound}, { ...outbound}, ...fragConfig.outbounds];
             } else {
                 fragConfig.outbounds = [{ ...outbound}, ...fragConfig.outbounds];
@@ -1122,6 +1039,7 @@ const getFragVLESSConfig = async (env, client) => {
         outbound.tag = `proxy_${index + 1}`;
 
         if (proxyOutbound) {
+            let proxyOut = structuredClone(proxyOutbound);
             proxyOut.tag = `out_${index + 1}`;
             proxyOut.streamSettings.sockopt.dialerProxy = `proxy_${index + 1}`;
             outbounds.push({...proxyOut}, {...outbound});
@@ -1196,59 +1114,75 @@ const getFragVLESSConfig = async (env, client) => {
     return Configs;
 }
 
-const updateDataset = async (env, host, Settings) => {
+const extractVlessParams = async (vlessConfig) => {
+
+    const url = new URL(vlessConfig.replace('vless', 'http'));
+    const uuid = url.username;
+    const hostName = url.hostname;
+    const port = url.port;
+    const params = new URLSearchParams(url.search);
+    const security = params.get('security') || '';
+    const encryption = params.get('encryption') || '';
+    const host = params.get('host') || '';
+    const sni = params.get('sni') || '';
+    const path = params.get('path') || '';
+    const alpn = params.get('alpn') || '';
+    const fp = params.get('fp') || '';
+    const type = params.get('type') || '';
+    const mode = params.get('mode') || '';
+    const authority = params.get('authority') || '';
+    const serviceName = params.get('serviceName') || '';
+    const flow = params.get('flow') || '';
+    const pbk = params.get('pbk') || '';
+    const sid = params.get('sid') || '';
+    const spx = params.get('spx') || '';
+    const headerType = params.get('headerType') || '';
+
+    return JSON.stringify({
+        uuid: uuid,
+        hostName: hostName,
+        port: port,
+        path: path,
+        security: security,
+        encryption: encryption,
+        alpn: alpn,
+        host: host,
+        fp: fp,
+        type: type,
+        sni: sni,
+        mode: mode,
+        authority: authority,
+        serviceName: serviceName,
+        flow: flow,
+        pbk: pbk,
+        sid: sid,
+        spx: spx,
+        headerType: headerType
+    });
+}
+
+const updateDataset = async (env, Settings) => {
 
     const vlessConfig = Settings?.get('outProxy');
-    const initData = {
-        host: host,
+    const proxySettings = {
         remoteDNS: Settings?.get('remoteDNS') || 'https://94.140.14.14/dns-query',
         localDNS: Settings?.get('localDNS') || '8.8.8.8',
         lengthMin: Settings?.get('fragmentLengthMin') || '100',
         lengthMax: Settings?.get('fragmentLengthMax') || '200',
         intervalMin: Settings?.get('fragmentIntervalMin') || '5',
         intervalMax: Settings?.get('fragmentIntervalMax') || '10',
-        blockAds: Settings?.get('block-ads') || 'false',
-        bypassIran: Settings?.get('bypass-iran') || 'false',
+        blockAds: Settings?.get('block-ads') || false,
+        bypassIran: Settings?.get('bypass-iran') || false,
         cleanIPs: Settings?.get('cleanIPs')?.replaceAll(' ', '') || '',
         outProxy: vlessConfig || '',
         outProxyParams: vlessConfig ? await extractVlessParams(vlessConfig) : ''
     };
 
-    try {
-        for (const [key, value] of Object.entries(initData)) {
-            await env.bpb.put(key, value);
-        }        
+    try {    
+        await env.bpb.put("proxySettings", JSON.stringify(proxySettings));          
     } catch (error) {
         throw new error(error);
     }
-}
-
-const getDataset = async (env) => {
-    const data = await env.bpb.list();
-    const keys = [...data.keys].map(({ name }) => name);
-    let values;
-
-    try {
-        values = await Promise.all(
-            keys.map((key) => env.bpb.get(key))
-        );        
-    } catch (error) {
-        throw new error(error);
-    }
-
-    const dataset = {
-        ...keys.reduce((acc, key, i) => {
-            const value = values[i];
-            if (key === 'blockAds' || key === 'bypassIran') {
-                acc[key] = value === 'true';
-            } else {
-                acc[key] = value;
-            }
-            return acc;
-        }, {}),
-    };
-  
-    return dataset;
 }
 
 const randomUpperCase = (str) => {
@@ -1320,7 +1254,6 @@ const generateSecretKey = () => {
   
 const verifyJWTToken = async (request, env) => {
     const secretKey = await env.bpb.get('secretKey');
-    if (!secretKey) return false;
 
     try {
         const cookie = request.headers.get('Cookie');
@@ -1349,9 +1282,8 @@ const verifyJWTToken = async (request, env) => {
     }
 }
 
-const renderPage = async (env, fragConfigs) => {
+const renderPage = async (env, hostName, fragConfigs) => {
     const {
-        host,
         remoteDNS, 
         localDNS, 
         lengthMin, 
@@ -1362,7 +1294,7 @@ const renderPage = async (env, fragConfigs) => {
         bypassIran,
         cleanIPs,
         outProxy
-    } = await getDataset(env);
+    } = await env.bpb.get("proxySettings", {type: 'json'});
 
     const genCustomConfRow = async (configs) => {
         let tableBlock = "";
@@ -1696,7 +1628,7 @@ const renderPage = async (env, fragConfigs) => {
                             </div>
                         </td>
 						<td>
-                            <button onclick="copyToClipboard('https://${host}/sub/${userID}#BPB%20Normal', false)">
+                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}#BPB%20Normal', false)">
                                 Copy Sub
                                 <span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
@@ -1718,7 +1650,7 @@ const renderPage = async (env, fragConfigs) => {
                             </div>
                         </td>
 						<td>
-                            <button onclick="copyToClipboard('https://${host}/sub/${userID}?app=singbox#BPB-Normal', false)">
+                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=singbox#BPB-Normal', false)">
                                 Copy Sub
                                 <span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
@@ -1750,7 +1682,7 @@ const renderPage = async (env, fragConfigs) => {
                             </div>
                         </td>
                         <td>
-                            <button onclick="copyToClipboard('https://${host}/fragsub/${userID}#BPB Fragment', false)">
+                            <button onclick="copyToClipboard('https://${hostName}/fragsub/${userID}#BPB Fragment', false)">
                                 Copy Sub
                                 <span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
@@ -1872,9 +1804,10 @@ const renderPage = async (env, fragConfigs) => {
             const cleanIPs = cleanIP.value?.split(',');
             const chainProxy = document.getElementById('outProxy').value;                    
             const formData = new FormData(configForm);
-            const isVlessRegex = /^vless:\/\//;
-            const securityRegex = /security=(tls|none|reality)/;
-            const typeRegex = /type=(tcp|grpc|ws)/;
+            const isVless = /^vless:\\/\\//.test(chainProxy);
+            const hasSecurity = /security=/.test(chainProxy);
+            const validSecurityType = /security=(tls|none|reality)/.test(chainProxy);
+            const validTransmission = /type=(tcp|grpc|ws)/.test(chainProxy);
 
             const invalidIPs = cleanIPs?.filter(value => {
                 if (value !== "") {
@@ -1893,11 +1826,10 @@ const renderPage = async (env, fragConfigs) => {
                 return false;
             }
 
-            if (!(isVlessRegex.test(chainProxy) && securityRegex.test(chainProxy) && typeRegex.test(chainProxy)) && chainProxy) {
+            if (!(isVless && (hasSecurity && validSecurityType || !hasSecurity) && validTransmission) && chainProxy) {
                 alert('⛔ Invalid Config! 🫤 \\n - The chain proxy should be VLESS!\\n - Transmission should be GRPC,WS or TCP\\n - Security should be TLS,Reality or None');               
                 return false;
             }
-
 
             try {
                 document.body.style.cursor = 'wait';
@@ -2202,8 +2134,7 @@ const fragConfigTemp = {
             },
             streamSettings: {
                 sockopt: {
-                    tcpKeepAliveIdle: 100,
-                    mark: 255
+                    tcpKeepAliveIdle: 100
                 },
             },
         }
@@ -2330,7 +2261,7 @@ const fragConfigNekorayTemp = {
             },
             streamSettings: {
                 sockopt: {
-                    tcpKeepAliveIdle: 100,
+                    tcpKeepAliveIdle: 100
                 },
             },
             tag: "fragment",
@@ -2431,7 +2362,8 @@ const vlessOutbound =
         network: "ws",
         security: "tls",
         sockopt: {
-            dialerProxy: "fragment"
+            dialerProxy: "fragment",
+            tcpKeepAliveIdle: 100
         },
         tlsSettings: {
             allowInsecure: false,
