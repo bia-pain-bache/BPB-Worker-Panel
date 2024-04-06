@@ -1,7 +1,9 @@
 # 💦 BPB Panel
+
 <div dir="rtl">
 <a href="README_fa.md">Farsi</a>
 </div>
+
 ## Introduction
 This project is dedicated to developing a user panel for the [Cloudflare-workers/pages proxy script](https://github.com/yonggekkk/Cloudflare-workers-pages-vless) created by [yonggekkk](https://github.com/yonggekkk). The panel offers two deployment options: 
 - Option 1: Supports worker deployment
