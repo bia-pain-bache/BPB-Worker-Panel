@@ -14,20 +14,20 @@
 
 حالا به آدرس گیتهاب [BPB-Worker-Panel](https://github.com/bia-pain-bache/BPB-Worker-Panel) میرید و از اون بالا دکمه Fork رو میزنید.
 
-![Fork](assets\Frok.png)
+![Fork](assets/Frok.png)
 
 
 تو صفحه‌ی بعدی به هیچی دست نزنید و Create Fork رو بزنید. خب کار ما با گیتهاب تموم شد.
 
 #### قدم دوم - ساخت Cloudflare KV:
 اگر اکانت کلود فلر ندارید اینجا یک اکانت بسازید (اینجا هم فقط یک ایمیل برای ثبت نام لازم دارید) در اکانت کلادفلرتون از منوی سمت چپ میریم به قسمت KV:
-![Fork](assets\KV-Menu.png)
+![Fork](assets/KV-Menu.png)
 روی Create a namespace کلیک میکنیم و یه اسم دلخواه بهش میدیم و Add میکنیم.
 #### قدم سوم - Cloudflare Pages:
 حالا وارد قسمت Workers and Pages بشید همونجا که ورکر میساختیم و Create Application رو بزنید. با این تفاوت این دفعه Pages رو انتخاب میکنیم:
-![Create Page](assets\Create-Pages-1.png)
+![Create Page](assets/Create-Pages-1.png)
 اینجا Connect to Git رو میزنید و میرید مرحله بعد:
-![Connect to Git](assets\Connect-Git.png)
+![Connect to Git](assets/Connect-Git.png)
 
 اینجا روی BPB-Worker-Panel کلیک کنید تا فعال بشه و Begin Setup رو بزنید. مرحله‌ی بعد یه Project Name داره که میشه دامین پنل شما، اونو حتما عوض کنید یه اسم دلخواه بذارید.
 
