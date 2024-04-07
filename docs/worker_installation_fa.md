@@ -6,7 +6,7 @@
 
 اولین گام، دانلود کد Worker از آدرس زیر است:
 
-[دانلود کد Worker](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/tag/v2.2)
+[دانلود کد Worker](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/download/v2.2/worker.js)
 
 سپس فایل را در داشبورد ورکر کلادفلر آپلود کنید. (توجه: به دلیل زیاد شدن کد، استفاده از کپی پیست با گوشی دشوار است. بهتر است تصویر زیر را مشاهده کنید.)
 
