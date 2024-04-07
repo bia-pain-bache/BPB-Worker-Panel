@@ -1,5 +1,7 @@
 # 💦 پنل BPB
 
+![Panel](docs/assets/Panel.png)
+
 <div dir="rtl">
 <a href="README.md">English</a>
 </div>
