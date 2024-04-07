@@ -1,6 +1,6 @@
 # 💦 پنل BPB
 
-![Panel](docs/assets/Panel.png)
+![Panel](docs/assets/images/Panel.png)
 
 <div dir="rtl">
 <a href="README.md">English</a>
@@ -48,9 +48,11 @@
 ---
 
 ## استفاده
-[نصب](docs/installation_fa.md)
+[نصب به صورت Pages](docs/pages_installation_fa.md)
 
-[پیکربندی](docs/configuration.md)
+[نصب به صورت Worker](docs/worker_installation_fa.md)
+
+[نحوه استفاده از پنل](docs/configuration.md)
 
 [رفع اشکال](docs/troubleshooting.md)
 

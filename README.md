@@ -1,6 +1,6 @@
 # 💦 BPB Panel
 
-![Panel](docs/assets/Panel.png)
+![Panel](docs/assets/images/Panel.png)
 
 <div dir="rtl">
 <a href="README_fa.md">Farsi</a>
@@ -29,9 +29,11 @@ This project is dedicated to developing a user panel for the [Cloudflare-workers
 ---
 
 ## How to use:
-[Installation](docs/installation_fa.md)
+[Installation (Pages)](docs/pages_installation_fa.md)
 
-[Configuration](docs/configuration_fa.md)
+[Installation (Worker)](docs/worker_installation_fa.md)
+
+[how to use](docs/configuration_fa.md)
 
 [Troubleshooting](docs/troubleshooting.md)
 
