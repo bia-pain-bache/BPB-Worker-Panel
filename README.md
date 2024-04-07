@@ -1,5 +1,7 @@
 # 💦 BPB Panel
 
+![Panel](docs/assets/Panel.png)
+
 <div dir="rtl">
 <a href="README_fa.md">Farsi</a>
 </div>
