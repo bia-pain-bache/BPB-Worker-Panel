@@ -36,19 +36,19 @@
 
 حالا با توجه به عکس زیر برید قسمت Settings و بعد Functions:
 
-![Link to KV](assets\Func-Setting.png)
+![Link to KV](assets/Func-Setting.png)
 
 
 اینجا مثل ورکر تو صفحه قسمت KV namespace bindings رو پیدا کنید، Add binding بزنید و Variable name باید حتما `bpb` باشه (همینجوری که نوشتم) و KV namespace اون KV رو انتخاب میکنید که مرحله دو ساختید و save میکنید.
-![Link to KV](assets\KV-link.png)
+![Link to KV](assets/KV-link.png)
 
 خب کارمون با KV تموم شد، حالا فقط باید دوباره Deploy کنیم که تغییرات KV اعمال بشه.
 
 از نوار بالا به قسمت Deployment برگردید و از بخش Production برید به view details:
-![Deploy](assets\Redeploy.png)
+![Deploy](assets/Redeploy.png)
 
 حالا تو قسمت Deployment detail دکمه‌ی Manage Deployment رو بزنید و Retry deployment:
-![Deploy](assets\Redeploy-1.png)
+![Deploy](assets/Redeploy-1.png)
 
 چند ثانیه صبر میکنید تا مراحلش تموم شه و کار ما تموم شد!
 
@@ -70,11 +70,11 @@
 
 برای تغییر UUID و Proxy IP 
 تو همین صفحه میاید پایین و قسمت Environment variables (advanced) رو باز میکنید:
-![Environment variables](assets\Env-Var.png)
+![Environment variables](assets/Env-Var.png)
 اینجا باید مقادیر رو مشخص کنید. یه بار Add variable بزنید و خونه اول رو بنویسید `UUID` با حروف بزرگ، بعد از این لینک یه UUID بگیرید و بذارید خونه دوم:
 
 [UUID Generator](https://www.uuidgenerator.net/)
-![UUID Generator](assets\uuid-generator.png)
+![UUID Generator](assets/uuid-generator.png)
 
 
 حالا یه بار دیگه Add variable بزنید خونه اول `PROXYIP` با حروف بزرگ، IP رو هم میتونید از لینک‌های زیر بگیرید:
@@ -86,10 +86,10 @@
 حالا لازمه دوباره تغییرات رو اعمال کنیم.
 
 از نوار بالا به قسمت Deployment برگردید و از بخش Production برید به view details:
-![Deploy](assets\Redeploy.png)
+![Deploy](assets/Redeploy.png)
 
 حالا تو قسمت Deployment detail دکمه‌ی Manage Deployment رو بزنید و Retry deployment:
-![Deploy](assets\Redeploy-1.png)
+![Deploy](assets/Redeploy-1.png)
 
 چند ثانیه صبر میکنید تا مراحلش تموم شه و کار ما تموم شد!
 
@@ -99,7 +99,7 @@
 
 #### به روز رسانی:
 یکی از مزیت‌های Pages نسبت به Worker اینه که وقتی آپدیتی برای کد منتشر میشه دیگه نیازی نیست برید ورژن جدید worker.js رو دانلود کنید و روز از نو روزی از نو! اصلا برای آپدیت دیگه کاری به کلادفلر ندارید. کافیه به گیتهاب خودتون برید وارد ریپازیتوری BPB-Worker-Panel بشید و از اینجا Sync fork رو بزنید:
-![Update](assets\Update.png)
+![Update](assets/Update.png)
 بعد یه سری تغییرات ورژن جدید رو نشون میده و Update branch رو میزنید. خوبیش اینه که با این کار Cloudflare Pages خودش متوجه میشه و در حدود ۱ دقیقه بعد خودبخود آپدیت میکنه براتون.
 
 
