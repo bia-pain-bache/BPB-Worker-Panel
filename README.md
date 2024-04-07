@@ -26,6 +26,17 @@ This project is dedicated to developing a user panel for the [Cloudflare-workers
 
 ---
 
+## How to use:
+[Installation](docs/installation_fa.md)
+
+[Configuration](docs/configuration_fa.md)
+
+[Troubleshooting](docs/troubleshooting.md)
+
+[FAQ](docs/faq.md)
+
+---
+
 ## Stargazers Over Time
 [![Stargazers Over Time](https://starchart.cc/bia-pain-bache/BPB-Worker-Panel.svg?variant=adaptive)](https://starchart.cc/bia-pain-bache/BPB-Worker-Panel)
 
