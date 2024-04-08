@@ -15,7 +15,7 @@
 
 ## 1- کانفیگ های نرمال (بدون فرگمنت)
 
-![Normal Configs](assets/images/Normal_config.png)
+![Normal Configs](assets/images/Normal-Configs.jpg)
 
 از این بخش شروع کردم چون خیلیا بدون فرگمنت هم میتونن استفاده کنن.
 
