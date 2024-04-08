@@ -6,7 +6,8 @@
 
 پنل با UUID و Proxy IP پیشفرض خودش کار میکنه و میتونید ادامه بدید، ولی اگر خواستید تغییر بدید به بخش [تنظیمات پیشرفته](https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/dev/docs/worker_installation_fa.md#%D8%AA%D9%86%D8%B8%DB%8C%D9%85%D8%A7%D8%AA-%D9%BE%DB%8C%D8%B4%D8%B1%D9%81%D8%AA%D9%87-%D8%A7%D8%AE%D8%AA%DB%8C%D8%A7%D8%B1%DB%8C) برید و برگردید اینجا.
 
- در نهایت ورکر رو Save and Deploy کنید.
+ در نهایت ورکر رو Save and Deploy کنید. 
+ 
 
 حالا از اینجا به داشبورد ورکر برگردید و این مراحل را دنبال کنید:
 
