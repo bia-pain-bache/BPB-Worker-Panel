@@ -6,35 +6,29 @@
 
 پنل با UUID و Proxy IP پیشفرض خودش کار میکنه و میتونید ادامه بدید، ولی اگر خواستید تغییر بدید به بخش [تنظیمات پیشرفته](https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/dev/docs/worker_installation_fa.md#%D8%AA%D9%86%D8%B8%DB%8C%D9%85%D8%A7%D8%AA-%D9%BE%DB%8C%D8%B4%D8%B1%D9%81%D8%AA%D9%87-%D8%A7%D8%AE%D8%AA%DB%8C%D8%A7%D8%B1%DB%8C) برید و برگردید اینجا.
 
- در نهایت ورکر رو Save and Deploy کنید.
+ در نهایت ورکر رو `Save and Deploy` کنید.
 حالا از اینجا به داشبورد ورکر برگردید و این مراحل را دنبال کنید:
 
 ![image](assets/images/navigate_worker.png)
 
-از این قسمت وارد صفحه KV بشید:
+از این قسمت وارد صفحه `KV` بشید:
 
 ![صفحه KV](assets/images/KV-Menu.png)
 
-تو قسمت KV بزنید Create a namespace و یه اسم دلخواه وارد کنید مثلا Test و Add کنید.
+تو قسمت KV بزنید `Create a namespace` و یه اسم دلخواه وارد کنید مثلا Test و `Add` کنید.
 
-دوباره از منوی سمت چپ به قسمت Workers & Pages برید، ورکری که ساختید رو باز کنید، برید به قسمت Settings و Variables رو انتخاب کنید. یه کم بیاید پایین قسمت KV Namespace Bindings رو میبینید، روی Add binding بزنید و مطابق تصویر زیر از کشویی سمت راست اون KV که ساخته بودید انتخاب کنید (در مثال Test بود). چیزی که مهمه کشویی سمت چپه، حتما باید مقدارش رو بذارید bpb و Save and Deploy و تمام.
+دوباره از منوی سمت چپ به قسمت `Workers & Pages` برید، ورکری که ساختید رو باز کنید، برید به قسمت `Settings` و `Variables` رو انتخاب کنید. یه کم بیاید پایین قسمت `KV Namespace Bindings` رو میبینید، روی `Add binding` بزنید و مطابق تصویر زیر از کشویی سمت راست اون KV که ساخته بودید انتخاب کنید (در مثال Test بود). چیزی که مهمه کشویی سمت چپه، حتما باید مقدارش رو بذارید `bpb` و `Save and Deploy` و تمام.
 
 
 ![تنظیمات KV](assets/images/KV-link.png)
 
-برای مثال، فرض کنید دامنه‌ی ورکر شما هست worker-polished-leaf-d022.workers.dev، یه panel/ تهش اضافه کنید و وارد پنل بشید. مثال:
+برای مثال، فرض کنید دامنه‌ی ورکر شما هست worker-polished-leaf-d022.workers.dev، یه `panel/` تهش اضافه کنید و وارد پنل بشید. مثال:
 
-https://worker-polished-leaf-d022.workers.dev/panel
+>`https://worker-polished-leaf-d022.workers.dev/panel`
 
-اول میره به صفحه‌ی لاگین، پسورد پیشفرض یعنی admin رو وارد کنید و تمام.
-
-
-
-آموزشها و نکات هم که تو آموزش اصلی هست:
-
-[Tutorial Link](configuration_fa.md)
-
+اول میره به صفحه‌ی لاگین، پسورد پیشفرض یعنی `admin` رو وارد کنید و تمام.
 نصب به پایان رسیده و توضیحاتی که در ادامه اومده شاید برای عموم لازم نباشه.
+آموزشهای تنظیمات و نکات هم که توی [آموزش اصلی](configuration_fa.md)  هست.
 
 ##  تنظیمات پیشرفته (اختیاری)
 شاید تا الان متوجه شده باشید که در مورد تغییر UUID و Proxy IP چیزی نگفتیم چون میتونید از پیشفرض خود پنل استفاده کنید. اما برای تغییرشون میتونید مراحل زیر رو دنبال کنید، توصیه میشه حداقل UUID رو تغییر بدید. 
@@ -44,7 +38,7 @@ https://worker-polished-leaf-d022.workers.dev/panel
 
 تو خط 9 یه UUID هست و میتونید تغییرش ندید ولی ترجیحا اینجوری عوضش کنید: تو خط 9 یه آدرس وبسایت گذاشتم این پایین هم لینکش رو گذاشتیم، بازش کنید یه UUID بگیرید و کپی کنید تو خط 10 جای قبلی و تمام. ورکر رو Save and Deploy کنید.
 
-[UUID Generator](https://www.uuidgenerator.net/)
+>[UUID Generator](https://www.uuidgenerator.net/)
 
 ![UUID Generator](assets/images/uuid-generator.png)
 
@@ -54,9 +48,9 @@ https://worker-polished-leaf-d022.workers.dev/panel
 ما یه مشکلی داریم که این کد به صورت پیشفرض از تعداد زیادی IP Proxy استفاده میکنه که برای هر بار اتصال به سایتای پشت کلادفلر ( شامل بخش وسیعی از وب میشه) به صورت رندوم IP جدیدی انتخاب میکنه و در نتیجه به صورت متناوب IP شما رو به صورت مجازی تغییر پیدا میکنه. این تغییر IP شاید برای برخی مشکل ساز باشه. (مخصوصا تریدرها)
 این دو تا لینک رو باز کنید (داخل کد ورکر خط 12 و 13 هم گذاشتم) یه تعدادی IP نشون میده که میتونید کشورشون رو هم چک کنید و یه دونه انتخاب کنید.
 
-[Proxy IP](https://www.nslookup.io/domains/cdn.xn--b6gac.eu.org/dns-records/)
+>[Proxy IP](https://www.nslookup.io/domains/cdn.xn--b6gac.eu.org/dns-records/)
 
-[Proxy IP](https://www.nslookup.io/domains/cdn-all.xn--b6gac.eu.org/dns-records/)
+>[Proxy IP](https://www.nslookup.io/domains/cdn-all.xn--b6gac.eu.org/dns-records/)
 
 ![Image](assets/images/IP_Proxy.png)
 
@@ -72,11 +66,13 @@ const proxyIPs = ['cdn.xn--b6gac.eu.org', 'cdn-all.xn--b6gac.eu.org', 'edgetunne
 const proxyIPs = ['8.218.149.193'];
 ```
 
-**نکته 1:** فقط حواستون باشه تعداد این IP ها زیاده و ممکنه تعداد زیادیشون از کار افتاده باشن. باید تست کنید تا یه خوبشو سوا کنید.
+ورکر رو `Save and Deploy` کنید.
+> [!WARNING]
+> فقط حواستون باشه تعداد این IP ها زیاده و ممکنه تعداد زیادیشون از کار افتاده باشن. باید تست کنید تا یه خوبشو سوا کنید.
 
-**نکته 2:** اگر از تک IP استفاده کنید احتمالا بعد یه مدت دوباره از کار میافته و خیلی سایتا باز نمیشن. باید از اول این مراحلو برید.
+> [!WARNING]
+> اگر از تک IP استفاده کنید احتمالا بعد یه مدت دوباره از کار میافته و خیلی سایتا باز نمیشن. باید از اول این مراحلو برید.
 
 
- ورکر رو Save and Deploy کنید.
 
  
