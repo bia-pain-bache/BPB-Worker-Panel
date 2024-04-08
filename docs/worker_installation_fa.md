@@ -3,6 +3,7 @@
 خب اول کد Worker رو از [اینجا](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/download/v2.2/worker.js) دانلود کنید و ببرید توی داشبورد ورکر کلادفلرو فایل رو آپلود کنید (چون کد خیلی زیاد شده Copy Paste کردن با گوشی خیلی سخت شده، با توجه به عکس زیر آپلود کنید)
 
 ![آپلود فایل Worker](https://telegra.ph/file/fd039bb86857e63263884.png)
+
 حالا اگر با UUID و Proxy IP پیشفرض مشکلی ندارید که ادامه بدید، در غیر اینصورت به بخش [تنظیمات پیشرفته]() برید و برگردید اینجا.
 
  در نهایت ورکر رو Save and Deploy کنید.
