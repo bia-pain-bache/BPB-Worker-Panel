@@ -42,7 +42,7 @@
 
 در ادامه نحوه استفاده از این کانفیگ ها رو توضیح دادیم . تنظیمات پیشرفته مربوط به فرگمنت هم [اینجا](https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/dev/docs/configuration_fa.md#3-2--%D8%AA%D9%86%D8%B8%DB%8C%D9%85%D8%A7%D8%AA-%D9%81%D8%B1%DA%AF%D9%85%D9%86%D8%AA) توضیح داده شده.
 
-### 1-2- استفاده روی موبایل
+### 2-1- استفاده روی موبایل
 
 ![Image](assets/images/Fragment-Sub.jpg)
 
