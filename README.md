@@ -1,41 +1,55 @@
-## Cloudflare-workers/pages代理脚本
+# 💦 BPB Panel
 
-### 方案一支持workers部署：实现vless+ws+tls与vless+ws两种代理节点
+![Panel](docs/assets/images/Panel.png)
 
-### 方案二支持pages部署：仅实现vless+ws+tls代理节点
+<div dir="rtl">
+<a href="README_fa.md">Farsi</a>
+</div>
 
-### 详细说明教程请参考[甬哥博客及视频教程](https://ygkkk.blogspot.com/2023/07/cfworkers-vless.html)
---------------------------------
-### CF vless代码默认修改内容
+## Introduction
+This project is dedicated to developing a user panel for the [Cloudflare-workers/pages proxy script](https://github.com/yonggekkk/Cloudflare-workers-pages-vless) created by [yonggekkk](https://github.com/yonggekkk). The panel offers two deployment options: 
+- Option 1: Supports worker deployment
+- Option 2: Supports pages deployment
 
-1、UUID必须自定义
+---
 
-2、proxyIP已更新支持chatgpt的IP，可直接使用（使用人数过多，不定时失效），可自定义
+## Features
 
-3、伪装网页已更新为微软www.bing.com，可自定义
+1. **Free**: No cost involved.
+2. **User-Friendly Panel**: Designed for easy navigation and usage.
+3. **Support Fragment**: Provides support for fragment functionality.
+4. **Ad Blocking (Optional)**: Option to block ads.
+5. **Direct Iran (Optional)**: Includes an option for direct access to Iran.
+6. **Subscription Link (URL) for Wide Range of Clients**: Offers subscription links for various clients.
+7. **Subscription Link (JSON)**: Provides subscription links in JSON format.
+8. **Singbox**: Features Singbox integration.
+9. **Password-Protected Panel**: Secure your panel with password protection.
+10. **Custom Cloudflare Clean IP**: Ability to set up a custom Cloudflare clean IP.
 
-4、重点对workers与pages、有域名与无域名，这4种情况下的节点分享做了优化显示，方便小白们理解操作
+---
 
----------------------------------
-### CF-CDN优选域名一键脚本，苹果安卓手机平板专用，(请参考教程，在本地网络环境下运行)：
-```
-curl -sSL https://gitlab.com/rwkgyg/CFwarp/raw/main/point/CFcdnym.sh -o CFcdnym.sh && chmod +x CFcdnym.sh && bash CFcdnym.sh
-```
-------------------------------------------------------------------------
-### CF-优选反代IP一键脚本，苹果安卓手机平板专用，(请参考教程，在本地网络环境下运行)：
-```
-curl -sSL https://gitlab.com/rwkgyg/CFwarp/raw/main/point/cfip.sh -o cfip.sh && chmod +x cfip.sh && bash cfip.sh
-```
+## How to use:
+[Installation (Pages)](docs/pages_installation_fa.md)
 
--------------------------------------------------------------
-### 感谢你右上角的star🌟
-[![Stargazers over time](https://starchart.cc/yonggekkk/Cloudflare-workers-pages-vless.svg)](https://starchart.cc/yonggekkk/Cloudflare-workers-pages-vless)
-------------------------------------------------------------------------
-### 感谢：CF-vless代码作者[3Kmfi6HP](https://github.com/3Kmfi6HP/EDtunnel) CF优选IP程序作者[badafans](https://github.com/badafans/Cloudflare-IP-SpeedTest)、[XIU2](https://github.com/XIU2/CloudflareSpeedTest)
+[Installation (Worker)](docs/worker_installation_fa.md)
 
----------------------------------------
-#### 声明：
+[how to use](docs/configuration_fa.md)
 
-#### 其中一键脚本使用base64加密，可自行解密，介意者请勿使用，[加密原因在此](https://ygkkk.blogspot.com/2022/06/github.html)
+[Troubleshooting](docs/troubleshooting.md)
 
-#### 所有代码来源于Github社区与ChatGPT的整合；如您需要开源代码，请提Issues留下您的联系邮箱
+[FAQ](docs/faq.md)
+
+---
+
+## Stargazers Over Time
+[![Stargazers Over Time](https://starchart.cc/bia-pain-bache/BPB-Worker-Panel.svg?variant=adaptive)](https://starchart.cc/bia-pain-bache/BPB-Worker-Panel)
+
+---
+
+### Special Thanks
+- CF-vless code author [3Kmfi6HP](https://github.com/3Kmfi6HP/EDtunnel)
+- CF preferred IP program author [badafans](https://github.com/badafans/Cloudflare-IP-SpeedTest), [XIU2](https://github.com/XIU2/CloudflareSpeedTest)
+
+---
+
+For a detailed tutorial on the core script, please refer to [Yongge’s blog and video tutorials](https://ygkkk.blogspot.com/2023/07/cfworkers-vless.html).
