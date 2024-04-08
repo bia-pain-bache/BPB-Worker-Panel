@@ -44,7 +44,7 @@
 
 ### 1-2- استفاده روی موبایل
 
-![Image](assets/images/mobile_fragment.png)
+![Image](assets/images/Fragment-Sub.jpg)
 
 قبل از هر چیزی بگم برای استفاده از این کانفیگ‌ها اول باید برنامه‌تون آپدیت باشه و همینطور باید Geo asset files برنامه V2rayNG آپدیت باشه.
 > [!CAUTION]
