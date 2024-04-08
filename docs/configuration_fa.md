@@ -66,7 +66,7 @@
 
 ### 2-2- استفاده در DESKTOP
 
-![Image](assets/images/desktop_fragment.png)
+![Image](assets/images/Fragment-Configs.jpg)
 
 این بخش هم همون کانفیگ‌های فرگمنت رو میده برای برنامه‌ی Nekoray روی Windows و لینوکس.
 
@@ -108,7 +108,7 @@
 
 ### 3-2- تنظیمات فرگمنت
 
-![Image](assets/images/panel_fragment_settings.png)
+![Image](assets/images/Fragment-Settings.jpg)
 
 این قسمت برای تنظیمات کانفیگای Fragment هست و تاثیری روی کانفیگ ها بخش نرمال نداره.
 
