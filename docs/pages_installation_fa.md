@@ -83,20 +83,20 @@
 
 اینجا باید مقادیر رو مشخص کنید. یه بار `Add variable` بزنید و خونه اول رو بنویسید `UUID` با حروف بزرگ، بعد از این لینک یه UUID بگیرید و بذارید خونه دوم:
 
-[UUID Generator](https://www.uuidgenerator.net/)
+>[UUID Generator](https://www.uuidgenerator.net/)
 
 ![UUID Generator](assets/images/uuid-generator.png)
 
 حالا یه بار دیگه `Add variable` بزنید خونه اول `PROXYIP` با حروف بزرگ، IP رو هم میتونید از لینک‌های زیر بگیرید:
 
-[Proxy IP](https://www.nslookup.io/domains/cdn.xn--b6gac.eu.org/dns-records/)
+>[Proxy IP](https://www.nslookup.io/domains/cdn.xn--b6gac.eu.org/dns-records/)
 
-[Proxy IP](https://www.nslookup.io/domains/cdn-all.xn--b6gac.eu.org/dns-records/)
+>[Proxy IP](https://www.nslookup.io/domains/cdn-all.xn--b6gac.eu.org/dns-records/)
 
 ## بروز رسانی:
-یکی از مزیت‌های Pages نسبت به Worker اینه که وقتی آپدیتی برای کد منتشر میشه دیگه نیازی نیست برید ورژن جدید worker.js رو دانلود کنید و روز از نو روزی از نو! اصلا برای آپدیت دیگه کاری به کلادفلر ندارید. کافیه به گیتهاب خودتون برید وارد ریپازیتوری BPB-Worker-Panel بشید و از اینجا Sync fork رو بزنید:
+یکی از مزیت‌های Pages نسبت به Worker اینه که وقتی آپدیتی برای کد منتشر میشه دیگه نیازی نیست برید ورژن جدید worker.js رو دانلود کنید و روز از نو روزی از نو! اصلا برای آپدیت دیگه کاری به کلادفلر ندارید. کافیه به گیتهاب خودتون برید وارد ریپازیتوری `BPB-Worker-Panel` بشید و از اینجا `Sync fork` رو بزنید:
 
 ![Update](assets/images/Update.png)
 
-بعد یه سری تغییرات ورژن جدید رو نشون میده و Update branch رو میزنید. خوبیش اینه که با این کار Cloudflare Pages خودش متوجه میشه و در حدود ۱ دقیقه بعد خودبخود آپدیت میکنه براتون.
+بعد یه سری تغییرات ورژن جدید رو نشون میده و `Update branch` رو میزنید. خوبیش اینه که با این کار Cloudflare Pages خودش متوجه میشه و در حدود ۱ دقیقه بعد خودبخود آپدیت میکنه براتون.
 
