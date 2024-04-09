@@ -33,7 +33,7 @@ This project is dedicated to developing a user panel for the [Cloudflare-workers
 
 [Installation (Worker)](docs/worker_installation_fa.md)
 
-[how to use](docs/configuration_fa.md)
+[How to use](docs/configuration_fa.md)
 
 [Troubleshooting](docs/troubleshooting.md)
 
