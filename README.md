@@ -1,30 +1,33 @@
-# 💦 BPB Panel
+<h1 align="center">💦 BPB Panel</h1>
 
-![Panel](docs/assets/images/Panel.png)
+#### 🌏 Readme in [Farsi](README_fa.md)
 
-<div dir="rtl">
-<a href="README_fa.md">Farsi</a>
-</div>
+<p align="center">
+  <img src="docs/assets/images/Panel.png">
+</p>
+<br><br>
 
 ## Introduction
 This project is dedicated to developing a user panel for the [Cloudflare-workers/pages proxy script](https://github.com/yonggekkk/Cloudflare-workers-pages-vless) created by [yonggekkk](https://github.com/yonggekkk). The panel offers two deployment options: 
-- Option 1: Supports worker deployment
-- Option 2: Supports pages deployment
+- Option 1: Worker deployment
+- Option 2: Pages deployment
 
 ---
 
 ## Features
 
 1. **Free**: No cost involved.
-2. **User-Friendly Panel**: Designed for easy navigation and usage.
-3. **Support Fragment**: Provides support for fragment functionality.
-4. **Ad Blocking (Optional)**: Option to block ads.
-5. **Direct Iran (Optional)**: Includes an option for direct access to Iran.
-6. **Subscription Link (URL) for Wide Range of Clients**: Offers subscription links for various clients.
-7. **Subscription Link (JSON)**: Provides subscription links in JSON format.
-8. **Singbox**: Features Singbox integration.
-9. **Password-Protected Panel**: Secure your panel with password protection.
-10. **Custom Cloudflare Clean IP**: Ability to set up a custom Cloudflare clean IP.
+2. **User-Friendly Panel:** Designed for easy navigation, configuration and usage.
+3. **Support Fragment:** Provides support for fragment functionality.
+5. **Ad Blocking (Optional):** Option to block Ads.
+6. **Direct Iran (Optional):** Includes an option for direct access to Iran.
+7. **Full routing rules:** Bypassing Iran, Blocking Ads, Malwares, Phishing... for Sing-box.
+8. **Chain Proxy:** Capable of adding a chain proxy to fix IP.
+9. **Supports Wide Range of Clients:** Offers subscription links.
+10. **Subscription Link (JSON):** Provides subscription link for JSON configs.
+11. **Singbox:** Features Singbox integration.
+12. **Password-Protected Panel:** Secure your panel with password protection.
+13. **Custom Cloudflare Clean IP:** Ability to use online scanner and setting up clean IP-domains.
 
 ---
 
