@@ -14,8 +14,8 @@
 
 ### این پنل به دو روش راه‌اندازی می‌شود:
 
-- **1-** راه‌اندازی با Cloudflare Worker
-- **2-** راه‌اندازی با Cloudflare Worker
+- راه‌اندازی با **Cloudflare Worker**
+- راه‌اندازی با **Cloudflare Worker**
 <br>
 
 ## ویژگی‌ها
