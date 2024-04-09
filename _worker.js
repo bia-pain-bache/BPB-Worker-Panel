@@ -120,6 +120,10 @@ export default {
 
                     case '/panel':
 
+                        if (!env.bpb) {
+                            return new Response(errorPage, { status: 200, headers: {'Content-Type': 'text/html'}});
+                        }
+
                         if (request.method === 'POST') {    
 
                             if (!(await Authenticate(request, env))) {                            
@@ -132,6 +136,7 @@ export default {
                             return new Response('Success', { status: 200 });
                         }
                             
+
                         if (!(await Authenticate(request, env))) {
                             return Response.redirect(`${url.origin}/login`, 302);        
                         }
@@ -157,6 +162,10 @@ export default {
                         });
                                                       
                     case '/login':
+
+                        if (!env.bpb) {
+                            return new Response(errorPage, { status: 200, headers: {'Content-Type': 'text/html'}});
+                        }
 
                         if (await Authenticate(request, env)) {
                             return Response.redirect(`${url.origin}/panel`, 302);       
@@ -189,7 +198,7 @@ export default {
                                     headers: {
                                       'Set-Cookie': cookieHeader,
                                       'Content-Type': 'text/plain',
-                                    },
+                                    }
                                 });        
                             } else {
                                 return new Response('Method Not Allowed', { status: 405 });
@@ -208,7 +217,7 @@ export default {
                                 'X-Content-Type-Options': 'nosniff',
                                 'X-Frame-Options': 'DENY',
                                 'Referrer-Policy': 'strict-origin-when-cross-origin'
-                            },
+                            }
                         });
                     
                     case '/logout':
@@ -218,7 +227,7 @@ export default {
                             headers: {
                                 'Set-Cookie': 'jwtToken=; Secure; SameSite=None; Expires=Thu, 01 Jan 1970 00:00:00 GMT',
                                 'Content-Type': 'text/plain'
-                            },
+                            }
                         });        
 
                     case '/panel/password':
@@ -241,7 +250,7 @@ export default {
                             headers: {
                                 'Set-Cookie': 'jwtToken=; Path=/; Secure; SameSite=None; Expires=Thu, 01 Jan 1970 00:00:00 GMT',
                                 'Content-Type': 'text/plain',
-                            },
+                            }
                         });
 
                     default:
@@ -1500,7 +1509,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 	</head>
 	
 	<body>
-		<h1 style="text-align: center; color: #2980b9">BPB Panel <span style="font-size: smaller;">2.2</span> 💦</h1>
+		<h1 style="text-align: center; color: #2980b9">BPB Panel <span style="font-size: smaller;">2.3</span> 💦</h1>
 		<div class="form-container">
             <h2>FRAGMENT SETTINGS ⚙️</h2>
 			<form id="configForm">
@@ -2002,7 +2011,7 @@ const renderLoginPage = async () => {
     </head>
     <body>
         <div class="container">
-            <h1>BPB Panel <span style="font-size: smaller;">2.2</span> 💦</h1>
+            <h1>BPB Panel <span style="font-size: smaller;">2.3</span> 💦</h1>
             <div class="form-container">
                 <h2>User Login</h2>
                 <form id="loginForm">
@@ -2512,3 +2521,43 @@ const singboxOutboundTemp = {
     },
     tag: ""
 };
+
+const errorPage = `
+    <!DOCTYPE html>
+    <html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Error Page</title>
+        <style>
+            body,
+            html {
+                height: 100%;
+                margin: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-family: system-ui;
+            }
+            h1 {
+                text-align: center;
+                color: #2980b9;
+                font-size: 2.5rem;
+            }
+            #error-container {
+                text-align: center;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="error-container">
+            <h1>BPB Panel <span style="font-size: smaller;">2.3</span> 💦</h1>
+            <div id="error-message">
+                <h2>KV Dataset is not properly set! Please refer to <a href="https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/README.md">documents</a></h2>
+            </div>
+        </div>
+    </body>
+
+    </html>`;
