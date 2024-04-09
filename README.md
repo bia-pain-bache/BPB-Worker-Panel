@@ -5,14 +5,13 @@
 <p align="center">
   <img src="docs/assets/images/Panel.png">
 </p>
-<br><br>
+<br>
 
 ## Introduction
 This project is dedicated to developing a user panel for the [Cloudflare-workers/pages proxy script](https://github.com/yonggekkk/Cloudflare-workers-pages-vless) created by [yonggekkk](https://github.com/yonggekkk). The panel offers two deployment options: 
-- Option 1: Worker deployment
-- Option 2: Pages deployment
-
----
+- **Option 1:** Worker deployment
+- **Option 2:** Pages deployment
+<br>
 
 ## Features
 
@@ -28,8 +27,7 @@ This project is dedicated to developing a user panel for the [Cloudflare-workers
 11. **Singbox:** Features Singbox integration.
 12. **Password-Protected Panel:** Secure your panel with password protection.
 13. **Custom Cloudflare Clean IP:** Ability to use online scanner and setting up clean IP-domains.
-
----
+<br>
 
 ## How to use:
 [Installation (Pages)](docs/pages_installation_fa.md)
