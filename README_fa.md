@@ -4,7 +4,7 @@
 #### 🌏 [English](README.md)
 
 <p align="center">
-  <img src="docs/assets/images/Panel.png">
+  <img src="docs/assets/images/Panel.jpg">
 </p>
 <br>
 
