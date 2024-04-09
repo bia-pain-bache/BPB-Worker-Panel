@@ -22,7 +22,7 @@ This project is dedicated to developing a user panel for the [Cloudflare-workers
 5. **Direct Iran (Optional):** Includes an option for direct access to Iran.
 6. **Full routing rules:** Bypassing Iran, Blocking Ads, Malwares, Phishing... for Sing-box.
 7. **Chain Proxy:** Capable of adding a chain proxy to fix IP.
-8. **Supports Wide Range of Clients:** Offers subscription links.
+8. **Supports Wide Range of Clients:** Offers subscription links for Xray and Sing-box core clients.
 9. **Subscription Link (JSON):** Provides subscription link for JSON configs.
 10. **Password-Protected Panel:** Secure your panel with password protection.
 11. **Custom Cloudflare Clean IP:** Ability to use online scanner and setting up clean IP-domains.
