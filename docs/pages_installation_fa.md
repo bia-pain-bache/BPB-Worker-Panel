@@ -13,25 +13,33 @@
 
 حالا به آدرس گیتهاب [BPB-Worker-Panel](https://github.com/bia-pain-bache/BPB-Worker-Panel) میرید و از اون بالا دکمه Fork رو میزنید.
 <br><br>
-![Fork](assets/images/Frok.png)
+<p align="center">
+  <img src="assets/images/Fork_repo.jpg">
+</p>
 
 تو صفحه‌ی بعدی به هیچی دست نزنید و Create Fork رو بزنید. خب کار ما با گیتهاب تموم شد.
 <br><br>
 ## قدم دوم - ساخت Cloudflare KV:
 اگر اکانت کلود فلر ندارید اینجا یک اکانت بسازید (اینجا هم فقط یک ایمیل برای ثبت نام لازم دارید) در اکانت کلادفلرتون از منوی سمت چپ میریم به قسمت KV:
 
-![KV](assets/images/KV-Menu.png)
+<p align="center">
+  <img src="assets/images/Nav_dash_kv.jpg">
+</p>
 
 روی `Create a namespace` کلیک میکنیم و یه اسم دلخواه بهش میدیم و Add میکنیم.
 <br><br>
 ## قدم سوم - Cloudflare Pages:
 حالا وارد قسمت `Workers and Pages` بشید همونجا که ورکر میساختیم و `Create Application` رو بزنید. با این تفاوت این دفعه `Pages` رو انتخاب میکنیم:
 
-![Create Page](assets/images/Create-Pages-1.png)
+<p align="center">
+  <img src="assets/images/Pages_application.jpg">
+</p>
 
 اینجا `Connect to Git` رو میزنید و میرید مرحله بعد:
 
-![Connect to Git](assets/images/Connect-Git.png)
+<p align="center">
+  <img src="assets/images/Connect_to_git.jpg">
+</p>
 
 اینجا روی `BPB-Worker-Panel` کلیک کنید تا فعال بشه و `Begin Setup` رو بزنید. مرحله‌ی بعد یه `Project Name` داره که میشه دامین پنل شما، اونو حتما عوض کنید یه اسم دلخواه بذارید. حالا اینجا یه فرقی با ورکر داره، یعنی اگر بخواید UUID یا Proxy IP رو عوض کنید دیکه نمیتونید برید توی کد تغییر بدید، اگر خواستید از پیشفرض پنل استفاده کنید که هیچ، اگرنه همین الان برید بخش [تنظیمات پیشرفته](#تنظیمات-پیشرفته-اختیاری) رو بخونید و بعد ادامه بدید.
 
@@ -40,22 +48,30 @@
 
 حالا با توجه به عکس زیر برید قسمت `Settings` و بعد `Functions`:
 
-![Link to KV](assets/images/Func-Setting.png)
+<p align="center">
+  <img src="assets/images/Settings_functions.jpg">
+</p>
 
 
 اینجا مثل ورکر تو صفحه قسمت `KV namespace bindings` رو پیدا کنید، `Add binding` بزنید و `Variable name` باید حتما `bpb` باشه (همینجوری که نوشتم) و KV namespace اون KV رو انتخاب میکنید که مرحله دو ساختید و `save` میکنید.
 
-![Link to KV](assets/images/KV-link.png)
+<p align="center">
+  <img src="assets/images/Pages_bind_kv.jpg">
+</p>
 
 خب کارمون با KV تموم شد، حالا فقط باید دوباره Deploy کنیم که تغییرات KV اعمال بشه.
 
 از نوار بالا به قسمت `Deployment` برگردید و از بخش `Production` برید به `view details`:
 
-![Deploy](assets/images/Redeploy.png)
+<p align="center">
+  <img src="assets/images/Pages_production_details.jpg">
+</p>
 
 حالا تو قسمت `Deployment detail` دکمه‌ی `Manage Deployment` رو بزنید و `Retry deployment`:
 
-![Deploy](assets/images/Redeploy-1.png)
+<p align="center">
+  <img src="assets/images/Pages_retry_deployment.jpg">
+</p>
 
 چند ثانیه صبر میکنید تا مراحلش تموم شه و کار ما تموم شد!
 
@@ -79,13 +95,11 @@
 
 برای تغییر UUID و Proxy IP تو همین صفحه میاید پایین و قسمت `Environment variables (advanced)` رو باز میکنید:
 
-![Environment variables](assets/images/Env-Var.png)
+<p align="center">
+  <img src="assets/images/Pages_env_vars.jpg">
+</p>
 
-اینجا باید مقادیر رو مشخص کنید. یه بار `Add variable` بزنید و خونه اول رو بنویسید `UUID` با حروف بزرگ، بعد از این لینک یه UUID بگیرید و بذارید خونه دوم:
-
->[UUID Generator](https://www.uuidgenerator.net/)
-
-![UUID Generator](assets/images/uuid-generator.png)
+اینجا باید مقادیر رو مشخص کنید. یه بار `Add variable` بزنید و خونه اول رو بنویسید `UUID` با حروف بزرگ، بعد از [اینجا](https://www.uuidgenerator.net/) یه UUID بگیرید و بذارید خونه دوم.
 
 حالا یه بار دیگه `Add variable` بزنید خونه اول `PROXYIP` با حروف بزرگ، IP رو هم میتونید از لینک‌های زیر بگیرید:
 
@@ -96,7 +110,9 @@
 ## بروز رسانی:
 یکی از مزیت‌های Pages نسبت به Worker اینه که وقتی آپدیتی برای کد منتشر میشه دیگه نیازی نیست برید ورژن جدید worker.js رو دانلود کنید و روز از نو روزی از نو! اصلا برای آپدیت دیگه کاری به کلادفلر ندارید. کافیه به گیتهاب خودتون برید وارد ریپازیتوری `BPB-Worker-Panel` بشید و از اینجا `Sync fork` رو بزنید:
 
-![Update](assets/images/Update.png)
+<p align="center">
+  <img src="assets/images/Sync_fork.jpg">
+</p>
 
 بعد یه سری تغییرات ورژن جدید رو نشون میده و `Update branch` رو میزنید. خوبیش اینه که با این کار Cloudflare Pages خودش متوجه میشه و در حدود ۱ دقیقه بعد خودبخود آپدیت میکنه براتون.
 
