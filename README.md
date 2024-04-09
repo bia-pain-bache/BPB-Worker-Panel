@@ -18,15 +18,14 @@ This project is dedicated to developing a user panel for the [Cloudflare-workers
 1. **Free**: No cost involved.
 2. **User-Friendly Panel:** Designed for easy navigation, configuration and usage.
 3. **Support Fragment:** Provides support for fragment functionality.
-5. **Ad Blocking (Optional):** Option to block Ads.
-6. **Direct Iran (Optional):** Includes an option for direct access to Iran.
-7. **Full routing rules:** Bypassing Iran, Blocking Ads, Malwares, Phishing... for Sing-box.
-8. **Chain Proxy:** Capable of adding a chain proxy to fix IP.
-9. **Supports Wide Range of Clients:** Offers subscription links.
-10. **Subscription Link (JSON):** Provides subscription link for JSON configs.
-11. **Singbox:** Features Singbox integration.
-12. **Password-Protected Panel:** Secure your panel with password protection.
-13. **Custom Cloudflare Clean IP:** Ability to use online scanner and setting up clean IP-domains.
+4. **Ad Blocking (Optional):** Option to block Ads.
+5. **Direct Iran (Optional):** Includes an option for direct access to Iran.
+6. **Full routing rules:** Bypassing Iran, Blocking Ads, Malwares, Phishing... for Sing-box.
+7. **Chain Proxy:** Capable of adding a chain proxy to fix IP.
+8. **Supports Wide Range of Clients:** Offers subscription links.
+9. **Subscription Link (JSON):** Provides subscription link for JSON configs.
+10. **Password-Protected Panel:** Secure your panel with password protection.
+11. **Custom Cloudflare Clean IP:** Ability to use online scanner and setting up clean IP-domains.
 <br>
 
 ## How to use:
