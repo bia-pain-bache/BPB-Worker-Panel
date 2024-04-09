@@ -1,6 +1,6 @@
 <h1 align="center">نصب از طریق Cloudflare Workers</h1>
 
-خب اول کد Worker رو از [اینجا](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/tag/v2.2) دانلود کنید و ببرید توی داشبورد ورکر کلادفلرو فایل رو آپلود کنید (چون کد خیلی زیاد شده Copy Paste کردن با گوشی خیلی سخت شده، با توجه به عکس زیر آپلود کنید)
+خب اول کد Worker رو از [اینجا](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/worker.js) دانلود کنید و ببرید توی داشبورد ورکر کلادفلرو فایل رو آپلود کنید (چون کد خیلی زیاد شده Copy Paste کردن با گوشی خیلی سخت شده، با توجه به عکس زیر آپلود کنید)
 
 <p align="center">
   <img src="assets/images/Worker_mobile_upload.jpg">
