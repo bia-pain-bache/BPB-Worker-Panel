@@ -65,7 +65,7 @@
 >اپلیکیشن‌های Nekobox و Hiddify Next این کانفیگا رو نداره چون Nekobox کلا فرگمنت رو پشتیبانی نمیکنه. برای برنامه‌ی Hiddify Next اول اول از ساب Normal کانفیگا رو بگیرید، بعد از تنظیمات خود اپلیکیشن باید Fragment رو اینجوری فعال کنید:
 
 <p align="center">
-  <img src="assets/images/fragment_settings.png">
+  <img src="assets/images/fragment_settings.jpg">
 </p>
 <br>
 
