@@ -1,26 +1,33 @@
  # مراحل نصب از طریق Cloudflare Worker
 
-خب اول کد Worker رو از [اینجا](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/download/v2.2/worker.js) دانلود کنید و ببرید توی داشبورد ورکر کلادفلرو فایل رو آپلود کنید (چون کد خیلی زیاد شده Copy Paste کردن با گوشی خیلی سخت شده، با توجه به عکس زیر آپلود کنید)
+خب اول کد Worker رو از [اینجا](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/tag/v2.2) دانلود کنید و ببرید توی داشبورد ورکر کلادفلرو فایل رو آپلود کنید (چون کد خیلی زیاد شده Copy Paste کردن با گوشی خیلی سخت شده، با توجه به عکس زیر آپلود کنید)
 
-![آپلود فایل Worker](https://telegra.ph/file/fd039bb86857e63263884.png)
+<p align="center">
+  <img src="assets/images/Worker_mobile_upload.jpg">
+</p>
 
-پنل با UUID و Proxy IP پیشفرض خودش کار میکنه و میتونید ادامه بدید، ولی اگر خواستید تغییر بدید به بخش [تنظیمات پیشرفته](https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/dev/docs/worker_installation_fa.md#%D8%AA%D9%86%D8%B8%DB%8C%D9%85%D8%A7%D8%AA-%D9%BE%DB%8C%D8%B4%D8%B1%D9%81%D8%AA%D9%87-%D8%A7%D8%AE%D8%AA%DB%8C%D8%A7%D8%B1%DB%8C) برید و برگردید اینجا.
+پنل با UUID و Proxy IP پیشفرض خودش کار میکنه و میتونید ادامه بدید، ولی اگر خواستید تغییر بدید به بخش [تنظیمات پیشرفته](#تنظیمات-پیشرفته-اختیاری) برید و برگردید اینجا.
 
  در نهایت ورکر رو `Save and Deploy` کنید.
 حالا از اینجا به داشبورد ورکر برگردید و این مراحل را دنبال کنید:
 
-![image](assets/images/navigate_worker.png)
+<p align="center">
+  <img src="assets/images/Navigate_worker_dash.jpg">
+</p>
 
 از این قسمت وارد صفحه `KV` بشید:
 
-![صفحه KV](assets/images/KV-Menu.png)
+<p align="center">
+  <img src="assets/images/Nav_dash_kv.jpg">
+</p>
 
 تو قسمت KV بزنید `Create a namespace` و یه اسم دلخواه وارد کنید مثلا Test و `Add` کنید.
 
 دوباره از منوی سمت چپ به قسمت `Workers & Pages` برید، ورکری که ساختید رو باز کنید، برید به قسمت `Settings` و `Variables` رو انتخاب کنید. یه کم بیاید پایین قسمت `KV Namespace Bindings` رو میبینید، روی `Add binding` بزنید و مطابق تصویر زیر از کشویی سمت راست اون KV که ساخته بودید انتخاب کنید (در مثال Test بود). چیزی که مهمه کشویی سمت چپه، حتما باید مقدارش رو بذارید `bpb` و `Save and Deploy` و تمام.
 
-
-![تنظیمات KV](assets/images/KV-link.png)
+<p align="center">
+  <img src="assets/images/Bind_kv.jpg">
+</p>
 
 برای مثال، فرض کنید دامنه‌ی ورکر شما هست worker-polished-leaf-d022.workers.dev، یه `panel/` تهش اضافه کنید و وارد پنل بشید. مثال:
 
@@ -36,11 +43,8 @@
 ### 1- تغییر UUID
 همونطور که میدونید UUID  مثل اسم رمزی میمونه که داخل لینک‌های اشتراک و کانفیگ ها قرار میگیره و شما در صورت نیاز میتونید تغییر بدید. در صورت تغییر این پارامتر اتصال کاربرهای شما قطع میشه  و لازم هست لینک اشتراک و یا کانفیگ ها رو مجددا در اختیارشون قرار بدید. در صورتی که این UUID رو در این مرحله تعریف نکنید هم کد از یک UUID پیشفرض استفاده خواهد کرد.
 
-تو خط 9 یه UUID هست و میتونید تغییرش ندید ولی ترجیحا اینجوری عوضش کنید: تو خط 9 یه آدرس وبسایت گذاشتم این پایین هم لینکش رو گذاشتیم، بازش کنید یه UUID بگیرید و کپی کنید تو خط 10 جای قبلی و تمام. ورکر رو Save and Deploy کنید.
+تو خط 9 یه UUID هست و میتونید تغییرش ندید ولی ترجیحا اینجوری عوضش کنید: از [اینجا](https://www.uuidgenerator.net/) (تو خط 9 کد هم هست) یه UUID بگیرید و کپی کنید تو خط 10 جای قبلی و تمام. ورکر رو Save and Deploy کنید.
 
->[UUID Generator](https://www.uuidgenerator.net/)
-
-![UUID Generator](assets/images/uuid-generator.png)
 
 
 ### 2- ثابت کردن Proxy IP
@@ -52,8 +56,9 @@
 
 >[Proxy IP](https://www.nslookup.io/domains/cdn-all.xn--b6gac.eu.org/dns-records/)
 
-![Image](assets/images/IP_Proxy.png)
-
+<p align="center">
+  <img src="assets/images/Proxy_ips.jpg">
+</p>
 
 متن اول خط 14 به این صورت است:
 
