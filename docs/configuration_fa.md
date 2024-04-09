@@ -60,8 +60,11 @@
 > [!NOTE]
 >اپلیکیشن‌های Nekobox و Hiddify Next این کانفیگا رو نداره چون Nekobox کلا فرگمنت رو پشتیبانی نمیکنه. برای برنامه‌ی Hiddify Next اول اول از ساب Normal کانفیگا رو بگیرید، بعد از تنظیمات خود اپلیکیشن باید Fragment رو اینجوری فعال کنید:
 
-![Image](assets/images/fragment_settings.png)
-<br><br>
+<p align="center">
+  <img src="assets/images/fragment_settings.png">
+</p>
+<br>
+
 ### 2-2- استفاده در DESKTOP
 
 ![Image](assets/images/Fragment-Configs.jpg)
@@ -143,6 +146,7 @@
 > `TCP Header`
 
 <br>
+
 ### 3-3- تنظیمات Routing
 
 این قسمت برای اینه که کانفیگای فرگمنت بتونن دو تا کار رو انجام بدن:
