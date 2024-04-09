@@ -13,9 +13,11 @@
 
 حالا بریم بخشای مختلف پنل رو بررسی کنیم:
 <br><br>
-## 1- کانفیگ های نرمال (بدون فرگمنت)
+## 1 - کانفیگ‌های نرمال
 
-![Normal Configs](assets/images/Normal-Configs.jpg)
+<p align="center">
+  <img src="assets/images/Normal-Configs.jpg">
+</p>
 
 از این بخش شروع کردم چون خیلیا بدون فرگمنت هم میتونن استفاده کنن.
 
@@ -30,7 +32,7 @@
 > [!WARNING]
 >با استفاده از این Worker مرتب IP دیوایس شما تغییر میکنه، بنابراین برای کارهایی مثل ترید و PayPal و حتی سایتهایی مثل Hetzner که حساس هستن ازش استفاده نکنید، امکان Ban شدن هست. در مورد فیکس کردن IP دو تا راه‌حل دادیم، یکی Proxy IP موقع راه‌اندازی و دومی Proxy Chain که [اینجا](#3-2--تنظیمات-chain-proxy) بیشتر توضیح دادیم.
 <br><br>
-## 2 - کانفیگ های فرگمنت (JSON)
+## 2 - سابسکریپشن و کانفیگ‌های Fragment
 
 > [!NOTE]
 > **خواص کانفیگای Fragment این پنل**
@@ -50,7 +52,9 @@
 <br><br>
 ### 2-1- استفاده روی موبایل
 
-![Image](assets/images/Fragment-Sub.jpg)
+<p align="center">
+  <img src="assets/images/Fragment-Sub.jpg">
+</p>
 
 یه جدول داریم که یه ساب میده و برای اپلیکیشن‌های v2rayNG و v2rayN و Streisand هست.
 وارد کردنش داخل اپ هم مثل ساب معمولیه.
@@ -65,9 +69,11 @@
 </p>
 <br>
 
-### 2-2- استفاده در DESKTOP
+### 2-2- استفاده در DESKTOP - Nekoray
 
-![Image](assets/images/Fragment-Configs.jpg)
+<p align="center">
+  <img src="assets/images/Fragment-Configs.jpg">
+</p>
 
 این بخش هم همون کانفیگ‌های فرگمنت رو میده برای برنامه‌ی Nekoray روی Windows و لینوکس.
 
@@ -79,11 +85,13 @@
    
 در اینجا هم دقت کنید که **Best Ping** را داریم.
 <br><br>
-## 3- تنظیمات پیشرفته
+## 3 - تنظیمات پیشرفته
 
 ### 3-1- تنظیمات فرگمنت
 
-![Image](assets/images/Fragment-Settings.jpg)
+<p align="center">
+  <img src="assets/images/Fragment-Settings.jpg">
+</p>
 
 این قسمت برای تنظیمات کانفیگای Fragment هست و تاثیری روی کانفیگ ها بخش نرمال نداره.
 
@@ -157,9 +165,9 @@
 > [!CAUTION]
 > اگر فعال کردید و VPN متصل نشد تنها دلیلش آپدیت نبودن Geo asset هست. از منوی برنامه‌ی v2rayNG وارد قسمت Geo asset files بشید و اون علامت ابر یا دانلود رو بزنید تا آپدیت بشن، اگر آپدیت ناموفق باشه وصل نمیشید. اگر هر کاری کردید آپدیت نشد دو تا فایل از دو تا لینک زیر دانلود کنید و بجای آپدیت زدن، دکمه اضافه کردن رو بزنید و این دوتا فایل رو وارد کنید:
 > 
->[https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat](https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat)
+>[geoip.dat](https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat)
 > 
->[https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat](https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat) 
+>[geosite.dat](https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat) 
 
 <br>
 ### 3-4- تنظیمات IP تمیز
@@ -180,7 +188,9 @@
 
 خب حالا اگر خواستید علاوه بر اون 6 تا کانفیگ دیگه ای اضافه کنید که با IP تمیز خودتون باشه، مطابق عکس IP یا دامین‌های تمیز خودتون رو با ویرگول وارد کنید و Apply بزنید، اسکنر آنلاین بچه‌های [IRCF](https://ircf.space) رو هم اضافه کردم:
 
-![Image](assets/images/clean_ip.png)
+<p align="center">
+  <img src="assets/images/Clean_ip_domain.jpg">
+</p>
 
 الان اگر توی اپلیکیشن Update subscription بزنید میبینید که کانفیگای جدید اضافه شدن.
 
