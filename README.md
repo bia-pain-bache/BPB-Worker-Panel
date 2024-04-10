@@ -29,15 +29,15 @@ This project is dedicated to developing a user panel for the [Cloudflare-workers
 <br>
 
 ## How to use:
-[Installation (Pages)](docs/pages_installation_fa.md)
+- [Installation (Pages)](docs/pages_installation_fa.md)
 
-[Installation (Worker)](docs/worker_installation_fa.md)
+- [Installation (Worker)](docs/worker_installation_fa.md)
 
-[How to use](docs/configuration_fa.md)
+- [How to use](docs/configuration_fa.md)
 
-[Troubleshooting](docs/troubleshooting.md)
+- [Troubleshooting](docs/troubleshooting.md)
 
-[FAQ](docs/faq.md)
+- [FAQ](docs/faq.md)
 
 ---
 
