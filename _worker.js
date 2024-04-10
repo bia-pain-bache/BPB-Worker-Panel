@@ -1800,7 +1800,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             const cleanIPs = cleanIP.value?.split(',');
             const chainProxy = document.getElementById('outProxy').value;                    
             const formData = new FormData(configForm);
-            const isVless = /vless:\\/\\/[^\s@]+@[^\s:]+:[^\s]+/.test(chainProxy);
+            const isVless = /vless:\\/\\/[^\s@]+@[^\\s:]+:[^\\s]+/.test(chainProxy);
             const hasSecurity = /security=/.test(chainProxy);
             const validSecurityType = /security=(tls|none|reality)/.test(chainProxy);
             const validTransmission = /type=(tcp|grpc|ws)/.test(chainProxy);
@@ -2430,49 +2430,57 @@ const singboxConfigTemp = {
                 type: "remote",
                 tag: "geosite-ir",
                 format: "binary",
-                url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-ir.srs"
+                url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-ir.srs",
+                download_detour: "direct"
             },
             {
                 type: "remote",
                 tag: "geosite-category-ads-all",
                 format: "binary",
-                url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-category-ads-all.srs"
+                url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-category-ads-all.srs",
+                download_detour: "direct"
             },
             {
                 type: "remote",
                 tag: "geosite-malware",
                 format: "binary",
-                url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-malware.srs"
+                url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-malware.srs",
+                download_detour: "direct"
             },
             {
                 type: "remote",
                 tag: "geosite-phishing",
                 format: "binary",
-                url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-phishing.srs"
+                url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-phishing.srs",
+                download_detour: "direct"
             },
             {
                 type: "remote",
                 tag: "geosite-cryptominers",
                 format: "binary",
-                url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-cryptominers.srs"
+                url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-cryptominers.srs",
+                download_detour: "direct"
             },
             {
                 type: "remote",
                 tag: "geoip-ir",
                 format: "binary",
-                url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-ir.srs"
+                url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-ir.srs",
+                download_detour: "direct"
             },
             {
                 type: "remote",
                 tag: "geoip-malware",
                 format: "binary",
-                url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-malware.srs"
+                url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-malware.srs",
+                download_detour: "direct"
             },
             {
                 type: "remote",
                 tag: "geoip-phishing",
                 format: "binary",
-                url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-phishing.srs"
+                url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-phishing.srs",
+                download_detour: "direct"
             }
         ],
         auto_detect_interface: true,
