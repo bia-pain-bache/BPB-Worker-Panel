@@ -46,31 +46,24 @@
 <br><br>
 
 ## استفاده
-[نصب به صورت Pages](docs/pages_installation_fa.md)
 
-[نصب به صورت Worker](docs/worker_installation_fa.md)
-
-[نحوه استفاده از پنل](docs/configuration.md)
-
-[رفع اشکال](docs/troubleshooting.md)
-
-[پرسش‌های متداول (FAQ)](docs/faq.md)
-
----
+- [نصب به صورت Pages](docs/pages_installation_fa.md)
+- [نصب به صورت Worker](docs/worker_installation_fa.md)
+- [نحوه استفاده از پنل](docs/configuration.md)
+- [رفع اشکال](docs/troubleshooting.md)
+- [پرسش‌های متداول (FAQ)](docs/faq.md)
+<br><br>
 
 ## تعداد ستاره‌ها به مرور زمان
+
 [![تعداد ستاره‌ها به مرور زمان](https://starchart.cc/bia-pain-bache/BPB-Worker-Panel.svg?variant=adaptive)](https://starchart.cc/bia-pain-bache/BPB-Worker-Panel)
 
----
 
 ### تشکر ویژه
-<div dir="rtl">
+
 - نویسنده کد CF-vless <a href="https://github.com/3Kmfi6HP/EDtunnel">3Kmfi6HP</a>
 - نویسنده برنامه IP ترجیحی CF <a href="https://github.com/badafans/Cloudflare-IP-SpeedTest">badafans</a>، <a href="https://github.com/XIU2/CloudflareSpeedTest">XIU2</a>
-</div>
 
----
 
-<div dir="rtl">
 برای آموزش جزئیات اسکریپت اصلی، لطفاً به <a href="https://ygkkk.blogspot.com/2023/07/cfworkers-vless.html">وبلاگ و آموزش‌های ویدیویی Yongge</a> مراجعه کنید.
-</div>
+
