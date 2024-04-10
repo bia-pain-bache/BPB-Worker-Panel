@@ -2321,7 +2321,7 @@ const singboxConfigTemp = {
             },
             {
                 outbound: "any",
-                server: "dns-remote"
+                server: "dns-direct"
             }
         ],
         strategy: "ipv4_only",
