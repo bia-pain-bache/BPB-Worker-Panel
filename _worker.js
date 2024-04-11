@@ -850,7 +850,7 @@ const getNormalConfigs = async (env, hostName, client) => {
         }&sni=${
             randomUpperCase(hostName)
         }&fp=randomized&alpn=http/1.1&path=${
-            encodeURIComponent(`/${getRandomPath(16)}?ed=2048`)
+            encodeURIComponent(`/${getRandomPath(16)}?ed=2560`)
         }#${encodeURIComponent(remark)}\n`;
     });
 
@@ -1006,7 +1006,7 @@ const getFragmentConfigs = async (env, hostName, client) => {
 
         let fragConfig = structuredClone(xrayConfigTemp);
         let outbound = structuredClone(xrayOutboundTemp);
-        let remark = `💦 BPB - ${addr}`;
+        let remark = `💦 BPB Frag - ${addr}`;
         delete outbound.mux;
         delete outbound.streamSettings.grpcSettings;
         delete outbound.streamSettings.realitySettings;
@@ -1016,7 +1016,7 @@ const getFragmentConfigs = async (env, hostName, client) => {
         outbound.settings.vnext[0].users[0].id = userID;
         outbound.streamSettings.tlsSettings.serverName = randomUpperCase(hostName);
         outbound.streamSettings.wsSettings.headers.Host = randomUpperCase(hostName);
-        outbound.streamSettings.wsSettings.path = `/${getRandomPath(16)}?ed=2048`;
+        outbound.streamSettings.wsSettings.path = `/${getRandomPath(16)}?ed=2560`;
         
         fragConfig.remarks = remark.length <= 30 ? remark : `${remark.slice(0,29)}...`;;
         fragConfig.dns.servers[0] = remoteDNS;
@@ -1798,7 +1798,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             const intervalMax = getValue('fragmentIntervalMax');
             const cleanIP = document.getElementById('cleanIPs');
             const cleanIPs = cleanIP.value?.split(',');
-            const chainProxy = document.getElementById('outProxy').value;                    
+            const chainProxy = document.getElementById('outProxy').value?.trim();                    
             const formData = new FormData(configForm);
             const isVless = /vless:\\/\\/[^\s@]+@[^\\s:]+:[^\\s]+/.test(chainProxy);
             const hasSecurity = /security=/.test(chainProxy);
@@ -2317,10 +2317,6 @@ const singboxConfigTemp = {
             },
             {
                 outbound: "direct",
-                server: "dns-direct"
-            },
-            {
-                outbound: "any",
                 server: "dns-direct"
             }
         ],
