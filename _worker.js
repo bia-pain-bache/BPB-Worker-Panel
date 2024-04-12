@@ -2357,11 +2357,11 @@ const singboxConfigTemp = {
         {
             type: "selector",
             tag: "proxy",
-            outbounds: ["URL-TEST"]
+            outbounds: ["Best-Ping"]
         },
         {
             type: "urltest",
-            tag: "URL-TEST",
+            tag: "Best-Ping",
             outbounds: [],
             url: "https://www.gstatic.com/generate_204",
             interval: "3m",
