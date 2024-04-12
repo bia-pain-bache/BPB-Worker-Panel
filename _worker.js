@@ -849,9 +849,7 @@ const getNormalConfigs = async (env, hostName, client) => {
             randomUpperCase(hostName)
         }&sni=${
             randomUpperCase(hostName)
-        }&fp=randomized&alpn=http/1.1&path=${
-            encodeURIComponent(`/${getRandomPath(16)}?ed=2560`)
-        }#${encodeURIComponent(remark)}\n`;
+        }&fp=randomized&alpn=http/1.1&path=/${getRandomPath(16)}#${encodeURIComponent(remark)}\n`;
     });
 
     const subscription = client === 'singbox' ? btoa(vlessWsTls) : btoa(vlessWsTls.replaceAll('http/1.1', 'h2,http/1.1'));
@@ -1016,7 +1014,7 @@ const getFragmentConfigs = async (env, hostName, client) => {
         outbound.settings.vnext[0].users[0].id = userID;
         outbound.streamSettings.tlsSettings.serverName = randomUpperCase(hostName);
         outbound.streamSettings.wsSettings.headers.Host = randomUpperCase(hostName);
-        outbound.streamSettings.wsSettings.path = `/${getRandomPath(16)}?ed=2560`;
+        outbound.streamSettings.wsSettings.path = `/${getRandomPath(16)}`;
         
         fragConfig.remarks = remark.length <= 30 ? remark : `${remark.slice(0,29)}...`;;
         fragConfig.dns.servers[0] = remoteDNS;
@@ -1131,6 +1129,7 @@ const getSingboxConfig = async (env, hostName) => {
         let outbound = structuredClone(singboxOutboundTemp);
         outbound.server = addr;
         outbound.tag = addr;
+        outbound.uuid = userID;
         outbound.tls.server_name = randomUpperCase(hostName);
         outbound.transport.headers.Host = randomUpperCase(hostName);
         outbound.transport.path += getRandomPath(16);
@@ -2320,7 +2319,6 @@ const singboxConfigTemp = {
                 server: "dns-direct"
             }
         ],
-        strategy: "ipv4_only",
         independent_cache: true
     },
     inbounds: [
@@ -2499,7 +2497,7 @@ const singboxOutboundTemp = {
     type: "vless",
     server: "",
     server_port: 443,
-    uuid: userID,
+    uuid: "",
     domain_strategy: "prefer_ipv6",
     packet_encoding: "",
     tls: {
