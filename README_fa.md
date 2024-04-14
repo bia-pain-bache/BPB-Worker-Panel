@@ -52,6 +52,7 @@
 <br>
 
 ## برنامه‌های پشتیبانی شده
+
 <div direction="rtl">
   
 - v2rayNG
@@ -59,6 +60,8 @@
 - Nekoray
   
 </div>
+
+
 
   
 <br><br>
