@@ -52,7 +52,7 @@
 <br>
 
 ## برنامه‌های پشتیبانی شده
-<div dir="rtl">
+<div direction="rtl">
   
 - v2rayNG
 - v2rayN
