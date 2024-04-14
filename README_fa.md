@@ -19,7 +19,6 @@
 <br>
 
 ## ویژگی‌ها
-
 <br>
 
 1- **رایگان**
@@ -45,13 +44,23 @@
 11- **دامنه و IP تمیز Cloudflare سفارشی:** قابلیت اسکن آنلاین و تنظیم IP یا دامنه‌ی تمیز Cloudflare را دارد.
 <br><br>
 
-## استفاده
-
+## نحوه‌ی راه‌اندازی، تنظیمات و استفاده
 - [نصب به صورت Pages](docs/pages_installation_fa.md)
 - [نصب به صورت Worker](docs/worker_installation_fa.md)
 - [نحوه استفاده از پنل](docs/configuration.md)
-- [رفع اشکال](docs/troubleshooting.md)
 - [پرسش‌های متداول (FAQ)](docs/faq.md)
+<br>
+
+## برنامه‌های پشتیبانی شده
+<div dir="rtl">
+  
+- v2rayNG
+- v2rayN
+- Nekoray
+  
+</div>
+
+  
 <br><br>
 
 ## تعداد ستاره‌ها به مرور زمان
