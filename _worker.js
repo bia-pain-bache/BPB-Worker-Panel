@@ -74,6 +74,7 @@ export default {
                     case '/panel':
 
                         if (!env.bpb) {
+                            const errorPage = getErrorPage('KV Dataset is not properly set!');
                             return new Response(errorPage, { status: 200, headers: {'Content-Type': 'text/html'}});
                         }
 
@@ -117,6 +118,7 @@ export default {
                     case '/login':
 
                         if (!env.bpb) {
+                            const errorPage = getErrorPage('KV Dataset is not properly set!');
                             return new Response(errorPage, { status: 200, headers: {'Content-Type': 'text/html'}});
                         }
 
@@ -219,7 +221,8 @@ export default {
             }
         } catch (err) {
             /** @type {Error} */ let e = err;
-            return new Response(e.toString());
+            const errorPage = getErrorPage('Something went wrong!', e.toString());
+            return new Response(errorPage, { status: 200, headers: {'Content-Type': 'text/html'}});
         }
     },
 };
@@ -803,7 +806,7 @@ const getNormalConfigs = async (env, hostName, client) => {
         }&sni=${
             randomUpperCase(hostName)
         }&fp=randomized&alpn=http/1.1&path=${
-            encodeURIComponent(`/${getRandomPath(16)}?ed=2048`)
+            encodeURIComponent(`/${getRandomPath(16)}?ed=2560`)
         }#${encodeURIComponent(remark)}\n`;
     });
 
@@ -969,7 +972,7 @@ const getFragmentConfigs = async (env, hostName, client) => {
         outbound.settings.vnext[0].users[0].id = userID;
         outbound.streamSettings.tlsSettings.serverName = randomUpperCase(hostName);
         outbound.streamSettings.wsSettings.headers.Host = randomUpperCase(hostName);
-        outbound.streamSettings.wsSettings.path = `/${getRandomPath(16)}?ed=2048`;
+        outbound.streamSettings.wsSettings.path = `/${getRandomPath(16)}?ed=2560`;
         
         fragConfig.remarks = remark.length <= 30 ? remark : `${remark.slice(0,29)}...`;;
         fragConfig.dns.servers[0] = remoteDNS;
@@ -989,8 +992,8 @@ const getFragmentConfigs = async (env, hostName, client) => {
         fragConfig.routing.rules.pop();
 
         if (!bypassIran) {
-            fragConfig.dns.servers[1].pop();
-            fragConfig.routing.rules[1].splice(1,1);
+            fragConfig.dns.servers.pop();
+            fragConfig.routing.rules.splice(1,1);
             fragConfig.routing.rules[1].ip = ["geoip:private"];
         }
 
@@ -1037,9 +1040,9 @@ const getFragmentConfigs = async (env, hostName, client) => {
     }
     
     if (!bypassIran) {
-        fragConfig.dns.servers[1].pop();
-        fragConfig.routing.rules[1].splice(1,1);
-        fragConfig.routing.rules[1].ip = ["geoip:private"];
+        bestPing.dns.servers.pop();
+        bestPing.routing.rules.splice(1,1);
+        bestPing.routing.rules[1].ip = ["geoip:private"];
     }
     
     if (proxyOutbound) {
@@ -2477,7 +2480,8 @@ const singboxOutboundTemp = {
     tag: ""
 };
 
-const errorPage = `
+const getErrorPage = (message, error) => {
+    return `
     <!DOCTYPE html>
     <html lang="en">
 
@@ -2495,14 +2499,8 @@ const errorPage = `
                 align-items: center;
                 font-family: system-ui;
             }
-            h1 {
-                text-align: center;
-                color: #2980b9;
-                font-size: 2.5rem;
-            }
-            #error-container {
-                text-align: center;
-            }
+            h1 { text-align: center; color: #2980b9; font-size: 2.5rem; }
+            #error-container { text-align: center; }
         </style>
     </head>
 
@@ -2510,9 +2508,11 @@ const errorPage = `
         <div id="error-container">
             <h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
             <div id="error-message">
-                <h2>KV Dataset is not properly set! Please refer to <a href="https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/README.md">documents</a></h2>
+                <h2>${message} Please try again or refer to <a href="https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/README.md">documents</a></h2>
+                <p><b>${error ? `⚠️ ${error}` : ''}</b></p>
             </div>
         </div>
     </body>
 
     </html>`;
+}
