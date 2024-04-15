@@ -1286,6 +1286,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                 'GRAD' 0,
                 'opsz' 24
             }
+            h1 { font-size: 2.5em; text-align: center; color: #09639f }
 			h2 { margin: 30px 0; text-align: center; color: #3b3b3b; }
 			hr { border: 1px solid #ddd; margin: 20px 0; }
             .footer {
@@ -1382,10 +1383,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 			}
             button.button:hover { color: white; }
 			.button:active,
-			table button:active {
-				transform: translateY(1px);
-				box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
-			}
+			table button:active { transform: translateY(1px); box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); }
 			.form-container {
 				max-width: 90%;
 				margin: 0 auto;
@@ -1398,6 +1396,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 			.table-container { margin-top: 20px; overflow-x: auto; }
 			table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
 			th, td { padding: 8px 15px; border-bottom: 1px solid #ddd; }
+            td div { display: flex; align-items: center; }
 			th { background-color: #3498db; color: white; font-weight: bold; font-size: 1.1rem; width: 50%;}
 			tr:nth-child(odd) { background-color: #f2f2f2; }
             #custom-configs-table td { text-align: center; }
@@ -1426,18 +1425,9 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                 left: 50%;
                 transform: translate(-50%, -50%);
             }
-            .close {
-                color: #aaa;
-                float: right;
-                font-size: 28px;
-                font-weight: bold;
-            }
+            .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
             .close:hover,
-            .close:focus {
-                color: black;
-                text-decoration: none;
-                cursor: pointer;
-            }
+            .close:focus { color: black; text-decoration: none; cursor: pointer; }
             .form-control label {
                 display: block;
                 margin-bottom: 5px;
@@ -1459,14 +1449,9 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             }
             .routing { display: flex; justify-content: center; align-items: center; margin-bottom: 15px; }
             .routing label { margin: 0; font-weight: 400; font-size: 100%; }
-            .form-control input[type="password"]:focus {
-                border-color: #3498db;
-                outline: none;
-            }
-            #passwordError {
-                color: red;
-                margin-bottom: 10px;
-            }
+            .form-control input[type="password"]:focus { border-color: #3498db; outline: none; }
+            #passwordError { color: red; margin-bottom: 10px; }
+            .symbol { margin-right: 8px; }
             @media only screen and (min-width: 768px) {
                 .form-container { max-width: 70%; }
                 #apply { display: block; margin: 30px auto 0 auto; max-width: 50%; }
@@ -1476,7 +1461,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 	</head>
 	
 	<body>
-		<h1 style="text-align: center; color: #2980b9">BPB Panel <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
+		<h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
 		<div class="form-container">
             <h2>FRAGMENT SETTINGS ⚙️</h2>
 			<form id="configForm">
@@ -1488,7 +1473,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 					<label for="localDNS">🏚️ Local DNS</label>
 					<input type="text" id="localDNS" name="localDNS" value="${localDNS}"
 						pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|localhost$"
-						title="Please enter a valid DNS IP Address!"  required>
+						title="Please enter a valid DNS IP Address or localhost!"  required>
 				</div>	
 				<div class="form-control">
 					<label for="fragmentLengthMin">📐 Length</label>
@@ -1554,24 +1539,24 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 					</tr>
 					<tr>
                         <td>
-                            <div style="display: flex; align-items: center;">
-                                <span class="material-symbols-outlined" style="margin-right: 8px;">verified</span>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
                                 <span>v2rayNG</span>
                             </div>
-                            <div style="display: flex; align-items: center;">
-                                <span class="material-symbols-outlined" style="margin-right: 8px;">verified</span>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
                                 <span>v2rayN</span>
                             </div>
-                            <div style="display: flex; align-items: center;">
-                                <span class="material-symbols-outlined" style="margin-right: 8px;">verified</span>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
                                 <span>Shadowrocket</span>
                             </div>
-                            <div style="display: flex; align-items: center;">
-                                <span class="material-symbols-outlined" style="margin-right: 8px;">verified</span>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
                                 <span>Streisand</span>
                             </div>
-                            <div style="display: flex; align-items: center;">
-                                <span class="material-symbols-outlined" style="margin-right: 8px;">verified</span>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
                                 <span>Nekoray (Xray)</span>
                             </div>
                         </td>
@@ -1584,16 +1569,16 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 					</tr>
 					<tr>
                         <td>
-                            <div style="display: flex; align-items: center;">
-                                <span class="material-symbols-outlined" style="margin-right: 8px;">verified</span>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
                                 <span>Nekobox</span>
                             </div>
-                            <div style="display: flex; align-items: center;">
-                                <span class="material-symbols-outlined" style="margin-right: 8px;">verified</span>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
                                 <span>Hiddify Next</span>
                             </div>
-                            <div style="display: flex; align-items: center;">
-                                <span class="material-symbols-outlined" style="margin-right: 8px;">verified</span>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
                                 <span>Nekoray (Sing-Box)</span>
                             </div>
                         </td>
@@ -1606,8 +1591,8 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 					</tr>
                     <tr>
                         <td>
-                            <div style="display: flex; align-items: center;">
-                                <span class="material-symbols-outlined" style="margin-right: 8px;">verified</span>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
                                 <span>Sing-box - <b>Best Ping</b></span>
                             </div>
                         </td>
@@ -1630,16 +1615,16 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                     </tr>
                     <tr>
                         <td style="text-wrap: nowrap;">
-                            <div style="display: flex; align-items: center;">
-                                <span class="material-symbols-outlined" style="margin-right: 8px;">verified</span>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
                                 <span>v2rayNG</span>
                             </div>
-                            <div style="display: flex; align-items: center;">
-                                <span class="material-symbols-outlined" style="margin-right: 8px;">verified</span>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
                                 <span>v2rayN</span>
                             </div>
-                            <div style="display: flex; align-items: center;">
-                                <span class="material-symbols-outlined" style="margin-right: 8px;">verified</span>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
                                 <span>Streisand</span>
                             </div>
                         </td>
@@ -1652,12 +1637,12 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                     </tr>
                 </table>
             </div>
-            <h2>FRAGMENT CONFIG ⛓️</h2>
+            <h2>FRAGMENT - NEKORAY ⛓️</h2>
             <div class="table-container">
 				<table id="custom-configs-table">
 					<tr style="text-wrap: nowrap;">
 						<th>Config Address</th>
-						<th>Nekoray Config</th>
+						<th>Fragment Config</th>
 					</tr>					
 					${await genCustomConfRow(fragConfigs)}
 				</table>
@@ -1784,8 +1769,8 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                 return false;
             }
 
-            if (lengthMin >= lengthMax || intervalMin >= intervalMax) {
-                alert('⛔ Minimum should be smaller than Maximum! 🫤');               
+            if (lengthMin >= lengthMax || intervalMin > intervalMax) {
+                alert('⛔ Minimum should be smaller or equal to Maximum! 🫤');               
                 return false;
             }
 
