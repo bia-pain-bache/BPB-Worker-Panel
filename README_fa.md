@@ -44,15 +44,15 @@
 ## برنامه‌های پشتیبانی شده
  
 <ul dir="rtl">
-  <li>v2rayNG</li>
-  <li>v2rayN</li>
-  <li>Nekobox</li>
-  <li>Sing-box</li>
-  <li>Streisand</li>
-  <li>V2Box</li>
-  <li>Shadowrocket</li>
-  <li>Nekoray</li>
-  <li>Hiddify</li>
+  <li><b>v2rayNG</b> (1.8.19 و بالاتر)</li>
+  <li><b>v2rayN</b> (6.42 و بالاتر)</li>
+  <li><b>Nekobox</b></li>
+  <li><b>Sing-box</b> (1.8.10 و بالاتر)</li>
+  <li><b>Streisand</b></li>
+  <li><b>V2Box</b></li>
+  <li><b>Shadowrocket</b></li>
+  <li><b>Nekoray</b></li>
+  <li><b>Hiddify</b></li>
 </ul>
 <br>
 
