@@ -17,7 +17,7 @@ let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 
 let dohURL = 'https://cloudflare-dns.com/dns-query';
 
-let panelVersion = '2.3.2';
+let panelVersion = '2.3.3';
 
 if (!isValidUUID(userID)) {
     throw new Error('uuid is not valid');
@@ -74,7 +74,7 @@ export default {
                     case '/panel':
 
                         if (!env.bpb) {
-                            const errorPage = getErrorPage('KV Dataset is not properly set!');
+                            const errorPage = renderErrorPage('KV Dataset is not properly set!');
                             return new Response(errorPage, { status: 200, headers: {'Content-Type': 'text/html'}});
                         }
 
@@ -118,7 +118,7 @@ export default {
                     case '/login':
 
                         if (!env.bpb) {
-                            const errorPage = getErrorPage('KV Dataset is not properly set!');
+                            const errorPage = renderErrorPage('KV Dataset is not properly set!');
                             return new Response(errorPage, { status: 200, headers: {'Content-Type': 'text/html'}});
                         }
 
@@ -221,7 +221,7 @@ export default {
             }
         } catch (err) {
             /** @type {Error} */ let e = err;
-            const errorPage = getErrorPage('Something went wrong!', e.toString());
+            const errorPage = renderErrorPage('Something went wrong!', e.toString());
             return new Response(errorPage, { status: 200, headers: {'Content-Type': 'text/html'}});
         }
     },
@@ -991,10 +991,15 @@ const getFragmentConfigs = async (env, hostName, client) => {
         delete fragConfig.routing.balancers;
         fragConfig.routing.rules.pop();
 
+        if (localDNS === 'localhost' && bypassIran) {
+            fragConfig.dns.servers.pop();
+            fragConfig.routing.rules.splice(0,1);
+        }
+
         if (!bypassIran) {
             fragConfig.dns.servers.pop();
-            fragConfig.routing.rules.splice(1,1);
-            fragConfig.routing.rules[1].ip = ["geoip:private"];
+            fragConfig.routing.rules.splice(0,2);
+            fragConfig.routing.rules[0].ip = ["geoip:private"];
         }
 
         if (!blockAds) {
@@ -1038,11 +1043,16 @@ const getFragmentConfigs = async (env, hostName, client) => {
         delete bestPing.dns.hosts;
         bestPing.routing.rules.splice(3,1);
     }
+
+    if (localDNS === 'localhost' && bypassIran) {
+        bestPing.dns.servers.pop();
+        bestPing.routing.rules.splice(0,1);
+    }
     
     if (!bypassIran) {
         bestPing.dns.servers.pop();
-        bestPing.routing.rules.splice(1,1);
-        bestPing.routing.rules[1].ip = ["geoip:private"];
+        bestPing.routing.rules.splice(0,2);
+        bestPing.routing.rules[0].ip = ["geoip:private"];
     }
     
     if (proxyOutbound) {
@@ -1477,7 +1487,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 				<div class="form-control">
 					<label for="localDNS">🏚️ Local DNS</label>
 					<input type="text" id="localDNS" name="localDNS" value="${localDNS}"
-						pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+						pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|localhost$"
 						title="Please enter a valid DNS IP Address!"  required>
 				</div>	
 				<div class="form-control">
@@ -2013,6 +2023,43 @@ const renderLoginPage = async () => {
     return html;
 }
 
+const renderErrorPage = (message, error) => {
+    return `
+    <!DOCTYPE html>
+    <html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Error Page</title>
+        <style>
+            body,
+            html {
+                height: 100%;
+                margin: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-family: system-ui;
+            }
+            h1 { text-align: center; color: #2980b9; font-size: 2.5rem; }
+            #error-container { text-align: center; }
+        </style>
+    </head>
+
+    <body>
+        <div id="error-container">
+            <h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
+            <div id="error-message">
+                <h2>${message} Please try again or refer to <a href="https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/README.md">documents</a></h2>
+                <p><b>${error ? `⚠️ ${error}` : ''}</b></p>
+            </div>
+        </div>
+    </body>
+
+    </html>`;
+}
+
 const xrayConfigTemp = {
     remarks: "",
     dns: {
@@ -2025,6 +2072,7 @@ const xrayConfigTemp = {
             {
                 address: "",
                 domains: ["geosite:category-ir", "domain:.ir"],
+                expectIPs: ["geoip:ir"],
                 port: 53
             },
         ],
@@ -2479,40 +2527,3 @@ const singboxOutboundTemp = {
     },
     tag: ""
 };
-
-const getErrorPage = (message, error) => {
-    return `
-    <!DOCTYPE html>
-    <html lang="en">
-
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Error Page</title>
-        <style>
-            body,
-            html {
-                height: 100%;
-                margin: 0;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                font-family: system-ui;
-            }
-            h1 { text-align: center; color: #2980b9; font-size: 2.5rem; }
-            #error-container { text-align: center; }
-        </style>
-    </head>
-
-    <body>
-        <div id="error-container">
-            <h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
-            <div id="error-message">
-                <h2>${message} Please try again or refer to <a href="https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/README.md">documents</a></h2>
-                <p><b>${error ? `⚠️ ${error}` : ''}</b></p>
-            </div>
-        </div>
-    </body>
-
-    </html>`;
-}
