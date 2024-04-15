@@ -54,55 +54,6 @@ export default {
                                 'Content-Type': 'application/json;charset=utf-8',
                             },
                         });
-
-                    case '/connect': // for test connect to cf socket
-
-                        const [hostname, port] = ['cloudflare.com', '80'];
-                        console.log(`Connecting to ${hostname}:${port}...`);
-
-                        try {
-                            const socket = await connect({
-                                hostname: hostname,
-                                port: parseInt(port, 10),
-                            });
-
-                            const writer = socket.writable.getWriter();
-
-                            try {
-                                await writer.write(
-                                    new TextEncoder().encode(
-                                        'GET / HTTP/1.1\r\nHost: ' + hostname + '\r\n\r\n'
-                                    )
-                                );
-                            } catch (writeError) {
-                                writer.releaseLock();
-                                await socket.close();
-                                return new Response(writeError.message, { status: 500 });
-                            }
-
-                            writer.releaseLock();
-
-                            const reader = socket.readable.getReader();
-                            let value;
-
-                            try {
-                                const result = await reader.read();
-                                value = result.value;
-                            } catch (readError) {
-                                await reader.releaseLock();
-                                await socket.close();
-                                return new Response(readError.message, { status: 500 });
-                            }
-
-                            await reader.releaseLock();
-                            await socket.close();
-
-                            return new Response(new TextDecoder().decode(value), {
-                                status: 200,
-                            });
-                        } catch (connectError) {
-                            return new Response(connectError.message, { status: 500 });
-                        }
                         
                     case `/sub/${userID}`:
 
@@ -1038,13 +989,13 @@ const getFragmentConfigs = async (env, hostName, client) => {
         fragConfig.routing.rules.pop();
 
         if (!bypassIran) {
-            fragConfig.dns.servers[1].domains = ["geosite:private"];
-            fragConfig.routing.rules[1].domain = ["geosite:private"];
-            fragConfig.routing.rules[2].ip = ["geoip:private"];
+            fragConfig.dns.servers[1].pop();
+            fragConfig.routing.rules[1].splice(1,1);
+            fragConfig.routing.rules[1].ip = ["geoip:private"];
         }
 
         if (!blockAds) {
-            fragConfig.dns.hosts = {"domain:googleapis.cn": "googleapis.com"};
+            delete fragConfig.dns.hosts;
             fragConfig.routing.rules.pop();
         }
 
@@ -1080,15 +1031,15 @@ const getFragmentConfigs = async (env, hostName, client) => {
     bestPing.routing.rules[0].ip = [localDNS];
     bestPing.outbounds = [...outbounds, ...bestPing.outbounds];
     
-    if (!bypassIran) {
-        bestPing.dns.servers[1].domains = ["geosite:private"];
-        bestPing.routing.rules[1].domain = ["geosite:private"];
-        bestPing.routing.rules[2].ip = ["geoip:private"];
+    if (!blockAds) {
+        delete bestPing.dns.hosts;
+        bestPing.routing.rules.splice(3,1);
     }
     
-    if (!blockAds) {
-        bestPing.dns.hosts = {"domain:googleapis.cn": "googleapis.com"};
-        bestPing.routing.rules.splice(3,1);
+    if (!bypassIran) {
+        fragConfig.dns.servers[1].pop();
+        fragConfig.routing.rules[1].splice(1,1);
+        fragConfig.routing.rules[1].ip = ["geoip:private"];
     }
     
     if (proxyOutbound) {
@@ -2064,15 +2015,13 @@ const xrayConfigTemp = {
     dns: {
         hosts: {
             "geosite:category-ads-all": "127.0.0.1",
-            "geosite:category-ads-ir": "127.0.0.1",
-            "domain:googleapis.cn": "googleapis.com"
+            "geosite:category-ads-ir": "127.0.0.1"
         },
         servers: [
             "",
             {
                 address: "",
-                domains: ["geosite:private", "geosite:category-ir", "domain:.ir"],
-                expectIPs: ["geoip:cn"],
+                domains: ["geosite:category-ir", "domain:.ir"],
                 port: 53
             },
         ],
@@ -2164,7 +2113,7 @@ const xrayConfigTemp = {
                 type: "field",
             },
             {
-                domain: ["geosite:private", "geosite:category-ir", "domain:.ir"],
+                domain: ["geosite:category-ir", "domain:.ir"],
                 outboundTag: "direct",
                 type: "field",
             },
