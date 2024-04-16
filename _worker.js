@@ -2120,7 +2120,8 @@ const xrayConfigTemp = {
             },
             streamSettings: {
                 sockopt: {
-                    tcpKeepAliveIdle: 100
+                    tcpKeepAliveIdle: 100,
+                    tcpNoDelay: true
                 },
             },
         }
@@ -2219,7 +2220,8 @@ const xrayOutboundTemp =
         security: "tls",
         sockopt: {
             dialerProxy: "fragment",
-            tcpKeepAliveIdle: 100
+            tcpKeepAliveIdle: 100,
+            tcpNoDelay: true
         },
         tlsSettings: {
             allowInsecure: false,
