@@ -916,6 +916,49 @@ const buildProxyOutbound = async (proxyParams) => {
     return proxyOutbound;
 }
 
+const buildWorkerLessConfig = async (env, client) => {
+    let proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
+    const { remoteDNS, lengthMin,  lengthMax,  intervalMin,  intervalMax, blockAds } = proxySettings;
+    
+    let fakeOutbound = structuredClone(xrayOutboundTemp);
+    delete fakeOutbound.mux;
+    fakeOutbound.settings.vnext[0].address = 'google.com';
+    fakeOutbound.settings.vnext[0].users[0].id = userID;
+    delete fakeOutbound.streamSettings.sockopt;
+    fakeOutbound.streamSettings.tlsSettings.serverName = 'google.com';
+    fakeOutbound.streamSettings.wsSettings.headers.Host = 'google.com';
+    fakeOutbound.streamSettings.wsSettings.path = '/?ed=2560';
+    delete fakeOutbound.streamSettings.grpcSettings;
+    delete fakeOutbound.streamSettings.tcpSettings;
+    delete fakeOutbound.streamSettings.realitySettings;
+    fakeOutbound.tag = 'fake-outbound';
+
+    let fragConfig = structuredClone(xrayConfigTemp);
+    fragConfig.remarks  = '💦 BPB Frag - WorkerLess ⭐'
+    fragConfig.dns.servers[0] = remoteDNS;
+    fragConfig.dns.servers.pop();
+    fragConfig.outbounds[0].settings.domainStrategy = 'UseIP';
+    fragConfig.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
+    fragConfig.outbounds[0].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
+    fragConfig.outbounds = [...fragConfig.outbounds, {...fakeOutbound}];
+    fragConfig.routing.rules.pop();
+    if (!blockAds) {
+        delete fragConfig.dns.hosts;
+        fragConfig.routing.rules.pop();
+    }
+    fragConfig.routing.rules[1].domain = ["domain:.ir"];
+    fragConfig.routing.rules.shift();
+    delete fragConfig.routing.balancers;
+    delete fragConfig.observatory;
+
+    if (client === 'nekoray') {
+        fragConfig.inbounds[0].port = 2080;
+        fragConfig.inbounds[1].port = 2081;
+    }
+
+    return fragConfig;
+}
+
 const getFragmentConfigs = async (env, hostName, client) => {
     let Configs = [];
     let outbounds = [];
@@ -977,8 +1020,8 @@ const getFragmentConfigs = async (env, hostName, client) => {
         fragConfig.remarks = remark.length <= 30 ? remark : `${remark.slice(0,29)}...`;;
         fragConfig.dns.servers[0] = remoteDNS;
         fragConfig.dns.servers[1].address = localDNS;
-        fragConfig.outbounds[2].settings.fragment.length = `${lengthMin}-${lengthMax}`;
-        fragConfig.outbounds[2].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
+        fragConfig.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
+        fragConfig.outbounds[0].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
         fragConfig.routing.rules[0].ip = [localDNS];
 
         if (proxyOutbound) {
@@ -1034,8 +1077,8 @@ const getFragmentConfigs = async (env, hostName, client) => {
     bestPing.remarks = '💦 BPB Frag - Best Ping 💥';
     bestPing.dns.servers[0] = remoteDNS;
     bestPing.dns.servers[1].address = localDNS;
-    bestPing.outbounds[2].settings.fragment.length = `${lengthMin}-${lengthMax}`;
-    bestPing.outbounds[2].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
+    bestPing.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
+    bestPing.outbounds[0].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
     bestPing.routing.rules[0].ip = [localDNS];
     bestPing.outbounds = [...outbounds, ...bestPing.outbounds];
     
@@ -1065,10 +1108,12 @@ const getFragmentConfigs = async (env, hostName, client) => {
         bestPing.inbounds[1].port = 2081;
     }
 
-    Configs.push({
-        address: "Best-Ping",
-        config: bestPing,
-    });
+    const workerLessConfig = await buildWorkerLessConfig(env, client);
+    
+    Configs.push(
+        { address: 'Best-Ping', config: bestPing}, 
+        { address: 'WorkerLess', config: workerLessConfig}
+    );
 
     return Configs;
 }
@@ -2093,22 +2138,6 @@ const xrayConfigTemp = {
     },
     outbounds: [
         {
-            protocol: "freedom",
-            settings: {
-                domainStrategy: "UseIP",
-            },
-            tag: "direct",
-        },
-        {
-            protocol: "blackhole",
-            settings: {
-                response: {
-                    type: "http",
-                },
-            },
-            tag: "block",
-        },
-        {
             tag: "fragment",
             protocol: "freedom",
             settings: {
@@ -2124,6 +2153,22 @@ const xrayConfigTemp = {
                     tcpNoDelay: true
                 },
             },
+        },
+        {
+            protocol: "freedom",
+            settings: {
+                domainStrategy: "UseIP",
+            },
+            tag: "direct",
+        },
+        {
+            protocol: "blackhole",
+            settings: {
+                response: {
+                    type: "http",
+                },
+            },
+            tag: "block",
         }
     ],
     policy: {
