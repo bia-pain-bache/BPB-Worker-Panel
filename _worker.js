@@ -940,7 +940,7 @@ const buildWorkerLessConfig = async (env, client) => {
     fragConfig.outbounds[0].settings.domainStrategy = 'UseIP';
     fragConfig.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
     fragConfig.outbounds[0].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
-    fragConfig.outbounds = [...fragConfig.outbounds, {...fakeOutbound}];
+    fragConfig.outbounds = [{...fragConfig.outbounds[0]}, {...fakeOutbound}, {...fragConfig.outbounds[1]}, {...fragConfig.outbounds[2]}];
     fragConfig.routing.rules.pop();
     if (!blockAds) {
         delete fragConfig.dns.hosts;
