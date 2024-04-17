@@ -1296,8 +1296,10 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             <tr>
                 <td>
                     ${config.address === 'Best-Ping' 
-                        ? `<div  style="display: flex; align-items: center; justify-content: center;"><span class="material-symbols-outlined">speed</span><span>&nbsp;<b>${config.address}</b></span></div>` 
-                        : config.address
+                        ? `<div  style="justify-content: center;"><span class="material-symbols-outlined">speed</span><span>&nbsp;<b>Best-Ping</b></span></div>` 
+                        : config.address === 'WorkerLess'
+                            ? `<div  style="justify-content: center;"><span class="material-symbols-outlined">star</span><span>&nbsp;<b>WorkerLess</b></span></div>`
+                            : config.address
                     }
                 </td>
                 <td>
