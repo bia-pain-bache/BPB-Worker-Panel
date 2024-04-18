@@ -39,15 +39,17 @@ This project is dedicated to developing a user panel for the [Cloudflare-workers
 <br>
 
 ## Supported Clients
-- **v2rayNG** (1.8.19 or higher)
-- **v2rayN** (6.42 or higher)
-- **Nekobox**
-- **Sing-box** (1.8.10 or higher)
-- **Streisand**
-- **V2Box**
-- **Shadowrocket**
-- **Nekoray**
-- **Hiddify**
+| Client  | Version | Fragment |
+| :-------------: | :-------------: | :-------------: |
+| **v2rayNG**  | 1.8.19 or higher  | :white_check_mark: |
+| **v2rayN**  | 6.42 or higher  | :white_check_mark: |
+| **Nekobox**  |   | :x: |
+| **Sing-box**  | 1.8.10 or higher  | :x: |
+| **Streisand**  |   | :white_check_mark: |
+| **V2Box**  |   | :x: |
+| **Shadowrocket**  |   | :x: |
+| **Nekoray**  |   | :white_check_mark: |
+
 
 ---
 
