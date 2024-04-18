@@ -49,6 +49,7 @@ This project is dedicated to developing a user panel for the [Cloudflare-workers
 | **V2Box**  |   | :x: |
 | **Shadowrocket**  |   | :x: |
 | **Nekoray**  |   | :white_check_mark: |
+| **Hiddify**  |   | :x: |
 
 
 ---
