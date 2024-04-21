@@ -74,35 +74,27 @@ export default {
                     case '/panel':
 
                         if (!env.bpb) {
-                            const errorPage = renderErrorPage('KV Dataset is not properly set!');
+                            const errorPage = renderErrorPage('KV Dataset is not properly set!', null, true);
                             return new Response(errorPage, { status: 200, headers: {'Content-Type': 'text/html'}});
                         }
 
-                        if (request.method === 'POST') {    
-
-                            if (!(await Authenticate(request, env))) {                            
-                                return new Response('Unauthorized', { status: 401 });  
-                            }
+                        let isAuth = await Authenticate(request, env); 
+                        
+                        if (request.method === 'POST') {
                             
+                            if (!isAuth) return new Response('Unauthorized', { status: 401 });             
                             const formData = await request.formData();
                             await updateDataset(env, formData);
 
                             return new Response('Success', { status: 200 });
                         }
-                            
+                        
+                        if (!isAuth) return Response.redirect(`${url.origin}/login`, 302);
+                        if (! await env.bpb.get('proxySettings')) await updateDataset(env);
+                        let fragConfs = await getFragmentConfigs(env, host, 'nekoray');
+                        let homePage = await renderHomePage(env, host, fragConfs);
 
-                        if (!(await Authenticate(request, env))) {
-                            return Response.redirect(`${url.origin}/login`, 302);        
-                        }
-
-                        if (! await env.bpb.get('proxySettings')) {
-                            await updateDataset(env);
-                        }
-
-                        const fragConfs = await getFragmentConfigs(env, host, 'nekoray');                        
-                        const htmlPage = await renderHomePage(env, host, fragConfs);
-
-                        return new Response(htmlPage, {
+                        return new Response(homePage, {
                             status: 200,
                             headers: {
                                 'Content-Type': 'text/html',
@@ -117,26 +109,27 @@ export default {
                                                       
                     case '/login':
 
+                        let secretKey;
                         if (!env.bpb) {
-                            const errorPage = renderErrorPage('KV Dataset is not properly set!');
+                            const errorPage = renderErrorPage('KV Dataset is not properly set!', null, true);
                             return new Response(errorPage, { status: 200, headers: {'Content-Type': 'text/html'}});
                         }
 
-                        if (await Authenticate(request, env)) {
-                            return Response.redirect(`${url.origin}/panel`, 302);       
-                        }
+                        let loginAuth = await Authenticate(request, env);
+                        if (loginAuth) return Response.redirect(`${url.origin}/panel`, 302);
 
-                        let secretKey = await env.bpb.get('secretKey');
-                        let pwd = await env.bpb.get('pwd');
-
-
-                        if (!pwd) {
-                            await env.bpb.put('pwd', 'admin');
-                        }
-
-                        if (!secretKey) {
-                            secretKey = generateSecretKey();
-                            await env.bpb.put('secretKey', secretKey);
+                        try {
+                            secretKey = await env.bpb.get('secretKey');
+                            const pwd = await env.bpb.get('pwd');
+                            if (!pwd) await env.bpb.put('pwd', 'admin');
+    
+                            if (!secretKey) {
+                                secretKey = generateSecretKey();
+                                await env.bpb.put('secretKey', secretKey);
+                            }
+                        } catch (error) {
+                            console.log(error);
+                            throw new Error(`An error occurred while login - ${error}`);
                         }
 
 
@@ -187,17 +180,11 @@ export default {
 
                     case '/panel/password':
 
-                        if (!(await Authenticate(request, env))) {                            
-                            return new Response('Unauthorized!', { status: 401 });  
-                        }
-                        
+                        let passAuth = await Authenticate(request, env);
+                        if (!passAuth) return new Response('Unauthorized!', { status: 401 });           
                         const newPwd = await request.text();
                         const oldPwd = await env.bpb.get('pwd');
-
-                        if (newPwd === oldPwd) {
-                            return new Response('Please enter a new Password!', { status: 400 });
-                        }
-
+                        if (newPwd === oldPwd) return new Response('Please enter a new Password!', { status: 400 });
                         await env.bpb.put('pwd', newPwd);
 
                         return new Response('Success', {
@@ -210,7 +197,6 @@ export default {
 
                     default:
                         // return new Response('Not found', { status: 404 });
-                        // For any other path, reverse proxy to 'www.fmprc.gov.cn' and return the original response
                         url.hostname = 'www.speedtest.net';
                         url.protocol = 'https:';
                         request = new Request(url, request);
@@ -221,7 +207,7 @@ export default {
             }
         } catch (err) {
             /** @type {Error} */ let e = err;
-            const errorPage = renderErrorPage('Something went wrong!', e.toString());
+            const errorPage = renderErrorPage('Something went wrong!', e.message.toString(), false);
             return new Response(errorPage, { status: 200, headers: {'Content-Type': 'text/html'}});
         }
     },
@@ -786,8 +772,17 @@ async function handleUDPOutBound(webSocket, vlessResponseHeader, log) {
  */
 
 const getNormalConfigs = async (env, hostName, client) => {
+    let proxySettings = {};
     let vlessWsTls = '';
-    const { cleanIPs } = await env.bpb.get("proxySettings", {type: 'json'});
+
+    try {
+        proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
+    } catch (error) {
+        console.log(error);
+        throw new Error(`An error occurred while getting normal configs - ${error}`);
+    }
+
+    const { cleanIPs } = proxySettings;
     const resolved = await resolveDNS(hostName);
     const Addresses = [
         hostName,
@@ -917,9 +912,16 @@ const buildProxyOutbound = async (proxyParams) => {
 }
 
 const buildWorkerLessConfig = async (env, client) => {
-    let proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
-    const { remoteDNS, lengthMin,  lengthMax,  intervalMin,  intervalMax, blockAds } = proxySettings;
-    
+    let proxySettings = {};
+
+    try {
+        proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
+    } catch (error) {
+        console.log(error);
+        throw new Error(`An error occurred while generating WorkerLess config - ${error}`);
+    }
+
+    const { remoteDNS, lengthMin,  lengthMax,  intervalMin,  intervalMax, blockAds } = proxySettings;  
     let fakeOutbound = structuredClone(xrayOutboundTemp);
     delete fakeOutbound.mux;
     fakeOutbound.settings.vnext[0].address = 'google.com';
@@ -962,7 +964,16 @@ const buildWorkerLessConfig = async (env, client) => {
 const getFragmentConfigs = async (env, hostName, client) => {
     let Configs = [];
     let outbounds = [];
-    let proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
+    let proxySettings = {};
+    let proxyOutbound;
+
+    try {
+        proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
+    } catch (error) {
+        console.log(error);
+        throw new Error(`An error occurred while getting fragment configs - ${error}`);
+    }
+
     const {
         remoteDNS, 
         localDNS, 
@@ -977,7 +988,6 @@ const getFragmentConfigs = async (env, hostName, client) => {
         outProxyParams
     } = proxySettings;
 
-    let proxyOutbound;
     const resolved = await resolveDNS(hostName);
     const Addresses = [
         hostName,
@@ -992,7 +1002,7 @@ const getFragmentConfigs = async (env, hostName, client) => {
         try {
             proxyOutbound = await buildProxyOutbound(proxyParams);
         } catch (error) {
-            console.log(error);
+            console.log('An error occured while parsing chain proxy: ', error);
             proxyOutbound = undefined;
             await env.bpb.put("proxySettings", JSON.stringify({
                 ...proxySettings, 
@@ -1119,12 +1129,16 @@ const getFragmentConfigs = async (env, hostName, client) => {
 }
 
 const getSingboxConfig = async (env, hostName) => {
-    const {
-        remoteDNS, 
-        localDNS,
-        cleanIPs
-    } = await env.bpb.get("proxySettings", {type: 'json'});
+    let proxySettings = {};
+    
+    try {
+        proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
+    } catch (error) {
+        console.log(error);
+        throw new Error(`An error occurred while getting sing-box configs - ${error}`);
+    }
 
+    const { remoteDNS,  localDNS, cleanIPs } = proxySettings
     let config = structuredClone(singboxConfigTemp);
     config.dns.servers[0].address = remoteDNS;
     config.dns.servers[1].address = localDNS;
@@ -1174,7 +1188,8 @@ const updateDataset = async (env, Settings) => {
     try {    
         await env.bpb.put("proxySettings", JSON.stringify(proxySettings));          
     } catch (error) {
-        throw new error(error);
+        console.log(error);
+        throw new Error(`An error occurred while updating KV - ${error}`);
     }
 }
 
@@ -1219,6 +1234,7 @@ const resolveDNS = async (domain) => {
         return { ipv4, ipv6 };
     } catch (error) {
         console.error('Error resolving DNS:', error);
+        throw new Error(`An error occurred while resolving DNS - ${error}`);
     }
 }
 
@@ -1246,14 +1262,17 @@ const generateSecretKey = () => {
 }
   
 const Authenticate = async (request, env) => {
-    const secretKey = await env.bpb.get('secretKey');
-
+    
     try {
+        const secretKey = await env.bpb.get('secretKey');
         const cookie = request.headers.get('Cookie');
         const cookieMatch = cookie ? cookie.match(/(^|;\s*)jwtToken=([^;]*)/) : null;
         const token = cookieMatch ? cookieMatch.pop() : null;
 
-        if (!token) return false;
+        if (!token) {
+            console.log('token');
+            return false;
+        }
 
         const tokenWithoutBearer = token.startsWith('Bearer ') ? token.slice(7) : token;
         const [encodedHeader, encodedPayload, signature] = tokenWithoutBearer.split('.');
@@ -1271,11 +1290,21 @@ const Authenticate = async (request, env) => {
 
         return true;
     } catch (error) {
-        return false;
+        console.log(error);
+        throw new Error(`An error occurred while authentication - ${error}`);
     }
 }
 
 const renderHomePage = async (env, hostName, fragConfigs) => {
+    let proxySettings = {};
+    
+    try {
+        proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
+    } catch (error) {
+        console.log(error);
+        throw new Error(`An error occurred while rendering home page - ${error}`);
+    }
+
     const {
         remoteDNS, 
         localDNS, 
@@ -1287,7 +1316,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
         bypassIran,
         cleanIPs,
         outProxy
-    } = await env.bpb.get("proxySettings", {type: 'json'});
+    } = proxySettings;
 
     const genCustomConfRow = async (configs) => {
         let tableBlock = "";
@@ -2113,7 +2142,7 @@ const renderLoginPage = async () => {
     return html;
 }
 
-const renderErrorPage = (message, error) => {
+const renderErrorPage = (message, error, refer) => {
     return `
     <!DOCTYPE html>
     <html lang="en">
@@ -2141,7 +2170,10 @@ const renderErrorPage = (message, error) => {
         <div id="error-container">
             <h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
             <div id="error-message">
-                <h2>${message} Please try again or refer to <a href="https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/README.md">documents</a></h2>
+                <h2>${message} ${refer 
+                    ? 'Please try again or refer to <a href="https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/README.md">documents</a>' 
+                    : ''}
+                </h2>
                 <p><b>${error ? `⚠️ ${error}` : ''}</b></p>
             </div>
         </div>
