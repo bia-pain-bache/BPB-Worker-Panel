@@ -927,7 +927,7 @@ const buildWorkerLessConfig = async (env, client) => {
     delete fakeOutbound.streamSettings.sockopt;
     fakeOutbound.streamSettings.tlsSettings.serverName = 'google.com';
     fakeOutbound.streamSettings.wsSettings.headers.Host = 'google.com';
-    fakeOutbound.streamSettings.wsSettings.path = '/?ed=2560';
+    fakeOutbound.streamSettings.wsSettings.path = '/';
     delete fakeOutbound.streamSettings.grpcSettings;
     delete fakeOutbound.streamSettings.tcpSettings;
     delete fakeOutbound.streamSettings.realitySettings;
@@ -1321,6 +1321,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>BPB Panel ${panelVersion}</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 		<style>
@@ -1333,7 +1334,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                 'GRAD' 0,
                 'opsz' 24
             }
-            h1 { font-size: 2.5em; text-align: center; color: #09639f }
+            h1 { font-size: 2.5em; text-align: center; color: #09639f; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25); }
 			h2 { margin: 30px 0; text-align: center; color: #3b3b3b; }
 			hr { border: 1px solid #ddd; margin: 20px 0; }
             .footer {
@@ -1462,7 +1463,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             .modal-content {
                 background-color: #f9f9f9;
                 margin: auto;
-                padding: 20px;
+                padding: 10px 20px 20px;
                 border: 1px solid #eaeaea;
                 border-radius: 10px;
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -1499,6 +1500,17 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             .form-control input[type="password"]:focus { border-color: #3498db; outline: none; }
             #passwordError { color: red; margin-bottom: 10px; }
             .symbol { margin-right: 8px; }
+            .modalQR {
+                display: none;
+                position: fixed;
+                z-index: 1;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                overflow: auto;
+                background-color: rgba(0, 0, 0, 0.4);
+            }
             @media only screen and (min-width: 768px) {
                 .form-container { max-width: 70%; }
                 #apply { display: block; margin: 30px auto 0 auto; max-width: 50%; }
@@ -1534,10 +1546,10 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 					<label for="fragmentIntervalMin">🕞 Interval</label>
 					<div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;">
 						<input type="number" id="fragmentIntervalMin" name="fragmentIntervalMin"
-						value="${intervalMin}" max="30" required>
+    						value="${intervalMin}" max="30" required>
 						<span style="text-align: center; white-space: pre;"> - </span>
 						<input type="number" id="fragmentIntervalMax" name="fragmentIntervalMax"
-						value="${intervalMax}" max="30" required>
+    						value="${intervalMax}" max="30" required>
 					</div>
 				</div>
 				<div class="form-control">
@@ -1575,8 +1587,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 					</div>
 				</div>
 			</form>
-            <hr>
-            
+            <hr>            
 			<h2>NORMAL CONFIGS 🔗</h2>
 			<div class="table-container">
 				<table id="normal-configs-table">
@@ -1604,13 +1615,19 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                             </div>
                             <div>
                                 <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Hiddify</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
                                 <span>Nekoray (Xray)</span>
                             </div>
                         </td>
 						<td>
-                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}#BPB%20Normal', false)">
-                                Copy Sub
-                                <span class="material-symbols-outlined">format_list_bulleted</span>
+                            <button onclick="openQR('https://${hostName}/sub/${userID}#BPB-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
+                                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
+                            </button>
+                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}#BPB-Normal', false)">
+                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
 					</tr>
@@ -1622,17 +1639,12 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                             </div>
                             <div>
                                 <span class="material-symbols-outlined symbol">verified</span>
-                                <span>Hiddify Next</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
                                 <span>Nekoray (Sing-Box)</span>
                             </div>
                         </td>
 						<td>
                             <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=singbox#BPB-Normal', false)">
-                                Copy Sub
-                                <span class="material-symbols-outlined">format_list_bulleted</span>
+                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
 						</td>
 					</tr>
@@ -1644,9 +1656,11 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                             </div>
                         </td>
                         <td>
+                            <button onclick="openQR('sing-box://import-remote-profile?url=https://${hostName}/sub/${userID}?app=sfa#BPB-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
+                                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
+                            </button>
                             <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=sfa#BPB-Normal', false)">
-                                Copy Sub
-                                <span class="material-symbols-outlined">format_list_bulleted</span>
+                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
                     </tr>
@@ -1676,9 +1690,11 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                             </div>
                         </td>
                         <td>
+                            <button onclick="openQR('https://${hostName}/fragsub/${userID}#BPB Fragment', 'Fragment Subscription')" style="margin-bottom: 8px;">
+                                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
+                            </button>
                             <button onclick="copyToClipboard('https://${hostName}/fragsub/${userID}#BPB Fragment', true)">
-                                Copy Sub
-                                <span class="material-symbols-outlined">format_list_bulleted</span>
+                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
                     </tr>
@@ -1696,20 +1712,29 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 			</div>
             <div id="myModal" class="modal">
                 <div class="modal-content">
-                <span class="close">&times;</span>
-                <form id="passwordChangeForm">
-                    <h2>Change Password</h2>
-                    <div class="form-control">
-                        <label for="newPassword">New Password</label>
-                        <input type="password" id="newPassword" name="newPassword" required>
+                    <span class="close">&times;</span>
+                    <form id="passwordChangeForm">
+                        <h2>Change Password</h2>
+                        <div class="form-control">
+                            <label for="newPassword">New Password</label>
+                            <input type="password" id="newPassword" name="newPassword" required>
+                            </div>
+                        <div class="form-control">
+                            <label for="confirmPassword">Confirm Password</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" required>
                         </div>
-                    <div class="form-control">
-                        <label for="confirmPassword">Confirm Password</label>
-                        <input type="password" id="confirmPassword" name="confirmPassword" required>
+                        <div id="passwordError" style="color: red; margin-bottom: 10px;"></div>
+                        <button id="changePasswordBtn" type="submit" class="button">Change Password</button>
+                    </form>
+                </div>
+            </div>
+            <div id="myQRModal" class="modalQR">
+                <div class="modal-content" style="width: auto; text-align: center;">
+                    <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 10px;">
+                        <span id="closeQRModal" class="close" style="align-self: flex-end;">&times;</span>
+                        <span id="qrcodeTitle" style="align-self: center; font-weight: bold;"></span>
                     </div>
-                    <div id="passwordError" style="color: red; margin-bottom: 10px;"></div>
-                    <button id="changePasswordBtn" type="submit" class="button">Change Password</button>
-                </form>
+                    <div id="qrcode-container"></div>
                 </div>
             </div>
             <div class="footer">
@@ -1721,7 +1746,8 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                 </button>
             </div>
         </div>
-
+        
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 	<script>
 		document.addEventListener('DOMContentLoaded', () => {
             const configForm = document.getElementById('configForm');            
@@ -1731,6 +1757,9 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             const passwordChangeForm = document.getElementById('passwordChangeForm');            
             const applyBtn = document.getElementById('applyButton');         
             const initialFormData = new FormData(configForm);
+            const closeQR = document.getElementById("closeQRModal");
+            let modalQR = document.getElementById("myQRModal");
+            let qrcodeContainer = document.getElementById("qrcode-container");
           
             const hasFormDataChanged = () => {
                 const currentFormData = new FormData(configForm);
@@ -1772,8 +1801,37 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                 modal.style.display = "none";
                 document.body.style.overflow = "";
             });
-
+            closeQR.addEventListener('click', () => {
+                modalQR.style.display = "none";
+                qrcodeContainer.lastElementChild.remove();
+            });
+            window.onclick = (event) => {
+                if (event.target == modalQR) {
+                    modalQR.style.display = "none";
+                    qrcodeContainer.lastElementChild.remove();
+                }
+            }
 		});
+
+        const openQR = (url, title) => {
+            let qrcodeContainer = document.getElementById("qrcode-container");
+            let qrcodeTitle = document.getElementById("qrcodeTitle");
+            const modalQR = document.getElementById("myQRModal");
+
+            qrcodeTitle.textContent = title;
+            modalQR.style.display = "block";
+            let qrcodeDiv = document.createElement("div");
+            qrcodeDiv.className = "qrcode";
+            new QRCode(qrcodeDiv, {
+                text: url,
+                width: 256,
+                height: 256,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            qrcodeContainer.appendChild(qrcodeDiv);
+        }
 
 		const copyToClipboard = (text, decode) => {
             const textarea = document.createElement('textarea');
