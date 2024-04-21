@@ -43,7 +43,7 @@
 ## نحوه‌ی راه‌اندازی، تنظیمات و استفاده
 - [نصب به صورت Pages](docs/pages_installation_fa.md)
 - [نصب به صورت Worker](docs/worker_installation_fa.md)
-- [نحوه استفاده از پنل](docs/configuration.md)
+- [نحوه استفاده از پنل](docs/configuration_fa.md)
 - [پرسش‌های متداول (FAQ)](docs/faq.md)
 <br>
 
@@ -59,12 +59,12 @@
     <tr>
       <td><b>v2rayNG</b></td>
       <td>1.8.19 و بالاتر</td>
-      <td>✅</td>
+      <td>✔️</td>
     </tr>
     <tr>
       <td><b>v2rayN</b></td>
       <td>6.42 و بالاتر</td>
-      <td>✅</td>
+      <td>✔️</td>
     </tr>
     <tr>
       <td><b>Nekobox</b></td>
@@ -79,7 +79,7 @@
     <tr>
       <td><b>Streisand</b></td>
       <td></td>
-      <td>✅</td>
+      <td>✔️</td>
     </tr>
     <tr>
       <td><b>V2Box</b></td>
@@ -94,7 +94,7 @@
     <tr>
       <td><b>Nekoray</b></td>
       <td></td>
-      <td>✅</td>
+      <td>✔️</td>
     </tr>
     <tr>
       <td><b>Hiddify</b></td>
