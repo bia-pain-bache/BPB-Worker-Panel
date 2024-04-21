@@ -13,6 +13,10 @@ This project is dedicated to developing a user panel for the [Cloudflare-workers
 - **Pages** deployment
 <br>
 
+🌟 If you found **BPB Panel** valuable, Your donations make all the difference 🌟
+- **USDT (TRC20):** `TUeGCozCNL1s5XqGkZ1DtKuCnugJaDnYcc`
+- **Tezos (XTZ):** `tz1RSFQ8jDTZC2UZPwHy55D9XvfnW9KqfZb1`
+
 ## Features
 
 1. **Free**: No cost involved.

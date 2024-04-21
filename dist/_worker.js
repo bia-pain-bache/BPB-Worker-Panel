@@ -17,7 +17,7 @@ let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 
 let dohURL = 'https://cloudflare-dns.com/dns-query';
 
-let panelVersion = '2.3.3';
+let panelVersion = '2.3.4';
 
 if (!isValidUUID(userID)) {
     throw new Error('uuid is not valid');
@@ -2436,7 +2436,7 @@ const singboxConfigTemp = {
             endpoint_independent_nat: true,
             stack: "mixed",
             sniff: true,
-            sniff_override_destination: false
+            sniff_override_destination: true
         },
         {
             type: "mixed",
@@ -2444,7 +2444,7 @@ const singboxConfigTemp = {
             listen: "127.0.0.1",
             listen_port: 2080,
             sniff: true,
-            sniff_override_destination: false
+            sniff_override_destination: true
         }
     ],
     outbounds: [

@@ -17,6 +17,12 @@
 - راه‌اندازی با **Cloudflare Worker**
 <br>
 
+🌟 اگر پروژه‌ی **BPB Panel** براتون مفید بوده، حمایت شما مایه‌ی دلگرمی من هست 🌟
+<ul dir="rtl">
+  <li><code>TUeGCozCNL1s5XqGkZ1DtKuCnugJaDnYcc</code> <strong>:USDT (TRC20)</strong></li>
+  <li><code>tz1RSFQ8jDTZC2UZPwHy55D9XvfnW9KqfZb1</code> <strong>:Tezos (XTZ)</strong></li>
+</ul>
+
 ## ویژگی‌ها
 <br>
 <ol dir="rtl">
