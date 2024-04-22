@@ -17,6 +17,12 @@
 - راه‌اندازی با **Cloudflare Worker**
 <br>
 
+🌟 اگر پروژه‌ی **BPB Panel** براتون مفید بوده، حمایت شما مایه‌ی دلگرمی من هست 🌟
+<ul dir="rtl">
+  <li><code>TUeGCozCNL1s5XqGkZ1DtKuCnugJaDnYcc</code> <strong>:USDT (TRC20)</strong></li>
+  <li><code>tz1RSFQ8jDTZC2UZPwHy55D9XvfnW9KqfZb1</code> <strong>:Tezos (XTZ)</strong></li>
+</ul>
+
 ## ویژگی‌ها
 <br>
 <ol dir="rtl">
@@ -37,24 +43,67 @@
 ## نحوه‌ی راه‌اندازی، تنظیمات و استفاده
 - [نصب به صورت Pages](docs/pages_installation_fa.md)
 - [نصب به صورت Worker](docs/worker_installation_fa.md)
-- [نحوه استفاده از پنل](docs/configuration.md)
+- [نحوه استفاده از پنل](docs/configuration_fa.md)
 - [پرسش‌های متداول (FAQ)](docs/faq.md)
 <br>
 
 ## برنامه‌های پشتیبانی شده
- 
-<ul dir="rtl">
-  <li><b>v2rayNG</b> (1.8.19 و بالاتر)</li>
-  <li><b>v2rayN</b> (6.42 و بالاتر)</li>
-  <li><b>Nekobox</b></li>
-  <li><b>Sing-box</b> (1.8.10 و بالاتر)</li>
-  <li><b>Streisand</b></li>
-  <li><b>V2Box</b></li>
-  <li><b>Shadowrocket</b></li>
-  <li><b>Nekoray</b></li>
-  <li><b>Hiddify</b></li>
-</ul>
-<br>
+<div dir="rtl">
+<table>
+  <thead>
+    <th>برنامه</th>
+    <th>ورژن</th>
+    <th>فرکمنت</th>
+  </thead>
+  <tbody  align="center">
+    <tr>
+      <td><b>v2rayNG</b></td>
+      <td>1.8.19 و بالاتر</td>
+      <td>✔️</td>
+    </tr>
+    <tr>
+      <td><b>v2rayN</b></td>
+      <td>6.42 و بالاتر</td>
+      <td>✔️</td>
+    </tr>
+    <tr>
+      <td><b>Nekobox</b></td>
+      <td></td>
+      <td>❌</td>
+    </tr>
+    <tr>
+      <td><b>Sing-box</b></td>
+      <td>1.8.10 و بالاتر</td>
+      <td>❌</td>
+    </tr>
+    <tr>
+      <td><b>Streisand</b></td>
+      <td></td>
+      <td>✔️</td>
+    </tr>
+    <tr>
+      <td><b>V2Box</b></td>
+      <td></td>
+      <td>❌</td>
+    </tr>
+    <tr>
+      <td><b>Shadowrocket</b></td>
+      <td></td>
+      <td>❌</td>
+    </tr>
+    <tr>
+      <td><b>Nekoray</b></td>
+      <td></td>
+      <td>✔️</td>
+    </tr>
+    <tr>
+      <td><b>Hiddify</b></td>
+      <td></td>
+      <td>❌</td>
+    </tr>
+  </tbody>
+</table>
+</div>
 
 ---
 ## تعداد ستاره‌ها به مرور زمان
