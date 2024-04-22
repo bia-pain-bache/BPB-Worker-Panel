@@ -73,7 +73,7 @@ export default {
 
                     case '/panel':
 
-                        if (!env.bpb) {
+                        if (!env.bpb?.hasOwnProperty('get')) {
                             const errorPage = renderErrorPage('KV Dataset is not properly set!', null, true);
                             return new Response(errorPage, { status: 200, headers: {'Content-Type': 'text/html'}});
                         }
@@ -109,8 +109,7 @@ export default {
                                                       
                     case '/login':
 
-                        let secretKey;
-                        if (!env.bpb) {
+                        if (!env.bpb?.hasOwnProperty('get')) {
                             const errorPage = renderErrorPage('KV Dataset is not properly set!', null, true);
                             return new Response(errorPage, { status: 200, headers: {'Content-Type': 'text/html'}});
                         }
@@ -118,20 +117,14 @@ export default {
                         let loginAuth = await Authenticate(request, env);
                         if (loginAuth) return Response.redirect(`${url.origin}/panel`, 302);
 
-                        try {
-                            secretKey = await env.bpb.get('secretKey');
-                            const pwd = await env.bpb.get('pwd');
-                            if (!pwd) await env.bpb.put('pwd', 'admin');
-    
-                            if (!secretKey) {
-                                secretKey = generateSecretKey();
-                                await env.bpb.put('secretKey', secretKey);
-                            }
-                        } catch (error) {
-                            console.log(error);
-                            throw new Error(`An error occurred while login - ${error}`);
-                        }
+                        let secretKey = await env.bpb.get('secretKey');
+                        const pwd = await env.bpb.get('pwd');
+                        if (!pwd) await env.bpb.put('pwd', 'admin');
 
+                        if (!secretKey) {
+                            secretKey = generateSecretKey();
+                            await env.bpb.put('secretKey', secretKey);
+                        }
 
                         if (request.method === 'POST') {
                             const password = await request.text();
@@ -2044,13 +2037,8 @@ const renderLoginPage = async () => {
             left: 50%;
             transform: translate(-50%, -50%);
             width: 90%;
-        }        
-        h1 {
-            text-align: center;
-            color: #2980b9;
-            margin-bottom: 30px;
-            margin-top: 0px;
         }
+        h1 { font-size: 2.5rem; text-align: center; color: #09639f; margin: 0 auto 30px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25); }        
         h2 {text-align: center;}
         .form-container {
             background: #f9f9f9;
@@ -2161,7 +2149,7 @@ const renderErrorPage = (message, error, refer) => {
                 align-items: center;
                 font-family: system-ui;
             }
-            h1 { text-align: center; color: #2980b9; font-size: 2.5rem; }
+            h1 { font-size: 2.5rem; text-align: center; color: #09639f; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25); }
             #error-container { text-align: center; }
         </style>
     </head>
