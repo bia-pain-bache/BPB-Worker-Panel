@@ -73,7 +73,7 @@ export default {
 
                     case '/panel':
 
-                        if (!env.bpb?.hasOwnProperty('get')) {
+                        if (typeof env.bpb !== 'object') {
                             const errorPage = renderErrorPage('KV Dataset is not properly set!', null, true);
                             return new Response(errorPage, { status: 200, headers: {'Content-Type': 'text/html'}});
                         }
@@ -109,7 +109,7 @@ export default {
                                                       
                     case '/login':
 
-                        if (!env.bpb?.hasOwnProperty('get')) {
+                        if (typeof env.bpb !== 'object') {
                             const errorPage = renderErrorPage('KV Dataset is not properly set!', null, true);
                             return new Response(errorPage, { status: 200, headers: {'Content-Type': 'text/html'}});
                         }
