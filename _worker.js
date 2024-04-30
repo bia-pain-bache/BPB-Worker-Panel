@@ -789,7 +789,7 @@ const getNormalConfigs = async (env, hostName, client) => {
         let remark = `💦 BPB - ${addr}`;
         remark = remark.length <= 30 ? remark : `${remark.slice(0,29)}...`;
 
-        vlessWsTls += 'vless' + `://${userID}@${addr}:443?encryption=none&security=tls&type=ws&host=${
+        vlessWsTls += 'vless' + `://${userID}\u0040${addr}:443?encryption=none&security=tls&type=ws&host=${
             randomUpperCase(hostName)
         }&sni=${
             randomUpperCase(hostName)
