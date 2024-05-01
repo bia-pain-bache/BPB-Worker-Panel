@@ -285,7 +285,7 @@ async function vlessOverWSHandler(request) {
 				udpStreamWrite(rawClientData);
 				return;
 			}
-			handleTCPOutBound(remoteSocketWapper, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log);
+			handleTCPOutBound(request, remoteSocketWapper, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log);
 		},
 		close() {
 			log(`readableWebSocketStream is close`);
@@ -315,7 +315,7 @@ async function vlessOverWSHandler(request) {
  * @param {function} log The logging function.
  * @returns {Promise<void>} The remote socket.
  */
-async function handleTCPOutBound(remoteSocket, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log,) {
+async function handleTCPOutBound(request, remoteSocket, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log,) {
 
 	/**
 	 * Connects to a given address and port and writes data to the socket.
@@ -342,7 +342,10 @@ async function handleTCPOutBound(remoteSocket, addressRemote, portRemote, rawCli
 	 * @returns {Promise<void>} A Promise that resolves when the retry is complete.
 	 */
 	async function retry() {
-		const tcpSocket = await connectAndWrite(proxyIP || addressRemote, portRemote)
+        const { pathname } = new URL(request.url);
+        let panelProxyIP = pathname.split('/')[2];
+        panelProxyIP = panelProxyIP ? atob(panelProxyIP) : undefined;
+		const tcpSocket = await connectAndWrite(panelProxyIP || proxyIP || addressRemote, portRemote);
 		tcpSocket.closed.catch(error => {
 			console.log('retry tcpSocket closed error', error);
 		}).finally(() => {
@@ -775,7 +778,7 @@ const getNormalConfigs = async (env, hostName, client) => {
         throw new Error(`An error occurred while getting normal configs - ${error}`);
     }
 
-    const { cleanIPs } = proxySettings;
+    const { cleanIPs, proxyIP } = proxySettings;
     const resolved = await resolveDNS(hostName);
     const Addresses = [
         hostName,
@@ -794,7 +797,7 @@ const getNormalConfigs = async (env, hostName, client) => {
         }&sni=${
             randomUpperCase(hostName)
         }&fp=randomized&alpn=http/1.1&path=${
-            encodeURIComponent(`/${getRandomPath(16)}?ed=2560`)
+            encodeURIComponent(`/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}?ed=2560`)
         }#${encodeURIComponent(remark)}\n`;
     });
 
@@ -977,6 +980,7 @@ const getFragmentConfigs = async (env, hostName, client) => {
         blockAds,
         bypassIran, 
         cleanIPs,
+        proxyIP,
         outProxy,
         outProxyParams
     } = proxySettings;
@@ -1018,7 +1022,7 @@ const getFragmentConfigs = async (env, hostName, client) => {
         outbound.settings.vnext[0].users[0].id = userID;
         outbound.streamSettings.tlsSettings.serverName = randomUpperCase(hostName);
         outbound.streamSettings.wsSettings.headers.Host = randomUpperCase(hostName);
-        outbound.streamSettings.wsSettings.path = `/${getRandomPath(16)}?ed=2560`;
+        outbound.streamSettings.wsSettings.path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}?ed=2560`;
         
         fragConfig.remarks = remark.length <= 30 ? remark : `${remark.slice(0,29)}...`;;
         fragConfig.dns.servers[0] = remoteDNS;
@@ -1131,7 +1135,7 @@ const getSingboxConfig = async (env, hostName) => {
         throw new Error(`An error occurred while getting sing-box configs - ${error}`);
     }
 
-    const { remoteDNS,  localDNS, cleanIPs } = proxySettings
+    const { remoteDNS,  localDNS, cleanIPs, proxyIP } = proxySettings
     let config = structuredClone(singboxConfigTemp);
     config.dns.servers[0].address = remoteDNS;
     config.dns.servers[1].address = localDNS;
@@ -1152,7 +1156,7 @@ const getSingboxConfig = async (env, hostName) => {
         outbound.uuid = userID;
         outbound.tls.server_name = randomUpperCase(hostName);
         outbound.transport.headers.Host = randomUpperCase(hostName);
-        outbound.transport.path += getRandomPath(16);
+        outbound.transport.path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}?ed=2560`;
         config.outbounds.push(outbound);
         config.outbounds[0].outbounds.push(addr);
         config.outbounds[1].outbounds.push(addr);
@@ -1174,6 +1178,7 @@ const updateDataset = async (env, Settings) => {
         blockAds: Settings?.get('block-ads') || false,
         bypassIran: Settings?.get('bypass-iran') || false,
         cleanIPs: Settings?.get('cleanIPs')?.replaceAll(' ', '') || '',
+        proxyIP: Settings?.get('proxyIP') || '',
         outProxy: vlessConfig || '',
         outProxyParams: vlessConfig ? await extractVlessParams(vlessConfig) : ''
     };
@@ -1298,18 +1303,19 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
         throw new Error(`An error occurred while rendering home page - ${error}`);
     }
 
-    const {
-        remoteDNS, 
-        localDNS, 
-        lengthMin, 
-        lengthMax, 
-        intervalMin, 
-        intervalMax, 
-        blockAds,
-        bypassIran,
-        cleanIPs,
-        outProxy
-    } = proxySettings;
+const {
+    remoteDNS = '', 
+    localDNS = '', 
+    lengthMin = '', 
+    lengthMax = '', 
+    intervalMin = '', 
+    intervalMax = '', 
+    blockAds = false, 
+    bypassIran = false, 
+    cleanIPs = '', 
+    proxyIP = '', 
+    outProxy = ''
+} = proxySettings;
 
     const genCustomConfRow = async (configs) => {
         let tableBlock = "";
@@ -1578,7 +1584,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 					<label for="outProxy">✈️ Chain Proxy</label>
 					<input type="text" id="outProxy" name="outProxy" value="${outProxy}">
 				</div>
-                <h2>ROUTING RULES ⚙️</h2>
+                <h2>FRAGMENT ROUTING ⚙️</h2>
 				<div class="form-control" style="margin-bottom: 20px;">			
                     <div class="routing">
                         <input type="checkbox" id="block-ads" name="block-ads" style="margin: 0 10px 0 0;" value="true" ${blockAds ? 'checked' : ''}>
@@ -1588,6 +1594,11 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 						<input type="checkbox" id="bypass-iran" name="bypass-iran" style="margin: 0 10px 0 0;;" value="true" ${bypassIran ? 'checked' : ''}>
                         <label for="bypass-iran">Direct Iran</label>
 					</div>
+				</div>
+                <h2>PROXY IP ⚙️</h2>
+				<div class="form-control">
+					<label for="proxyIP">📍 IP or Domain</label>
+					<input type="text" id="proxyIP" name="proxyIP" value="${proxyIP}">
 				</div>
                 <h2>CLEAN IP ⚙️</h2>
 				<div class="form-control">
@@ -1875,6 +1886,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             const lengthMax = getValue('fragmentLengthMax');
             const intervalMin = getValue('fragmentIntervalMin');
             const intervalMax = getValue('fragmentIntervalMax');
+            const proxyIP = document.getElementById('proxyIP').value?.trim();
             const cleanIP = document.getElementById('cleanIPs');
             const cleanIPs = cleanIP.value?.split(',');
             const chainProxy = document.getElementById('outProxy').value?.trim();                    
@@ -1883,11 +1895,12 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             const hasSecurity = /security=/.test(chainProxy);
             const validSecurityType = /security=(tls|none|reality)/.test(chainProxy);
             const validTransmission = /type=(tcp|grpc|ws)/.test(chainProxy);
+            const validIPDomain = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 
-            const invalidIPs = cleanIPs?.filter(value => {
+            const invalidIPs = [...cleanIPs, proxyIP]?.filter(value => {
                 if (value !== "") {
                     const trimmedValue = value.trim();
-                    return !/^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(trimmedValue);
+                    return !validIPDomain.test(trimmedValue);
                 }
             });
     
@@ -2186,7 +2199,6 @@ const xrayConfigTemp = {
                 port: 53
             },
         ],
-        queryStrategy: "UseIP",
         tag: "dns"
     },
     inbounds: [
@@ -2236,9 +2248,6 @@ const xrayConfigTemp = {
         },
         {
             protocol: "freedom",
-            settings: {
-                domainStrategy: "UseIP",
-            },
             tag: "direct",
         },
         {
