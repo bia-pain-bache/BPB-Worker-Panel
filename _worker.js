@@ -2633,7 +2633,7 @@ const singboxOutboundTemp = {
         headers: {
             Host: ""
         },
-        max_early_data: 2048,
+        max_early_data: 2560,
         path: "/",
         type: "ws"
     },
