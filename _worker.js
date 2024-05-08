@@ -17,7 +17,7 @@ let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 
 let dohURL = 'https://cloudflare-dns.com/dns-query';
 
-let panelVersion = '2.3.4';
+let panelVersion = '2.3.5';
 
 if (!isValidUUID(userID)) {
     throw new Error('uuid is not valid');
@@ -92,7 +92,7 @@ export default {
                         if (!isAuth) return Response.redirect(`${url.origin}/login`, 302);
                         if (! await env.bpb.get('proxySettings')) await updateDataset(env);
                         let fragConfs = await getFragmentConfigs(env, host, 'nekoray');
-                        let homePage = await renderHomePage(env, host, fragConfs);
+                        let homePage = await renderHomePage(request, env, host, fragConfs);
 
                         return new Response(homePage, {
                             status: 200,
@@ -917,7 +917,7 @@ const buildWorkerLessConfig = async (env, client) => {
         throw new Error(`An error occurred while generating WorkerLess config - ${error}`);
     }
 
-    const { remoteDNS, lengthMin,  lengthMax,  intervalMin,  intervalMax, blockAds } = proxySettings;  
+    const { remoteDNS, localDNS, lengthMin,  lengthMax,  intervalMin,  intervalMax, blockAds, bypassIran, blockPorn, bypassLAN } = proxySettings;  
     let fakeOutbound = structuredClone(xrayOutboundTemp);
     delete fakeOutbound.mux;
     fakeOutbound.settings.vnext[0].address = 'google.com';
@@ -933,19 +933,18 @@ const buildWorkerLessConfig = async (env, client) => {
 
     let fragConfig = structuredClone(xrayConfigTemp);
     fragConfig.remarks  = '💦 BPB Frag - WorkerLess ⭐'
-    fragConfig.dns.servers[0] = remoteDNS;
-    fragConfig.dns.servers.pop();
+    fragConfig.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, blockPorn, true);
     fragConfig.outbounds[0].settings.domainStrategy = 'UseIP';
     fragConfig.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
     fragConfig.outbounds[0].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
-    fragConfig.outbounds = [{...fragConfig.outbounds[0]}, {...fakeOutbound}, {...fragConfig.outbounds[1]}, {...fragConfig.outbounds[2]}];
-    fragConfig.routing.rules.pop();
-    if (!blockAds) {
-        delete fragConfig.dns.hosts;
-        fragConfig.routing.rules.pop();
-    }
-    fragConfig.routing.rules[1].domain = ["domain:.ir"];
-    fragConfig.routing.rules.shift();
+    fragConfig.outbounds = [
+        {...fragConfig.outbounds[0]}, 
+        {...fragConfig.outbounds[1]}, 
+        {...fakeOutbound}, 
+        {...fragConfig.outbounds[2]}, 
+        {...fragConfig.outbounds[3]}
+    ];
+    fragConfig.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, false, false, true);
     delete fragConfig.routing.balancers;
     delete fragConfig.observatory;
 
@@ -978,7 +977,9 @@ const getFragmentConfigs = async (env, hostName, client) => {
         intervalMin, 
         intervalMax,
         blockAds,
-        bypassIran, 
+        bypassIran,
+        blockPorn,
+        bypassLAN, 
         cleanIPs,
         proxyIP,
         outProxy,
@@ -991,7 +992,7 @@ const getFragmentConfigs = async (env, hostName, client) => {
         "www.speedtest.net",
         ...(cleanIPs ? cleanIPs.split(",") : []),
         ...resolved.ipv4,
-        ...resolved.ipv6.map((ip) => `[${ip}]`),
+        ...resolved.ipv6.map((ip) => `[${ip}]`)
     ];
 
     if (outProxy) {
@@ -1008,8 +1009,9 @@ const getFragmentConfigs = async (env, hostName, client) => {
         }
     }
 
-    Addresses.forEach((addr, index) => {
+    for (let index in Addresses) {
 
+        let addr = Addresses[index];
         let fragConfig = structuredClone(xrayConfigTemp);
         let outbound = structuredClone(xrayOutboundTemp);
         let remark = `💦 BPB Frag - ${addr}`;
@@ -1025,37 +1027,20 @@ const getFragmentConfigs = async (env, hostName, client) => {
         outbound.streamSettings.wsSettings.path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}?ed=2560`;
         
         fragConfig.remarks = remark.length <= 30 ? remark : `${remark.slice(0,29)}...`;;
-        fragConfig.dns.servers[0] = remoteDNS;
-        fragConfig.dns.servers[1].address = localDNS;
+        fragConfig.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, blockPorn);
         fragConfig.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
         fragConfig.outbounds[0].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
-        fragConfig.routing.rules[0].ip = [localDNS];
-
+        
         if (proxyOutbound) {
             fragConfig.outbounds = [{...proxyOutbound}, { ...outbound}, ...fragConfig.outbounds];
+            fragConfig.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, true, false);
         } else {
             fragConfig.outbounds = [{ ...outbound}, ...fragConfig.outbounds];
+            fragConfig.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, false, false);
         }
-
+        
         delete fragConfig.observatory;
         delete fragConfig.routing.balancers;
-        fragConfig.routing.rules.pop();
-
-        if (localDNS === 'localhost' && bypassIran) {
-            fragConfig.dns.servers.pop();
-            fragConfig.routing.rules.splice(0,1);
-        }
-
-        if (!bypassIran) {
-            fragConfig.dns.servers.pop();
-            fragConfig.routing.rules.splice(0,2);
-            fragConfig.routing.rules[0].ip = ["geoip:private"];
-        }
-
-        if (!blockAds) {
-            delete fragConfig.dns.hosts;
-            fragConfig.routing.rules.pop();
-        }
 
         if (client === 'nekoray') {
             fragConfig.inbounds[0].port = 2080;
@@ -1067,47 +1052,32 @@ const getFragmentConfigs = async (env, hostName, client) => {
             config: fragConfig
         }); 
 
-        outbound.tag = `proxy_${index + 1}`;
+        outbound.tag = `prox_${+index + 1}`;
     
         if (proxyOutbound) {
             let proxyOut = structuredClone(proxyOutbound);
-            proxyOut.tag = `out_${index + 1}`;
-            proxyOut.streamSettings.sockopt.dialerProxy = `proxy_${index + 1}`;
+            proxyOut.tag = `out_${+index + 1}`;
+            proxyOut.streamSettings.sockopt.dialerProxy = `prox_${+index + 1}`;
             outbounds.push({...proxyOut}, {...outbound});
         } else {
             outbounds.push({...outbound});
         }
-    });
+    };
 
 
     let bestPing = structuredClone(xrayConfigTemp);
     bestPing.remarks = '💦 BPB Frag - Best Ping 💥';
-    bestPing.dns.servers[0] = remoteDNS;
-    bestPing.dns.servers[1].address = localDNS;
+    bestPing.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, blockPorn);
     bestPing.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
     bestPing.outbounds[0].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
-    bestPing.routing.rules[0].ip = [localDNS];
     bestPing.outbounds = [...outbounds, ...bestPing.outbounds];
-    
-    if (!blockAds) {
-        delete bestPing.dns.hosts;
-        bestPing.routing.rules.splice(3,1);
-    }
-
-    if (localDNS === 'localhost' && bypassIran) {
-        bestPing.dns.servers.pop();
-        bestPing.routing.rules.splice(0,1);
-    }
-    
-    if (!bypassIran) {
-        bestPing.dns.servers.pop();
-        bestPing.routing.rules.splice(0,2);
-        bestPing.routing.rules[0].ip = ["geoip:private"];
-    }
     
     if (proxyOutbound) {
         bestPing.observatory.subjectSelector = ["out"];
         bestPing.routing.balancers[0].selector = ["out"];
+        bestPing.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, true, true);
+    } else {
+        bestPing.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, false, true);
     }
 
     if (client === 'nekoray') {
@@ -1116,6 +1086,8 @@ const getFragmentConfigs = async (env, hostName, client) => {
     }
 
     const workerLessConfig = await buildWorkerLessConfig(env, client);
+
+
     
     Configs.push(
         { address: 'Best-Ping', config: bestPing}, 
@@ -1177,6 +1149,8 @@ const updateDataset = async (env, Settings) => {
         intervalMax: Settings?.get('fragmentIntervalMax') || '10',
         blockAds: Settings?.get('block-ads') || false,
         bypassIran: Settings?.get('bypass-iran') || false,
+        blockPorn: Settings?.get('block-porn') || false,
+        bypassLAN: Settings?.get('bypass-lan') || false,
         cleanIPs: Settings?.get('cleanIPs')?.replaceAll(' ', '') || '',
         proxyIP: Settings?.get('proxyIP') || '',
         outProxy: vlessConfig || '',
@@ -1293,7 +1267,7 @@ const Authenticate = async (request, env) => {
     }
 }
 
-const renderHomePage = async (env, hostName, fragConfigs) => {
+const renderHomePage = async (request, env, hostName, fragConfigs) => {
     let proxySettings = {};
     
     try {
@@ -1303,19 +1277,23 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
         throw new Error(`An error occurred while rendering home page - ${error}`);
     }
 
-const {
-    remoteDNS = '', 
-    localDNS = '', 
-    lengthMin = '', 
-    lengthMax = '', 
-    intervalMin = '', 
-    intervalMax = '', 
-    blockAds = false, 
-    bypassIran = false, 
-    cleanIPs = '', 
-    proxyIP = '', 
-    outProxy = ''
-} = proxySettings;
+    const {
+        remoteDNS = '', 
+        localDNS = '', 
+        lengthMin = '', 
+        lengthMax = '', 
+        intervalMin = '', 
+        intervalMax = '', 
+        blockAds = false, 
+        bypassIran = false,
+        blockPorn = false,
+        bypassLAN = false,
+        cleanIPs = '', 
+        proxyIP = '', 
+        outProxy = ''
+    } = proxySettings;
+
+    let regionNames = new Intl.DisplayNames(['en'], {type: 'region'});
 
     const genCustomConfRow = async (configs) => {
         let tableBlock = "";
@@ -1470,7 +1448,14 @@ const {
 				box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 			}
 			.table-container { margin-top: 20px; overflow-x: auto; }
-			table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+			table { 
+                width: 100%; 
+                border-collapse: collapse; 
+                margin-bottom: 20px;
+                border-radius: 7px;
+                overflow: hidden;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
 			th, td { padding: 8px 15px; border-bottom: 1px solid #ddd; }
             td div { display: flex; align-items: center; }
 			th { background-color: #3498db; color: white; font-weight: bold; font-size: 1.1rem; width: 50%;}
@@ -1539,6 +1524,7 @@ const {
                 overflow: auto;
                 background-color: rgba(0, 0, 0, 0.4);
             }
+            #ips th { background-color: #3b3b3b; width: initial;}
             @media only screen and (min-width: 768px) {
                 .form-container { max-width: 70%; }
                 #apply { display: block; margin: 30px auto 0 auto; max-width: 50%; }
@@ -1588,11 +1574,19 @@ const {
 				<div class="form-control" style="margin-bottom: 20px;">			
                     <div class="routing">
                         <input type="checkbox" id="block-ads" name="block-ads" style="margin: 0 10px 0 0;" value="true" ${blockAds ? 'checked' : ''}>
-                        <label for="block-ads">Block Ads</label>
+                        <label for="block-ads">Block Ads.&nbsp</label>
                     </div>
                     <div class="routing">
 						<input type="checkbox" id="bypass-iran" name="bypass-iran" style="margin: 0 10px 0 0;;" value="true" ${bypassIran ? 'checked' : ''}>
-                        <label for="bypass-iran">Direct Iran</label>
+                        <label for="bypass-iran">Bypass Iran&nbsp</label>
+					</div>
+                    <div class="routing">
+						<input type="checkbox" id="block-porn" name="block-porn" style="margin: 0 10px 0 0;;" value="true" ${blockPorn ? 'checked' : ''}>
+                        <label for="block-porn">Block Porn</label>
+					</div>
+                    <div class="routing">
+						<input type="checkbox" id="bypass-lan" name="bypass-lan" style="margin: 0 10px 0 0;;" value="true" ${bypassLAN ? 'checked' : ''}>
+                        <label for="bypass-lan">Bypass LAN</label>
 					</div>
 				</div>
                 <h2>PROXY IP ⚙️</h2>
@@ -1699,7 +1693,6 @@ const {
                     </tr>
 				</table>
 			</div>
-			<hr>
 			<h2>FRAGMENT SUB ⛓️</h2>
 			<div class="table-container">
                 <table id="frag-sub-table">
@@ -1770,6 +1763,30 @@ const {
                     <div id="qrcode-container"></div>
                 </div>
             </div>
+            <h2>YOUR IP </h2>
+            <div class="table-container">
+				<table id="ips" style="text-align: center;">
+                    <tr>
+                        <th>Target address</th>
+                        <th>IP</th>
+                        <th>Country</th>
+                        <th>City</th>
+                    </tr>
+                    <tr>
+                        <td>Cloudflare CDN</td>
+                        <td>${request.headers.get('cf-connecting-ip') || 'Failed!'}</td>
+                        <td style="font-weight: 600;">${regionNames.of(request.cf.country)}</td>
+                        <td>${request.cf.city}</td>
+                    </tr>
+                    <tr>
+                        <td>Others</td>
+                        <td></td>
+                        <td style="font-weight: 600;"></td>
+                        <td></td>
+                    </tr>
+                </table>
+            </div>
+            <hr>
             <div class="footer">
                 <i class="fa fa-github" style="font-size:36px; margin-right: 10px;"></i>
                 <a class="link" href="https://github.com/bia-pain-bache/BPB-Worker-Panel" target="_blank">Github</a>
@@ -1783,6 +1800,7 @@ const {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 	<script>
 		document.addEventListener('DOMContentLoaded', () => {
+            let regionNames = new Intl.DisplayNames(['en'], {type: 'region'});
             const configForm = document.getElementById('configForm');            
             const modal = document.getElementById('myModal');
             const changePass = document.getElementById("openModalBtn");
@@ -1844,6 +1862,19 @@ const {
                     qrcodeContainer.lastElementChild.remove();
                 }
             }
+
+            fetch('https://ipinfo.io/json')
+                .then(response => response.json())
+                .then(data => {
+                    const country = regionNames.of(data.country);
+                    document.querySelector('#ips tr:nth-child(3) td:nth-child(2)').textContent = data.ip;
+                    document.querySelector('#ips tr:nth-child(3) td:nth-child(3)').textContent = country;
+                    document.querySelector('#ips tr:nth-child(3) td:nth-child(4)').textContent = data.city;
+                })
+                .catch(error => {
+                    console.error('Error fetching IP address:', error);
+                    document.getElementById('ip-address').textContent = 'Failed!';
+                });
 		});
 
         const openQR = (url, title) => {
@@ -2185,144 +2216,107 @@ const renderErrorPage = (message, error, refer) => {
 
 const xrayConfigTemp = {
     remarks: "",
-    dns: {
-        hosts: {
-            "geosite:category-ads-all": "127.0.0.1",
-            "geosite:category-ads-ir": "127.0.0.1"
-        },
-        servers: [
-            "",
-            {
-                address: "",
-                domains: ["geosite:category-ir", "domain:.ir"],
-                expectIPs: ["geoip:ir"],
-                port: 53
-            },
-        ],
-        tag: "dns"
-    },
+    dns: {},
     inbounds: [
-        {
-            port: 10808,
-            protocol: "socks",
-            settings: {
-                auth: "noauth",
-                udp: true,
-                userLevel: 8,
-            },
-            sniffing: {
-                destOverride: ["http", "tls", "fakedns"],
-                enabled: true,
-            },
-            tag: "socks",
+      {
+        port: 10808,
+        protocol: "socks",
+        settings: {
+          auth: "noauth",
+          udp: true,
+          userLevel: 8,
         },
-        {
-            port: 10809,
-            protocol: "http",
-            settings: {
-                userLevel: 8,
-            },
-            tag: "http",
+        sniffing: {
+          destOverride: ["http", "tls", "fakedns"],
+          enabled: true,
         },
+        tag: "socks-in",
+      },
+      {
+        port: 10809,
+        protocol: "http",
+        settings: {
+          userLevel: 8,
+        },
+        tag: "http-in",
+      },
     ],
     log: {
-        loglevel: "warning",
+      loglevel: "warning",
     },
     outbounds: [
-        {
-            tag: "fragment",
-            protocol: "freedom",
-            settings: {
-                fragment: {
-                    packets: "tlshello",
-                    length: "",
-                    interval: "",
-                },
-            },
-            streamSettings: {
-                sockopt: {
-                    tcpKeepAliveIdle: 100,
-                    tcpNoDelay: true
-                },
-            },
+      {
+        tag: "fragment",
+        protocol: "freedom",
+        settings: {
+          fragment: {
+            packets: "tlshello",
+            length: "",
+            interval: "",
+          },
         },
-        {
-            protocol: "freedom",
-            tag: "direct",
+        streamSettings: {
+          sockopt: {
+            tcpKeepAliveIdle: 100,
+            tcpNoDelay: true,
+          },
         },
-        {
-            protocol: "blackhole",
-            settings: {
-                response: {
-                    type: "http",
-                },
-            },
-            tag: "block",
-        }
+      },
+      {
+        protocol: "dns",
+        tag: "dns-out"
+      },
+      {
+        protocol: "freedom",
+        settings: {},
+        tag: "direct",
+      },
+      {
+        protocol: "blackhole",
+        settings: {
+          response: {
+            type: "http",
+          },
+        },
+        tag: "block",
+      },
     ],
     policy: {
-        levels: {
-            8: {
-                connIdle: 300,
-                downlinkOnly: 1,
-                handshake: 4,
-                uplinkOnly: 1,
-            },
+      levels: {
+        8: {
+          connIdle: 300,
+          downlinkOnly: 1,
+          handshake: 4,
+          uplinkOnly: 1,
         },
-        system: {
-            statsOutboundUplink: true,
-            statsOutboundDownlink: true,
-        },
+      },
+      system: {
+        statsOutboundUplink: true,
+        statsOutboundDownlink: true,
+      },
     },
     routing: {
-        domainStrategy: "IPIfNonMatch",
-        rules: [
-            {
-                ip: [],
-                outboundTag: "direct",
-                port: "53",
-                type: "field",
-            },
-            {
-                domain: ["geosite:category-ir", "domain:.ir"],
-                outboundTag: "direct",
-                type: "field",
-            },
-            {
-                ip: ["geoip:private", "geoip:ir"],
-                outboundTag: "direct",
-                type: "field",
-            },
-            {
-                domain: ["geosite:category-ads-all", "geosite:category-ads-ir"],
-                outboundTag: "block",
-                type: "field",
-            },
-            {
-                balancerTag: "all",
-                type: "field",
-                network: "tcp,udp",
-            }
-        ],
-        balancers: [
-            {
-                tag: "all",
-                selector: ["proxy"],
-                strategy: {
-                    type: "leastPing",
-                },
-            },
-        ],
+      domainStrategy: "IPIfNonMatch",
+      rules: [],
+      balancers: [
+        {
+          tag: "all",
+          selector: ["prox"],
+          strategy: {
+            type: "leastPing",
+          },
+        },
+      ],
     },
     observatory: {
-        probeInterval: "3m",
-        probeURL: "https://api.github.com/_private/browser/stats",
-        subjectSelector: ["proxy"],
-        EnableConcurrency: true,
+      probeInterval: "3m",
+      probeURL: "https://api.github.com/_private/browser/stats",
+      subjectSelector: ["prox"],
+      EnableConcurrency: true,
     },
     stats: {},
 };
-
+  
 const xrayOutboundTemp = 
 {
     mux: {
@@ -2648,3 +2642,119 @@ const singboxOutboundTemp = {
     },
     tag: ""
 };
+
+const buildDNSObject = async (remoteDNS, localDNS, blockAds, bypassIran, blockPorn, isWorkerLess) => {
+    let dnsObject = {
+        hosts: {},
+        servers: [
+          isWorkerLess ? "https://cloudflare-dns.com/dns-query" : remoteDNS,
+          {
+            address: localDNS,
+            domains: ["geosite:category-ir", "domain:.ir"],
+            expectIPs: ["geoip:ir"],
+            port: 53,
+          },
+        ],
+        tag: "dns",
+    };
+
+    if (isWorkerLess) {
+        const resolvedDOH = await resolveDNS('cloudflare-dns.com');
+        const resolvedCloudflare = await resolveDNS('cloudflare.com');
+        const resolvedCLDomain = await resolveDNS('www.speedtest.net.cdn.cloudflare.net');
+        const resolvedCFNS_1 = await resolveDNS('ben.ns.cloudflare.com');
+        const resolvedCFNS_2 = await resolveDNS('lara.ns.cloudflare.com');
+        dnsObject.hosts['cloudflare-dns.com'] = [
+            ...resolvedDOH.ipv4, 
+            ...resolvedCloudflare.ipv4, 
+            ...resolvedCLDomain.ipv4,
+            ...resolvedCFNS_1.ipv4,
+            ...resolvedCFNS_2.ipv4
+        ];
+    }
+
+    if (blockAds) {
+        dnsObject.hosts["geosite:category-ads-all"] = "127.0.0.1";
+        dnsObject.hosts["geosite:category-ads-ir"] = "127.0.0.1";
+    }
+
+    if (blockPorn) {
+        dnsObject.hosts["geosite:category-porn"] = "127.0.0.1";
+    }
+
+    if (!bypassIran || localDNS === 'localhost' || isWorkerLess) {
+        dnsObject.servers.pop();
+    }
+
+    return dnsObject;
+}
+
+const buildRoutingRules = (localDNS, blockAds, bypassIran, blockPorn, bypassLAN, isChain, isBalancer, isWorkerLess) => {
+    let rules = [
+        {
+          ip: [localDNS],
+          outboundTag: "direct",
+          port: "53",
+          type: "field",
+        },
+        {
+          inboundTag: ["socks-in", "http-in"],
+          type: "field",
+          port: "53",
+          outboundTag: "dns-out",
+          enabled: true,
+        }
+    ];
+
+    if (localDNS === 'localhost' || isWorkerLess) {
+        rules.splice(0,1);
+    }
+
+    if (bypassIran || bypassLAN) {
+        let rule = {
+            ip: [],
+            outboundTag: "direct",
+            type: "field",
+        };
+        
+        if (bypassIran && !isWorkerLess) {
+            rules.push({
+                domain: ["geosite:category-ir", "domain:.ir"],
+                outboundTag: "direct",
+                type: "field",
+            });
+            rule.ip.push("geoip:ir");
+        }
+
+        bypassLAN && rule.ip.push("geoip:private");
+        rules.push(rule);
+    }
+
+    if (blockAds || blockPorn) {
+        let rule = {
+            domain: [],
+            outboundTag: "block",
+            type: "field",
+        };
+
+        blockAds && rule.domain.push("geosite:category-ads-all", "geosite:category-ads-ir");
+        blockPorn && rule.domain.push("geosite:category-porn");
+        rules.push(rule);
+    }
+   
+    if (isBalancer) {
+        rules.push({
+            balancerTag: "all",
+            type: "field",
+            network: "tcp,udp",
+        });
+    } else  {
+        rules.push({
+            outboundTag: isChain ? "out" : isWorkerLess ? "fragment" : "proxy",
+            type: "field",
+            port: "0-65535"
+        });
+    }
+
+    return rules;
+}
