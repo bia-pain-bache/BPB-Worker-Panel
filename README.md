@@ -22,8 +22,8 @@ This project is dedicated to developing a user panel for the [Cloudflare-workers
 1. **Free**: No cost involved.
 2. **User-Friendly Panel:** Designed for easy navigation, configuration and usage.
 3. **Support Fragment:** Provides support for fragment functionality.
-4. **Ad Blocking (Optional):** Option to block Ads.
-5. **Direct Iran (Optional):** Includes an option for direct access to Iran.
+4. **Block Ads. and Porn (Optional)**
+5. **Bypass Iran and LAN (Optional)**
 6. **Full routing rules:** Bypassing Iran, Blocking Ads, Malwares, Phishing... for Sing-box.
 7. **Chain Proxy:** Capable of adding a chain proxy to fix IP.
 8. **Supports Wide Range of Clients:** Offers subscription links for Xray and Sing-box core clients.
