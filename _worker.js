@@ -864,7 +864,7 @@ const buildProxyOutbound = async (proxyParams) => {
             delete proxyOutbound.streamSettings.grpcSettings;
             delete proxyOutbound.streamSettings.wsSettings;
             
-            if (security === 'reality' && !headerType) {
+            if (security === 'reality' && (!headerType || headerType === 'none')) {
                 delete proxyOutbound.streamSettings.tcpSettings;
                 break;
             }
@@ -883,15 +883,13 @@ const buildProxyOutbound = async (proxyParams) => {
             break;
 
         case 'ws':
-            
             proxyOutbound.streamSettings.wsSettings.headers.Host = host;
             proxyOutbound.streamSettings.wsSettings.path = path;
             delete proxyOutbound.streamSettings.grpcSettings;
             delete proxyOutbound.streamSettings.tcpSettings;
             break;
 
-        case 'grpc':
-            
+        case 'grpc':  
             proxyOutbound.streamSettings.grpcSettings.authority = authority;
             proxyOutbound.streamSettings.grpcSettings.serviceName = serviceName;
             proxyOutbound.streamSettings.grpcSettings.multiMode = mode === 'multi';
@@ -1524,7 +1522,6 @@ const renderHomePage = async (request, env, hostName, fragConfigs) => {
                 overflow: auto;
                 background-color: rgba(0, 0, 0, 0.4);
             }
-            #ips th { background-color: #3b3b3b; width: initial;}
             @media only screen and (min-width: 768px) {
                 .form-container { max-width: 70%; }
                 #apply { display: block; margin: 30px auto 0 auto; max-width: 50%; }
@@ -1763,29 +1760,6 @@ const renderHomePage = async (request, env, hostName, fragConfigs) => {
                     <div id="qrcode-container"></div>
                 </div>
             </div>
-            <h2>YOUR IP </h2>
-            <div class="table-container">
-				<table id="ips" style="text-align: center;">
-                    <tr>
-                        <th>Target address</th>
-                        <th>IP</th>
-                        <th>Country</th>
-                        <th>City</th>
-                    </tr>
-                    <tr>
-                        <td>Cloudflare CDN</td>
-                        <td>${request.headers.get('cf-connecting-ip') || 'Failed!'}</td>
-                        <td style="font-weight: 600;">${regionNames.of(request.cf.country)}</td>
-                        <td>${request.cf.city}</td>
-                    </tr>
-                    <tr>
-                        <td>Others</td>
-                        <td></td>
-                        <td style="font-weight: 600;"></td>
-                        <td></td>
-                    </tr>
-                </table>
-            </div>
             <hr>
             <div class="footer">
                 <i class="fa fa-github" style="font-size:36px; margin-right: 10px;"></i>
@@ -1862,26 +1836,12 @@ const renderHomePage = async (request, env, hostName, fragConfigs) => {
                     qrcodeContainer.lastElementChild.remove();
                 }
             }
-
-            fetch('https://ipinfo.io/json')
-                .then(response => response.json())
-                .then(data => {
-                    const country = regionNames.of(data.country);
-                    document.querySelector('#ips tr:nth-child(3) td:nth-child(2)').textContent = data.ip;
-                    document.querySelector('#ips tr:nth-child(3) td:nth-child(3)').textContent = country;
-                    document.querySelector('#ips tr:nth-child(3) td:nth-child(4)').textContent = data.city;
-                })
-                .catch(error => {
-                    console.error('Error fetching IP address:', error);
-                    document.getElementById('ip-address').textContent = 'Failed!';
-                });
 		});
 
         const openQR = (url, title) => {
             let qrcodeContainer = document.getElementById("qrcode-container");
             let qrcodeTitle = document.getElementById("qrcodeTitle");
             const modalQR = document.getElementById("myQRModal");
-
             qrcodeTitle.textContent = title;
             modalQR.style.display = "block";
             let qrcodeDiv = document.createElement("div");
@@ -2216,103 +2176,109 @@ const renderErrorPage = (message, error, refer) => {
 
 const xrayConfigTemp = {
     remarks: "",
+    log: {
+        loglevel: "warning",
+    },
     dns: {},
     inbounds: [
-      {
-        port: 10808,
-        protocol: "socks",
-        settings: {
-          auth: "noauth",
-          udp: true,
-          userLevel: 8,
+        {
+            port: 10808,
+            protocol: "socks",
+            settings: {
+                auth: "noauth",
+                udp: true,
+                userLevel: 8,
+            },
+            sniffing: {
+                destOverride: ["http", "tls"],
+                enabled: true,
+            },
+            tag: "socks-in",
         },
-        sniffing: {
-          destOverride: ["http", "tls", "fakedns"],
-          enabled: true,
+        {
+            port: 10809,
+            protocol: "http",
+            settings: {
+                auth: "noauth",
+                udp: true,
+                userLevel: 8,
+            },
+            sniffing: {
+                destOverride: ["http", "tls"],
+                enabled: true,
+            },
+            tag: "http-in",
         },
-        tag: "socks-in",
-      },
-      {
-        port: 10809,
-        protocol: "http",
-        settings: {
-          userLevel: 8,
-        },
-        tag: "http-in",
-      },
     ],
-    log: {
-      loglevel: "warning",
-    },
     outbounds: [
-      {
-        tag: "fragment",
-        protocol: "freedom",
-        settings: {
-          fragment: {
-            packets: "tlshello",
-            length: "",
-            interval: "",
-          },
+        {
+            tag: "fragment",
+            protocol: "freedom",
+            settings: {
+                fragment: {
+                    packets: "tlshello",
+                    length: "",
+                    interval: "",
+                },
+            },
+            streamSettings: {
+                sockopt: {
+                    tcpKeepAliveIdle: 100,
+                    tcpNoDelay: true,
+                },
+            },
         },
-        streamSettings: {
-          sockopt: {
-            tcpKeepAliveIdle: 100,
-            tcpNoDelay: true,
-          },
+        {
+            protocol: "dns",
+            tag: "dns-out"
         },
-      },
-      {
-        protocol: "dns",
-        tag: "dns-out"
-      },
-      {
-        protocol: "freedom",
-        settings: {},
-        tag: "direct",
-      },
-      {
-        protocol: "blackhole",
-        settings: {
-          response: {
-            type: "http",
-          },
+        {
+            protocol: "freedom",
+            settings: {},
+            tag: "direct",
         },
-        tag: "block",
-      },
+        {
+            protocol: "blackhole",
+            settings: {
+                response: {
+                    type: "http",
+                },
+            },
+            tag: "block",
+        },
     ],
     policy: {
-      levels: {
-        8: {
-          connIdle: 300,
-          downlinkOnly: 1,
-          handshake: 4,
-          uplinkOnly: 1,
+        levels: {
+            8: {
+                connIdle: 300,
+                downlinkOnly: 1,
+                handshake: 4,
+                uplinkOnly: 1,
+            }
         },
-      },
-      system: {
-        statsOutboundUplink: true,
-        statsOutboundDownlink: true,
-      },
+        system: {
+            statsOutboundUplink: true,
+            statsOutboundDownlink: true,
+        }
     },
     routing: {
-      domainStrategy: "IPIfNonMatch",
-      rules: [],
-      balancers: [
-        {
-          tag: "all",
-          selector: ["prox"],
-          strategy: {
-            type: "leastPing",
-          },
-        },
-      ],
+        domainStrategy: "IPIfNonMatch",
+        rules: [],
+        balancers: [
+            {
+                tag: "all",
+                selector: ["prox"],
+                strategy: {
+                    type: "leastPing",
+                },
+            }
+        ]
     },
     observatory: {
-      probeInterval: "3m",
-      probeURL: "https://api.github.com/_private/browser/stats",
-      subjectSelector: ["prox"],
-      EnableConcurrency: true,
+        probeInterval: "3m",
+        probeURL: "https://api.github.com/_private/browser/stats",
+        subjectSelector: ["prox"],
+        EnableConcurrency: true,
     },
     stats: {},
 };
@@ -2358,9 +2324,7 @@ const xrayOutboundTemp =
             serverName: ""
         },
         wsSettings: {
-            headers: {
-                Host: ""
-            },
+            headers: {Host: ""},
             path: ""
         },
         grpcSettings: {
@@ -2395,7 +2359,7 @@ const xrayOutboundTemp =
                 },
                 type: "http"
             }
-          }
+        }
     },
     tag: "proxy"
 };
@@ -2752,7 +2716,7 @@ const buildRoutingRules = (localDNS, blockAds, bypassIran, blockPorn, bypassLAN,
         rules.push({
             outboundTag: isChain ? "out" : isWorkerLess ? "fragment" : "proxy",
             type: "field",
-            port: "0-65535"
+            network: "tcp,udp"
         });
     }
 
