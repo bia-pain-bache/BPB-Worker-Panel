@@ -1531,7 +1531,7 @@ const renderHomePage = async (request, env, hostName, fragConfigs) => {
 	</head>
 	
 	<body>
-		<h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
+		<h1>Panel <span style="font-size: smaller;">${panelVersion}</span></h1>
 		<div class="form-container">
             <h2>FRAGMENT SETTINGS ⚙️</h2>
 			<form id="configForm">
@@ -2089,7 +2089,7 @@ const renderLoginPage = async () => {
     </head>
     <body>
         <div class="container">
-            <h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
+            <h1> Panel <span style="font-size: smaller;">${panelVersion}</span></h1>
             <div class="form-container">
                 <h2>User Login</h2>
                 <form id="loginForm">
