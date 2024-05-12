@@ -930,7 +930,7 @@ const buildWorkerLessConfig = async (env, client) => {
     fakeOutbound.tag = 'fake-outbound';
 
     let fragConfig = structuredClone(xrayConfigTemp);
-    fragConfig.remarks  = '💦 BPB Frag - WorkerLess ⭐'
+    fragConfig.remarks  = ' Frag - WorkerLess ⭐'
     fragConfig.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, blockPorn, true);
     fragConfig.outbounds[0].settings.domainStrategy = 'UseIP';
     fragConfig.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
@@ -1012,7 +1012,7 @@ const getFragmentConfigs = async (env, hostName, client) => {
         let addr = Addresses[index];
         let fragConfig = structuredClone(xrayConfigTemp);
         let outbound = structuredClone(xrayOutboundTemp);
-        let remark = `💦 BPB Frag - ${addr}`;
+        let remark = ` Frag - ${addr}`;
         delete outbound.mux;
         delete outbound.streamSettings.grpcSettings;
         delete outbound.streamSettings.realitySettings;
@@ -1064,7 +1064,7 @@ const getFragmentConfigs = async (env, hostName, client) => {
 
 
     let bestPing = structuredClone(xrayConfigTemp);
-    bestPing.remarks = '💦 BPB Frag - Best Ping 💥';
+    bestPing.remarks = ' Frag - Best Ping 💥';
     bestPing.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, blockPorn);
     bestPing.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
     bestPing.outbounds[0].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
