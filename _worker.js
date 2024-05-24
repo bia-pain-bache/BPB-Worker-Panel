@@ -2614,7 +2614,7 @@ const buildDNSObject = async (remoteDNS, localDNS, blockAds, bypassIran, blockPo
           isWorkerLess ? "https://cloudflare-dns.com/dns-query" : remoteDNS,
           {
             address: localDNS,
-            domains: ["geosite:category-ir", "domain:.ir"],
+            domains: ["domain:.ir"],
             expectIPs: ["geoip:ir"],
             port: 53,
           },
@@ -2683,7 +2683,7 @@ const buildRoutingRules = (localDNS, blockAds, bypassIran, blockPorn, bypassLAN,
         
         if (bypassIran && !isWorkerLess) {
             rules.push({
-                domain: ["geosite:category-ir", "domain:.ir"],
+                domain: ["domain:.ir"],
                 outboundTag: "direct",
                 type: "field",
             });
