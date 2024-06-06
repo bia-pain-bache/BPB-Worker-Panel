@@ -13,6 +13,9 @@ let userID = '89b3cbba-e6ac-485a-9481-976a0415eab9';
 // https://www.nslookup.io/domains/cdn-all.xn--b6gac.eu.org/dns-records/
 const proxyIPs= ['cdn.xn--b6gac.eu.org', 'cdn-all.xn--b6gac.eu.org', 'edgetunnel.anycast.eu.org'];
 
+const defaultHttpPorts = ['80', '8080', '2052', '2082', '2086', '2095', '8880'];
+const defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
+
 let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 
 let dohURL = 'https://cloudflare-dns.com/dns-query';
@@ -92,7 +95,7 @@ export default {
                         if (!isAuth) return Response.redirect(`${url.origin}/login`, 302);
                         if (! await env.bpb.get('proxySettings')) await updateDataset(env);
                         let fragConfs = await getFragmentConfigs(env, host, 'nekoray');
-                        let homePage = await renderHomePage(request, env, host, fragConfs);
+                        let homePage = await renderHomePage(env, host, fragConfs);
 
                         return new Response(homePage, {
                             status: 200,
@@ -778,31 +781,58 @@ const getNormalConfigs = async (env, hostName, client) => {
         throw new Error(`An error occurred while getting normal configs - ${error}`);
     }
 
-    const { cleanIPs, proxyIP } = proxySettings;
+    const { cleanIPs, proxyIP, ports } = proxySettings;
     const resolved = await resolveDNS(hostName);
     const Addresses = [
         hostName,
         'www.speedtest.net',
-        ...(cleanIPs ? cleanIPs.split(',') : []),
         ...resolved.ipv4,
         ...resolved.ipv6.map((ip) => `[${ip}]`),
+        ...(cleanIPs ? cleanIPs.split(',') : [])
     ];
 
-    Addresses.forEach((addr) => {
-        let remark = `💦 BPB - ${addr}`;
-        remark = remark.length <= 30 ? remark : `${remark.slice(0,29)}...`;
+    ports.forEach(port => {
+        Addresses.forEach((addr, index) => {
 
-        vlessWsTls += 'vless' + `://${userID}@${addr}:443?encryption=none&security=tls&type=ws&host=${
-            randomUpperCase(hostName)
-        }&sni=${
-            randomUpperCase(hostName)
-        }&fp=randomized&alpn=http/1.1&path=${
-            encodeURIComponent(`/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}?ed=2560`)
-        }#${encodeURIComponent(remark)}\n`;
+            vlessWsTls += 'vless' + `://${userID}@${addr}:${port}?encryption=none&type=ws&host=${
+                randomUpperCase(hostName)}${
+                defaultHttpsPorts.includes(port) 
+                ? `&security=tls&sni=${
+                    randomUpperCase(hostName)
+                }&fp=randomized&alpn=${
+                    client === 'singbox' ? 'http/1.1' : 'h2,http/1.1'
+                }`
+                : ''}&path=${
+                encodeURIComponent(`/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`)}${
+                    client === 'singbox' ? '&eh=Sec-WebSocket-Protocol&ed=2560' : '?ed=2560'
+                }#${await generateRemark(index)}\n`;
+        });
     });
 
-    const subscription = client === 'singbox' ? btoa(vlessWsTls) : btoa(vlessWsTls.replaceAll('http/1.1', 'h2,http/1.1'));
-    return subscription;
+    return btoa(vlessWsTls);;
+}
+
+const generateRemark = async (index) => {
+    let remark = '';
+    switch (index) {
+        case 0:
+        case 1:
+            remark = `💦 BPB - Domain_${index + 1} : ${port}`;
+            break;
+        case 2:
+        case 3:
+            remark = `💦 BPB - IPv4_${index - 1} : ${port}`;
+            break;
+        case 4:
+        case 5:
+            remark = `💦 BPB - IPv6_${index - 3} : ${port}`;
+            break;
+        default:
+            remark = `💦 BPB - Clean IP_${index - 5} : ${port}`;
+            break;
+    }
+
+    return encodeURIComponent(remark);
 }
 
 const extractVlessParams = async (vlessConfig) => {
@@ -959,6 +989,7 @@ const getFragmentConfigs = async (env, hostName, client) => {
     let outbounds = [];
     let proxySettings = {};
     let proxyOutbound;
+    let proxyIndex = 1;
 
     try {
         proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
@@ -981,16 +1012,17 @@ const getFragmentConfigs = async (env, hostName, client) => {
         cleanIPs,
         proxyIP,
         outProxy,
-        outProxyParams
+        outProxyParams,
+        ports = ['443']
     } = proxySettings;
 
     const resolved = await resolveDNS(hostName);
     const Addresses = [
         hostName,
         "www.speedtest.net",
-        ...(cleanIPs ? cleanIPs.split(",") : []),
         ...resolved.ipv4,
-        ...resolved.ipv6.map((ip) => `[${ip}]`)
+        ...resolved.ipv6.map((ip) => `[${ip}]`),
+        ...(cleanIPs ? cleanIPs.split(",") : [])
     ];
 
     if (outProxy) {
@@ -1007,59 +1039,63 @@ const getFragmentConfigs = async (env, hostName, client) => {
         }
     }
 
-    for (let index in Addresses) {
+    for (let portIndex in ports.filter(port => defaultHttpsPorts.includes(port))) {
+        let port = +ports[portIndex];
+        for (let index in Addresses) {
 
-        let addr = Addresses[index];
-        let fragConfig = structuredClone(xrayConfigTemp);
-        let outbound = structuredClone(xrayOutboundTemp);
-        let remark = `💦 BPB Frag - ${addr}`;
-        delete outbound.mux;
-        delete outbound.streamSettings.grpcSettings;
-        delete outbound.streamSettings.realitySettings;
-        delete outbound.streamSettings.tcpSettings;
-        outbound.settings.vnext[0].address = addr;
-        outbound.settings.vnext[0].port = 443;
-        outbound.settings.vnext[0].users[0].id = userID;
-        outbound.streamSettings.tlsSettings.serverName = randomUpperCase(hostName);
-        outbound.streamSettings.wsSettings.headers.Host = randomUpperCase(hostName);
-        outbound.streamSettings.wsSettings.path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}?ed=2560`;
-        
-        fragConfig.remarks = remark.length <= 30 ? remark : `${remark.slice(0,29)}...`;;
-        fragConfig.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, blockPorn);
-        fragConfig.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
-        fragConfig.outbounds[0].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
-        
-        if (proxyOutbound) {
-            fragConfig.outbounds = [{...proxyOutbound}, { ...outbound}, ...fragConfig.outbounds];
-            fragConfig.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, true, false);
-        } else {
-            fragConfig.outbounds = [{ ...outbound}, ...fragConfig.outbounds];
-            fragConfig.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, false, false);
-        }
-        
-        delete fragConfig.observatory;
-        delete fragConfig.routing.balancers;
+            let remark = await generateRemark(index);
+            let addr = Addresses[index];
+            let fragConfig = structuredClone(xrayConfigTemp);
+            let outbound = structuredClone(xrayOutboundTemp);
+            delete outbound.mux;
+            delete outbound.streamSettings.grpcSettings;
+            delete outbound.streamSettings.realitySettings;
+            delete outbound.streamSettings.tcpSettings;
+            outbound.settings.vnext[0].address = addr;
+            outbound.settings.vnext[0].port = port;
+            outbound.settings.vnext[0].users[0].id = userID;
+            outbound.streamSettings.tlsSettings.serverName = randomUpperCase(hostName);
+            outbound.streamSettings.wsSettings.headers.Host = randomUpperCase(hostName);
+            outbound.streamSettings.wsSettings.path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}?ed=2560`;
+            fragConfig.remarks = remark;
+            fragConfig.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, blockPorn);
+            fragConfig.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
+            fragConfig.outbounds[0].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
+            
+            if (proxyOutbound) {
+                fragConfig.outbounds = [{...proxyOutbound}, { ...outbound}, ...fragConfig.outbounds];
+                fragConfig.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, true, false);
+            } else {
+                fragConfig.outbounds = [{ ...outbound}, ...fragConfig.outbounds];
+                fragConfig.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, false, false);
+            }
+            
+            delete fragConfig.observatory;
+            delete fragConfig.routing.balancers;
 
-        if (client === 'nekoray') {
-            fragConfig.inbounds[0].port = 2080;
-            fragConfig.inbounds[1].port = 2081;
-        }
-                    
-        Configs.push({
-            address: addr,
-            config: fragConfig
-        }); 
+            if (client === 'nekoray') {
+                fragConfig.inbounds[0].port = 2080;
+                fragConfig.inbounds[1].port = 2081;
+            }
+                        
+            Configs.push({
+                address: remark,
+                config: fragConfig
+            }); 
 
-        outbound.tag = `prox_${+index + 1}`;
-    
-        if (proxyOutbound) {
-            let proxyOut = structuredClone(proxyOutbound);
-            proxyOut.tag = `out_${+index + 1}`;
-            proxyOut.streamSettings.sockopt.dialerProxy = `prox_${+index + 1}`;
-            outbounds.push({...proxyOut}, {...outbound});
-        } else {
-            outbounds.push({...outbound});
-        }
+            outbound.tag = `prox_${proxyIndex}`;
+        
+            if (proxyOutbound) {
+                let proxyOut = structuredClone(proxyOutbound);
+                proxyOut.tag = `out_${proxyIndex}`;
+                proxyOut.streamSettings.sockopt.dialerProxy = `prox_${proxyIndex}`;
+                outbounds.push({...proxyOut}, {...outbound});
+            } else {
+                outbounds.push({...outbound});
+            }
+
+            proxyIndex++;
+        };
     };
 
 
@@ -1105,7 +1141,7 @@ const getSingboxConfig = async (env, hostName) => {
         throw new Error(`An error occurred while getting sing-box configs - ${error}`);
     }
 
-    const { remoteDNS,  localDNS, cleanIPs, proxyIP } = proxySettings
+    const { remoteDNS,  localDNS, cleanIPs, proxyIP, ports } = proxySettings
     let config = structuredClone(singboxConfigTemp);
     config.dns.servers[0].address = remoteDNS;
     config.dns.servers[1].address = localDNS;
@@ -1114,22 +1150,29 @@ const getSingboxConfig = async (env, hostName) => {
     const Addresses = [
         hostName,
         "www.speedtest.net",
-        ...(cleanIPs ? cleanIPs.split(",") : []),
         ...resolved.ipv4,
         ...resolved.ipv6.map((ip) => `[${ip}]`),
+        ...(cleanIPs ? cleanIPs.split(",") : [])
     ];
 
-    Addresses.forEach(addr => {
-        let outbound = structuredClone(singboxOutboundTemp);
-        outbound.server = addr;
-        outbound.tag = addr;
-        outbound.uuid = userID;
-        outbound.tls.server_name = randomUpperCase(hostName);
-        outbound.transport.headers.Host = randomUpperCase(hostName);
-        outbound.transport.path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}?ed=2560`;
-        config.outbounds.push(outbound);
-        config.outbounds[0].outbounds.push(addr);
-        config.outbounds[1].outbounds.push(addr);
+    ports.forEach(port => {
+        Addresses.forEach((addr, index) => {
+
+            let remark = await generateRemark(index);
+            let outbound = structuredClone(singboxOutboundTemp);
+            outbound.server = addr;
+            outbound.tag = remark;
+            outbound.uuid = userID;
+            outbound.server_port = +port;
+            outbound.transport.headers.Host = randomUpperCase(hostName);
+            outbound.transport.path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
+            defaultHttpsPorts.includes(port)
+                ? outbound.tls.server_name = randomUpperCase(hostName)
+                : delete outbound.tls;
+            config.outbounds.push(outbound);
+            config.outbounds[0].outbounds.push(remark);
+            config.outbounds[1].outbounds.push(remark);
+        });
     });
 
     return config;
@@ -1151,6 +1194,7 @@ const updateDataset = async (env, Settings) => {
         bypassLAN: Settings?.get('bypass-lan') || false,
         cleanIPs: Settings?.get('cleanIPs')?.replaceAll(' ', '') || '',
         proxyIP: Settings?.get('proxyIP') || '',
+        ports: Settings?.getAll('ports[]') || ['443'],
         outProxy: vlessConfig || '',
         outProxyParams: vlessConfig ? await extractVlessParams(vlessConfig) : ''
     };
@@ -1265,7 +1309,7 @@ const Authenticate = async (request, env) => {
     }
 }
 
-const renderHomePage = async (request, env, hostName, fragConfigs) => {
+const renderHomePage = async (env, hostName, fragConfigs) => {
     let proxySettings = {};
     
     try {
@@ -1288,10 +1332,9 @@ const renderHomePage = async (request, env, hostName, fragConfigs) => {
         bypassLAN = false,
         cleanIPs = '', 
         proxyIP = '', 
-        outProxy = ''
+        outProxy = '',
+        ports = ['443']
     } = proxySettings;
-
-    let regionNames = new Intl.DisplayNames(['en'], {type: 'region'});
 
     const genCustomConfRow = async (configs) => {
         let tableBlock = "";
@@ -1300,9 +1343,9 @@ const renderHomePage = async (request, env, hostName, fragConfigs) => {
             <tr>
                 <td>
                     ${config.address === 'Best-Ping' 
-                        ? `<div  style="justify-content: center;"><span class="material-symbols-outlined">speed</span><span>&nbsp;<b>Best-Ping</b></span></div>` 
+                        ? `<div  style="justify-content: center;"><span><b>💦 Best-Ping 💥</b></span></div>` 
                         : config.address === 'WorkerLess'
-                            ? `<div  style="justify-content: center;"><span class="material-symbols-outlined">star</span><span>&nbsp;<b>WorkerLess</b></span></div>`
+                            ? `<div  style="justify-content: center;"><span><b>💦 WorkerLess ⭐</b></span></div>`
                             : config.address
                     }
                 </td>
@@ -1316,6 +1359,22 @@ const renderHomePage = async (request, env, hostName, fragConfigs) => {
         });
 
         return tableBlock;
+    }
+
+    const buildPortsBlock = async () => {
+        let httpPortsBlock = '';
+        let httpsPortsBlock = '';
+        [...defaultHttpPorts, ...defaultHttpsPorts].forEach(port => {
+            let id = `port-${port}`;
+            let portBlock = `
+                <div class="routing" style="grid-template-columns: 1fr 2fr; margin-right: 10px;">
+                    <input type="checkbox" id=${id} name=${id} value="true" ${ports.includes(port) ? 'checked' : ''}>
+                    <label style="margin-bottom: 3px;" for=${id}>${port}</label>
+                </div>`;
+            defaultHttpPorts.includes(port) ? httpPortsBlock += portBlock : httpsPortsBlock += portBlock;
+        });
+
+        return {httpPortsBlock, httpsPortsBlock};
     }
 
     const html = `
@@ -1506,8 +1565,18 @@ const renderHomePage = async (request, env, hostName, fragConfigs) => {
                 margin-bottom: 15px;
                 transition: border-color 0.3s ease;
             }
-            .routing { display: flex; justify-content: center; align-items: center; margin-bottom: 15px; }
-            .routing label { margin: 0; font-weight: 400; font-size: 100%; }
+            .routing { 
+                display: grid;
+                grid-template-columns: 5fr 1fr 5fr;
+                justify-content: center;
+                margin-bottom: 15px;
+            }
+            .routing label {
+                text-align: left;
+                margin: 0;
+                font-weight: 400;
+                font-size: 100%;
+            }
             .form-control input[type="password"]:focus { border-color: #3498db; outline: none; }
             #passwordError { color: red; margin-bottom: 10px; }
             .symbol { margin-right: 8px; }
@@ -1570,19 +1639,19 @@ const renderHomePage = async (request, env, hostName, fragConfigs) => {
                 <h2>FRAGMENT ROUTING ⚙️</h2>
 				<div class="form-control" style="margin-bottom: 20px;">			
                     <div class="routing">
-                        <input type="checkbox" id="block-ads" name="block-ads" style="margin: 0 10px 0 0;" value="true" ${blockAds ? 'checked' : ''}>
-                        <label for="block-ads">Block Ads.&nbsp</label>
+                        <input type="checkbox" id="block-ads" name="block-ads" style="margin: 0; grid-column: 2;" value="true" ${blockAds ? 'checked' : ''}>
+                        <label for="block-ads">Block Ads.</label>
                     </div>
                     <div class="routing">
-						<input type="checkbox" id="bypass-iran" name="bypass-iran" style="margin: 0 10px 0 0;;" value="true" ${bypassIran ? 'checked' : ''}>
-                        <label for="bypass-iran">Bypass Iran&nbsp</label>
+						<input type="checkbox" id="bypass-iran" name="bypass-iran" style="margin: 0; grid-column: 2;" value="true" ${bypassIran ? 'checked' : ''}>
+                        <label for="bypass-iran">Bypass Iran</label>
 					</div>
                     <div class="routing">
-						<input type="checkbox" id="block-porn" name="block-porn" style="margin: 0 10px 0 0;;" value="true" ${blockPorn ? 'checked' : ''}>
+						<input type="checkbox" id="block-porn" name="block-porn" style="margin: 0; grid-column: 2;" value="true" ${blockPorn ? 'checked' : ''}>
                         <label for="block-porn">Block Porn</label>
 					</div>
                     <div class="routing">
-						<input type="checkbox" id="bypass-lan" name="bypass-lan" style="margin: 0 10px 0 0;;" value="true" ${bypassLAN ? 'checked' : ''}>
+						<input type="checkbox" id="bypass-lan" name="bypass-lan" style="margin: 0; grid-column: 2;" value="true" ${bypassLAN ? 'checked' : ''}>
                         <label for="bypass-lan">Bypass LAN</label>
 					</div>
 				</div>
@@ -1604,6 +1673,23 @@ const renderHomePage = async (request, env, hostName, fragConfigs) => {
                             <span class="material-symbols-outlined" style="margin-left: 5px;">open_in_new</span>
                         </button>
                     </a>
+                </div>
+                <h2>PORTS ⚙️</h2>
+                <div class="table-container">
+                    <table id="frag-sub-table">
+                        <tr>
+                            <th style="text-wrap: nowrap; background-color: gray;">Config type</th>
+                            <th style="text-wrap: nowrap; background-color: gray;">Ports</th>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-size: larger;"><b>TLS</b></td>
+                            <td style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;">${(await buildPortsBlock()).httpsPortsBlock}</td>    
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-size: larger;"><b>Non TLS</b></td>
+                            <td style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;">${(await buildPortsBlock()).httpPortsBlock}</td>    
+                        </tr>
+                    </table>
                 </div>
 				<div id="apply" class="form-control">
 					<div style="grid-column: 2; width: 100%;">
@@ -1887,6 +1973,8 @@ const renderHomePage = async (request, env, hostName, fragConfigs) => {
             const validSecurityType = /security=(tls|none|reality)/.test(chainProxy);
             const validTransmission = /type=(tcp|grpc|ws)/.test(chainProxy);
             const validIPDomain = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+            const checkedPorts = Array.from(document.querySelectorAll('input[name^="port-"]:checked')).map(input => input.name.split('-')[1]);
+            checkedPorts.forEach(port => formData.append('ports[]', port));
 
             const invalidIPs = [...cleanIPs, proxyIP]?.filter(value => {
                 if (value !== "") {
@@ -2438,11 +2526,11 @@ const singboxConfigTemp = {
         {
             type: "selector",
             tag: "proxy",
-            outbounds: ["Best-Ping"]
+            outbounds: ["💦 Best-Ping 💥"]
         },
         {
             type: "urltest",
-            tag: "Best-Ping",
+            tag: "💦 Best-Ping 💥",
             outbounds: [],
             url: "https://www.gstatic.com/generate_204",
             interval: "3m",
@@ -2597,10 +2685,10 @@ const singboxOutboundTemp = {
     },
     transport: {
         early_data_header_name: "Sec-WebSocket-Protocol",
+        max_early_data: 2560,
         headers: {
             Host: ""
         },
-        max_early_data: 2048,
         path: "/",
         type: "ws"
     },
