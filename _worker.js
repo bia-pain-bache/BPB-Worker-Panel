@@ -1149,10 +1149,8 @@ const getFragmentConfigs = async (env, hostName, client) => {
     outbounds[1].tag = 'proxy';
 
     if (proxyOutbound) {
-        // delete outbounds[0].streamSettings.sockopt.dialerProxy;
         outbounds[0].streamSettings.sockopt.dialerProxy = 'proxy';
         delete outbounds[1].streamSettings.sockopt.dialerProxy;
-        // outbounds[1].proxySettings = {tag: "out"};
         bestFragment.outbounds = [outbounds[0], outbounds[1], ...bestFragment.outbounds];
         bestFragment.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, true, true);
     } else {
