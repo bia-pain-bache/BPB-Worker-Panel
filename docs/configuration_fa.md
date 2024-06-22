@@ -80,7 +80,15 @@
 </p>
 <br>
 
-### 2-2- استفاده در DESKTOP - Nekoray
+### 2-2- کانفیگ‌های Warp و Warp on Warp
+
+<p align="center">
+  <img src="assets/images/Warp-Configs.jpg">
+</p>
+
+این بخش یه کانفیگ Warp میده که IP کلادفلر ایران هست و یه کانفیگ Warp on Warp که IP خارجه. کانفیگ Warp on Warp روی هسنه Xray عملکرد خوبی نداره متاسفانه. در نظر داشته باشید حتما از اسکنر استفاده کنید برای پیدت کردن Endpoint مناسب روی اپراتور خودتون. اسکریپت اسکنر داخل پنل هست، کپی کنید و داخل Termux روی اندروید اجراش کنید. هر بار که ساب Warp رو آپدیت کنید کانفیگ‌های Warp تغییر میکنن ولی از همون Endpoint استفاده میکنن. ترجیحا از اپلیکیشن MahsaNG برای اپراتورهایی که وارپ متصل نمیشه استفاده کنهید.
+<br><br>
+### 2-3- استفاده از فرگمنت در DESKTOP - Nekoray
 
 <p align="center">
   <img src="assets/images/Fragment-Configs.jpg">

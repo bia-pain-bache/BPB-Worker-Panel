@@ -1269,12 +1269,12 @@ const getWoWConfig = async (env, client) => {
         xrayOutbound.settings.peers[0].publicKey = wgConfig.account.config.peers[0].public_key;
         xrayOutbound.settings.reserved = base64ToDecimal(wgConfig.account.config.client_id);
         xrayOutbound.settings.secretKey = wgConfig.privateKey;
-        xrayOutbound.tag = i === 1 ? 'Wg-Ir' : 'Wg-Out';    
+        xrayOutbound.tag = i === 1 ? 'warp-ir' : 'warp-out';    
         
         if (i === 1) {
             delete xrayOutbound.streamSettings;
         } else {
-            xrayOutbound.streamSettings.sockopt.dialerProxy = 'Wg-Ir';
+            xrayOutbound.streamSettings.sockopt.dialerProxy = 'warp-ir';
         }
 
         xrayOutbounds.push(xrayOutbound);
@@ -1291,12 +1291,12 @@ const getWoWConfig = async (env, client) => {
         singboxOutbound.peer_public_key = wgConfig.account.config.peers[0].public_key;
         singboxOutbound.reserved = wgConfig.account.config.client_id;
         singboxOutbound.private_key = wgConfig.privateKey;
-        singboxOutbound.tag = i === 1 ? 'Wg-Ir' : 'Wg-Out';    
+        singboxOutbound.tag = i === 1 ? '💦 Warp' : '💦 Warp on Warp 🚀';    
         
         if (i === 1) {
             delete singboxOutbound.detour;
         } else {
-            singboxOutbound.detour = 'Wg-Ir';
+            singboxOutbound.detour = '💦 Warp';
         }
 
         singboxOutbounds.push(singboxOutbound);
@@ -1309,16 +1309,21 @@ const getWoWConfig = async (env, client) => {
     delete wowConfigXray.observatory;
     delete wowConfigXray.routing.balancers;
     wowConfigXray.outbounds = [...xrayOutbounds, ...wowConfigXray.outbounds];
-    wowConfigXray.routing.rules[wowConfigXray.routing.rules.length - 1].outboundTag = 'Wg-Out';
+    wowConfigXray.routing.rules[wowConfigXray.routing.rules.length - 1].outboundTag = 'warp-out';
+    let warpConfigXray = structuredClone(wowConfigXray);
+    warpConfigXray.outbounds.splice(0,1);
+    warpConfigXray.routing.rules[warpConfigXray.routing.rules.length - 1].outboundTag = 'warp-ir';
+    warpConfigXray.remarks = '💦 BPB - Warp';
 
     wowConfigSingbox.dns.servers[0].address = remoteDNS;
     wowConfigSingbox.dns.servers[1].address = localDNS;
     wowConfigSingbox.dns.rules[0].domain = 'engage.cloudflareclient.com';
-    wowConfigSingbox.outbounds.splice(0,2);
-    wowConfigSingbox.outbounds = [...singboxOutbounds, ...wowConfigSingbox.outbounds];
-    wowConfigSingbox.route.final = 'Wg-Out';
+    wowConfigSingbox.outbounds.splice(1,1);
+    wowConfigSingbox.outbounds[0].outbounds = ['💦 Warp on Warp 🚀', '💦 Warp'];
+    wowConfigSingbox.outbounds = [...wowConfigSingbox.outbounds, ...singboxOutbounds];
+    delete wowConfigSingbox.route.final;
 
-    return client === 'singbox' ? wowConfigSingbox : wowConfigXray;
+    return client === 'singbox' ? wowConfigSingbox : [{...wowConfigXray}, {...warpConfigXray}];
 }
 
 const fetchWgConfig = async () => {
@@ -2113,6 +2118,10 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                             </div>
                             <div>
                                 <span class="material-symbols-outlined symbol">verified</span>
+                                <span>MahsaNG</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
                                 <span>Streisand</span>
                             </div>
                         </td>
@@ -2127,7 +2136,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                     </tr>
                 </table>
             </div>
-            <h2>Warp on Warp 🔗</h2>
+            <h2>WARP SUB 🔗</h2>
 			<div class="table-container">
 				<table id="normal-configs-table">
 					<tr>
@@ -2151,10 +2160,6 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                             <div>
                                 <span class="material-symbols-outlined symbol">verified</span>
                                 <span>Streisand</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>Nekoray (Xray)</span>
                             </div>
                         </td>
 						<td>
@@ -2656,6 +2661,7 @@ const xrayConfigTemp = {
             sniffing: {
                 destOverride: ["http", "tls"],
                 enabled: true,
+                routeOnly: true
             },
             tag: "socks-in",
         },
@@ -2670,6 +2676,7 @@ const xrayConfigTemp = {
             sniffing: {
                 destOverride: ["http", "tls"],
                 enabled: true,
+                routeOnly: true
             },
             tag: "http-in",
         },
