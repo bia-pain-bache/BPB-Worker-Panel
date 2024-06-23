@@ -1997,10 +1997,10 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                             <td style="text-align: center; font-size: larger;"><b>TLS</b></td>
                             <td style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;">${(await buildPortsBlock()).httpsPortsBlock}</td>    
                         </tr>
-                        <tr>
+                        ${!hostName.includes('pages.dev') && `<tr>
                             <td style="text-align: center; font-size: larger;"><b>Non TLS</b></td>
                             <td style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;">${(await buildPortsBlock()).httpPortsBlock}</td>    
-                        </tr>
+                        </tr>`}        
                     </table>
                 </div>
                 <h2>WARP ENDPOINT ⚙️</h2>
@@ -2641,6 +2641,10 @@ const renderErrorPage = (message, error, refer) => {
     </body>
 
     </html>`;
+}
+
+const isRunningAsWorker = () => {
+    return typeof process === 'undefined';
 }
 
 const xrayConfigTemp = {
