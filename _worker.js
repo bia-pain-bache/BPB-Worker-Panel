@@ -1148,19 +1148,21 @@ const getFragmentConfigs = async (env, hostName, client) => {
             }
         });
     });
-    
-    outbounds[0].settings.vnext[0].port = 443;
-    outbounds[0].tag = 'out';
-    outbounds[1].tag = 'proxy';
 
+    let bestFragmentOutbounds = structuredClone([{...outbounds[0]}, {...outbounds[1]}]);  
+    bestFragmentOutbounds[0].settings.vnext[0].port = 443;
+    
     if (proxyOutbound) {
-        outbounds[0].streamSettings.sockopt.dialerProxy = 'proxy';
-        delete outbounds[1].streamSettings.sockopt.dialerProxy;
-        bestFragment.outbounds = [outbounds[0], outbounds[1], ...bestFragment.outbounds];
+        bestFragmentOutbounds[0].streamSettings.sockopt.dialerProxy = 'proxy';
+        delete bestFragmentOutbounds[1].streamSettings.sockopt.dialerProxy;
+        bestFragmentOutbounds[0].tag = 'out';
+        bestFragmentOutbounds[1].tag = 'proxy';
+        bestFragment.outbounds = [bestFragmentOutbounds[0], bestFragmentOutbounds[1], ...bestFragment.outbounds];
         bestFragment.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, true, true);
     } else {
-        delete outbounds[1].streamSettings.sockopt.dialerProxy;
-        bestFragment.outbounds = [outbounds[1], ...bestFragment.outbounds];
+        delete bestFragmentOutbounds[0].streamSettings.sockopt.dialerProxy;
+        bestFragmentOutbounds[0].tag = 'proxy';
+        bestFragment.outbounds = [bestFragmentOutbounds[0], ...bestFragment.outbounds];
         bestFragment.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, false, true);
     }
 
@@ -1174,10 +1176,7 @@ const getFragmentConfigs = async (env, hostName, client) => {
         bestFragment.inbounds[2].port = 6450;
     }
 
-    const workerLessConfig = await buildWorkerLessConfig(env, client);
-
-
-    
+    const workerLessConfig = await buildWorkerLessConfig(env, client); 
     Configs.push(
         { address: 'Best-Ping', config: bestPing}, 
         { address: 'Best-Fragment', config: bestFragment}, 
@@ -1201,7 +1200,6 @@ const getSingboxConfig = async (env, hostName) => {
     let config = structuredClone(singboxConfigTemp);
     config.dns.servers[0].address = remoteDNS;
     config.dns.servers[1].address = localDNS;
-
     const resolved = await resolveDNS(hostName);
     const Addresses = [
         hostName,
@@ -1680,7 +1678,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             let id = `port-${port}`;
             let portBlock = `
                 <div class="routing" style="grid-template-columns: 1fr 2fr; margin-right: 10px;">
-                    <input type="checkbox" id=${id} name=${id} value="true" ${ports.includes(port) ? 'checked' : ''}>
+                    <input type="checkbox" id=${id} name=${id} onchange="handlePortChange(event)" value="true" ${ports.includes(port) ? 'checked' : ''}>
                     <label style="margin-bottom: 3px;" for=${id}>${port}</label>
                 </div>`;
             defaultHttpPorts.includes(port) ? httpPortsBlock += portBlock : httpsPortsBlock += portBlock;
@@ -2242,6 +2240,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
         
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 	<script>
+    let activePortsNo = ${ports.length};
 		document.addEventListener('DOMContentLoaded', () => {
             let regionNames = new Intl.DisplayNames(['en'], {type: 'region'});
             const configForm = document.getElementById('configForm');            
@@ -2306,6 +2305,17 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                 }
             }
 		});
+
+        const handlePortChange = (event) => {
+            event.target.checked ? activePortsNo++ : activePortsNo--;
+            if (activePortsNo === 0) {
+                event.preventDefault();
+                event.target.checked = !event.target.checked;
+                alert("⛔ At least one port should be selected! 🫤");
+                activePortsNo = 1;
+                return false;
+            }
+        }
 
         const openQR = (url, title) => {
             let qrcodeContainer = document.getElementById("qrcode-container");
