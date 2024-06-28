@@ -2275,7 +2275,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                 <i class="fa fa-telegram" style="font-size:36px; margin-right: 10px;"></i>
                 <a class="link" href="https://t.me/MFJD666" target="_blank">TG频道</a>
                 <button id="openModalBtn" class="button">更改密码</button>
-                <button type="button" id="logout" style="background: none; margin: 0; border: none; cursor: pointer;">注销
+                <button type="button" id="logout" style="background: none; margin: 0; border: none; cursor: pointer; font-size: 16px;">注销
                     <i class="fa fa-power-off fa-2x" aria-hidden="true"></i>
                 </button>
             </div>
