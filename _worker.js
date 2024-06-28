@@ -20,7 +20,7 @@ let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 
 let dohURL = 'https://cloudflare-dns.com/dns-query';
 
-let panelVersion = '2.4.1';
+let panelVersion = '2.4.3';
 
 if (!isValidUUID(userID)) {
     throw new Error('uuid is not valid');
@@ -807,7 +807,7 @@ const getNormalConfigs = async (env, hostName, client) => {
                     }&fp=randomized&alpn=${
                         client === 'singbox' ? 'http/1.1' : 'h2,http/1.1'
                     }`
-                    : ''}&path=${`/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`}${
+                    : ''}&path=${`/${getRandomPath(16)}${proxyIP ? `/${encodeURIComponent(btoa(proxyIP))}` : ''}`}${
                         client === 'singbox' 
                             ? '&eh=Sec-WebSocket-Protocol&ed=2560' 
                             : encodeURIComponent('?ed=2560')
@@ -1256,8 +1256,8 @@ const getWarpConfigs = async (env, client) => {
 
     let xrayWoWConfig = structuredClone(xrayConfigTemp);
     let singboxWarpConfig = structuredClone(singboxConfigTemp);
-    singboxWarpConfig.outbounds[0].outbounds = ['💦 Warp Best Ping 💥'];
-    singboxWarpConfig.outbounds[1].tag = '💦 Warp Best Ping 💥';
+    singboxWarpConfig.outbounds[0].outbounds = ['💦 Warp Best Ping 🚀'];
+    singboxWarpConfig.outbounds[1].tag = '💦 Warp Best Ping 🚀';
 
     for (let i = 0; i < 2; i++) {
         let wgConfig = await fetchWgConfig();
@@ -1810,7 +1810,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                 justify-content: center;
                 width: 100%;
 				white-space: nowrap;
-				padding: 10px 20px;
+				padding: 10px 15px;
 				font-size: 16px;
                 font-weight: 600;
 				letter-spacing: 1px;
@@ -2050,7 +2050,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 				</div>
                 <div class="form-control">
                     <label>🔎 Scanner Script</label>
-                    <button class="button" onclick="copyToClipboard('bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/warp/main/endip/install.sh)', false)">
+                    <button class="button" style="padding: 10px 0;" onclick="copyToClipboard('bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/warp/main/endip/install.sh)', false)">
                         Copy Script<span class="material-symbols-outlined">terminal</span>
                     </button>
                 </div>
@@ -2410,10 +2410,9 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             const hasSecurity = /security=/.test(chainProxy);
             const validSecurityType = /security=(tls|none|reality)/.test(chainProxy);
             const validTransmission = /type=(tcp|grpc|ws)/.test(chainProxy);
-            const validIPDomain = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+            const validIPDomain = /^((?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,})|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|\\[(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,7}:\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}\\]|\\[[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}\\]|\\[:(?::[a-fA-F0-9]{1,4}){1,7}\\]|\\[\\](?:::[a-fA-F0-9]{1,4}){1,7}\\])$/i;
             const checkedPorts = Array.from(document.querySelectorAll('input[name^="port-"]:checked')).map(input => input.name.split('-')[1]);
-            const validEndpoint = /^(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)):(?:[0-9]{1,5})$/;
-
+            const validEndpoint = /^(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|\\[(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,7}:\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}\\]|\\[[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}\\]|\\[:(?::[a-fA-F0-9]{1,4}){1,7}\\]|\\[::(?::[a-fA-F0-9]{1,4}){0,7}\\]):(?:[0-9]{1,5})$/;
             checkedPorts.forEach(port => formData.append('ports[]', port));
 
             const invalidIPs = [...cleanIPs, proxyIP]?.filter(value => {
@@ -2828,7 +2827,7 @@ const xrayConfigTemp = {
         ]
     },
     observatory: {
-        probeInterval: "3m",
+        probeInterval: "30s",
         probeURL: "https://api.github.com/_private/browser/stats",
         subjectSelector: ["prox"],
         EnableConcurrency: true,
@@ -2998,7 +2997,7 @@ const singboxConfigTemp = {
             tag: "💦 Best-Ping 💥",
             outbounds: [],
             url: "https://www.gstatic.com/generate_204",
-            interval: "3m",
+            interval: "30s",
             tolerance: 50
         },
         {
