@@ -2247,7 +2247,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                 <div class="modal-content">
                     <span class="close">&times;</span>
                     <form id="passwordChangeForm">
-                        <h2>Change Password</h2>
+                        <h2>更改密码</h2>
                         <div class="form-control">
                             <label for="newPassword">New Password</label>
                             <input type="password" id="newPassword" name="newPassword" required>
@@ -2272,7 +2272,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             </div>
             <hr>
             <div class="footer">
-                <i class="fa fa-github" style="font-size:36px; margin-right: 10px;"></i>
+                <i class="fa fa-TG频道" style="font-size:36px; margin-right: 10px;"></i>
                 <a class="link" href="https://github.com/bia-pain-bache/BPB-Worker-Panel" target="_blank">Github</a>
                 <button id="openModalBtn" class="button">Change Password</button>
                 <button type="button" id="logout" style="background: none; margin: 0; border: none; cursor: pointer;">
