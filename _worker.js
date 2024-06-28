@@ -2278,7 +2278,10 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             align-items: center;
         }
         .footer .link, .footer button {
+            display: inline-block;
             font-size: 16px;
+            line-height: 1.5;
+            vertical-align: middle;
         }
         .footer button {
             background: none;
