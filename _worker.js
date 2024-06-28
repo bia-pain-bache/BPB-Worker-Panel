@@ -1697,7 +1697,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                 </td>
                 <td>
                     <button onclick="copyToClipboard('${encodeURIComponent(JSON.stringify(config.config, null, 4))}', true)">
-                        Copy Config 
+                        复制配置 
                         <span class="material-symbols-outlined">copy_all</span>
                     </button>
                 </td>
