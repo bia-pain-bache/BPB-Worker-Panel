@@ -1291,7 +1291,7 @@ const getWarpConfigs = async (env, client) => {
 
         if (wowEndpoint) {
             singboxOutbound.server = wowEndpoint.includes('[') ? wowEndpoint.match(ipv6Regex)[1] : wowEndpoint.split(':')[0];
-            singboxOutbound.server_port = wowEndpoint.includes('[') ? +wowEndpoint.match(portRegex)[0] : +wowEndpoint.split(':')[0];
+            singboxOutbound.server_port = wowEndpoint.includes('[') ? +wowEndpoint.match(portRegex)[0] : +wowEndpoint.split(':')[1];
         }
 
         singboxOutbound.peer_public_key = wgConfig.account.config.peers[0].public_key;
