@@ -2271,31 +2271,15 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                 </div>
             </div>
             <hr>
-<head>
-    <style>
-        .footer {
-            display: flex;
-            align-items: center;
-        }
-        .footer .link, .footer button {
-            font-size: 16px;
-        }
-        .footer button {
-            background: none;
-            margin: 0;
-            border: none;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-    <div class="footer">
-        <i class="fab fa-telegram" style="font-size:36px; margin-right: 10px;"></i>
-        <a class="link" href="https://t.me/MFJD666" target="_blank">TG频道</a>
-        <button id="openModalBtn" class="button">更改密码</button>
-        <button type="button" id="logout">注销</button>
-    </div>
-</body>
+            <div class="footer">
+                <i class="fa fa-github" style="font-size:36px; margin-right: 10px;"></i>
+                <a class="link" href="https://github.com/bia-pain-bache/BPB-Worker-Panel" target="_blank">Github</a>
+                <button id="openModalBtn" class="button">Change Password</button>
+                <button type="button" id="logout" style="background: none; margin: 0; border: none; cursor: pointer;">
+                    <i class="fa fa-power-off fa-2x" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
        
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 	<script>
