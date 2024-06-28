@@ -2277,7 +2277,6 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
     <button id="openModalBtn" class="button">更改密码</button>
     <button type="button" id="logout" style="background: none; margin: 0; border: none; cursor: pointer;">注销</button>
 </div>
-        </div>
        
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 	<script>
