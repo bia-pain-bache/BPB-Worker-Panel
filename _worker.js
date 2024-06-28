@@ -20,7 +20,7 @@ let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 
 let dohURL = 'https://cloudflare-dns.com/dns-query';
 
-let panelVersion = '2.4.3';
+let panelVersion = '';
 
 if (!isValidUUID(userID)) {
     throw new Error('uuid is not valid');
@@ -1948,7 +1948,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 	</head>
 	
 	<body>
-		<h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
+		<h1>BPB面板  <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
 		<div class="form-container">
             <h2>节点设置 ⚙️</h2>
 			<form id="configForm">
@@ -2627,16 +2627,16 @@ const renderLoginPage = async () => {
     </head>
     <body>
         <div class="container">
-            <h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
+            <h1>BPB 面板 <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
             <div class="form-container">
-                <h2>User Login</h2>
+                <h2>用户登录</h2>
                 <form id="loginForm">
                     <div class="form-control">
-                        <label for="password">Password</label>
+                        <label for="password">密码</label>
                         <input type="password" id="password" name="password" required>
                     </div>
                     <div id="passwordError" style="color: red; margin-bottom: 10px;"></div>
-                    <button type="submit" class="button">Login</button>
+                    <button type="submit" class="button">登录</button>
                 </form>
             </div>
         </div>
@@ -2698,7 +2698,7 @@ const renderErrorPage = (message, error, refer) => {
 
     <body>
         <div id="error-container">
-            <h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
+            <h1>BPB 面板 <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
             <div id="error-message">
                 <h2>${message} ${refer 
                     ? 'Please try again or refer to <a href="https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/README.md">documents</a>' 
