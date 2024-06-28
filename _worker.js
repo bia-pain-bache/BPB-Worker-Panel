@@ -1992,29 +1992,29 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                     </div>
                     <div class="routing">
 						<input type="checkbox" id="bypass-iran" name="bypass-iran" style="margin: 0; grid-column: 2;" value="true" ${bypassIran ? 'checked' : ''}>
-                        <label for="bypass-iran">Bypass Iran</label>
+                        <label for="bypass-iran">屏蔽色情内容</label>
 					</div>
                     <div class="routing">
 						<input type="checkbox" id="block-porn" name="block-porn" style="margin: 0; grid-column: 2;" value="true" ${blockPorn ? 'checked' : ''}>
-                        <label for="block-porn">Block Porn</label>
+                        <label for="block-porn">绕过伊朗限制</label>
 					</div>
                     <div class="routing">
 						<input type="checkbox" id="bypass-lan" name="bypass-lan" style="margin: 0; grid-column: 2;" value="true" ${bypassLAN ? 'checked' : ''}>
                         <label for="bypass-lan">Bypass LAN</label>
 					</div>
 				</div>
-                <h2>PROXY IP ⚙️</h2>
+                <h2>代理IP ⚙️</h2>
 				<div class="form-control">
-					<label for="proxyIP">📍 IP or Domain</label>
+					<label for="proxyIP">📍 IP 、 域名</label>
 					<input type="text" id="proxyIP" name="proxyIP" value="${proxyIP}">
 				</div>
-                <h2>CLEAN IP ⚙️</h2>
+                <h2>干净的IP ⚙️</h2>
 				<div class="form-control">
-					<label for="cleanIPs">✨ Clean IPs</label>
+					<label for="cleanIPs">✨IP地址</label>
 					<input type="text" id="cleanIPs" name="cleanIPs" value="${cleanIPs.replaceAll(",", " , ")}">
 				</div>
                 <div class="form-control">
-                    <label>🔎 Online Scanner</label>
+                    <label>🔎 在线扫描</label>
                     <a href="https://scanner.github1.cloud/" id="scanner" name="scanner" target="_blank">
                         <button type="button" class="button">
                             Scan now
@@ -2022,12 +2022,12 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                         </button>
                     </a>
                 </div>
-                <h2>PORTS ⚙️</h2>
+                <h2>端口设置 ⚙️</h2>
                 <div class="table-container">
                     <table id="frag-sub-table">
                         <tr>
-                            <th style="text-wrap: nowrap; background-color: gray;">Config type</th>
-                            <th style="text-wrap: nowrap; background-color: gray;">Ports</th>
+                            <th style="text-wrap: nowrap; background-color: gray;">配置类型</th>
+                            <th style="text-wrap: nowrap; background-color: gray;">端口</th>
                         </tr>
                         <tr>
                             <td style="text-align: center; font-size: larger;"><b>TLS</b></td>
@@ -2039,34 +2039,34 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                         </tr>`}        
                     </table>
                 </div>
-                <h2>WARP ENDPOINT ⚙️</h2>
+                <h2>WARP端点设置 ⚙️</h2>
 				<div class="form-control">
-                    <label for="wowEndpoint">✨ WoW Endpoint</label>
+                    <label for="wowEndpoint">✨ WOW端点</label>
                     <input type="text" id="wowEndpoint" name="wowEndpoint" value="${wowEndpoint.replaceAll(",", " , ")}">
 				</div>
 				<div class="form-control">
-                    <label for="warpEndpoints">✨ Warp Endpoints</label>
+                    <label for="warpEndpoints">✨ WARP端点</label>
                     <input type="text" id="warpEndpoints" name="warpEndpoints" value="${warpEndpoints.replaceAll(",", " , ")}">
 				</div>
                 <div class="form-control">
-                    <label>🔎 Scanner Script</label>
+                    <label>🔎 扫描脚本</label>
                     <button class="button" style="padding: 10px 0;" onclick="copyToClipboard('bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/warp/main/endip/install.sh)', false)">
-                        Copy Script<span class="material-symbols-outlined">terminal</span>
+                        复制脚本<span class="material-symbols-outlined">terminal</span>
                     </button>
                 </div>
 				<div id="apply" class="form-control">
 					<div style="grid-column: 2; width: 100%;">
-						<input type="submit" id="applyButton" class="button disabled" value="APPLY SETTINGS 💥" form="configForm">
+						<input type="submit" id="applyButton" class="button disabled" value="应用设置 💥" form="configForm">
 					</div>
 				</div>
 			</form>
             <hr>            
-			<h2>NORMAL CONFIGS 🔗</h2>
+			<h2>常规配置 🔗</h2>
 			<div class="table-container">
 				<table id="normal-configs-table">
 					<tr>
-						<th>Application</th>
-						<th>Subscription</th>
+						<th>代理工具</th>
+						<th>订阅方式</th>
 					</tr>
 					<tr>
                         <td>
@@ -2097,10 +2097,10 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                         </td>
 						<td>
                             <button onclick="openQR('https://${hostName}/sub/${userID}#BPB-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
-                                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
+                                二维码&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
                             <button onclick="copyToClipboard('https://${hostName}/sub/${userID}#BPB-Normal', false)">
-                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
+                                复制订阅<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
 					</tr>
@@ -2117,7 +2117,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                         </td>
 						<td>
                             <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=singbox#BPB-Normal', false)">
-                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
+                                复制订阅<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
 						</td>
 					</tr>
@@ -2130,21 +2130,21 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                         </td>
                         <td>
                             <button onclick="openQR('sing-box://import-remote-profile?url=https://${hostName}/sub/${userID}?app=sfa#BPB-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
-                                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
+                                二维码&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
                             <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=sfa#BPB-Normal', false)">
-                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
+                                复制订阅<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
                     </tr>
 				</table>
 			</div>
-			<h2>FRAGMENT SUB ⛓️</h2>
+			<h2>分段订阅 ⛓️</h2>
 			<div class="table-container">
                 <table id="frag-sub-table">
                     <tr>
-                        <th style="text-wrap: nowrap;">Application</th>
-                        <th style="text-wrap: nowrap;">Fragment Subscription</th>
+                        <th style="text-wrap: nowrap;">应用程序</th>
+                        <th style="text-wrap: nowrap;">订阅方式</th>
                     </tr>
                     <tr>
                         <td style="text-wrap: nowrap;">
@@ -2167,21 +2167,21 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                         </td>
                         <td>
                             <button onclick="openQR('https://${hostName}/fragsub/${userID}#BPB Fragment', 'Fragment Subscription')" style="margin-bottom: 8px;">
-                                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
+                                二维码&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
                             <button onclick="copyToClipboard('https://${hostName}/fragsub/${userID}#BPB Fragment', true)">
-                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
+                                复制订阅<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
                     </tr>
                 </table>
             </div>
-            <h2>WARP SUB 🔗</h2>
+            <h2>WARP 订阅 🔗</h2>
 			<div class="table-container">
 				<table id="normal-configs-table">
 					<tr>
-						<th>Application</th>
-						<th>Subscription</th>
+						<th>应用程序</th>
+						<th>订阅方式</th>
 					</tr>
 					<tr>
                         <td>
@@ -2204,10 +2204,10 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                         </td>
 						<td>
                             <button onclick="openQR('https://${hostName}/warpsub/${userID}#BPB-Warp', 'Warp Subscription')" style="margin-bottom: 8px;">
-                                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
+                                二维码&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
                             <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID}#BPB-Warp', false)">
-                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
+                                复制订阅<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
 					</tr>
@@ -2224,21 +2224,21 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                         </td>
 						<td>
                             <button onclick="openQR('sing-box://import-remote-profile?url=https://${hostName}/warpsub/${userID}?app=singbox#BPB-Warp', 'Warp Subscription')" style="margin-bottom: 8px;">
-                                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
+                                二维码&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
                             <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID}?app=singbox#BPB-Warp', false)">
-                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
+                                复制订阅<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
 						</td>
 					</tr>
 				</table>
 			</div>
-            <h2>FRAGMENT - NEKORAY ⛓️</h2>
+            <h2>片段订阅 ⛓️</h2>
             <div class="table-container">
 				<table id="custom-configs-table">
 					<tr style="text-wrap: nowrap;">
-						<th>Config Address</th>
-						<th>Fragment Config</th>
+						<th>配置地址</th>
+						<th>复制配置</th>
 					</tr>					
 					${await genCustomConfRow(fragConfigs)}
 				</table>
