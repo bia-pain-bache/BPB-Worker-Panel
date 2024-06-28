@@ -2247,7 +2247,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                 <div class="modal-content">
                     <span class="close">&times;</span>
                     <form id="passwordChangeForm">
-                        <h2>更改密码</h2>
+                        <h2>Change Password</h2>
                         <div class="form-control">
                             <label for="newPassword">New Password</label>
                             <input type="password" id="newPassword" name="newPassword" required>
@@ -2274,7 +2274,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             <div class="footer">
                 <i class="fa fa-github" style="font-size:36px; margin-right: 10px;"></i>
                 <a class="link" href="https://t.me/MFJD666" target="_blank">TG频道</a>
-                <button id="openModalBtn" class="button">Change Password</button>
+                <button id="openModalBtn" class="button">更改密码</button>
                 <button type="button" id="logout" style="background: none; margin: 0; border: none; cursor: pointer;">
                     <i class="fa fa-power-off fa-2x" aria-hidden="true"></i>
                 </button>
