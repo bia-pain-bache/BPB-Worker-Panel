@@ -2271,27 +2271,6 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                 </div>
             </div>
             <hr>
-            <head>
-    <style>
-        .footer {
-            display: flex;
-            align-items: center;
-        }
-        .footer .link, .footer button {
-            display: inline-block;
-            font-size: 16px;
-            line-height: 1.5;
-            vertical-align: middle;
-        }
-        .footer button {
-            background: none;
-            margin: 0;
-            border: none;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
             <div class="footer">
                 <i class="fa fa-telegram" style="font-size:36px; margin-right: 10px;"></i>
                 <a class="link" href="https://t.me/MFJD666" target="_blank">TG频道</a>
