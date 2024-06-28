@@ -1254,6 +1254,8 @@ const getWarpConfigs = async (env, client) => {
         warpEndpoints
     } = proxySettings;
 
+    const ipv6Regex = /\[(.*?)\]/;
+    const portRegex = /[^:]*$/;
     let xrayWoWConfig = structuredClone(xrayConfigTemp);
     let singboxWarpConfig = structuredClone(singboxConfigTemp);
     singboxWarpConfig.outbounds[0].outbounds = ['💦 Warp Best Ping 🚀'];
@@ -1288,8 +1290,8 @@ const getWarpConfigs = async (env, client) => {
         ];
 
         if (wowEndpoint) {
-            singboxOutbound.server = wowEndpoint.split(':')[0];
-            singboxOutbound.server_port = +wowEndpoint.split(':')[1];
+            singboxOutbound.server = wowEndpoint.includes('[') ? wowEndpoint.match(ipv6Regex)[1] : wowEndpoint.split(':')[0];
+            singboxOutbound.server_port = wowEndpoint.includes('[') ? +wowEndpoint.match(portRegex)[0] : +wowEndpoint.split(':')[1];
         }
 
         singboxOutbound.peer_public_key = wgConfig.account.config.peers[0].public_key;
@@ -1332,8 +1334,8 @@ const getWarpConfigs = async (env, client) => {
         xrayWarpOutbounds.push(xrayWarpOutbound);
 
         let singboxWarpOutbound = structuredClone(singboxOutbounds[singboxOutbounds.length - 1]);
-        singboxWarpOutbound.server = endpoint.split(':')[0];
-        singboxWarpOutbound.server_port = +endpoint.split(':')[1];
+        singboxWarpOutbound.server = endpoint.includes('[') ? endpoint.match(ipv6Regex)[1] : endpoint.split(':')[0];
+        singboxWarpOutbound.server_port = endpoint.includes('[') ? +endpoint.match(portRegex)[0] : +endpoint.split(':')[1];
         singboxWarpOutbound.tag = `💦 Warp ${index + 1} 🇮🇷`;
         singboxWarpOutbound
         singboxOutbounds.push(singboxWarpOutbound);
@@ -2050,7 +2052,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 				</div>
                 <div class="form-control">
                     <label>🔎 Scanner Script</label>
-                    <button class="button" style="padding: 10px 0;" onclick="copyToClipboard('bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/warp/main/endip/install.sh)', false)">
+                    <button type="button" class="button" style="padding: 10px 0;" onclick="copyToClipboard('bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/warp/main/endip/install.sh)', false)">
                         Copy Script<span class="material-symbols-outlined">terminal</span>
                     </button>
                 </div>
