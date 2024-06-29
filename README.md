@@ -4,8 +4,10 @@
 
 第一步：从 GitHub 复制 BPB 项目
 
-克隆项目仓库           https://github.com/bia-pain-bache/BPB-Worker-Panel
-https://github.com/cloudflaregithub0/BPB-Worker-Panel
+克隆项目仓库           
+原始项目  https://github.com/bia-pain-bache/BPB-Worker-Panel
+本人汉化项目https://github.com/Lu6618/MFJD
+
 第二步：配置 Cloudflare Workers
 
 登录 Cloudflare
