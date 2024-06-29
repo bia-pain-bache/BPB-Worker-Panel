@@ -1,72 +1,35 @@
-<h1 align="center">💦 BPB Panel</h1>
+搭建 BPB 面板的详细教程
 
-### 🌏 Readme in [Farsi](README_fa.md)
+本教程将指导您使用 GitHub 复制 BPB 项目并使用 Cloudflare Workers 和 Pages 搭建 BPB 面板。以下是步骤：
 
-<p align="center">
-  <img src="docs/assets/images/Panel.jpg">
-</p>
-<br>
+第一步：从 GitHub 复制 BPB 项目
 
-## Introduction
-This project is dedicated to developing a user panel for the [Cloudflare-workers/pages proxy script](https://github.com/yonggekkk/Cloudflare-workers-pages-vless) created by [yonggekkk](https://github.com/yonggekkk). The panel offers two deployment options: 
-- **Worker** deployment
-- **Pages** deployment
-<br>
+克隆项目仓库           https://github.com/bia-pain-bache/BPB-Worker-Panel
+https://github.com/cloudflaregithub0/BPB-Worker-Panel
+第二步：配置 Cloudflare Workers
 
-🌟 If you found **BPB Panel** valuable, Your donations make all the difference 🌟
-- **USDT (BEP20):** `0x111EFF917E7cf4b0BfC99Edffd8F1AbC2b23d158`
+登录 Cloudflare
+访问 Cloudflare官网 并登录您的账户。如果没有账户，请先注册一个。
+创建 Workers
+在 Cloudflare 仪表板中，导航到“Workers”选项卡。
+点击“Create a Service”按钮，输入服务名称并创建服务。
+选择“Quick Edit”，进入 Workers 编辑界面。
+上传代码
+将 BPB-Worker-Panel 目录中的 worker.js 文件内容复制粘贴到 Workers 编辑器中。
+点击“Save and Deploy”按钮来保存和部署您的 Workers 脚本。
+第三步：配置 Cloudflare Pages
 
-## Features
-
-1. **Free**: No cost involved.
-2. **User-Friendly Panel:** Designed for easy navigation, configuration and usage.
-3. **Support Fragment:** Provides support for fragment functionality.
-4. **Block Ads. and Porn (Optional)**
-5. **Bypass Iran and LAN (Optional)**
-6. **Full routing rules:** Bypassing Iran, Blocking Ads, Malwares, Phishing... for Sing-box.
-7. **Chain Proxy:** Capable of adding a chain proxy to fix IP.
-8. **Supports Wide Range of Clients:** Offers subscription links for Xray and Sing-box core clients.
-9. **Subscription Link (JSON):** Provides subscription link for JSON configs.
-10. **Password-Protected Panel:** Secure your panel with password protection.
-11. **Custom Cloudflare Clean IP:** Ability to use online scanner and setting up clean IP-domains.
-12. **Warp configs:** Provides Warp and Warp on Warp subscription.
-<br>
-
-## How to use:
-- [Installation (Pages)](docs/pages_installation_fa.md)
-
-- [Installation (Worker)](docs/worker_installation_fa.md)
-
-- [How to use](docs/configuration_fa.md)
-
-- [FAQ](docs/faq.md)
-<br>
-
-## Supported Clients
-| Client  | Version | Fragment |
-| :-------------: | :-------------: | :-------------: |
-| **v2rayNG**  | 1.8.19 or higher  | :heavy_check_mark: |
-| **v2rayN**  | 6.42 or higher  | :heavy_check_mark: |
-| **Nekobox**  |   | :x: |
-| **Sing-box**  | 1.8.10 or higher  | :x: |
-| **Streisand**  |   | :heavy_check_mark: |
-| **V2Box**  |   | :x: |
-| **Shadowrocket**  |   | :x: |
-| **Nekoray**  |   | :heavy_check_mark: |
-| **Hiddify**  |   | :x: |
-
-
----
-
-## Stargazers Over Time
-[![Stargazers Over Time](https://starchart.cc/bia-pain-bache/BPB-Worker-Panel.svg?variant=adaptive)](https://starchart.cc/bia-pain-bache/BPB-Worker-Panel)
-
----
-
-### Special Thanks
-- CF-vless code author [3Kmfi6HP](https://github.com/3Kmfi6HP/EDtunnel)
-- CF preferred IP program author [badafans](https://github.com/badafans/Cloudflare-IP-SpeedTest), [XIU2](https://github.com/XIU2/CloudflareSpeedTest)
-
----
-
-For a detailed tutorial on the core script, please refer to [Yongge’s blog and video tutorials](https://ygkkk.blogspot.com/2023/07/cfworkers-vless.html).
+创建 Pages 项目
+在 Cloudflare 仪表板中，导航到“Pages”选项卡。
+点击“Create a Project”按钮。
+选择从 GitHub 导入仓库并授权 Cloudflare 访问您的 GitHub 账户。
+选择仓库
+选择您之前克隆的 BPB-Worker-Panel 仓库。
+配置项目名称和生产分支（通常是 main 或 master）。
+构建设置
+Build command: npm run build（如果项目有自定义构建命令，请根据需要调整）
+Build output directory: dist（或其他项目输出目录）
+在“Build settings”页面，配置以下设置：
+部署项目
+点击“Save and Deploy”按钮，Cloudflare Pages 将开始构建和部署您的项目。
+部署完成后，您将获得一个项目 URL，访问该 URL 可以查看您的 BPB 面板。
