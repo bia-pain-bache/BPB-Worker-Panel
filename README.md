@@ -14,8 +14,7 @@ This project is dedicated to developing a user panel for the [Cloudflare-workers
 <br>
 
 🌟 If you found **BPB Panel** valuable, Your donations make all the difference 🌟
-- **USDT (TRC20):** `TUeGCozCNL1s5XqGkZ1DtKuCnugJaDnYcc`
-- **Tezos (XTZ):** `tz1RSFQ8jDTZC2UZPwHy55D9XvfnW9KqfZb1`
+- **USDT (BEP20):** `0x111EFF917E7cf4b0BfC99Edffd8F1AbC2b23d158`
 
 ## Features
 
@@ -30,6 +29,7 @@ This project is dedicated to developing a user panel for the [Cloudflare-workers
 9. **Subscription Link (JSON):** Provides subscription link for JSON configs.
 10. **Password-Protected Panel:** Secure your panel with password protection.
 11. **Custom Cloudflare Clean IP:** Ability to use online scanner and setting up clean IP-domains.
+12. **Warp configs:** Provides Warp and Warp on Warp subscription.
 <br>
 
 ## How to use:

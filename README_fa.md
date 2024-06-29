@@ -19,8 +19,7 @@
 
 🌟 اگر پروژه‌ی **BPB Panel** براتون مفید بوده، حمایت شما مایه‌ی دلگرمی من هست 🌟
 <ul dir="rtl">
-  <li><code>TUeGCozCNL1s5XqGkZ1DtKuCnugJaDnYcc</code> <strong>:USDT (TRC20)</strong></li>
-  <li><code>tz1RSFQ8jDTZC2UZPwHy55D9XvfnW9KqfZb1</code> <strong>:Tezos (XTZ)</strong></li>
+  <li><code>0x111EFF917E7cf4b0BfC99Edffd8F1AbC2b23d158</code> <strong>:USDT (BEP20)</strong></li>
 </ul>
 
 ## ویژگی‌ها
@@ -37,6 +36,7 @@
   <li><strong>لینک اشتراک (JSON):</strong> لینک‌ اشتراک کانفیگ‌های فرگمنت را در فرمت JSON فراهم می‌کند.</li>
   <li><strong>پنل با رمز عبور محافظت شده:</strong> ایمن‌سازی پنل با استفاده از رمز عبور.</li>
   <li><strong>دامنه و IP تمیز Cloudflare سفارشی:</strong> قابلیت اسکن آنلاین و تنظیم IP یا دامنه‌ی تمیز Cloudflare را دارد.</li>
+  <li><strong>سابسکریپشن Warp: </strong>ارائه‌ی کانفیگ‌های Warp و Warp on Warp همراه اسکنر Endpoint</li>
 </ol>
 <br><br>
 
