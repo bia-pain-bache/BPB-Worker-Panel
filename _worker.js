@@ -7,11 +7,11 @@ import { connect } from 'cloudflare:sockets';
 
 // How to generate your own UUID:
 // https://www.uuidgenerator.net/
-let userID = '89b3cbba-e6ac-485a-9481-976a0415eab9';
+let userID = 'e5a22b18-1df4-49fb-a7b4-f859b39ed9e4';
 
 // https://www.nslookup.io/domains/cdn.xn--b6gac.eu.org/dns-records/
 // https://www.nslookup.io/domains/cdn-all.xn--b6gac.eu.org/dns-records/
-const proxyIPs= ['cdn.xn--b6gac.eu.org', 'cdn-all.xn--b6gac.eu.org', 'edgetunnel.anycast.eu.org'];
+const proxyIPs = ['cdn.xn--b6gac.eu.org', 'cdn-all.xn--b6gac.eu.org', 'edgetunnel.anycast.eu.org'];
 
 const defaultHttpPorts = ['80', '8080', '2052', '2082', '2086', '2095', '8880'];
 const defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
@@ -35,14 +35,14 @@ export default {
      */
     async fetch(request, env, ctx) {
         try {
-            
+
             userID = env.UUID || userID;
             proxyIP = env.PROXYIP || proxyIP;
             dohURL = env.DNS_RESOLVER_URL || dohURL;
             const upgradeHeader = request.headers.get('Upgrade');
-            
+
             if (!upgradeHeader || upgradeHeader !== 'websocket') {
-                
+
                 const url = new URL(request.url);
                 const searchParams = new URLSearchParams(url.search);
                 const host = request.headers.get('Host');
@@ -57,15 +57,15 @@ export default {
                                 'Content-Type': 'application/json;charset=utf-8',
                             },
                         });
-                        
+
                     case `/sub/${userID}`:
 
                         if (client === 'sfa') {
                             const BestPingSFA = await getSingboxConfig(env, host);
-                            return new Response(`${JSON.stringify(BestPingSFA, null, 4)}`, { status: 200 });                            
+                            return new Response(`${JSON.stringify(BestPingSFA, null, 4)}`, { status: 200 });
                         }
                         const normalConfigs = await getNormalConfigs(env, host, client);
-                        return new Response(normalConfigs, { status: 200 });                        
+                        return new Response(normalConfigs, { status: 200 });
 
                     case `/fragsub/${userID}`:
 
@@ -81,24 +81,24 @@ export default {
 
                     case '/panel':
 
-                        if (typeof env.bpb !== 'object') {
+                        if (typeof env.asali !== 'object') {
                             const errorPage = renderErrorPage('KV Dataset is not properly set!', null, true);
-                            return new Response(errorPage, { status: 200, headers: {'Content-Type': 'text/html'}});
+                            return new Response(errorPage, { status: 200, headers: { 'Content-Type': 'text/html' } });
                         }
 
                         const isAuth = await Authenticate(request, env); 
                         
                         if (request.method === 'POST') {
-                            
-                            if (!isAuth) return new Response('Unauthorized', { status: 401 });             
+
+                            if (!isAuth) return new Response('Unauthorized', { status: 401 });
                             const formData = await request.formData();
                             await updateDataset(env, formData);
 
                             return new Response('Success', { status: 200 });
                         }
-                        
+
                         if (!isAuth) return Response.redirect(`${url.origin}/login`, 302);
-                        if (! await env.bpb.get('proxySettings')) await updateDataset(env);
+                        if (! await env.asali.get('proxySettings')) await updateDataset(env);
                         const fragConfs = await getFragmentConfigs(env, host, 'nekoray');
                         const homePage = await renderHomePage(env, host, fragConfs);
 
@@ -114,46 +114,46 @@ export default {
                                 'Referrer-Policy': 'strict-origin-when-cross-origin'
                             }
                         });
-                                                      
+
                     case '/login':
 
-                        if (typeof env.bpb !== 'object') {
+                        if (typeof env.asali !== 'object') {
                             const errorPage = renderErrorPage('KV Dataset is not properly set!', null, true);
-                            return new Response(errorPage, { status: 200, headers: {'Content-Type': 'text/html'}});
+                            return new Response(errorPage, { status: 200, headers: { 'Content-Type': 'text/html' } });
                         }
 
                         const loginAuth = await Authenticate(request, env);
                         if (loginAuth) return Response.redirect(`${url.origin}/panel`, 302);
 
-                        let secretKey = await env.bpb.get('secretKey');
-                        const pwd = await env.bpb.get('pwd');
-                        if (!pwd) await env.bpb.put('pwd', 'admin');
+                        let secretKey = await env.asali.get('secretKey');
+                        const pwd = await env.asali.get('pwd');
+                        if (!pwd) await env.asali.put('pwd', 'admin');
 
                         if (!secretKey) {
                             secretKey = generateSecretKey();
-                            await env.bpb.put('secretKey', secretKey);
+                            await env.asali.put('secretKey', secretKey);
                         }
 
                         if (request.method === 'POST') {
                             const password = await request.text();
-                            const savedPass = await env.bpb.get('pwd');
+                            const savedPass = await env.asali.get('pwd');
 
                             if (password === savedPass) {
                                 const jwtToken = generateJWTToken(secretKey, password);
                                 const cookieHeader = `jwtToken=${jwtToken}; HttpOnly; Secure; Max-Age=${7 * 24 * 60 * 60}; Path=/; SameSite=Strict`;
-                                
+
                                 return new Response('Success', {
                                     status: 200,
                                     headers: {
-                                      'Set-Cookie': cookieHeader,
-                                      'Content-Type': 'text/plain',
+                                        'Set-Cookie': cookieHeader,
+                                        'Content-Type': 'text/plain',
                                     }
-                                });        
+                                });
                             } else {
                                 return new Response('Method Not Allowed', { status: 405 });
                             }
                         }
-                        
+
                         const loginPage = await renderLoginPage();
 
                         return new Response(loginPage, {
@@ -168,25 +168,25 @@ export default {
                                 'Referrer-Policy': 'strict-origin-when-cross-origin'
                             }
                         });
-                    
+
                     case '/logout':
-                                    
+
                         return new Response('Success', {
                             status: 200,
                             headers: {
                                 'Set-Cookie': 'jwtToken=; Secure; SameSite=None; Expires=Thu, 01 Jan 1970 00:00:00 GMT',
                                 'Content-Type': 'text/plain'
                             }
-                        });        
+                        });
 
                     case '/panel/password':
 
                         let passAuth = await Authenticate(request, env);
-                        if (!passAuth) return new Response('Unauthorized!', { status: 401 });           
+                        if (!passAuth) return new Response('Unauthorized!', { status: 401 });
                         const newPwd = await request.text();
-                        const oldPwd = await env.bpb.get('pwd');
+                        const oldPwd = await env.asali.get('pwd');
                         if (newPwd === oldPwd) return new Response('Please enter a new Password!', { status: 400 });
-                        await env.bpb.put('pwd', newPwd);
+                        await env.asali.put('pwd', newPwd);
 
                         return new Response('Success', {
                             status: 200,
@@ -209,7 +209,7 @@ export default {
         } catch (err) {
             /** @type {Error} */ let e = err;
             const errorPage = renderErrorPage('Something went wrong!', e.message.toString(), false);
-            return new Response(errorPage, { status: 200, headers: {'Content-Type': 'text/html'}});
+            return new Response(errorPage, { status: 200, headers: { 'Content-Type': 'text/html' } });
         }
     },
 };
@@ -220,95 +220,95 @@ export default {
  * @returns {Promise<Response>} A Promise that resolves to a WebSocket response object.
  */
 async function vlessOverWSHandler(request) {
-	const webSocketPair = new WebSocketPair();
-	const [client, webSocket] = Object.values(webSocketPair);
-	webSocket.accept();
+    const webSocketPair = new WebSocketPair();
+    const [client, webSocket] = Object.values(webSocketPair);
+    webSocket.accept();
 
-	let address = '';
-	let portWithRandomLog = '';
-	let currentDate = new Date();
-	const log = (/** @type {string} */ info, /** @type {string | undefined} */ event) => {
-		console.log(`[${currentDate} ${address}:${portWithRandomLog}] ${info}`, event || '');
-	};
-	const earlyDataHeader = request.headers.get('sec-websocket-protocol') || '';
+    let address = '';
+    let portWithRandomLog = '';
+    let currentDate = new Date();
+    const log = (/** @type {string} */ info, /** @type {string | undefined} */ event) => {
+        console.log(`[${currentDate} ${address}:${portWithRandomLog}] ${info}`, event || '');
+    };
+    const earlyDataHeader = request.headers.get('sec-websocket-protocol') || '';
 
-	const readableWebSocketStream = makeReadableWebSocketStream(webSocket, earlyDataHeader, log);
+    const readableWebSocketStream = makeReadableWebSocketStream(webSocket, earlyDataHeader, log);
 
-	/** @type {{ value: import("@cloudflare/workers-types").Socket | null}}*/
-	let remoteSocketWapper = {
-		value: null,
-	};
-	let udpStreamWrite = null;
-	let isDns = false;
+    /** @type {{ value: import("@cloudflare/workers-types").Socket | null}}*/
+    let remoteSocketWapper = {
+        value: null,
+    };
+    let udpStreamWrite = null;
+    let isDns = false;
 
-	// ws --> remote
-	readableWebSocketStream.pipeTo(new WritableStream({
-		async write(chunk, controller) {
-			if (isDns && udpStreamWrite) {
-				return udpStreamWrite(chunk);
-			}
-			if (remoteSocketWapper.value) {
-				const writer = remoteSocketWapper.value.writable.getWriter()
-				await writer.write(chunk);
-				writer.releaseLock();
-				return;
-			}
+    // ws --> remote
+    readableWebSocketStream.pipeTo(new WritableStream({
+        async write(chunk, controller) {
+            if (isDns && udpStreamWrite) {
+                return udpStreamWrite(chunk);
+            }
+            if (remoteSocketWapper.value) {
+                const writer = remoteSocketWapper.value.writable.getWriter()
+                await writer.write(chunk);
+                writer.releaseLock();
+                return;
+            }
 
-			const {
-				hasError,
-				message,
-				portRemote = 443,
-				addressRemote = '',
-				rawDataIndex,
-				vlessVersion = new Uint8Array([0, 0]),
-				isUDP,
-			} = processVlessHeader(chunk, userID);
-			address = addressRemote;
-			portWithRandomLog = `${portRemote} ${isUDP ? 'udp' : 'tcp'} `;
-			if (hasError) {
-				// controller.error(message);
-				throw new Error(message); // cf seems has bug, controller.error will not end stream
-				// webSocket.close(1000, message);
-				return;
-			}
+            const {
+                hasError,
+                message,
+                portRemote = 443,
+                addressRemote = '',
+                rawDataIndex,
+                vlessVersion = new Uint8Array([0, 0]),
+                isUDP,
+            } = processVlessHeader(chunk, userID);
+            address = addressRemote;
+            portWithRandomLog = `${portRemote} ${isUDP ? 'udp' : 'tcp'} `;
+            if (hasError) {
+                // controller.error(message);
+                throw new Error(message); // cf seems has bug, controller.error will not end stream
+                // webSocket.close(1000, message);
+                return;
+            }
 
-			// If UDP and not DNS port, close it
-			if (isUDP && portRemote !== 53) {
-				throw new Error('UDP proxy only enabled for DNS which is port 53');
-				// cf seems has bug, controller.error will not end stream
-			}
+            // If UDP and not DNS port, close it
+            if (isUDP && portRemote !== 53) {
+                throw new Error('UDP proxy only enabled for DNS which is port 53');
+                // cf seems has bug, controller.error will not end stream
+            }
 
-			if (isUDP && portRemote === 53) {
-				isDns = true;
-			}
+            if (isUDP && portRemote === 53) {
+                isDns = true;
+            }
 
-			// ["version", "附加信息长度 N"]
-			const vlessResponseHeader = new Uint8Array([vlessVersion[0], 0]);
-			const rawClientData = chunk.slice(rawDataIndex);
+            // ["version", "附加信息长度 N"]
+            const vlessResponseHeader = new Uint8Array([vlessVersion[0], 0]);
+            const rawClientData = chunk.slice(rawDataIndex);
 
-			// TODO: support udp here when cf runtime has udp support
-			if (isDns) {
-				const { write } = await handleUDPOutBound(webSocket, vlessResponseHeader, log);
-				udpStreamWrite = write;
-				udpStreamWrite(rawClientData);
-				return;
-			}
-			handleTCPOutBound(request, remoteSocketWapper, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log);
-		},
-		close() {
-			log(`readableWebSocketStream is close`);
-		},
-		abort(reason) {
-			log(`readableWebSocketStream is abort`, JSON.stringify(reason));
-		},
-	})).catch((err) => {
-		log('readableWebSocketStream pipeTo error', err);
-	});
+            // TODO: support udp here when cf runtime has udp support
+            if (isDns) {
+                const { write } = await handleUDPOutBound(webSocket, vlessResponseHeader, log);
+                udpStreamWrite = write;
+                udpStreamWrite(rawClientData);
+                return;
+            }
+            handleTCPOutBound(request, remoteSocketWapper, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log);
+        },
+        close() {
+            log(`readableWebSocketStream is close`);
+        },
+        abort(reason) {
+            log(`readableWebSocketStream is abort`, JSON.stringify(reason));
+        },
+    })).catch((err) => {
+        log('readableWebSocketStream pipeTo error', err);
+    });
 
-	return new Response(null, {
-		status: 101,
-		webSocket: client,
-	});
+    return new Response(null, {
+        status: 101,
+        webSocket: client,
+    });
 }
 
 /**
@@ -325,48 +325,48 @@ async function vlessOverWSHandler(request) {
  */
 async function handleTCPOutBound(request, remoteSocket, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log,) {
 
-	/**
-	 * Connects to a given address and port and writes data to the socket.
-	 * @param {string} address The address to connect to.
-	 * @param {number} port The port to connect to.
-	 * @returns {Promise<import("@cloudflare/workers-types").Socket>} A Promise that resolves to the connected socket.
-	 */
-	async function connectAndWrite(address, port) {
-		/** @type {import("@cloudflare/workers-types").Socket} */
-		const tcpSocket = connect({
-			hostname: address,
-			port: port,
-		});
-		remoteSocket.value = tcpSocket;
-		log(`connected to ${address}:${port}`);
-		const writer = tcpSocket.writable.getWriter();
-		await writer.write(rawClientData); // first write, nomal is tls client hello
-		writer.releaseLock();
-		return tcpSocket;
-	}
+    /**
+     * Connects to a given address and port and writes data to the socket.
+     * @param {string} address The address to connect to.
+     * @param {number} port The port to connect to.
+     * @returns {Promise<import("@cloudflare/workers-types").Socket>} A Promise that resolves to the connected socket.
+     */
+    async function connectAndWrite(address, port) {
+        /** @type {import("@cloudflare/workers-types").Socket} */
+        const tcpSocket = connect({
+            hostname: address,
+            port: port,
+        });
+        remoteSocket.value = tcpSocket;
+        log(`connected to ${address}:${port}`);
+        const writer = tcpSocket.writable.getWriter();
+        await writer.write(rawClientData); // first write, nomal is tls client hello
+        writer.releaseLock();
+        return tcpSocket;
+    }
 
-	/**
-	 * Retries connecting to the remote address and port if the Cloudflare socket has no incoming data.
-	 * @returns {Promise<void>} A Promise that resolves when the retry is complete.
-	 */
-	async function retry() {
+    /**
+     * Retries connecting to the remote address and port if the Cloudflare socket has no incoming data.
+     * @returns {Promise<void>} A Promise that resolves when the retry is complete.
+     */
+    async function retry() {
         const { pathname } = new URL(request.url);
         let panelProxyIP = pathname.split('/')[2];
         panelProxyIP = panelProxyIP ? atob(panelProxyIP) : undefined;
-		const tcpSocket = await connectAndWrite(panelProxyIP || proxyIP || addressRemote, portRemote);
-		tcpSocket.closed.catch(error => {
-			console.log('retry tcpSocket closed error', error);
-		}).finally(() => {
-			safeCloseWebSocket(webSocket);
-		})
-		remoteSocketToWS(tcpSocket, webSocket, vlessResponseHeader, null, log);
-	}
+        const tcpSocket = await connectAndWrite(panelProxyIP || proxyIP || addressRemote, portRemote);
+        tcpSocket.closed.catch(error => {
+            console.log('retry tcpSocket closed error', error);
+        }).finally(() => {
+            safeCloseWebSocket(webSocket);
+        })
+        remoteSocketToWS(tcpSocket, webSocket, vlessResponseHeader, null, log);
+    }
 
-	const tcpSocket = await connectAndWrite(addressRemote, portRemote);
+    const tcpSocket = await connectAndWrite(addressRemote, portRemote);
 
-	// when remoteSocket is ready, pass to websocket
-	// remote--> ws
-	remoteSocketToWS(tcpSocket, webSocket, vlessResponseHeader, retry, log);
+    // when remoteSocket is ready, pass to websocket
+    // remote--> ws
+    remoteSocketToWS(tcpSocket, webSocket, vlessResponseHeader, retry, log);
 }
 
 /**
@@ -377,44 +377,44 @@ async function handleTCPOutBound(request, remoteSocket, addressRemote, portRemot
  * @returns {ReadableStream} A readable stream that can be used to read data from the WebSocket.
  */
 function makeReadableWebSocketStream(webSocketServer, earlyDataHeader, log) {
-	let readableStreamCancel = false;
-	const stream = new ReadableStream({
-		start(controller) {
-			webSocketServer.addEventListener('message', (event) => {
-				const message = event.data;
-				controller.enqueue(message);
-			});
+    let readableStreamCancel = false;
+    const stream = new ReadableStream({
+        start(controller) {
+            webSocketServer.addEventListener('message', (event) => {
+                const message = event.data;
+                controller.enqueue(message);
+            });
 
-			webSocketServer.addEventListener('close', () => {
-				safeCloseWebSocket(webSocketServer);
-				controller.close();
-			});
+            webSocketServer.addEventListener('close', () => {
+                safeCloseWebSocket(webSocketServer);
+                controller.close();
+            });
 
-			webSocketServer.addEventListener('error', (err) => {
-				log('webSocketServer has error');
-				controller.error(err);
-			});
-			const { earlyData, error } = base64ToArrayBuffer(earlyDataHeader);
-			if (error) {
-				controller.error(error);
-			} else if (earlyData) {
-				controller.enqueue(earlyData);
-			}
-		},
+            webSocketServer.addEventListener('error', (err) => {
+                log('webSocketServer has error');
+                controller.error(err);
+            });
+            const { earlyData, error } = base64ToArrayBuffer(earlyDataHeader);
+            if (error) {
+                controller.error(error);
+            } else if (earlyData) {
+                controller.enqueue(earlyData);
+            }
+        },
 
-		pull(controller) {
-			// if ws can stop read if stream is full, we can implement backpressure
-			// https://streams.spec.whatwg.org/#example-rs-push-backpressure
-		},
+        pull(controller) {
+            // if ws can stop read if stream is full, we can implement backpressure
+            // https://streams.spec.whatwg.org/#example-rs-push-backpressure
+        },
 
-		cancel(reason) {
-			log(`ReadableStream was canceled, due to ${reason}`)
-			readableStreamCancel = true;
-			safeCloseWebSocket(webSocketServer);
-		}
-	});
+        cancel(reason) {
+            log(`ReadableStream was canceled, due to ${reason}`)
+            readableStreamCancel = true;
+            safeCloseWebSocket(webSocketServer);
+        }
+    });
 
-	return stream;
+    return stream;
 }
 
 // https://xtls.github.io/development/protocols/vless.html
@@ -436,123 +436,123 @@ function makeReadableWebSocketStream(webSocketServer, earlyDataHeader, log) {
  * }} An object with the relevant information extracted from the VLESS header buffer.
  */
 function processVlessHeader(vlessBuffer, userID) {
-	if (vlessBuffer.byteLength < 24) {
-		return {
-			hasError: true,
-			message: 'invalid data',
-		};
-	}
+    if (vlessBuffer.byteLength < 24) {
+        return {
+            hasError: true,
+            message: 'invalid data',
+        };
+    }
 
-	const version = new Uint8Array(vlessBuffer.slice(0, 1));
-	let isValidUser = false;
-	let isUDP = false;
-	const slicedBuffer = new Uint8Array(vlessBuffer.slice(1, 17));
-	const slicedBufferString = stringify(slicedBuffer);
-	// check if userID is valid uuid or uuids split by , and contains userID in it otherwise return error message to console
-	const uuids = userID.includes(',') ? userID.split(",") : [userID];
-	// uuid_validator(hostName, slicedBufferString);
+    const version = new Uint8Array(vlessBuffer.slice(0, 1));
+    let isValidUser = false;
+    let isUDP = false;
+    const slicedBuffer = new Uint8Array(vlessBuffer.slice(1, 17));
+    const slicedBufferString = stringify(slicedBuffer);
+    // check if userID is valid uuid or uuids split by , and contains userID in it otherwise return error message to console
+    const uuids = userID.includes(',') ? userID.split(",") : [userID];
+    // uuid_validator(hostName, slicedBufferString);
 
 
-	// isValidUser = uuids.some(userUuid => slicedBufferString === userUuid.trim());
-	isValidUser = uuids.some(userUuid => slicedBufferString === userUuid.trim()) || uuids.length === 1 && slicedBufferString === uuids[0].trim();
+    // isValidUser = uuids.some(userUuid => slicedBufferString === userUuid.trim());
+    isValidUser = uuids.some(userUuid => slicedBufferString === userUuid.trim()) || uuids.length === 1 && slicedBufferString === uuids[0].trim();
 
-	console.log(`userID: ${slicedBufferString}`);
+    console.log(`userID: ${slicedBufferString}`);
 
-	if (!isValidUser) {
-		return {
-			hasError: true,
-			message: 'invalid user',
-		};
-	}
+    if (!isValidUser) {
+        return {
+            hasError: true,
+            message: 'invalid user',
+        };
+    }
 
-	const optLength = new Uint8Array(vlessBuffer.slice(17, 18))[0];
-	//skip opt for now
+    const optLength = new Uint8Array(vlessBuffer.slice(17, 18))[0];
+    //skip opt for now
 
-	const command = new Uint8Array(
-		vlessBuffer.slice(18 + optLength, 18 + optLength + 1)
-	)[0];
+    const command = new Uint8Array(
+        vlessBuffer.slice(18 + optLength, 18 + optLength + 1)
+    )[0];
 
-	// 0x01 TCP
-	// 0x02 UDP
-	// 0x03 MUX
-	if (command === 1) {
-		isUDP = false;
-	} else if (command === 2) {
-		isUDP = true;
-	} else {
-		return {
-			hasError: true,
-			message: `command ${command} is not support, command 01-tcp,02-udp,03-mux`,
-		};
-	}
-	const portIndex = 18 + optLength + 1;
-	const portBuffer = vlessBuffer.slice(portIndex, portIndex + 2);
-	// port is big-Endian in raw data etc 80 == 0x005d
-	const portRemote = new DataView(portBuffer).getUint16(0);
+    // 0x01 TCP
+    // 0x02 UDP
+    // 0x03 MUX
+    if (command === 1) {
+        isUDP = false;
+    } else if (command === 2) {
+        isUDP = true;
+    } else {
+        return {
+            hasError: true,
+            message: `command ${command} is not support, command 01-tcp,02-udp,03-mux`,
+        };
+    }
+    const portIndex = 18 + optLength + 1;
+    const portBuffer = vlessBuffer.slice(portIndex, portIndex + 2);
+    // port is big-Endian in raw data etc 80 == 0x005d
+    const portRemote = new DataView(portBuffer).getUint16(0);
 
-	let addressIndex = portIndex + 2;
-	const addressBuffer = new Uint8Array(
-		vlessBuffer.slice(addressIndex, addressIndex + 1)
-	);
+    let addressIndex = portIndex + 2;
+    const addressBuffer = new Uint8Array(
+        vlessBuffer.slice(addressIndex, addressIndex + 1)
+    );
 
-	// 1--> ipv4  addressLength =4
-	// 2--> domain name addressLength=addressBuffer[1]
-	// 3--> ipv6  addressLength =16
-	const addressType = addressBuffer[0];
-	let addressLength = 0;
-	let addressValueIndex = addressIndex + 1;
-	let addressValue = '';
-	switch (addressType) {
-		case 1:
-			addressLength = 4;
-			addressValue = new Uint8Array(
-				vlessBuffer.slice(addressValueIndex, addressValueIndex + addressLength)
-			).join('.');
-			break;
-		case 2:
-			addressLength = new Uint8Array(
-				vlessBuffer.slice(addressValueIndex, addressValueIndex + 1)
-			)[0];
-			addressValueIndex += 1;
-			addressValue = new TextDecoder().decode(
-				vlessBuffer.slice(addressValueIndex, addressValueIndex + addressLength)
-			);
-			break;
-		case 3:
-			addressLength = 16;
-			const dataView = new DataView(
-				vlessBuffer.slice(addressValueIndex, addressValueIndex + addressLength)
-			);
-			// 2001:0db8:85a3:0000:0000:8a2e:0370:7334
-			const ipv6 = [];
-			for (let i = 0; i < 8; i++) {
-				ipv6.push(dataView.getUint16(i * 2).toString(16));
-			}
-			addressValue = ipv6.join(':');
-			// seems no need add [] for ipv6
-			break;
-		default:
-			return {
-				hasError: true,
-				message: `invild  addressType is ${addressType}`,
-			};
-	}
-	if (!addressValue) {
-		return {
-			hasError: true,
-			message: `addressValue is empty, addressType is ${addressType}`,
-		};
-	}
+    // 1--> ipv4  addressLength =4
+    // 2--> domain name addressLength=addressBuffer[1]
+    // 3--> ipv6  addressLength =16
+    const addressType = addressBuffer[0];
+    let addressLength = 0;
+    let addressValueIndex = addressIndex + 1;
+    let addressValue = '';
+    switch (addressType) {
+        case 1:
+            addressLength = 4;
+            addressValue = new Uint8Array(
+                vlessBuffer.slice(addressValueIndex, addressValueIndex + addressLength)
+            ).join('.');
+            break;
+        case 2:
+            addressLength = new Uint8Array(
+                vlessBuffer.slice(addressValueIndex, addressValueIndex + 1)
+            )[0];
+            addressValueIndex += 1;
+            addressValue = new TextDecoder().decode(
+                vlessBuffer.slice(addressValueIndex, addressValueIndex + addressLength)
+            );
+            break;
+        case 3:
+            addressLength = 16;
+            const dataView = new DataView(
+                vlessBuffer.slice(addressValueIndex, addressValueIndex + addressLength)
+            );
+            // 2001:0db8:85a3:0000:0000:8a2e:0370:7334
+            const ipv6 = [];
+            for (let i = 0; i < 8; i++) {
+                ipv6.push(dataView.getUint16(i * 2).toString(16));
+            }
+            addressValue = ipv6.join(':');
+            // seems no need add [] for ipv6
+            break;
+        default:
+            return {
+                hasError: true,
+                message: `invild  addressType is ${addressType}`,
+            };
+    }
+    if (!addressValue) {
+        return {
+            hasError: true,
+            message: `addressValue is empty, addressType is ${addressType}`,
+        };
+    }
 
-	return {
-		hasError: false,
-		addressRemote: addressValue,
-		addressType,
-		portRemote,
-		rawDataIndex: addressValueIndex + addressLength,
-		vlessVersion: version,
-		isUDP,
-	};
+    return {
+        hasError: false,
+        addressRemote: addressValue,
+        addressType,
+        portRemote,
+        rawDataIndex: addressValueIndex + addressLength,
+        vlessVersion: version,
+        isUDP,
+    };
 }
 
 
@@ -566,67 +566,67 @@ function processVlessHeader(vlessBuffer, userID) {
  * @returns {Promise<void>} A Promise that resolves when the conversion is complete.
  */
 async function remoteSocketToWS(remoteSocket, webSocket, vlessResponseHeader, retry, log) {
-	// remote--> ws
-	let remoteChunkCount = 0;
-	let chunks = [];
-	/** @type {ArrayBuffer | null} */
-	let vlessHeader = vlessResponseHeader;
-	let hasIncomingData = false; // check if remoteSocket has incoming data
-	await remoteSocket.readable
-		.pipeTo(
-			new WritableStream({
-				start() {
-				},
-				/**
-				 * 
-				 * @param {Uint8Array} chunk 
-				 * @param {*} controller 
-				 */
-				async write(chunk, controller) {
-					hasIncomingData = true;
-					remoteChunkCount++;
-					if (webSocket.readyState !== WS_READY_STATE_OPEN) {
-						controller.error(
-							'webSocket.readyState is not open, maybe close'
-						);
-					}
-					if (vlessHeader) {
-						webSocket.send(await new Blob([vlessHeader, chunk]).arrayBuffer());
-						vlessHeader = null;
-					} else {
-						// console.log(`remoteSocketToWS send chunk ${chunk.byteLength}`);
-						// seems no need rate limit this, CF seems fix this??..
-						// if (remoteChunkCount > 20000) {
-						// 	// cf one package is 4096 byte(4kb),  4096 * 20000 = 80M
-						// 	await delay(1);
-						// }
-						webSocket.send(chunk);
-					}
-				},
-				close() {
-					log(`remoteConnection!.readable is close with hasIncomingData is ${hasIncomingData}`);
-					// safeCloseWebSocket(webSocket); // no need server close websocket frist for some case will casue HTTP ERR_CONTENT_LENGTH_MISMATCH issue, client will send close event anyway.
-				},
-				abort(reason) {
-					console.error(`remoteConnection!.readable abort`, reason);
-				},
-			})
-		)
-		.catch((error) => {
-			console.error(
-				`remoteSocketToWS has exception `,
-				error.stack || error
-			);
-			safeCloseWebSocket(webSocket);
-		});
+    // remote--> ws
+    let remoteChunkCount = 0;
+    let chunks = [];
+    /** @type {ArrayBuffer | null} */
+    let vlessHeader = vlessResponseHeader;
+    let hasIncomingData = false; // check if remoteSocket has incoming data
+    await remoteSocket.readable
+        .pipeTo(
+            new WritableStream({
+                start() {
+                },
+                /**
+                 * 
+                 * @param {Uint8Array} chunk 
+                 * @param {*} controller 
+                 */
+                async write(chunk, controller) {
+                    hasIncomingData = true;
+                    remoteChunkCount++;
+                    if (webSocket.readyState !== WS_READY_STATE_OPEN) {
+                        controller.error(
+                            'webSocket.readyState is not open, maybe close'
+                        );
+                    }
+                    if (vlessHeader) {
+                        webSocket.send(await new Blob([vlessHeader, chunk]).arrayBuffer());
+                        vlessHeader = null;
+                    } else {
+                        // console.log(`remoteSocketToWS send chunk ${chunk.byteLength}`);
+                        // seems no need rate limit this, CF seems fix this??..
+                        // if (remoteChunkCount > 20000) {
+                        // 	// cf one package is 4096 byte(4kb),  4096 * 20000 = 80M
+                        // 	await delay(1);
+                        // }
+                        webSocket.send(chunk);
+                    }
+                },
+                close() {
+                    log(`remoteConnection!.readable is close with hasIncomingData is ${hasIncomingData}`);
+                    // safeCloseWebSocket(webSocket); // no need server close websocket frist for some case will casue HTTP ERR_CONTENT_LENGTH_MISMATCH issue, client will send close event anyway.
+                },
+                abort(reason) {
+                    console.error(`remoteConnection!.readable abort`, reason);
+                },
+            })
+        )
+        .catch((error) => {
+            console.error(
+                `remoteSocketToWS has exception `,
+                error.stack || error
+            );
+            safeCloseWebSocket(webSocket);
+        });
 
-	// seems is cf connect socket have error,
-	// 1. Socket.closed will have error
-	// 2. Socket.readable will be close without any data coming
-	if (hasIncomingData === false && retry) {
-		log(`retry`)
-		retry();
-	}
+    // seems is cf connect socket have error,
+    // 1. Socket.closed will have error
+    // 2. Socket.readable will be close without any data coming
+    if (hasIncomingData === false && retry) {
+        log(`retry`)
+        retry();
+    }
 }
 
 /**
@@ -635,18 +635,18 @@ async function remoteSocketToWS(remoteSocket, webSocket, vlessResponseHeader, re
  * @returns {{earlyData: ArrayBuffer|null, error: Error|null}} An object containing the decoded ArrayBuffer or null if there was an error, and any error that occurred during decoding or null if there was no error.
  */
 function base64ToArrayBuffer(base64Str) {
-	if (!base64Str) {
-		return { earlyData: null, error: null };
-	}
-	try {
-		// go use modified Base64 for URL rfc4648 which js atob not support
-		base64Str = base64Str.replace(/-/g, '+').replace(/_/g, '/');
-		const decode = atob(base64Str);
-		const arryBuffer = Uint8Array.from(decode, (c) => c.charCodeAt(0));
-		return { earlyData: arryBuffer.buffer, error: null };
-	} catch (error) {
-		return { earlyData: null, error };
-	}
+    if (!base64Str) {
+        return { earlyData: null, error: null };
+    }
+    try {
+        // go use modified Base64 for URL rfc4648 which js atob not support
+        base64Str = base64Str.replace(/-/g, '+').replace(/_/g, '/');
+        const decode = atob(base64Str);
+        const arryBuffer = Uint8Array.from(decode, (c) => c.charCodeAt(0));
+        return { earlyData: arryBuffer.buffer, error: null };
+    } catch (error) {
+        return { earlyData: null, error };
+    }
 }
 
 /**
@@ -656,8 +656,8 @@ function base64ToArrayBuffer(base64Str) {
  * @returns {boolean} True if the string is a valid UUID, false otherwise.
  */
 function isValidUUID(uuid) {
-	const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-	return uuidRegex.test(uuid);
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(uuid);
 }
 
 const WS_READY_STATE_OPEN = 1;
@@ -667,31 +667,31 @@ const WS_READY_STATE_CLOSING = 2;
  * @param {import("@cloudflare/workers-types").WebSocket} socket The WebSocket connection to close.
  */
 function safeCloseWebSocket(socket) {
-	try {
-		if (socket.readyState === WS_READY_STATE_OPEN || socket.readyState === WS_READY_STATE_CLOSING) {
-			socket.close();
-		}
-	} catch (error) {
-		console.error('safeCloseWebSocket error', error);
-	}
+    try {
+        if (socket.readyState === WS_READY_STATE_OPEN || socket.readyState === WS_READY_STATE_CLOSING) {
+            socket.close();
+        }
+    } catch (error) {
+        console.error('safeCloseWebSocket error', error);
+    }
 }
 
 const byteToHex = [];
 
 for (let i = 0; i < 256; ++i) {
-	byteToHex.push((i + 256).toString(16).slice(1));
+    byteToHex.push((i + 256).toString(16).slice(1));
 }
 
 function unsafeStringify(arr, offset = 0) {
-	return (byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + "-" + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + "-" + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + "-" + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + "-" + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]]).toLowerCase();
+    return (byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + "-" + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + "-" + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + "-" + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + "-" + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]]).toLowerCase();
 }
 
 function stringify(arr, offset = 0) {
-	const uuid = unsafeStringify(arr, offset);
-	if (!isValidUUID(uuid)) {
-		throw TypeError("Stringified UUID is invalid");
-	}
-	return uuid;
+    const uuid = unsafeStringify(arr, offset);
+    if (!isValidUUID(uuid)) {
+        throw TypeError("Stringified UUID is invalid");
+    }
+    return uuid;
 }
 
 
@@ -704,68 +704,68 @@ function stringify(arr, offset = 0) {
  */
 async function handleUDPOutBound(webSocket, vlessResponseHeader, log) {
 
-	let isVlessHeaderSent = false;
-	const transformStream = new TransformStream({
-		start(controller) {
+    let isVlessHeaderSent = false;
+    const transformStream = new TransformStream({
+        start(controller) {
 
-		},
-		transform(chunk, controller) {
-			// udp message 2 byte is the the length of udp data
-			// TODO: this should have bug, beacsue maybe udp chunk can be in two websocket message
-			for (let index = 0; index < chunk.byteLength;) {
-				const lengthBuffer = chunk.slice(index, index + 2);
-				const udpPakcetLength = new DataView(lengthBuffer).getUint16(0);
-				const udpData = new Uint8Array(
-					chunk.slice(index + 2, index + 2 + udpPakcetLength)
-				);
-				index = index + 2 + udpPakcetLength;
-				controller.enqueue(udpData);
-			}
-		},
-		flush(controller) {
-		}
-	});
+        },
+        transform(chunk, controller) {
+            // udp message 2 byte is the the length of udp data
+            // TODO: this should have bug, beacsue maybe udp chunk can be in two websocket message
+            for (let index = 0; index < chunk.byteLength;) {
+                const lengthBuffer = chunk.slice(index, index + 2);
+                const udpPakcetLength = new DataView(lengthBuffer).getUint16(0);
+                const udpData = new Uint8Array(
+                    chunk.slice(index + 2, index + 2 + udpPakcetLength)
+                );
+                index = index + 2 + udpPakcetLength;
+                controller.enqueue(udpData);
+            }
+        },
+        flush(controller) {
+        }
+    });
 
-	// only handle dns udp for now
-	transformStream.readable.pipeTo(new WritableStream({
-		async write(chunk) {
-			const resp = await fetch(dohURL, // dns server url
-				{
-					method: 'POST',
-					headers: {
-						'content-type': 'application/dns-message',
-					},
-					body: chunk,
-				})
-			const dnsQueryResult = await resp.arrayBuffer();
-			const udpSize = dnsQueryResult.byteLength;
-			// console.log([...new Uint8Array(dnsQueryResult)].map((x) => x.toString(16)));
-			const udpSizeBuffer = new Uint8Array([(udpSize >> 8) & 0xff, udpSize & 0xff]);
-			if (webSocket.readyState === WS_READY_STATE_OPEN) {
-				log(`doh success and dns message length is ${udpSize}`);
-				if (isVlessHeaderSent) {
-					webSocket.send(await new Blob([udpSizeBuffer, dnsQueryResult]).arrayBuffer());
-				} else {
-					webSocket.send(await new Blob([vlessResponseHeader, udpSizeBuffer, dnsQueryResult]).arrayBuffer());
-					isVlessHeaderSent = true;
-				}
-			}
-		}
-	})).catch((error) => {
-		log('dns udp has error' + error)
-	});
+    // only handle dns udp for now
+    transformStream.readable.pipeTo(new WritableStream({
+        async write(chunk) {
+            const resp = await fetch(dohURL, // dns server url
+                {
+                    method: 'POST',
+                    headers: {
+                        'content-type': 'application/dns-message',
+                    },
+                    body: chunk,
+                })
+            const dnsQueryResult = await resp.arrayBuffer();
+            const udpSize = dnsQueryResult.byteLength;
+            // console.log([...new Uint8Array(dnsQueryResult)].map((x) => x.toString(16)));
+            const udpSizeBuffer = new Uint8Array([(udpSize >> 8) & 0xff, udpSize & 0xff]);
+            if (webSocket.readyState === WS_READY_STATE_OPEN) {
+                log(`doh success and dns message length is ${udpSize}`);
+                if (isVlessHeaderSent) {
+                    webSocket.send(await new Blob([udpSizeBuffer, dnsQueryResult]).arrayBuffer());
+                } else {
+                    webSocket.send(await new Blob([vlessResponseHeader, udpSizeBuffer, dnsQueryResult]).arrayBuffer());
+                    isVlessHeaderSent = true;
+                }
+            }
+        }
+    })).catch((error) => {
+        log('dns udp has error' + error)
+    });
 
-	const writer = transformStream.writable.getWriter();
+    const writer = transformStream.writable.getWriter();
 
-	return {
-		/**
-		 * 
-		 * @param {Uint8Array} chunk 
-		 */
-		write(chunk) {
-			writer.write(chunk);
-		}
-	};
+    return {
+        /**
+         * 
+         * @param {Uint8Array} chunk 
+         */
+        write(chunk) {
+            writer.write(chunk);
+        }
+    };
 }
 
 /**
@@ -780,7 +780,7 @@ const getNormalConfigs = async (env, hostName, client) => {
     let vlessWsTls = '';
 
     try {
-        proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
+        proxySettings = await env.asali.get("proxySettings", { type: 'json' });
     } catch (error) {
         console.log(error);
         throw new Error(`An error occurred while getting normal configs - ${error}`);
@@ -823,18 +823,18 @@ const generateRemark = (index, port) => {
     switch (index) {
         case 0:
         case 1:
-            remark = `💦 BPB - Domain_${index + 1} : ${port}`;
+            remark = `🍯 Asali - Domain_${index + 1} : ${port}`;
             break;
         case 2:
         case 3:
-            remark = `💦 BPB - IPv4_${index - 1} : ${port}`;
+            remark = `🍯 Asali - IPv4_${index - 1} : ${port}`;
             break;
         case 4:
         case 5:
-            remark = `💦 BPB - IPv6_${index - 3} : ${port}`;
+            remark = `🍯 Asali - IPv6_${index - 3} : ${port}`;
             break;
         default:
-            remark = `💦 BPB - Clean IP_${index - 5} : ${port}`;
+            remark = `🍯 Asali - Clean IP_${index - 5} : ${port}`;
             break;
     }
 
@@ -845,12 +845,12 @@ const extractVlessParams = async (vlessConfig) => {
     const url = new URL(vlessConfig.replace('vless', 'http'));
     const params = new URLSearchParams(url.search);
     let configParams = {
-        uuid : url.username,
-        hostName : url.hostname,
-        port : url.port
+        uuid: url.username,
+        hostName: url.hostname,
+        port: url.port
     };
 
-    params.forEach( (value, key) => {
+    params.forEach((value, key) => {
         configParams[key] = value;
     })
 
@@ -859,7 +859,7 @@ const extractVlessParams = async (vlessConfig) => {
 
 const buildProxyOutbound = async (proxyParams) => {
     const { hostName, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, spx, headerType, host, path, authority, serviceName, mode } = proxyParams;
-    let proxyOutbound = structuredClone(xrayOutboundTemp);   
+    let proxyOutbound = structuredClone(xrayOutboundTemp);
     proxyOutbound.settings.vnext[0].address = hostName;
     proxyOutbound.settings.vnext[0].port = +port;
     proxyOutbound.settings.vnext[0].users[0].id = uuid;
@@ -875,7 +875,7 @@ const buildProxyOutbound = async (proxyParams) => {
             proxyOutbound.streamSettings.tlsSettings.serverName = sni;
             proxyOutbound.streamSettings.tlsSettings.fingerprint = fp;
             proxyOutbound.streamSettings.tlsSettings.alpn = alpn ? alpn?.split(',') : [];
-            delete proxyOutbound.streamSettings.realitySettings;         
+            delete proxyOutbound.streamSettings.realitySettings;
             break;
 
         case 'reality':
@@ -890,16 +890,16 @@ const buildProxyOutbound = async (proxyParams) => {
 
         default:
             delete proxyOutbound.streamSettings.tlsSettings;
-            delete proxyOutbound.streamSettings.realitySettings;         
+            delete proxyOutbound.streamSettings.realitySettings;
             break;
     }
- 
+
     switch (type) {
 
         case 'tcp':
             delete proxyOutbound.streamSettings.grpcSettings;
             delete proxyOutbound.streamSettings.wsSettings;
-            
+
             if (security === 'reality' && (!headerType || headerType === 'none')) {
                 delete proxyOutbound.streamSettings.tcpSettings;
                 break;
@@ -908,14 +908,14 @@ const buildProxyOutbound = async (proxyParams) => {
             if (headerType === 'http') {
                 proxyOutbound.streamSettings.tcpSettings.header.request.headers.Host = host?.split(',');
                 proxyOutbound.streamSettings.tcpSettings.header.request.path = path?.split(',');
-            } 
-            
+            }
+
             if (!headerType) {
                 proxyOutbound.streamSettings.tcpSettings.header.type = 'none';
                 delete proxyOutbound.streamSettings.tcpSettings.header.request;
                 delete proxyOutbound.streamSettings.tcpSettings.header.response;
             }
-            
+
             break;
 
         case 'ws':
@@ -925,7 +925,7 @@ const buildProxyOutbound = async (proxyParams) => {
             delete proxyOutbound.streamSettings.tcpSettings;
             break;
 
-        case 'grpc':  
+        case 'grpc':
             proxyOutbound.streamSettings.grpcSettings.authority = authority;
             proxyOutbound.streamSettings.grpcSettings.serviceName = serviceName;
             proxyOutbound.streamSettings.grpcSettings.multiMode = mode === 'multi';
@@ -937,7 +937,7 @@ const buildProxyOutbound = async (proxyParams) => {
         default:
             break;
     }
-    
+
     return proxyOutbound;
 }
 
@@ -945,13 +945,13 @@ const buildWorkerLessConfig = async (env, client) => {
     let proxySettings = {};
 
     try {
-        proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
+        proxySettings = await env.asali.get("proxySettings", { type: 'json' });
     } catch (error) {
         console.log(error);
         throw new Error(`An error occurred while generating WorkerLess config - ${error}`);
     }
 
-    const { remoteDNS, localDNS, lengthMin,  lengthMax,  intervalMin,  intervalMax, blockAds, bypassIran, blockPorn, bypassLAN } = proxySettings;  
+    const { remoteDNS, localDNS, lengthMin, lengthMax, intervalMin, intervalMax, blockAds, bypassIran, blockPorn, bypassLAN } = proxySettings;
     let fakeOutbound = structuredClone(xrayOutboundTemp);
     delete fakeOutbound.mux;
     fakeOutbound.settings.vnext[0].address = 'google.com';
@@ -966,7 +966,7 @@ const buildWorkerLessConfig = async (env, client) => {
     fakeOutbound.tag = 'fake-outbound';
 
     let fragConfig = structuredClone(xrayConfigTemp);
-    fragConfig.remarks  = '💦 BPB Frag - WorkerLess ⭐'
+    fragConfig.remarks = '🍯 Asali Frag - WorkerLess ⭐'
     fragConfig.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, blockPorn, true);
     fragConfig.outbounds[0].settings.domainStrategy = 'UseIP';
     fragConfig.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
@@ -1001,23 +1001,23 @@ const getFragmentConfigs = async (env, hostName, client) => {
                             '40-60', '50-70', '60-80', '70-90', '80-100', '100-200']
 
     try {
-        proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
+        proxySettings = await env.asali.get("proxySettings", { type: 'json' });
     } catch (error) {
         console.log(error);
         throw new Error(`An error occurred while getting fragment configs - ${error}`);
     }
 
     const {
-        remoteDNS, 
-        localDNS, 
-        lengthMin, 
-        lengthMax, 
-        intervalMin, 
+        remoteDNS,
+        localDNS,
+        lengthMin,
+        lengthMax,
+        intervalMin,
         intervalMax,
         blockAds,
         bypassIran,
         blockPorn,
-        bypassLAN, 
+        bypassLAN,
         cleanIPs,
         proxyIP,
         outProxy,
@@ -1041,10 +1041,11 @@ const getFragmentConfigs = async (env, hostName, client) => {
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
             proxyOutbound = undefined;
-            await env.bpb.put("proxySettings", JSON.stringify({
-                ...proxySettings, 
+            await env.asali.put("proxySettings", JSON.stringify({
+                ...proxySettings,
                 outProxy: '',
-                outProxyParams: ''}));
+                outProxyParams: ''
+            }));
         }
     }
 
@@ -1108,12 +1109,12 @@ const getFragmentConfigs = async (env, hostName, client) => {
     };
 
     let bestPing = structuredClone(xrayConfigTemp);
-    bestPing.remarks = '💦 BPB Frag - Best Ping 💥';
+    bestPing.remarks = '🍯 Asali Frag - Best Ping 💥';
     bestPing.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, blockPorn);
     bestPing.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
     bestPing.outbounds[0].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
     bestPing.outbounds = [...outbounds, ...bestPing.outbounds];
-    
+
     if (proxyOutbound) {
         bestPing.observatory.subjectSelector = ["out"];
         bestPing.routing.balancers[0].selector = ["out"];
@@ -1129,7 +1130,7 @@ const getFragmentConfigs = async (env, hostName, client) => {
     }
 
     let bestFragment = structuredClone(xrayConfigTemp);
-    bestFragment.remarks = '💦 BPB Frag - Best Fragment 😎';
+    bestFragment.remarks = '🍯 Asali Frag - Best Fragment 😎';
     bestFragment.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, blockPorn);
     bestFragment.outbounds.splice(0,1);
     bestFragValues.forEach( (fragLength, index) => {
@@ -1188,9 +1189,9 @@ const getFragmentConfigs = async (env, hostName, client) => {
 
 const getSingboxConfig = async (env, hostName) => {
     let proxySettings = {};
-    
+
     try {
-        proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
+        proxySettings = await env.asali.get("proxySettings", { type: 'json' });
     } catch (error) {
         console.log(error);
         throw new Error(`An error occurred while getting sing-box configs - ${error}`);
@@ -1258,8 +1259,8 @@ const getWarpConfigs = async (env, client) => {
     const portRegex = /[^:]*$/;
     let xrayWoWConfig = structuredClone(xrayConfigTemp);
     let singboxWarpConfig = structuredClone(singboxConfigTemp);
-    singboxWarpConfig.outbounds[0].outbounds = ['💦 Warp Best Ping 🚀'];
-    singboxWarpConfig.outbounds[1].tag = '💦 Warp Best Ping 🚀';
+    singboxWarpConfig.outbounds[0].outbounds = ['🍯 Warp Best Ping 🚀'];
+    singboxWarpConfig.outbounds[1].tag = '🍯 Warp Best Ping 🚀';
 
     for (let i = 0; i < 2; i++) {
         let wgConfig = await fetchWgConfig();
@@ -1297,11 +1298,11 @@ const getWarpConfigs = async (env, client) => {
         singboxOutbound.peer_public_key = wgConfig.account.config.peers[0].public_key;
         singboxOutbound.reserved = wgConfig.account.config.client_id;
         singboxOutbound.private_key = wgConfig.privateKey;
-        singboxOutbound.tag = i === 1 ? '💦 Warp-ir' : '💦 WoW 🌍';    
+        singboxOutbound.tag = i === 1 ? '🍯 Warp-ir' : '🍯 WoW 🌍';    
         
         if (i === 0) {
-            singboxOutbound.detour = '💦 Warp-ir';
-            singboxWarpConfig.outbounds[0].outbounds.push('💦 WoW 🌍');
+            singboxOutbound.detour = '🍯 Warp-ir';
+            singboxWarpConfig.outbounds[0].outbounds.push('🍯 WoW 🌍');
         } else {
             delete singboxOutbound.detour;
         }
@@ -1309,7 +1310,7 @@ const getWarpConfigs = async (env, client) => {
         singboxOutbounds.push(singboxOutbound);
     }
 
-    xrayWoWConfig.remarks = '💦 BPB - WoW 🌍';
+    xrayWoWConfig.remarks = '🍯 Asali - WoW 🌍';
     xrayWoWConfig.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, blockPorn);
     xrayWoWConfig.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, false, false);
     xrayWoWConfig.outbounds.splice(0,1);
@@ -1327,7 +1328,7 @@ const getWarpConfigs = async (env, client) => {
         xrayWarpConfig.outbounds[0].settings.peers[0].endpoint = endpoint;
         xrayWarpConfig.outbounds[0].tag = 'warp';
         xrayWarpConfig.routing.rules[xrayWarpConfig.routing.rules.length - 1].outboundTag = 'warp';
-        xrayWarpConfig.remarks = `💦 BPB - Warp ${index + 1} 🇮🇷`;
+        xrayWarpConfig.remarks = `🍯 Asali - Warp ${index + 1} 🇮🇷`;
         xrayWarpConfigs.push(xrayWarpConfig);
         let xrayWarpOutbound = structuredClone(xrayWarpConfig.outbounds[0]);
         xrayWarpOutbound.tag = `warp_${index + 1}`;
@@ -1336,7 +1337,7 @@ const getWarpConfigs = async (env, client) => {
         let singboxWarpOutbound = structuredClone(singboxOutbounds[singboxOutbounds.length - 1]);
         singboxWarpOutbound.server = endpoint.includes('[') ? endpoint.match(ipv6Regex)[1] : endpoint.split(':')[0];
         singboxWarpOutbound.server_port = endpoint.includes('[') ? +endpoint.match(portRegex)[0] : +endpoint.split(':')[1];
-        singboxWarpOutbound.tag = `💦 Warp ${index + 1} 🇮🇷`;
+        singboxWarpOutbound.tag = `🍯 Warp ${index + 1} 🇮🇷`;
         singboxWarpOutbound
         singboxOutbounds.push(singboxWarpOutbound);
         singboxWarpConfig.outbounds[0].outbounds.push(singboxWarpOutbound.tag);
@@ -1344,7 +1345,7 @@ const getWarpConfigs = async (env, client) => {
     });
 
     let xrayWarpBestPing = structuredClone(xrayConfigTemp);
-    xrayWarpBestPing.remarks = '💦 BPB - Warp Best Ping 🚀';
+    xrayWarpBestPing.remarks = '🍯 Asali - Warp Best Ping 🚀';
     xrayWarpBestPing.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, blockPorn);
     xrayWarpBestPing.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, false, true);
     xrayWarpBestPing.outbounds.splice(0,1);
@@ -1543,8 +1544,8 @@ const updateDataset = async (env, Settings) => {
         warpEndpoints: Settings?.get('warpEndpoints')?.replaceAll(' ', '') || 'engage.cloudflareclient.com:2408'
     };
 
-    try {    
-        await env.bpb.put("proxySettings", JSON.stringify(proxySettings));          
+    try {
+        await env.asali.put("proxySettings", JSON.stringify(proxySettings));
     } catch (error) {
         console.log(error);
         throw new Error(`An error occurred while updating KV - ${error}`);
@@ -1618,11 +1619,11 @@ const generateSecretKey = () => {
     crypto.getRandomValues(bytes);
     return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
 }
-  
+
 const Authenticate = async (request, env) => {
-    
+
     try {
-        const secretKey = await env.bpb.get('secretKey');
+        const secretKey = await env.asali.get('secretKey');
         const cookie = request.headers.get('Cookie');
         const cookieMatch = cookie ? cookie.match(/(^|;\s*)jwtToken=([^;]*)/) : null;
         const token = cookieMatch ? cookieMatch.pop() : null;
@@ -1655,22 +1656,22 @@ const Authenticate = async (request, env) => {
 
 const renderHomePage = async (env, hostName, fragConfigs) => {
     let proxySettings = {};
-    
+
     try {
-        proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
+        proxySettings = await env.asali.get("proxySettings", { type: 'json' });
     } catch (error) {
         console.log(error);
         throw new Error(`An error occurred while rendering home page - ${error}`);
     }
 
     const {
-        remoteDNS = '', 
-        localDNS = '', 
-        lengthMin = '', 
-        lengthMax = '', 
-        intervalMin = '', 
-        intervalMax = '', 
-        blockAds = false, 
+        remoteDNS = '',
+        localDNS = '',
+        lengthMin = '',
+        lengthMax = '',
+        intervalMin = '',
+        intervalMax = '',
+        blockAds = false,
         bypassIran = false,
         blockPorn = false,
         bypassLAN = false,
@@ -1689,11 +1690,11 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             <tr>
                 <td>
                     ${config.address === 'Best-Ping' 
-                        ? `<div  style="justify-content: center;"><span><b>💦 Best-Ping 💥</b></span></div>` 
+                        ? `<div  style="justify-content: center;"><span><b>🍯 Best-Ping 💥</b></span></div>` 
                         : config.address === 'WorkerLess'
-                            ? `<div  style="justify-content: center;"><span><b>💦 WorkerLess ⭐</b></span></div>`
+                            ? `<div  style="justify-content: center;"><span><b>🍯 WorkerLess ⭐</b></span></div>`
                             : config.address === 'Best-Fragment'
-                                ? `<div  style="justify-content: center;"><span><b>💦 Best-Fragment 😎</b></span></div>`
+                                ? `<div  style="justify-content: center;"><span><b>🍯 Best-Fragment 😎</b></span></div>`
                                 : config.address
                     }
                 </td>
@@ -1732,7 +1733,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>BPB Panel ${panelVersion}</title>
+        <title>Asali Worker Panel ${panelVersion}</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 		<style>
@@ -1950,7 +1951,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 	</head>
 	
 	<body>
-		<h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
+		<h1>Asali Worker Panel <span style="font-size: smaller;">${panelVersion}</span> 🍯</h1>
 		<div class="form-container">
             <h2>FRAGMENT SETTINGS ⚙️</h2>
 			<form id="configForm">
@@ -2098,10 +2099,10 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                             </div>
                         </td>
 						<td>
-                            <button onclick="openQR('https://${hostName}/sub/${userID}#BPB-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
+                            <button onclick="openQR('https://${hostName}/sub/${userID}#Asali-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
-                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}#BPB-Normal', false)">
+                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}#Asali-Normal', false)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
@@ -2118,7 +2119,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                             </div>
                         </td>
 						<td>
-                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=singbox#BPB-Normal', false)">
+                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=singbox#Asali-Normal', false)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
 						</td>
@@ -2131,10 +2132,10 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                             </div>
                         </td>
                         <td>
-                            <button onclick="openQR('sing-box://import-remote-profile?url=https://${hostName}/sub/${userID}?app=sfa#BPB-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
+                            <button onclick="openQR('sing-box://import-remote-profile?url=https://${hostName}/sub/${userID}?app=sfa#Aasali-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
-                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=sfa#BPB-Normal', false)">
+                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=sfa#Asali-Normal', false)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
@@ -2168,7 +2169,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                             </div>
                         </td>
                         <td>
-                            <button onclick="openQR('https://${hostName}/fragsub/${userID}#BPB Fragment', 'Fragment Subscription')" style="margin-bottom: 8px;">
+                            <button onclick="openQR('https://${hostName}/fragsub/${userID}#Asali Fragment', 'Fragment Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
                             <button onclick="copyToClipboard('https://${hostName}/fragsub/${userID}#BPB Fragment', true)">
@@ -2275,7 +2276,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             <hr>
             <div class="footer">
                 <i class="fa fa-github" style="font-size:36px; margin-right: 10px;"></i>
-                <a class="link" href="https://github.com/bia-pain-bache/BPB-Worker-Panel" target="_blank">Github</a>
+                <a class="link" href="https://github.com/bia-pain-bache/Asali-Worker-Panel" target="_blank">Github</a>
                 <button id="openModalBtn" class="button">Change Password</button>
                 <button type="button" id="logout" style="background: none; margin: 0; border: none; cursor: pointer;">
                     <i class="fa fa-power-off fa-2x" aria-hidden="true"></i>
@@ -2630,7 +2631,7 @@ const renderLoginPage = async () => {
     </head>
     <body>
         <div class="container">
-            <h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
+            <h1>Asali Panel <span style="font-size: smaller;">${panelVersion}</span> 🍯</h1>
             <div class="form-container">
                 <h2>User Login</h2>
                 <form id="loginForm">
@@ -2701,11 +2702,11 @@ const renderErrorPage = (message, error, refer) => {
 
     <body>
         <div id="error-container">
-            <h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
+            <h1>Asali Panel <span style="font-size: smaller;">${panelVersion}</span> 🍯</h1>
             <div id="error-message">
-                <h2>${message} ${refer 
-                    ? 'Please try again or refer to <a href="https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/README.md">documents</a>' 
-                    : ''}
+                <h2>${message} ${refer
+            ? 'Please try again or refer to <a href="https://github.com/bia-pain-bache/Asali-Worker-Panel/blob/main/README.md">documents</a>'
+            : ''}
                 </h2>
                 <p><b>${error ? `⚠️ ${error}` : ''}</b></p>
             </div>
@@ -2836,8 +2837,8 @@ const xrayConfigTemp = {
     },
     stats: {},
 };
-  
-const xrayOutboundTemp = 
+
+const xrayOutboundTemp =
 {
     mux: {
         concurrency: 8,
@@ -2878,7 +2879,7 @@ const xrayOutboundTemp =
             serverName: ""
         },
         wsSettings: {
-            headers: {Host: ""},
+            headers: { Host: "" },
             path: ""
         },
         grpcSettings: {
@@ -2992,11 +2993,11 @@ const singboxConfigTemp = {
         {
             type: "selector",
             tag: "proxy",
-            outbounds: ["💦 Best-Ping 💥"]
+            outbounds: ["🍯 Best-Ping 💥"]
         },
         {
             type: "urltest",
-            tag: "💦 Best-Ping 💥",
+            tag: "🍯 Best-Ping 💥",
             outbounds: [],
             url: "https://www.gstatic.com/generate_204",
             interval: "30s",
