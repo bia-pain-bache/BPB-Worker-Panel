@@ -3196,5 +3196,5 @@ const singboxWgOutboundTemp = {
     type: "wireguard",
     domain_strategy: "prefer_ipv6",
     detour: "",
-    tag: ""
+    tag: "",
 };
