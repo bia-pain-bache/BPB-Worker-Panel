@@ -3185,16 +3185,17 @@ const xrayWgOutboundTemp = {
 };
 
 const singboxWgOutboundTemp = {
-    local_address: [],
-    mtu: 1280,
-    peer_public_key: "",
-    pre_shared_key: "",
-    private_key: "",
-    reserved: "",
+    type: "wireguard",
+    tag: "",
+
     server: "engage.cloudflareclient.com",
     server_port: 2408,
-    type: "wireguard",
-    domain_strategy: "prefer_ipv6",
+    local_address: [],
+    private_key: "",
+    peer_public_key: "",
+    pre_shared_key: "",
+    reserved: "",
+    mtu: 1280,
     detour: "",
-    tag: "",
+    domain_strategy: "prefer_ipv6",
 };
