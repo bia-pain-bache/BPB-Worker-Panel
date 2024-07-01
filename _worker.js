@@ -11,7 +11,7 @@ let userID = '89b3cbba-e6ac-485a-9481-976a0415eab9';
 
 // https://www.nslookup.io/domains/cdn.xn--b6gac.eu.org/dns-records/
 // https://www.nslookup.io/domains/cdn-all.xn--b6gac.eu.org/dns-records/
-const proxyIPs= ['cdn.xn--b6gac.eu.org', 'cdn-all.xn--b6gac.eu.org', 'edgetunnel.anycast.eu.org'];
+const proxyIPs= ['cdn.xn--b6gac.eu.org', 'workers.bestip.one', 'edgetunnel.anycast.eu.org'];
 
 let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 
