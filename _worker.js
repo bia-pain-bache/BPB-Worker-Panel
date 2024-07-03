@@ -831,8 +831,8 @@ const generateRemark = (index, port) => {
             break;
         case 4:
         case 5:
-            remark = `💦 BPB - IPv6_${index - 3} : ${port}`;
-            break;
+         /* remark = `💦 BPB - IPv6_${index - 3} : ${port}`;
+            break;*/
         default:
             remark = `💦 BPB - Clean IP_${index - 5} : ${port}`;
             break;
@@ -1030,7 +1030,7 @@ const getFragmentConfigs = async (env, hostName, client) => {
         hostName,
         "www.speedtest.net",
         ...resolved.ipv4,
-        ...resolved.ipv6.map((ip) => `[${ip}]`),
+      //...resolved.ipv6.map((ip) => `[${ip}]`),
         ...(cleanIPs ? cleanIPs.split(",") : [])
     ];
 
@@ -1205,7 +1205,7 @@ const getSingboxConfig = async (env, hostName) => {
         hostName,
         "www.speedtest.net",
         ...resolved.ipv4,
-        ...resolved.ipv6.map((ip) => `[${ip}]`),
+        //...resolved.ipv6.map((ip) => `[${ip}]`),
         ...(cleanIPs ? cleanIPs.split(",") : [])
     ];
 
