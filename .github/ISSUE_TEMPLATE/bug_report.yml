@@ -1,4 +1,4 @@
-name: Bug Report
+name: Bug Report | گزارش مشکل
 description: Report a bug encountered while using BPB Panel
 body:
     - type: markdown
