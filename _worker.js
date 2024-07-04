@@ -20,7 +20,7 @@ let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 
 let dohURL = 'https://cloudflare-dns.com/dns-query';
 
-let panelVersion = '2.4.3';
+let panelVersion = '2.4.4';
 
 if (!isValidUUID(userID)) {
     throw new Error('uuid is not valid');
@@ -98,7 +98,9 @@ export default {
                         }
                         
                         if (!isAuth) return Response.redirect(`${url.origin}/login`, 302);
-                        if (! await env.bpb.get('proxySettings')) await updateDataset(env);
+                        const proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
+                        const isUpdated = panelVersion === proxySettings.panelVersion;
+                        if (!proxySettings || !isUpdated) await updateDataset(env);
                         const fragConfs = await getFragmentConfigs(env, host, 'nekoray');
                         const homePage = await renderHomePage(env, host, fragConfs);
 
@@ -1022,7 +1024,7 @@ const getFragmentConfigs = async (env, hostName, client) => {
         proxyIP,
         outProxy,
         outProxyParams,
-        ports = ['443']
+        ports
     } = proxySettings;
 
     const resolved = await resolveDNS(hostName);
@@ -1521,26 +1523,55 @@ const base64ToDecimal = (base64) => {
 }
 
 const updateDataset = async (env, Settings) => {
+    let currentProxySettings = {};
+
+    try {
+        currentProxySettings = await env.bpb.get("proxySettings", {type: 'json'});
+    } catch (error) {
+        console.log(error);
+        throw new Error(`An error occurred while getting current values - ${error}`);
+    }
+
+    const {
+        remoteDNS: currentRemoteDNS, 
+        localDNS: currentLocalDNS, 
+        lengthMin: currentLengthMin, 
+        lengthMax: currentLengthMax, 
+        intervalMin: currentIntervalMin, 
+        intervalMax: currentIntervalMax,
+        blockAds: currentBlockAds,
+        bypassIran: currentBypassIran,
+        blockPorn: currentBlockPorn,
+        bypassLAN: currentBypassLAN, 
+        cleanIPs: currentCleanIPs,
+        proxyIP: currentProxyIP,
+        outProxy: currentOutProxy,
+        outProxyParams: currentOutProxyParams,
+        wowEndpoint: currentWoWEndpoint,
+        warpEndpoints: currentWarpEndpoints,
+        ports: currentPorts
+    } = currentProxySettings;
 
     const vlessConfig = Settings?.get('outProxy');
     const proxySettings = {
-        remoteDNS: Settings?.get('remoteDNS') || 'https://94.140.14.14/dns-query',
-        localDNS: Settings?.get('localDNS') || '8.8.8.8',
-        lengthMin: Settings?.get('fragmentLengthMin') || '100',
-        lengthMax: Settings?.get('fragmentLengthMax') || '200',
-        intervalMin: Settings?.get('fragmentIntervalMin') || '5',
-        intervalMax: Settings?.get('fragmentIntervalMax') || '10',
-        blockAds: Settings?.get('block-ads') || false,
-        bypassIran: Settings?.get('bypass-iran') || false,
-        blockPorn: Settings?.get('block-porn') || false,
-        bypassLAN: Settings?.get('bypass-lan') || false,
-        cleanIPs: Settings?.get('cleanIPs')?.replaceAll(' ', '') || '',
-        proxyIP: Settings?.get('proxyIP') || '',
-        ports: Settings?.getAll('ports[]') || ['443'],
-        outProxy: vlessConfig || '',
-        outProxyParams: vlessConfig ? await extractVlessParams(vlessConfig) : '',
-        wowEndpoint: Settings?.get('wowEndpoint')?.replaceAll(' ', '') || 'engage.cloudflareclient.com:2408',
-        warpEndpoints: Settings?.get('warpEndpoints')?.replaceAll(' ', '') || 'engage.cloudflareclient.com:2408'
+        remoteDNS: Settings?.get('remoteDNS') || currentRemoteDNS || 'https://94.140.14.14/dns-query',
+        localDNS: Settings?.get('localDNS') || currentLocalDNS || '8.8.8.8',
+        lengthMin: Settings?.get('fragmentLengthMin') || currentLengthMin || '100',
+        lengthMax: Settings?.get('fragmentLengthMax') || currentLengthMax || '200',
+        intervalMin: Settings?.get('fragmentIntervalMin') || currentIntervalMin || '5',
+        intervalMax: Settings?.get('fragmentIntervalMax') || currentIntervalMax || '10',
+        blockAds: Settings?.get('block-ads') || currentBlockAds || false,
+        bypassIran: Settings?.get('bypass-iran') || currentBypassIran || false,
+        blockPorn: Settings?.get('block-porn') || currentBlockPorn || false,
+        bypassLAN: Settings?.get('bypass-lan') || currentBypassLAN || false,
+        cleanIPs: Settings?.get('cleanIPs')?.replaceAll(' ', '') || currentCleanIPs || '',
+        proxyIP: Settings?.get('proxyIP') || currentProxyIP || '',
+        ports: Settings?.getAll('ports[]') || currentPorts || ['443'],
+        outProxy: vlessConfig || currentOutProxy || '',
+        outProxyParams: vlessConfig ? await extractVlessParams(vlessConfig) : currentOutProxyParams || '',
+        wowEndpoint: Settings?.get('wowEndpoint')?.replaceAll(' ', '') || currentWoWEndpoint || 'engage.cloudflareclient.com:2408',
+        warpEndpoints: Settings?.get('warpEndpoints')?.replaceAll(' ', '') || currentWarpEndpoints || 'engage.cloudflareclient.com:2408',
+        panelVersion: panelVersion
     };
 
     try {    
@@ -1664,22 +1695,22 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
     }
 
     const {
-        remoteDNS = '', 
-        localDNS = '', 
-        lengthMin = '', 
-        lengthMax = '', 
-        intervalMin = '', 
-        intervalMax = '', 
-        blockAds = false, 
-        bypassIran = false,
-        blockPorn = false,
-        bypassLAN = false,
-        cleanIPs = '', 
-        proxyIP = '', 
-        outProxy = '',
-        ports = ['443'],
-        wowEndpoint = 'engage.cloudflareclient.com:2408',
-        warpEndpoints = 'engage.cloudflareclient.com:2408'
+        remoteDNS, 
+        localDNS, 
+        lengthMin, 
+        lengthMax, 
+        intervalMin, 
+        intervalMax, 
+        blockAds, 
+        bypassIran,
+        blockPorn,
+        bypassLAN,
+        cleanIPs, 
+        proxyIP, 
+        outProxy,
+        ports,
+        wowEndpoint,
+        warpEndpoints
     } = proxySettings;
 
     const genCustomConfRow = async (configs) => {
@@ -2287,7 +2318,6 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 	<script>
     let activePortsNo = ${ports.length};
 		document.addEventListener('DOMContentLoaded', () => {
-            let regionNames = new Intl.DisplayNames(['en'], {type: 'region'});
             const configForm = document.getElementById('configForm');            
             const modal = document.getElementById('myModal');
             const changePass = document.getElementById("openModalBtn");
