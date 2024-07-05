@@ -1169,7 +1169,7 @@ const getFragmentConfigs = async (env, hostName, client) => {
     }
 
     bestFragment.observatory.subjectSelector = ["frag"];
-    bestFragment.observatory.probeInterval = '1m';
+    bestFragment.observatory.probeInterval = '30s';
     bestFragment.routing.balancers[0].selector = ["frag"];
 
     if (client === 'nekoray') {
@@ -1236,132 +1236,183 @@ const getSingboxConfig = async (env, hostName) => {
 
 const getWarpConfigs = async (env, client) => {
     let proxySettings = {};
-    let xrayOutbounds = [], singboxOutbounds = [];
-
+    let xrayWarpConfigs = [];
+    let xrayWarpConfig = structuredClone(xrayConfigTemp);
+    let xrayWarpBestPing = structuredClone(xrayConfigTemp);
+    let xrayWoWConfigTemp = structuredClone(xrayConfigTemp);
+    let singboxWarpConfig = structuredClone(singboxConfigTemp);
+    
     try {
         proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
     } catch (error) {
         console.log(error);
         throw new Error(`An error occurred while getting fragment configs - ${error}`);
     }
-
-    const {
-        remoteDNS, 
-        localDNS,
-        blockAds,
-        bypassIran,
-        blockPorn,
-        bypassLAN,
-        wowEndpoint,
-        warpEndpoints
-    } = proxySettings;
-
-    const ipv6Regex = /\[(.*?)\]/;
-    const portRegex = /[^:]*$/;
-    let xrayWoWConfig = structuredClone(xrayConfigTemp);
-    let singboxWarpConfig = structuredClone(singboxConfigTemp);
+    
+    const {remoteDNS, localDNS, blockAds, bypassIran, blockPorn, bypassLAN, wowEndpoint, warpEndpoints} = proxySettings;
+    const {xray: xrayWarpOutbounds, singbox: singboxWarpOutbounds} = await buildWarpOutbounds(remoteDNS, localDNS, blockAds, bypassIran, blockPorn, bypassLAN, warpEndpoints) 
+    const {xray: xrayWoWOutbounds, singbox: singboxWoWOutbounds} = await buildWoWOutbounds(remoteDNS, localDNS, blockAds, bypassIran, blockPorn, bypassLAN, wowEndpoint); 
+    
     singboxWarpConfig.outbounds[0].outbounds = ['💦 Warp Best Ping 🚀'];
     singboxWarpConfig.outbounds[1].tag = '💦 Warp Best Ping 🚀';
-
-    for (let i = 0; i < 2; i++) {
-        let wgConfig = await fetchWgConfig();
-        let xrayOutbound = structuredClone(xrayWgOutboundTemp);
-        let singboxOutbound = structuredClone(singboxWgOutboundTemp);
-        xrayOutbound.settings.address = [
-            `${wgConfig.account.config.interface.addresses.v4}/32`,
-            `${wgConfig.account.config.interface.addresses.v6}/128`
-        ];
-
-        if (wowEndpoint) xrayOutbound.settings.peers[0].endpoint = wowEndpoint;
-        xrayOutbound.settings.peers[0].publicKey = wgConfig.account.config.peers[0].public_key;
-        xrayOutbound.settings.reserved = base64ToDecimal(wgConfig.account.config.client_id);
-        xrayOutbound.settings.secretKey = wgConfig.privateKey;
-        xrayOutbound.tag = i === 1 ? 'warp-ir' : 'warp-out';    
-        
-        if (i === 1) {
-            delete xrayOutbound.streamSettings;
-        } else {
-            xrayOutbound.streamSettings.sockopt.dialerProxy = 'warp-ir';
-        }
-
-        xrayOutbounds.push(xrayOutbound);
-
-        singboxOutbound.local_address = [
-            `${wgConfig.account.config.interface.addresses.v4}/32`,
-            `${wgConfig.account.config.interface.addresses.v6}/128`
-        ];
-
-        if (wowEndpoint) {
-            singboxOutbound.server = wowEndpoint.includes('[') ? wowEndpoint.match(ipv6Regex)[1] : wowEndpoint.split(':')[0];
-            singboxOutbound.server_port = wowEndpoint.includes('[') ? +wowEndpoint.match(portRegex)[0] : +wowEndpoint.split(':')[1];
-        }
-
-        singboxOutbound.peer_public_key = wgConfig.account.config.peers[0].public_key;
-        singboxOutbound.reserved = wgConfig.account.config.client_id;
-        singboxOutbound.private_key = wgConfig.privateKey;
-        singboxOutbound.tag = i === 1 ? '💦 Warp-ir' : '💦 WoW 🌍';    
-        
-        if (i === 0) {
-            singboxOutbound.detour = '💦 Warp-ir';
-            singboxWarpConfig.outbounds[0].outbounds.push('💦 WoW 🌍');
-        } else {
-            delete singboxOutbound.detour;
-        }
-
-        singboxOutbounds.push(singboxOutbound);
-    }
-
-    xrayWoWConfig.remarks = '💦 BPB - WoW 🌍';
-    xrayWoWConfig.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, blockPorn);
-    xrayWoWConfig.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, false, false);
-    xrayWoWConfig.outbounds.splice(0,1);
-    delete xrayWoWConfig.observatory;
-    delete xrayWoWConfig.routing.balancers;
-    xrayWoWConfig.outbounds = [...xrayOutbounds, ...xrayWoWConfig.outbounds];
-    xrayWoWConfig.routing.rules[xrayWoWConfig.routing.rules.length - 1].outboundTag = 'warp-out';
-    
-    let xrayWarpConfigs = [];
-    let xrayWarpOutbounds = [];
-    
-    warpEndpoints.split(',').forEach((endpoint, index) => {
-        let xrayWarpConfig = structuredClone(xrayWoWConfig);
-        xrayWarpConfig.outbounds.splice(0,1);
-        xrayWarpConfig.outbounds[0].settings.peers[0].endpoint = endpoint;
-        xrayWarpConfig.outbounds[0].tag = 'warp';
-        xrayWarpConfig.routing.rules[xrayWarpConfig.routing.rules.length - 1].outboundTag = 'warp';
-        xrayWarpConfig.remarks = `💦 BPB - Warp ${index + 1} 🇮🇷`;
-        xrayWarpConfigs.push(xrayWarpConfig);
-        let xrayWarpOutbound = structuredClone(xrayWarpConfig.outbounds[0]);
-        xrayWarpOutbound.tag = `warp_${index + 1}`;
-        xrayWarpOutbounds.push(xrayWarpOutbound);
-
-        let singboxWarpOutbound = structuredClone(singboxOutbounds[singboxOutbounds.length - 1]);
-        singboxWarpOutbound.server = endpoint.includes('[') ? endpoint.match(ipv6Regex)[1] : endpoint.split(':')[0];
-        singboxWarpOutbound.server_port = endpoint.includes('[') ? +endpoint.match(portRegex)[0] : +endpoint.split(':')[1];
-        singboxWarpOutbound.tag = `💦 Warp ${index + 1} 🇮🇷`;
-        singboxWarpOutbound
-        singboxOutbounds.push(singboxWarpOutbound);
-        singboxWarpConfig.outbounds[0].outbounds.push(singboxWarpOutbound.tag);
-        singboxWarpConfig.outbounds[1].outbounds.push(singboxWarpOutbound.tag);
-    });
-
-    let xrayWarpBestPing = structuredClone(xrayConfigTemp);
-    xrayWarpBestPing.remarks = '💦 BPB - Warp Best Ping 🚀';
+    xrayWarpConfig.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, blockPorn);
+    xrayWarpConfig.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, false, false);
+    xrayWarpConfig.outbounds.splice(0,1);
+    xrayWarpConfig.routing.rules[xrayWarpConfig.routing.rules.length - 1].outboundTag = 'warp';
+    delete xrayWarpConfig.observatory;
+    delete xrayWarpConfig.routing.balancers;
+    xrayWarpBestPing.remarks = '💦 BPB - Warp Best Ping 🚀'
     xrayWarpBestPing.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, blockPorn);
     xrayWarpBestPing.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, false, true);
     xrayWarpBestPing.outbounds.splice(0,1);
-    xrayWarpBestPing.outbounds = [...xrayWarpOutbounds, ...xrayWarpBestPing.outbounds];
     xrayWarpBestPing.routing.balancers[0].selector = 'warp';
     xrayWarpBestPing.observatory.subjectSelector = ['warp'];
+    xrayWoWConfigTemp.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, blockPorn);
+    xrayWoWConfigTemp.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, false, false);
+    xrayWoWConfigTemp.outbounds.splice(0,1);
+    delete xrayWoWConfigTemp.observatory;
+    delete xrayWoWConfigTemp.routing.balancers;
+  
+    xrayWarpOutbounds.forEach((outbound, index) => {
+        xrayWarpConfigs.push({
+            ...xrayWarpConfig,
+            remarks: `💦 BPB - Warp ${index + 1} 🇮🇷`,
+            outbounds: [{...outbound, tag: 'warp'}, ...xrayWarpConfig.outbounds]
+        });
+    });
+    
+    xrayWoWOutbounds.forEach((outbound, index) => {
+        if (outbound.tag.includes('warp-out')) {
+            let xrayWoWConfig = structuredClone(xrayWoWConfigTemp);
+            xrayWoWConfig.remarks = `💦 BPB - WoW ${index/2 + 1} 🌍`;
+            xrayWoWConfig.outbounds = [{...xrayWoWOutbounds[index]}, {...xrayWoWOutbounds[index + 1]}, ...xrayWoWConfig.outbounds];
+            xrayWoWConfig.routing.rules[xrayWoWConfig.routing.rules.length - 1].outboundTag = outbound.tag;
+            xrayWarpConfigs.push(xrayWoWConfig);
+        }
+    });
 
-    singboxWarpConfig.dns.servers[0].address = remoteDNS;
-    singboxWarpConfig.dns.servers[1].address = localDNS;
-    singboxWarpConfig.dns.rules[0].domain = 'engage.cloudflareclient.com';
-    singboxWarpConfig.outbounds = [...singboxWarpConfig.outbounds, ...singboxOutbounds];
+    xrayWarpBestPing.outbounds = [...xrayWarpOutbounds, ...xrayWarpBestPing.outbounds];
+    xrayWarpConfigs.push(xrayWarpBestPing);
+    
+    singboxWarpOutbounds.forEach((outbound, index) => {
+        singboxWarpConfig.outbounds.push(outbound);
+        singboxWarpConfig.outbounds[0].outbounds.push(outbound.tag);
+        singboxWarpConfig.outbounds[1].outbounds.push(outbound.tag);
+    });
+
+    singboxWoWOutbounds.forEach((outbound, index) => {
+        if (outbound.tag.includes('WoW')) {
+            singboxWarpConfig.outbounds.push(singboxWoWOutbounds[index], singboxWoWOutbounds[index + 1]);
+            singboxWarpConfig.outbounds[0].outbounds.push(outbound.tag);
+        }
+    });
 
     return client === 'singbox' 
         ? singboxWarpConfig 
-        : [{...xrayWoWConfig}, {...xrayWarpBestPing}, ...xrayWarpConfigs];
+        : xrayWarpConfigs;
+}
+
+const buildWarpOutbounds = async (remoteDNS, localDNS, blockAds, bypassIran, blockPorn, bypassLAN, warpEndpoints) => {
+    let wgConfig = await fetchWgConfig();
+    let xrayOutboundTemp = structuredClone(xrayWgOutboundTemp);
+    let singboxOutbound = structuredClone(singboxWgOutboundTemp);
+    let xrayOutbounds = [];
+    let singboxOutbounds = [];
+    const ipv6Regex = /\[(.*?)\]/;
+    const portRegex = /[^:]*$/;
+
+    xrayOutboundTemp.settings.address = [
+        `${wgConfig.account.config.interface.addresses.v4}/32`,
+        `${wgConfig.account.config.interface.addresses.v6}/128`
+    ];
+
+    xrayOutboundTemp.settings.peers[0].publicKey = wgConfig.account.config.peers[0].public_key;
+    xrayOutboundTemp.settings.reserved = base64ToDecimal(wgConfig.account.config.client_id);
+    xrayOutboundTemp.settings.secretKey = wgConfig.privateKey;
+    delete xrayOutboundTemp.streamSettings;
+    
+    singboxOutbound.local_address = [
+        `${wgConfig.account.config.interface.addresses.v4}/32`,
+        `${wgConfig.account.config.interface.addresses.v6}/128`
+    ];
+
+    singboxOutbound.peer_public_key = wgConfig.account.config.peers[0].public_key;
+    singboxOutbound.reserved = wgConfig.account.config.client_id;
+    singboxOutbound.private_key = wgConfig.privateKey;
+    delete singboxOutbound.detour;
+    
+    warpEndpoints.split(',').forEach( (endpoint, index) => {
+        let xrayOutbound = structuredClone(xrayOutboundTemp);
+        xrayOutbound.settings.peers[0].endpoint = endpoint;
+        xrayOutbound.tag = `warp-${index + 1}`;        
+        xrayOutbounds.push(xrayOutbound);
+        
+        singboxOutbounds.push({
+            ...singboxOutbound,
+            server: endpoint.includes('[') ? endpoint.match(ipv6Regex)[1] : endpoint.split(':')[0],
+            server_port: endpoint.includes('[') ? +endpoint.match(portRegex)[0] : +endpoint.split(':')[1],
+            tag: `💦 Warp ${index + 1} 🇮🇷`
+        });
+    })
+    
+    return {xray: xrayOutbounds, singbox: singboxOutbounds};
+}
+
+const buildWoWOutbounds = async (remoteDNS, localDNS, blockAds, bypassIran, blockPorn, bypassLAN, wowEndpoint) => {
+    let xrayOutbounds = [];
+    let singboxOutbounds = [];
+    const ipv6Regex = /\[(.*?)\]/;
+    const portRegex = /[^:]*$/;
+    const wgConfigs = [await fetchWgConfig(), await fetchWgConfig()]; 
+
+    wowEndpoint.split(',').forEach( (endpoint, index) => {
+        
+        for (let i = 0; i < 2; i++) {
+            let xrayOutbound = structuredClone(xrayWgOutboundTemp);
+            let singboxOutbound = structuredClone(singboxWgOutboundTemp);
+            xrayOutbound.settings.address = [
+                `${wgConfigs[i].account.config.interface.addresses.v4}/32`,
+                `${wgConfigs[i].account.config.interface.addresses.v6}/128`
+            ];
+    
+            xrayOutbound.settings.peers[0].endpoint = endpoint;
+            xrayOutbound.settings.peers[0].publicKey = wgConfigs[i].account.config.peers[0].public_key;
+            xrayOutbound.settings.reserved = base64ToDecimal(wgConfigs[i].account.config.client_id);
+            xrayOutbound.settings.secretKey = wgConfigs[i].privateKey;
+            xrayOutbound.tag = i === 1 ? `warp-ir_${index + 1}` : `warp-out_${index + 1}`;    
+            
+            if (i === 1) {
+                delete xrayOutbound.streamSettings;
+            } else {
+                xrayOutbound.streamSettings.sockopt.dialerProxy = `warp-ir_${index + 1}`;
+            }
+    
+            xrayOutbounds.push(xrayOutbound);
+    
+            singboxOutbound.local_address = [
+                `${wgConfigs[i].account.config.interface.addresses.v4}/32`,
+                `${wgConfigs[i].account.config.interface.addresses.v6}/128`
+            ];
+    
+            singboxOutbound.server = endpoint.includes('[') ? endpoint.match(ipv6Regex)[1] : endpoint.split(':')[0];
+            singboxOutbound.server_port = endpoint.includes('[') ? +endpoint.match(portRegex)[0] : +endpoint.split(':')[1];    
+            singboxOutbound.peer_public_key = wgConfigs[i].account.config.peers[0].public_key;
+            singboxOutbound.reserved = wgConfigs[i].account.config.client_id;
+            singboxOutbound.private_key = wgConfigs[i].privateKey;
+            singboxOutbound.tag = i === 1 ? `warp-ir_${index + 1}` : `💦 WoW ${index + 1} 🌍`;    
+            
+            if (i === 0) {
+                singboxOutbound.detour = `warp-ir_${index + 1}`;
+            } else {
+                delete singboxOutbound.detour;
+            }
+    
+            singboxOutbounds.push(singboxOutbound);
+        }
+
+    })
+
+    return {xray: xrayOutbounds, singbox: singboxOutbounds};
 }
 
 const fetchWgConfig = async () => {
@@ -2072,9 +2123,9 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                         </tr>`}        
                     </table>
                 </div>
-                <h2>WARP ENDPOINT ⚙️</h2>
+                <h2>WARP ENDPOINTS ⚙️</h2>
 				<div class="form-control">
-                    <label for="wowEndpoint">✨ WoW Endpoint</label>
+                    <label for="wowEndpoint">✨ WoW Endpoints</label>
                     <input type="text" id="wowEndpoint" name="wowEndpoint" value="${wowEndpoint.replaceAll(",", " , ")}">
 				</div>
 				<div class="form-control">
@@ -2433,7 +2484,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             const intervalMax = getValue('fragmentIntervalMax');
             const proxyIP = document.getElementById('proxyIP').value?.trim();
             const cleanIP = document.getElementById('cleanIPs');
-            const wowEndpoint = document.getElementById('wowEndpoint').value?.trim();
+            const wowEndpoint = document.getElementById('warpEndpoints').value?.replaceAll(' ', '').split(',');
             const warpEndpoints = document.getElementById('warpEndpoints').value?.replaceAll(' ', '').split(',');
             const cleanIPs = cleanIP.value?.split(',');
             const chainProxy = document.getElementById('outProxy').value?.trim();                    
@@ -2454,7 +2505,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                 }
             });
 
-            const invalidEndpoints = [wowEndpoint, ...warpEndpoints]?.filter(value => {
+            const invalidEndpoints = [...wowEndpoint, ...warpEndpoints]?.filter(value => {
                 if (value !== "") {
                     const trimmedValue = value.trim();
                     return !validEndpoint.test(trimmedValue);
