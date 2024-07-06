@@ -6,3 +6,6 @@
 !location.json
 !_worker.js
 !docs/
+!docs/**
+!.github/
+!.github/**
