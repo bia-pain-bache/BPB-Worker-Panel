@@ -99,7 +99,7 @@ export default {
                         
                         if (!isAuth) return Response.redirect(`${url.origin}/login`, 302);
                         const proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
-                        const isUpdated = panelVersion === proxySettings.panelVersion;
+                        const isUpdated = panelVersion === proxySettings?.panelVersion;
                         if (!proxySettings || !isUpdated) await updateDataset(env);
                         const fragConfs = await getFragmentConfigs(env, host, 'nekoray');
                         const homePage = await renderHomePage(env, host, fragConfs);
@@ -1583,45 +1583,25 @@ const updateDataset = async (env, Settings) => {
         throw new Error(`An error occurred while getting current values - ${error}`);
     }
 
-    const {
-        remoteDNS: currentRemoteDNS, 
-        localDNS: currentLocalDNS, 
-        lengthMin: currentLengthMin, 
-        lengthMax: currentLengthMax, 
-        intervalMin: currentIntervalMin, 
-        intervalMax: currentIntervalMax,
-        blockAds: currentBlockAds,
-        bypassIran: currentBypassIran,
-        blockPorn: currentBlockPorn,
-        bypassLAN: currentBypassLAN, 
-        cleanIPs: currentCleanIPs,
-        proxyIP: currentProxyIP,
-        outProxy: currentOutProxy,
-        outProxyParams: currentOutProxyParams,
-        wowEndpoint: currentWoWEndpoint,
-        warpEndpoints: currentWarpEndpoints,
-        ports: currentPorts
-    } = currentProxySettings;
-
     const vlessConfig = Settings?.get('outProxy');
     const proxySettings = {
-        remoteDNS: Settings?.get('remoteDNS') || currentRemoteDNS || 'https://94.140.14.14/dns-query',
-        localDNS: Settings?.get('localDNS') || currentLocalDNS || '8.8.8.8',
-        lengthMin: Settings?.get('fragmentLengthMin') || currentLengthMin || '100',
-        lengthMax: Settings?.get('fragmentLengthMax') || currentLengthMax || '200',
-        intervalMin: Settings?.get('fragmentIntervalMin') || currentIntervalMin || '5',
-        intervalMax: Settings?.get('fragmentIntervalMax') || currentIntervalMax || '10',
-        blockAds: Settings?.get('block-ads') || currentBlockAds || false,
-        bypassIran: Settings?.get('bypass-iran') || currentBypassIran || false,
-        blockPorn: Settings?.get('block-porn') || currentBlockPorn || false,
-        bypassLAN: Settings?.get('bypass-lan') || currentBypassLAN || false,
-        cleanIPs: Settings?.get('cleanIPs')?.replaceAll(' ', '') || currentCleanIPs || '',
-        proxyIP: Settings?.get('proxyIP') || currentProxyIP || '',
-        ports: Settings?.getAll('ports[]') || currentPorts || ['443'],
-        outProxy: vlessConfig || currentOutProxy || '',
-        outProxyParams: vlessConfig ? await extractVlessParams(vlessConfig) : currentOutProxyParams || '',
-        wowEndpoint: Settings?.get('wowEndpoint')?.replaceAll(' ', '') || currentWoWEndpoint || 'engage.cloudflareclient.com:2408',
-        warpEndpoints: Settings?.get('warpEndpoints')?.replaceAll(' ', '') || currentWarpEndpoints || 'engage.cloudflareclient.com:2408',
+        remoteDNS: Settings?.get('remoteDNS') || currentProxySettings?.remoteDNS || 'https://94.140.14.14/dns-query',
+        localDNS: Settings?.get('localDNS') || currentProxySettings?.localDNS || '8.8.8.8',
+        lengthMin: Settings?.get('fragmentLengthMin') || currentProxySettings?.lengthMin || '100',
+        lengthMax: Settings?.get('fragmentLengthMax') || currentProxySettings?.lengthMax || '200',
+        intervalMin: Settings?.get('fragmentIntervalMin') || currentProxySettings?.intervalMin || '5',
+        intervalMax: Settings?.get('fragmentIntervalMax') || currentProxySettings?.intervalMax || '10',
+        blockAds: Settings?.get('block-ads') || currentProxySettings?.blockAds || false,
+        bypassIran: Settings?.get('bypass-iran') || currentProxySettings?.bypassIran || false,
+        blockPorn: Settings?.get('block-porn') || currentProxySettings?.blockPorn || false,
+        bypassLAN: Settings?.get('bypass-lan') || currentProxySettings?.bypassLAN || false,
+        cleanIPs: Settings?.get('cleanIPs')?.replaceAll(' ', '') || currentProxySettings?.cleanIPs || '',
+        proxyIP: Settings?.get('proxyIP') || currentProxySettings?.proxyIP || '',
+        ports: Settings?.getAll('ports[]') || currentProxySettings?.ports || ['443'],
+        outProxy: vlessConfig || currentProxySettings?.outProxy || '',
+        outProxyParams: vlessConfig ? await extractVlessParams(vlessConfig) : currentProxySettings?.outProxyParams || '',
+        wowEndpoint: Settings?.get('wowEndpoint')?.replaceAll(' ', '') || currentProxySettings?.wowEndpoint || 'engage.cloudflareclient.com:2408',
+        warpEndpoints: Settings?.get('warpEndpoints')?.replaceAll(' ', '') || currentProxySettings?.warpEndpoints || 'engage.cloudflareclient.com:2408',
         panelVersion: panelVersion
     };
 
