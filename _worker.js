@@ -20,7 +20,7 @@ let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 
 let dohURL = 'https://cloudflare-dns.com/dns-query';
 
-let panelVersion = '2.4.4';
+let panelVersion = '2.4.5';
 
 if (!isValidUUID(userID)) {
     throw new Error('uuid is not valid');
@@ -1190,6 +1190,8 @@ const getFragmentConfigs = async (env, hostName, client) => {
 
 const getSingboxConfig = async (env, hostName) => {
     let proxySettings = {};
+    let outboundDomains = [];
+    const domainRegex = /^(?!:\/\/)([a-zA-Z0-9-]{1,63}\.)*[a-zA-Z0-9][a-zA-Z0-9-]{0,62}\.[a-zA-Z]{2,11}$/;
     
     try {
         proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
@@ -1228,8 +1230,11 @@ const getSingboxConfig = async (env, hostName) => {
             config.outbounds.push(outbound);
             config.outbounds[0].outbounds.push(remark);
             config.outbounds[1].outbounds.push(remark);
+            if (domainRegex.test(outbound.server)) outboundDomains.push(outbound.server);
         });
     });
+
+    config.dns.rules[0].domain = [...new Set(outboundDomains)];
 
     return config;
 }
@@ -1241,6 +1246,8 @@ const getWarpConfigs = async (env, client) => {
     let xrayWarpBestPing = structuredClone(xrayConfigTemp);
     let xrayWoWConfigTemp = structuredClone(xrayConfigTemp);
     let singboxWarpConfig = structuredClone(singboxConfigTemp);
+    let outboundDomains = [];
+    const domainRegex = /^(?!:\/\/)([a-zA-Z0-9-]{1,63}\.)*[a-zA-Z0-9][a-zA-Z0-9-]{0,62}\.[a-zA-Z]{2,11}$/;
     
     try {
         proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
@@ -1265,7 +1272,7 @@ const getWarpConfigs = async (env, client) => {
     xrayWarpBestPing.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, blockPorn);
     xrayWarpBestPing.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, false, true);
     xrayWarpBestPing.outbounds.splice(0,1);
-    xrayWarpBestPing.routing.balancers[0].selector = 'warp';
+    xrayWarpBestPing.routing.balancers[0].selector = ['warp'];
     xrayWarpBestPing.observatory.subjectSelector = ['warp'];
     xrayWoWConfigTemp.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, blockPorn);
     xrayWoWConfigTemp.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, false, false);
@@ -1298,14 +1305,18 @@ const getWarpConfigs = async (env, client) => {
         singboxWarpConfig.outbounds.push(outbound);
         singboxWarpConfig.outbounds[0].outbounds.push(outbound.tag);
         singboxWarpConfig.outbounds[1].outbounds.push(outbound.tag);
+        if (domainRegex.test(outbound.server)) outboundDomains.push(outbound.server);
     });
 
     singboxWoWOutbounds.forEach((outbound, index) => {
         if (outbound.tag.includes('WoW')) {
             singboxWarpConfig.outbounds.push(singboxWoWOutbounds[index], singboxWoWOutbounds[index + 1]);
             singboxWarpConfig.outbounds[0].outbounds.push(outbound.tag);
+            if (domainRegex.test(outbound.server)) outboundDomains.push(outbound.server);
         }
     });
+    
+    singboxWarpConfig.dns.rules[0].domain = [...new Set(outboundDomains)]; 
 
     return client === 'singbox' 
         ? singboxWarpConfig 
@@ -1585,23 +1596,23 @@ const updateDataset = async (env, Settings) => {
 
     const vlessConfig = Settings?.get('outProxy');
     const proxySettings = {
-        remoteDNS: Settings?.get('remoteDNS') || currentProxySettings?.remoteDNS || 'https://94.140.14.14/dns-query',
-        localDNS: Settings?.get('localDNS') || currentProxySettings?.localDNS || '8.8.8.8',
-        lengthMin: Settings?.get('fragmentLengthMin') || currentProxySettings?.lengthMin || '100',
-        lengthMax: Settings?.get('fragmentLengthMax') || currentProxySettings?.lengthMax || '200',
-        intervalMin: Settings?.get('fragmentIntervalMin') || currentProxySettings?.intervalMin || '5',
-        intervalMax: Settings?.get('fragmentIntervalMax') || currentProxySettings?.intervalMax || '10',
-        blockAds: Settings?.get('block-ads') || currentProxySettings?.blockAds || false,
-        bypassIran: Settings?.get('bypass-iran') || currentProxySettings?.bypassIran || false,
-        blockPorn: Settings?.get('block-porn') || currentProxySettings?.blockPorn || false,
-        bypassLAN: Settings?.get('bypass-lan') || currentProxySettings?.bypassLAN || false,
-        cleanIPs: Settings?.get('cleanIPs')?.replaceAll(' ', '') || currentProxySettings?.cleanIPs || '',
-        proxyIP: Settings?.get('proxyIP') || currentProxySettings?.proxyIP || '',
-        ports: Settings?.getAll('ports[]') || currentProxySettings?.ports || ['443'],
-        outProxy: vlessConfig || currentProxySettings?.outProxy || '',
+        remoteDNS: Settings ? Settings.get('remoteDNS') : currentProxySettings?.remoteDNS || 'https://94.140.14.14/dns-query',
+        localDNS: Settings ? Settings.get('localDNS') : currentProxySettings?.localDNS || '8.8.8.8',
+        lengthMin: Settings ? Settings.get('fragmentLengthMin') : currentProxySettings?.lengthMin || '100',
+        lengthMax: Settings ? Settings.get('fragmentLengthMax') : currentProxySettings?.lengthMax || '200',
+        intervalMin: Settings ? Settings.get('fragmentIntervalMin') : currentProxySettings?.intervalMin || '5',
+        intervalMax: Settings ? Settings.get('fragmentIntervalMax') : currentProxySettings?.intervalMax || '10',
+        blockAds: Settings ? Settings.get('block-ads') : currentProxySettings?.blockAds || false,
+        bypassIran: Settings ? Settings.get('bypass-iran') : currentProxySettings?.bypassIran || false,
+        blockPorn: Settings ? Settings.get('block-porn') : currentProxySettings?.blockPorn || false,
+        bypassLAN: Settings ? Settings.get('bypass-lan') : currentProxySettings?.bypassLAN || false,
+        cleanIPs: Settings ? Settings.get('cleanIPs')?.replaceAll(' ', '') : currentProxySettings?.cleanIPs || '',
+        proxyIP: Settings ? Settings.get('proxyIP') : currentProxySettings?.proxyIP || '',
+        ports: Settings ? Settings.getAll('ports[]') : currentProxySettings?.ports || ['443'],
+        outProxy: Settings ? vlessConfig : currentProxySettings?.outProxy || '',
         outProxyParams: vlessConfig ? await extractVlessParams(vlessConfig) : currentProxySettings?.outProxyParams || '',
-        wowEndpoint: Settings?.get('wowEndpoint')?.replaceAll(' ', '') || currentProxySettings?.wowEndpoint || 'engage.cloudflareclient.com:2408',
-        warpEndpoints: Settings?.get('warpEndpoints')?.replaceAll(' ', '') || currentProxySettings?.warpEndpoints || 'engage.cloudflareclient.com:2408',
+        wowEndpoint: Settings ? Settings.get('wowEndpoint')?.replaceAll(' ', '') : currentProxySettings?.wowEndpoint || 'engage.cloudflareclient.com:2408',
+        warpEndpoints: Settings ? Settings.get('warpEndpoints')?.replaceAll(' ', '') : currentProxySettings?.warpEndpoints || 'engage.cloudflareclient.com:2408',
         panelVersion: panelVersion
     };
 
@@ -2106,11 +2117,11 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                 <h2>WARP ENDPOINTS ⚙️</h2>
 				<div class="form-control">
                     <label for="wowEndpoint">✨ WoW Endpoints</label>
-                    <input type="text" id="wowEndpoint" name="wowEndpoint" value="${wowEndpoint.replaceAll(",", " , ")}">
+                    <input type="text" id="wowEndpoint" name="wowEndpoint" value="${wowEndpoint.replaceAll(",", " , ")}" required>
 				</div>
 				<div class="form-control">
                     <label for="warpEndpoints">✨ Warp Endpoints</label>
-                    <input type="text" id="warpEndpoints" name="warpEndpoints" value="${warpEndpoints.replaceAll(",", " , ")}">
+                    <input type="text" id="warpEndpoints" name="warpEndpoints" value="${warpEndpoints.replaceAll(",", " , ")}" required>
 				</div>
                 <div class="form-control">
                     <label>🔎 Scanner Script</label>
@@ -2464,7 +2475,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             const intervalMax = getValue('fragmentIntervalMax');
             const proxyIP = document.getElementById('proxyIP').value?.trim();
             const cleanIP = document.getElementById('cleanIPs');
-            const wowEndpoint = document.getElementById('warpEndpoints').value?.replaceAll(' ', '').split(',');
+            const wowEndpoint = document.getElementById('wowEndpoint').value?.replaceAll(' ', '').split(',');
             const warpEndpoints = document.getElementById('warpEndpoints').value?.replaceAll(' ', '').split(',');
             const cleanIPs = cleanIP.value?.split(',');
             const chainProxy = document.getElementById('outProxy').value?.trim();                    
@@ -3009,7 +3020,7 @@ const singboxConfigTemp = {
         ],
         rules: [
             {
-                domain_suffix: [".ir"],
+                domain_suffix: ".ir",
                 server: "dns-direct"
             },
             {
