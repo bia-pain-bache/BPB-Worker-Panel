@@ -1595,6 +1595,9 @@ const updateDataset = async (env, Settings) => {
     }
 
     const vlessConfig = Settings?.get('outProxy');
+    let ports = Settings?.getAll('ports[]')  || [];
+    if (!ports.some(port => defaultHttpsPorts.includes(port))) ports.push('443');
+
     const proxySettings = {
         remoteDNS: Settings ? Settings.get('remoteDNS') : currentProxySettings?.remoteDNS || 'https://94.140.14.14/dns-query',
         localDNS: Settings ? Settings.get('localDNS') : currentProxySettings?.localDNS || '8.8.8.8',
@@ -1608,7 +1611,7 @@ const updateDataset = async (env, Settings) => {
         bypassLAN: Settings ? Settings.get('bypass-lan') : currentProxySettings?.bypassLAN || false,
         cleanIPs: Settings ? Settings.get('cleanIPs')?.replaceAll(' ', '') : currentProxySettings?.cleanIPs || '',
         proxyIP: Settings ? Settings.get('proxyIP') : currentProxySettings?.proxyIP || '',
-        ports: Settings ? Settings.getAll('ports[]') : currentProxySettings?.ports || ['443'],
+        ports: Settings ? ports : currentProxySettings?.ports || ['443'],
         outProxy: Settings ? vlessConfig : currentProxySettings?.outProxy || '',
         outProxyParams: vlessConfig ? await extractVlessParams(vlessConfig) : currentProxySettings?.outProxyParams || '',
         wowEndpoint: Settings ? Settings.get('wowEndpoint')?.replaceAll(' ', '') : currentProxySettings?.wowEndpoint || 'engage.cloudflareclient.com:2408',
