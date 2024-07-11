@@ -1487,12 +1487,12 @@ const buildDNSObject = async (remoteDNS, localDNS, blockAds, bypassIran, blockPo
     }
 
     if (blockAds) {
-        dnsObject.hosts["geosite:category-ads-all"] = "127.0.0.1";
-        dnsObject.hosts["geosite:category-ads-ir"] = "127.0.0.1";
+        dnsObject.hosts["geosite:category-ads-all"] = ["127.0.0.1"];
+        dnsObject.hosts["geosite:category-ads-ir"] = ["127.0.0.1"];
     }
 
     if (blockPorn) {
-        dnsObject.hosts["geosite:category-porn"] = "127.0.0.1";
+        dnsObject.hosts["geosite:category-porn"] = ["127.0.0.1"];
     }
 
     if (!bypassIran || localDNS === 'localhost' || isWorkerLess) {
