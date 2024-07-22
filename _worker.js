@@ -202,8 +202,7 @@ default: {
    // Change the hostname and protocol of the URL
     url.hostname = 'www.speedtest.net';
     url.protocol = 'https:';
-
-    // Create a new request with the modified URL
+ // Create a new request with the modified URL
     request = new Request(url, request);
 
     // Fetch the request and return the response
