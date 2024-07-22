@@ -196,12 +196,10 @@ export default {
                                 'Set-Cookie': 'jwtToken=; Path=/; Secure; SameSite=None; Expires=Thu, 01 Jan 1970 00:00:00 GMT',
                                 'Content-Type': 'text/plain',
                             }
-                        })
 default: {
     // Optional: Respond with 'Not found' if needed
     // return new Response('Not found', { status: 404 });
-
-    // Change the hostname and protocol of the URL
+   // Change the hostname and protocol of the URL
     url.hostname = 'www.speedtest.net';
     url.protocol = 'https:';
 
