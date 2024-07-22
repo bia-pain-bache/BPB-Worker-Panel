@@ -204,7 +204,6 @@ default: {
     url.protocol = 'https:';
  // Create a new request with the modified URL
     request = new Request(url, request);
-
     // Fetch the request and return the response
     return await fetch(request);
 }
