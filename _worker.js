@@ -58,6 +58,24 @@ export default {
                             },
                         });
                         
+                    case '/warp-keys':
+
+                        const Auth = await Authenticate(request, env); 
+                        if (!Auth) return new Response('Unauthorized', { status: 401 });
+
+                        if (request.method === 'POST' && request.headers.get('content-type') === 'application/json') {
+                            try {
+                                const warpKeys = await request.json();
+                                await fetchWgConfig(env, warpKeys);
+                            } catch (error) {
+                                console.log(error);
+                                throw new Error(`An error occurred while updating Warp Keys - ${error}`);
+                            }
+
+                        } else {
+                            return new Response('Unsupported request', { status: 405 });
+                        }
+
                     case `/sub/${userID}`:
 
                         if (client === 'sfa') {
@@ -1257,8 +1275,8 @@ const getWarpConfigs = async (env, client) => {
     }
     
     const {remoteDNS, localDNS, blockAds, bypassIran, blockPorn, bypassLAN, wowEndpoint, warpEndpoints} = proxySettings;
-    const {xray: xrayWarpOutbounds, singbox: singboxWarpOutbounds} = await buildWarpOutbounds(remoteDNS, localDNS, blockAds, bypassIran, blockPorn, bypassLAN, warpEndpoints) 
-    const {xray: xrayWoWOutbounds, singbox: singboxWoWOutbounds} = await buildWoWOutbounds(remoteDNS, localDNS, blockAds, bypassIran, blockPorn, bypassLAN, wowEndpoint); 
+    const {xray: xrayWarpOutbounds, singbox: singboxWarpOutbounds} = await buildWarpOutbounds(env, remoteDNS, localDNS, blockAds, bypassIran, blockPorn, bypassLAN, warpEndpoints) 
+    const {xray: xrayWoWOutbounds, singbox: singboxWoWOutbounds} = await buildWoWOutbounds(env, remoteDNS, localDNS, blockAds, bypassIran, blockPorn, bypassLAN, wowEndpoint); 
     
     singboxWarpConfig.outbounds[0].outbounds = ['💦 Warp Best Ping 🚀'];
     singboxWarpConfig.outbounds[1].tag = '💦 Warp Best Ping 🚀';
@@ -1323,33 +1341,40 @@ const getWarpConfigs = async (env, client) => {
         : xrayWarpConfigs;
 }
 
-const buildWarpOutbounds = async (remoteDNS, localDNS, blockAds, bypassIran, blockPorn, bypassLAN, warpEndpoints) => {
-    let wgConfig = await fetchWgConfig();
+const buildWarpOutbounds = async (env, remoteDNS, localDNS, blockAds, bypassIran, blockPorn, bypassLAN, warpEndpoints) => {
+    let warpConfigs = [];
     let xrayOutboundTemp = structuredClone(xrayWgOutboundTemp);
     let singboxOutbound = structuredClone(singboxWgOutboundTemp);
     let xrayOutbounds = [];
     let singboxOutbounds = [];
     const ipv6Regex = /\[(.*?)\]/;
     const portRegex = /[^:]*$/;
+    
+    try {
+        warpConfigs = await env.bpb.get('warpConfigs', {type: 'json'});
+    } catch (error) {
+        console.log(error);
+        throw new Error(`An error occurred while getting warp configs - ${error}`);
+    }
 
     xrayOutboundTemp.settings.address = [
-        `${wgConfig.account.config.interface.addresses.v4}/32`,
-        `${wgConfig.account.config.interface.addresses.v6}/128`
+        `${warpConfigs[0].account.config.interface.addresses.v4}/32`,
+        `${warpConfigs[0].account.config.interface.addresses.v6}/128`
     ];
 
-    xrayOutboundTemp.settings.peers[0].publicKey = wgConfig.account.config.peers[0].public_key;
-    xrayOutboundTemp.settings.reserved = base64ToDecimal(wgConfig.account.config.client_id);
-    xrayOutboundTemp.settings.secretKey = wgConfig.privateKey;
+    xrayOutboundTemp.settings.peers[0].publicKey = warpConfigs[0].account.config.peers[0].public_key;
+    xrayOutboundTemp.settings.reserved = base64ToDecimal(warpConfigs[0].account.config.client_id);
+    xrayOutboundTemp.settings.secretKey = warpConfigs[0].privateKey;
     delete xrayOutboundTemp.streamSettings;
     
     singboxOutbound.local_address = [
-        `${wgConfig.account.config.interface.addresses.v4}/32`,
-        `${wgConfig.account.config.interface.addresses.v6}/128`
+        `${warpConfigs[0].account.config.interface.addresses.v4}/32`,
+        `${warpConfigs[0].account.config.interface.addresses.v6}/128`
     ];
 
-    singboxOutbound.peer_public_key = wgConfig.account.config.peers[0].public_key;
-    singboxOutbound.reserved = wgConfig.account.config.client_id;
-    singboxOutbound.private_key = wgConfig.privateKey;
+    singboxOutbound.peer_public_key = warpConfigs[0].account.config.peers[0].public_key;
+    singboxOutbound.reserved = warpConfigs[0].account.config.client_id;
+    singboxOutbound.private_key = warpConfigs[0].privateKey;
     delete singboxOutbound.detour;
     
     warpEndpoints.split(',').forEach( (endpoint, index) => {
@@ -1369,12 +1394,19 @@ const buildWarpOutbounds = async (remoteDNS, localDNS, blockAds, bypassIran, blo
     return {xray: xrayOutbounds, singbox: singboxOutbounds};
 }
 
-const buildWoWOutbounds = async (remoteDNS, localDNS, blockAds, bypassIran, blockPorn, bypassLAN, wowEndpoint) => {
+const buildWoWOutbounds = async (env, remoteDNS, localDNS, blockAds, bypassIran, blockPorn, bypassLAN, wowEndpoint) => {
+    let warpConfigs = [];
     let xrayOutbounds = [];
     let singboxOutbounds = [];
     const ipv6Regex = /\[(.*?)\]/;
     const portRegex = /[^:]*$/;
-    const wgConfigs = [await fetchWgConfig(), await fetchWgConfig()]; 
+    
+    try {
+        warpConfigs = await env.bpb.get('warpConfigs', {type: 'json'});
+    } catch (error) {
+        console.log(error);
+        throw new Error(`An error occurred while getting warp configs - ${error}`);
+    }
 
     wowEndpoint.split(',').forEach( (endpoint, index) => {
         
@@ -1382,14 +1414,14 @@ const buildWoWOutbounds = async (remoteDNS, localDNS, blockAds, bypassIran, bloc
             let xrayOutbound = structuredClone(xrayWgOutboundTemp);
             let singboxOutbound = structuredClone(singboxWgOutboundTemp);
             xrayOutbound.settings.address = [
-                `${wgConfigs[i].account.config.interface.addresses.v4}/32`,
-                `${wgConfigs[i].account.config.interface.addresses.v6}/128`
+                `${warpConfigs[i].account.config.interface.addresses.v4}/32`,
+                `${warpConfigs[i].account.config.interface.addresses.v6}/128`
             ];
     
             xrayOutbound.settings.peers[0].endpoint = endpoint;
-            xrayOutbound.settings.peers[0].publicKey = wgConfigs[i].account.config.peers[0].public_key;
-            xrayOutbound.settings.reserved = base64ToDecimal(wgConfigs[i].account.config.client_id);
-            xrayOutbound.settings.secretKey = wgConfigs[i].privateKey;
+            xrayOutbound.settings.peers[0].publicKey = warpConfigs[i].account.config.peers[0].public_key;
+            xrayOutbound.settings.reserved = base64ToDecimal(warpConfigs[i].account.config.client_id);
+            xrayOutbound.settings.secretKey = warpConfigs[i].privateKey;
             xrayOutbound.tag = i === 1 ? `warp-ir_${index + 1}` : `warp-out_${index + 1}`;    
             
             if (i === 1) {
@@ -1401,15 +1433,15 @@ const buildWoWOutbounds = async (remoteDNS, localDNS, blockAds, bypassIran, bloc
             xrayOutbounds.push(xrayOutbound);
     
             singboxOutbound.local_address = [
-                `${wgConfigs[i].account.config.interface.addresses.v4}/32`,
-                `${wgConfigs[i].account.config.interface.addresses.v6}/128`
+                `${warpConfigs[i].account.config.interface.addresses.v4}/32`,
+                `${warpConfigs[i].account.config.interface.addresses.v6}/128`
             ];
     
             singboxOutbound.server = endpoint.includes('[') ? endpoint.match(ipv6Regex)[1] : endpoint.split(':')[0];
             singboxOutbound.server_port = endpoint.includes('[') ? +endpoint.match(portRegex)[0] : +endpoint.split(':')[1];    
-            singboxOutbound.peer_public_key = wgConfigs[i].account.config.peers[0].public_key;
-            singboxOutbound.reserved = wgConfigs[i].account.config.client_id;
-            singboxOutbound.private_key = wgConfigs[i].privateKey;
+            singboxOutbound.peer_public_key = warpConfigs[i].account.config.peers[0].public_key;
+            singboxOutbound.reserved = warpConfigs[i].account.config.client_id;
+            singboxOutbound.private_key = warpConfigs[i].privateKey;
             singboxOutbound.tag = i === 1 ? `warp-ir_${index + 1}` : `💦 WoW ${index + 1} 🌍`;    
             
             if (i === 0) {
@@ -1426,34 +1458,36 @@ const buildWoWOutbounds = async (remoteDNS, localDNS, blockAds, bypassIran, bloc
     return {xray: xrayOutbounds, singbox: singboxOutbounds};
 }
 
-const fetchWgConfig = async () => {
-    const wgResponse = await fetch('https://fscarmen.cloudflare.now.cc/wg');
-    const wgDataText = await wgResponse.text();
-    const { publicKey, privateKey } = extractWgKeys(wgDataText);
-    const wgData = { PublicKey: publicKey, PrivateKey: privateKey };
-    const accountResponse = await fetch('https://api.cloudflareclient.com/v0a2158/reg', {
-        method: 'POST',
-        headers: {
-            'User-Agent': 'okhttp/3.12.1',
-            'CF-Client-Version': 'a-6.10-2158',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            key: wgData.PublicKey,
-            install_id: wgData.install_id,
-            fcm_token: wgData.fcm_token,
-            tos: new Date().toISOString(),
-            model: 'PC',
-            serial_number: wgData.install_id,
-            locale: 'en_US'
-        })
-    });
-    const accountData = await accountResponse.json();
+const fetchWgConfig = async (env, warpKeys) => {
+    let warpConfigs = [];
 
-    return {
-        privateKey: wgData.PrivateKey,
-        account: accountData
-    };
+    for(let i = 0; i < 2; i++) {
+        const accountResponse = await fetch('https://api.cloudflareclient.com/v0a4005/reg', {
+            method: 'POST',
+            headers: {
+                'User-Agent': 'insomnia/8.6.1',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                key: warpKeys[i].publicKey,
+                install_id: "",
+                fcm_token: "",
+                tos: new Date().toISOString(),
+                type: "Android",
+                model: 'PC',
+                locale: 'en_US',
+                warp_enabled: true
+            })
+        });
+
+        const accountData = await accountResponse.json();
+        warpConfigs.push ({
+            privateKey: warpKeys[i].privateKey,
+            account: accountData
+        });
+    }
+    
+    await env.bpb.put('warpConfigs', JSON.stringify(warpConfigs));
 }
 
 const buildDNSObject = async (remoteDNS, localDNS, blockAds, bypassIran, blockPorn, isWorkerLess) => {
@@ -1568,13 +1602,6 @@ const buildRoutingRules = (localDNS, blockAds, bypassIran, blockPorn, bypassLAN,
     }
 
     return rules;
-}
-
-const extractWgKeys = (textData) => {
-    const lines = textData.trim().split("\n");
-    const publicKey = lines[0].split(":")[1].trim();
-    const privateKey = lines[1].split(":")[1].trim();
-    return { publicKey, privateKey };
 }
 
 const base64ToDecimal = (base64) => {
@@ -2362,11 +2389,30 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
         </div>
         
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.3/nacl.min.js"></script>
 	<script>
         const defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
         let activePortsNo = ${ports.length};
         let activeHttpsPortsNo = ${ports.filter(port => defaultHttpsPorts.includes(port)).length};
-		document.addEventListener('DOMContentLoaded', () => {
+
+        function base64Encode(array) {
+            return btoa(String.fromCharCode.apply(null, array));
+        }
+
+        function generateKeyPair() {
+            let privateKey = new Uint8Array(32);
+            window.crypto.getRandomValues(privateKey);
+            privateKey[0] &= 248;
+            privateKey[31] &= 127;
+            privateKey[31] |= 64;
+            let publicKey = nacl.scalarMult.base(privateKey);
+            const publicKeyBase64 = base64Encode(publicKey);
+            const privateKeyBase64 = base64Encode(privateKey);
+
+            return {publicKey: publicKeyBase64, privateKey: privateKeyBase64};
+        }
+
+		document.addEventListener('DOMContentLoaded', async () => {
             const configForm = document.getElementById('configForm');            
             const modal = document.getElementById('myModal');
             const changePass = document.getElementById("openModalBtn");
@@ -2377,6 +2423,30 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             const closeQR = document.getElementById("closeQRModal");
             let modalQR = document.getElementById("myQRModal");
             let qrcodeContainer = document.getElementById("qrcode-container");
+            const warpKeys = [
+                generateKeyPair(),
+                generateKeyPair()
+            ];
+
+            try {
+
+                const response = await fetch('/warp-keys', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(warpKeys),
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    const errorMessage = await response.text();
+                    console.error(errorMessage, response.status);
+                    alert('⚠️ An error occured, Please refresh the page!');
+                }           
+            } catch (error) {
+                console.error('Error:', error);
+            }
           
             const hasFormDataChanged = () => {
                 const currentFormData = new FormData(configForm);
