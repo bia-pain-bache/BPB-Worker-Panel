@@ -198,10 +198,10 @@ export default {
 
                     case '/panel/password':
 
-                        let passAuth = await Authenticate(request, env);
-                        if (!passAuth) return new Response('Unauthorized!', { status: 401 });           
-                        const newPwd = await request.text();
                         const oldPwd = await env.bpb.get('pwd');
+                        let passAuth = await Authenticate(request, env);
+                        if (oldPwd && !passAuth) return new Response('Unauthorized!', { status: 401 });           
+                        const newPwd = await request.text();
                         if (newPwd === oldPwd) return new Response('Please enter a new Password!', { status: 400 });
                         await env.bpb.put('pwd', newPwd);
 
@@ -2416,7 +2416,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             let qrcodeContainer = document.getElementById("qrcode-container");
             let forcedPassChange = false;
 
-            ${!isWarpReady} && await getWarpConfigs();
+            ${isPassSet && !isWarpReady} && await getWarpConfigs();
                   
             const hasFormDataChanged = () => {
                 const currentFormData = new FormData(configForm);
