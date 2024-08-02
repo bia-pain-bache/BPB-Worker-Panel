@@ -104,6 +104,7 @@ export default {
                             return new Response(errorPage, { status: 200, headers: {'Content-Type': 'text/html'}});
                         }
 
+                        const pwd = await env.bpb.get('pwd');
                         const isAuth = await Authenticate(request, env); 
                         
                         if (request.method === 'POST') {     
@@ -114,7 +115,7 @@ export default {
                             return new Response('Success', { status: 200 });
                         }
                         
-                        if (!isAuth) return Response.redirect(`${url.origin}/login`, 302);
+                        if (pwd && !isAuth) return Response.redirect(`${url.origin}/login`, 302);
                         const proxySettings = await env.bpb.get('proxySettings', {type: 'json'});
                         const isUpdated = panelVersion === proxySettings?.panelVersion;
                         if (!proxySettings || !isUpdated) await updateDataset(env);
@@ -145,9 +146,6 @@ export default {
                         if (loginAuth) return Response.redirect(`${url.origin}/panel`, 302);
 
                         let secretKey = await env.bpb.get('secretKey');
-                        const pwd = await env.bpb.get('pwd');
-                        if (!pwd) await env.bpb.put('pwd', 'admin');
-
                         if (!secretKey) {
                             secretKey = generateSecretKey();
                             await env.bpb.put('secretKey', secretKey);
@@ -158,7 +156,7 @@ export default {
                             const savedPass = await env.bpb.get('pwd');
 
                             if (password === savedPass) {
-                                const jwtToken = generateJWTToken(secretKey, password);
+                                const jwtToken = generateJWTToken(password, secretKey);
                                 const cookieHeader = `jwtToken=${jwtToken}; HttpOnly; Secure; Max-Age=${7 * 24 * 60 * 60}; Path=/; SameSite=Strict`;
                                 
                                 return new Response('Success', {
@@ -1756,10 +1754,12 @@ const Authenticate = async (request, env) => {
 const renderHomePage = async (env, hostName, fragConfigs) => {
     let proxySettings = {};
     let warpConfigs = [];
+    let password = '';
     
     try {
         proxySettings = await env.bpb.get('proxySettings', {type: 'json'});
         warpConfigs = await env.bpb.get('warpConfigs', {type: 'json'});
+        password = await env.bpb.get('pwd');
     } catch (error) {
         console.log(error);
         throw new Error(`An error occurred while rendering home page - ${error}`);
@@ -1785,6 +1785,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
     } = proxySettings;
 
     const isWarpReady = warpConfigs ? true : false;
+    const isPassSet = password ? password.length >= 8 : false;
     const genCustomConfRow = async (configs) => {
         let tableBlock = "";
         configs.forEach(config => {
@@ -2413,9 +2414,10 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             const closeQR = document.getElementById("closeQRModal");
             let modalQR = document.getElementById("myQRModal");
             let qrcodeContainer = document.getElementById("qrcode-container");
+            let forcedPassChange = false;
 
             ${!isWarpReady} && await getWarpConfigs();
-          
+                  
             const hasFormDataChanged = () => {
                 const currentFormData = new FormData(configForm);
                 const currentFormDataEntries = [...currentFormData.entries()];
@@ -2449,8 +2451,10 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             configForm.addEventListener('input', enableApplyButton);
             configForm.addEventListener('change', enableApplyButton);
             changePass.addEventListener('click', () => {
+                forcedPassChange ? closeBtn.style.display = 'none' : closeBtn.style.display = '';
                 modal.style.display = "block";
                 document.body.style.overflow = "hidden";
+                forcedPassChange = false;
             });        
             closeBtn.addEventListener('click', () => {
                 modal.style.display = "none";
@@ -2465,6 +2469,11 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                     modalQR.style.display = "none";
                     qrcodeContainer.lastElementChild.remove();
                 }
+            }
+
+            if (${!isPassSet}) {
+                forcedPassChange = true;
+                changePass.click();
             }
 		});
 
