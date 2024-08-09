@@ -1,39 +1,39 @@
-// @ts-nocheck
-// <!--GAMFC-->version base on commit 43fad05dcdae3b723c53c226f8181fc5bd47223e, time is 2023-06-22 15:20:02 UTC<!--GAMFC-END-->.
-// @ts-ignore
+//@ts-nocheck
+// <!--GAMFC-->版本基于提交 43fad05dcdae3b723c53c226f8181fc5bd47223e，时间为 2023-06-22 15:20:02 UTC<!--GAMFC-END-->。
+//@ts-忽略
 // https://github.com/bia-pain-bache/BPB-Worker-Panel
 
-import { connect } from 'cloudflare:sockets';
+从 'cloudflare:sockets' 导入{   connect   }；
 
-// How to generate your own UUID:
+// 如何生成自己的UUID：
 // https://www.uuidgenerator.net/
-let userID = 'f57b8b89-e494-45a8-8172-dc4b06f18723';
+让用户ID = '459a0c7f-98b0-4f2c-88bc-5a4d1d80af3c' ;
 
 // https://www.nslookup.io/domains/bpb.yousef.isegaro.com/dns-records/
-const proxyIPs= ['bpb.yousef.isegaro.com'];
+const 代理IP = [  'bpb.yousef.isegaro.com'  ] ;
 
-const defaultHttpPorts = ['80', '8080', '2052', '2082', '2086', '2095', '8880'];
-const defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
+const   defaultHttpPorts = [  '80' , '8080' , '2052' , '2082' , '2086' , '2095' , '8880'  ] ;
+const  defaultHttpsPorts = [ '443' , '8443' , '2053' , '2083' , '2087' , '2096' ] ;
 
-let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
+让 proxyIP = proxyIPs [ Math.floor ( Math.random ( ) * proxyIPs.length ) ] ;​
 
-let dohURL = 'https://cloudflare-dns.com/dns-query';
+让 dohURL = 'https://cloudflare-dns.com/dns-query' ;
 
-let panelVersion = '2.4.7';
+让 面板版本= '2.4.7' ;
 
-if (!isValidUUID(userID)) {
-    throw new Error('uuid is not valid');
+如果 （！isValidUUID （用户ID ）） {
+    抛出 新的错误（'uuid 无效' ）；
 }
 
-export default {
+导出 默认 {
     /**
-     * @param {import("@cloudflare/workers-types").Request} request
-     * @param {{UUID: string, PROXYIP: string, DNS_RESOLVER_URL: string}} env
-     * @param {import("@cloudflare/workers-types").ExecutionContext} ctx
-     * @returns {Promise<Response>}
+     * @param {import("@cloudflare/workers-types").Request} 请求
+     * @param {{UUID: string, PROXYIP: string, DNS_RESOLVER_URL: string}} 环境
+     * @param {导入（“@cloudflare/workers-types”）。ExecutionContext} ctx
+     * @returns {Promise <响应>}
      */
-    async fetch(request, env, ctx) {
-        try {
+    异步 获取（请求，环境，ctx ） {
+        尝试 {
             
             userID = env.UUID || userID;
             proxyIP = env.PROXYIP || proxyIP;
