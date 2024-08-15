@@ -1682,14 +1682,14 @@ const updateDataset = async (env, Settings) => {
         outProxyParams: vlessConfig ? await extractVlessParams(vlessConfig) : currentProxySettings?.outProxyParams || '',
         wowEndpoint: Settings ? Settings.get('wowEndpoint')?.replaceAll(' ', '') : currentProxySettings?.wowEndpoint || 'engage.cloudflareclient.com:2408',
         warpEndpoints: Settings ? Settings.get('warpEndpoints')?.replaceAll(' ', '') : currentProxySettings?.warpEndpoints || 'engage.cloudflareclient.com:2408',
-        hiddifyNoiseMode: Settings ? Settings.get('hiddifyNoiseMode')?.replaceAll(' ', '') : currentProxySettings?.hiddifyNoiseMode || 'm1',
-        nikaNGNoiseMode: Settings ? Settings.get('nikaNGNoiseMode')?.replaceAll(' ', '') : currentProxySettings?.nikaNGNoiseMode || 'quic',
-        noiseCountMin: Settings ? Settings.get('noiseCountMin')?.replaceAll(' ', '') : currentProxySettings?.noiseCountMin || '10',
-        noiseCountMax: Settings ? Settings.get('noiseCountMax')?.replaceAll(' ', '') : currentProxySettings?.noiseCountMax || '15',
-        noiseSizeMin: Settings ? Settings.get('noiseSizeMin')?.replaceAll(' ', '') : currentProxySettings?.noiseSizeMin || '5',
-        noiseSizeMax: Settings ? Settings.get('noiseSizeMax')?.replaceAll(' ', '') : currentProxySettings?.noiseSizeMax || '10',
-        noiseDelayMin: Settings ? Settings.get('noiseDelayMin')?.replaceAll(' ', '') : currentProxySettings?.noiseDelayMin || '1',
-        noiseDelayMax: Settings ? Settings.get('noiseDelayMax')?.replaceAll(' ', '') : currentProxySettings?.noiseDelayMax || '1',
+        hiddifyNoiseMode: Settings ? Settings.get('hiddifyNoiseMode') : currentProxySettings?.hiddifyNoiseMode || 'm4',
+        nikaNGNoiseMode: Settings ? Settings.get('nikaNGNoiseMode') : currentProxySettings?.nikaNGNoiseMode || 'quic',
+        noiseCountMin: Settings ? Settings.get('noiseCountMin') : currentProxySettings?.noiseCountMin || '10',
+        noiseCountMax: Settings ? Settings.get('noiseCountMax') : currentProxySettings?.noiseCountMax || '15',
+        noiseSizeMin: Settings ? Settings.get('noiseSizeMin') : currentProxySettings?.noiseSizeMin || '5',
+        noiseSizeMax: Settings ? Settings.get('noiseSizeMax') : currentProxySettings?.noiseSizeMax || '10',
+        noiseDelayMin: Settings ? Settings.get('noiseDelayMin') : currentProxySettings?.noiseDelayMin || '1',
+        noiseDelayMax: Settings ? Settings.get('noiseDelayMax') : currentProxySettings?.noiseDelayMax || '1',
         panelVersion: panelVersion
     };
 
@@ -2146,12 +2146,8 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
     						value="${intervalMax}" max="30" required>
 					</div>
 				</div>
-				<div class="form-control">
-					<label for="outProxy">✈️ Chain Proxy</label>
-					<input type="text" id="outProxy" name="outProxy" value="${outProxy}">
-				</div>
                 <div class="form-control">
-                    <label for="fragmentPackets">🔗 Fragment Packets</label>
+                    <label for="fragmentPackets">📦 Fragment Packets</label>
                     <div class="input-with-select">
                         <select id="fragmentPackets" name="fragmentPackets">
                             <option value="tlshello" ${fragmentPackets === 'tlshello' ? 'selected' : ''}>tlshello</option>
@@ -2162,7 +2158,11 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                         </select>
                     </div>
                 </div>
-                <h2>FRAGMENT ROUTING ⚙️</h2>
+				<div class="form-control">
+					<label for="outProxy">✈️ Chain Proxy</label>
+					<input type="text" id="outProxy" name="outProxy" value="${outProxy}">
+				</div>
+                <h2>FRAG/WARP ROUTING ⚙️</h2>
 				<div class="form-control" style="margin-bottom: 20px;">			
                     <div class="routing">
                         <input type="checkbox" id="block-ads" name="block-ads" style="margin: 0; grid-column: 2;" value="true" ${blockAds ? 'checked' : ''}>
@@ -2217,7 +2217,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                         </tr>`}        
                     </table>
                 </div>
-                <h2>NORMAL WARP SETTINGS ⚙️</h2>
+                <h2>WARP SETTINGS ⚙️</h2>
 				<div class="form-control">
                     <label for="wowEndpoint">✨ WoW Endpoints</label>
                     <input type="text" id="wowEndpoint" name="wowEndpoint" value="${wowEndpoint.replaceAll(",", " , ")}" required>
@@ -2305,7 +2305,19 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                             </div>
                             <div>
                                 <span class="material-symbols-outlined symbol">verified</span>
+                                <span>NikaNG</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>MahsaNG</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
                                 <span>v2rayN</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>v2rayN-PRO</span>
                             </div>
                             <div>
                                 <span class="material-symbols-outlined symbol">verified</span>
@@ -2387,11 +2399,19 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                             </div>
                             <div>
                                 <span class="material-symbols-outlined symbol">verified</span>
-                                <span>v2rayN</span>
+                                <span>NikaNG</span>
                             </div>
                             <div>
                                 <span class="material-symbols-outlined symbol">verified</span>
                                 <span>MahsaNG</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>v2rayN</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>v2rayN-PRO</span>
                             </div>
                             <div>
                                 <span class="material-symbols-outlined symbol">verified</span>
@@ -2424,11 +2444,15 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                             </div>
                             <div>
                                 <span class="material-symbols-outlined symbol">verified</span>
-                                <span>v2rayN</span>
+                                <span>MahsaNG</span>
                             </div>
                             <div>
                                 <span class="material-symbols-outlined symbol">verified</span>
-                                <span>MahsaNG</span>
+                                <span>NikaNG</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>v2rayN</span>
                             </div>
                             <div>
                                 <span class="material-symbols-outlined symbol">verified</span>
@@ -2478,6 +2502,10 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                             <div>
                                 <span class="material-symbols-outlined symbol">verified</span>
                                 <span>NikaNG</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>v2rayN-PRO</span>
                             </div>
                         </td>
 						<td>
