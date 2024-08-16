@@ -65,8 +65,12 @@ export default {
                         if (request.method === 'POST' && request.headers.get('content-type') === 'application/json') {
                             try {
                                 const warpKeys = await request.json();
-                                await fetchWgConfig(env, warpKeys);
-                                return new Response('Warp configs updated successfully', { status: 200 });
+                                const warpPlusError = await fetchWgConfig(env, warpKeys);
+                                if (warpPlusError) {
+                                    return new Response(warpPlusError, { status: 400 });
+                                } else {
+                                    return new Response('Warp configs updated successfully', { status: 200 });
+                                }
                             } catch (error) {
                                 console.log(error);
                                 return new Response(`An error occurred while updating Warp configs! - ${error}`, { status: 500 });
@@ -1500,9 +1504,20 @@ const buildWoWOutbounds = async (env, client, remoteDNS, localDNS, blockAds, byp
 
 const fetchWgConfig = async (env, warpKeys) => {
     let warpConfigs = [];
+    let proxySettings = {};
+    const apiBaseUrl = 'https://api.cloudflareclient.com/v0a4005/reg';
+
+    try {
+        proxySettings = await env.bpb.get('proxySettings', {type: 'json'});
+    } catch (error) {
+        console.log(error);
+        throw new Error(`An error occurred while getting warp configs - ${error}`);
+    }
+
+    const { warpPlusLicense } = proxySettings;
 
     for(let i = 0; i < 2; i++) {
-        const accountResponse = await fetch('https://api.cloudflareclient.com/v0a4005/reg', {
+        const accountResponse = await fetch(apiBaseUrl, {
             method: 'POST',
             headers: {
                 'User-Agent': 'insomnia/8.6.1',
@@ -1525,6 +1540,31 @@ const fetchWgConfig = async (env, warpKeys) => {
             privateKey: warpKeys[i].privateKey,
             account: accountData
         });
+
+        if (warpPlusLicense) {
+            const response = await fetch(`${apiBaseUrl}/${accountData.id}/account`, {
+                method: 'PUT',
+                headers: {
+                    'User-Agent': 'insomnia/8.6.1',
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accountData.token}`
+                },
+                body: JSON.stringify({
+                    key: warpKeys[i].publicKey,
+                    install_id: "",
+                    fcm_token: "",
+                    tos: new Date().toISOString(),
+                    type: "Android",
+                    model: 'PC',
+                    locale: 'en_US',
+                    warp_enabled: true,
+                    license: warpPlusLicense
+                })
+            });
+
+            const responseData = await response.json();
+            if(response.status !== 200 && !responseData.success) return responseData.errors[0]?.message;
+        }
     }
     
     await env.bpb.put('warpConfigs', JSON.stringify(warpConfigs));
@@ -1690,6 +1730,7 @@ const updateDataset = async (env, Settings) => {
         noiseSizeMax: Settings ? Settings.get('noiseSizeMax') : currentProxySettings?.noiseSizeMax || '10',
         noiseDelayMin: Settings ? Settings.get('noiseDelayMin') : currentProxySettings?.noiseDelayMin || '1',
         noiseDelayMax: Settings ? Settings.get('noiseDelayMax') : currentProxySettings?.noiseDelayMax || '1',
+        warpPlusLicense: Settings ? Settings.get('warpPlusLicense') : currentProxySettings?.warpPlusLicense || '',
         panelVersion: panelVersion
     };
 
@@ -1842,11 +1883,13 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
         noiseSizeMin,
         noiseSizeMax,
         noiseDelayMin,
-        noiseDelayMax
+        noiseDelayMax,
+        warpPlusLicense
     } = proxySettings;
 
     const isWarpReady = warpConfigs ? true : false;
     const isPassSet = password ? password.length >= 8 : false;
+    const isWarpPlus = warpPlusLicense ? true : false;
     const genCustomConfRow = async (configs) => {
         let tableBlock = "";
         configs.forEach(config => {
@@ -2226,10 +2269,16 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                     <label for="warpEndpoints">✨ Warp Endpoints</label>
                     <input type="text" id="warpEndpoints" name="warpEndpoints" value="${warpEndpoints.replaceAll(",", " , ")}" required>
 				</div>
+				<div class="form-control">
+                    <label for="warpPlusLicense">➕ Warp+ License</label>
+                    <input type="text" id="warpPlusLicense" name="warpPlusLicense" value="${warpPlusLicense}" 
+                        pattern="^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{8}-[a-zA-Z0-9]{8}$" 
+                        title="Please enter a valid Warp Plus license in xxxxxxxx-xxxxxxxx-xxxxxxxx format">
+				</div>
                 <div class="form-control">
-                    <label>🔄 Warp Configs</label>
+                    <label>♻️ Warp Configs</label>
                     <button id="refreshBtn" type="button" class="button" style="padding: 10px 0;" onclick="getWarpConfigs()">
-                        Refresh<span class="material-symbols-outlined">autorenew</span>
+                        Update<span class="material-symbols-outlined">autorenew</span>
                     </button>
                 </div>
                 <div class="form-control">
@@ -2290,7 +2339,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 				</div>
 			</form>
             <hr>            
-			<h2>NORMAL CONFIGS 🔗</h2>
+			<h2>NORMAL CONFIGS SUB 🔗</h2>
 			<div class="table-container">
 				<table id="normal-configs-table">
 					<tr>
@@ -2702,15 +2751,15 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                     credentials: 'include'
                 });
 
+                document.body.style.cursor = 'default';
+                refreshBtn.innerHTML = refreshButtonVal;
                 if (response.ok) {
-                    document.body.style.cursor = 'default';
-                    refreshBtn.innerHTML = refreshButtonVal;
-                    alert('Warp configs updated successfully! 😎');
+                    ${isWarpPlus} ? alert('Warp configs upgraded to PLUS successfully! 😎') : alert('Warp configs updated successfully! 😎');
                 } else {
                     const errorMessage = await response.text();
                     console.error(errorMessage, response.status);
-                    alert('⚠️ An error occured, Please try again!');
-                }           
+                    alert('⚠️ An error occured, Please try again!\\n⛔ ' + errorMessage);
+                }         
             } catch (error) {
                 console.error('Error:', error);
             } 
