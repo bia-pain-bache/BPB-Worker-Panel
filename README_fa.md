@@ -37,6 +37,7 @@
   <li><strong>پنل با رمز عبور محافظت شده:</strong> ایمن‌سازی پنل با استفاده از رمز عبور.</li>
   <li><strong>دامنه و IP تمیز Cloudflare سفارشی:</strong> قابلیت اسکن آنلاین و تنظیم IP یا دامنه‌ی تمیز Cloudflare را دارد.</li>
   <li><strong>سابسکریپشن Warp: </strong>ارائه‌ی کانفیگ‌های Warp و Warp on Warp همراه اسکنر Endpoint</li>
+  <li><strong>سابسکریپشن Warp Pro: </strong>ارائه‌ی کانفیگ‌های وارپ بهینه شده برای شرایط همیشه خاص ایران</li>
 </ol>
 <br><br>
 
@@ -52,54 +53,76 @@
 <table>
   <thead>
     <th>برنامه</th>
-    <th>ورژن</th>
-    <th>فرکمنت</th>
+    <th>نسخه</th>
+    <th>Fragment</th>
+    <th>Warp Pro</th>
   </thead>
   <tbody  align="center">
     <tr>
       <td><b>v2rayNG</b></td>
       <td>1.8.19 و بالاتر</td>
       <td>✔️</td>
+      <td>❌</td>
     </tr>
     <tr>
       <td><b>v2rayN</b></td>
       <td>6.42 و بالاتر</td>
+      <td>✔️</td>
+      <td>❌</td>
+    </tr>
+    <tr>
+      <td><b>v2rayN-Pro</b></td>
+      <td>1.4 و بالاتر</td>
+      <td>✔️</td>
       <td>✔️</td>
     </tr>
     <tr>
       <td><b>Nekobox</b></td>
       <td></td>
       <td>❌</td>
+      <td>❌</td>
     </tr>
     <tr>
       <td><b>Sing-box</b></td>
       <td>1.8.10 و بالاتر</td>
+      <td>❌</td>
       <td>❌</td>
     </tr>
     <tr>
       <td><b>Streisand</b></td>
       <td></td>
       <td>✔️</td>
+      <td>❌</td>
     </tr>
     <tr>
       <td><b>V2Box</b></td>
       <td></td>
+      <td>❌</td>
       <td>❌</td>
     </tr>
     <tr>
       <td><b>Shadowrocket</b></td>
       <td></td>
       <td>❌</td>
+      <td>❌</td>
     </tr>
     <tr>
       <td><b>Nekoray</b></td>
       <td></td>
       <td>✔️</td>
+      <td>❌</td>
     </tr>
     <tr>
       <td><b>Hiddify</b></td>
-      <td></td>
+      <td>2.0.5 و بالاتر</td>
       <td>❌</td>
+      <td>✔️</td>
+    </tr>
+    <tr>
+      <td><b>NikaNG</b></td>
+      <td></td>
+      <td>✔️</td>
+      <td>✔️</td>
     </tr>
   </tbody>
 </table>
