@@ -19,7 +19,7 @@ let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 
 let dohURL = 'https://cloudflare-dns.com/dns-query';
 
-let panelVersion = '2.5';
+let panelVersion = '2.5.1';
 
 if (!isValidUUID(userID)) {
     throw new Error('uuid is not valid');
@@ -972,7 +972,7 @@ const buildWorkerLessConfig = async (env, client) => {
         throw new Error(`An error occurred while generating WorkerLess config - ${error}`);
     }
 
-    const { remoteDNS, localDNS, lengthMin,  lengthMax,  intervalMin,  intervalMax, blockAds, bypassIran, blockPorn, bypassLAN } = proxySettings;  
+    const { remoteDNS, localDNS, lengthMin,  lengthMax,  intervalMin,  intervalMax, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443 } = proxySettings;  
     let fakeOutbound = structuredClone(xrayOutboundTemp);
     delete fakeOutbound.mux;
     fakeOutbound.settings.vnext[0].address = 'google.com';
@@ -999,7 +999,7 @@ const buildWorkerLessConfig = async (env, client) => {
         {...fragConfig.outbounds[2]}, 
         {...fragConfig.outbounds[3]}
     ];
-    fragConfig.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, false, false, true);
+    fragConfig.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, false, true);
     delete fragConfig.routing.balancers;
     delete fragConfig.observatory;
 
@@ -1039,7 +1039,9 @@ const getFragmentConfigs = async (env, hostName, client) => {
         blockAds,
         bypassIran,
         blockPorn,
-        bypassLAN, 
+        bypassLAN,
+        bypassChina,
+        blockUDP443, 
         cleanIPs,
         proxyIP,
         outProxy,
@@ -1095,10 +1097,10 @@ const getFragmentConfigs = async (env, hostName, client) => {
             
             if (proxyOutbound) {
                 fragConfig.outbounds = [{...proxyOutbound}, { ...outbound}, ...fragConfig.outbounds];
-                fragConfig.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, true, false);
+                fragConfig.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, true, false);
             } else {
                 fragConfig.outbounds = [{ ...outbound}, ...fragConfig.outbounds];
-                fragConfig.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, false, false);
+                fragConfig.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, false);
             }
             
             delete fragConfig.observatory;
@@ -1141,9 +1143,9 @@ const getFragmentConfigs = async (env, hostName, client) => {
     if (proxyOutbound) {
         bestPing.observatory.subjectSelector = ["out"];
         bestPing.routing.balancers[0].selector = ["out"];
-        bestPing.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, true, true);
+        bestPing.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, true, true);
     } else {
-        bestPing.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, false, true);
+        bestPing.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, true);
     }
 
     if (client === 'nekoray') {
@@ -1182,12 +1184,12 @@ const getFragmentConfigs = async (env, hostName, client) => {
         bestFragmentOutbounds[0].tag = 'out';
         bestFragmentOutbounds[1].tag = 'proxy';
         bestFragment.outbounds = [bestFragmentOutbounds[0], bestFragmentOutbounds[1], ...bestFragment.outbounds];
-        bestFragment.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, true, true);
+        bestFragment.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, true, true);
     } else {
         delete bestFragmentOutbounds[0].streamSettings.sockopt.dialerProxy;
         bestFragmentOutbounds[0].tag = 'proxy';
         bestFragment.outbounds = [bestFragmentOutbounds[0], ...bestFragment.outbounds];
-        bestFragment.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, false, true);
+        bestFragment.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, true);
     }
 
     bestFragment.observatory.subjectSelector = ["frag"];
@@ -1263,6 +1265,7 @@ const getSingboxConfig = async (env, hostName) => {
 
 const getWarpConfigs = async (env, client) => {
     let proxySettings = {};
+    let warpConfigs = [];
     let xrayWarpConfigs = [];
     let xrayWarpConfig = structuredClone(xrayConfigTemp);
     let xrayWarpBestPing = structuredClone(xrayConfigTemp);
@@ -1273,31 +1276,33 @@ const getWarpConfigs = async (env, client) => {
     
     try {
         proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
+        warpConfigs = await env.bpb.get('warpConfigs', {type: 'json'});
     } catch (error) {
         console.log(error);
         throw new Error(`An error occurred while getting fragment configs - ${error}`);
     }
     
-    const {remoteDNS, localDNS, blockAds, bypassIran, blockPorn, bypassLAN, wowEndpoint, warpEndpoints} = proxySettings;
-    const {xray: xrayWarpOutbounds, singbox: singboxWarpOutbounds} = await buildWarpOutbounds(env, client, remoteDNS, localDNS, blockAds, bypassIran, blockPorn, bypassLAN, warpEndpoints) 
-    const {xray: xrayWoWOutbounds, singbox: singboxWoWOutbounds} = await buildWoWOutbounds(env, client, remoteDNS, localDNS, blockAds, bypassIran, blockPorn, bypassLAN, wowEndpoint); 
+    const { localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, wowEndpoint, warpEndpoints } = proxySettings;
+    const {xray: xrayWarpOutbounds, singbox: singboxWarpOutbounds} = await buildWarpOutbounds(env, client, proxySettings, warpConfigs);
+    const {xray: xrayWoWOutbounds, singbox: singboxWoWOutbounds} = await buildWoWOutbounds(env, client, proxySettings, warpConfigs); 
     
-    singboxWarpConfig.outbounds[0].outbounds = ['💦 Warp Best Ping 🚀'];
-    singboxWarpConfig.outbounds[1].tag = '💦 Warp Best Ping 🚀';
-    xrayWarpConfig.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, blockPorn);
-    xrayWarpConfig.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, false, false);
+    singboxWarpConfig.outbounds[0].outbounds = [client === 'hiddify' ? '💦 Warp Pro Best Ping 🚀' : '💦 Warp Best Ping 🚀'];
+    singboxWarpConfig.outbounds[1].tag = client === 'hiddify' ? '💦 Warp Pro Best Ping 🚀' : '💦 Warp Best Ping 🚀';
+    singboxWarpConfig.dns.servers[0].address = '1.1.1.1';
+    xrayWarpConfig.dns = await buildDNSObject('1.1.1.1', localDNS, blockAds, bypassIran, blockPorn);
+    xrayWarpConfig.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, false);
     xrayWarpConfig.outbounds.splice(0,1);
     xrayWarpConfig.routing.rules[xrayWarpConfig.routing.rules.length - 1].outboundTag = 'warp';
     delete xrayWarpConfig.observatory;
     delete xrayWarpConfig.routing.balancers;
-    xrayWarpBestPing.remarks = '💦 BPB - Warp Best Ping 🚀'
-    xrayWarpBestPing.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, blockPorn);
-    xrayWarpBestPing.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, false, true);
+    xrayWarpBestPing.remarks = client === 'nikang' ? '💦 BPB - Warp Pro Best Ping 🚀' : '💦 BPB - Warp Best Ping 🚀';
+    xrayWarpBestPing.dns = await buildDNSObject('1.1.1.1', localDNS, blockAds, bypassIran, blockPorn);
+    xrayWarpBestPing.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, true);
     xrayWarpBestPing.outbounds.splice(0,1);
     xrayWarpBestPing.routing.balancers[0].selector = ['warp'];
     xrayWarpBestPing.observatory.subjectSelector = ['warp'];
-    xrayWoWConfigTemp.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, blockPorn);
-    xrayWoWConfigTemp.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, false, false);
+    xrayWoWConfigTemp.dns = await buildDNSObject('1.1.1.1', localDNS, blockAds, bypassIran, blockPorn);
+    xrayWoWConfigTemp.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, false);
     xrayWoWConfigTemp.outbounds.splice(0,1);
     delete xrayWoWConfigTemp.observatory;
     delete xrayWoWConfigTemp.routing.balancers;
@@ -1305,7 +1310,7 @@ const getWarpConfigs = async (env, client) => {
     xrayWarpOutbounds.forEach((outbound, index) => {
         xrayWarpConfigs.push({
             ...xrayWarpConfig,
-            remarks: `💦 BPB - Warp ${index + 1} 🇮🇷`,
+            remarks: client === 'nikang' ? `💦 BPB - Warp Pro ${index + 1} 🇮🇷` : `💦 BPB - Warp ${index + 1} 🇮🇷`,
             outbounds: [{...outbound, tag: 'warp'}, ...xrayWarpConfig.outbounds]
         });
     });
@@ -1313,7 +1318,7 @@ const getWarpConfigs = async (env, client) => {
     xrayWoWOutbounds.forEach((outbound, index) => {
         if (outbound.tag.includes('warp-out')) {
             let xrayWoWConfig = structuredClone(xrayWoWConfigTemp);
-            xrayWoWConfig.remarks = `💦 BPB - WoW ${index/2 + 1} 🌍`;
+            xrayWoWConfig.remarks = client === 'nikang' ? `💦 BPB - WoW Pro ${index/2 + 1} 🌍` : `💦 BPB - WoW ${index/2 + 1} 🌍`;
             xrayWoWConfig.outbounds = [{...xrayWoWOutbounds[index]}, {...xrayWoWOutbounds[index + 1]}, ...xrayWoWConfig.outbounds];
             xrayWoWConfig.routing.rules[xrayWoWConfig.routing.rules.length - 1].outboundTag = outbound.tag;
             xrayWarpConfigs.push(xrayWoWConfig);
@@ -1345,23 +1350,14 @@ const getWarpConfigs = async (env, client) => {
         : xrayWarpConfigs;
 }
 
-const buildWarpOutbounds = async (env, client, remoteDNS, localDNS, blockAds, bypassIran, blockPorn, bypassLAN, warpEndpoints) => {
-    let warpConfigs = [];
-    let proxySettings = {};
+const buildWarpOutbounds = async (env, client, proxySettings, warpConfigs) => {
     let xrayOutboundTemp = structuredClone(xrayWgOutboundTemp);
     let singboxOutbound = structuredClone(singboxWgOutboundTemp);
     let xrayOutbounds = [];
     let singboxOutbounds = [];
     const ipv6Regex = /\[(.*?)\]/;
     const portRegex = /[^:]*$/;
-    
-    try {
-        warpConfigs = await env.bpb.get('warpConfigs', {type: 'json'});
-        proxySettings = await env.bpb.get('proxySettings', {type: 'json'});
-    } catch (error) {
-        console.log(error);
-        throw new Error(`An error occurred while getting warp configs - ${error}`);
-    }
+    const { warpEndpoints, nikaNGNoiseMode, hiddifyNoiseMode, noiseCountMin, noiseCountMax, noiseSizeMin, noiseSizeMax, noiseDelayMin, noiseDelayMax } = proxySettings;
 
     xrayOutboundTemp.settings.address = [
         `${warpConfigs[0].account.config.interface.addresses.v4}/32`,
@@ -1374,10 +1370,10 @@ const buildWarpOutbounds = async (env, client, remoteDNS, localDNS, blockAds, by
     
     if (client === 'nikang') xrayOutboundTemp.settings = {
         ...xrayOutboundTemp.settings,
-        wnoise: proxySettings.nikaNGNoiseMode,
-        wnoisecount: `${proxySettings.noiseCountMin}-${proxySettings.noiseCountMax}`,
-        wpayloadsize: `${proxySettings.noiseSizeMin}-${proxySettings.noiseSizeMax}`,
-        wnoisedelay: `${proxySettings.noiseDelayMin}-${proxySettings.noiseDelayMax}`
+        wnoise: nikaNGNoiseMode,
+        wnoisecount: `${noiseCountMin}-${noiseCountMax}`,
+        wpayloadsize: `${noiseSizeMin}-${noiseSizeMax}`,
+        wnoisedelay: `${noiseDelayMin}-${noiseDelayMax}`
     };
 
     delete xrayOutboundTemp.streamSettings;
@@ -1393,10 +1389,10 @@ const buildWarpOutbounds = async (env, client, remoteDNS, localDNS, blockAds, by
     
     if (client === 'hiddify') singboxOutbound = {
         ...singboxOutbound,
-        fake_packets_mode: proxySettings.hiddifyNoiseMode,
-        fake_packets: `${proxySettings.noiseCountMin}-${proxySettings.noiseCountMax}`,
-        fake_packets_size: `${proxySettings.noiseSizeMin}-${proxySettings.noiseSizeMax}`,
-        fake_packets_delay: `${proxySettings.noiseDelayMin}-${proxySettings.noiseDelayMax}`
+        fake_packets_mode: hiddifyNoiseMode,
+        fake_packets: `${noiseCountMin}-${noiseCountMax}`,
+        fake_packets_size: `${noiseSizeMin}-${noiseSizeMax}`,
+        fake_packets_delay: `${noiseDelayMin}-${noiseDelayMax}`
     };
 
     delete singboxOutbound.detour;
@@ -1411,28 +1407,19 @@ const buildWarpOutbounds = async (env, client, remoteDNS, localDNS, blockAds, by
             ...singboxOutbound,
             server: endpoint.includes('[') ? endpoint.match(ipv6Regex)[1] : endpoint.split(':')[0],
             server_port: endpoint.includes('[') ? +endpoint.match(portRegex)[0] : +endpoint.split(':')[1],
-            tag: `💦 Warp ${index + 1} 🇮🇷`
+            tag: client === 'hiddify' ? `💦 Warp Pro ${index + 1} 🇮🇷` : `💦 Warp ${index + 1} 🇮🇷`
         });
     })
     
     return {xray: xrayOutbounds, singbox: singboxOutbounds};
 }
 
-const buildWoWOutbounds = async (env, client, remoteDNS, localDNS, blockAds, bypassIran, blockPorn, bypassLAN, wowEndpoint) => {
-    let warpConfigs = [];
-    let proxySettings = {};
+const buildWoWOutbounds = async (env, client, proxySettings, warpConfigs) => {
     let xrayOutbounds = [];
     let singboxOutbounds = [];
     const ipv6Regex = /\[(.*?)\]/;
     const portRegex = /[^:]*$/;
-    
-    try {
-        warpConfigs = await env.bpb.get('warpConfigs', {type: 'json'});
-        proxySettings = await env.bpb.get('proxySettings', {type: 'json'});
-    } catch (error) {
-        console.log(error);
-        throw new Error(`An error occurred while getting warp configs - ${error}`);
-    }
+    const { wowEndpoint, nikaNGNoiseMode, hiddifyNoiseMode, noiseCountMin, noiseCountMax, noiseSizeMin, noiseSizeMax, noiseDelayMin, noiseDelayMax } = proxySettings;
 
     wowEndpoint.split(',').forEach( (endpoint, index) => {
         
@@ -1451,10 +1438,10 @@ const buildWoWOutbounds = async (env, client, remoteDNS, localDNS, blockAds, byp
             
             if (client === 'nikang' && i === 1) xrayOutbound.settings = {
                 ...xrayOutbound.settings,
-                wnoise: proxySettings.nikaNGNoiseMode,
-                wnoisecount: `${proxySettings.noiseCountMin}-${proxySettings.noiseCountMax}`,
-                wpayloadsize: `${proxySettings.noiseSizeMin}-${proxySettings.noiseSizeMax}`,
-                wnoisedelay: `${proxySettings.noiseDelayMin}-${proxySettings.noiseDelayMax}`
+                wnoise: nikaNGNoiseMode,
+                wnoisecount: `${noiseCountMin}-${noiseCountMax}`,
+                wpayloadsize: `${noiseSizeMin}-${noiseSizeMax}`,
+                wnoisedelay: `${noiseDelayMin}-${noiseDelayMax}`
             };
 
             xrayOutbound.tag = i === 1 ? `warp-ir_${index + 1}` : `warp-out_${index + 1}`;   
@@ -1480,13 +1467,13 @@ const buildWoWOutbounds = async (env, client, remoteDNS, localDNS, blockAds, byp
             
             if (client === 'hiddify' && i === 1) singboxOutbound = {
                 ...singboxOutbound,
-                fake_packets_mode: proxySettings.hiddifyNoiseMode,
-                fake_packets: `${proxySettings.noiseCountMin}-${proxySettings.noiseCountMax}`,
-                fake_packets_size: `${proxySettings.noiseSizeMin}-${proxySettings.noiseSizeMax}`,
-                fake_packets_delay: `${proxySettings.noiseDelayMin}-${proxySettings.noiseDelayMax}`
+                fake_packets_mode: hiddifyNoiseMode,
+                fake_packets: `${noiseCountMin}-${noiseCountMax}`,
+                fake_packets_size: `${noiseSizeMin}-${noiseSizeMax}`,
+                fake_packets_delay: `${noiseDelayMin}-${noiseDelayMax}`
             };
 
-            singboxOutbound.tag = i === 1 ? `warp-ir_${index + 1}` : `💦 WoW ${index + 1} 🌍`;    
+            singboxOutbound.tag = i === 1 ? `warp-ir_${index + 1}` : client === 'hiddify' ? `💦 WoW Pro ${index + 1} 🌍` : `💦 WoW ${index + 1} 🌍`;    
             
             if (i === 0) {
                 singboxOutbound.detour = `warp-ir_${index + 1}`;
@@ -1572,7 +1559,37 @@ const fetchWgConfig = async (env, warpKeys) => {
 
 const buildDNSObject = async (remoteDNS, localDNS, blockAds, bypassIran, blockPorn, isWorkerLess) => {
     let dnsObject = {
-        hosts: {},
+        hosts: {
+            "dns.google": [
+                "8.8.8.8",
+                "8.8.4.4",
+                "2001:4860:4860::8888",
+                "2001:4860:4860::8844"
+            ],
+            "cloudflare-dns.com": [
+                "1.1.1.1",
+                "1.0.0.1",
+                "2606:4700:4700::1111",
+                "2606:4700:4700::1001"
+            ],
+            "security.cloudflare-dns.com": [
+                "1.1.1.2",
+                "1.0.0.2",
+                "2606:4700:4700::1112",
+                "2606:4700:4700::1002"
+            ],
+            "dns.adguard.com": [
+                "94.140.14.14",
+                "94.140.15.15",
+                "2a10:50c0::ad1:ff",
+                "2a10:50c0::ad2:ff"
+            ],
+            "dns.quad9.net": [
+                "9.9.9.9",
+                "2620:fe::fe"
+            ],
+            "domain:googleapis.cn": ["googleapis.com"]
+        },
         servers: [
           isWorkerLess ? "https://cloudflare-dns.com/dns-query" : remoteDNS,
           {
@@ -1616,7 +1633,7 @@ const buildDNSObject = async (remoteDNS, localDNS, blockAds, bypassIran, blockPo
     return dnsObject;
 }
 
-const buildRoutingRules = (localDNS, blockAds, bypassIran, blockPorn, bypassLAN, isChain, isBalancer, isWorkerLess) => {
+const buildRoutingRules = (localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, isChain, isBalancer, isWorkerLess) => {
     let rules = [
         {
             inboundTag: ["dns-in"],
@@ -1635,24 +1652,30 @@ const buildRoutingRules = (localDNS, blockAds, bypassIran, blockPorn, bypassLAN,
         rules.pop();
     }
 
-    if (bypassIran || bypassLAN) {
-        let rule = {
+    if (bypassIran || bypassLAN || bypassChina) {
+        let ipRule = {
             ip: [],
             outboundTag: "direct",
             type: "field",
         };
+
+        let domainRule = {
+            domain: [],
+            outboundTag: "direct",
+            type: "field",
+        };
         
-        if (bypassIran && !isWorkerLess) {
-            rules.push({
-                domain: ["geosite:category-ir", "domain:.ir"],
-                outboundTag: "direct",
-                type: "field",
-            });
-            rule.ip.push("geoip:ir");
+        bypassLAN && ipRule.ip.push("geoip:private");
+
+        if ((bypassIran || bypassChina) && !isWorkerLess) {
+            bypassIran && domainRule.domain.push("geosite:category-ir", "domain:.ir");
+            bypassIran && ipRule.ip.push("geoip:ir");
+            bypassChina && domainRule.domain.push("geosite:cn");
+            bypassChina && ipRule.ip.push("geoip:cn");
+            rules.push(domainRule);
         }
 
-        bypassLAN && rule.ip.push("geoip:private");
-        rules.push(rule);
+        rules.push(ipRule);
     }
 
     if (blockAds || blockPorn) {
@@ -1666,18 +1689,31 @@ const buildRoutingRules = (localDNS, blockAds, bypassIran, blockPorn, bypassLAN,
         blockPorn && rule.domain.push("geosite:category-porn");
         rules.push(rule);
     }
+
+    blockUDP443 && rules.push({
+        network: "udp",
+        port: "443",
+        outboundTag: "block",
+        type: "field",
+    }) 
    
     if (isBalancer) {
         rules.push({
             balancerTag: "all",
             type: "field",
-            network: "tcp,udp",
+            ip: [
+                "0.0.0.0/0",
+                "::/0"
+            ]
         });
     } else  {
         rules.push({
             outboundTag: isChain ? "out" : isWorkerLess ? "fragment" : "proxy",
             type: "field",
-            network: "tcp,udp"
+            ip: [
+                "0.0.0.0/0",
+                "::/0"
+            ]
         });
     }
 
@@ -1715,6 +1751,8 @@ const updateDataset = async (env, Settings) => {
         bypassIran: Settings ? Settings.get('bypass-iran') : currentProxySettings?.bypassIran || false,
         blockPorn: Settings ? Settings.get('block-porn') : currentProxySettings?.blockPorn || false,
         bypassLAN: Settings ? Settings.get('bypass-lan') : currentProxySettings?.bypassLAN || false,
+        bypassChina: Settings ? Settings.get('bypass-china') : currentProxySettings?.bypassChina || false,
+        blockUDP443: Settings ? Settings.get('block-udp-443') : currentProxySettings?.blockUDP443 || false,
         cleanIPs: Settings ? Settings.get('cleanIPs')?.replaceAll(' ', '') : currentProxySettings?.cleanIPs || '',
         proxyIP: Settings ? Settings.get('proxyIP') : currentProxySettings?.proxyIP || '',
         ports: Settings ? Settings.getAll('ports[]') : currentProxySettings?.ports || ['443'],
@@ -1870,6 +1908,8 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
         bypassIran,
         blockPorn,
         bypassLAN,
+        bypassChina,
+        blockUDP443,
         cleanIPs, 
         proxyIP, 
         outProxy,
@@ -2190,7 +2230,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 					</div>
 				</div>
                 <div class="form-control">
-                    <label for="fragmentPackets">📦 Fragment Packets</label>
+                    <label for="fragmentPackets">📦 Packets</label>
                     <div class="input-with-select">
                         <select id="fragmentPackets" name="fragmentPackets">
                             <option value="tlshello" ${fragmentPackets === 'tlshello' ? 'selected' : ''}>tlshello</option>
@@ -2222,6 +2262,14 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                     <div class="routing">
 						<input type="checkbox" id="bypass-lan" name="bypass-lan" style="margin: 0; grid-column: 2;" value="true" ${bypassLAN ? 'checked' : ''}>
                         <label for="bypass-lan">Bypass LAN</label>
+					</div>
+                    <div class="routing">
+						<input type="checkbox" id="bypass-china" name="bypass-china" style="margin: 0; grid-column: 2;" value="true" ${bypassChina ? 'checked' : ''}>
+                        <label for="bypass-china">Bypass China</label>
+					</div>
+                    <div class="routing">
+						<input type="checkbox" id="block-udp-443" name="block-udp-443" style="margin: 0; grid-column: 2;" value="true" ${blockUDP443 ? 'checked' : ''}>
+                        <label for="block-udp-443">Block UDP:443</label>
 					</div>
 				</div>
                 <h2>PROXY IP ⚙️</h2>
@@ -2282,7 +2330,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
                     </button>
                 </div>
                 <div class="form-control">
-                    <label>🔎 Endpoint Scanner</label>
+                    <label style="line-height: 1.5;">🔎 Scan Endpoint</label>
                     <button type="button" class="button" style="padding: 10px 0;" onclick="copyToClipboard('bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/warp/main/endip/install.sh)', false)">
                         Copy Script<span class="material-symbols-outlined">terminal</span>
                     </button>
@@ -3219,7 +3267,9 @@ const xrayConfigTemp = {
         },
         {
             protocol: "freedom",
-            settings: {},
+            settings: {
+                domainStrategy: "UseIP"
+            },
             tag: "direct",
         },
         {
@@ -3611,16 +3661,18 @@ const xrayWgOutboundTemp = {
         peers: [
             {
                 endpoint: "engage.cloudflareclient.com:2408",
-                publicKey: ""
+                publicKey: "",
+                keepAlive: 5
             }
         ],
         reserved: [],
-        secretKey: "",
-        keepAlive: 10
+        secretKey: ""
     },
     streamSettings: {
         sockopt: {
-            dialerProxy: ""
+            dialerProxy: "",
+            tcpKeepAliveIdle: 100,
+            tcpNoDelay: true,
         }
     },
     tag: "proxy"
