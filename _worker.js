@@ -988,7 +988,7 @@ const buildWorkerLessConfig = async (env, client) => {
 
     let fragConfig = structuredClone(xrayConfigTemp);
     fragConfig.remarks  = '💦 BPB Frag - WorkerLess ⭐'
-    fragConfig.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, blockPorn, true);
+    fragConfig.dns = await buildDNSObject('https://cloudflare-dns.com/dns-query', localDNS, blockAds, bypassIran, blockPorn, true);
     fragConfig.outbounds[0].settings.domainStrategy = 'UseIP';
     fragConfig.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
     fragConfig.outbounds[0].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
@@ -1558,52 +1558,39 @@ const fetchWgConfig = async (env, warpKeys) => {
 }
 
 const buildDNSObject = async (remoteDNS, localDNS, blockAds, bypassIran, blockPorn, isWorkerLess) => {
+
+    const dohPattern = /^(?:[a-zA-Z]+:\/\/)?([^:\/\s?]+)/;
+    const domainPattern = /^(?!\-)(?:[A-Za-z0-9\-]{1,63}\.?)+[A-Za-z]{2,}$/;
+
+    const dohHost = remoteDNS.match(dohPattern)[1];
+    const isDomain = domainPattern.test(dohHost);
+    
     let dnsObject = {
         hosts: {
-            "dns.google": [
-                "8.8.8.8",
-                "8.8.4.4",
-                "2001:4860:4860::8888",
-                "2001:4860:4860::8844"
-            ],
-            "cloudflare-dns.com": [
-                "1.1.1.1",
-                "1.0.0.1",
-                "2606:4700:4700::1111",
-                "2606:4700:4700::1001"
-            ],
-            "security.cloudflare-dns.com": [
-                "1.1.1.2",
-                "1.0.0.2",
-                "2606:4700:4700::1112",
-                "2606:4700:4700::1002"
-            ],
-            "dns.adguard.com": [
-                "94.140.14.14",
-                "94.140.15.15",
-                "2a10:50c0::ad1:ff",
-                "2a10:50c0::ad2:ff"
-            ],
-            "dns.quad9.net": [
-                "9.9.9.9",
-                "2620:fe::fe"
-            ],
             "domain:googleapis.cn": ["googleapis.com"]
         },
         servers: [
-          isWorkerLess ? "https://cloudflare-dns.com/dns-query" : remoteDNS,
-          {
-            address: localDNS,
-            domains: ["geosite:category-ir", "domain:.ir"],
-            expectIPs: ["geoip:ir"],
-            port: 53,
-          },
+            remoteDNS,
+            {
+                address: localDNS,
+                domains: ["geosite:category-ir", "domain:.ir"],
+                expectIPs: ["geoip:ir"],
+                port: 53,
+            },
         ],
         tag: "dns",
     };
 
+    if (dohHost && isDomain && !isWorkerLess) {
+        const resolvedDOH = await resolveDNS(dohHost);
+        dnsObject.hosts[dohHost] = [
+            ...resolvedDOH.ipv4, 
+            ...resolvedDOH.ipv6 
+        ];        
+    }
+
     if (isWorkerLess) {
-        const resolvedDOH = await resolveDNS('cloudflare-dns.com');
+        const resolvedDOH = await resolveDNS(dohHost);
         const resolvedCloudflare = await resolveDNS('cloudflare.com');
         const resolvedCLDomain = await resolveDNS('www.speedtest.net.cdn.cloudflare.net');
         const resolvedCFNS_1 = await resolveDNS('ben.ns.cloudflare.com');
@@ -2269,7 +2256,7 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
 					</div>
                     <div class="routing">
 						<input type="checkbox" id="block-udp-443" name="block-udp-443" style="margin: 0; grid-column: 2;" value="true" ${blockUDP443 ? 'checked' : ''}>
-                        <label for="block-udp-443">Block UDP:443</label>
+                        <label for="block-udp-443">Block QUIC</label>
 					</div>
 				</div>
                 <h2>PROXY IP ⚙️</h2>
