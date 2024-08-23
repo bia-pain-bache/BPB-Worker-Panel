@@ -832,30 +832,31 @@ const getNormalConfigs = async (env, hostName, client) => {
                         client === 'singbox' 
                             ? '&eh=Sec-WebSocket-Protocol&ed=2560' 
                             : encodeURIComponent('?ed=2560')
-                    }#${encodeURIComponent(generateRemark(index, port))}\n`;
+                    }#${encodeURIComponent(generateRemark(index, port, false))}\n`;
         });
     });
 
     return btoa(vlessWsTls);
 }
 
-const generateRemark = (index, port) => {
+const generateRemark = (index, port, fragType) => {
     let remark = '';
+    const type = fragType ? 'Frag' : '';
     switch (index) {
         case 0:
         case 1:
-            remark = `💦 BPB - Domain_${index + 1} : ${port}`;
+            remark = `💦 BPB ${type} - Domain_${index + 1} : ${port}`;
             break;
         case 2:
         case 3:
-            remark = `💦 BPB - IPv4_${index - 1} : ${port}`;
+            remark = `💦 BPB ${type} - IPv4_${index - 1} : ${port}`;
             break;
         case 4:
         case 5:
-            remark = `💦 BPB - IPv6_${index - 3} : ${port}`;
+            remark = `💦 BPB ${type} - IPv6_${index - 3} : ${port}`;
             break;
         default:
-            remark = `💦 BPB - Clean IP_${index - 5} : ${port}`;
+            remark = `💦 BPB ${type} - Clean IP_${index - 5} : ${port}`;
             break;
     }
 
@@ -1075,7 +1076,7 @@ const getFragmentConfigs = async (env, hostName, client) => {
     for (let portIndex in ports.filter(port => defaultHttpsPorts.includes(port))) {
         let port = +ports[portIndex];
         for (let index in Addresses) {            
-            let remark = generateRemark(+index, port);
+            let remark = generateRemark(+index, port, true);
             let addr = Addresses[index];
             let fragConfig = structuredClone(xrayConfigTemp);
             let outbound = structuredClone(xrayOutboundTemp);
@@ -1240,7 +1241,7 @@ const getSingboxConfig = async (env, hostName) => {
     ports.forEach(port => {
         Addresses.forEach((addr, index) => {
 
-            let remark = generateRemark(index, port);
+            let remark = generateRemark(index, port, false);
             let outbound = structuredClone(singboxOutboundTemp);
             outbound.server = addr;
             outbound.tag = remark;
@@ -1792,7 +1793,7 @@ const resolveDNS = async (domain) => {
     try {
         const [ipv4Response, ipv6Response] = await Promise.all([
             fetch(dohURLv4, { headers: { accept: 'application/dns-json' } }),
-            fetch(dohURLv6, { headers: { accept: 'application/dns-json' } }),
+            fetch(dohURLv6, { headers: { accept: 'application/dns-json' } })
         ]);
 
         const ipv4Addresses = await ipv4Response.json();
@@ -1924,11 +1925,11 @@ const renderHomePage = async (env, hostName, fragConfigs) => {
             <tr>
                 <td>
                     ${config.address === 'Best-Ping' 
-                        ? `<div  style="justify-content: center;"><span><b>💦 Best-Ping 💥</b></span></div>` 
+                        ? `<div  style="justify-content: center;"><span><b>💦 BPB Frag - Best-Ping 💥</b></span></div>` 
                         : config.address === 'WorkerLess'
-                            ? `<div  style="justify-content: center;"><span><b>💦 WorkerLess ⭐</b></span></div>`
+                            ? `<div  style="justify-content: center;"><span><b>💦 BPB Frag - WorkerLess ⭐</b></span></div>`
                             : config.address === 'Best-Fragment'
-                                ? `<div  style="justify-content: center;"><span><b>💦 Best-Fragment 😎</b></span></div>`
+                                ? `<div  style="justify-content: center;"><span><b>💦 BPB Frag - Best-Fragment 😎</b></span></div>`
                                 : config.address
                     }
                 </td>
@@ -3244,7 +3245,7 @@ const xrayConfigTemp = {
             streamSettings: {
                 sockopt: {
                     tcpKeepAliveIdle: 100,
-                    tcpNoDelay: true,
+                    tcpNoDelay: true
                 },
             },
         },
@@ -3341,12 +3342,15 @@ const xrayOutboundTemp =
         },
         tlsSettings: {
             allowInsecure: false,
-            fingerprint: "chrome",
+            fingerprint: "randomized",
             alpn: ["h2", "http/1.1"],
             serverName: ""
         },
         wsSettings: {
-            headers: {Host: ""},
+            headers: {
+                Host: "",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
+            },
             path: ""
         },
         grpcSettings: {
