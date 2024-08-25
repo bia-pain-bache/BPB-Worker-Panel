@@ -18,17 +18,11 @@
 
 تو صفحه‌ی بعدی به هیچی دست نزنید و Create Fork رو بزنید. خب کار ما با گیتهاب تموم شد.
 <br><br>
-## قدم دوم - ساخت Cloudflare KV
-اگر اکانت کلود فلر ندارید از [اینجا](https://dash.cloudflare.com/sign-up) یک اکانت بسازید (اینجا هم فقط یک ایمیل برای ثبت نام لازم دارید) در اکانت کلادفلرتون از منوی سمت چپ میریم به قسمت KV:
 
-<p align="center">
-  <img src="assets/images/Nav_dash_kv.jpg">
-</p>
+## قدم دوم - Cloudflare Pages
+اگر اکانت کلود فلر ندارید از [اینجا](https://dash.cloudflare.com/sign-up) یک اکانت بسازید (اینجا هم فقط یک ایمیل برای ثبت نام لازم دارید).
 
-روی `Create a namespace` کلیک میکنیم و یه اسم دلخواه بهش میدیم و Add میکنیم.
-<br><br>
-## قدم سوم - Cloudflare Pages
-حالا وارد قسمت `Workers and Pages` بشید همونجا که ورکر میساختیم و `Create Application` رو بزنید. با این تفاوت این دفعه `Pages` رو انتخاب میکنیم:
+حالا در اکانت کلادفلرتون از منوی سمت چپ وارد قسمت `Workers and Pages` بشید (همونجا که ورکر میساختیم) و `Create Application` رو بزنید. با این تفاوت این دفعه `Pages` رو انتخاب میکنیم:
 
 <p align="center">
   <img src="assets/images/Pages_application.jpg">
@@ -40,12 +34,22 @@
   <img src="assets/images/Connect_to_git.jpg">
 </p>
 
-اینجا روی `BPB-Worker-Panel` کلیک کنید تا فعال بشه و `Begin Setup` رو بزنید. مرحله‌ی بعد یه `Project Name` داره که میشه دامین پنل شما، اونو حتما عوض کنید یه اسم دلخواه بذارید. حالا اینجا یه فرقی با ورکر داره، یعنی اگر بخواید UUID یا Proxy IP رو عوض کنید دیکه نمیتونید برید توی کد تغییر بدید، اگر خواستید از پیشفرض پنل استفاده کنید که هیچ، اگرنه همین الان برید بخش [تنظیمات پیشرفته](#تنظیمات-پیشرفته-اختیاری) رو بخونید و بعد ادامه بدید.
+اینجا روی `BPB-Worker-Panel` کلیک کنید تا فعال بشه و `Begin Setup` رو بزنید. مرحله‌ی بعد یه `Project Name` داره که میشه دامین پنل شما، اونو حتما عوض کنید یه اسم دلخواه بذارید. حالا اینجا یه فرقی با Workers داره، یعنی اگر بخواید UUID یا Proxy IP رو عوض کنید دیکه نمیتونید برید توی کد تغییر بدید، اگر خواستید از پیشفرض پنل استفاده کنید که هیچ، اگرنه همین الان برید بخش [تنظیمات پیشرفته](#تنظیمات-پیشرفته-اختیاری) رو بخونید و بعد ادامه بدید.
 
 دیگه الان میتونید `Save and Deploy` رو بزنید.
 یه چند ثانیه زمان میخواد تا پروژه نصب بشه، صبر کنید تا دکمه‌ی `Continue to Project` ظاهر بشه و بزنید و برید تو صفحه‌ی پروژه.
+<br><br>
+## قدم سوم - ساخت Cloudflare KV
+از منوی سمت چپ میریم به قسمت KV:
 
-حالا با توجه به عکس زیر برید قسمت `Settings` و بعد `Functions`:
+<p align="center">
+  <img src="assets/images/Nav_dash_kv.jpg">
+</p>
+
+روی `Create a namespace` کلیک میکنیم و یه اسم دلخواه بهش میدیم و Add میکنیم.
+
+
+برگردید به قسمت `Workers and Pages` و وارد اون پروژه‌ی Pages بشید که ساختید، با توجه به عکس زیر برید قسمت `Settings` و بعد `Functions`:
 
 <p align="center">
   <img src="assets/images/Settings_functions.jpg">
@@ -105,11 +109,10 @@
 
 اینجا باید مقادیر رو مشخص کنید. یه بار `Add variable` بزنید و خونه اول رو بنویسید `UUID` با حروف بزرگ، بعد از [اینجا](https://www.uuidgenerator.net/) یه UUID بگیرید و بذارید خونه دوم.
 
-حالا یه بار دیگه `Add variable` بزنید خونه اول `PROXYIP` با حروف بزرگ، IP رو هم میتونید از لینک‌های زیر بگیرید، اینا رو باز کنید یه تعدادی IP نشون میده که میتونید کشورشون رو هم چک کنید و یه دونه انتخاب کنید:
+حالا یه بار دیگه `Add variable` بزنید خونه اول `PROXYIP` با حروف بزرگ، IP رو هم میتونید از لینک‌ زیر بگیرید، اینا رو باز کنید یه تعدادی IP نشون میده که میتونید کشورشون رو هم چک کنید و یه دونه انتخاب کنید:
 
->[Proxy IP](https://www.nslookup.io/domains/cdn.xn--b6gac.eu.org/dns-records/)
+>[Proxy IP](https://www.nslookup.io/domains/bpb.yousef.isegaro.com/dns-records/)
 
->[Proxy IP](https://www.nslookup.io/domains/cdn-all.xn--b6gac.eu.org/dns-records/)
 
 <p align="center">
   <img src="assets/images/Proxy_ips.jpg">
