@@ -83,22 +83,42 @@ export default {
 
                         if (client === 'sfa') {
                             const BestPingSFA = await getSingboxConfig(env, host);
-                            return new Response(`${JSON.stringify(BestPingSFA, null, 4)}`, { status: 200 });                            
+                            return new Response(JSON.stringify(BestPingSFA, null, 4), { 
+                                status: 200,
+                                headers: {
+                                    "Content-Type": "application/json;charset=utf-8",
+                                }
+                            });                            
                         }
                         const normalConfigs = await getNormalConfigs(env, host, client);
-                        return new Response(normalConfigs, { status: 200 });                        
+                        return new Response(normalConfigs, { 
+                            status: 200,
+                            headers: {
+                                "Content-Type": "application/json;charset=utf-8",
+                            }
+                        });                        
 
                     case `/fragsub/${userID}`:
 
                         let fragConfigs = await getFragmentConfigs(env, host, 'v2ray');
                         fragConfigs = fragConfigs.map(config => config.config);
 
-                        return new Response(`${JSON.stringify(fragConfigs, null, 4)}`, { status: 200 });
+                        return new Response(JSON.stringify(fragConfigs, null, 4), { 
+                            status: 200,
+                            headers: {
+                                "Content-Type": "application/json;charset=utf-8",
+                            }
+                        });
 
                     case `/warpsub/${userID}`:
 
                         const warpConfig = await getWarpConfigs(env, client);
-                        return new Response(`${JSON.stringify(warpConfig, null, 4)}`, { status: 200 });
+                        return new Response(JSON.stringify(warpConfig, null, 4), { 
+                            status: 200,
+                            headers: {
+                                "Content-Type": "application/json;charset=utf-8",
+                            }
+                        });
 
                     case '/panel':
 
@@ -316,7 +336,7 @@ async function vlessOverWSHandler(request) {
                     udpStreamWrite(rawClientData);
                     return;
                 }
-                
+
                 handleVLESSTCPOutBound(
                     request,
                     remoteSocketWapper,
@@ -1737,7 +1757,7 @@ async function buildWarpOutbounds (env, client, proxySettings, warpConfigs) {
     delete singboxOutbound.detour;
     
     warpEndpoints.split(',').forEach( (endpoint, index) => {
-        let xrayOutbound = structuredClone(xrayWgOutboundTemp);
+        let xrayOutbound = structuredClone(xrayOutboundTemp);
         xrayOutbound.settings.peers[0].endpoint = endpoint;
         xrayOutbound.tag = `warp-${index + 1}`;        
         xrayOutbounds.push(xrayOutbound);
