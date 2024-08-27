@@ -337,7 +337,7 @@ async function vlessOverWSHandler(request) {
                     return;
                 }
 
-                handleVLESSTCPOutBound(
+                handleTCPOutBound(
                     request,
                     remoteSocketWapper,
                     addressRemote,
@@ -435,7 +435,7 @@ async function trojanOverWSHandler(request) {
                         return;
                     }
 
-                    handleTrojanTCPOutBound(remoteSocketWapper, addressRemote, portRemote, rawClientData, webSocket, log);
+                    handleTCPOutBound(request, remoteSocketWapper, addressRemote, portRemote, rawClientData, webSocket, false, log);
                 },
                 close() {
                     log(`readableWebSocketStream is closed`);
@@ -560,7 +560,7 @@ async function parseTrojanHeader(buffer) {
  * @param {function} log The logging function.
  * @returns {Promise<void>} The remote socket.
  */
-async function handleVLESSTCPOutBound(
+async function handleTCPOutBound(
     request,
     remoteSocket,
     addressRemote,
@@ -599,47 +599,19 @@ async function handleVLESSTCPOutBound(
             .finally(() => {
                 safeCloseWebSocket(webSocket);
             });
-        vlessRemoteSocketToWS(tcpSocket, webSocket, vlessResponseHeader, null, log);
+            
+        vlessResponseHeader 
+            ? vlessRemoteSocketToWS(tcpSocket, webSocket, vlessResponseHeader, null, log) 
+            : trojanRemoteSocketToWS(tcpSocket2, webSocket, null, log);
     }
   
     const tcpSocket = await connectAndWrite(addressRemote, portRemote);
   
     // when remoteSocket is ready, pass to websocket
     // remote--> ws
-    vlessRemoteSocketToWS(tcpSocket, webSocket, vlessResponseHeader, retry, log);
-}
-
-async function handleTrojanTCPOutBound(remoteSocket, addressRemote, portRemote, rawClientData, webSocket, log) {
-    if (/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(addressRemote)) addressRemote = `${atob('d3d3Lg==')}${addressRemote}${atob('LnNzbGlwLmlv')}`;
-
-    async function connectAndWrite(address, port) {
-        const tcpSocket2 = connect({
-            hostname: address,
-            port,
-        });
-        remoteSocket.value = tcpSocket2;
-        log(`connected to ${address}:${port}`);
-        const writer = tcpSocket2.writable.getWriter();
-        await writer.write(rawClientData);
-        writer.releaseLock();
-        return tcpSocket2;
-    }
-
-    async function retry() {
-        const tcpSocket2 = await connectAndWrite(proxyIP || addressRemote, portRemote);
-        tcpSocket2.closed
-            .catch((error) => {
-                console.log("retry tcpSocket closed error", error);
-            })
-            .finally(() => {
-                safeCloseWebSocket(webSocket);
-            });
-        
-        trojanRemoteSocketToWS(tcpSocket2, webSocket, null, log);
-    }
-
-    const tcpSocket = await connectAndWrite(addressRemote, portRemote);
-    trojanRemoteSocketToWS(tcpSocket, webSocket, retry, log);
+    vlessResponseHeader
+        ? vlessRemoteSocketToWS(tcpSocket, webSocket, vlessResponseHeader, retry, log) 
+        : trojanRemoteSocketToWS(tcpSocket, webSocket, retry, log);
 }
 
 /**
@@ -1120,37 +1092,24 @@ async function getNormalConfigs(env, hostName, client) {
 
     ports.forEach(port => {
         Addresses.forEach((addr, index) => {
+            const sni = randomUpperCase(hostName);
+            const alpn = client === 'singbox' ? 'http/1.1' : 'h2,http/1.1';
+            const earlyData = client === 'singbox' 
+                ? '&eh=Sec-WebSocket-Protocol&ed=2560' 
+                : encodeURIComponent('?ed=2560');
+            const path = `${getRandomPath(16)}${proxyIP ? `/${encodeURIComponent(btoa(proxyIP))}` : ''}${earlyData}`;
+            const vlessRemark = encodeURIComponent(generateRemark(index, port, 'VLESS', false));
+            const trojanRemark = encodeURIComponent(generateRemark(index, port, 'Trojan', false));
+            const tlsFields = defaultHttpsPorts.includes(port) 
+                ? `&security=tls&sni=${sni}&fp=randomized&alpn=${alpn}`
+                : '&security=none';
 
             if (vlessConfigs) {
-                vlessConfs += 'vless' + `://${userID}@${addr}:${port}?encryption=none&type=ws&host=${
-                    randomUpperCase(hostName)}${
-                    defaultHttpsPorts.includes(port) 
-                        ? `&security=tls&sni=${
-                            randomUpperCase(hostName)
-                        }&fp=randomized&alpn=${
-                            client === 'singbox' ? 'http/1.1' : 'h2,http/1.1'
-                        }`
-                        : ''}&path=${`/${getRandomPath(16)}${proxyIP ? `/${encodeURIComponent(btoa(proxyIP))}` : ''}`}${
-                            client === 'singbox' 
-                                ? '&eh=Sec-WebSocket-Protocol&ed=2560' 
-                                : encodeURIComponent('?ed=2560')
-                        }#${encodeURIComponent(generateRemark(index, port, 'VLESS', false))}\n`;    
+                vlessConfs += `vless://${userID}@${addr}:${port}?path=/${path}&encryption=none&host=${hostName}&type=ws${tlsFields}#${vlessRemark}\n`; 
             }
 
             if (trojanConfigs) {
-                trojanConfs += 'trojan' + `://${trojanPwd}@${addr}:${port}?encryption=none&type=ws&host=${
-                    randomUpperCase(hostName)}${
-                    defaultHttpsPorts.includes(port) 
-                        ? `&security=tls&sni=${
-                            randomUpperCase(hostName)
-                        }&fp=randomized&alpn=${
-                            client === 'singbox' ? 'http/1.1' : 'h2,http/1.1'
-                        }`
-                        : '&security=none'}&path=${`/tr${getRandomPath(16)}${proxyIP ? `/${encodeURIComponent(btoa(proxyIP))}` : ''}`}${
-                            client === 'singbox' 
-                                ? '&eh=Sec-WebSocket-Protocol&ed=2560' 
-                                : encodeURIComponent('?ed=2560')
-                        }#${encodeURIComponent(generateRemark(index, port, 'Trojan', false))}\n`;
+                trojanConfs += `trojan://${trojanPwd}@${addr}:${port}?path=/tr${path}&host=${hostName}&type=ws${tlsFields}#${trojanRemark}\n`;
             }
         });
     });
@@ -1225,8 +1184,7 @@ async function buildProxyOutbound(proxyParams) {
             proxyOutbound.streamSettings.realitySettings.serverName = sni;
             proxyOutbound.streamSettings.realitySettings.fingerprint = fp;
             proxyOutbound.streamSettings.realitySettings.spiderX = spx;
-            proxyOutbound.mux.concurrency = -1;
-            proxyOutbound.mux.enabled = false;
+            delete proxyOutbound.mux;
             delete proxyOutbound.streamSettings.tlsSettings;
             break;
 
@@ -1271,8 +1229,7 @@ async function buildProxyOutbound(proxyParams) {
             proxyOutbound.streamSettings.grpcSettings.authority = authority;
             proxyOutbound.streamSettings.grpcSettings.serviceName = serviceName;
             proxyOutbound.streamSettings.grpcSettings.multiMode = mode === 'multi';
-            proxyOutbound.mux.concurrency = -1;
-            proxyOutbound.mux.enabled = false;
+            delete proxyOutbound.mux;
             delete proxyOutbound.streamSettings.tcpSettings;
             delete proxyOutbound.streamSettings.wsSettings;
             break;
@@ -1411,8 +1368,7 @@ async function getFragmentConfigs(env, hostName, client) {
                     delete outbound.streamSettings.grpcSettings;
                     delete outbound.streamSettings.realitySettings;
                     delete outbound.streamSettings.tcpSettings;
-                    outbound.mux.concurrency = -1;
-                    outbound.mux.enabled = false;
+                    delete outbound.mux;
                     outbound.settings.vnext[0].address = addr;
                     outbound.settings.vnext[0].port = port;
                     outbound.settings.vnext[0].users[0].id = userID;
@@ -1422,8 +1378,7 @@ async function getFragmentConfigs(env, hostName, client) {
                 if (i === 1 && trojanConfigs) {
                     outbound = structuredClone(xrayTrojanOutboundTemp);
                     remark = generateRemark(+index, port, 'Trojan', true);
-                    outbound.mux.concurrency = -1;
-                    outbound.mux.enabled = false;
+                    delete outbound.mux;
                     outbound.settings.servers[0].address = addr;
                     outbound.settings.servers[0].port = port;
                     outbound.settings.servers[0].password = trojanPwd;
@@ -1930,6 +1885,7 @@ async function buildDNSObject (remoteDNS, localDNS, blockAds, bypassIran, blockP
         },
         servers: [
             remoteDNS,
+            "1.1.1.2",
             {
                 address: localDNS,
                 domains: ["geosite:category-ir", "domain:.ir"],
