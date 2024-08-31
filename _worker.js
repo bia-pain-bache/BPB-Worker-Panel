@@ -35,7 +35,7 @@ export default {
             userID = env.UUID || userID;
             proxyIP = env.PROXYIP || proxyIP;
             dohURL = env.DNS_RESOLVER_URL || dohURL;
-            trojanPwd = env.TROJAN_PWD || trojanPwd;
+            trojanPwd = env.TROJAN_PASSWORD || trojanPwd;
             const upgradeHeader = request.headers.get('Upgrade');
             sha224Password = sha256.sha224(trojanPwd);
             const url = new URL(request.url);
@@ -1105,11 +1105,11 @@ async function getNormalConfigs(env, hostName, client) {
                 : '&security=none';
 
             if (vlessConfigs) {
-                vlessConfs += `vless://${userID}@${addr}:${port}?path=/${path}&encryption=none&host=${hostName}&type=ws${tlsFields}#${vlessRemark}\n`; 
+                vlessConfs += `${atob('dmxlc3M')}://${userID}@${addr}:${port}?path=/${path}&encryption=none&host=${hostName}&type=ws${tlsFields}#${vlessRemark}\n`; 
             }
 
             if (trojanConfigs) {
-                trojanConfs += `trojan://${trojanPwd}@${addr}:${port}?path=/tr${path}&host=${hostName}&type=ws${tlsFields}#${trojanRemark}\n`;
+                trojanConfs += `${atob('dHJvamFu')}://${trojanPwd}@${addr}:${port}?path=/tr${path}&host=${hostName}&type=ws${tlsFields}#${trojanRemark}\n`;
             }
         });
     });
@@ -1251,7 +1251,21 @@ async function buildWorkerLessConfig(env, client) {
         throw new Error(`An error occurred while generating WorkerLess config - ${error}`);
     }
 
-    const { remoteDNS, localDNS, lengthMin,  lengthMax,  intervalMin,  intervalMax, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443 } = proxySettings;  
+    const { 
+		remoteDNS, 
+		localDNS, 
+		lengthMin,  
+		lengthMax,  
+		intervalMin,  
+		intervalMax, 
+		blockAds, 
+		bypassIran, 
+		blockPorn, 
+		bypassLAN, 
+		bypassChina, 
+		blockUDP443 
+	} = proxySettings;  
+
     let fakeOutbound = structuredClone(xrayVLESSOutboundTemp);
     delete fakeOutbound.mux;
     fakeOutbound.settings.vnext[0].address = 'google.com';
@@ -1671,7 +1685,18 @@ async function buildWarpOutbounds (env, client, proxySettings, warpConfigs) {
     let singboxOutbounds = [];
     const ipv6Regex = /\[(.*?)\]/;
     const portRegex = /[^:]*$/;
-    const { warpEndpoints, nikaNGNoiseMode, hiddifyNoiseMode, noiseCountMin, noiseCountMax, noiseSizeMin, noiseSizeMax, noiseDelayMin, noiseDelayMax } = proxySettings;
+
+    const { 
+		warpEndpoints, 
+		nikaNGNoiseMode, 
+		hiddifyNoiseMode, 
+		noiseCountMin, 
+		noiseCountMax, 
+		noiseSizeMin, 
+		noiseSizeMax, 
+		noiseDelayMin, 
+		noiseDelayMax 
+	} = proxySettings;
 
     xrayOutboundTemp.settings.address = [
         `${warpConfigs[0].account.config.interface.addresses.v4}/32`,
@@ -1733,7 +1758,17 @@ async function buildWoWOutbounds (env, client, proxySettings, warpConfigs) {
     let singboxOutbounds = [];
     const ipv6Regex = /\[(.*?)\]/;
     const portRegex = /[^:]*$/;
-    const { wowEndpoint, nikaNGNoiseMode, hiddifyNoiseMode, noiseCountMin, noiseCountMax, noiseSizeMin, noiseSizeMax, noiseDelayMin, noiseDelayMax } = proxySettings;
+    const { 
+		wowEndpoint, 
+		nikaNGNoiseMode, 
+		hiddifyNoiseMode, 
+		noiseCountMin, 
+		noiseCountMax, 
+		noiseSizeMin, 
+		noiseSizeMax, 
+		noiseDelayMin, 
+		noiseDelayMax 
+	} = proxySettings;
 
     wowEndpoint.split(',').forEach( (endpoint, index) => {
         
@@ -1787,7 +1822,11 @@ async function buildWoWOutbounds (env, client, proxySettings, warpConfigs) {
                 fake_packets_delay: `${noiseDelayMin}-${noiseDelayMax}`
             };
 
-            singboxOutbound.tag = i === 1 ? `warp-ir_${index + 1}` : client === 'hiddify' ? `💦 WoW Pro ${index + 1} 🌍` : `💦 WoW ${index + 1} 🌍`;    
+            singboxOutbound.tag = i === 1 
+				? `warp-ir_${index + 1}` 
+				: client === 'hiddify' 
+					? `💦 WoW Pro ${index + 1} 🌍` 
+					: `💦 WoW ${index + 1} 🌍`;    
             
             if (i === 0) {
                 singboxOutbound.detour = `warp-ir_${index + 1}`;
@@ -4786,7 +4825,7 @@ const xrayWgOutboundTemp = {
         mtu: 1280,
         peers: [
             {
-                endpoint: "engage.cloudflareclient.com:2408",
+                endpoint: "",
                 publicKey: "",
                 keepAlive: 5
             }
@@ -4811,7 +4850,7 @@ const singboxWgOutboundTemp = {
     pre_shared_key: "",
     private_key: "",
     reserved: "",
-    server: "engage.cloudflareclient.com",
+    server: "",
     server_port: 2408,
     type: "wireguard",
     domain_strategy: "prefer_ipv6",
