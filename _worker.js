@@ -3643,8 +3643,6 @@ function buildClashVLESSOutbound (remark, address, port, uuid, sni, host, path) 
 }
 
 function buildClashTrojanOutbound (remark, address, port, password, sni, host, path) {
-    const tls = defaultHttpsPorts.includes(port) ? true : false;
-
     let outbound = {
         "name": remark,
         "type": "trojan",
@@ -3658,13 +3656,10 @@ function buildClashTrojanOutbound (remark, address, port, password, sni, host, p
           "headers": { "host": host },
           "max-early-data": 2560,
           "early-data-header-name": "Sec-WebSocket-Protocol"
-        }
-    }
-
-    if (tls) {
-        outbound["sni"] = sni;
-        outbound["alpn"] = ["h2", "http/1.1"];
-        outbound["client-fingerprint"] = "randomized";
+        },
+        "sni": sni,
+        "alpn": ["h2", "http/1.1"],
+        "client-fingerprint": "randomized"
     }
 
     return `    - ${JSON.stringify(outbound)}\n`;
@@ -3672,9 +3667,8 @@ function buildClashTrojanOutbound (remark, address, port, password, sni, host, p
 
 async function getClashConfig (env, hostName) {
     let proxySettings = {};
-    let outboundDomains = [];
     let resolvedNameserver = [];
-    let remark, path, nameserverPolicy;
+    let remark, path, hosts;
     let outbounds = '';
     let outboundsRemarks = '';
     const domainPattern = /^(?!:\/\/)([a-zA-Z0-9-]{1,63}\.)*[a-zA-Z0-9][a-zA-Z0-9-]{0,62}\.[a-zA-Z]{2,11}$/;
@@ -3698,15 +3692,14 @@ async function getClashConfig (env, hostName) {
             ...resolvedDOH.ipv6 
         ]; 
         
-        nameserverPolicy = `    nameserver-policy:\n        '${DNSNameserver}':`;
+        hosts = `    hosts:\n        '${DNSNameserver}':`;
         resolvedNameserver.forEach(ip => {
-            nameserverPolicy += `\n            - '${ip}'`;       
+            hosts += `\n            - '${ip}'`;       
         });
     } else {
-        nameserverPolicy = '';
+        hosts = '';
     }
     
-
     let sni = randomUpperCase(hostName);
     const resolved = await resolveDNS(hostName);
     const Addresses = [
@@ -3725,27 +3718,18 @@ async function getClashConfig (env, hostName) {
                     remark = generateRemark(index, port, 'VLESS', false).replace(' : ', ' - ');
                     path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
                     outbounds += buildClashVLESSOutbound(remark, addr, port, userID, sni, hostName, path);
+                    outboundsRemarks += `          - ${remark}\n`;
                 }
                 
-                if (i === 1 && trojanConfigs) {
+                if (i === 1 && trojanConfigs && defaultHttpsPorts.includes(port)) {
                     remark = generateRemark(index, port, 'Trojan', false).replace(' : ', ' - ');
                     path = `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
                     outbounds += buildClashTrojanOutbound(remark, addr, port, trojanPwd, sni, hostName, path);
+                    outboundsRemarks += `          - ${remark}\n`;
                 }
-
-                outboundsRemarks += `          - ${remark}\n`;
-                if (domainPattern.test(addr)) outboundDomains.push(addr);
-                outboundDomains = [...new Set(outboundDomains)];
             });
         });
     }
-
-    let fallbackFilter = '        domain:\n';
-    outboundDomains.forEach(domain => {
-        fallbackFilter += `            - ${domain}\n`;
-    });
-    if (bypassIran || bypassChina) fallbackFilter += '        geosite:\n';
-
 
     let rules = 'rules:';
     if (blockAds) rules += `\n    - GEOSITE,CATEGORY-ADS-ALL,REJECT`;
@@ -3754,13 +3738,11 @@ async function getClashConfig (env, hostName) {
         rules += `\n    - GEOSITE,CATEGORY-IR,DIRECT`;
         rules += `\n    - GEOIP,IR,DIRECT`;
         rules += `\n    - DOMAIN-KEYWORD,.ir,DIRECT`;
-        fallbackFilter += '            - CATEGORY-IR\n';
     }
 
     if (bypassChina) {
         rules += `\n    - GEOSITE,CN,DIRECT`;
         rules += `\n    - GEOIP,CN,DIRECT`;
-        fallbackFilter += '            - CN\n';
     }
 
     if (blockPorn) rules += `\n    - GEOSITE,CATEGORY-PORN,REJECT`;
@@ -3778,13 +3760,16 @@ dns:
     ipv6: true
     enhanced-mode: fake-ip
     fake-ip-range: 198.18.0.1/16
+${hosts}
     default-nameserver: 
-        - 8.8.8.8
+        - ${localDNS}
         - 223.5.5.5
-${nameserverPolicy}
     nameserver:
         - ${remoteDNS}
     fallback:
+        - https://8.8.8.8/dns-query
+        - https://8.8.4.4/dns-query
+    proxy-server-nameserver:
         - ${localDNS}
         - 223.5.5.5
     fallback-filter:
@@ -3792,7 +3777,7 @@ ${nameserverPolicy}
         ipcidr:
             - 240.0.0.0/4
             - 0.0.0.0/32
-${fallbackFilter}
+
 proxies: 
 ${outbounds}
 proxy-groups:
@@ -3803,12 +3788,11 @@ proxy-groups:
       tolerance: 50
       proxies:
 ${outboundsRemarks}
-    - name: 🌍 Select
+    - name: ✅ Select
       type: select
       proxies:
           - 💦 Best-Ping 💥
           - DIRECT
-          - REJECT
 ${outboundsRemarks}
 ${rules}
     - MATCH,💦 Best-Ping 💥
