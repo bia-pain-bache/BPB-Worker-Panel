@@ -90,6 +90,17 @@ export default {
                                 }
                             });                            
                         }
+                        
+                        if (client === 'clash') {
+                            const BestPingClash = await getClashConfig(env, host);
+                            return new Response(BestPingClash, { 
+                                status: 200,
+                                headers: {
+                                    "Content-Type": "text/plain;charset=utf-8",
+                                }
+                            });                            
+                        }
+
                         const normalConfigs = await getNormalConfigs(env, host, client);
                         return new Response(normalConfigs, { 
                             status: 200,
@@ -1281,7 +1292,7 @@ async function buildWorkerLessConfig(env, client) {
 
     let fragConfig = structuredClone(xrayConfigTemp);
     fragConfig.remarks  = '💦 BPB Frag - WorkerLess ⭐'
-    fragConfig.dns = await buildDNSObject('https://cloudflare-dns.com/dns-query', localDNS, blockAds, bypassIran, blockPorn, true);
+    fragConfig.dns = await buildDNSObject('https://cloudflare-dns.com/dns-query', localDNS, blockAds, bypassIran, bypassChina, blockPorn, true);
     fragConfig.outbounds[0].settings.domainStrategy = 'UseIP';
     fragConfig.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
     fragConfig.outbounds[0].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
@@ -1402,7 +1413,7 @@ async function getFragmentConfigs(env, hostName, client) {
                 outbound.streamSettings.tlsSettings.serverName = randomUpperCase(hostName);
                 outbound.streamSettings.wsSettings.headers.Host = randomUpperCase(hostName);
                 fragConfig.remarks = remark;
-                fragConfig.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, blockPorn);
+                fragConfig.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, bypassChina, blockPorn, false);
                 fragConfig.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
                 fragConfig.outbounds[0].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
                 fragConfig.outbounds[0].settings.fragment.packets = fragmentPackets;
@@ -1447,7 +1458,7 @@ async function getFragmentConfigs(env, hostName, client) {
 
     let bestPing = structuredClone(xrayConfigTemp);
     bestPing.remarks = '💦 BPB Frag - Best Ping 💥';
-    bestPing.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, blockPorn);
+    bestPing.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, bypassChina, blockPorn, false);
     bestPing.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
     bestPing.outbounds[0].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
     bestPing.outbounds[0].settings.fragment.packets = fragmentPackets;
@@ -1469,7 +1480,7 @@ async function getFragmentConfigs(env, hostName, client) {
 
     let bestFragment = structuredClone(xrayConfigTemp);
     bestFragment.remarks = '💦 BPB Frag - Best Fragment 😎';
-    bestFragment.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, blockPorn);
+    bestFragment.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, bypassChina, blockPorn, false);
     bestFragment.outbounds.splice(0,1);
     bestFragValues.forEach( (fragLength, index) => {
         bestFragment.outbounds.push({
@@ -1617,19 +1628,19 @@ async function getWarpConfigs (env, client) {
     singboxWarpConfig.outbounds[0].outbounds = [client === 'hiddify' ? '💦 Warp Pro Best Ping 🚀' : '💦 Warp Best Ping 🚀'];
     singboxWarpConfig.outbounds[1].tag = client === 'hiddify' ? '💦 Warp Pro Best Ping 🚀' : '💦 Warp Best Ping 🚀';
     singboxWarpConfig.dns.servers[0].address = '1.1.1.1';
-    xrayWarpConfig.dns = await buildDNSObject('1.1.1.1', localDNS, blockAds, bypassIran, blockPorn);
+    xrayWarpConfig.dns = await buildDNSObject('1.1.1.1', localDNS, blockAds, bypassIran, bypassChina, blockPorn, false);
     xrayWarpConfig.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, false);
     xrayWarpConfig.outbounds.splice(0,1);
     xrayWarpConfig.routing.rules[xrayWarpConfig.routing.rules.length - 1].outboundTag = 'warp';
     delete xrayWarpConfig.observatory;
     delete xrayWarpConfig.routing.balancers;
     xrayWarpBestPing.remarks = client === 'nikang' ? '💦 BPB - Warp Pro Best Ping 🚀' : '💦 BPB - Warp Best Ping 🚀';
-    xrayWarpBestPing.dns = await buildDNSObject('1.1.1.1', localDNS, blockAds, bypassIran, blockPorn);
+    xrayWarpBestPing.dns = await buildDNSObject('1.1.1.1', localDNS, blockAds, bypassIran, bypassChina, blockPorn, false);
     xrayWarpBestPing.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, true);
     xrayWarpBestPing.outbounds.splice(0,1);
     xrayWarpBestPing.routing.balancers[0].selector = ['warp'];
     xrayWarpBestPing.observatory.subjectSelector = ['warp'];
-    xrayWoWConfigTemp.dns = await buildDNSObject('1.1.1.1', localDNS, blockAds, bypassIran, blockPorn);
+    xrayWoWConfigTemp.dns = await buildDNSObject('1.1.1.1', localDNS, blockAds, bypassIran, bypassChina, blockPorn, false);
     xrayWoWConfigTemp.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, false);
     xrayWoWConfigTemp.outbounds.splice(0,1);
     delete xrayWoWConfigTemp.observatory;
@@ -1910,7 +1921,7 @@ async function fetchWgConfig (env, warpKeys) {
     await env.bpb.put('warpConfigs', JSON.stringify(warpConfigs));
 }
 
-async function buildDNSObject (remoteDNS, localDNS, blockAds, bypassIran, blockPorn, isWorkerLess) {
+async function buildDNSObject (remoteDNS, localDNS, blockAds, bypassIran, bypassChina, blockPorn, isWorkerLess) {
 
     const dohPattern = /^(?:[a-zA-Z]+:\/\/)?([^:\/\s?]+)/;
     const domainPattern = /^(?!\-)(?:[A-Za-z0-9\-]{1,63}\.?)+[A-Za-z]{2,}$/;
@@ -1927,8 +1938,7 @@ async function buildDNSObject (remoteDNS, localDNS, blockAds, bypassIran, blockP
             "1.1.1.2",
             {
                 address: localDNS,
-                domains: ["geosite:category-ir", "domain:.ir"],
-                expectIPs: ["geoip:ir"],
+                domains: [],
                 port: 53,
             },
         ],
@@ -1967,8 +1977,11 @@ async function buildDNSObject (remoteDNS, localDNS, blockAds, bypassIran, blockP
         dnsObject.hosts["geosite:category-porn"] = ["127.0.0.1"];
     }
 
-    if (!bypassIran || !bypassChina || localDNS === 'localhost' || isWorkerLess) {
+    if (!(bypassIran || bypassChina) || localDNS === 'localhost' || isWorkerLess) {
         dnsObject.servers.pop();
+    } else {
+        bypassIran && dnsObject.servers[2].domains.push("geosite:category-ir", "domain:.ir"); 
+        bypassChina && dnsObject.servers[2].domains.push("geosite:cn");         
     }
 
     return dnsObject;
@@ -2835,6 +2848,34 @@ async function renderHomePage (env, hostName, fragConfigs) {
                             </button>
                         </td>
                     </tr>
+                    <tr>
+                        <td>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Clash Meta - <b>Best Ping</b></span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Clash Verge Rev - <b>Best Ping</b></span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>v2rayN (Mihomo) - <b>Best Ping</b></span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>FlClash - <b>Best Ping</b></span>
+                            </div>
+                        </td>
+                        <td>
+                            <button onclick="openQR('https://${hostName}/sub/${userID}?app=clash#BPB-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
+                                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
+                            </button>
+                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=clash#BPB-Normal', false)">
+                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
+                            </button>
+                        </td>
+                    </tr>
 				</table>
 			</div>
 			<h2>FRAGMENT SUB ⛓️</h2>
@@ -3548,6 +3589,209 @@ function renderErrorPage (message, error, refer) {
     </body>
 
     </html>`;
+}
+
+function buildClashVLESSOutbound (remark, address, port, uuid, sni, host, path) {
+    const tls = defaultHttpsPorts.includes(port) ? true : false;
+
+    let outbound = {
+        "name": remark,
+        "type": "vless",
+        "server": address,
+        "port": +port,
+        "uuid": uuid,
+        "tls": tls,
+        "servername": sni,
+        "network": "ws",
+        "udp": false,
+        "ws-opts": {
+          "path": path,
+          "headers": { "host": host },
+          "max-early-data": 2560,
+          "early-data-header-name": "Sec-WebSocket-Protocol"
+        }
+    };
+
+    if (tls) {
+        outbound["servername"] = sni;
+        outbound["alpn"] = ["h2", "http/1.1"];
+        outbound["client-fingerprint"] = "randomized";
+    }
+
+    return `    - ${JSON.stringify(outbound)}\n`;
+}
+
+function buildClashTrojanOutbound (remark, address, port, password, sni, host, path) {
+    const tls = defaultHttpsPorts.includes(port) ? true : false;
+
+    let outbound = {
+        "name": remark,
+        "type": "trojan",
+        "server": address,
+        "port": +port,
+        "password": password,
+        "network": "ws",
+        "udp": false,
+        "ws-opts": {
+          "path": path,
+          "headers": { "host": host },
+          "max-early-data": 2560,
+          "early-data-header-name": "Sec-WebSocket-Protocol"
+        }
+    }
+
+    if (tls) {
+        outbound["sni"] = sni;
+        outbound["alpn"] = ["h2", "http/1.1"];
+        outbound["client-fingerprint"] = "randomized";
+    }
+
+    return `    - ${JSON.stringify(outbound)}\n`;
+}
+
+async function getClashConfig (env, hostName) {
+    let proxySettings = {};
+    let outboundDomains = [];
+    let resolvedNameserver = [];
+    let remark, path, nameserverPolicy;
+    let outbounds = '';
+    let outboundsRemarks = '';
+    const domainPattern = /^(?!:\/\/)([a-zA-Z0-9-]{1,63}\.)*[a-zA-Z0-9][a-zA-Z0-9-]{0,62}\.[a-zA-Z]{2,11}$/;
+    const dohPattern = /^(?:[a-zA-Z]+:\/\/)?([^:\/\s?]+)/;
+
+    try {
+        proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
+    } catch (error) {
+        console.log(error);
+        throw new Error(`An error occurred while getting sing-box configs - ${error}`);
+    }
+
+    const { remoteDNS,  localDNS, cleanIPs, proxyIP, ports, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, vlessConfigs, trojanConfigs } = proxySettings;
+    const DNSNameserver = remoteDNS.match(dohPattern)[1];
+    const isDomain = domainPattern.test(DNSNameserver);
+
+    if (DNSNameserver && isDomain) {
+        const resolvedDOH = await resolveDNS(DNSNameserver);
+        resolvedNameserver = [
+            ...resolvedDOH.ipv4, 
+            ...resolvedDOH.ipv6 
+        ]; 
+        
+        nameserverPolicy = `    nameserver-policy:\n        '${DNSNameserver}':`;
+        resolvedNameserver.forEach(ip => {
+            nameserverPolicy += `\n            - '${ip}'`;       
+        });
+    } else {
+        nameserverPolicy = '';
+    }
+    
+
+    let sni = randomUpperCase(hostName);
+    const resolved = await resolveDNS(hostName);
+    const Addresses = [
+        hostName,
+        "www.speedtest.net",
+        ...resolved.ipv4,
+        ...resolved.ipv6.map((ip) => `[${ip}]`),
+        ...(cleanIPs ? cleanIPs.split(",") : [])
+    ];
+
+    for (let i = 0; i < 2; i++) {
+        ports.forEach(port => {
+            Addresses.forEach((addr, index) => {
+    
+                if (i === 0 && vlessConfigs) {
+                    remark = generateRemark(index, port, 'VLESS', false).replace(' : ', ' - ');
+                    path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
+                    outbounds += buildClashVLESSOutbound(remark, addr, port, userID, sni, hostName, path);
+                }
+                
+                if (i === 1 && trojanConfigs) {
+                    remark = generateRemark(index, port, 'Trojan', false).replace(' : ', ' - ');
+                    path = `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
+                    outbounds += buildClashTrojanOutbound(remark, addr, port, trojanPwd, sni, hostName, path);
+                }
+
+                outboundsRemarks += `          - ${remark}\n`;
+                if (domainPattern.test(addr)) outboundDomains.push(addr);
+                outboundDomains = [...new Set(outboundDomains)];
+            });
+        });
+    }
+
+    let fallbackFilter = '        domain:\n';
+    outboundDomains.forEach(domain => {
+        fallbackFilter += `            - ${domain}\n`;
+    });
+    if (bypassIran || bypassChina) fallbackFilter += '        geosite:\n';
+
+
+    let rules = 'rules:';
+    if (blockAds) rules += `\n    - GEOSITE,CATEGORY-ADS-ALL,REJECT`;
+    if (blockAds) rules += `\n    - GEOSITE,CATEGORY-ADS-IR,REJECT`;
+    if (bypassIran) {
+        rules += `\n    - GEOSITE,CATEGORY-IR,DIRECT`;
+        rules += `\n    - GEOIP,IR,DIRECT`;
+        rules += `\n    - DOMAIN-KEYWORD,.ir,DIRECT`;
+        fallbackFilter += '            - CATEGORY-IR\n';
+    }
+
+    if (bypassChina) {
+        rules += `\n    - GEOSITE,CN,DIRECT`;
+        rules += `\n    - GEOIP,CN,DIRECT`;
+        fallbackFilter += '            - CN\n';
+    }
+
+    if (blockPorn) rules += `\n    - GEOSITE,CATEGORY-PORN,REJECT`;
+    if (bypassLAN) rules += `\n    - GEOIP,LAN,DIRECT`;
+    
+    return `
+port: 7890
+allow-lan: true
+mode: rule
+log-level: info
+unified-delay: true
+dns:
+    enable: true
+    listen: :53
+    ipv6: true
+    enhanced-mode: fake-ip
+    fake-ip-range: 198.18.0.1/16
+    default-nameserver: 
+        - 8.8.8.8
+        - 223.5.5.5
+${nameserverPolicy}
+    nameserver:
+        - ${remoteDNS}
+    fallback:
+        - ${localDNS}
+        - 223.5.5.5
+    fallback-filter:
+        geoip: false
+        ipcidr:
+            - 240.0.0.0/4
+            - 0.0.0.0/32
+${fallbackFilter}
+proxies: 
+${outbounds}
+proxy-groups:
+    - name: 💦 Best-Ping 💥
+      type: url-test
+      url: https://www.gstatic.com/generate_204
+      interval: 30
+      tolerance: 50
+      proxies:
+${outboundsRemarks}
+    - name: 🌍 Select
+      type: select
+      proxies:
+          - 💦 Best-Ping 💥
+          - DIRECT
+          - REJECT
+${outboundsRemarks}
+${rules}
+    - MATCH,💦 Best-Ping 💥
+`;
 }
 
 /**
