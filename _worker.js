@@ -2242,6 +2242,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
     let proxySettings = {};
     let warpConfigs = [];
     let password = '';
+    let activeProtocols = 0;
     
     try {
         proxySettings = await env.bpb.get('proxySettings', {type: 'json'});
@@ -2288,6 +2289,8 @@ async function renderHomePage (env, hostName, fragConfigs) {
     const isWarpReady = warpConfigs ? true : false;
     const isPassSet = password ? password.length >= 8 : false;
     const isWarpPlus = warpPlusLicense ? true : false;
+    vlessConfigs && activeProtocols++;
+    trojanConfigs && activeProtocols++;
     const genCustomConfRow = async (configs) => {
         let tableBlock = "";
         configs.forEach(config => {
@@ -2603,7 +2606,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
 					<label for="outProxy">✈️ Chain Proxy</label>
 					<input type="text" id="outProxy" name="outProxy" value="${outProxy}">
 				</div>
-                <h2>FRAG/WARP ROUTING ⚙️</h2>
+                <h2>ROUTING ⚙️</h2>
 				<div class="form-control" style="margin-bottom: 20px;">			
                     <div class="routing">
                         <input type="checkbox" id="block-ads" name="block-ads" style="margin: 0; grid-column: 2;" value="true" ${blockAds ? 'checked' : ''}>
@@ -2669,11 +2672,11 @@ async function renderHomePage (env, hostName, fragConfigs) {
                 <h2>CONFIG TYPES ⚙️</h2>
 				<div class="form-control" style="margin-bottom: 20px;">			
                     <div class="routing">
-                        <input type="checkbox" id="vlessConfigs" name="vlessConfigs" style="margin: 0; grid-column: 2;" value="true" ${vlessConfigs ? 'checked' : ''}>
+                        <input type="checkbox" id="vlessConfigs" name="vlessConfigs" onchange="handleProtocolChange(event)" style="margin: 0; grid-column: 2;" value="true" ${vlessConfigs ? 'checked' : ''}>
                         <label for="vlessConfigs">VLESS</label>
                     </div>
                     <div class="routing">
-						<input type="checkbox" id="trojanConfigs" name="trojanConfigs" style="margin: 0; grid-column: 2;" value="true" ${trojanConfigs ? 'checked' : ''}>
+						<input type="checkbox" id="trojanConfigs" name="trojanConfigs" onchange="handleProtocolChange(event)" style="margin: 0; grid-column: 2;" value="true" ${trojanConfigs ? 'checked' : ''}>
                         <label for="trojanConfigs">Trojan</label>
 					</div>
 				</div>
@@ -3083,6 +3086,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
         const defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
         let activePortsNo = ${ports.length};
         let activeHttpsPortsNo = ${ports.filter(port => defaultHttpsPorts.includes(port)).length};
+        let activeProtocols = ${activeProtocols};
 
 		document.addEventListener('DOMContentLoaded', async () => {
             const configForm = document.getElementById('configForm');            
@@ -3234,6 +3238,23 @@ async function renderHomePage (env, hostName, fragConfigs) {
                 event.target.checked = !event.target.checked;
                 alert("⛔ At least one TLS(https) port should be selected! 🫤");
                 activeHttpsPortsNo = 1;
+                return false;
+            }
+        }
+        
+        const handleProtocolChange = (event) => {
+            
+            if(event.target.checked) { 
+                activeProtocols++ 
+            } else {
+                activeProtocols--;
+            }
+
+            if (activeProtocols === 0) {
+                event.preventDefault();
+                event.target.checked = !event.target.checked;
+                alert("⛔ At least one Protocol should be selected! 🫤");
+                activeProtocols = 1;
                 return false;
             }
         }
