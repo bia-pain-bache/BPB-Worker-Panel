@@ -17,7 +17,7 @@ let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 let dohURL = 'https://cloudflare-dns.com/dns-query';
 let trojanPwd = "bpb-trojan";
 let sha224Password;
-let panelVersion = '2.5.2';
+let panelVersion = '2.5.3';
 
 if (!isValidUUID(userID)) {
     throw new Error('uuid is not valid');
@@ -93,7 +93,7 @@ export default {
                         
                         if (client === 'clash') {
                             const BestPingClash = await getClashConfig(env, host);
-                            return new Response(BestPingClash, { 
+                            return new Response(JSON.stringify(BestPingClash, null, 4), { 
                                 status: 200,
                                 headers: {
                                     "Content-Type": "text/plain;charset=utf-8",
@@ -2298,11 +2298,11 @@ async function renderHomePage (env, hostName, fragConfigs) {
             <tr>
                 <td>
                     ${config.address === 'Best-Ping' 
-                        ? `<div  style="justify-content: center;"><span><b>💦 BPB Frag - Best-Ping 💥</b></span></div>` 
+                        ? `<div  style="justify-content: center;"><span><b>💦 BPB F - Best-Ping 💥</b></span></div>` 
                         : config.address === 'WorkerLess'
-                            ? `<div  style="justify-content: center;"><span><b>💦 BPB Frag - WorkerLess ⭐</b></span></div>`
+                            ? `<div  style="justify-content: center;"><span><b>💦 BPB F - WorkerLess ⭐</b></span></div>`
                             : config.address === 'Best-Fragment'
-                                ? `<div  style="justify-content: center;"><span><b>💦 BPB Frag - Best-Fragment 😎</b></span></div>`
+                                ? `<div  style="justify-content: center;"><span><b>💦 BPB F - Best-Fragment 😎</b></span></div>`
                                 : config.address
                     }
                 </td>
@@ -2839,7 +2839,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
                         <td>
                             <div>
                                 <span class="material-symbols-outlined symbol">verified</span>
-                                <span>Sing-box - <b>Best Ping</b></span>
+                                <span>Sing-box</b></span>
                             </div>
                         </td>
                         <td>
@@ -2855,19 +2855,19 @@ async function renderHomePage (env, hostName, fragConfigs) {
                         <td>
                             <div>
                                 <span class="material-symbols-outlined symbol">verified</span>
-                                <span>Clash Meta - <b>Best Ping</b></span>
+                                <span>Clash Meta</span>
                             </div>
                             <div>
                                 <span class="material-symbols-outlined symbol">verified</span>
-                                <span>Clash Verge Rev - <b>Best Ping</b></span>
+                                <span>Clash Verge</span>
                             </div>
                             <div>
                                 <span class="material-symbols-outlined symbol">verified</span>
-                                <span>v2rayN (Mihomo) - <b>Best Ping</b></span>
+                                <span>v2rayN</span>
                             </div>
                             <div>
                                 <span class="material-symbols-outlined symbol">verified</span>
-                                <span>FlClash - <b>Best Ping</b></span>
+                                <span>FlClash</span>
                             </div>
                         </td>
                         <td>
@@ -3612,7 +3612,7 @@ function renderErrorPage (message, error, refer) {
     </html>`;
 }
 
-function buildClashVLESSOutbound (remark, address, port, uuid, sni, host, path) {
+function buildClashVLESSOutbound (remark, address, port, uuid, host, path) {
     const tls = defaultHttpsPorts.includes(port) ? true : false;
 
     let outbound = {
@@ -3622,28 +3622,29 @@ function buildClashVLESSOutbound (remark, address, port, uuid, sni, host, path) 
         "port": +port,
         "uuid": uuid,
         "tls": tls,
-        "servername": sni,
         "network": "ws",
         "udp": false,
         "ws-opts": {
-          "path": path,
-          "headers": { "host": host },
-          "max-early-data": 2560,
-          "early-data-header-name": "Sec-WebSocket-Protocol"
+            "path": path,
+            "headers": { "host": host },
+            "max-early-data": 2560,
+            "early-data-header-name": "Sec-WebSocket-Protocol"
         }
     };
 
     if (tls) {
-        outbound["servername"] = sni;
-        outbound["alpn"] = ["h2", "http/1.1"];
-        outbound["client-fingerprint"] = "randomized";
+        Object.assign(outbound, {
+            "servername": randomUpperCase(host),
+            "alpn": ["h2", "http/1.1"],
+            "clientFingerprint": "random"
+        });
     }
 
-    return `    - ${JSON.stringify(outbound)}\n`;
+    return outbound;
 }
 
-function buildClashTrojanOutbound (remark, address, port, password, sni, host, path) {
-    let outbound = {
+function buildClashTrojanOutbound (remark, address, port, password, host, path) {
+    return {
         "name": remark,
         "type": "trojan",
         "server": address,
@@ -3652,25 +3653,24 @@ function buildClashTrojanOutbound (remark, address, port, password, sni, host, p
         "network": "ws",
         "udp": false,
         "ws-opts": {
-          "path": path,
-          "headers": { "host": host },
-          "max-early-data": 2560,
-          "early-data-header-name": "Sec-WebSocket-Protocol"
+            "path": path,
+            "headers": { "host": host },
+            "max-early-data": 2560,
+            "early-data-header-name": "Sec-WebSocket-Protocol"
         },
-        "sni": sni,
+        "sni": randomUpperCase(host),
         "alpn": ["h2", "http/1.1"],
-        "client-fingerprint": "randomized"
-    }
-
-    return `    - ${JSON.stringify(outbound)}\n`;
+        "client-fingerprint": "random"
+    };
 }
 
 async function getClashConfig (env, hostName) {
     let proxySettings = {};
     let resolvedNameserver = [];
-    let remark, path, hosts;
-    let outbounds = '';
-    let outboundsRemarks = '';
+    let remark, path;
+    let hosts = {};
+    let outbounds = [];
+    let outboundsRemarks = [];
     const domainPattern = /^(?!:\/\/)([a-zA-Z0-9-]{1,63}\.)*[a-zA-Z0-9][a-zA-Z0-9-]{0,62}\.[a-zA-Z]{2,11}$/;
     const dohPattern = /^(?:[a-zA-Z]+:\/\/)?([^:\/\s?]+)/;
 
@@ -3690,17 +3690,12 @@ async function getClashConfig (env, hostName) {
         resolvedNameserver = [
             ...resolvedDOH.ipv4, 
             ...resolvedDOH.ipv6 
-        ]; 
-        
-        hosts = `    hosts:\n        '${DNSNameserver}':`;
-        resolvedNameserver.forEach(ip => {
-            hosts += `\n            - '${ip}'`;       
-        });
+        ];         
+        hosts[DNSNameserver] = resolvedNameserver;
     } else {
-        hosts = '';
+        hosts = {};
     }
     
-    let sni = randomUpperCase(hostName);
     const resolved = await resolveDNS(hostName);
     const Addresses = [
         hostName,
@@ -3717,86 +3712,86 @@ async function getClashConfig (env, hostName) {
                 if (i === 0 && vlessConfigs) {
                     remark = generateRemark(index, port, 'VLESS', false).replace(' : ', ' - ');
                     path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
-                    outbounds += buildClashVLESSOutbound(remark, addr, port, userID, sni, hostName, path);
-                    outboundsRemarks += `          - ${remark}\n`;
+                    const VLESSOutbound = buildClashVLESSOutbound(remark, addr, port, userID, hostName, path);
+                    outbounds.push(VLESSOutbound);
+                    outboundsRemarks.push(remark);
                 }
                 
                 if (i === 1 && trojanConfigs && defaultHttpsPorts.includes(port)) {
                     remark = generateRemark(index, port, 'Trojan', false).replace(' : ', ' - ');
                     path = `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
-                    outbounds += buildClashTrojanOutbound(remark, addr, port, trojanPwd, sni, hostName, path);
-                    outboundsRemarks += `          - ${remark}\n`;
+                    const TrojanOutbound = buildClashTrojanOutbound(remark, addr, port, trojanPwd, hostName, path);
+                    outbounds.push(TrojanOutbound);
+                    outboundsRemarks.push(remark);
                 }
             });
         });
     }
 
-    let rules = 'rules:';
-    if (blockAds) rules += `\n    - GEOSITE,CATEGORY-ADS-ALL,REJECT`;
-    if (blockAds) rules += `\n    - GEOSITE,CATEGORY-ADS-IR,REJECT`;
-    if (bypassIran) {
-        rules += `\n    - GEOSITE,CATEGORY-IR,DIRECT`;
-        rules += `\n    - GEOIP,IR,DIRECT`;
-        rules += `\n    - DOMAIN-KEYWORD,.ir,DIRECT`;
-    }
+    let rules = [];
+    blockAds && rules.push('GEOSITE,CATEGORY-ADS-ALL,REJECT');
+    blockAds && rules.push('GEOSITE,CATEGORY-ADS-IR,REJECT');;
+    bypassIran && rules.push('GEOSITE,CATEGORY-IR,DIRECT', 'GEOIP,IR,DIRECT', 'DOMAIN-SUFFIX,.ir,DIRECT');
+    bypassChina && rules.push('GEOSITE,CN,DIRECT', 'GEOIP,CN,DIRECT');
+    blockPorn && rules.push('GEOSITE,CATEGORY-PORN,REJECT');
+    bypassLAN && rules.push('GEOIP,LAN,DIRECT');
 
-    if (bypassChina) {
-        rules += `\n    - GEOSITE,CN,DIRECT`;
-        rules += `\n    - GEOIP,CN,DIRECT`;
-    }
-
-    if (blockPorn) rules += `\n    - GEOSITE,CATEGORY-PORN,REJECT`;
-    if (bypassLAN) rules += `\n    - GEOIP,LAN,DIRECT`;
-    
-    return `
-port: 7890
-allow-lan: true
-mode: rule
-log-level: info
-unified-delay: true
-dns:
-    enable: true
-    listen: :53
-    ipv6: true
-    enhanced-mode: fake-ip
-    fake-ip-range: 198.18.0.1/16
-${hosts}
-    default-nameserver: 
-        - ${localDNS}
-        - 223.5.5.5
-    nameserver:
-        - ${remoteDNS}
-    fallback:
-        - https://8.8.8.8/dns-query
-        - https://8.8.4.4/dns-query
-    proxy-server-nameserver:
-        - ${localDNS}
-        - 223.5.5.5
-    fallback-filter:
-        geoip: false
-        ipcidr:
-            - 240.0.0.0/4
-            - 0.0.0.0/32
-
-proxies: 
-${outbounds}
-proxy-groups:
-    - name: 💦 Best-Ping 💥
-      type: url-test
-      url: https://www.gstatic.com/generate_204
-      interval: 30
-      tolerance: 50
-      proxies:
-${outboundsRemarks}
-    - name: ✅ Select
-      type: select
-      proxies:
-          - 💦 Best-Ping 💥
-          - DIRECT
-${outboundsRemarks}
-${rules}
-    - MATCH,💦 Best-Ping 💥
-`;
+    return {
+        "mixed-port": 7890,
+        "allow-lan": true,
+        "mode": "rule",
+        "log-level": "info",
+        "keep-alive-interval": 30,
+        "unified-delay": true,
+        "dns": {
+          "enable": true,
+          "listen": ":53",
+          "ipv6": true,
+          "respect-rules": true,
+          "enhanced-mode": "fake-ip",
+          "fake-ip-range": "198.18.0.1/16",
+          "hosts": hosts,
+          "default-nameserver": [
+            localDNS,
+            "223.5.5.5"
+          ],
+          "nameserver": [
+            remoteDNS
+          ],
+          "fallback": [
+            "https://8.8.8.8/dns-query",
+            "https://8.8.4.4/dns-query"
+          ],
+          "proxy-server-nameserver": [
+            localDNS,
+            "223.5.5.5"
+          ],
+          "fallback-filter": {
+            "geoip": false,
+            "ipcidr": [
+              "240.0.0.0/4",
+              "0.0.0.0/32"
+            ]
+          }
+        },
+        "proxies": outbounds,
+        "proxy-groups": [
+          {
+            "name": "💦 Best-Ping 💥",
+            "type": "url-test",
+            "url": "https://www.gstatic.com/generate_204",
+            "interval": 30,
+            "tolerance": 50,
+            "proxies": outboundsRemarks
+          },
+          {
+            "name": "✅ Select",
+            "type": "select",
+            "proxies": ['💦 Best-Ping 💥', 'DIRECT', ...outboundsRemarks ]
+          }
+        ],
+        "rules": [...rules, 'MATCH,💦 Best-Ping 💥']
+      };
 }
 
 /**
