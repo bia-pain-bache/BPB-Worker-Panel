@@ -1536,72 +1536,6 @@ async function getFragmentConfigs(env, hostName, client) {
     return Configs;
 }
 
-async function getSingboxConfig (env, hostName) {
-    let proxySettings = {};
-    let outboundDomains = [];
-    const domainRegex = /^(?!:\/\/)([a-zA-Z0-9-]{1,63}\.)*[a-zA-Z0-9][a-zA-Z0-9-]{0,62}\.[a-zA-Z]{2,11}$/;
-    
-    try {
-        proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
-    } catch (error) {
-        console.log(error);
-        throw new Error(`An error occurred while getting sing-box configs - ${error}`);
-    }
-
-    const { remoteDNS,  localDNS, cleanIPs, proxyIP, ports, vlessConfigs, trojanConfigs } = proxySettings
-    let config = structuredClone(singboxConfigTemp);
-    let outbound;
-    let remark;
-    config.dns.servers[0].address = remoteDNS;
-    config.dns.servers[1].address = localDNS;
-    const resolved = await resolveDNS(hostName);
-    const Addresses = [
-        hostName,
-        "www.speedtest.net",
-        ...resolved.ipv4,
-        ...resolved.ipv6.map((ip) => `[${ip}]`),
-        ...(cleanIPs ? cleanIPs.split(",") : [])
-    ];
-
-    for (let i = 0; i < 2; i++) {
-        ports.forEach(port => {
-            Addresses.forEach((addr, index) => {
-    
-                if (i === 0 && vlessConfigs) {
-                    outbound = structuredClone(singboxVLESSOutboundTemp);
-                    remark = generateRemark(index, port, 'VLESS', false);
-                    outbound.uuid = userID;
-                    outbound.transport.path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
-                    
-                }
-                
-                if (i === 1 && trojanConfigs) {
-                    outbound = structuredClone(singboxTrojanOutboundTemp);
-                    remark = generateRemark(index, port, 'Trojan', false);
-                    outbound.password = trojanPwd;
-                    outbound.transport.path = `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
-                }
-
-                outbound.server = addr;
-                outbound.tag = remark;
-                outbound.server_port = +port;
-                outbound.transport.headers.Host = randomUpperCase(hostName);
-                defaultHttpsPorts.includes(port)
-                    ? outbound.tls.server_name = randomUpperCase(hostName)
-                    : delete outbound.tls;
-                config.outbounds.push(outbound);
-                config.outbounds[0].outbounds.push(remark);
-                config.outbounds[1].outbounds.push(remark);
-                if (domainRegex.test(outbound.server)) outboundDomains.push(outbound.server);
-            });
-        });
-    }
-
-    config.dns.rules[0].domain = [...config.dns.rules[0].domain, ...new Set(outboundDomains)];
-
-    return config;
-}
-
 async function getWarpConfigs (env, client) {
     let proxySettings = {};
     let warpConfigs = [];
@@ -3744,54 +3678,190 @@ async function getClashConfig (env, hostName) {
         "keep-alive-interval": 30,
         "unified-delay": true,
         "dns": {
-          "enable": true,
-          "listen": ":53",
-          "ipv6": true,
-          "respect-rules": true,
-          "enhanced-mode": "fake-ip",
-          "fake-ip-range": "198.18.0.1/16",
-          "hosts": hosts,
-          "default-nameserver": [
-            localDNS,
-            "223.5.5.5"
-          ],
-          "nameserver": [
-            remoteDNS
-          ],
-          "fallback": [
-            "https://8.8.8.8/dns-query",
-            "https://8.8.4.4/dns-query"
-          ],
-          "proxy-server-nameserver": [
-            localDNS,
-            "223.5.5.5"
-          ],
-          "fallback-filter": {
-            "geoip": false,
-            "ipcidr": [
-              "240.0.0.0/4",
-              "0.0.0.0/32"
-            ]
-          }
+            "enable": true,
+            "listen": ":53",
+            "ipv6": true,
+            "respect-rules": true,
+            "enhanced-mode": "fake-ip",
+            "fake-ip-range": "198.18.0.1/16",
+            "hosts": hosts,
+            "default-nameserver": [
+                localDNS,
+                "223.5.5.5"
+            ],
+            "nameserver": [
+                remoteDNS
+            ],
+            "fallback": [
+                "https://8.8.8.8/dns-query",
+                "https://8.8.4.4/dns-query"
+            ],
+            "proxy-server-nameserver": [
+                localDNS,
+                "223.5.5.5"
+            ],
+            "fallback-filter": {
+                "geoip": false,
+                "ipcidr": [
+                "240.0.0.0/4",
+                "0.0.0.0/32"
+                ]
+            }
         },
         "proxies": outbounds,
         "proxy-groups": [
-          {
-            "name": "💦 Best-Ping 💥",
-            "type": "url-test",
-            "url": "https://www.gstatic.com/generate_204",
-            "interval": 30,
-            "tolerance": 50,
-            "proxies": outboundsRemarks
-          },
-          {
-            "name": "✅ Select",
-            "type": "select",
-            "proxies": ['💦 Best-Ping 💥', 'DIRECT', ...outboundsRemarks ]
-          }
+            {
+                "name": "💦 Best-Ping 💥",
+                "type": "url-test",
+                "url": "https://www.gstatic.com/generate_204",
+                "interval": 30,
+                "tolerance": 50,
+                "proxies": outboundsRemarks
+            },
+            {
+                "name": "✅ Select",
+                "type": "select",
+                "proxies": ['💦 Best-Ping 💥', 'DIRECT', ...outboundsRemarks ]
+            }
         ],
         "rules": [...rules, 'MATCH,💦 Best-Ping 💥']
-      };
+    };
+}
+
+function buildSingboxVLESSOutbound (remark, address, port, uuid, host, path) {
+    const tls = defaultHttpsPorts.includes(port) ? true : false;
+    let outbound =  {
+        type: "vless",
+        server: address,
+        server_port: +port,
+        uuid: uuid,
+        domain_strategy: "prefer_ipv6",
+        packet_encoding: "",
+        tls: {
+            alpn: [
+                "http/1.1"
+            ],
+            enabled: true,
+            insecure: false,
+            server_name: randomUpperCase(host),
+            utls: {
+                enabled: true,
+                fingerprint: "randomized"
+            }
+        },
+        transport: {
+            early_data_header_name: "Sec-WebSocket-Protocol",
+            max_early_data: 2560,
+            headers: {
+                Host: host
+            },
+            path: path,
+            type: "ws"
+        },
+        tag: remark
+    };
+
+    if (!tls) delete outbound.tls;
+
+    return outbound;
+}
+
+function buildSingboxTrojanOutbound (remark, address, port, password, host, path) {
+    const tls = defaultHttpsPorts.includes(port) ? true : false;
+    let outbound = {
+        password: password,
+        server: address,
+        server_port: +port,
+        tls: {
+            alpn: [
+                "http/1.1"
+            ],
+            enabled: true,
+            insecure: false,
+            server_name: randomUpperCase(host),
+            utls: {
+                enabled: true,
+                fingerprint: "randomized"
+            }
+        },
+        transport: {
+            early_data_header_name: "Sec-WebSocket-Protocol",
+            max_early_data: 2560,
+            headers: {
+                Host: [
+                    host
+                ]
+            },
+            path: path,
+            type: "ws"
+        },
+        type: "trojan",
+        tag: remark
+    }
+
+    if (!tls) delete outbound.tls;
+
+    return outbound;    
+}
+
+async function getSingboxConfig (env, hostName) {
+    let proxySettings = {};
+    let outboundDomains = [];
+    const domainRegex = /^(?!:\/\/)([a-zA-Z0-9-]{1,63}\.)*[a-zA-Z0-9][a-zA-Z0-9-]{0,62}\.[a-zA-Z]{2,11}$/;
+    
+    try {
+        proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
+    } catch (error) {
+        console.log(error);
+        throw new Error(`An error occurred while getting sing-box configs - ${error}`);
+    }
+
+    const { remoteDNS,  localDNS, cleanIPs, proxyIP, ports, vlessConfigs, trojanConfigs } = proxySettings
+    let config = structuredClone(singboxConfigTemp);
+    let outbound;
+    let remark;
+    config.dns.servers[0].address = remoteDNS;
+    config.dns.servers[1].address = localDNS;
+    const resolved = await resolveDNS(hostName);
+    const Addresses = [
+        hostName,
+        "www.speedtest.net",
+        ...resolved.ipv4,
+        ...resolved.ipv6.map((ip) => `[${ip}]`),
+        ...(cleanIPs ? cleanIPs.split(",") : [])
+    ];
+
+    let outbounds = [];
+    let outboundsRemarks = [];
+    let path;
+    for (let i = 0; i < 2; i++) {
+        ports.forEach(port => {
+            Addresses.forEach((addr, index) => {
+
+                if (i === 0 && vlessConfigs) {
+                    remark = generateRemark(index, port, 'VLESS', false);
+                    path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
+                    const VLESSOutbound = buildSingboxVLESSOutbound(remark, addr, port, userID, hostName, path);
+                    config.outbounds.push(VLESSOutbound);
+                }
+                
+                if (i === 1 && trojanConfigs) {
+                    remark = generateRemark(index, port, 'Trojan', false);
+                    path = `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
+                    const TrojanOutbound = buildSingboxTrojanOutbound(remark, addr, port, trojanPwd, hostName, path);
+                    config.outbounds.push(TrojanOutbound);
+                }
+
+                config.outbounds[0].outbounds.push(remark);
+                config.outbounds[1].outbounds.push(remark);
+                if (domainRegex.test(addr)) outboundDomains.push(addr);
+            });
+        });
+    }
+
+    config.dns.rules[0].domain = [...config.dns.rules[0].domain, ...new Set(outboundDomains)];
+
+    return config;
 }
 
 /**
@@ -4999,68 +5069,6 @@ const singboxConfigTemp = {
         }
     }
 };
-
-const singboxVLESSOutboundTemp = {
-    type: "vless",
-    server: "",
-    server_port: 443,
-    uuid: "",
-    domain_strategy: "prefer_ipv6",
-    packet_encoding: "",
-    tls: {
-        alpn: [
-            "http/1.1"
-        ],
-        enabled: true,
-        insecure: false,
-        server_name: "",
-        utls: {
-            enabled: true,
-            fingerprint: "randomized"
-        }
-    },
-    transport: {
-        early_data_header_name: "Sec-WebSocket-Protocol",
-        max_early_data: 2560,
-        headers: {
-            Host: ""
-        },
-        path: "/",
-        type: "ws"
-    },
-    tag: ""
-};
-
-const singboxTrojanOutboundTemp = {
-	password: "",
-	server: "",
-	server_port: 443,
-	tls: {
-		alpn: [
-            "http/1.1"
-		],
-		enabled: true,
-		insecure: false,
-		server_name: "",
-		utls: {
-			enabled: true,
-			fingerprint: "randomized"
-		}
-	},
-	transport: {
-		early_data_header_name: "Sec-WebSocket-Protocol",
-		max_early_data: 2560,
-		headers: {
-			Host: [
-				""
-			]
-		},
-		path: "",
-		type: "ws"
-	},
-	type: "trojan",
-	tag: "proxy"
-}
 
 const xrayWgOutboundTemp = {
     protocol: "wireguard",
