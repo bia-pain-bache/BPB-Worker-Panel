@@ -17,7 +17,7 @@ let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 let dohURL = 'https://cloudflare-dns.com/dns-query';
 let trojanPwd = "bpb-trojan";
 let sha224Password;
-let panelVersion = '2.5.3';
+let panelVersion = '2.5.4';
 
 if (!isValidUUID(userID)) {
     throw new Error('uuid is not valid');
@@ -3686,7 +3686,7 @@ async function getClashConfig (env, hostName) {
             "fake-ip-range": "198.18.0.1/16",
             "hosts": hosts,
             "default-nameserver": [
-                localDNS,
+                localDNS === 'localhost' ? '8.8.8.8' : localDNS,
                 "223.5.5.5"
             ],
             "nameserver": [
@@ -3697,7 +3697,7 @@ async function getClashConfig (env, hostName) {
                 "https://8.8.4.4/dns-query"
             ],
             "proxy-server-nameserver": [
-                localDNS,
+                localDNS === 'localhost' ? '8.8.8.8' : localDNS,
                 "223.5.5.5"
             ],
             "fallback-filter": {
