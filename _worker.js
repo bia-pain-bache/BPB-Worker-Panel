@@ -92,7 +92,7 @@ export default {
                         }
                         
                         if (client === 'clash') {
-                            const BestPingClash = await getClashConfig(env, host);
+                            const BestPingClash = await getClashConfig(env, host, false);
                             return new Response(JSON.stringify(BestPingClash, null, 4), { 
                                 status: 200,
                                 headers: {
@@ -122,6 +122,16 @@ export default {
                         });
 
                     case `/warpsub/${userID}`:
+
+                        if (client === 'clash') {
+                            const clashWarpConfigs = await getClashConfig(env, host, true);
+                            return new Response(JSON.stringify(clashWarpConfigs, null, 4), { 
+                                status: 200,
+                                headers: {
+                                    "Content-Type": "text/plain;charset=utf-8",
+                                }
+                            });                            
+                        }
 
                         const warpConfig = await getWarpConfigs(env, client);
                         return new Response(JSON.stringify(warpConfig, null, 4), { 
@@ -1628,6 +1638,7 @@ async function buildWarpOutbounds (env, client, proxySettings, warpConfigs) {
     let singboxOutbound = structuredClone(singboxWgOutboundTemp);
     let xrayOutbounds = [];
     let singboxOutbounds = [];
+    let clashOutbounds = [];
     const ipv6Regex = /\[(.*?)\]/;
     const portRegex = /[^:]*$/;
 
@@ -1643,14 +1654,19 @@ async function buildWarpOutbounds (env, client, proxySettings, warpConfigs) {
 		noiseDelayMax 
 	} = proxySettings;
 
+    const warpIPv6 = warpConfigs[0].account.config.interface.addresses.v6;
+    const publicKey = warpConfigs[0].account.config.peers[0].public_key;
+    const privateKey = warpConfigs[0].privateKey;
+    const reserved = warpConfigs[0].account.config.client_id;
+
     xrayOutboundTemp.settings.address = [
-        `${warpConfigs[0].account.config.interface.addresses.v4}/32`,
-        `${warpConfigs[0].account.config.interface.addresses.v6}/128`
+        '172.16.0.2/32',
+        `${warpIPv6}/128`
     ];
 
-    xrayOutboundTemp.settings.peers[0].publicKey = warpConfigs[0].account.config.peers[0].public_key;
-    xrayOutboundTemp.settings.reserved = base64ToDecimal(warpConfigs[0].account.config.client_id);
-    xrayOutboundTemp.settings.secretKey = warpConfigs[0].privateKey;
+    xrayOutboundTemp.settings.peers[0].publicKey = publicKey;
+    xrayOutboundTemp.settings.reserved = base64ToDecimal(reserved);
+    xrayOutboundTemp.settings.secretKey = privateKey;
     
     if (client === 'nikang') xrayOutboundTemp.settings = {
         ...xrayOutboundTemp.settings,
@@ -1663,13 +1679,13 @@ async function buildWarpOutbounds (env, client, proxySettings, warpConfigs) {
     delete xrayOutboundTemp.streamSettings;
     
     singboxOutbound.local_address = [
-        `${warpConfigs[0].account.config.interface.addresses.v4}/32`,
-        `${warpConfigs[0].account.config.interface.addresses.v6}/128`
+        '172.16.0.2/32',
+        `${warpIPv6}/128`
     ];
 
-    singboxOutbound.peer_public_key = warpConfigs[0].account.config.peers[0].public_key;
-    singboxOutbound.reserved = warpConfigs[0].account.config.client_id;
-    singboxOutbound.private_key = warpConfigs[0].privateKey;
+    singboxOutbound.peer_public_key = publicKey;
+    singboxOutbound.reserved = reserved;
+    singboxOutbound.private_key = privateKey;
     
     if (client === 'hiddify') singboxOutbound = {
         ...singboxOutbound,
@@ -1680,8 +1696,11 @@ async function buildWarpOutbounds (env, client, proxySettings, warpConfigs) {
     };
 
     delete singboxOutbound.detour;
+
     
     warpEndpoints.split(',').forEach( (endpoint, index) => {
+        let endpointIP = endpoint.includes('[') ? endpoint.match(ipv6Regex)[1] : endpoint.split(':')[0];
+        let endpointPort = endpoint.includes('[') ? +endpoint.match(portRegex)[0] : +endpoint.split(':')[1];
         let xrayOutbound = structuredClone(xrayOutboundTemp);
         xrayOutbound.settings.peers[0].endpoint = endpoint;
         xrayOutbound.tag = `warp-${index + 1}`;        
@@ -1689,18 +1708,22 @@ async function buildWarpOutbounds (env, client, proxySettings, warpConfigs) {
         
         singboxOutbounds.push({
             ...singboxOutbound,
-            server: endpoint.includes('[') ? endpoint.match(ipv6Regex)[1] : endpoint.split(':')[0],
-            server_port: endpoint.includes('[') ? +endpoint.match(portRegex)[0] : +endpoint.split(':')[1],
+            server: endpointIP,
+            server_port: endpointPort,
             tag: client === 'hiddify' ? `💦 Warp Pro ${index + 1} 🇮🇷` : `💦 Warp ${index + 1} 🇮🇷`
         });
+
+        let clashOutbound = buildClashWarpOutbound(`💦 Warp ${index + 1} 🇮🇷`, warpIPv6, privateKey, publicKey, endpointIP, endpointPort, reserved, '');
+        clashOutbounds.push(clashOutbound);
     })
     
-    return {xray: xrayOutbounds, singbox: singboxOutbounds};
+    return {xray: xrayOutbounds, singbox: singboxOutbounds, clash: clashOutbounds};
 }
 
 async function buildWoWOutbounds (env, client, proxySettings, warpConfigs) {
     let xrayOutbounds = [];
     let singboxOutbounds = [];
+    let clashOutbounds = [];
     const ipv6Regex = /\[(.*?)\]/;
     const portRegex = /[^:]*$/;
     const { 
@@ -1718,17 +1741,23 @@ async function buildWoWOutbounds (env, client, proxySettings, warpConfigs) {
     wowEndpoint.split(',').forEach( (endpoint, index) => {
         
         for (let i = 0; i < 2; i++) {
+            const warpIPv6 = warpConfigs[i].account.config.interface.addresses.v6;
+            const publicKey = warpConfigs[i].account.config.peers[0].public_key;
+            const privateKey = warpConfigs[i].privateKey;
+            const reserved = warpConfigs[i].account.config.client_id;
+            const endpointIP = endpoint.includes('[') ? endpoint.match(ipv6Regex)[1] : endpoint.split(':')[0];
+            const endpointPort = endpoint.includes('[') ? +endpoint.match(portRegex)[0] : +endpoint.split(':')[1];
             let xrayOutbound = structuredClone(xrayWgOutboundTemp);
             let singboxOutbound = structuredClone(singboxWgOutboundTemp);
             xrayOutbound.settings.address = [
-                `${warpConfigs[i].account.config.interface.addresses.v4}/32`,
-                `${warpConfigs[i].account.config.interface.addresses.v6}/128`
+                '172.16.0.2/32',
+                `${warpIPv6}/128`
             ];
     
             xrayOutbound.settings.peers[0].endpoint = endpoint;
-            xrayOutbound.settings.peers[0].publicKey = warpConfigs[i].account.config.peers[0].public_key;
-            xrayOutbound.settings.reserved = base64ToDecimal(warpConfigs[i].account.config.client_id);
-            xrayOutbound.settings.secretKey = warpConfigs[i].privateKey;
+            xrayOutbound.settings.peers[0].publicKey = publicKey;
+            xrayOutbound.settings.reserved = base64ToDecimal(reserved);
+            xrayOutbound.settings.secretKey = privateKey;
             
             if (client === 'nikang' && i === 1) xrayOutbound.settings = {
                 ...xrayOutbound.settings,
@@ -1749,15 +1778,15 @@ async function buildWoWOutbounds (env, client, proxySettings, warpConfigs) {
             xrayOutbounds.push(xrayOutbound);
     
             singboxOutbound.local_address = [
-                `${warpConfigs[i].account.config.interface.addresses.v4}/32`,
-                `${warpConfigs[i].account.config.interface.addresses.v6}/128`
+                '172.16.0.2/32',
+                `${warpIPv6}/128`
             ];
     
-            singboxOutbound.server = endpoint.includes('[') ? endpoint.match(ipv6Regex)[1] : endpoint.split(':')[0];
-            singboxOutbound.server_port = endpoint.includes('[') ? +endpoint.match(portRegex)[0] : +endpoint.split(':')[1];    
-            singboxOutbound.peer_public_key = warpConfigs[i].account.config.peers[0].public_key;
-            singboxOutbound.reserved = warpConfigs[i].account.config.client_id;
-            singboxOutbound.private_key = warpConfigs[i].privateKey;
+            singboxOutbound.server = endpointIP;
+            singboxOutbound.server_port = endpointPort;    
+            singboxOutbound.peer_public_key = publicKey;
+            singboxOutbound.reserved = reserved;
+            singboxOutbound.private_key = privateKey;
             
             if (client === 'hiddify' && i === 1) singboxOutbound = {
                 ...singboxOutbound,
@@ -1780,11 +1809,24 @@ async function buildWoWOutbounds (env, client, proxySettings, warpConfigs) {
             }
     
             singboxOutbounds.push(singboxOutbound);
+
+            let clashOutbound = buildClashWarpOutbound(
+                i === 1 ? `warp-ir_${index + 1}` : `💦 WoW ${index + 1} 🌍`, 
+                warpIPv6, 
+                privateKey, 
+                publicKey, 
+                endpointIP, 
+                endpointPort, 
+                reserved, 
+                i === 0 ? `warp-ir_${index + 1}` : ''
+            );
+            
+            clashOutbounds.push(clashOutbound);
         }
 
-    })
+    });
 
-    return {xray: xrayOutbounds, singbox: singboxOutbounds};
+    return {xray: xrayOutbounds, singbox: singboxOutbounds, clash: clashOutbounds};
 }
 
 async function fetchWgConfig (env, warpKeys) {
@@ -2919,6 +2961,34 @@ async function renderHomePage (env, hostName, fragConfigs) {
                             </button>
 						</td>
 					</tr>
+                    <tr>
+                        <td>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Clash Meta</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Clash Verge</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>v2rayN</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>FlClash</span>
+                            </div>
+                        </td>
+                        <td>
+                            <button onclick="openQR('https://${hostName}/warpsub/${userID}?app=clash#BPB-WARP', 'Warp Subscription')" style="margin-bottom: 8px;">
+                                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
+                            </button>
+                            <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID}?app=clash#BPB-WARP', false)">
+                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
+                            </button>
+                        </td>
+                    </tr>
 				</table>
 			</div>
             <h2>WARP PRO SUB 🔗</h2>
@@ -3598,8 +3668,29 @@ function buildClashTrojanOutbound (remark, address, port, password, host, path) 
     };
 }
 
-async function getClashConfig (env, hostName) {
+function buildClashWarpOutbound (remark, ipv6, privateKey, publicKey, endpoint, port, reserved, chain) {
+    return {
+        "name": remark,
+        "type": "wireguard",
+        "ip": "172.16.0.2/32",
+        "ipv6": `${ipv6}/128`,
+        "private-key": privateKey,
+        "server": endpoint,
+        "port": port,
+        "public-key": publicKey,
+        "allowed-ips": ["0.0.0.0/0", "::/0"],
+        "reserved": reserved,
+        "udp": true,
+        "mtu": 1280,
+        "dialer-proxy": chain,
+        "remote-dns-resolve": true,
+        "dns": [ "1.1.1.1", "1.0.0.1" ]
+    };
+}
+
+async function getClashConfig (env, hostName, warpType) {
     let proxySettings = {};
+    let warpConfigs = [];
     let resolvedNameserver = [];
     let remark, path;
     let hosts = {};
@@ -3610,6 +3701,7 @@ async function getClashConfig (env, hostName) {
 
     try {
         proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
+        warpConfigs = await env.bpb.get('warpConfigs', {type: 'json'});
     } catch (error) {
         console.log(error);
         throw new Error(`An error occurred while getting sing-box configs - ${error}`);
@@ -3639,7 +3731,20 @@ async function getClashConfig (env, hostName) {
         ...(cleanIPs ? cleanIPs.split(",") : [])
     ];
 
-    for (let i = 0; i < 2; i++) {
+    if (warpType) {
+        const { clash: clashWarpOutbounds } = await buildWarpOutbounds(env, 'clash', proxySettings, warpConfigs);
+        const { clash: clashWOWpOutbounds } = await buildWoWOutbounds(env, 'clash', proxySettings, warpConfigs);
+        outbounds.push(...clashWarpOutbounds, ...clashWOWpOutbounds);
+        clashWarpOutbounds.forEach(outbound => {
+            outboundsRemarks.push(outbound["name"]);
+        });
+
+        clashWOWpOutbounds.forEach(outbound => {
+            outbound["name"].includes('WoW') && outboundsRemarks.push(outbound["name"]);
+        });
+    }
+
+    for (let i = 0; i < 2 && !warpType; i++) {
         ports.forEach(port => {
             Addresses.forEach((addr, index) => {
     
