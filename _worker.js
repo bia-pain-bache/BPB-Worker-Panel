@@ -1154,18 +1154,18 @@ function generateRemark(index, port, protocol, fragType) {
     switch (index) {
         case 0:
         case 1:
-            remark = `💦 BPB ${protocol}${type} - Domain ${index + 1} : ${port}`;
+            remark = `💦 ${protocol}${type} - Domain ${index + 1} : ${port}`;
             break;
         case 2:
         case 3:
-            remark = `💦 BPB ${protocol}${type} - IPv4 ${index - 1} : ${port}`;
+            remark = `💦 ${protocol}${type} - IPv4 ${index - 1} : ${port}`;
             break;
         case 4:
         case 5:
-            remark = `💦 BPB ${protocol}${type} - IPv6 ${index - 3} : ${port}`;
+            remark = `💦 ${protocol}${type} - IPv6 ${index - 3} : ${port}`;
             break;
         default:
-            remark = `💦 BPB ${protocol}${type} - Clean IP ${index - 5} : ${port}`;
+            remark = `💦 ${protocol}${type} - Clean IP ${index - 5} : ${port}`;
             break;
     }
 
@@ -3754,7 +3754,7 @@ async function getClashConfig (env, hostName, isWarp) {
     blockPorn && rules.push('GEOSITE,CATEGORY-PORN,REJECT');
     bypassLAN && rules.push('GEOIP,LAN,DIRECT');
 
-    return {
+    let config = {
         "mixed-port": 7890,
         "allow-lan": true,
         "mode": "rule",
@@ -3800,7 +3800,7 @@ async function getClashConfig (env, hostName, isWarp) {
                 "type": "select",
                 "proxies": isWarp
                     ? ['💦 Warp Best Ping 🚀', '💦 WoW Best Ping 🚀', ...warpOutboundsRemarks, ...wowOutboundRemarks ]
-                    : ['💦 Best-Ping 💥', ...outboundsRemarks ]
+                    : ['💦 Best Ping 💥', ...outboundsRemarks ]
             },
             {
                 "name": isWarp ? `💦 Warp Best Ping 🚀`: `💦 Best Ping 💥`,
@@ -3809,20 +3809,21 @@ async function getClashConfig (env, hostName, isWarp) {
                 "interval": 30,
                 "tolerance": 50,
                 "proxies": isWarp ? warpOutboundsRemarks : outboundsRemarks
-            },
-            {
-                ...(isWarp && {
-                    "name": "💦 WoW Best Ping 🚀",
-                    "type": "url-test",
-                    "url": "https://www.gstatic.com/generate_204",
-                    "interval": 30,
-                    "tolerance": 50,
-                    "proxies": wowOutboundRemarks
-                })
             }
         ],
         "rules": [...rules, 'MATCH,✅ Selector']
     };
+
+    isWarp && config["proxy-groups"].push({
+        "name": "💦 WoW Best Ping 🚀",
+        "type": "url-test",
+        "url": "https://www.gstatic.com/generate_204",
+        "interval": 30,
+        "tolerance": 50,
+        "proxies": wowOutboundRemarks
+    });
+
+    return config;
 }
 
 function buildSingboxVLESSOutbound (remark, address, port, uuid, host, path) {
@@ -3997,10 +3998,17 @@ function buildSingboxRoutingRules (blockAds, bypassIran, bypassChina, blockPorn,
         });
     }
 
+    bypassChina && rules.push({
+        geosite: "cn",
+        geoip: "cn",
+        outbound: "direct"
+    });
+    
     bypassLAN && rules.push({
         ip_is_private: true,
         outbound: "direct"
     });
+
 
     let blockRuleSet = {
         rule_set: [
@@ -4143,8 +4151,8 @@ async function getSingboxConfig (env, hostName, client, warpType) {
     const {rules, rule_set} = buildSingboxRoutingRules (blockAds, bypassIran, bypassChina, blockPorn, blockUDP443, bypassLAN);
     config.route.rules = rules;
     config.route.rule_set = rule_set;
-    blockAds && config.dns.rules[1].rule_set.push("geosite-category-ads-all");
-    blockPorn && config.dns.rules[1].rule_set.push("geosite-nsfw");
+    blockAds && config.dns.rules[2].rule_set.push("geosite-category-ads-all");
+    blockPorn && config.dns.rules[2].rule_set.push("geosite-nsfw");
 
     return config;
 }
@@ -5167,6 +5175,12 @@ const singboxConfigTemp = {
                 server: "dns-direct"
             },
             {
+                outbound: [
+                  "any"
+                ],
+                server: "dns-direct"
+            },
+            {
                 disable_cache: true,
                 rule_set: [
                     "geosite-malware",
@@ -5213,11 +5227,11 @@ const singboxConfigTemp = {
         {
             type: "selector",
             tag: "proxy",
-            outbounds: ["💦 Best-Ping 💥"]
+            outbounds: ["💦 Best Ping 💥"]
         },
         {
             type: "urltest",
-            tag: "💦 Best-Ping 💥",
+            tag: "💦 Best Ping 💥",
             outbounds: [],
             url: "https://www.gstatic.com/generate_204",
             interval: "30s",
