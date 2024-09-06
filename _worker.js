@@ -3925,6 +3925,134 @@ function buildSingboxWarpOutbound (remark, ipv6, privateKey, publicKey, endpoint
     };
 }
 
+function buildSingboxRoutingRules (blockAds, bypassIran, bypassChina, blockPorn, blockUDP443, bypassLAN) {
+    let rules = [
+        {
+            port: 53,
+            outbound: "dns-out"
+        },
+        {
+            inbound: "dns-in",
+            outbound: "dns-out"
+        }
+    ];
+
+    let ruleSet = [
+        {
+            type: "remote",
+            tag: "geosite-malware",
+            format: "binary",
+            url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-malware.srs",
+            download_detour: "direct"
+        },
+        {
+            type: "remote",
+            tag: "geosite-phishing",
+            format: "binary",
+            url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-phishing.srs",
+            download_detour: "direct"
+        },
+        {
+            type: "remote",
+            tag: "geosite-cryptominers",
+            format: "binary",
+            url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-cryptominers.srs",
+            download_detour: "direct"
+        },
+        {
+            type: "remote",
+            tag: "geoip-malware",
+            format: "binary",
+            url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-malware.srs",
+            download_detour: "direct"
+        },
+        {
+            type: "remote",
+            tag: "geoip-phishing",
+            format: "binary",
+            url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-phishing.srs",
+            download_detour: "direct"
+        }
+    ];
+
+    if (bypassIran) {
+        rules.push({
+            rule_set: ["geosite-ir", "geoip-ir"],
+            outbound: "direct"
+        });
+
+        ruleSet.push({
+            type: "remote",
+            tag: "geosite-ir",
+            format: "binary",
+            url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-ir.srs",
+            download_detour: "direct"
+        },
+        {
+            type: "remote",
+            tag: "geoip-ir",
+            format: "binary",
+            url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-ir.srs",
+            download_detour: "direct"
+        });
+    }
+
+    bypassLAN && rules.push({
+        ip_is_private: true,
+        outbound: "direct"
+    });
+
+    let blockRuleSet = {
+        rule_set: [
+            "geosite-malware",
+            "geosite-phishing",
+            "geosite-cryptominers",
+            "geoip-malware",
+            "geoip-phishing"
+        ],
+        outbound: "block"
+    };
+    
+    if (blockAds) { 
+        blockRuleSet.rule_set.push("geosite-category-ads-all");
+        ruleSet.push({
+            type: "remote",
+            tag: "geosite-category-ads-all",
+            format: "binary",
+            url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-category-ads-all.srs",
+            download_detour: "direct"
+        });
+    }
+
+    if (blockPorn) { 
+        blockRuleSet.rule_set.push("geosite-nsfw");
+        ruleSet.push({
+            type: "remote",
+            tag: "geosite-nsfw",
+            format: "binary",
+            url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-nsfw.srs",
+            download_detour: "direct"
+        });
+    }
+
+    rules.push(blockRuleSet);
+
+    blockUDP443 && rules.push({
+        network: "udp",
+        port: 443,
+        protocol: "quic",
+        outbound: "block"
+    });
+
+    rules.push({
+        ip_cidr: ["224.0.0.0/3", "ff00::/8"],
+        source_ip_cidr: ["224.0.0.0/3", "ff00::/8"],
+        outbound: "block"
+    });
+
+    return {rules: rules, rule_set: ruleSet};
+}
+
 async function getSingboxConfig (env, hostName, client, warpType) {
     let warpConfigs = [];
     let proxySettings = {};
@@ -3939,7 +4067,7 @@ async function getSingboxConfig (env, hostName, client, warpType) {
         throw new Error(`An error occurred while getting sing-box configs - ${error}`);
     }
 
-    const { remoteDNS,  localDNS, cleanIPs, proxyIP, ports, vlessConfigs, trojanConfigs } = proxySettings
+    const { remoteDNS,  localDNS, cleanIPs, proxyIP, ports, vlessConfigs, trojanConfigs, blockAds, bypassIran, bypassChina, blockPorn, blockUDP443, bypassLAN } = proxySettings
     let config = structuredClone(singboxConfigTemp);
     let outbound;
     let remark;
@@ -3974,6 +4102,7 @@ async function getSingboxConfig (env, hostName, client, warpType) {
         warpOutbounds.forEach(outbound => {
             config.outbounds[0].outbounds.push(outbound.tag);
             config.outbounds[1].outbounds.push(outbound.tag);
+            if (domainRegex.test(outbound.server)) outboundDomains.push(outbound.server);
         });
 
         WOWOutbounds.forEach(outbound => {
@@ -3981,6 +4110,7 @@ async function getSingboxConfig (env, hostName, client, warpType) {
                 config.outbounds[0].outbounds.push(outbound.tag);
                 config.outbounds[2].outbounds.push(outbound.tag);
             }
+            if (domainRegex.test(outbound.server)) outboundDomains.push(outbound.server);
         });
     }
 
@@ -4010,6 +4140,11 @@ async function getSingboxConfig (env, hostName, client, warpType) {
     }
 
     config.dns.rules[0].domain = [...config.dns.rules[0].domain, ...new Set(outboundDomains)];
+    const {rules, rule_set} = buildSingboxRoutingRules (blockAds, bypassIran, bypassChina, blockPorn, blockUDP443, bypassLAN);
+    config.route.rules = rules;
+    config.route.rule_set = rule_set;
+    blockAds && config.dns.rules[1].rule_set.push("geosite-category-ads-all");
+    blockPorn && config.dns.rules[1].rule_set.push("geosite-nsfw");
 
     return config;
 }
@@ -5034,7 +5169,6 @@ const singboxConfigTemp = {
             {
                 disable_cache: true,
                 rule_set: [
-                    "geosite-category-ads-all",
                     "geosite-malware",
                     "geosite-phishing",
                     "geosite-cryptominers"
@@ -5103,104 +5237,8 @@ const singboxConfigTemp = {
         }
     ],
     route: {
-        rules: [
-            {
-                port: 53,
-                outbound: "dns-out"
-            },
-            {
-                inbound: "dns-in",
-                outbound: "dns-out"
-            },
-            {
-                network: "udp",
-                port: 443,
-                protocol: "quic",
-                outbound: "block"
-            },
-            {
-                ip_is_private: true,
-                outbound: "direct"
-            },
-            {
-                rule_set: [
-                    "geosite-category-ads-all",
-                    "geosite-malware",
-                    "geosite-phishing",
-                    "geosite-cryptominers",
-                    "geoip-malware",
-                    "geoip-phishing"
-                ],
-                outbound: "block"
-            },
-            {
-                rule_set: ["geosite-ir", "geoip-ir"],
-                outbound: "direct"
-            },
-            {
-                ip_cidr: ["224.0.0.0/3", "ff00::/8"],
-                source_ip_cidr: ["224.0.0.0/3", "ff00::/8"],
-                outbound: "block"
-            }
-        ],
-        rule_set: [
-            {
-                type: "remote",
-                tag: "geosite-ir",
-                format: "binary",
-                url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-ir.srs",
-                download_detour: "direct"
-            },
-            {
-                type: "remote",
-                tag: "geosite-category-ads-all",
-                format: "binary",
-                url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-category-ads-all.srs",
-                download_detour: "direct"
-            },
-            {
-                type: "remote",
-                tag: "geosite-malware",
-                format: "binary",
-                url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-malware.srs",
-                download_detour: "direct"
-            },
-            {
-                type: "remote",
-                tag: "geosite-phishing",
-                format: "binary",
-                url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-phishing.srs",
-                download_detour: "direct"
-            },
-            {
-                type: "remote",
-                tag: "geosite-cryptominers",
-                format: "binary",
-                url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-cryptominers.srs",
-                download_detour: "direct"
-            },
-            {
-                type: "remote",
-                tag: "geoip-ir",
-                format: "binary",
-                url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-ir.srs",
-                download_detour: "direct"
-            },
-            {
-                type: "remote",
-                tag: "geoip-malware",
-                format: "binary",
-                url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-malware.srs",
-                download_detour: "direct"
-            },
-            {
-                type: "remote",
-                tag: "geoip-phishing",
-                format: "binary",
-                url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-phishing.srs",
-                download_detour: "direct"
-            }
-        ],
+        rules: [],
+        rule_set: [],
         auto_detect_interface: true,
         override_android_vpn: true,
         final: "proxy"
@@ -5218,29 +5256,4 @@ const singboxConfigTemp = {
             default_mode: "rule"
         }
     }
-};
-
-const xrayWgOutboundTemp = {
-    protocol: "wireguard",
-    settings: {
-        address: [],
-        mtu: 1280,
-        peers: [
-            {
-                endpoint: "",
-                publicKey: "",
-                keepAlive: 5
-            }
-        ],
-        reserved: [],
-        secretKey: ""
-    },
-    streamSettings: {
-        sockopt: {
-            dialerProxy: "",
-            tcpKeepAliveIdle: 100,
-            tcpNoDelay: true,
-        }
-    },
-    tag: "proxy"
 };
