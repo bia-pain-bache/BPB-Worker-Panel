@@ -1460,7 +1460,6 @@ async function renderHomePage (env, hostName, fragConfigs) {
     let proxySettings = {};
     let warpConfigs = [];
     let password = '';
-    let activeProtocols = 0;
     
     try {
         proxySettings = await env.bpb.get('proxySettings', {type: 'json'});
@@ -1507,8 +1506,8 @@ async function renderHomePage (env, hostName, fragConfigs) {
     const isWarpReady = warpConfigs ? true : false;
     const isPassSet = password ? password.length >= 8 : false;
     const isWarpPlus = warpPlusLicense ? true : false;
-    vlessConfigs && activeProtocols++;
-    trojanConfigs && activeProtocols++;
+    let activeProtocols = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
+
     const genCustomConfRow = async (configs) => {
         let tableBlock = "";
         configs.forEach(config => {
@@ -3406,7 +3405,6 @@ async function getFragmentConfigs(env, hostName, client) {
     let proxySettings = {};
     let proxyOutbound;
     let proxyIndex = 1;
-    let outbound;
     const bestFragValues = ['10-20', '20-30', '30-40', '40-50', '50-60', '60-70', 
                             '70-80', '80-90', '90-100', '10-30', '20-40', '30-50', 
                             '40-60', '50-70', '60-80', '70-90', '80-100', '100-200']
@@ -3464,29 +3462,33 @@ async function getFragmentConfigs(env, hostName, client) {
         }
     }
 
-    for (let i = 0; i < 2; i++) {
+    let protocolNo = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
+    let config = structuredClone(xrayConfigTemp);
+	config.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, bypassChina, blockPorn, false);
+	config.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
+	config.outbounds[0].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
+	config.outbounds[0].settings.fragment.packets = fragmentPackets;
+
+    for (let i = 0; i < protocolNo; i++) {
         for (let portIndex in ports.filter(port => defaultHttpsPorts.includes(port))) {
             let port = +ports[portIndex];
             for (let index in Addresses) {
-                let fragConfig = structuredClone(xrayConfigTemp);
+                let fragConfig = structuredClone(config);
+                let outbound;
                 let addr = Addresses[index];
                 let remark;
 
-                if (i === 0 && vlessConfigs) {
+                if (vlessConfigs && i === 0) {
                     remark = generateRemark(+index, port, 'VLESS', true);
                     outbound = buildXrayVLESSOutbound('proxy', addr, port, userID, hostName, proxyIP);
                 }
                 
-                if (i === 1 && trojanConfigs) {
+                if (trojanConfigs && !outbound) {
                     remark = generateRemark(+index, port, 'Trojan', true);
                     outbound = buildXrayTrojanOutbound('proxy', addr, port, trojanPwd, hostName, proxyIP);
                 }
                 
                 fragConfig.remarks = remark;
-                fragConfig.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, bypassChina, blockPorn, false);
-                fragConfig.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
-                fragConfig.outbounds[0].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
-                fragConfig.outbounds[0].settings.fragment.packets = fragmentPackets;
                 
                 if (proxyOutbound) {
                     fragConfig.outbounds = [{...proxyOutbound}, { ...outbound}, ...fragConfig.outbounds];
@@ -3570,7 +3572,6 @@ async function getFragmentConfigs(env, hostName, client) {
     });
 
     let bestFragmentOutbounds = structuredClone([{...outbounds[0]}, {...outbounds[1]}]);  
-    bestFragmentOutbounds[0].settings.vnext[0].port = 443;
     
     if (proxyOutbound) {
         bestFragmentOutbounds[0].streamSettings.sockopt.dialerProxy = 'proxy';
@@ -3808,22 +3809,25 @@ async function getClashConfig (env, hostName, isWarp) {
         });
     }
 
-    for (let i = 0; i < 2 && !isWarp; i++) {
+    let protocolsNo = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
+
+    for (let i = 0; i < protocolsNo && !isWarp; i++) {
         ports.forEach(port => {
             Addresses.forEach((addr, index) => {
+                let VLESSOutbound, TrojanOutbound;
     
-                if (i === 0 && vlessConfigs) {
+                if (vlessConfigs && i === 0) {
                     remark = generateRemark(index, port, 'VLESS', false).replace(' : ', ' - ');
                     path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
-                    const VLESSOutbound = buildClashVLESSOutbound(remark, addr, port, userID, hostName, path);
+                    VLESSOutbound = buildClashVLESSOutbound(remark, addr, port, userID, hostName, path);
                     outbounds.push(VLESSOutbound);
                     outboundsRemarks.push(remark);
                 }
                 
-                if (i === 1 && trojanConfigs && defaultHttpsPorts.includes(port)) {
+                if (trojanConfigs && !VLESSOutbound && defaultHttpsPorts.includes(port)) {
                     remark = generateRemark(index, port, 'Trojan', false).replace(' : ', ' - ');
                     path = `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
-                    const TrojanOutbound = buildClashTrojanOutbound(remark, addr, port, trojanPwd, hostName, path);
+                    TrojanOutbound = buildClashTrojanOutbound(remark, addr, port, trojanPwd, hostName, path);
                     outbounds.push(TrojanOutbound);
                     outboundsRemarks.push(remark);
                 }
@@ -4208,21 +4212,24 @@ async function getSingboxConfig (env, hostName, client, warpType) {
         });
     }
 
-    for (let i = 0; i < 2 && !warpType; i++) {
+    let protocolsNo = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
+
+    for (let i = 0; i < protocolsNo && !warpType; i++) {
         ports.forEach(port => {
             Addresses.forEach((addr, index) => {
+                let VLESSOutbound, TrojanOutbound;
 
-                if (i === 0 && vlessConfigs) {
+                if (vlessConfigs && i === 0) {
                     remark = generateRemark(index, port, 'VLESS', false);
                     path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
-                    const VLESSOutbound = buildSingboxVLESSOutbound(remark, addr, port, userID, hostName, path);
+                    VLESSOutbound = buildSingboxVLESSOutbound(remark, addr, port, userID, hostName, path);
                     config.outbounds.push(VLESSOutbound);
                 }
                 
-                if (i === 1 && trojanConfigs) {
+                if (trojanConfigs && !VLESSOutbound) {
                     remark = generateRemark(index, port, 'Trojan', false);
                     path = `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
-                    const TrojanOutbound = buildSingboxTrojanOutbound(remark, addr, port, trojanPwd, hostName, path);
+                    TrojanOutbound = buildSingboxTrojanOutbound(remark, addr, port, trojanPwd, hostName, path);
                     config.outbounds.push(TrojanOutbound);
                 }
 
