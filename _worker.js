@@ -1139,159 +1139,6 @@ async function extractVlessParams(vlessConfig) {
     return JSON.stringify(configParams);
 }
 
-async function buildDNSObject (remoteDNS, localDNS, blockAds, bypassIran, bypassChina, blockPorn, isWorkerLess) {
-
-    const dohPattern = /^(?:[a-zA-Z]+:\/\/)?([^:\/\s?]+)/;
-    const domainPattern = /^(?!\-)(?:[A-Za-z0-9\-]{1,63}\.?)+[A-Za-z]{2,}$/;
-
-    const dohHost = remoteDNS.match(dohPattern)[1];
-    const isDomain = domainPattern.test(dohHost);
-    
-    let dnsObject = {
-        hosts: {
-            "domain:googleapis.cn": ["googleapis.com"]
-        },
-        servers: [
-            remoteDNS,
-            "1.0.0.1",
-            {
-                address: localDNS,
-                domains: [],
-                port: 53,
-            },
-        ],
-        tag: "dns",
-    };
-
-    if (dohHost && isDomain && !isWorkerLess) {
-        const resolvedDOH = await resolveDNS(dohHost);
-        dnsObject.hosts[dohHost] = [
-            ...resolvedDOH.ipv4, 
-            ...resolvedDOH.ipv6 
-        ];        
-    }
-
-    if (isWorkerLess) {
-        const resolvedDOH = await resolveDNS(dohHost);
-        const resolvedCloudflare = await resolveDNS('cloudflare.com');
-        const resolvedCLDomain = await resolveDNS('www.speedtest.net.cdn.cloudflare.net');
-        const resolvedCFNS_1 = await resolveDNS('ben.ns.cloudflare.com');
-        const resolvedCFNS_2 = await resolveDNS('lara.ns.cloudflare.com');
-        dnsObject.hosts['cloudflare-dns.com'] = [
-            ...resolvedDOH.ipv4, 
-            ...resolvedCloudflare.ipv4, 
-            ...resolvedCLDomain.ipv4,
-            ...resolvedCFNS_1.ipv4,
-            ...resolvedCFNS_2.ipv4
-        ];
-    }
-
-    if (blockAds) {
-        dnsObject.hosts["geosite:category-ads-all"] = ["127.0.0.1"];
-        dnsObject.hosts["geosite:category-ads-ir"] = ["127.0.0.1"];
-    }
-
-    if (blockPorn) {
-        dnsObject.hosts["geosite:category-porn"] = ["127.0.0.1"];
-    }
-
-    if (!(bypassIran || bypassChina) || localDNS === 'localhost' || isWorkerLess) {
-        dnsObject.servers.pop();
-    } else {
-        bypassIran && dnsObject.servers[2].domains.push("geosite:category-ir"); 
-        bypassChina && dnsObject.servers[2].domains.push("geosite:cn");         
-    }
-
-    return dnsObject;
-}
-
-function buildRoutingRules (localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, isChain, isBalancer, isWorkerLess) {
-    let rules = [
-        {
-            inboundTag: ["dns-in"],
-            outboundTag: "dns-out",
-            type: "field"
-        },
-        {
-          ip: [localDNS],
-          outboundTag: "direct",
-          port: "53",
-          type: "field",
-        }
-    ];
-
-    if (localDNS === 'localhost' || isWorkerLess) {
-        rules.pop();
-    }
-
-    if (bypassIran || bypassLAN || bypassChina) {
-        let ipRule = {
-            ip: [],
-            outboundTag: "direct",
-            type: "field",
-        };
-
-        let domainRule = {
-            domain: [],
-            outboundTag: "direct",
-            type: "field",
-        };
-        
-        bypassLAN && ipRule.ip.push("geoip:private");
-
-        if ((bypassIran || bypassChina) && !isWorkerLess) {
-            bypassIran && domainRule.domain.push("geosite:category-ir");
-            bypassIran && ipRule.ip.push("geoip:ir");
-            bypassChina && domainRule.domain.push("geosite:cn");
-            bypassChina && ipRule.ip.push("geoip:cn");
-            rules.push(domainRule);
-        }
-
-        rules.push(ipRule);
-    }
-
-    if (blockAds || blockPorn) {
-        let rule = {
-            domain: [],
-            outboundTag: "block",
-            type: "field",
-        };
-
-        blockAds && rule.domain.push("geosite:category-ads-all", "geosite:category-ads-ir");
-        blockPorn && rule.domain.push("geosite:category-porn");
-        rules.push(rule);
-    }
-
-    blockUDP443 && rules.push({
-        network: "udp",
-        port: "443",
-        outboundTag: "block",
-        type: "field",
-    }) 
-   
-    if (isBalancer) {
-        rules.push({
-            balancerTag: "all",
-            type: "field",
-            ip: [
-                "0.0.0.0/0",
-                "::/0"
-            ]
-        });
-    } else  {
-        rules.push({
-            outboundTag: isChain ? "out" : isWorkerLess ? "fragment" : "proxy",
-            type: "field",
-            ip: [
-                "0.0.0.0/0",
-                "::/0"
-            ]
-        });
-    }
-
-    return rules;
-}
-
 function base64ToDecimal (base64) {
     const binaryString = atob(base64);
     const hexString = Array.from(binaryString).map(char => char.charCodeAt(0).toString(16).padStart(2, '0')).join('');
@@ -1316,8 +1163,8 @@ async function updateDataset (env, Settings) {
         localDNS: Settings ? Settings.get('localDNS') : currentProxySettings?.localDNS || '8.8.8.8',
         lengthMin: Settings ? Settings.get('fragmentLengthMin') : currentProxySettings?.lengthMin || '100',
         lengthMax: Settings ? Settings.get('fragmentLengthMax') : currentProxySettings?.lengthMax || '200',
-        intervalMin: Settings ? Settings.get('fragmentIntervalMin') : currentProxySettings?.intervalMin || '5',
-        intervalMax: Settings ? Settings.get('fragmentIntervalMax') : currentProxySettings?.intervalMax || '10',
+        intervalMin: Settings ? Settings.get('fragmentIntervalMin') : currentProxySettings?.intervalMin || '1',
+        intervalMax: Settings ? Settings.get('fragmentIntervalMax') : currentProxySettings?.intervalMax || '1',
         fragmentPackets: Settings ? Settings.get('fragmentPackets') : currentProxySettings?.fragmentPackets || 'tlshello',
         blockAds: Settings ? Settings.get('block-ads') : currentProxySettings?.blockAds || false,
         bypassIran: Settings ? Settings.get('bypass-iran') : currentProxySettings?.bypassIran || false,
@@ -3077,6 +2924,158 @@ async function buildWoWOutbounds (env, client, proxySettings, warpConfigs) {
     return wowOutbounds;
 }
 
+async function buildXrayDNSObject (remoteDNS, localDNS, blockAds, bypassIran, bypassChina, blockPorn, isWorkerLess) {
+
+    const dohPattern = /^(?:[a-zA-Z]+:\/\/)?([^:\/\s?]+)/;
+    const domainPattern = /^(?!\-)(?:[A-Za-z0-9\-]{1,63}\.?)+[A-Za-z]{2,}$/;
+
+    const dohHost = remoteDNS.match(dohPattern)[1];
+    const isDomain = domainPattern.test(dohHost);
+    
+    let dnsObject = {
+        hosts: {
+            "domain:googleapis.cn": ["googleapis.com"]
+        },
+        servers: [
+            remoteDNS,
+            {
+                address: localDNS,
+                domains: [],
+                port: 53,
+            },
+        ],
+        tag: "dns",
+    };
+
+    if (dohHost && isDomain && !isWorkerLess) {
+        const resolvedDOH = await resolveDNS(dohHost);
+        dnsObject.hosts[dohHost] = [
+            ...resolvedDOH.ipv4, 
+            ...resolvedDOH.ipv6 
+        ];        
+    }
+
+    if (isWorkerLess) {
+        const resolvedDOH = await resolveDNS(dohHost);
+        const resolvedCloudflare = await resolveDNS('cloudflare.com');
+        const resolvedCLDomain = await resolveDNS('www.speedtest.net.cdn.cloudflare.net');
+        const resolvedCFNS_1 = await resolveDNS('ben.ns.cloudflare.com');
+        const resolvedCFNS_2 = await resolveDNS('lara.ns.cloudflare.com');
+        dnsObject.hosts['cloudflare-dns.com'] = [
+            ...resolvedDOH.ipv4, 
+            ...resolvedCloudflare.ipv4, 
+            ...resolvedCLDomain.ipv4,
+            ...resolvedCFNS_1.ipv4,
+            ...resolvedCFNS_2.ipv4
+        ];
+    }
+
+    if (blockAds) {
+        dnsObject.hosts["geosite:category-ads-all"] = ["127.0.0.1"];
+        dnsObject.hosts["geosite:category-ads-ir"] = ["127.0.0.1"];
+    }
+
+    if (blockPorn) {
+        dnsObject.hosts["geosite:category-porn"] = ["127.0.0.1"];
+    }
+
+    if (!(bypassIran || bypassChina) || localDNS === 'localhost' || isWorkerLess) {
+        dnsObject.servers.pop();
+    } else {
+        bypassIran && dnsObject.servers[2].domains.push("geosite:category-ir"); 
+        bypassChina && dnsObject.servers[2].domains.push("geosite:cn");         
+    }
+
+    return dnsObject;
+}
+
+function buildXrayRoutingRules (localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, isChain, isBalancer, isWorkerLess) {
+    let rules = [
+        {
+            inboundTag: ["dns-in"],
+            outboundTag: "dns-out",
+            type: "field"
+        },
+        {
+          ip: [localDNS],
+          outboundTag: "direct",
+          port: "53",
+          type: "field",
+        }
+    ];
+
+    if (localDNS === 'localhost' || isWorkerLess) {
+        rules.pop();
+    }
+
+    if (bypassIran || bypassLAN || bypassChina) {
+        let ipRule = {
+            ip: [],
+            outboundTag: "direct",
+            type: "field",
+        };
+
+        let domainRule = {
+            domain: [],
+            outboundTag: "direct",
+            type: "field",
+        };
+        
+        bypassLAN && ipRule.ip.push("geoip:private");
+
+        if ((bypassIran || bypassChina) && !isWorkerLess) {
+            bypassIran && domainRule.domain.push("geosite:category-ir");
+            bypassIran && ipRule.ip.push("geoip:ir");
+            bypassChina && domainRule.domain.push("geosite:cn");
+            bypassChina && ipRule.ip.push("geoip:cn");
+            rules.push(domainRule);
+        }
+
+        rules.push(ipRule);
+    }
+
+    if (blockAds || blockPorn) {
+        let rule = {
+            domain: [],
+            outboundTag: "block",
+            type: "field",
+        };
+
+        blockAds && rule.domain.push("geosite:category-ads-all", "geosite:category-ads-ir");
+        blockPorn && rule.domain.push("geosite:category-porn");
+        rules.push(rule);
+    }
+
+    blockUDP443 && rules.push({
+        network: "udp",
+        port: "443",
+        outboundTag: "block",
+        type: "field",
+    }) 
+   
+    if (isBalancer) {
+        rules.push({
+            balancerTag: "all",
+            type: "field",
+            ip: [
+                "0.0.0.0/0",
+                "::/0"
+            ]
+        });
+    } else  {
+        rules.push({
+            outboundTag: isChain ? "out" : isWorkerLess ? "fragment" : "proxy",
+            type: "field",
+            ip: [
+                "0.0.0.0/0",
+                "::/0"
+            ]
+        });
+    }
+
+    return rules;
+}
+
 function buildXrayVLESSOutbound (tag, address, port, uuid, host, proxyIP) {
     return {
         protocol: "vless",
@@ -3327,7 +3326,7 @@ async function buildWorkerLessConfig(env, client) {
 
     let fragConfig = structuredClone(xrayConfigTemp);
     fragConfig.remarks  = '💦 BPB Frag - WorkerLess ⭐'
-    fragConfig.dns = await buildDNSObject('https://cloudflare-dns.com/dns-query', localDNS, blockAds, bypassIran, bypassChina, blockPorn, true);
+    fragConfig.dns = await buildXrayDNSObject('https://cloudflare-dns.com/dns-query', localDNS, blockAds, bypassIran, bypassChina, blockPorn, true);
     fragConfig.outbounds[0].settings.domainStrategy = 'UseIP';
     fragConfig.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
     fragConfig.outbounds[0].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
@@ -3338,7 +3337,7 @@ async function buildWorkerLessConfig(env, client) {
         {...fragConfig.outbounds[2]}, 
         {...fragConfig.outbounds[3]}
     ];
-    fragConfig.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, false, true);
+    fragConfig.routing.rules = buildXrayRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, false, true);
     delete fragConfig.routing.balancers;
     delete fragConfig.observatory;
 
@@ -3464,7 +3463,7 @@ async function getFragmentConfigs(env, hostName, client) {
 
     let protocolNo = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
     let config = structuredClone(xrayConfigTemp);
-	config.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, bypassChina, blockPorn, false);
+	config.dns = await buildXrayDNSObject(remoteDNS, localDNS, blockAds, bypassIran, bypassChina, blockPorn, false);
 	config.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
 	config.outbounds[0].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
 	config.outbounds[0].settings.fragment.packets = fragmentPackets;
@@ -3492,10 +3491,10 @@ async function getFragmentConfigs(env, hostName, client) {
                 
                 if (proxyOutbound) {
                     fragConfig.outbounds = [{...proxyOutbound}, { ...outbound}, ...fragConfig.outbounds];
-                    fragConfig.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, true, false);
+                    fragConfig.routing.rules = buildXrayRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, true, false);
                 } else {
                     fragConfig.outbounds = [{ ...outbound}, ...fragConfig.outbounds];
-                    fragConfig.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, false);
+                    fragConfig.routing.rules = buildXrayRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, false);
                 }
                 
                 delete fragConfig.observatory;
@@ -3530,7 +3529,7 @@ async function getFragmentConfigs(env, hostName, client) {
 
     let bestPing = structuredClone(xrayConfigTemp);
     bestPing.remarks = '💦 BPB Frag - Best Ping 💥';
-    bestPing.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, bypassChina, blockPorn, false);
+    bestPing.dns = await buildXrayDNSObject(remoteDNS, localDNS, blockAds, bypassIran, bypassChina, blockPorn, false);
     bestPing.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
     bestPing.outbounds[0].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
     bestPing.outbounds[0].settings.fragment.packets = fragmentPackets;
@@ -3539,9 +3538,9 @@ async function getFragmentConfigs(env, hostName, client) {
     if (proxyOutbound) {
         bestPing.observatory.subjectSelector = ["out"];
         bestPing.routing.balancers[0].selector = ["out"];
-        bestPing.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, true, true);
+        bestPing.routing.rules = buildXrayRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, true, true);
     } else {
-        bestPing.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, true);
+        bestPing.routing.rules = buildXrayRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, true);
     }
 
     if (client === 'nekoray') {
@@ -3552,7 +3551,7 @@ async function getFragmentConfigs(env, hostName, client) {
 
     let bestFragment = structuredClone(xrayConfigTemp);
     bestFragment.remarks = '💦 BPB Frag - Best Fragment 😎';
-    bestFragment.dns = await buildDNSObject(remoteDNS, localDNS, blockAds, bypassIran, bypassChina, blockPorn, false);
+    bestFragment.dns = await buildXrayDNSObject(remoteDNS, localDNS, blockAds, bypassIran, bypassChina, blockPorn, false);
     bestFragment.outbounds.splice(0,1);
     bestFragValues.forEach( (fragLength, index) => {
         bestFragment.outbounds.push({
@@ -3579,12 +3578,12 @@ async function getFragmentConfigs(env, hostName, client) {
         bestFragmentOutbounds[0].tag = 'out';
         bestFragmentOutbounds[1].tag = 'proxy';
         bestFragment.outbounds = [bestFragmentOutbounds[0], bestFragmentOutbounds[1], ...bestFragment.outbounds];
-        bestFragment.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, true, true);
+        bestFragment.routing.rules = buildXrayRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, true, true);
     } else {
         delete bestFragmentOutbounds[0].streamSettings.sockopt.dialerProxy;
         bestFragmentOutbounds[0].tag = 'proxy';
         bestFragment.outbounds = [bestFragmentOutbounds[0], ...bestFragment.outbounds];
-        bestFragment.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, true);
+        bestFragment.routing.rules = buildXrayRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, true);
     }
 
     bestFragment.observatory.subjectSelector = ["frag"];
@@ -3627,20 +3626,20 @@ async function getXrayWarpConfigs (env, client) {
     const xrayWarpOutbounds = await buildWarpOutbounds(env, client, proxySettings, warpConfigs);
     const xrayWoWOutbounds = await buildWoWOutbounds(env, client, proxySettings, warpConfigs); 
     
-    xrayWarpConfig.dns = await buildDNSObject('1.1.1.1', localDNS, blockAds, bypassIran, bypassChina, blockPorn, false);
-    xrayWarpConfig.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, false);
+    xrayWarpConfig.dns = await buildXrayDNSObject('1.1.1.1', localDNS, blockAds, bypassIran, bypassChina, blockPorn, false);
+    xrayWarpConfig.routing.rules = buildXrayRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, false);
     xrayWarpConfig.outbounds.splice(0,1);
     xrayWarpConfig.routing.rules[xrayWarpConfig.routing.rules.length - 1].outboundTag = 'warp';
     delete xrayWarpConfig.observatory;
     delete xrayWarpConfig.routing.balancers;
     xrayWarpBestPing.remarks = client === 'nikang' ? '💦 BPB - Warp Pro Best Ping 🚀' : '💦 BPB - Warp Best Ping 🚀';
-    xrayWarpBestPing.dns = await buildDNSObject('1.1.1.1', localDNS, blockAds, bypassIran, bypassChina, blockPorn, false);
-    xrayWarpBestPing.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, true);
+    xrayWarpBestPing.dns = await buildXrayDNSObject('1.1.1.1', localDNS, blockAds, bypassIran, bypassChina, blockPorn, false);
+    xrayWarpBestPing.routing.rules = buildXrayRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, true);
     xrayWarpBestPing.outbounds.splice(0,1);
     xrayWarpBestPing.routing.balancers[0].selector = ['warp'];
     xrayWarpBestPing.observatory.subjectSelector = ['warp'];
-    xrayWoWConfigTemp.dns = await buildDNSObject('1.1.1.1', localDNS, blockAds, bypassIran, bypassChina, blockPorn, false);
-    xrayWoWConfigTemp.routing.rules = buildRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, false);
+    xrayWoWConfigTemp.dns = await buildXrayDNSObject('1.1.1.1', localDNS, blockAds, bypassIran, bypassChina, blockPorn, false);
+    xrayWoWConfigTemp.routing.rules = buildXrayRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, false);
     xrayWoWConfigTemp.outbounds.splice(0,1);
     delete xrayWoWConfigTemp.observatory;
     delete xrayWoWConfigTemp.routing.balancers;
