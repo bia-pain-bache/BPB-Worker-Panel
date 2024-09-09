@@ -86,7 +86,7 @@ export default {
                             return new Response(JSON.stringify(BestPingSFA, null, 4), { 
                                 status: 200,
                                 headers: {
-                                    "Content-Type": "application/json;charset=utf-8",
+                                    "Content-Type": "text/plain;charset=utf-8",
                                 }
                             });                            
                         }
@@ -105,7 +105,7 @@ export default {
                         return new Response(normalConfigs, { 
                             status: 200,
                             headers: {
-                                "Content-Type": "application/json;charset=utf-8",
+                                "Content-Type": "text/plain;charset=utf-8",
                             }
                         });                        
 
@@ -117,7 +117,7 @@ export default {
                         return new Response(JSON.stringify(fragConfigs, null, 4), { 
                             status: 200,
                             headers: {
-                                "Content-Type": "application/json;charset=utf-8",
+                                "Content-Type": "text/plain;charset=utf-8",
                             }
                         });
 
@@ -147,7 +147,7 @@ export default {
                         return new Response(JSON.stringify(warpConfig, null, 4), { 
                             status: 200,
                             headers: {
-                                "Content-Type": "application/json;charset=utf-8",
+                                "Content-Type": "text/plain;charset=utf-8",
                             }
                         });
 
