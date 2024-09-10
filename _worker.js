@@ -801,6 +801,8 @@ const getNormalConfigs = async (env, hostName, client) => {
     let vlessWsTls = '';
     let cmDomainName = 'www.speedtest.net';
     let cuDomianName = 'www.speedtest.net';
+    let cmDomainIPv6 = 'www.speedtest.net';
+    let cuDomianIPv6 = 'www.speedtest.net';
 
 
     try {
@@ -812,12 +814,16 @@ const getNormalConfigs = async (env, hostName, client) => {
 
     cmDomainName = env.CM_DOMAIN_NAME || cmDomainName;
     cuDomianName = env.CU_DOMAIN_NAME || cuDomianName;
+    cmDomainIPv6 = env.CM_IPV6_DOMIAN_NAME || cmDomainIPv6;
+    cuDomianIPv6 = env.CU_IPV6_DOMIAN_NAME || cuDomianIPv6;
     const { cleanIPs, proxyIP, ports } = proxySettings;
     const resolved = await resolveDNS(hostName);
     const Addresses = [
         hostName,
         cmDomainName,
         cuDomianName,
+        cmDomainIPv6,
+        cuDomianIPv6,
         ...resolved.ipv4,
         ...resolved.ipv6.map((ip) => `[${ip}]`),
         ...(cleanIPs ? cleanIPs.split(',') : [])
@@ -856,13 +862,19 @@ const generateRemark = (index, port) => {
             break;
         case 2:
             remark = `BPB - BEST CU : ${port}`;
-            break
+            break;
         case 3:
+            remark = `BPB - BEST CM V6 : ${port}`;
+            break;
         case 4:
-            remark = `💦 BPB - IPv4_${index - 2} : ${port}`;
+            remark = `BPB - BEST CU V6 : ${port}`;
             break;
         case 5:
         case 6:
+            remark = `💦 BPB - IPv4_${index - 2} : ${port}`;
+            break;
+        case 7:
+        case 8:
             remark = `💦 BPB - IPv6_${index - 4} : ${port}`;
             break;
         default:
@@ -1033,9 +1045,13 @@ const getFragmentConfigs = async (env, hostName, client) => {
                             '40-60', '50-70', '60-80', '70-90', '80-100', '100-200']
     let cmDomainName = 'www.speedtest.net';
     let cuDomianName = 'www.speedtest.net';
+    let cmDomainIPv6 = 'www.speedtest.net';
+    let cuDomianIPv6 = 'www.speedtest.net';
     
     cmDomainName = env.CM_DOMAIN_NAME || cmDomainName;
     cuDomianName = env.CU_DOMAIN_NAME || cuDomianName;
+    cmDomainIPv6 = env.CM_IPV6_DOMIAN_NAME || cmDomainIPv6;
+    cuDomianIPv6 = env.CU_IPV6_DOMIAN_NAME || cuDomianIPv6;
 
     try {
         proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
@@ -1068,6 +1084,8 @@ const getFragmentConfigs = async (env, hostName, client) => {
         hostName,
         cmDomainName,
         cuDomianName,
+        cmDomainIPv6,
+        cuDomianIPv6,
         ...resolved.ipv4,
         ...resolved.ipv6.map((ip) => `[${ip}]`),
         ...(cleanIPs ? cleanIPs.split(",") : [])
@@ -1233,9 +1251,13 @@ const getSingboxConfig = async (env, hostName) => {
     const domainRegex = /^(?!:\/\/)([a-zA-Z0-9-]{1,63}\.)*[a-zA-Z0-9][a-zA-Z0-9-]{0,62}\.[a-zA-Z]{2,11}$/;
     let cmDomainName = 'www.speedtest.net';
     let cuDomianName = 'www.speedtest.net';
+    let cmDomainIPv6 = 'www.speedtest.net';
+    let cuDomianIPv6 = 'www.speedtest.net';
     
     cmDomainName = env.CM_DOMAIN_NAME || cmDomainName;
     cuDomianName = env.CU_DOMAIN_NAME || cuDomianName;
+    cmDomainIPv6 = env.CM_IPV6_DOMIAN_NAME || cmDomainIPv6;
+    cuDomianIPv6 = env.CU_IPV6_DOMIAN_NAME || cuDomianIPv6;
     
     try {
         proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
@@ -1253,6 +1275,8 @@ const getSingboxConfig = async (env, hostName) => {
         hostName,
         cmDomainName,
         cuDomianName,
+        cmDomainIPv6,
+        cuDomianIPv6,
         ...resolved.ipv4,
         ...resolved.ipv6.map((ip) => `[${ip}]`),
         ...(cleanIPs ? cleanIPs.split(",") : [])
