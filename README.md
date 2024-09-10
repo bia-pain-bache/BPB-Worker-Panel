@@ -3,7 +3,7 @@
 ### 🌏 Readme in [Farsi](README_fa.md)
 
 <p align="center">
-  <img src="docs/assets/images/Panel.jpg">
+  <img src="docs/assets/images/Panel0.jpg">
 </p>
 <br>
 
