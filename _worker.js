@@ -819,12 +819,12 @@ const getNormalConfigs = async (env, hostName, client) => {
     const { cleanIPs, proxyIP, ports } = proxySettings;
     const resolved = await resolveDNS(hostName);
     const Addresses = [
-        hostName,
+        //hostName,
         cmDomainName,
         cuDomianName,
         cmDomainIPv6,
         cuDomianIPv6,
-        ...resolved.ipv4,
+        //...resolved.ipv4,
         ...resolved.ipv6.map((ip) => `[${ip}]`),
         ...(cleanIPs ? cleanIPs.split(',') : [])
     ];
@@ -854,27 +854,27 @@ const getNormalConfigs = async (env, hostName, client) => {
 const generateRemark = (index, port) => {
     let remark = '';
     switch (index) {
+        //case 0:
+        //    remark = `💦 BPB - Domain_${index + 1} : ${port}`;
+        //    break;
         case 0:
-            remark = `💦 BPB - Domain_${index + 1} : ${port}`;
-            break;
-        case 1:
             remark = `BPB - BEST CM : ${port}`;
             break;
-        case 2:
+        case 1:
             remark = `BPB - BEST CU : ${port}`;
             break;
-        case 3:
+        case 2:
             remark = `BPB - BEST CM V6 : ${port}`;
             break;
-        case 4:
+        case 3:
             remark = `BPB - BEST CU V6 : ${port}`;
             break;
+        //case 5:
+        //case 6:
+        //    remark = `💦 BPB - IPv4_${index - 2} : ${port}`;
+        //    break;
+        case 4:
         case 5:
-        case 6:
-            remark = `💦 BPB - IPv4_${index - 2} : ${port}`;
-            break;
-        case 7:
-        case 8:
             remark = `💦 BPB - IPv6_${index - 4} : ${port}`;
             break;
         default:
@@ -1081,12 +1081,12 @@ const getFragmentConfigs = async (env, hostName, client) => {
 
     const resolved = await resolveDNS(hostName);
     const Addresses = [
-        hostName,
+        //hostName,
         cmDomainName,
         cuDomianName,
         cmDomainIPv6,
         cuDomianIPv6,
-        ...resolved.ipv4,
+        //...resolved.ipv4,
         ...resolved.ipv6.map((ip) => `[${ip}]`),
         ...(cleanIPs ? cleanIPs.split(",") : [])
     ];
@@ -1272,12 +1272,12 @@ const getSingboxConfig = async (env, hostName) => {
     config.dns.servers[1].address = localDNS;
     const resolved = await resolveDNS(hostName);
     const Addresses = [
-        hostName,
+        //hostName,
         cmDomainName,
         cuDomianName,
         cmDomainIPv6,
         cuDomianIPv6,
-        ...resolved.ipv4,
+        //...resolved.ipv4,
         ...resolved.ipv6.map((ip) => `[${ip}]`),
         ...(cleanIPs ? cleanIPs.split(",") : [])
     ];
