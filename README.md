@@ -1,4 +1,4 @@
-<h1 align="center">💦 M2rayNG Panel</h1>
+<h1 align="center">👑 M2rayNG Panel</h1>
 
 ### 🌏 Readme in [Farsi](README_fa.md)
 
