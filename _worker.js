@@ -1626,8 +1626,8 @@ async function renderHomePage (env, hostName, fragConfigs) {
 	<body>
 		<h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
 		<div class="form-container">
-            <h2>FRAGMENT SETTINGS ⚙️</h2>
-			<form id="configForm">
+            <form id="configForm">
+                <h2>VLESS/TROJAN SETTINGS ⚙️</h2>
 				<div class="form-control">
 					<label for="remoteDNS">🌏 Remote DNS</label>
 					<input type="url" id="remoteDNS" name="remoteDNS" value="${remoteDNS}" required>
@@ -1637,7 +1637,54 @@ async function renderHomePage (env, hostName, fragConfigs) {
 					<input type="text" id="localDNS" name="localDNS" value="${localDNS}"
 						pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|localhost$"
 						title="Please enter a valid DNS IP Address or localhost!"  required>
-				</div>	
+				</div>
+				<div class="form-control">
+					<label for="proxyIP">📍 Proxy IP</label>
+					<input type="text" id="proxyIP" name="proxyIP" value="${proxyIP}">
+				</div>
+				<div class="form-control">
+					<label for="cleanIPs">✨ Clean IPs</label>
+					<input type="text" id="cleanIPs" name="cleanIPs" value="${cleanIPs.replaceAll(",", " , ")}">
+				</div>
+                <div class="form-control">
+                    <label>🔎 Online Scanner</label>
+                    <a href="https://scanner.github1.cloud/" id="scanner" name="scanner" target="_blank">
+                        <button type="button" class="button">
+                            Scan now
+                            <span class="material-symbols-outlined" style="margin-left: 5px;">open_in_new</span>
+                        </button>
+                    </a>
+                </div>
+                <div class="form-control" style="padding-top: 10px;">
+					<label>⚙️ Protocols</label>
+					<div style="display: grid; grid-template-columns: 1fr 1fr; align-items: baseline; margin-top: 10px;">
+                        <div style = "display: flex; justify-content: center; align-items: center;">
+                            <input type="checkbox" id="vlessConfigs" name="vlessConfigs" onchange="handleProtocolChange(event)" style="margin: 0; grid-column: 2;" value="true" ${vlessConfigs ? 'checked' : ''}>
+                            <label for="vlessConfigs" style="margin: 0 10px;">VLESS</label>
+                        </div>
+                        <div style = "display: flex; justify-content: center; align-items: center;">
+                            <input type="checkbox" id="trojanConfigs" name="trojanConfigs" onchange="handleProtocolChange(event)" style="margin: 0; grid-column: 2;" value="true" ${trojanConfigs ? 'checked' : ''}>
+                            <label for="trojanConfigs" style="margin: 0 10px;">Trojan</label>
+                        </div>
+					</div>
+				</div>
+                <div class="table-container">
+                    <table id="frag-sub-table">
+                        <tr>
+                            <th style="text-wrap: nowrap; background-color: gray;">Config type</th>
+                            <th style="text-wrap: nowrap; background-color: gray;">Ports</th>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-size: larger;"><b>TLS</b></td>
+                            <td style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;">${(await buildPortsBlock()).httpsPortsBlock}</td>    
+                        </tr>
+                        ${hostName.includes('pages.dev') ? '' : `<tr>
+                            <td style="text-align: center; font-size: larger;"><b>Non TLS</b></td>
+                            <td style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;">${(await buildPortsBlock()).httpPortsBlock}</td>    
+                        </tr>`}        
+                    </table>
+                </div>
+                <h2>FRAGMENT SETTINGS ⚙️</h2>	
 				<div class="form-control">
 					<label for="fragmentLengthMin">📐 Length</label>
 					<div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;">
@@ -1697,53 +1744,6 @@ async function renderHomePage (env, hostName, fragConfigs) {
                     <div class="routing">
 						<input type="checkbox" id="block-udp-443" name="block-udp-443" style="margin: 0; grid-column: 2;" value="true" ${blockUDP443 ? 'checked' : ''}>
                         <label for="block-udp-443">Block QUIC</label>
-					</div>
-				</div>
-                <h2>PROXY IP ⚙️</h2>
-				<div class="form-control">
-					<label for="proxyIP">📍 IP or Domain</label>
-					<input type="text" id="proxyIP" name="proxyIP" value="${proxyIP}">
-				</div>
-                <h2>CLEAN IP ⚙️</h2>
-				<div class="form-control">
-					<label for="cleanIPs">✨ Clean IPs</label>
-					<input type="text" id="cleanIPs" name="cleanIPs" value="${cleanIPs.replaceAll(",", " , ")}">
-				</div>
-                <div class="form-control">
-                    <label>🔎 Online Scanner</label>
-                    <a href="https://scanner.github1.cloud/" id="scanner" name="scanner" target="_blank">
-                        <button type="button" class="button">
-                            Scan now
-                            <span class="material-symbols-outlined" style="margin-left: 5px;">open_in_new</span>
-                        </button>
-                    </a>
-                </div>
-                <h2>PORTS ⚙️</h2>
-                <div class="table-container">
-                    <table id="frag-sub-table">
-                        <tr>
-                            <th style="text-wrap: nowrap; background-color: gray;">Config type</th>
-                            <th style="text-wrap: nowrap; background-color: gray;">Ports</th>
-                        </tr>
-                        <tr>
-                            <td style="text-align: center; font-size: larger;"><b>TLS</b></td>
-                            <td style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;">${(await buildPortsBlock()).httpsPortsBlock}</td>    
-                        </tr>
-                        ${hostName.includes('pages.dev') ? '' : `<tr>
-                            <td style="text-align: center; font-size: larger;"><b>Non TLS</b></td>
-                            <td style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;">${(await buildPortsBlock()).httpPortsBlock}</td>    
-                        </tr>`}        
-                    </table>
-                </div>
-                <h2>CONFIG TYPES ⚙️</h2>
-				<div class="form-control" style="margin-bottom: 20px;">			
-                    <div class="routing">
-                        <input type="checkbox" id="vlessConfigs" name="vlessConfigs" onchange="handleProtocolChange(event)" style="margin: 0; grid-column: 2;" value="true" ${vlessConfigs ? 'checked' : ''}>
-                        <label for="vlessConfigs">VLESS</label>
-                    </div>
-                    <div class="routing">
-						<input type="checkbox" id="trojanConfigs" name="trojanConfigs" onchange="handleProtocolChange(event)" style="margin: 0; grid-column: 2;" value="true" ${trojanConfigs ? 'checked' : ''}>
-                        <label for="trojanConfigs">Trojan</label>
 					</div>
 				</div>
                 <h2>WARP SETTINGS ⚙️</h2>
@@ -4017,6 +4017,48 @@ function buildSingboxWarpOutbound (remark, ipv6, privateKey, publicKey, endpoint
     };
 }
 
+function buildSingboxDNSRules (blockAds, bypassIran, bypassChina, blockPorn, outboundDomains) {
+    let rules = [
+        {
+            domain: [
+                "www.gstatic.com",
+                ...outboundDomains
+            ],
+            server: "dns-direct"
+        },
+        {
+            outbound: [
+              "any"
+            ],
+            server: "dns-direct"
+        }
+    ];
+
+    let bypassRules = {
+        rule_set: [],
+        server: "dns-direct"
+    }
+    
+    bypassIran && bypassRules.rule_set.push("geosite-ir");
+    bypassChina && bypassRules.rule_set.push("geosite-cn");
+    (bypassIran || bypassChina) && rules.push(bypassRules);
+
+    let blockRules = {
+        disable_cache: true,
+        rule_set: [
+            "geosite-malware",
+            "geosite-phishing",
+            "geosite-cryptominers"
+        ],
+        server: "dns-block"
+    };
+    
+    blockAds && blockRules.rule_set.push("geosite-category-ads-all");
+    blockPorn && blockRules.rule_set.push("geosite-nsfw");
+
+    return rules;
+}
+
 function buildSingboxRoutingRules (blockAds, bypassIran, bypassChina, blockPorn, blockUDP443, bypassLAN) {
     let rules = [
         {
@@ -4089,11 +4131,27 @@ function buildSingboxRoutingRules (blockAds, bypassIran, bypassChina, blockPorn,
         });
     }
 
-    bypassChina && rules.push({
-        geosite: "cn",
-        geoip: "cn",
-        outbound: "direct"
-    });
+    if (bypassChina) {
+        rules.push({
+            rule_set: ["geosite-cn", "geoip-cn"],
+            outbound: "direct"
+        });
+
+        ruleSet.push({
+            type: "remote",
+            tag: "geosite-cn",
+            format: "binary",
+            url: "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-cn.srs",
+            download_detour: "direct"
+        },
+        {
+            type: "remote",
+            tag: "geoip-cn",
+            format: "binary",
+            url: "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-cn.srs",
+            download_detour: "direct"
+        });
+    }
     
     bypassLAN && rules.push({
         ip_is_private: true,
@@ -4241,12 +4299,10 @@ async function getSingboxConfig (env, hostName, client, warpType) {
         });
     }
 
-    config.dns.rules[0].domain = [...config.dns.rules[0].domain, ...new Set(outboundDomains)];
+    config.dns.rules = buildSingboxDNSRules(blockAds, bypassIran, bypassChina, blockPorn, new Set(outboundDomains));
     const {rules, rule_set} = buildSingboxRoutingRules (blockAds, bypassIran, bypassChina, blockPorn, blockUDP443, bypassLAN);
     config.route.rules = rules;
     config.route.rule_set = rule_set;
-    blockAds && config.dns.rules[2].rule_set.push("geosite-category-ads-all");
-    blockPorn && config.dns.rules[2].rule_set.push("geosite-nsfw");
 
     return config;
 }
@@ -4399,29 +4455,7 @@ const singboxConfigTemp = {
                 tag: "dns-block"
             }
         ],
-        rules: [
-            {
-                domain: [
-                    "www.gstatic.com"
-                ],
-                server: "dns-direct"
-            },
-            {
-                outbound: [
-                  "any"
-                ],
-                server: "dns-direct"
-            },
-            {
-                disable_cache: true,
-                rule_set: [
-                    "geosite-malware",
-                    "geosite-phishing",
-                    "geosite-cryptominers"
-                ],
-                server: "dns-block"
-            }
-        ],
+        rules: [],
         independent_cache: true
     },
     inbounds: [
