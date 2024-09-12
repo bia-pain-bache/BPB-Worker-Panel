@@ -1834,7 +1834,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
 				</div>
 			</form>
             <hr>            
-			<h2>NORMAL CONFIGS SUB 🔗</h2>
+			<h2>NORMAL SUB 🔗</h2>
 			<div class="table-container">
 				<table id="normal-configs-table">
 					<tr>
