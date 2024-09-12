@@ -15,14 +15,18 @@ const defaultHttpPorts = ['80', '8080', '2052', '2082', '2086', '2095', '8880'];
 const defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
 let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 let dohURL = 'https://cloudflare-dns.com/dns-query';
-let trojanPassword = 'bpb-trojan';
+let trojanPassword = `bpb-trojan`;
 // https://emn178.github.io/online-tools/sha224.html
 // https://www.atatus.com/tools/sha224-to-hash
-let hashPassword = 'b5d0a5f7ff7aac227bc68b55ae713131ffdf605ca0da52cce182d513'
-let panelVersion = '2.5.4';
+let hashPassword = 'b5d0a5f7ff7aac227bc68b55ae713131ffdf605ca0da52cce182d513';
+let panelVersion = '2.5.5';
 
 if (!isValidUUID(userID)) {
-    throw new Error('uuid is not valid');
+    throw new Error('UUID is not valid');
+}
+
+if (!isValidSHA224(hashPassword)) {
+    throw new Error('Hash Password is not valid');
 }
 
 export default {
@@ -966,6 +970,11 @@ function isValidUUID(uuid) {
 	return uuidRegex.test(uuid);
 }
 
+function isValidSHA224(hash) {
+    const sha224Regex = /^[0-9a-f]{56}$/i;
+    return sha224Regex.test(hash);
+}
+
 const WS_READY_STATE_OPEN = 1;
 const WS_READY_STATE_CLOSING = 2;
 /**
@@ -1660,11 +1669,11 @@ async function renderHomePage (env, hostName, fragConfigs) {
 					<div style="display: grid; grid-template-columns: 1fr 1fr; align-items: baseline; margin-top: 10px;">
                         <div style = "display: flex; justify-content: center; align-items: center;">
                             <input type="checkbox" id="vlessConfigs" name="vlessConfigs" onchange="handleProtocolChange(event)" style="margin: 0; grid-column: 2;" value="true" ${vlessConfigs ? 'checked' : ''}>
-                            <label for="vlessConfigs" style="margin: 0 10px;">VLESS</label>
+                            <label for="vlessConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">VLESS</label>
                         </div>
                         <div style = "display: flex; justify-content: center; align-items: center;">
                             <input type="checkbox" id="trojanConfigs" name="trojanConfigs" onchange="handleProtocolChange(event)" style="margin: 0; grid-column: 2;" value="true" ${trojanConfigs ? 'checked' : ''}>
-                            <label for="trojanConfigs" style="margin: 0 10px;">Trojan</label>
+                            <label for="trojanConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">Trojan</label>
                         </div>
 					</div>
 				</div>
@@ -2939,12 +2948,7 @@ async function buildXrayDNSObject (remoteDNS, localDNS, blockAds, bypassIran, by
             "domain:googleapis.cn": ["googleapis.com"]
         },
         servers: [
-            remoteDNS,
-            {
-                address: localDNS,
-                domains: [],
-                port: 53,
-            },
+            remoteDNS
         ],
         tag: "dns",
     };
@@ -2981,11 +2985,15 @@ async function buildXrayDNSObject (remoteDNS, localDNS, blockAds, bypassIran, by
         dnsObject.hosts["geosite:category-porn"] = ["127.0.0.1"];
     }
 
-    if (!(bypassIran || bypassChina) || localDNS === 'localhost' || isWorkerLess) {
-        dnsObject.servers.pop();
-    } else {
-        bypassIran && dnsObject.servers[2].domains.push("geosite:category-ir"); 
-        bypassChina && dnsObject.servers[2].domains.push("geosite:cn");         
+    if (!isWorkerLess && localDNS !== 'localhost' && (bypassIran || bypassChina)) {
+        let localDNSServer = {
+            address: localDNS,
+            domains: [],
+            port: 53,
+        };
+        bypassIran && localDNSServer.domains.push("geosite:category-ir"); 
+        bypassChina && localDNSServer.domains.push("geosite:cn");
+        dnsObject.servers.push(localDNSServer);
     }
 
     return dnsObject;
@@ -3917,106 +3925,6 @@ async function getClashConfig (env, hostName, isWarp) {
     return config;
 }
 
-function buildSingboxVLESSOutbound (remark, address, port, uuid, host, path) {
-    const tls = defaultHttpsPorts.includes(port) ? true : false;
-    let outbound =  {
-        type: "vless",
-        server: address,
-        server_port: +port,
-        uuid: uuid,
-        domain_strategy: "prefer_ipv6",
-        packet_encoding: "",
-        tls: {
-            alpn: [
-                "http/1.1"
-            ],
-            enabled: true,
-            insecure: false,
-            server_name: randomUpperCase(host),
-            utls: {
-                enabled: true,
-                fingerprint: "randomized"
-            }
-        },
-        transport: {
-            early_data_header_name: "Sec-WebSocket-Protocol",
-            max_early_data: 2560,
-            headers: {
-                Host: host
-            },
-            path: path,
-            type: "ws"
-        },
-        tag: remark
-    };
-
-    if (!tls) delete outbound.tls;
-
-    return outbound;
-}
-
-function buildSingboxTrojanOutbound (remark, address, port, password, host, path) {
-    const tls = defaultHttpsPorts.includes(port) ? true : false;
-    let outbound = {
-        password: password,
-        server: address,
-        server_port: +port,
-        tls: {
-            alpn: [
-                "http/1.1"
-            ],
-            enabled: true,
-            insecure: false,
-            server_name: randomUpperCase(host),
-            utls: {
-                enabled: true,
-                fingerprint: "randomized"
-            }
-        },
-        transport: {
-            early_data_header_name: "Sec-WebSocket-Protocol",
-            max_early_data: 2560,
-            headers: {
-                Host: [
-                    host
-                ]
-            },
-            path: path,
-            type: "ws"
-        },
-        type: "trojan",
-        tag: remark
-    }
-
-    if (!tls) delete outbound.tls;
-
-    return outbound;    
-}
-
-function buildSingboxWarpOutbound (remark, ipv6, privateKey, publicKey, endpoint, reserved, chain) {
-    const ipv6Regex = /\[(.*?)\]/;
-    const portRegex = /[^:]*$/;
-    const endpointServer = endpoint.includes('[') ? endpoint.match(ipv6Regex)[1] : endpoint.split(':')[0];
-    const endpointPort = endpoint.includes('[') ? +endpoint.match(portRegex)[0] : +endpoint.split(':')[1];
-
-    return {
-        local_address: [
-            "172.16.0.2/32",
-            ipv6
-        ],
-        mtu: 1280,
-        peer_public_key: publicKey,
-        private_key: privateKey,
-        reserved: reserved,
-        server: endpointServer,
-        server_port: endpointPort,
-        type: "wireguard",
-        domain_strategy: "prefer_ipv6",
-        detour: chain,
-        tag: remark
-    };
-}
-
 function buildSingboxDNSRules (blockAds, bypassIran, bypassChina, blockPorn, outboundDomains) {
     let rules = [
         {
@@ -4027,9 +3935,7 @@ function buildSingboxDNSRules (blockAds, bypassIran, bypassChina, blockPorn, out
             server: "dns-direct"
         },
         {
-            outbound: [
-              "any"
-            ],
+            outbound: "any",
             server: "dns-direct"
         }
     ];
@@ -4043,18 +3949,22 @@ function buildSingboxDNSRules (blockAds, bypassIran, bypassChina, blockPorn, out
     bypassChina && bypassRules.rule_set.push("geosite-cn");
     (bypassIran || bypassChina) && rules.push(bypassRules);
 
-    let blockRules = {
-        disable_cache: true,
-        rule_set: [
-            "geosite-malware",
-            "geosite-phishing",
-            "geosite-cryptominers"
-        ],
-        server: "dns-block"
-    };
-    
-    blockAds && blockRules.rule_set.push("geosite-category-ads-all");
-    blockPorn && blockRules.rule_set.push("geosite-nsfw");
+    if (blockAds || blockPorn) {
+        let blockRules = {
+            disable_cache: true,
+            rule_set: [
+                "geosite-malware",
+                "geosite-phishing",
+                "geosite-cryptominers"
+            ],
+            server: "dns-block"
+        };
+        
+        blockAds && blockRules.rule_set.push("geosite-category-ads-all");
+        blockPorn && blockRules.rule_set.push("geosite-nsfw");
+
+        rules.push(blockRules);
+    }
 
     return rules;
 }
@@ -4208,6 +4118,100 @@ function buildSingboxRoutingRules (blockAds, bypassIran, bypassChina, blockPorn,
     });
 
     return {rules: rules, rule_set: ruleSet};
+}
+
+function buildSingboxVLESSOutbound (remark, address, port, uuid, host, path) {
+    const tls = defaultHttpsPorts.includes(port) ? true : false;
+    let outbound =  {
+        type: "vless",
+        server: address,
+        server_port: +port,
+        uuid: uuid,
+        domain_strategy: "prefer_ipv6",
+        packet_encoding: "",
+        tls: {
+            alpn: "http/1.1",
+            enabled: true,
+            insecure: false,
+            server_name: randomUpperCase(host),
+            utls: {
+                enabled: true,
+                fingerprint: "randomized"
+            }
+        },
+        transport: {
+            early_data_header_name: "Sec-WebSocket-Protocol",
+            max_early_data: 2560,
+            headers: {
+                Host: host
+            },
+            path: path,
+            type: "ws"
+        },
+        tag: remark
+    };
+
+    if (!tls) delete outbound.tls;
+
+    return outbound;
+}
+
+function buildSingboxTrojanOutbound (remark, address, port, password, host, path) {
+    const tls = defaultHttpsPorts.includes(port) ? true : false;
+    let outbound = {
+        password: password,
+        server: address,
+        server_port: +port,
+        tls: {
+            alpn: "http/1.1",
+            enabled: true,
+            insecure: false,
+            server_name: randomUpperCase(host),
+            utls: {
+                enabled: true,
+                fingerprint: "randomized"
+            }
+        },
+        transport: {
+            early_data_header_name: "Sec-WebSocket-Protocol",
+            max_early_data: 2560,
+            headers: {
+                Host: host
+            },
+            path: path,
+            type: "ws"
+        },
+        type: "trojan",
+        tag: remark
+    }
+
+    if (!tls) delete outbound.tls;
+
+    return outbound;    
+}
+
+function buildSingboxWarpOutbound (remark, ipv6, privateKey, publicKey, endpoint, reserved, chain) {
+    const ipv6Regex = /\[(.*?)\]/;
+    const portRegex = /[^:]*$/;
+    const endpointServer = endpoint.includes('[') ? endpoint.match(ipv6Regex)[1] : endpoint.split(':')[0];
+    const endpointPort = endpoint.includes('[') ? +endpoint.match(portRegex)[0] : +endpoint.split(':')[1];
+
+    return {
+        local_address: [
+            "172.16.0.2/32",
+            ipv6
+        ],
+        mtu: 1280,
+        peer_public_key: publicKey,
+        private_key: privateKey,
+        reserved: reserved,
+        server: endpointServer,
+        server_port: endpointPort,
+        type: "wireguard",
+        domain_strategy: "prefer_ipv6",
+        detour: chain,
+        tag: remark
+    };
 }
 
 async function getSingboxConfig (env, hostName, client, warpType) {
@@ -4462,7 +4466,7 @@ const singboxConfigTemp = {
         {
             type: "direct",
             tag: "dns-in",
-            listen: "127.0.0.1",
+            listen: "0.0.0.0",
             listen_port: 6450,
             override_address: "8.8.8.8",
             override_port: 53
@@ -4483,7 +4487,7 @@ const singboxConfigTemp = {
         {
             type: "mixed",
             tag: "mixed-in",
-            listen: "127.0.0.1",
+            listen: "0.0.0.0",
             listen_port: 2080,
             sniff: true,
             sniff_override_destination: true
