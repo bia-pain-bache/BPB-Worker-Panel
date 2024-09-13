@@ -3949,22 +3949,19 @@ function buildSingboxDNSRules (blockAds, bypassIran, bypassChina, blockPorn, out
     bypassChina && bypassRules.rule_set.push("geosite-cn");
     (bypassIran || bypassChina) && rules.push(bypassRules);
 
-    if (blockAds || blockPorn) {
-        let blockRules = {
-            disable_cache: true,
-            rule_set: [
-                "geosite-malware",
-                "geosite-phishing",
-                "geosite-cryptominers"
-            ],
-            server: "dns-block"
-        };
-        
-        blockAds && blockRules.rule_set.push("geosite-category-ads-all");
-        blockPorn && blockRules.rule_set.push("geosite-nsfw");
+    let blockRules = {
+        disable_cache: true,
+        rule_set: [
+            "geosite-malware",
+            "geosite-phishing",
+            "geosite-cryptominers"
+        ],
+        server: "dns-block"
+    };
 
-        rules.push(blockRules);
-    }
+    blockAds && blockRules.rule_set.push("geosite-category-ads-all");
+    blockPorn && blockRules.rule_set.push("geosite-nsfw");
+    rules.push(blockRules);
 
     return rules;
 }
