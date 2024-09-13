@@ -27,23 +27,22 @@
 <ol dir="rtl">
   <li><strong>رایگان</strong></li>
   <li><strong>پنل کاربری راحت:</strong> قابلیت آسان تنظیمات و دریافت کانفیگ ها و لینک های اشتراک.</li>
+  <li><strong>پروتکل‌های متنوع:</strong> ارائه کانفیگ‌های VLESS، Trojan و Warp.</li>
+  <li><strong>سابسکریپشن Warp Pro: </strong>ارائه‌ی کانفیگ‌های وارپ بهینه شده برای شرایط همیشه خاص ایران</li>
   <li><strong>پشتیبانی از فرگمنت:</strong> قابل استفاده حتی در صورت فیلتر شدن دامنه.</li>
-  <li><strong>مسدودسازی تبلیغات (اختیاری):</strong> گزینه‌ای برای مسدودسازی تبلیغات ایرانی و خارجی.</li>
-  <li><strong>دسترسی مستقیم به ایران (اختیاری):</strong> شامل یک گزینه برای دسترسی مستقیم به سایت های ایران بدون قطع VPN.</li>
-  <li><strong>مسیریابی کامل Sing-box:</strong> شامل دور زدن سایت‌های ایرانی، مسدودسازی Malware، Phishing و تبلیغات ایرانی و خارجی.</li>
+  <li><strong>قوانین مسیریابی کامل:</strong> شامل دور زدن سایت‌های ایرانی و چینی، دسترسی مستقیم به LAN، مسدودسازی تبلیغات ایرانی و خارجی و پورن و پروتکل QUIC</li>
   <li><strong>زنجیره‌ی Proxy:</strong> قابلیت اضافه کردن Proxy خروجی جهت تثبیت IP.</li>
-  <li><strong>پشتیبانی از طیف وسیعی از برنامه‌ها:</strong> لینک‌های اشتراک را برای انواع نرم افزار ها با هسته‌های Xray و Sing-box ارائه می‌دهد.</li>
+  <li><strong>پشتیبانی از طیف وسیعی از برنامه‌ها:</strong> لینک‌های اشتراک را برای انواع نرم افزار ها با هسته‌های Xray و Sing-box و Clash ارائه میدهد.</li>
   <li><strong>لینک اشتراک (JSON):</strong> لینک‌ اشتراک کانفیگ‌های فرگمنت را در فرمت JSON فراهم می‌کند.</li>
   <li><strong>پنل با رمز عبور محافظت شده:</strong> ایمن‌سازی پنل با استفاده از رمز عبور.</li>
-  <li><strong>دامنه و IP تمیز Cloudflare سفارشی:</strong> قابلیت اسکن آنلاین و تنظیم IP یا دامنه‌ی تمیز Cloudflare را دارد.</li>
-  <li><strong>سابسکریپشن Warp: </strong>ارائه‌ی کانفیگ‌های Warp و Warp on Warp همراه اسکنر Endpoint</li>
-  <li><strong>سابسکریپشن Warp Pro: </strong>ارائه‌ی کانفیگ‌های وارپ بهینه شده برای شرایط همیشه خاص ایران</li>
+  <li><strong>سفارشی‌سازی کامل تنظیمات:</strong> قابلیت اسکن و تنظیم IP تمیز، Proxy IP، DNS سرورها، پورت‌ها، پروتکل‌ها و Warp endpoint و ...</li>
 </ol>
 <br><br>
 
 ## نحوه‌ی راه‌اندازی، تنظیمات و استفاده
 - [نصب به صورت Pages](docs/pages_installation_fa.md)
 - [نصب به صورت Worker](docs/worker_installation_fa.md)
+- [پیدا کردن Proxy IP](docs/proxy-ip-scanner.md)
 - [نحوه استفاده از پنل](docs/configuration_fa.md)
 - [پرسش‌های متداول (FAQ)](docs/faq.md)
 <br>
@@ -123,6 +122,24 @@
       <td></td>
       <td>✔️</td>
       <td>✔️</td>
+    </tr>
+    <tr>
+      <td><b>Clash Meta</b></td>
+      <td></td>
+      <td>❌</td>
+      <td>❌</td>
+    </tr>
+    <tr>
+      <td><b>Clash Verg Rev</b></td>
+      <td></td>
+      <td>❌</td>
+      <td>❌</td>
+    </tr>
+    <tr>
+      <td><b>FLClash</b></td>
+      <td></td>
+      <td>❌</td>
+      <td>❌</td>
     </tr>
   </tbody>
 </table>
