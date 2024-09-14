@@ -3124,7 +3124,7 @@ function buildXrayVLESSOutbound (tag, address, port, uuid, host, proxyIP) {
                     Host: host,
                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
                 },
-                path: `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}?ed=2560`
+                path: `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}channel@ISVvpn?ed=2560`
             }
         },
         tag: tag
@@ -3166,7 +3166,7 @@ function buildXrayTrojanOutbound (tag, address, port, password, host, proxyIP) {
                 headers: {
                     Host: host
                 },
-                path: `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}?ed=2560`
+                path: `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}channel@ISVvpn?ed=2560`
             }
         },
         tag: tag
