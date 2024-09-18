@@ -3708,10 +3708,7 @@ async function buildClashDNS (remoteDNS, localDNS, blockAds, bypassIran, blockPo
         "nameserver": [
             remoteDNS
         ],
-        "proxy-server-nameserver": [
-            clashLocalDNS,
-            "8.8.4.4"
-        ]
+        "proxy-server-nameserver": [clashLocalDNS]
     };
     
     if (DNSNameserver && isDomain) {
@@ -3730,7 +3727,8 @@ async function buildClashDNS (remoteDNS, localDNS, blockAds, bypassIran, blockPo
 
     if (bypassIran || bypassChina) { 
         dns['nameserver-policy'] = {
-            [`geosite:${geosites.join(',')}`]: [clashLocalDNS, '8.8.4.4']
+            [`geosite:${geosites.join(',')}`]: [clashLocalDNS],
+            'www.gstatic.com': [clashLocalDNS]
         };
     }
 
@@ -3740,8 +3738,7 @@ async function buildClashDNS (remoteDNS, localDNS, blockAds, bypassIran, blockPo
 function buildClashRoutingRules (localDNS, blockAds, bypassIran, bypassChina, blockPorn, blockUDP443, bypassLAN, isWarp) {
     let rules = [];
 
-    (localDNS !== 'localhost') && rules.push(`AND,((IP-SUFFIX,${localDNS}/24),(DST-PORT,53)),DIRECT`);
-    rules.push('AND,((IP-SUFFIX,8.8.4.4/24),(DST-PORT,53)),DIRECT');
+    (localDNS !== 'localhost') && rules.push(`AND,((IP-CIDR,${localDNS}/32),(DST-PORT,53)),DIRECT`);
     bypassLAN && rules.push('GEOIP,private,DIRECT,no-resolve');
     bypassIran && rules.push('GEOSITE,category-ir,DIRECT', 'GEOIP,ir,DIRECT,no-resolve');
     bypassChina && rules.push('GEOSITE,cn,DIRECT', 'GEOIP,cn,DIRECT,no-resolve');
@@ -3909,6 +3906,35 @@ async function getClashConfig (env, hostName, isWarp) {
         "keep-alive-interval": 30,
         "unified-delay": false,
         "dns": dns,
+        "tun": {
+            "enable": true,
+            "stack": "system",
+            "auto-route": true,
+            "auto-redirect": true,
+            "auto-detect-interface": true,
+            "dns-hijack": [
+                "any:53",
+                "198.18.0.2:53"
+            ],
+            "device": "utun0",
+            "mtu": 9000,
+            "strict-route": true
+        },
+        "sniffer": {
+            "enable": true,
+            "force-dns-mapping": true,
+            "parse-pure-ip": true,
+            "sniff": {
+                "HTTP": {
+                    "ports": [80, 8080, 8880, 2052, 2082, 2086, 2095],
+                    "override-destination": true
+                },
+                "TLS": {
+                    "ports": [443, 8443, 2053, 2083, 2087, 2096],
+                    "override-destination": true
+                }
+            }
+        },
         "proxies": outbounds,
         "proxy-groups": [
             {
