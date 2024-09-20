@@ -3239,6 +3239,43 @@ function buildXrayWarpOutbound (remark, ipv6, privateKey, publicKey, endpoint, r
     return outbound;
 }
 
+function buildXraySocksChainOutbound(socksChainConfig) {
+    const regex = /(?:(\w+):(\w+)@)?([a-zA-Z0-9.-]+):([0-9]+)/;
+    const matches = socksChainConfig.match(regex);
+    const username = matches[1] || '';
+    const password = matches[2] || '';
+    const Address = matches[3];
+    const port = matches[4];
+
+    return {
+        protocol: "socks",
+        settings: {
+            servers: [
+                {
+                    address: Address,
+                    level: 8,
+                    ota: false,
+                    port: +port,
+                    users: [
+                        {
+                            level: 8,
+                            user: username,
+                            pass: password
+                        }
+                    ]
+                }
+            ]
+        },
+        streamSettings: {
+            network: "tcp",
+            sockopt: {
+                dialerProxy: "proxy"
+            }
+        },
+        tag: "chain-proxy"
+    };
+}
+
 function buildXrayChainOutbound(proxyParams) {
     const { hostName, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, spx, headerType, host, path, authority, serviceName, mode } = proxyParams;
     
@@ -3322,7 +3359,7 @@ function buildXrayChainOutbound(proxyParams) {
             }
         };
     }
-    
+
     if (type === 'tcp' && security !== 'reality' && !headerType) proxyOutbound.streamSettings.tcpSettings = {
         header: {
             type: "none"
@@ -3765,7 +3802,7 @@ async function buildClashDNS (remoteDNS, localDNS, blockAds, bypassIran, blockPo
     return dns;
 }
 
-function buildClashRoutingRules (localDNS, blockAds, bypassIran, bypassChina, blockPorn, blockUDP443, bypassLAN, isWarp, isChain) {
+function buildClashRoutingRules (localDNS, blockAds, bypassIran, bypassChina, blockPorn, blockUDP443, bypassLAN, isWarp) {
     let rules = [];
 
     (localDNS !== 'localhost') && rules.push(`AND,((IP-CIDR,${localDNS}/32),(DST-PORT,53)),DIRECT`);
@@ -3776,7 +3813,7 @@ function buildClashRoutingRules (localDNS, blockAds, bypassIran, bypassChina, bl
     !isWarp && rules.push('NETWORK,udp,REJECT');
     blockAds && rules.push('GEOSITE,category-ads-all,REJECT', 'GEOSITE,category-ads-ir,REJECT');
     blockPorn && rules.push('GEOSITE,category-porn,REJECT');
-    rules.push(isChain && !isWarp ? 'MATCH,chain-proxy' : 'MATCH,✅ Selector');
+    rules.push('MATCH,✅ Selector');
 
     return rules;
 }
@@ -3862,7 +3899,7 @@ function buildClashChainOutbound(proxyParams) {
     const { hostName, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, spx, headerType, host, path, authority, serviceName, mode } = proxyParams;
 
     let chainOutbound = {
-        "name": "chain-proxy",
+        "name": "💦 Chain Best Ping 💥",
         "type": "vless",
         "server": hostName,
         "port": +port,
@@ -3870,7 +3907,7 @@ function buildClashChainOutbound(proxyParams) {
         "uuid": uuid,
         "flow": flow,
         "network": type,
-        "dialer-proxy": "✅ Selector"
+        "dialer-proxy": "💦 Best Ping 💥"
     };
 
     if (security === 'tls') {
@@ -3945,7 +3982,7 @@ async function getClashConfig (env, hostName, isWarp) {
 
     const { remoteDNS,  localDNS, cleanIPs, proxyIP, ports, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, vlessConfigs, trojanConfigs, outProxy, outProxyParams} = proxySettings; 
     let dns = await buildClashDNS(isWarp ? '1.1.1.1' : remoteDNS, localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina);
-    let routingRules = buildClashRoutingRules(localDNS, blockAds, bypassIran, bypassChina, blockPorn, blockUDP443, bypassLAN, isWarp, outProxy);
+    let routingRules = buildClashRoutingRules(localDNS, blockAds, bypassIran, bypassChina, blockPorn, blockUDP443, bypassLAN, isWarp);
 
     if (outProxy && !isWarp) {
         const proxyParams = JSON.parse(outProxyParams);
@@ -4050,7 +4087,9 @@ async function getClashConfig (env, hostName, isWarp) {
                 "type": "select",
                 "proxies": isWarp
                     ? ['💦 Warp Best Ping 🚀', '💦 WoW Best Ping 🚀', ...warpOutboundsRemarks, ...wowOutboundRemarks ]
-                    : ['💦 Best Ping 💥', ...outboundsRemarks ]
+                    : outProxy 
+                        ? ['💦 Chain Best Ping 💥', '💦 Best Ping 💥', ...outboundsRemarks ]
+                        : ['💦 Best Ping 💥', ...outboundsRemarks ]
             },
             {
                 "name": isWarp ? `💦 Warp Best Ping 🚀`: `💦 Best Ping 💥`,
@@ -4369,13 +4408,13 @@ function buildSingboxChainOutbound(proxyParams) {
 
     let chainOutbound = {
         type: "vless",
-        tag: "chain-proxy",
+        tag: "💦 Chain Best Ping 💥",
         server: hostName,
         server_port: +port,
         uuid: uuid,
         flow: flow,
         network: "tcp",
-        detour: "proxy"
+        detour: "💦 Best Ping 💥"
     };
 
     if (security === 'tls' || security === 'reality') {
@@ -4461,7 +4500,7 @@ async function getSingboxConfig (env, hostName, client, isWarp) {
             chainProxyOutbound = buildSingboxChainOutbound(proxyParams);
             config.outbounds.push(chainProxyOutbound);
             domainRegex.test(chainProxyOutbound.server) && outboundDomains.push(chainProxyOutbound.server);
-            config.route.final = 'chain-proxy';
+            config.outbounds[0].outbounds.unshift('💦 Chain Best Ping 💥');
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
             chainProxyOutbound = undefined;
@@ -4682,7 +4721,7 @@ const singboxConfigTemp = {
                 address: "",
                 address_resolver: "dns-direct",
                 strategy: "prefer_ipv4",
-                detour: "proxy",
+                detour: "💦 Best Ping 💥",
                 tag: "dns-remote"
             },
             {
