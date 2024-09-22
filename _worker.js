@@ -1134,18 +1134,38 @@ function generateRemark(index, port, protocol, fragType) {
     return remark;
 }
 
-async function extractVlessParams(vlessConfig) {
-    const url = new URL(vlessConfig.replace('vless', 'http'));
-    const params = new URLSearchParams(url.search);
-    let configParams = {
-        uuid : url.username,
-        hostName : url.hostname,
-        port : url.port
-    };
+function extractChainProxyParams(chainProxy) {
+    let configParams = {};
 
-    params.forEach( (value, key) => {
-        configParams[key] = value;
-    })
+    if (chainProxy.startsWith('vless')) {
+        const url = new URL(chainProxy.replace('vless', 'http'));
+        const params = new URLSearchParams(url.search);
+        configParams = {
+            uuid : url.username,
+            hostName : url.hostname,
+            port : url.port
+        };
+    
+        params.forEach( (value, key) => {
+            configParams[key] = value;
+        });
+    } else {
+        const regex = /^(http|socks):\/\/(?:([^:@]+):([^:@]+)@)?([^:@]+):(\d+)$/;
+        const matches = chainProxy.match(regex);
+        const protocol = matches[1];
+        const user = matches[2] || '';
+        const pass = matches[3] || '';
+        const host = matches[4];
+        const port = matches[5];
+
+        configParams = {
+            protocol: protocol, 
+            user : user,
+            pass : pass,
+            host : host,
+            port : port
+        };
+    }
 
     return JSON.stringify(configParams);
 }
@@ -1167,7 +1187,7 @@ async function updateDataset (env, Settings) {
         throw new Error(`An error occurred while getting current values - ${error}`);
     }
 
-    const vlessConfig = Settings?.get('outProxy');
+    const chainProxy = Settings?.get('outProxy');
 
     const proxySettings = {
         remoteDNS: Settings ? Settings.get('remoteDNS') : currentProxySettings?.remoteDNS || 'https://94.140.14.14/dns-query',
@@ -1188,8 +1208,8 @@ async function updateDataset (env, Settings) {
         ports: Settings ? Settings.getAll('ports[]') : currentProxySettings?.ports || ['443'],
         vlessConfigs: Settings ? Settings.get('vlessConfigs') : currentProxySettings?.vlessConfigs || true,
         trojanConfigs: Settings ? Settings.get('trojanConfigs') : currentProxySettings?.trojanConfigs || false,
-        outProxy: Settings ? vlessConfig : currentProxySettings?.outProxy || '',
-        outProxyParams: vlessConfig ? await extractVlessParams(vlessConfig) : currentProxySettings?.outProxyParams || '',
+        outProxy: Settings ? chainProxy : currentProxySettings?.outProxy || '',
+        outProxyParams: chainProxy ? extractChainProxyParams(chainProxy) : currentProxySettings?.outProxyParams || '',
         wowEndpoint: Settings ? Settings.get('wowEndpoint')?.replaceAll(' ', '') : currentProxySettings?.wowEndpoint || 'engage.cloudflareclient.com:2408',
         warpEndpoints: Settings ? Settings.get('warpEndpoints')?.replaceAll(' ', '') : currentProxySettings?.warpEndpoints || 'engage.cloudflareclient.com:2408',
         hiddifyNoiseMode: Settings ? Settings.get('hiddifyNoiseMode') : currentProxySettings?.hiddifyNoiseMode || 'm4',
@@ -2417,6 +2437,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
             const chainProxy = document.getElementById('outProxy').value?.trim();                    
             const formData = new FormData(configForm);
             const isVless = /vless:\\/\\/[^\s@]+@[^\\s:]+:[^\\s]+/.test(chainProxy);
+            const isSocksHttp = /^(http|socks):\\/\\/(?:([^:@]+):([^:@]+)@)?([^:@]+):(\\d+)$/.test(chainProxy);
             const hasSecurity = /security=/.test(chainProxy);
             const validSecurityType = /security=(tls|none|reality)/.test(chainProxy);
             const validTransmission = /type=(tcp|grpc|ws)/.test(chainProxy);
@@ -2454,8 +2475,8 @@ async function renderHomePage (env, hostName, fragConfigs) {
                 return false;
             }
 
-            if (!(isVless && (hasSecurity && validSecurityType || !hasSecurity) && validTransmission) && chainProxy) {
-                alert('⛔ Invalid Config! 🫤 \\n - The chain proxy should be VLESS!\\n - Transmission should be GRPC,WS or TCP\\n - Security should be TLS,Reality or None');               
+            if ((!(isVless && (hasSecurity && validSecurityType || !hasSecurity) && validTransmission) && chainProxy) && (!isSocksHttp && chainProxy)) {
+                alert('⛔ Invalid Config! 🫤 \\n - The chain proxy should be VLESS, Socks or Http!\\n - VLESS transmission should be GRPC,WS or TCP\\n - VLESS security should be TLS,Reality or None\\n - socks or http should be like:\\n + (socks or http)://user:pass@host:port\\n + (socks or http)://host:port');               
                 return false;
             }
 
@@ -3171,11 +3192,9 @@ function buildXrayTrojanOutbound (tag, address, port, password, host, proxyIP) {
             servers: [
                 {
                     address: address,
-                    level: 8,
-                    method: "chacha20-poly1305",
-                    ota: false,
+                    port: port,
                     password: password,
-                    port: port
+                    level: 8
                 }
             ]
         },
@@ -3239,48 +3258,44 @@ function buildXrayWarpOutbound (remark, ipv6, privateKey, publicKey, endpoint, r
     return outbound;
 }
 
-function buildXraySocksChainOutbound(socksChainConfig) {
-    const regex = /(?:(\w+):(\w+)@)?([a-zA-Z0-9.-]+):([0-9]+)/;
-    const matches = socksChainConfig.match(regex);
-    const username = matches[1] || '';
-    const password = matches[2] || '';
-    const Address = matches[3];
-    const port = matches[4];
-
-    return {
-        protocol: "socks",
-        settings: {
-            servers: [
-                {
-                    address: Address,
-                    level: 8,
-                    ota: false,
-                    port: +port,
-                    users: [
-                        {
-                            level: 8,
-                            user: username,
-                            pass: password
-                        }
-                    ]
+function buildXrayChainOutbound(chainProxyParams) {
+    if (chainProxyParams.protocol) {
+        const { protocol, host, port, user, pass } = chainProxyParams;
+        return {
+            protocol: protocol,
+            settings: {
+                servers: [
+                    {
+                        address: host,
+                        port: +port,
+                        users: [
+                            {
+                                user: user,
+                                pass: pass,
+                                level: 8
+                            }
+                        ]
+                    }
+                ]
+            },
+            streamSettings: {
+                network: "tcp",
+                sockopt: {
+                    dialerProxy: "proxy",
+                    tcpNoDelay: true
                 }
-            ]
-        },
-        streamSettings: {
-            network: "tcp",
-            sockopt: {
-                dialerProxy: "proxy"
-            }
-        },
-        tag: "chain-proxy"
-    };
-}
+            },
+            mux: {
+                enabled: true,
+                concurrency: 8,
+                xudpConcurrency: 16,
+                xudpProxyUDP443: "reject"
+            },
+            tag: "out"
+        };
+    }
 
-function buildXrayChainOutbound(proxyParams) {
-    const { hostName, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, spx, headerType, host, path, authority, serviceName, mode } = proxyParams;
-    
-    
-
+    const { hostName, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, spx, headerType, host, path, authority, serviceName, mode } = chainProxyParams;
     let proxyOutbound = {
         mux: {
             concurrency: 8,
@@ -3488,7 +3503,7 @@ async function getFragmentConfigs(env, hostName, client) {
     let proxyIndex = 1;
     const bestFragValues = ['10-20', '20-30', '30-40', '40-50', '50-60', '60-70', 
                             '70-80', '80-90', '90-100', '10-30', '20-40', '30-50', 
-                            '40-60', '50-70', '60-80', '70-90', '80-100', '100-200']
+                            '40-60', '50-70', '60-80', '70-90', '80-100', '100-200'];
 
     try {
         proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
@@ -3521,7 +3536,7 @@ async function getFragmentConfigs(env, hostName, client) {
     } = proxySettings;
 
     const Addresses = await getConfigAddresses(hostName, cleanIPs, false);
-
+    
     if (outProxy) {
         const proxyParams = JSON.parse(outProxyParams);
         try {
@@ -3568,7 +3583,7 @@ async function getFragmentConfigs(env, hostName, client) {
                 
                 if (proxyOutbound) {
                     fragConfig.outbounds = [{...proxyOutbound}, { ...outbound}, ...fragConfig.outbounds];
-                    outboundAddresses.push(proxyOutbound.settings.vnext[0].address);
+                    outboundAddresses.push(outProxyParams.hostName || outProxyParams.host);
                     fragConfig.routing.rules = buildXrayRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, true, false, false, false);
                 } else {
                     fragConfig.outbounds = [{ ...outbound}, ...fragConfig.outbounds];
@@ -3607,7 +3622,7 @@ async function getFragmentConfigs(env, hostName, client) {
     }
     
     let outboundAddresses = proxyOutbound 
-        ? [...Addresses, proxyOutbound.settings.vnext[0].address, 'www.gstatic.com'] 
+        ? [...Addresses, outProxyParams.hostName || outProxyParams.host, 'www.gstatic.com'] 
         : [...Addresses, 'www.gstatic.com'];
     let bestPing = structuredClone(xrayConfigTemp);
     bestPing.remarks = '💦 BPB F - Best Ping 💥';
@@ -3632,7 +3647,7 @@ async function getFragmentConfigs(env, hostName, client) {
     }
 
     outboundAddresses = proxyOutbound 
-        ? [hostName, proxyOutbound.settings.vnext[0].address, 'www.gstatic.com'] 
+        ? [hostName, outProxyParams.hostName || outProxyParams.host, 'www.gstatic.com'] 
         : [hostName, 'www.gstatic.com'];
     let bestFragment = structuredClone(xrayConfigTemp);
     bestFragment.remarks = '💦 BPB F - Best Fragment 😎';
@@ -3895,9 +3910,22 @@ function buildClashWarpOutbound (remark, ipv6, privateKey, publicKey, endpoint, 
     };
 }
 
-function buildClashChainOutbound(proxyParams) {
-    const { hostName, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, spx, headerType, host, path, authority, serviceName, mode } = proxyParams;
+function buildClashChainOutbound(chainProxyParams) {
+    if (chainProxyParams.protocol) {
+        const { protocol, host, port, user, pass } = chainProxyParams;
+        const proxyType = protocol === 'socks' ? 'socks5' : protocol; 
+        return {
+            "name": "",
+            "type": proxyType,
+            "server": host,
+            "port": +port,
+            "dialer-proxy": "",
+            "username": user,
+            "password": pass
+        };
+    }
 
+    const { hostName, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, spx, headerType, host, path, authority, serviceName, mode } = chainProxyParams;
     let chainOutbound = {
         "name": "💦 Chain Best Ping 💥",
         "type": "vless",
@@ -3989,7 +4017,6 @@ async function getClashConfig (env, hostName, isWarp) {
         
         try {
             chainProxyOutbound = buildClashChainOutbound(proxyParams);
-            outbounds.push(chainProxyOutbound);
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
             chainProxyOutbound = undefined;
@@ -4017,6 +4044,7 @@ async function getClashConfig (env, hostName, isWarp) {
     }
 
     let protocolsNo = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
+    let proxyIndex = 1;
 
     for (let i = 0; i < protocolsNo && !isWarp; i++) {
         ports.forEach(port => {
@@ -4026,7 +4054,7 @@ async function getClashConfig (env, hostName, isWarp) {
                 if (vlessConfigs && i === 0) {
                     remark = generateRemark(index, port, 'VLESS', false).replace(' : ', ' - ');
                     path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
-                    VLESSOutbound = buildClashVLESSOutbound(remark, addr, port, userID, hostName, path);
+                    VLESSOutbound = buildClashVLESSOutbound(chainProxyOutbound ? `proxy-${proxyIndex}` : remark, addr, port, userID, hostName, path);
                     outbounds.push(VLESSOutbound);
                     outboundsRemarks.push(remark);
                 }
@@ -4034,9 +4062,17 @@ async function getClashConfig (env, hostName, isWarp) {
                 if (trojanConfigs && !VLESSOutbound && defaultHttpsPorts.includes(port)) {
                     remark = generateRemark(index, port, 'Trojan', false).replace(' : ', ' - ');
                     path = `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
-                    TrojanOutbound = buildClashTrojanOutbound(remark, addr, port, trojanPassword, hostName, path);
+                    TrojanOutbound = buildClashTrojanOutbound(chainProxyOutbound ? `proxy-${proxyIndex}` : remark, addr, port, trojanPassword, hostName, path);
                     outbounds.push(TrojanOutbound);
                     outboundsRemarks.push(remark);
+                }
+
+                if (chainProxyOutbound && (TrojanOutbound || VLESSOutbound)) {
+                    let chain = structuredClone(chainProxyOutbound);
+                    chain['name'] = remark;
+                    chain['dialer-proxy'] = `proxy-${proxyIndex}`;
+                    outbounds.push(chain);
+                    proxyIndex++;
                 }
             });
         });
@@ -4087,9 +4123,7 @@ async function getClashConfig (env, hostName, isWarp) {
                 "type": "select",
                 "proxies": isWarp
                     ? ['💦 Warp Best Ping 🚀', '💦 WoW Best Ping 🚀', ...warpOutboundsRemarks, ...wowOutboundRemarks ]
-                    : outProxy 
-                        ? ['💦 Chain Best Ping 💥', '💦 Best Ping 💥', ...outboundsRemarks ]
-                        : ['💦 Best Ping 💥', ...outboundsRemarks ]
+                    : ['💦 Best Ping 💥', ...outboundsRemarks ]
             },
             {
                 "name": isWarp ? `💦 Warp Best Ping 🚀`: `💦 Best Ping 💥`,
@@ -4403,18 +4437,38 @@ function buildSingboxWarpOutbound (remark, ipv6, privateKey, publicKey, endpoint
     };
 }
 
-function buildSingboxChainOutbound(proxyParams) {
-    const { hostName, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, spx, headerType, host, path, authority, serviceName, mode } = proxyParams;
+function buildSingboxChainOutbound(chainProxyParams) {
+    if (chainProxyParams.protocol) {
+        const { protocol, host, port, user, pass } = chainProxyParams;
+    
+        let chainOutbound = {
+            type: protocol,
+            tag: "",
+            server: host,
+            server_port: +port,
+            username: user,
+            password: pass,
+            detour: ""
+        };
+    
+        protocol === 'socks' && Object.assign(chainOutbound, {
+            version: "5",
+            network: "tcp"
+        });
+    
+        return chainOutbound;
+    }
 
+    const { hostName, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, spx, headerType, host, path, authority, serviceName, mode } = chainProxyParams;
     let chainOutbound = {
         type: "vless",
-        tag: "💦 Chain Best Ping 💥",
+        tag: "",
         server: hostName,
         server_port: +port,
         uuid: uuid,
         flow: flow,
         network: "tcp",
-        detour: "💦 Best Ping 💥"
+        detour: ""
     };
 
     if (security === 'tls' || security === 'reality') {
@@ -4494,13 +4548,11 @@ async function getSingboxConfig (env, hostName, client, isWarp) {
     let config = structuredClone(singboxConfigTemp);
     
     if (outProxy && !isWarp) {
-        const proxyParams = JSON.parse(outProxyParams);
-        
+        const proxyParams = JSON.parse(outProxyParams);      
         try {
             chainProxyOutbound = buildSingboxChainOutbound(proxyParams);
-            config.outbounds.push(chainProxyOutbound);
             domainRegex.test(chainProxyOutbound.server) && outboundDomains.push(chainProxyOutbound.server);
-            config.outbounds[0].outbounds.unshift('💦 Chain Best Ping 💥');
+            config.dns.servers[0].detour = "proxy-1";
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
             chainProxyOutbound = undefined;
@@ -4513,9 +4565,7 @@ async function getSingboxConfig (env, hostName, client, isWarp) {
         }
     }
 
-    let outbound;
-    let remark;
-    let path;
+    let outbound, remark, path;
     config.dns.servers[0].address = remoteDNS;
     config.dns.servers[1].address = localDNS === 'localhost' ? 'local' : localDNS;
     const Addresses = await getConfigAddresses(hostName, cleanIPs, false);
@@ -4551,29 +4601,38 @@ async function getSingboxConfig (env, hostName, client, isWarp) {
     }
 
     let protocolsNo = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
+    let proxyIndex = 1;
 
     for (let i = 0; i < protocolsNo && !isWarp; i++) {
         ports.forEach(port => {
             Addresses.forEach((addr, index) => {
                 let VLESSOutbound, TrojanOutbound;
-
+         
                 if (vlessConfigs && i === 0) {
                     remark = generateRemark(index, port, 'VLESS', false);
                     path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
-                    VLESSOutbound = buildSingboxVLESSOutbound(remark, addr, port, userID, hostName, path);
+                    VLESSOutbound = buildSingboxVLESSOutbound(chainProxyOutbound ? `proxy-${proxyIndex}` : remark, addr, port, userID, hostName, path);
                     config.outbounds.push(VLESSOutbound);
                 }
                 
                 if (trojanConfigs && !VLESSOutbound) {
                     remark = generateRemark(index, port, 'Trojan', false);
                     path = `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
-                    TrojanOutbound = buildSingboxTrojanOutbound(remark, addr, port, trojanPassword, hostName, path);
+                    TrojanOutbound = buildSingboxTrojanOutbound(chainProxyOutbound ? `proxy-${proxyIndex}` : remark, addr, port, trojanPassword, hostName, path);
                     config.outbounds.push(TrojanOutbound);
                 }
-
+                
+                if (chainProxyOutbound) {
+                    let chain = structuredClone(chainProxyOutbound);
+                    chain.tag = remark;
+                    chain.detour = `proxy-${proxyIndex}`;
+                    config.outbounds.push(chain);
+                }
+                
                 config.outbounds[0].outbounds.push(remark);
                 config.outbounds[1].outbounds.push(remark);
                 domainRegex.test(addr) && outboundDomains.push(addr);
+                proxyIndex++;
             });
         });
     }
