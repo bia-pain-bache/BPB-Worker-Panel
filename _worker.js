@@ -2439,7 +2439,12 @@ async function renderHomePage (env, hostName, fragConfigs) {
             const isVless = /vless:\\/\\/[^\s@]+@[^\\s:]+:[^\\s]+/.test(chainProxy);
             const isSocksHttp = /^(http|socks):\\/\\/(?:([^:@]+):([^:@]+)@)?([^:@]+):(\\d+)$/.test(chainProxy);
             const hasSecurity = /security=/.test(chainProxy);
-            const validSecurityType = /security=(tls|none|reality)/.test(chainProxy);
+            const securityRegex = /security=(tls|none|reality)/;
+            const validSecurityType = securityRegex.test(chainProxy);
+            let match = chainProxy.match(securityRegex);
+            const securityType = match ? match[1] : null;
+            match = chainProxy.match(/:(\\d+)\\?/);
+            const vlessPort = match ? match[1] : null;
             const validTransmission = /type=(tcp|grpc|ws)/.test(chainProxy);
             const validIPDomain = /^((?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,})|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|\\[(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,7}:\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}\\]|\\[[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}\\]|\\[:(?::[a-fA-F0-9]{1,4}){1,7}\\]|\\[\\](?:::[a-fA-F0-9]{1,4}){1,7}\\])$/i;
             const checkedPorts = Array.from(document.querySelectorAll('input[id^="port-"]:checked')).map(input => input.id.split('-')[1]);
@@ -2475,8 +2480,13 @@ async function renderHomePage (env, hostName, fragConfigs) {
                 return false;
             }
 
-            if ((!(isVless && (hasSecurity && validSecurityType || !hasSecurity) && validTransmission) && chainProxy) && (!isSocksHttp && chainProxy)) {
+            if (!(isVless && (hasSecurity && validSecurityType || !hasSecurity) && validTransmission) && !isSocksHttp && chainProxy) {
                 alert('⛔ Invalid Config! 🫤 \\n - The chain proxy should be VLESS, Socks or Http!\\n - VLESS transmission should be GRPC,WS or TCP\\n - VLESS security should be TLS,Reality or None\\n - socks or http should be like:\\n + (socks or http)://user:pass@host:port\\n + (socks or http)://host:port');               
+                return false;
+            }
+
+            if (isVless && securityType === 'tls' && vlessPort !== '443') {
+                alert('⛔ VLESS TLS port can be only 443 to be used as a proxy chain! 🫤');               
                 return false;
             }
 
@@ -3456,6 +3466,7 @@ async function getNormalConfigs(env, hostName, client) {
     let proxySettings = {};
     let vlessConfs = '';
     let trojanConfs = '';
+    let chainProxy = '';
 
     try {
         proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
@@ -3464,7 +3475,7 @@ async function getNormalConfigs(env, hostName, client) {
         throw new Error(`An error occurred while getting normal configs - ${error}`);
     }
 
-    const { cleanIPs, proxyIP, ports, vlessConfigs, trojanConfigs } = proxySettings;
+    const { cleanIPs, proxyIP, ports, vlessConfigs, trojanConfigs , outProxy} = proxySettings;
     const Addresses = await getConfigAddresses(hostName, cleanIPs, false);
 
     ports.forEach(port => {
@@ -3492,7 +3503,20 @@ async function getNormalConfigs(env, hostName, client) {
         });
     });
 
-    return btoa(vlessConfs + trojanConfs);
+    if (outProxy) {
+        let chainRemark = `#${encodeURIComponent('💦 Chain proxy 🔗')}`;
+        if (outProxy.startsWith('socks') || outProxy.startsWith('http')) {
+            const regex = /^(?:socks|http):\/\/([^@]+)@/;
+            const userPass = outProxy.match(regex)[1];
+            chainProxy = userPass 
+                ? outProxy.replace(userPass, btoa(userPass)) + chainRemark 
+                : outProxy + chainRemark;
+        } else {
+            chainProxy = outProxy.split('#')[0] + chainRemark;
+        }
+    }
+
+    return btoa(vlessConfs + trojanConfs + chainProxy);
 }
 
 async function getFragmentConfigs(env, hostName, client) {
@@ -3536,9 +3560,9 @@ async function getFragmentConfigs(env, hostName, client) {
     } = proxySettings;
 
     const Addresses = await getConfigAddresses(hostName, cleanIPs, false);
+    const proxyParams = outProxyParams ? JSON.parse(outProxyParams) : null;
     
     if (outProxy) {
-        const proxyParams = JSON.parse(outProxyParams);
         try {
             proxyOutbound = buildXrayChainOutbound(proxyParams);
         } catch (error) {
@@ -3583,7 +3607,7 @@ async function getFragmentConfigs(env, hostName, client) {
                 
                 if (proxyOutbound) {
                     fragConfig.outbounds = [{...proxyOutbound}, { ...outbound}, ...fragConfig.outbounds];
-                    outboundAddresses.push(outProxyParams.hostName || outProxyParams.host);
+                    outboundAddresses.push(proxyParams.hostName || proxyParams.host);
                     fragConfig.routing.rules = buildXrayRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, true, false, false, false);
                 } else {
                     fragConfig.outbounds = [{ ...outbound}, ...fragConfig.outbounds];
@@ -3622,7 +3646,7 @@ async function getFragmentConfigs(env, hostName, client) {
     }
     
     let outboundAddresses = proxyOutbound 
-        ? [...Addresses, outProxyParams.hostName || outProxyParams.host, 'www.gstatic.com'] 
+        ? [...Addresses, proxyParams.hostName || proxyParams.host, 'www.gstatic.com'] 
         : [...Addresses, 'www.gstatic.com'];
     let bestPing = structuredClone(xrayConfigTemp);
     bestPing.remarks = '💦 BPB F - Best Ping 💥';
@@ -3647,7 +3671,7 @@ async function getFragmentConfigs(env, hostName, client) {
     }
 
     outboundAddresses = proxyOutbound 
-        ? [hostName, outProxyParams.hostName || outProxyParams.host, 'www.gstatic.com'] 
+        ? [hostName, proxyParams.hostName || proxyParams.host, 'www.gstatic.com'] 
         : [hostName, 'www.gstatic.com'];
     let bestFragment = structuredClone(xrayConfigTemp);
     bestFragment.remarks = '💦 BPB F - Best Fragment 😎';
@@ -4817,7 +4841,7 @@ const singboxConfigTemp = {
             endpoint_independent_nat: true,
             stack: "mixed",
             sniff: true,
-            sniff_override_destination: true
+            sniff_override_destination: false
         },
         {
             type: "mixed",
@@ -4825,7 +4849,7 @@ const singboxConfigTemp = {
             listen: "0.0.0.0",
             listen_port: 2080,
             sniff: true,
-            sniff_override_destination: true
+            sniff_override_destination: false
         }
     ],
     outbounds: [
