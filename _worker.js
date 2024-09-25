@@ -19,7 +19,7 @@ let trojanPassword = `bpb-trojan`;
 // https://emn178.github.io/online-tools/sha224.html
 // https://www.atatus.com/tools/sha224-to-hash
 let hashPassword = 'b5d0a5f7ff7aac227bc68b55ae713131ffdf605ca0da52cce182d513';
-let panelVersion = '2.5.8';
+let panelVersion = '2.5.9';
 
 if (!isValidUUID(userID)) {
     throw new Error('UUID is not valid');
@@ -4071,11 +4071,12 @@ async function getClashConfig (env, hostName, isWarp) {
         customCdnSni
     } = proxySettings; 
 
+    let config = structuredClone(clashConfigTemp);
+    config.dns = await buildClashDNS(isWarp ? '1.1.1.1' : remoteDNS, localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina);
+    config.rules = buildClashRoutingRules(localDNS, blockAds, bypassIran, bypassChina, blockPorn, blockUDP443, bypassLAN, isWarp);
     const Addresses = (await getConfigAddresses(hostName, cleanIPs));
     const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
     const totalAddresses = [...Addresses, ...customCdnAddresses];
-    let dns = await buildClashDNS(isWarp ? '1.1.1.1' : remoteDNS, localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina);
-    let routingRules = buildClashRoutingRules(localDNS, blockAds, bypassIran, bypassChina, blockPorn, blockUDP443, bypassLAN, isWarp);
 
     if (outProxy && !isWarp) {
         const proxyParams = JSON.parse(outProxyParams);
@@ -4165,64 +4166,14 @@ async function getClashConfig (env, hostName, isWarp) {
         });
     }
 
-    let config = {
-        "mixed-port": 7890,
-        "ipv6": true,
-        "allow-lan": true,
-        "mode": "rule",
-        "log-level": "info",
-        "keep-alive-interval": 30,
-        "unified-delay": false,
-        "dns": dns,
-        "tun": {
-            "enable": true,
-            "stack": "system",
-            "auto-route": true,
-            "auto-redirect": true,
-            "auto-detect-interface": true,
-            "dns-hijack": [
-                "any:53",
-                "198.18.0.2:53"
-            ],
-            "device": "utun0",
-            "mtu": 9000,
-            "strict-route": true
-        },
-        "sniffer": {
-            "enable": true,
-            "force-dns-mapping": true,
-            "parse-pure-ip": true,
-            "sniff": {
-                "HTTP": {
-                    "ports": [80, 8080, 8880, 2052, 2082, 2086, 2095],
-                    "override-destination": true
-                },
-                "TLS": {
-                    "ports": [443, 8443, 2053, 2083, 2087, 2096],
-                    "override-destination": true
-                }
-            }
-        },
-        "proxies": outbounds,
-        "proxy-groups": [
-            {
-                "name": "✅ Selector",
-                "type": "select",
-                "proxies": isWarp
-                    ? ['💦 Warp Best Ping 🚀', '💦 WoW Best Ping 🚀', ...warpOutboundsRemarks, ...wowOutboundRemarks ]
-                    : ['💦 Best Ping 💥', ...outboundsRemarks ]
-            },
-            {
-                "name": isWarp ? `💦 Warp Best Ping 🚀`: `💦 Best Ping 💥`,
-                "type": "url-test",
-                "url": "https://www.gstatic.com/generate_204",
-                "interval": 30,
-                "tolerance": 50,
-                "proxies": isWarp ? warpOutboundsRemarks : outboundsRemarks
-            }
-        ],
-        "rules": routingRules
-    };
+
+    config.proxies = outbounds;
+    config['proxy-groups'][0].proxies = isWarp
+        ? ['💦 Warp Best Ping 🚀', '💦 WoW Best Ping 🚀', ...warpOutboundsRemarks, ...wowOutboundRemarks ]
+        : ['💦 Best Ping 💥', ...outboundsRemarks ];
+
+    config['proxy-groups'][1].proxies = isWarp ? warpOutboundsRemarks : outboundsRemarks;
+    config['proxy-groups'][1].name = isWarp ? `💦 Warp Best Ping 🚀`: `💦 Best Ping 💥`,
 
     isWarp && config["proxy-groups"].push({
         "name": "💦 WoW Best Ping 🚀",
@@ -5079,6 +5030,13 @@ const singboxConfigTemp = {
         override_android_vpn: true,
         final: "proxy"
     },
+    ntp: {
+        enabled: false,
+        server: "time.apple.com",
+        server_port: 123,
+        detour: "direct",
+        interval: "30m",
+    },
     experimental: {
         cache_file: {
             enabled: true
@@ -5088,8 +5046,70 @@ const singboxConfigTemp = {
             external_ui: "yacd",
             external_ui_download_url: "https://github.com/MetaCubeX/Yacd-meta/archive/gh-pages.zip",
             external_ui_download_detour: "direct",
-            secret: "",
             default_mode: "rule"
         }
+    }
+};
+
+const clashConfigTemp = {
+    "mixed-port": 7890,
+    "ipv6": true,
+    "allow-lan": true,
+    "mode": "rule",
+    "log-level": "info",
+    "keep-alive-interval": 30,
+    "unified-delay": false,
+    "dns": {},
+    "tun": {
+        "enable": true,
+        "stack": "system",
+        "auto-route": true,
+        "auto-redirect": true,
+        "auto-detect-interface": true,
+        "dns-hijack": [
+            "any:53",
+            "198.18.0.2:53"
+        ],
+        "device": "utun0",
+        "mtu": 9000,
+        "strict-route": true
+    },
+    "sniffer": {
+        "enable": true,
+        "force-dns-mapping": true,
+        "parse-pure-ip": true,
+        "sniff": {
+            "HTTP": {
+                "ports": [80, 8080, 8880, 2052, 2082, 2086, 2095],
+                "override-destination": false
+            },
+            "TLS": {
+                "ports": [443, 8443, 2053, 2083, 2087, 2096],
+                "override-destination": false
+            }
+        }
+    },
+    "proxies": [],
+    "proxy-groups": [
+        {
+            "name": "✅ Selector",
+            "type": "select",
+            "proxies": []
+        },
+        {
+            "name": "",
+            "type": "url-test",
+            "url": "https://www.gstatic.com/generate_204",
+            "interval": 30,
+            "tolerance": 50,
+            "proxies": []
+        }
+    ],
+    "rules": [],
+    "ntp": {
+        "enable": true,
+        "server": "time.apple.com",
+        "port": 123,
+        "interval": 30
     }
 };
