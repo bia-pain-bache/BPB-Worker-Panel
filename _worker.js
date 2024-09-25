@@ -125,7 +125,7 @@ export default {
   
                         let fragConfigs = client === 'hiddify'
                             ? await getSingboxConfig(env, host, client, false, true)
-                            : (await getFragmentConfigs(env, host, 'v2ray')).map(config => config.config);
+                            : (await getFragmentConfigs(env, host));
 
                         return new Response(JSON.stringify(fragConfigs, null, 4), { 
                             status: 200,
@@ -197,8 +197,7 @@ export default {
                         const proxySettings = await env.bpb.get('proxySettings', {type: 'json'});
                         const isUpdated = panelVersion === proxySettings?.panelVersion;
                         if (!proxySettings || !isUpdated) await updateDataset(env);
-                        const fragConfs = await getFragmentConfigs(env, host, 'nekoray');
-                        const homePage = await renderHomePage(env, host, fragConfs);
+                        const homePage = await renderHomePage(env, host);
 
                         return new Response(homePage, {
                             status: 200,
@@ -1425,32 +1424,32 @@ async function renderHomePage (env, hostName, fragConfigs) {
     const isWarpPlus = warpPlusLicense ? true : false;
     let activeProtocols = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
 
-    const genCustomConfRow = async (configs) => {
-        let tableBlock = "";
-        configs.forEach(config => {
-            tableBlock += `
-            <tr>
-                <td>
-                    ${config.address === 'Best-Ping' 
-                        ? `<div  style="justify-content: center;"><span><b>💦 BPB F - Best-Ping 💥</b></span></div>` 
-                        : config.address === 'WorkerLess'
-                            ? `<div  style="justify-content: center;"><span><b>💦 BPB F - WorkerLess ⭐</b></span></div>`
-                            : config.address === 'Best-Fragment'
-                                ? `<div  style="justify-content: center;"><span><b>💦 BPB F - Best-Fragment 😎</b></span></div>`
-                                : config.address
-                    }
-                </td>
-                <td>
-                    <button onclick="copyToClipboard('${encodeURIComponent(JSON.stringify(config.config, null, 4))}', true)">
-                        Copy Config 
-                        <span class="material-symbols-outlined">copy_all</span>
-                    </button>
-                </td>
-            </tr>`;
-        });
+    // const genCustomConfRow = async (configs) => {
+    //     let tableBlock = "";
+    //     configs.forEach(config => {
+    //         tableBlock += `
+    //         <tr>
+    //             <td>
+    //                 ${config.address === 'Best-Ping' 
+    //                     ? `<div  style="justify-content: center;"><span><b>💦 BPB F - Best-Ping 💥</b></span></div>` 
+    //                     : config.address === 'WorkerLess'
+    //                         ? `<div  style="justify-content: center;"><span><b>💦 BPB F - WorkerLess ⭐</b></span></div>`
+    //                         : config.address === 'Best-Fragment'
+    //                             ? `<div  style="justify-content: center;"><span><b>💦 BPB F - Best-Fragment 😎</b></span></div>`
+    //                             : config.address
+    //                 }
+    //             </td>
+    //             <td>
+    //                 <button onclick="copyToClipboard('${encodeURIComponent(JSON.stringify(config.config, null, 4))}', true)">
+    //                     Copy Config 
+    //                     <span class="material-symbols-outlined">copy_all</span>
+    //                 </button>
+    //             </td>
+    //         </tr>`;
+    //     });
 
-        return tableBlock;
-    }
+    //     return tableBlock;
+    // }
 
     const buildPortsBlock = async () => {
         let httpPortsBlock = '';
@@ -2218,16 +2217,6 @@ async function renderHomePage (env, hostName, fragConfigs) {
                             </button>
 						</td>
 					</tr>
-				</table>
-			</div>
-            <h2>FRAGMENT - NEKORAY ⛓️</h2>
-            <div class="table-container">
-				<table id="custom-configs-table">
-					<tr style="text-wrap: nowrap;">
-						<th>Config Address</th>
-						<th>Fragment Config</th>
-					</tr>					
-					${await genCustomConfRow(fragConfigs)}
 				</table>
 			</div>
             <div id="myModal" class="modal">
@@ -3218,7 +3207,7 @@ function buildXrayRoutingRules (localDNS, blockAds, bypassIran, blockPorn, bypas
         type: "field",
     }); 
 
-    !isWarp && rules.push({
+    !(isWarp || isWorkerLess) && rules.push({
         network: "udp",
         outboundTag: "block",
         type: "field",
@@ -3499,35 +3488,10 @@ function buildXrayChainOutbound(chainProxyParams) {
     return proxyOutbound;
 }
 
-async function buildWorkerLessConfig(env, client) {
-    let proxySettings = {};
-
-    try {
-        proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
-    } catch (error) {
-        console.log(error);
-        throw new Error(`An error occurred while generating WorkerLess config - ${error}`);
-    }
-
-    const { 
-		remoteDNS, 
-		localDNS, 
-		lengthMin,  
-		lengthMax,  
-		intervalMin,  
-		intervalMax, 
-		blockAds, 
-		bypassIran, 
-		blockPorn, 
-		bypassLAN, 
-		bypassChina, 
-		blockUDP443 
-	} = proxySettings;  
-
+async function buildWorkerLessConfig(remoteDNS, localDNS, lengthMin,  lengthMax,  intervalMin,  intervalMax, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443) {
     let fakeOutbound = buildXrayVLESSOutbound('fake-outbound', 'google.com', 443, userID, 'google.com', '');
     delete fakeOutbound.streamSettings.sockopt;
     fakeOutbound.streamSettings.wsSettings.path = '/';
-
     let fragConfig = structuredClone(xrayConfigTemp);
     fragConfig.remarks  = '💦 BPB F - WorkerLess ⭐'
     fragConfig.dns = await buildXrayDNSObject('https://cloudflare-dns.com/dns-query', localDNS, blockAds, bypassIran, bypassChina, bypassLAN, blockPorn, true);
@@ -3545,15 +3509,10 @@ async function buildWorkerLessConfig(env, client) {
     delete fragConfig.routing.balancers;
     delete fragConfig.observatory;
 
-    if (client === 'nekoray') {
-        fragConfig.inbounds[0].port = 2080;
-        fragConfig.inbounds[1].port = 2081;
-    }
-
     return fragConfig;
 }
 
-async function getFragmentConfigs(env, hostName, client) {
+async function getFragmentConfigs(env, hostName) {
     let Configs = [];
     let outbounds = [];
     let proxySettings = {};
@@ -3651,18 +3610,8 @@ async function getFragmentConfigs(env, hostName, client) {
                 } else {
                     fragConfig.outbounds = [{ ...outbound}, ...fragConfig.outbounds];
                 }
-                
-                if (client === 'nekoray') {
-                    fragConfig.inbounds[0].port = 2080;
-                    fragConfig.inbounds[1].port = 2081;
-                    fragConfig.inbounds[2].port = 6450;
-                }
-                
-                Configs.push({
-                    address: remark,
-                    config: fragConfig
-                }); 
     
+                Configs.push(fragConfig); 
                 outbound.tag = `prox_${proxyIndex}`;
                 
                 if (chainProxy) {
@@ -3687,12 +3636,6 @@ async function getFragmentConfigs(env, hostName, client) {
         bestPing.observatory.subjectSelector = ["out"];
         bestPing.routing.balancers[0].selector = ["out"];
         bestPing.dns.servers[1].domains = domainAddressesRules;
-    }
-
-    if (client === 'nekoray') {
-        bestPing.inbounds[0].port = 2080;
-        bestPing.inbounds[1].port = 2081;
-        bestPing.inbounds[2].port = 6450;
     }
 
     let bestFragment = structuredClone(balancerConfig);
@@ -3733,19 +3676,8 @@ async function getFragmentConfigs(env, hostName, client) {
     bestFragment.observatory.subjectSelector = ["frag"];
     bestFragment.observatory.probeInterval = '30s';
     bestFragment.routing.balancers[0].selector = ["frag"];
-
-    if (client === 'nekoray') {
-        bestFragment.inbounds[0].port = 2080;
-        bestFragment.inbounds[1].port = 2081;
-        bestFragment.inbounds[2].port = 6450;
-    }
-
-    const workerLessConfig = await buildWorkerLessConfig(env, client); 
-    Configs.push(
-        { address: 'Best-Ping', config: bestPing}, 
-        { address: 'Best-Fragment', config: bestFragment}, 
-        { address: 'WorkerLess', config: workerLessConfig}
-    );
+    const workerLessConfig = await buildWorkerLessConfig(remoteDNS, localDNS, lengthMin,  lengthMax,  intervalMin,  intervalMax, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443); 
+    Configs.push(bestPing, bestFragment, workerLessConfig);
 
     return Configs;
 }
