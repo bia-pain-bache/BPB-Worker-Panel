@@ -92,7 +92,9 @@ export default {
                             return new Response(JSON.stringify(BestPingSFA, null, 4), { 
                                 status: 200,
                                 headers: {
-                                    "Content-Type": "application/json;charset=utf-8",
+                                    'Content-Type': 'application/json;charset=utf-8',
+                                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                                    'Surrogate-Control': 'no-store'
                                 }
                             });                            
                         }
@@ -102,7 +104,9 @@ export default {
                             return new Response(JSON.stringify(BestPingClash, null, 4), { 
                                 status: 200,
                                 headers: {
-                                    "Content-Type": "application/json;charset=utf-8",
+                                    'Content-Type': 'application/json;charset=utf-8',
+                                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                                    'Surrogate-Control': 'no-store'
                                 }
                             });                            
                         }
@@ -111,7 +115,9 @@ export default {
                         return new Response(normalConfigs, { 
                             status: 200,
                             headers: {
-                                "Content-Type": "text/plain;charset=utf-8",
+                                'Content-Type': 'text/plain;charset=utf-8',
+                                'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                                'Surrogate-Control': 'no-store'
                             }
                         });                        
 
@@ -124,7 +130,9 @@ export default {
                         return new Response(JSON.stringify(fragConfigs, null, 4), { 
                             status: 200,
                             headers: {
-                                "Content-Type": "application/json;charset=utf-8",
+                                'Content-Type': 'application/json;charset=utf-8',
+                                'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                                'Surrogate-Control': 'no-store'
                             }
                         });
 
@@ -135,7 +143,9 @@ export default {
                             return new Response(JSON.stringify(clashWarpConfigs, null, 4), { 
                                 status: 200,
                                 headers: {
-                                    "Content-Type": "application/json;charset=utf-8",
+                                    'Content-Type': 'application/json;charset=utf-8',
+                                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                                    'Surrogate-Control': 'no-store'
                                 }
                             });                            
                         }
@@ -145,7 +155,9 @@ export default {
                             return new Response(JSON.stringify(singboxWarpConfigs, null, 4), { 
                                 status: 200,
                                 headers: {
-                                    "Content-Type": "application/json;charset=utf-8",
+                                    'Content-Type': 'application/json;charset=utf-8',
+                                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                                    'Surrogate-Control': 'no-store'
                                 }
                             });                            
                         }
@@ -154,7 +166,9 @@ export default {
                         return new Response(JSON.stringify(warpConfig, null, 4), { 
                             status: 200,
                             headers: {
-                                "Content-Type": "application/json;charset=utf-8",
+                                'Content-Type': 'application/json;charset=utf-8',
+                                'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                                'Surrogate-Control': 'no-store'
                             }
                         });
 
@@ -169,9 +183,13 @@ export default {
                         const isAuth = await Authenticate(request, env); 
                         
                         if (request.method === 'POST') {     
-                            if (!isAuth) return new Response('Unauthorized', { status: 401 });             
+                            if (!isAuth) return new Response('Unauthorized', { status: 401 });
                             const formData = await request.formData();
-                            await updateDataset(env, formData);
+                            const isReset = formData.get('resetSettings') === 'true';             
+                            isReset 
+                                ? await updateDataset(env, null, true) 
+                                : await updateDataset(env, formData);
+
                             return new Response('Success', { status: 200 });
                         }
                         
@@ -1180,53 +1198,54 @@ function base64ToDecimal (base64) {
     return decimalArray;
 }
 
-async function updateDataset (env, Settings) {
-    let currentProxySettings = {};
+async function updateDataset (env, Settings, resetSettings) {
+    let currentProxySettings;
 
-    try {
-        currentProxySettings = await env.bpb.get("proxySettings", {type: 'json'});
-    } catch (error) {
-        console.log(error);
-        throw new Error(`An error occurred while getting current values - ${error}`);
+    if (!resetSettings) {
+        try {
+            currentProxySettings = await env.bpb.get("proxySettings", {type: 'json'});
+        } catch (error) {
+            console.log(error);
+            throw new Error(`An error occurred while getting current values - ${error}`);
+        }
     }
 
     const chainProxy = Settings?.get('outProxy');
-
     const proxySettings = {
-        remoteDNS: Settings ? Settings.get('remoteDNS') : currentProxySettings?.remoteDNS || 'https://94.140.14.14/dns-query',
-        localDNS: Settings ? Settings.get('localDNS') : currentProxySettings?.localDNS || '8.8.8.8',
-        lengthMin: Settings ? Settings.get('fragmentLengthMin') : currentProxySettings?.lengthMin || '100',
-        lengthMax: Settings ? Settings.get('fragmentLengthMax') : currentProxySettings?.lengthMax || '200',
-        intervalMin: Settings ? Settings.get('fragmentIntervalMin') : currentProxySettings?.intervalMin || '1',
-        intervalMax: Settings ? Settings.get('fragmentIntervalMax') : currentProxySettings?.intervalMax || '1',
-        fragmentPackets: Settings ? Settings.get('fragmentPackets') : currentProxySettings?.fragmentPackets || 'tlshello',
-        blockAds: Settings ? Settings.get('block-ads') : currentProxySettings?.blockAds || false,
-        bypassIran: Settings ? Settings.get('bypass-iran') : currentProxySettings?.bypassIran || false,
-        blockPorn: Settings ? Settings.get('block-porn') : currentProxySettings?.blockPorn || false,
-        bypassLAN: Settings ? Settings.get('bypass-lan') : currentProxySettings?.bypassLAN || false,
-        bypassChina: Settings ? Settings.get('bypass-china') : currentProxySettings?.bypassChina || false,
-        blockUDP443: Settings ? Settings.get('block-udp-443') : currentProxySettings?.blockUDP443 || false,
-        cleanIPs: Settings ? Settings.get('cleanIPs')?.replaceAll(' ', '') : currentProxySettings?.cleanIPs || '',
-        proxyIP: Settings ? Settings.get('proxyIP') : currentProxySettings?.proxyIP || '',
-        ports: Settings ? Settings.getAll('ports[]') : currentProxySettings?.ports || ['443'],
-        vlessConfigs: Settings ? Settings.get('vlessConfigs') : currentProxySettings?.vlessConfigs || true,
-        trojanConfigs: Settings ? Settings.get('trojanConfigs') : currentProxySettings?.trojanConfigs || false,
-        outProxy: Settings ? chainProxy : currentProxySettings?.outProxy || '',
-        outProxyParams: chainProxy ? extractChainProxyParams(chainProxy) : currentProxySettings?.outProxyParams || '',
-        wowEndpoint: Settings ? Settings.get('wowEndpoint')?.replaceAll(' ', '') : currentProxySettings?.wowEndpoint || 'engage.cloudflareclient.com:2408',
-        warpEndpoints: Settings ? Settings.get('warpEndpoints')?.replaceAll(' ', '') : currentProxySettings?.warpEndpoints || 'engage.cloudflareclient.com:2408',
-        hiddifyNoiseMode: Settings ? Settings.get('hiddifyNoiseMode') : currentProxySettings?.hiddifyNoiseMode || 'm4',
-        nikaNGNoiseMode: Settings ? Settings.get('nikaNGNoiseMode') : currentProxySettings?.nikaNGNoiseMode || 'quic',
-        noiseCountMin: Settings ? Settings.get('noiseCountMin') : currentProxySettings?.noiseCountMin || '10',
-        noiseCountMax: Settings ? Settings.get('noiseCountMax') : currentProxySettings?.noiseCountMax || '15',
-        noiseSizeMin: Settings ? Settings.get('noiseSizeMin') : currentProxySettings?.noiseSizeMin || '5',
-        noiseSizeMax: Settings ? Settings.get('noiseSizeMax') : currentProxySettings?.noiseSizeMax || '10',
-        noiseDelayMin: Settings ? Settings.get('noiseDelayMin') : currentProxySettings?.noiseDelayMin || '1',
-        noiseDelayMax: Settings ? Settings.get('noiseDelayMax') : currentProxySettings?.noiseDelayMax || '1',
-        warpPlusLicense: Settings ? Settings.get('warpPlusLicense') : currentProxySettings?.warpPlusLicense || '',
-        customCdnAddrs: Settings ? Settings.get('customCdnAddrs')?.replaceAll(' ', '') : currentProxySettings?.customCdnAddrs || '',
-        customCdnHost: Settings ? Settings.get('customCdnHost') : currentProxySettings?.customCdnHost || '',
-        customCdnSni: Settings ? Settings.get('customCdnSni') : currentProxySettings?.customCdnSni || '',
+        remoteDNS: (Settings ? Settings.get('remoteDNS') : currentProxySettings?.remoteDNS) || 'https://94.140.14.14/dns-query',
+        localDNS: (Settings ? Settings.get('localDNS') : currentProxySettings?.localDNS) || '8.8.8.8',
+        lengthMin: (Settings ? Settings.get('fragmentLengthMin') : currentProxySettings?.lengthMin) || '100',
+        lengthMax: (Settings ? Settings.get('fragmentLengthMax') : currentProxySettings?.lengthMax) || '200',
+        intervalMin: (Settings ? Settings.get('fragmentIntervalMin') : currentProxySettings?.intervalMin) || '1',
+        intervalMax: (Settings ? Settings.get('fragmentIntervalMax') : currentProxySettings?.intervalMax) || '1',
+        fragmentPackets: (Settings ? Settings.get('fragmentPackets') : currentProxySettings?.fragmentPackets) || 'tlshello',
+        blockAds: (Settings ? Settings.get('block-ads') : currentProxySettings?.blockAds) || false,
+        bypassIran: (Settings ? Settings.get('bypass-iran') : currentProxySettings?.bypassIran) || false,
+        blockPorn: (Settings ? Settings.get('block-porn') : currentProxySettings?.blockPorn) || false,
+        bypassLAN: (Settings ? Settings.get('bypass-lan') : currentProxySettings?.bypassLAN) || false,
+        bypassChina: (Settings ? Settings.get('bypass-china') : currentProxySettings?.bypassChina) || false,
+        blockUDP443: (Settings ? Settings.get('block-udp-443') : currentProxySettings?.blockUDP443) || false,
+        cleanIPs: (Settings ? Settings.get('cleanIPs')?.replaceAll(' ', '') : currentProxySettings?.cleanIPs) || '',
+        proxyIP: (Settings ? Settings.get('proxyIP') : currentProxySettings?.proxyIP) || '',
+        ports: (Settings ? Settings.getAll('ports[]') : currentProxySettings?.ports) || ['443'],
+        vlessConfigs: (Settings ? Settings.get('vlessConfigs') : currentProxySettings?.vlessConfigs) || true,
+        trojanConfigs: (Settings ? Settings.get('trojanConfigs') : currentProxySettings?.trojanConfigs) || false,
+        outProxy: (Settings ? chainProxy : currentProxySettings?.outProxy) || '',
+        outProxyParams: (chainProxy ? extractChainProxyParams(chainProxy) : currentProxySettings?.outProxyParams) || '',
+        wowEndpoint: (Settings ? Settings.get('wowEndpoint')?.replaceAll(' ', '') : currentProxySettings?.wowEndpoint) || 'engage.cloudflareclient.com:2408',
+        warpEndpoints: (Settings ? Settings.get('warpEndpoints')?.replaceAll(' ', '') : currentProxySettings?.warpEndpoints) || 'engage.cloudflareclient.com:2408',
+        hiddifyNoiseMode: (Settings ? Settings.get('hiddifyNoiseMode') : currentProxySettings?.hiddifyNoiseMode) || 'm4',
+        nikaNGNoiseMode: (Settings ? Settings.get('nikaNGNoiseMode') : currentProxySettings?.nikaNGNoiseMode) || 'quic',
+        noiseCountMin: (Settings ? Settings.get('noiseCountMin') : currentProxySettings?.noiseCountMin) || '10',
+        noiseCountMax: (Settings ? Settings.get('noiseCountMax') : currentProxySettings?.noiseCountMax) || '15',
+        noiseSizeMin: (Settings ? Settings.get('noiseSizeMin') : currentProxySettings?.noiseSizeMin) || '5',
+        noiseSizeMax: (Settings ? Settings.get('noiseSizeMax') : currentProxySettings?.noiseSizeMax) || '10',
+        noiseDelayMin: (Settings ? Settings.get('noiseDelayMin') : currentProxySettings?.noiseDelayMin) || '1',
+        noiseDelayMax: (Settings ? Settings.get('noiseDelayMax') : currentProxySettings?.noiseDelayMax) || '1',
+        warpPlusLicense: (Settings ? Settings.get('warpPlusLicense') : currentProxySettings?.warpPlusLicense) || '',
+        customCdnAddrs: (Settings ? Settings.get('customCdnAddrs')?.replaceAll(' ', '') : currentProxySettings?.customCdnAddrs) || '',
+        customCdnHost: (Settings ? Settings.get('customCdnHost') : currentProxySettings?.customCdnHost) || '',
+        customCdnSni: (Settings ? Settings.get('customCdnSni') : currentProxySettings?.customCdnSni) || '',
         panelVersion: panelVersion
     };
 
@@ -1683,7 +1702,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
 				<div class="form-control">
 					<label for="localDNS">🏚️ Local DNS</label>
 					<input type="text" id="localDNS" name="localDNS" value="${localDNS}"
-						pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|localhost$"
+						pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|localhost$"
 						title="Please enter a valid DNS IP Address or localhost!"  required>
 				</div>
 				<div class="form-control">
@@ -1879,8 +1898,11 @@ async function renderHomePage (env, hostName, fragConfigs) {
 					</div>
 				</div>
 				<div id="apply" class="form-control">
-					<div style="grid-column: 2; width: 100%;">
-						<input type="submit" id="applyButton" class="button disabled" value="APPLY SETTINGS 💥" form="configForm">
+					<div style="grid-column: 2; width: 100%; display: inline-flex;">
+						<input type="submit" id="applyButton" style="margin-right: 10px;" class="button disabled" value="APPLY SETTINGS 💥" form="configForm">
+                        <button type="button" id="resetSettings" style="background: none; margin: 0; border: none; cursor: pointer;">
+                            <i class="fa fa-refresh fa-2x fa-border" aria-hidden="true"></i>
+                        </button>
 					</div>
 				</div>
 			</form>
@@ -2257,14 +2279,15 @@ async function renderHomePage (env, hostName, fragConfigs) {
 		document.addEventListener('DOMContentLoaded', async () => {
             const configForm = document.getElementById('configForm');            
             const modal = document.getElementById('myModal');
-            const changePass = document.getElementById("openModalBtn");
+            const changePass = document.getElementById('openModalBtn');
             const closeBtn = document.querySelector(".close");
             const passwordChangeForm = document.getElementById('passwordChangeForm');            
             const applyBtn = document.getElementById('applyButton');         
             const initialFormData = new FormData(configForm);
-            const closeQR = document.getElementById("closeQRModal");
-            let modalQR = document.getElementById("myQRModal");
-            let qrcodeContainer = document.getElementById("qrcode-container");
+            const closeQR = document.getElementById('closeQRModal');
+            const resetSettings = document.getElementById('resetSettings');
+            let modalQR = document.getElementById('myQRModal');
+            let qrcodeContainer = document.getElementById('qrcode-container');
             let forcedPassChange = false;
 
             ${isPassSet && !isWarpReady} && await getWarpConfigs();
@@ -2314,6 +2337,34 @@ async function renderHomePage (env, hostName, fragConfigs) {
             closeQR.addEventListener('click', () => {
                 modalQR.style.display = "none";
                 qrcodeContainer.lastElementChild.remove();
+            });
+            resetSettings.addEventListener('click', async () => {
+                const formData = new FormData();
+                formData.append('resetSettings', 'true');
+                try {
+                    document.body.style.cursor = 'wait';
+                    const refreshButtonVal = refreshBtn.innerHTML;
+                    refreshBtn.innerHTML = '⌛ Loading...';
+
+                    const response = await fetch('/panel', {
+                        method: 'POST',
+                        body: formData,
+                        credentials: 'include'
+                    });
+
+                    document.body.style.cursor = 'default';
+                    refreshBtn.innerHTML = refreshButtonVal;
+                    if (response.ok) {
+                        alert('✅ Panel settings reset to default successfully! 😎');
+                        window.location.reload(true);
+                    } else {
+                        const errorMessage = await response.text();
+                        console.error(errorMessage, response.status);
+                        alert('⚠️ An error occured, Please try again!\\n⛔ ' + errorMessage);
+                    }         
+                } catch (error) {
+                    console.error('Error:', error);
+                }
             });
             window.onclick = (event) => {
                 if (event.target == modalQR) {
@@ -2369,7 +2420,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
                 document.body.style.cursor = 'default';
                 refreshBtn.innerHTML = refreshButtonVal;
                 if (response.ok) {
-                    ${isWarpPlus} ? alert('Warp configs upgraded to PLUS successfully! 😎') : alert('Warp configs updated successfully! 😎');
+                    ${isWarpPlus} ? alert('✅ Warp configs upgraded to PLUS successfully! 😎') : alert('Warp configs updated successfully! 😎');
                 } else {
                     const errorMessage = await response.text();
                     console.error(errorMessage, response.status);
@@ -2472,6 +2523,12 @@ async function renderHomePage (env, hostName, fragConfigs) {
             const isCustomCdn = customCdnAddrs.length > 0 || customCdnHost !== '' || customCdnSni !== '';
             const wowEndpoint = document.getElementById('wowEndpoint').value?.replaceAll(' ', '').split(',');
             const warpEndpoints = document.getElementById('warpEndpoints').value?.replaceAll(' ', '').split(',');
+            const noiseCountMin = getValue('noiseCountMin');
+            const noiseCountMax = getValue('noiseCountMax');
+            const noiseSizeMin = getValue('noiseSizeMin');
+            const noiseSizeMax = getValue('noiseSizeMax');
+            const noiseDelayMin = getValue('noiseDelayMin');
+            const noiseDelayMax = getValue('noiseDelayMax');
             const cleanIPs = cleanIP.value?.split(',');
             const chainProxy = document.getElementById('outProxy').value?.trim();                    
             const formData = new FormData(configForm);
@@ -2514,7 +2571,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
                 return false;
             }
 
-            if (lengthMin >= lengthMax || intervalMin > intervalMax) {
+            if (lengthMin >= lengthMax || intervalMin > intervalMax || noiseCountMin > noiseCountMax || noiseSizeMin > noiseSizeMax || noiseDelayMin > noiseDelayMax) {
                 alert('⛔ Minimum should be smaller or equal to Maximum! 🫤');               
                 return false;
             }
@@ -2549,7 +2606,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
                 applyButton.value = applyButtonVal;
 
                 if (response.ok) {
-                    alert('Parameters applied successfully 😎');
+                    alert('✅ Parameters applied successfully 😎');
                     window.location.reload(true);
                 } else {
                     const errorMessage = await response.text();
@@ -2617,7 +2674,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
                 if (response.ok) {
                     modal.style.display = "none";
                     document.body.style.overflow = "";
-                    alert("Password changed successfully! 👍");
+                    alert("✅ Password changed successfully! 👍");
                     window.location.href = '/login';
                 } else if (response.status === 401) {
                     const errorMessage = await response.text();
@@ -3171,19 +3228,13 @@ function buildXrayRoutingRules (localDNS, blockAds, bypassIran, blockPorn, bypas
         rules.push({
             balancerTag: "all",
             type: "field",
-            ip: [
-                "0.0.0.0/0",
-                "::/0"
-            ]
+            port: "0-65535"
         });
     } else  {
         rules.push({
             outboundTag: isChain ? "out" : isWorkerLess ? "fragment" : "proxy",
             type: "field",
-            ip: [
-                "0.0.0.0/0",
-                "::/0"
-            ]
+            port: "0-65535"
         });
     }
 
@@ -3588,7 +3639,7 @@ async function getFragmentConfigs(env, hostName, client) {
                 
                 if (trojanConfigs && !outbound) {
                     remark = generateRemark(proxyIndex, port, addr, cleanIPs, 'Trojan', 'F', addr);
-                    outbound = buildXrayTrojanOutbound('proxy', addr, port, cleanIPs, trojanPassword, hostName, proxyIP);
+                    outbound = buildXrayTrojanOutbound('proxy', addr, port, trojanPassword, hostName, proxyIP);
                 }
                 
                 fragConfig.remarks = remark;
