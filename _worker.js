@@ -4571,7 +4571,7 @@ async function getSingboxConfig (env, hostName, client, isWarp, isFragment) {
             totalAddresses.forEach((addr, index) => {
                 let VLESSOutbound, TrojanOutbound;
                 const isCustomAddr = index > Addresses.length - 1;
-                const configType = isCustomAddr ? 'C' : '';
+                const configType = isCustomAddr ? 'C' : isFragment ? 'F' : '';
                 const configIndex = isCustomAddr ? index - Addresses.length + 1 : index;
                 const sni = isCustomAddr ? customCdnSni : hostName;
                 const host = isCustomAddr ? customCdnHost : hostName;
