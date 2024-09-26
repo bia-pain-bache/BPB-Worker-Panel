@@ -1207,11 +1207,13 @@ async function updateDataset (env, Settings, resetSettings) {
             console.log(error);
             throw new Error(`An error occurred while getting current values - ${error}`);
         }
+    } else {
+        await env.bpb.delete('warpConfigs');
     }
 
     const chainProxy = Settings?.get('outProxy');
     const proxySettings = {
-        remoteDNS: (Settings ? Settings.get('remoteDNS') : currentProxySettings?.remoteDNS) || 'https://94.140.14.14/dns-query',
+        remoteDNS: (Settings ? Settings.get('remoteDNS') : currentProxySettings?.remoteDNS) || 'https://dns.google/dns-query',
         localDNS: (Settings ? Settings.get('localDNS') : currentProxySettings?.localDNS) || '8.8.8.8',
         lengthMin: (Settings ? Settings.get('fragmentLengthMin') : currentProxySettings?.lengthMin) || '100',
         lengthMax: (Settings ? Settings.get('fragmentLengthMax') : currentProxySettings?.lengthMax) || '200',
@@ -1225,7 +1227,7 @@ async function updateDataset (env, Settings, resetSettings) {
         bypassChina: (Settings ? Settings.get('bypass-china') : currentProxySettings?.bypassChina) || false,
         blockUDP443: (Settings ? Settings.get('block-udp-443') : currentProxySettings?.blockUDP443) || false,
         cleanIPs: (Settings ? Settings.get('cleanIPs')?.replaceAll(' ', '') : currentProxySettings?.cleanIPs) || '',
-        proxyIP: (Settings ? Settings.get('proxyIP') : currentProxySettings?.proxyIP) || '',
+        proxyIP: (Settings ? Settings.get('proxyIP')?.trim() : currentProxySettings?.proxyIP) || '',
         ports: (Settings ? Settings.getAll('ports[]') : currentProxySettings?.ports) || ['443'],
         vlessConfigs: (Settings ? Settings.get('vlessConfigs') : currentProxySettings?.vlessConfigs) || true,
         trojanConfigs: (Settings ? Settings.get('trojanConfigs') : currentProxySettings?.trojanConfigs) || false,
@@ -1243,8 +1245,8 @@ async function updateDataset (env, Settings, resetSettings) {
         noiseDelayMax: (Settings ? Settings.get('noiseDelayMax') : currentProxySettings?.noiseDelayMax) || '1',
         warpPlusLicense: (Settings ? Settings.get('warpPlusLicense') : currentProxySettings?.warpPlusLicense) || '',
         customCdnAddrs: (Settings ? Settings.get('customCdnAddrs')?.replaceAll(' ', '') : currentProxySettings?.customCdnAddrs) || '',
-        customCdnHost: (Settings ? Settings.get('customCdnHost') : currentProxySettings?.customCdnHost) || '',
-        customCdnSni: (Settings ? Settings.get('customCdnSni') : currentProxySettings?.customCdnSni) || '',
+        customCdnHost: (Settings ? Settings.get('customCdnHost')?.trim() : currentProxySettings?.customCdnHost) || '',
+        customCdnSni: (Settings ? Settings.get('customCdnSni')?.trim() : currentProxySettings?.customCdnSni) || '',
         panelVersion: panelVersion
     };
 
@@ -1424,33 +1426,6 @@ async function renderHomePage (env, hostName, fragConfigs) {
     const isWarpPlus = warpPlusLicense ? true : false;
     let activeProtocols = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
 
-    // const genCustomConfRow = async (configs) => {
-    //     let tableBlock = "";
-    //     configs.forEach(config => {
-    //         tableBlock += `
-    //         <tr>
-    //             <td>
-    //                 ${config.address === 'Best-Ping' 
-    //                     ? `<div  style="justify-content: center;"><span><b>💦 BPB F - Best-Ping 💥</b></span></div>` 
-    //                     : config.address === 'WorkerLess'
-    //                         ? `<div  style="justify-content: center;"><span><b>💦 BPB F - WorkerLess ⭐</b></span></div>`
-    //                         : config.address === 'Best-Fragment'
-    //                             ? `<div  style="justify-content: center;"><span><b>💦 BPB F - Best-Fragment 😎</b></span></div>`
-    //                             : config.address
-    //                 }
-    //             </td>
-    //             <td>
-    //                 <button onclick="copyToClipboard('${encodeURIComponent(JSON.stringify(config.config, null, 4))}', true)">
-    //                     Copy Config 
-    //                     <span class="material-symbols-outlined">copy_all</span>
-    //                 </button>
-    //             </td>
-    //         </tr>`;
-    //     });
-
-    //     return tableBlock;
-    // }
-
     const buildPortsBlock = async () => {
         let httpPortsBlock = '';
         let httpsPortsBlock = '';
@@ -1514,7 +1489,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
                 font-weight: 600;
                 color: #09639f;
                 border-color: #09639f;
-                border: 2px solid;
+                border: 1px solid;
             }
             #apply {display: block; margin-top: 30px;}
             input.button {font-weight: 600; padding: 15px 0; font-size: 1.1rem;}
@@ -1640,6 +1615,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
                 font-size: 110%;
                 font-weight: 600;
                 color: #333;
+                line-height: 1.3em;
             }
             .form-control input[type="password"] {
                 width: 100%;
@@ -1717,7 +1693,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
 					<input type="text" id="cleanIPs" name="cleanIPs" value="${cleanIPs.replaceAll(",", " , ")}">
 				</div>
                 <div class="form-control">
-                    <label>🔎 Online Scanner</label>
+                    <label>🔎 IP Scanner</label>
                     <a href="https://scanner.github1.cloud/" id="scanner" name="scanner" target="_blank">
                         <button type="button" class="button">
                             Scan now
@@ -1900,7 +1876,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
 					<div style="grid-column: 2; width: 100%; display: inline-flex;">
 						<input type="submit" id="applyButton" style="margin-right: 10px;" class="button disabled" value="APPLY SETTINGS 💥" form="configForm">
                         <button type="button" id="resetSettings" style="background: none; margin: 0; border: none; cursor: pointer;">
-                            <i class="fa fa-refresh fa-2x fa-border" aria-hidden="true"></i>
+                            <i class="fa fa-refresh fa-2x fa-border" style="border-radius: .2em;" aria-hidden="true"></i>
                         </button>
 					</div>
 				</div>
@@ -2264,6 +2240,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
         let activePortsNo = ${ports.length};
         let activeHttpsPortsNo = ${ports.filter(port => defaultHttpsPorts.includes(port)).length};
         let activeProtocols = ${activeProtocols};
+        const warpPlusLicense = '${warpPlusLicense}';
 
 		document.addEventListener('DOMContentLoaded', async () => {
             const configForm = document.getElementById('configForm');            
@@ -2328,6 +2305,8 @@ async function renderHomePage (env, hostName, fragConfigs) {
                 qrcodeContainer.lastElementChild.remove();
             });
             resetSettings.addEventListener('click', async () => {
+                const confirmReset = confirm('⚠️ Are you sure?');
+                if(!confirmReset) return;
                 const formData = new FormData();
                 formData.append('resetSettings', 'true');
                 try {
@@ -2386,6 +2365,11 @@ async function renderHomePage (env, hostName, fragConfigs) {
         }
 
         const getWarpConfigs = async () => {
+            const license = document.getElementById('warpPlusLicense').value;
+            if (license !== warpPlusLicense) {
+                alert('⚠️ First APPLY SETTINGS and then update Warp configs!');
+                return false;
+            }
             const refreshBtn = document.getElementById('refreshBtn');
             const warpKeys = [
                 generateKeyPair(),
@@ -2409,7 +2393,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
                 document.body.style.cursor = 'default';
                 refreshBtn.innerHTML = refreshButtonVal;
                 if (response.ok) {
-                    ${isWarpPlus} ? alert('✅ Warp configs upgraded to PLUS successfully! 😎') : alert('Warp configs updated successfully! 😎');
+                    ${isWarpPlus} ? alert('✅ Warp configs upgraded to PLUS successfully! 😎') : alert('✅ Warp configs updated successfully! 😎');
                 } else {
                     const errorMessage = await response.text();
                     console.error(errorMessage, response.status);
@@ -3074,7 +3058,6 @@ async function buildXrayDNSObject (remoteDNS, localDNS, blockAds, bypassIran, by
     const dohMatch = remoteDNS.match(dohPattern);
     const dohHost = dohMatch ? dohMatch[1] : null;
     const isDOHDomain = isDomain(dohHost);
-    // const chainDomain = isDomain(chainAddr) ? chainAddr : null;
     let dnsObject = {
         hosts: {
             "domain:googleapis.cn": ["googleapis.com"]
