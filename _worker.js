@@ -21,13 +21,8 @@ let trojanPassword = `bpb-trojan`;
 let hashPassword = 'b5d0a5f7ff7aac227bc68b55ae713131ffdf605ca0da52cce182d513';
 let panelVersion = '2.5.9';
 
-if (!isValidUUID(userID)) {
-    throw new Error('UUID is not valid');
-}
-
-if (!isValidSHA224(hashPassword)) {
-    throw new Error('Hash Password is not valid');
-}
+if (!isValidUUID(userID)) throw new Error(`Invalid UUID: ${userID}`);
+if (!isValidSHA224(hashPassword)) throw new Error(`Invalid Hash password: ${hashPassword}`);
 
 export default {
     /**
@@ -3130,22 +3125,12 @@ function buildXrayRoutingRules (localDNS, blockAds, bypassIran, blockPorn, bypas
             type: "field"
         },
         {
-            inboundTag: [
-                "socks-in",
-                "http-in"
-            ],
+            network: "udp",
             port: "53",
-            outboundTag: "dns-out",
+            outboundTag: "direct",
             type: "field"
         }
     ];
-
-    (!isWorkerLess && (isChain || localDNS !== 'localhost')) && rules.push({
-        network: "udp",
-        port: "53",
-        outboundTag: "direct",
-        type: "field"
-    });
 
     if (bypassIran || bypassLAN || bypassChina) {
         let ipRule = {
@@ -3159,16 +3144,13 @@ function buildXrayRoutingRules (localDNS, blockAds, bypassIran, blockPorn, bypas
             outboundTag: "direct",
             type: "field",
         };
-        
-        bypassLAN && domainRule.domain.push("geosite:private") && ipRule.ip.push("geoip:private");
 
-        if ((bypassIran || bypassChina) && !isWorkerLess) {
+        if (!isWorkerLess) {
+            bypassLAN && domainRule.domain.push("geosite:private") && ipRule.ip.push("geoip:private");
             bypassIran && domainRule.domain.push("geosite:category-ir") && ipRule.ip.push("geoip:ir");
             bypassChina && domainRule.domain.push("geosite:cn") && ipRule.ip.push("geoip:cn");
-            rules.push(domainRule);
+            rules.push(domainRule, ipRule);
         }
-
-        rules.push(ipRule);
     }
 
     if (blockAds || blockPorn) {
@@ -3183,30 +3165,24 @@ function buildXrayRoutingRules (localDNS, blockAds, bypassIran, blockPorn, bypas
         rules.push(rule);
     }
 
-    blockUDP443 && isWarp && rules.push({
+    blockUDP443 && isWarp && !isWorkerLess && rules.push({
         network: "udp",
         port: "443",
         outboundTag: "block",
         type: "field",
-    }); 
-
-    !(isWarp || isWorkerLess) && rules.push({
-        network: "udp",
-        outboundTag: "block",
-        type: "field",
-    }); 
+    });
    
     if (isBalancer) {
         rules.push({
+            network: isWarp || isWorkerLess ? "tcp,udp" : "tcp",
             balancerTag: "all",
-            type: "field",
-            port: "0-65535"
+            type: "field"
         });
     } else  {
         rules.push({
+            network: isWarp || isWorkerLess ? "tcp,udp" : "tcp",
             outboundTag: isChain ? "out" : isWorkerLess ? "fragment" : "proxy",
-            type: "field",
-            port: "0-65535"
+            type: "field"
         });
     }
 
@@ -4243,15 +4219,15 @@ function buildSingboxRoutingRules (blockAds, bypassIran, bypassChina, blockPorn,
         outbound: "direct"
     });
     
+    !isWarp && rules.push({
+        network: "udp",
+        outbound: "block"
+    });
+
     blockUDP443 && isWarp && rules.push({
         network: "udp",
         port: 443,
         protocol: "quic",
-        outbound: "block"
-    });
-    
-    !isWarp && rules.push({
-        network: "udp",
         outbound: "block"
     });
     
