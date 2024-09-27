@@ -3137,6 +3137,15 @@ function buildXrayRoutingRules (localDNS, blockAds, bypassIran, blockPorn, bypas
             type: "field"
         },
         {
+            "inboundTag": [
+                "socks-in",
+                "http-in"
+            ],
+            "port": "53",
+            "outboundTag": "dns-out",
+            "type": "field"
+        },
+        {
             network: "udp",
             port: "53",
             outboundTag: "direct",
