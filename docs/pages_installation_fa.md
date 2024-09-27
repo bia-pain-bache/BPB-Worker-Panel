@@ -49,14 +49,14 @@
 روی `Create a namespace` کلیک میکنیم و یه اسم دلخواه بهش میدیم و Add میکنیم.
 
 
-برگردید به قسمت `Workers and Pages` و وارد اون پروژه‌ی Pages بشید که ساختید، با توجه به عکس زیر برید قسمت `Settings` و بعد `Functions`:
+برگردید به قسمت `Workers and Pages` و وارد اون پروژه‌ی Pages بشید که ساختید، با توجه به عکس زیر برید قسمت `Settings`:
 
 <p align="center">
   <img src="assets/images/Settings_functions.jpg">
 </p>
 
 
-اینجا مثل ورکر تو صفحه قسمت `KV namespace bindings` رو پیدا کنید، `Add binding` بزنید و `Variable name` باید حتما `bpb` باشه (همینجوری که نوشتم) و KV namespace اون KV رو انتخاب میکنید که مرحله دو ساختید و `save` میکنید.
+اینجا مثل ورکر تو صفحه قسمت `Bindings` رو پیدا کنید، `Add` بزنید و `KV Namespace` رو انتخاب کنید، `Variable name` باید حتما `bpb` باشه (همینجوری که نوشتم) و `KV namespace` اون KV رو انتخاب میکنید که مرحله دو ساختید و `save` میکنید.
 
 <p align="center">
   <img src="assets/images/Pages_bind_kv.jpg">
@@ -130,6 +130,21 @@
 - یا اگر از این استفاده میکنید، `TROJAN_PASS` رو میذارید سمت چپ و convert رو میزنید.
 
 > https://www.atatus.com/tools/sha224-to-hash
+
+> [!TIP]
+> اگر موقع دپلوی کردن این تنظیمات رو انجام ندادید بعدا هم میتونید از قسمت Settings این مقادیر رو اضافه کنید. از قسمت `Workers and Pages` وارد اون پروژه‌ی Pages بشید که ساختید، با توجه به عکس زیر برید قسمت `Settings` و پایین‌تر `Variables and Secrets`:
+
+<p align="center">
+  <img src="assets/images/Pages_variables.jpg">
+</p>
+
+هر بار `Add` میزنید و یه کدوم رو وارد میکنید و `Save` میکنید:
+
+<p align="center">
+  <img src="assets/images/Pages_add_variables.jpg">
+</p>
+
+و در نهایت از نوار بالا به قسمت `Deployment` برگردید و از بخش `Production` برید به `view details` و تو قسمت `Deployment detail` دکمه‌ی `Manage Deployment` رو بزنید و `Retry deployment`.
 <br>
 <br>
 
