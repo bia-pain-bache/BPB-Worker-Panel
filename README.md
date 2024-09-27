@@ -36,7 +36,7 @@ This project is dedicated to developing a user panel for the [Cloudflare-workers
 
 - [Installation (Worker)](docs/worker_installation_fa.md)
 
-- [Scanning Proxy IP](docs/proxy-ip-scanner.md))
+- [Scanning Proxy IP](docs/proxy-ip-scanner.md)
 
 - [How to use](docs/configuration_fa.md)
 
