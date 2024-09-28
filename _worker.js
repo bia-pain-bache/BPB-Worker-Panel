@@ -19,7 +19,7 @@ let trojanPassword = `bpb-trojan`;
 // https://emn178.github.io/online-tools/sha224.html
 // https://www.atatus.com/tools/sha224-to-hash
 let hashPassword = 'b5d0a5f7ff7aac227bc68b55ae713131ffdf605ca0da52cce182d513';
-let panelVersion = '2.5.9';
+let panelVersion = '2.6';
 
 if (!isValidUUID(userID)) throw new Error(`Invalid UUID: ${userID}`);
 if (!isValidSHA224(hashPassword)) throw new Error(`Invalid Hash password: ${hashPassword}`);
@@ -1242,6 +1242,8 @@ async function updateDataset (env, Settings, resetSettings) {
         customCdnAddrs: (Settings ? Settings.get('customCdnAddrs')?.replaceAll(' ', '') : currentProxySettings?.customCdnAddrs) || '',
         customCdnHost: (Settings ? Settings.get('customCdnHost')?.trim() : currentProxySettings?.customCdnHost) || '',
         customCdnSni: (Settings ? Settings.get('customCdnSni')?.trim() : currentProxySettings?.customCdnSni) || '',
+        bestVLESSTrojanInterval: (Settings ? Settings.get('bestVLESSTrojanInterval') : currentProxySettings?.bestVLESSTrojanInterval) || '30',
+        bestWarpInterval: (Settings ? Settings.get('bestWarpInterval') : currentProxySettings?.bestWarpInterval) || '30',
         panelVersion: panelVersion
     };
 
@@ -1413,7 +1415,9 @@ async function renderHomePage (env, hostName, fragConfigs) {
         warpPlusLicense,
         customCdnAddrs,
         customCdnHost,
-        customCdnSni
+        customCdnSni,
+        bestVLESSTrojanInterval,
+        bestWarpInterval
     } = proxySettings;
 
     const isWarpReady = warpConfigs ? true : false;
@@ -1708,6 +1712,10 @@ async function renderHomePage (env, hostName, fragConfigs) {
 					<label for="customCdnSni">💀 Custom SNI</label>
 					<input type="text" id="customCdnSni" name="customCdnSni" value="${customCdnSni}">
 				</div>
+                <div class="form-control">
+					<label for="bestVLESSTrojanInterval">🔄 Best Interval</label>
+					<input type="number" id="bestVLESSTrojanInterval" name="bestVLESSTrojanInterval" min="10" max="90" value="${bestVLESSTrojanInterval}">
+				</div>
                 <div class="form-control" style="padding-top: 10px;">
 					<label>⚙️ Protocols</label>
 					<div style="display: grid; grid-template-columns: 1fr 1fr; align-items: baseline; margin-top: 10px;">
@@ -1822,6 +1830,10 @@ async function renderHomePage (env, hostName, fragConfigs) {
                         Copy Script<span class="material-symbols-outlined">terminal</span>
                     </button>
                 </div>
+                <div class="form-control">
+					<label for="bestWarpInterval">🔄 Best Interval</label>
+					<input type="number" id="bestWarpInterval" name="bestWarpInterval" min="10" max="90" value="${bestWarpInterval}">
+				</div>
                 <h2>WARP PRO SETTINGS ⚙️</h2>
                 <div class="form-control">
 					<label for="hiddifyNoiseMode">😵‍💫 Hiddify Mode</label>
@@ -3125,6 +3137,15 @@ function buildXrayRoutingRules (localDNS, blockAds, bypassIran, blockPorn, bypas
             type: "field"
         },
         {
+            inboundTag: [
+                "socks-in",
+                "http-in"
+            ],
+            port: "53",
+            outboundTag: "dns-out",
+            type: "field"
+        },
+        {
             network: "udp",
             port: "53",
             outboundTag: "direct",
@@ -3508,7 +3529,8 @@ async function getFragmentConfigs(env, hostName) {
         outProxyParams,
         ports,
         vlessConfigs,
-        trojanConfigs
+        trojanConfigs,
+        bestVLESSTrojanInterval
     } = proxySettings;
 
     if (outProxy) {
@@ -3534,6 +3556,7 @@ async function getFragmentConfigs(env, hostName) {
     let balancerConfig = structuredClone(config);
     config.routing.rules = buildXrayRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, chainProxy, false, false, false);
     balancerConfig.routing.rules = buildXrayRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, chainProxy, true, false, false);
+    balancerConfig.observatory.probeInterval = `${bestVLESSTrojanInterval}s`;
     delete config.observatory;
     delete config.routing.balancers;
     let protocolNo = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
@@ -3633,7 +3656,6 @@ async function getFragmentConfigs(env, hostName) {
     }
 
     bestFragment.observatory.subjectSelector = ["frag"];
-    bestFragment.observatory.probeInterval = '30s';
     bestFragment.routing.balancers[0].selector = ["frag"];
     const workerLessConfig = await buildWorkerLessConfig(remoteDNS, localDNS, lengthMin,  lengthMax,  intervalMin,  intervalMax, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443); 
     Configs.push(bestPing, bestFragment, workerLessConfig);
@@ -3657,7 +3679,7 @@ async function getXrayWarpConfigs (env, client) {
         throw new Error(`An error occurred while getting fragment configs - ${error}`);
     }
     
-    const { localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, wowEndpoint, warpEndpoints } = proxySettings;
+    const { localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, wowEndpoint, warpEndpoints, bestWarpInterval } = proxySettings;
     const xrayWarpOutbounds = await buildWarpOutbounds(env, client, proxySettings, warpConfigs);
     const xrayWoWOutbounds = await buildWoWOutbounds(env, client, proxySettings, warpConfigs); 
     
@@ -3673,6 +3695,7 @@ async function getXrayWarpConfigs (env, client) {
     xrayWarpBestPing.outbounds.splice(0,1);
     xrayWarpBestPing.routing.balancers[0].selector = ['warp'];
     xrayWarpBestPing.observatory.subjectSelector = ['warp'];
+    xrayWarpBestPing.observatory.probeInterval = `${bestWarpInterval}s`;
     xrayWoWConfigTemp.dns = await buildXrayDNSObject('1.1.1.1', localDNS, blockAds, bypassIran, bypassChina, bypassLAN, blockPorn, false);
     xrayWoWConfigTemp.routing.rules = buildXrayRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, false, false, true);
     xrayWoWConfigTemp.outbounds.splice(0,1);
@@ -3959,7 +3982,9 @@ async function getClashConfig (env, hostName, isWarp) {
         outProxyParams,
         customCdnAddrs,
         customCdnHost,
-        customCdnSni
+        customCdnSni,
+        bestVLESSTrojanInterval,
+        bestWarpInterval
     } = proxySettings; 
 
     let config = structuredClone(clashConfigTemp);
@@ -3986,6 +4011,7 @@ async function getClashConfig (env, hostName, isWarp) {
     }
 
     if (isWarp) {
+        config['proxy-groups'][1].interval = +bestWarpInterval;
         const clashWarpOutbounds = await buildWarpOutbounds(env, 'clash', proxySettings, warpConfigs);
         const clashWOWpOutbounds = await buildWoWOutbounds(env, 'clash', proxySettings, warpConfigs);
         outbounds.push(...clashWarpOutbounds, ...clashWOWpOutbounds);
@@ -3996,6 +4022,8 @@ async function getClashConfig (env, hostName, isWarp) {
         clashWOWpOutbounds.forEach(outbound => {
             outbound["name"].includes('WoW') && wowOutboundRemarks.push(outbound["name"]);
         });
+    } else {
+        config['proxy-groups'][1].interval = +bestVLESSTrojanInterval;
     }
 
     let protocolsNo = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
@@ -4070,7 +4098,7 @@ async function getClashConfig (env, hostName, isWarp) {
         "name": "💦 WoW Best Ping 🚀",
         "type": "url-test",
         "url": "https://www.gstatic.com/generate_204",
-        "interval": 30,
+        "interval": +bestWarpInterval,
         "tolerance": 50,
         "proxies": wowOutboundRemarks
     });
@@ -4503,7 +4531,9 @@ async function getSingboxConfig (env, hostName, client, isWarp, isFragment) {
         outProxyParams,
         customCdnAddrs,
         customCdnHost,
-        customCdnSni
+        customCdnSni,
+        bestVLESSTrojanInterval,
+        bestWarpInterval
     } = proxySettings;
 
     let config = structuredClone(singboxConfigTemp);
@@ -4561,6 +4591,11 @@ async function getSingboxConfig (env, hostName, client, isWarp, isFragment) {
             }
             isDomain(outbound.server) && outboundDomains.push(outbound.server);
         });
+
+        config.outbounds[1].interval = `${bestWarpInterval}s`;
+        config.outbounds[2].interval = `${bestWarpInterval}s`;
+    } else {
+        config.outbounds[1].interval = `${bestVLESSTrojanInterval}s`;
     }
 
     let protocolsNo = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
@@ -4693,7 +4728,8 @@ async function getNormalConfigs(env, hostName, client) {
         let chainRemark = `#${encodeURIComponent('💦 Chain proxy 🔗')}`;
         if (outProxy.startsWith('socks') || outProxy.startsWith('http')) {
             const regex = /^(?:socks|http):\/\/([^@]+)@/;
-            const userPass = outProxy.match(regex)[1];
+            const isUserPass = outProxy.match(regex);
+            const userPass = isUserPass ? isUserPass[1] : false;
             chainProxy = userPass 
                 ? outProxy.replace(userPass, btoa(userPass)) + chainRemark 
                 : outProxy + chainRemark;
