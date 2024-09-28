@@ -19,7 +19,7 @@ let trojanPassword = `bpb-trojan`;
 // https://emn178.github.io/online-tools/sha224.html
 // https://www.atatus.com/tools/sha224-to-hash
 let hashPassword = 'b5d0a5f7ff7aac227bc68b55ae713131ffdf605ca0da52cce182d513';
-let panelVersion = '2.6';
+let panelVersion = '2.6.1';
 
 if (!isValidUUID(userID)) throw new Error(`Invalid UUID: ${userID}`);
 if (!isValidSHA224(hashPassword)) throw new Error(`Invalid Hash password: ${hashPassword}`);
@@ -89,7 +89,7 @@ export default {
                                 headers: {
                                     'Content-Type': 'application/json;charset=utf-8',
                                     'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-                                    'Surrogate-Control': 'no-store'
+                                    'CDN-Cache-Control': 'no-store'
                                 }
                             });                            
                         }
@@ -101,7 +101,7 @@ export default {
                                 headers: {
                                     'Content-Type': 'application/json;charset=utf-8',
                                     'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-                                    'Surrogate-Control': 'no-store'
+                                    'CDN-Cache-Control': 'no-store'
                                 }
                             });                            
                         }
@@ -112,7 +112,7 @@ export default {
                             headers: {
                                 'Content-Type': 'text/plain;charset=utf-8',
                                 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-                                'Surrogate-Control': 'no-store'
+                                'CDN-Cache-Control': 'no-store'
                             }
                         });                        
 
@@ -127,7 +127,7 @@ export default {
                             headers: {
                                 'Content-Type': 'application/json;charset=utf-8',
                                 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-                                'Surrogate-Control': 'no-store'
+                                'CDN-Cache-Control': 'no-store'
                             }
                         });
 
@@ -140,7 +140,7 @@ export default {
                                 headers: {
                                     'Content-Type': 'application/json;charset=utf-8',
                                     'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-                                    'Surrogate-Control': 'no-store'
+                                    'CDN-Cache-Control': 'no-store'
                                 }
                             });                            
                         }
@@ -152,7 +152,7 @@ export default {
                                 headers: {
                                     'Content-Type': 'application/json;charset=utf-8',
                                     'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-                                    'Surrogate-Control': 'no-store'
+                                    'CDN-Cache-Control': 'no-store'
                                 }
                             });                            
                         }
@@ -163,7 +163,7 @@ export default {
                             headers: {
                                 'Content-Type': 'application/json;charset=utf-8',
                                 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-                                'Surrogate-Control': 'no-store'
+                                'CDN-Cache-Control': 'no-store'
                             }
                         });
 
@@ -296,11 +296,10 @@ export default {
                 return url.pathname.startsWith('/tr') ? await trojanOverWSHandler(request) : await vlessOverWSHandler(request);
             }
         } catch (err) {
-            /** @type {Error} */ let e = err;
-            const errorPage = renderErrorPage('Something went wrong!', e.message.toString(), false);
+            const errorPage = renderErrorPage('Something went wrong!', err, false);
             return new Response(errorPage, { status: 200, headers: {'Content-Type': 'text/html'}});
         }
-    },
+    }
 };
 
 /**
@@ -1208,42 +1207,42 @@ async function updateDataset (env, Settings, resetSettings) {
 
     const chainProxy = Settings?.get('outProxy');
     const proxySettings = {
-        remoteDNS: (Settings ? Settings.get('remoteDNS') : currentProxySettings?.remoteDNS) || 'https://dns.google/dns-query',
-        localDNS: (Settings ? Settings.get('localDNS') : currentProxySettings?.localDNS) || '8.8.8.8',
-        lengthMin: (Settings ? Settings.get('fragmentLengthMin') : currentProxySettings?.lengthMin) || '100',
-        lengthMax: (Settings ? Settings.get('fragmentLengthMax') : currentProxySettings?.lengthMax) || '200',
-        intervalMin: (Settings ? Settings.get('fragmentIntervalMin') : currentProxySettings?.intervalMin) || '1',
-        intervalMax: (Settings ? Settings.get('fragmentIntervalMax') : currentProxySettings?.intervalMax) || '1',
-        fragmentPackets: (Settings ? Settings.get('fragmentPackets') : currentProxySettings?.fragmentPackets) || 'tlshello',
-        blockAds: (Settings ? Settings.get('block-ads') : currentProxySettings?.blockAds) || false,
-        bypassIran: (Settings ? Settings.get('bypass-iran') : currentProxySettings?.bypassIran) || false,
-        blockPorn: (Settings ? Settings.get('block-porn') : currentProxySettings?.blockPorn) || false,
-        bypassLAN: (Settings ? Settings.get('bypass-lan') : currentProxySettings?.bypassLAN) || false,
-        bypassChina: (Settings ? Settings.get('bypass-china') : currentProxySettings?.bypassChina) || false,
-        blockUDP443: (Settings ? Settings.get('block-udp-443') : currentProxySettings?.blockUDP443) || false,
-        cleanIPs: (Settings ? Settings.get('cleanIPs')?.replaceAll(' ', '') : currentProxySettings?.cleanIPs) || '',
-        proxyIP: (Settings ? Settings.get('proxyIP')?.trim() : currentProxySettings?.proxyIP) || '',
-        ports: (Settings ? Settings.getAll('ports[]') : currentProxySettings?.ports) || ['443'],
-        vlessConfigs: (Settings ? Settings.get('vlessConfigs') : currentProxySettings?.vlessConfigs) || true,
-        trojanConfigs: (Settings ? Settings.get('trojanConfigs') : currentProxySettings?.trojanConfigs) || false,
-        outProxy: (Settings ? chainProxy : currentProxySettings?.outProxy) || '',
-        outProxyParams: (chainProxy ? extractChainProxyParams(chainProxy) : currentProxySettings?.outProxyParams) || '',
-        wowEndpoint: (Settings ? Settings.get('wowEndpoint')?.replaceAll(' ', '') : currentProxySettings?.wowEndpoint) || 'engage.cloudflareclient.com:2408',
-        warpEndpoints: (Settings ? Settings.get('warpEndpoints')?.replaceAll(' ', '') : currentProxySettings?.warpEndpoints) || 'engage.cloudflareclient.com:2408',
-        hiddifyNoiseMode: (Settings ? Settings.get('hiddifyNoiseMode') : currentProxySettings?.hiddifyNoiseMode) || 'm4',
-        nikaNGNoiseMode: (Settings ? Settings.get('nikaNGNoiseMode') : currentProxySettings?.nikaNGNoiseMode) || 'quic',
-        noiseCountMin: (Settings ? Settings.get('noiseCountMin') : currentProxySettings?.noiseCountMin) || '10',
-        noiseCountMax: (Settings ? Settings.get('noiseCountMax') : currentProxySettings?.noiseCountMax) || '15',
-        noiseSizeMin: (Settings ? Settings.get('noiseSizeMin') : currentProxySettings?.noiseSizeMin) || '5',
-        noiseSizeMax: (Settings ? Settings.get('noiseSizeMax') : currentProxySettings?.noiseSizeMax) || '10',
-        noiseDelayMin: (Settings ? Settings.get('noiseDelayMin') : currentProxySettings?.noiseDelayMin) || '1',
-        noiseDelayMax: (Settings ? Settings.get('noiseDelayMax') : currentProxySettings?.noiseDelayMax) || '1',
-        warpPlusLicense: (Settings ? Settings.get('warpPlusLicense') : currentProxySettings?.warpPlusLicense) || '',
-        customCdnAddrs: (Settings ? Settings.get('customCdnAddrs')?.replaceAll(' ', '') : currentProxySettings?.customCdnAddrs) || '',
-        customCdnHost: (Settings ? Settings.get('customCdnHost')?.trim() : currentProxySettings?.customCdnHost) || '',
-        customCdnSni: (Settings ? Settings.get('customCdnSni')?.trim() : currentProxySettings?.customCdnSni) || '',
-        bestVLESSTrojanInterval: (Settings ? Settings.get('bestVLESSTrojanInterval') : currentProxySettings?.bestVLESSTrojanInterval) || '30',
-        bestWarpInterval: (Settings ? Settings.get('bestWarpInterval') : currentProxySettings?.bestWarpInterval) || '30',
+        remoteDNS: Settings ? Settings.get('remoteDNS') : currentProxySettings?.remoteDNS || 'https://dns.google/dns-query',
+        localDNS: Settings ? Settings.get('localDNS') : currentProxySettings?.localDNS || '8.8.8.8',
+        lengthMin: Settings ? Settings.get('fragmentLengthMin') : currentProxySettings?.lengthMin || '100',
+        lengthMax: Settings ? Settings.get('fragmentLengthMax') : currentProxySettings?.lengthMax || '200',
+        intervalMin: Settings ? Settings.get('fragmentIntervalMin') : currentProxySettings?.intervalMin || '1',
+        intervalMax: Settings ? Settings.get('fragmentIntervalMax') : currentProxySettings?.intervalMax || '1',
+        fragmentPackets: Settings ? Settings.get('fragmentPackets') : currentProxySettings?.fragmentPackets || 'tlshello',
+        blockAds: Settings ? Settings.get('block-ads') : currentProxySettings?.blockAds || false,
+        bypassIran: Settings ? Settings.get('bypass-iran') : currentProxySettings?.bypassIran || false,
+        blockPorn: Settings ? Settings.get('block-porn') : currentProxySettings?.blockPorn || false,
+        bypassLAN: Settings ? Settings.get('bypass-lan') : currentProxySettings?.bypassLAN || false,
+        bypassChina: Settings ? Settings.get('bypass-china') : currentProxySettings?.bypassChina || false,
+        blockUDP443: Settings ? Settings.get('block-udp-443') : currentProxySettings?.blockUDP443 || false,
+        cleanIPs: Settings ? Settings.get('cleanIPs')?.replaceAll(' ', '') : currentProxySettings?.cleanIPs || '',
+        proxyIP: Settings ? Settings.get('proxyIP')?.trim() : currentProxySettings?.proxyIP || '',
+        ports: Settings ? Settings.getAll('ports[]') : currentProxySettings?.ports || ['443'],
+        vlessConfigs: Settings ? Settings.get('vlessConfigs') : currentProxySettings?.vlessConfigs || true,
+        trojanConfigs: Settings ? Settings.get('trojanConfigs') : currentProxySettings?.trojanConfigs || false,
+        outProxy: Settings ? chainProxy : currentProxySettings?.outProxy || '',
+        outProxyParams: chainProxy ? extractChainProxyParams(chainProxy) : currentProxySettings?.outProxyParams || '',
+        wowEndpoint: Settings ? Settings.get('wowEndpoint')?.replaceAll(' ', '') : currentProxySettings?.wowEndpoint || 'engage.cloudflareclient.com:2408',
+        warpEndpoints: Settings ? Settings.get('warpEndpoints')?.replaceAll(' ', '') : currentProxySettings?.warpEndpoints || 'engage.cloudflareclient.com:2408',
+        hiddifyNoiseMode: Settings ? Settings.get('hiddifyNoiseMode') : currentProxySettings?.hiddifyNoiseMode || 'm4',
+        nikaNGNoiseMode: Settings ? Settings.get('nikaNGNoiseMode') : currentProxySettings?.nikaNGNoiseMode || 'quic',
+        noiseCountMin: Settings ? Settings.get('noiseCountMin') : currentProxySettings?.noiseCountMin || '10',
+        noiseCountMax: Settings ? Settings.get('noiseCountMax') : currentProxySettings?.noiseCountMax || '15',
+        noiseSizeMin: Settings ? Settings.get('noiseSizeMin') : currentProxySettings?.noiseSizeMin || '5',
+        noiseSizeMax: Settings ? Settings.get('noiseSizeMax') : currentProxySettings?.noiseSizeMax || '10',
+        noiseDelayMin: Settings ? Settings.get('noiseDelayMin') : currentProxySettings?.noiseDelayMin || '1',
+        noiseDelayMax: Settings ? Settings.get('noiseDelayMax') : currentProxySettings?.noiseDelayMax || '1',
+        warpPlusLicense: Settings ? Settings.get('warpPlusLicense') : currentProxySettings?.warpPlusLicense || '',
+        customCdnAddrs: Settings ? Settings.get('customCdnAddrs')?.replaceAll(' ', '') : currentProxySettings?.customCdnAddrs || '',
+        customCdnHost: Settings ? Settings.get('customCdnHost')?.trim() : currentProxySettings?.customCdnHost || '',
+        customCdnSni: Settings ? Settings.get('customCdnSni')?.trim() : currentProxySettings?.customCdnSni || '',
+        bestVLESSTrojanInterval: Settings ? Settings.get('bestVLESSTrojanInterval') : currentProxySettings?.bestVLESSTrojanInterval || '30',
+        bestWarpInterval: Settings ? Settings.get('bestWarpInterval') : currentProxySettings?.bestWarpInterval || '30',
         panelVersion: panelVersion
     };
 
@@ -2799,7 +2798,6 @@ function renderErrorPage (message, error, refer) {
     return `
     <!DOCTYPE html>
     <html lang="en">
-
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -2818,7 +2816,6 @@ function renderErrorPage (message, error, refer) {
             #error-container { text-align: center; }
         </style>
     </head>
-
     <body>
         <div id="error-container">
             <h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
@@ -2827,11 +2824,10 @@ function renderErrorPage (message, error, refer) {
                     ? 'Please try again or refer to <a href="https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/README.md">documents</a>' 
                     : ''}
                 </h2>
-                <p><b>${error ? `⚠️ ${error}` : ''}</b></p>
+                <p><b>${error ? `⚠️ ${error.stack.toString()}` : ''}</b></p>
             </div>
         </div>
     </body>
-
     </html>`;
 }
 
@@ -3949,11 +3945,7 @@ function buildClashChainOutbound(chainProxyParams) {
 async function getClashConfig (env, hostName, isWarp) {
     let proxySettings = {};
     let warpConfigs = [];
-    let remark, path, selectorProxies;
-    let outbounds = [];
-    let warpOutboundsRemarks = [];
-    let wowOutboundRemarks = [];
-    let outboundsRemarks = [];
+    let remark, path;
     let chainProxyOutbound;
 
     try {
@@ -3995,8 +3987,7 @@ async function getClashConfig (env, hostName, isWarp) {
     const totalAddresses = [...Addresses, ...customCdnAddresses];
 
     if (outProxy && !isWarp) {
-        const proxyParams = JSON.parse(outProxyParams);
-        
+        const proxyParams = JSON.parse(outProxyParams);        
         try {
             chainProxyOutbound = buildClashChainOutbound(proxyParams);
         } catch (error) {
@@ -4011,18 +4002,28 @@ async function getClashConfig (env, hostName, isWarp) {
     }
 
     if (isWarp) {
+        config['proxy-groups'][0].proxies = ['💦 Warp Best Ping 🚀', '💦 WoW Best Ping 🚀'];
+        config['proxy-groups'][1].name = ['💦 Warp Best Ping 🚀'];
         config['proxy-groups'][1].interval = +bestWarpInterval;
+        config['proxy-groups'].splice(2, 0, structuredClone(config['proxy-groups'][1]));
+        config['proxy-groups'][2].name = '💦 WoW Best Ping 🚀';
         const clashWarpOutbounds = await buildWarpOutbounds(env, 'clash', proxySettings, warpConfigs);
         const clashWOWpOutbounds = await buildWoWOutbounds(env, 'clash', proxySettings, warpConfigs);
-        outbounds.push(...clashWarpOutbounds, ...clashWOWpOutbounds);
+        config.proxies = [...clashWarpOutbounds, ...clashWOWpOutbounds];
         clashWarpOutbounds.forEach(outbound => {
-            warpOutboundsRemarks.push(outbound["name"]);
+            config['proxy-groups'][0].proxies.push(outbound["name"]);
+            config['proxy-groups'][1].proxies.push(outbound["name"]);
+
         });
         
         clashWOWpOutbounds.forEach(outbound => {
-            outbound["name"].includes('WoW') && wowOutboundRemarks.push(outbound["name"]);
+            outbound["name"].includes('WoW') && config['proxy-groups'][0].proxies.push(outbound["name"]);
+            outbound["name"].includes('WoW') && config['proxy-groups'][2].proxies.push(outbound["name"]);
         });
+
     } else {
+        config['proxy-groups'][0].proxies = ['💦 Best Ping 💥'];
+        config['proxy-groups'][1].name = ['💦 Best Ping 💥'];
         config['proxy-groups'][1].interval = +bestVLESSTrojanInterval;
     }
 
@@ -4035,7 +4036,6 @@ async function getClashConfig (env, hostName, isWarp) {
                 let VLESSOutbound, TrojanOutbound;
                 const isCustomAddr = index > Addresses.length - 1;
                 const configType = isCustomAddr ? 'C' : '';
-                const configIndex = isCustomAddr ? index - Addresses.length + 1 : index;
                 const sni = isCustomAddr ? customCdnSni : hostName;
                 const host = isCustomAddr ? customCdnHost : hostName;
 
@@ -4052,8 +4052,9 @@ async function getClashConfig (env, hostName, isWarp) {
                         sni, 
                         path
                     );
-                    outbounds.push(VLESSOutbound);
-                    outboundsRemarks.push(remark);
+                    config.proxies.push(VLESSOutbound);
+                    config['proxy-groups'][0].proxies.push(remark);
+                    config['proxy-groups'][1].proxies.push(remark);
                 }
                 
                 if (trojanConfigs && !VLESSOutbound && defaultHttpsPorts.includes(port)) {
@@ -4069,39 +4070,22 @@ async function getClashConfig (env, hostName, isWarp) {
                         sni, 
                         path
                     );
-                    outbounds.push(TrojanOutbound);
-                    outboundsRemarks.push(remark);
+                    config.proxies.push(TrojanOutbound);
+                    config['proxy-groups'][0].proxies.push(remark);
+                    config['proxy-groups'][1].proxies.push(remark);
                 }
 
                 if (chainProxyOutbound && (TrojanOutbound || VLESSOutbound)) {
                     let chain = structuredClone(chainProxyOutbound);
                     chain['name'] = remark;
                     chain['dialer-proxy'] = `proxy-${proxyIndex}`;
-                    outbounds.push(chain);
+                    config.proxies.push(chain);
                 }
 
                 proxyIndex++;
             });
         });
     }
-
-
-    config.proxies = outbounds;
-    config['proxy-groups'][0].proxies = isWarp
-        ? ['💦 Warp Best Ping 🚀', '💦 WoW Best Ping 🚀', ...warpOutboundsRemarks, ...wowOutboundRemarks ]
-        : ['💦 Best Ping 💥', ...outboundsRemarks ];
-
-    config['proxy-groups'][1].proxies = isWarp ? warpOutboundsRemarks : outboundsRemarks;
-    config['proxy-groups'][1].name = isWarp ? `💦 Warp Best Ping 🚀`: `💦 Best Ping 💥`,
-
-    isWarp && config["proxy-groups"].push({
-        "name": "💦 WoW Best Ping 🚀",
-        "type": "url-test",
-        "url": "https://www.gstatic.com/generate_204",
-        "interval": +bestWarpInterval,
-        "tolerance": 50,
-        "proxies": wowOutboundRemarks
-    });
 
     return config;
 }
@@ -4607,7 +4591,6 @@ async function getSingboxConfig (env, hostName, client, isWarp, isFragment) {
                 let VLESSOutbound, TrojanOutbound;
                 const isCustomAddr = index > Addresses.length - 1;
                 const configType = isCustomAddr ? 'C' : isFragment ? 'F' : '';
-                const configIndex = isCustomAddr ? index - Addresses.length + 1 : index;
                 const sni = isCustomAddr ? customCdnSni : hostName;
                 const host = isCustomAddr ? customCdnHost : hostName;
          
@@ -4705,7 +4688,6 @@ async function getNormalConfigs(env, hostName, client) {
             const sni = randomUpperCase(isCustomAddr ? customCdnSni : hostName);
             const host = isCustomAddr ? customCdnHost : hostName;
             const path = `${getRandomPath(16)}${proxyIP ? `/${encodeURIComponent(btoa(proxyIP))}` : ''}${earlyData}`;
-            const configIndex = isCustomAddr ? index - Addresses.length + 1 : index;
             const vlessRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, 'VLESS', configType));
             const trojanRemark = encodeURIComponent(generateRemark(proxyIndex + totalAddresses.length * ports.length, port, addr, cleanIPs, 'Trojan', configType));
             const tlsFields = defaultHttpsPorts.includes(port) 
