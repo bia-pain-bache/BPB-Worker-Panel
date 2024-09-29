@@ -1782,10 +1782,10 @@ async function renderHomePage (env, hostName, fragConfigs) {
                         <label for="fragmentIntervalMin">🕞 Interval</label>
                         <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;">
                             <input type="number" id="fragmentIntervalMin" name="fragmentIntervalMin"
-                                value="${intervalMin}" max="30" required>
+                                value="${intervalMin}" min="1" max="30" required>
                             <span style="text-align: center; white-space: pre;"> - </span>
                             <input type="number" id="fragmentIntervalMax" name="fragmentIntervalMax"
-                                value="${intervalMax}" max="30" required>
+                                value="${intervalMax}" min="1" max="30" required>
                         </div>
                     </div>
                     <div class="form-control">
