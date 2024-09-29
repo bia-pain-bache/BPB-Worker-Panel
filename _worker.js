@@ -1450,6 +1450,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
         <title>BPB Panel ${panelVersion}</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+        <title>Collapsible Sections</title>
 		<style>
 			body { font-family: system-ui; }
             .material-symbols-outlined {
@@ -1460,6 +1461,15 @@ async function renderHomePage (env, hostName, fragConfigs) {
                 'GRAD' 0,
                 'opsz' 24
             }
+            details { margin-bottom: 10px; }
+            summary {
+                font-weight: bold;
+                cursor: pointer;
+                text-align: center;
+                text-wrap: nowrap;
+            }
+            summary::marker { font-size: 1.5rem; color: #09639f; }
+            summary h2 { display: inline-flex; }
             h1 { font-size: 2.5em; text-align: center; color: #09639f; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25); }
 			h2 { margin: 30px 0; text-align: center; color: #3b3b3b; }
 			hr { border: 1px solid #ddd; margin: 20px 0; }
@@ -1667,217 +1677,227 @@ async function renderHomePage (env, hostName, fragConfigs) {
 		<h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
 		<div class="form-container">
             <form id="configForm">
-                <h2>VLESS/TROJAN SETTINGS ⚙️</h2>
-				<div class="form-control">
-					<label for="remoteDNS">🌏 Remote DNS</label>
-					<input type="url" id="remoteDNS" name="remoteDNS" value="${remoteDNS}" required>
-				</div>
-				<div class="form-control">
-					<label for="localDNS">🏚️ Local DNS</label>
-					<input type="text" id="localDNS" name="localDNS" value="${localDNS}"
-						pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|localhost$"
-						title="Please enter a valid DNS IP Address or localhost!"  required>
-				</div>
-				<div class="form-control">
-					<label for="proxyIP">📍 Proxy IP</label>
-					<input type="text" id="proxyIP" name="proxyIP" value="${proxyIP}">
-				</div>
-                <div class="form-control">
-					<label for="outProxy">✈️ Chain Proxy</label>
-					<input type="text" id="outProxy" name="outProxy" value="${outProxy}">
-				</div>
-				<div class="form-control">
-					<label for="cleanIPs">✨ Clean IPs</label>
-					<input type="text" id="cleanIPs" name="cleanIPs" value="${cleanIPs.replaceAll(",", " , ")}">
-				</div>
-                <div class="form-control">
-                    <label>🔎 IP Scanner</label>
-                    <a href="https://scanner.github1.cloud/" id="scanner" name="scanner" target="_blank">
-                        <button type="button" class="button">
-                            Scan now
-                            <span class="material-symbols-outlined" style="margin-left: 5px;">open_in_new</span>
+                <details open>
+                    <summary><h2>VLESS / TROJAN ⚙️</h2></summary>
+                    <div class="form-control">
+                        <label for="remoteDNS">🌏 Remote DNS</label>
+                        <input type="url" id="remoteDNS" name="remoteDNS" value="${remoteDNS}" required>
+                    </div>
+                    <div class="form-control">
+                        <label for="localDNS">🏚️ Local DNS</label>
+                        <input type="text" id="localDNS" name="localDNS" value="${localDNS}"
+                            pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|localhost$"
+                            title="Please enter a valid DNS IP Address or localhost!"  required>
+                    </div>
+                    <div class="form-control">
+                        <label for="proxyIP">📍 Proxy IP</label>
+                        <input type="text" id="proxyIP" name="proxyIP" value="${proxyIP}">
+                    </div>
+                    <div class="form-control">
+                        <label for="outProxy">✈️ Chain Proxy</label>
+                        <input type="text" id="outProxy" name="outProxy" value="${outProxy}">
+                    </div>
+                    <div class="form-control">
+                        <label for="cleanIPs">✨ Clean IPs</label>
+                        <input type="text" id="cleanIPs" name="cleanIPs" value="${cleanIPs.replaceAll(",", " , ")}">
+                    </div>
+                    <div class="form-control">
+                        <label>🔎 IP Scanner</label>
+                        <a href="https://scanner.github1.cloud/" id="scanner" name="scanner" target="_blank">
+                            <button type="button" class="button">
+                                Scan now
+                                <span class="material-symbols-outlined" style="margin-left: 5px;">open_in_new</span>
+                            </button>
+                        </a>
+                    </div>
+                    <div class="form-control">
+                        <label for="customCdnAddrs">💀 Custom Addr</label>
+                        <input type="text" id="customCdnAddrs" name="customCdnAddrs" value="${customCdnAddrs.replaceAll(",", " , ")}">
+                    </div>
+                    <div class="form-control">
+                        <label for="customCdnHost">💀 Custom Host</label> 
+                        <input type="text" id="customCdnHost" name="customCdnHost" value="${customCdnHost}">
+                    </div>
+                    <div class="form-control">
+                        <label for="customCdnSni">💀 Custom SNI</label>
+                        <input type="text" id="customCdnSni" name="customCdnSni" value="${customCdnSni}">
+                    </div>
+                    <div class="form-control">
+                        <label for="bestVLESSTrojanInterval">🔄 Best Interval</label>
+                        <input type="number" id="bestVLESSTrojanInterval" name="bestVLESSTrojanInterval" min="10" max="90" value="${bestVLESSTrojanInterval}">
+                    </div>
+                    <div class="form-control" style="padding-top: 10px;">
+                        <label>⚙️ Protocols</label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; align-items: baseline; margin-top: 10px;">
+                            <div style = "display: flex; justify-content: center; align-items: center;">
+                                <input type="checkbox" id="vlessConfigs" name="vlessConfigs" onchange="handleProtocolChange(event)" style="margin: 0; grid-column: 2;" value="true" ${vlessConfigs ? 'checked' : ''}>
+                                <label for="vlessConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">VLESS</label>
+                            </div>
+                            <div style = "display: flex; justify-content: center; align-items: center;">
+                                <input type="checkbox" id="trojanConfigs" name="trojanConfigs" onchange="handleProtocolChange(event)" style="margin: 0; grid-column: 2;" value="true" ${trojanConfigs ? 'checked' : ''}>
+                                <label for="trojanConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">Trojan</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table id="frag-sub-table">
+                            <tr>
+                                <th style="text-wrap: nowrap; background-color: gray;">Config type</th>
+                                <th style="text-wrap: nowrap; background-color: gray;">Ports</th>
+                            </tr>
+                            <tr>
+                                <td style="text-align: center; font-size: larger;"><b>TLS</b></td>
+                                <td style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;">${(await buildPortsBlock()).httpsPortsBlock}</td>    
+                            </tr>
+                            ${hostName.includes('pages.dev') ? '' : `<tr>
+                                <td style="text-align: center; font-size: larger;"><b>Non TLS</b></td>
+                                <td style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;">${(await buildPortsBlock()).httpPortsBlock}</td>    
+                            </tr>`}        
+                        </table>
+                    </div>
+                </details>
+                <details>
+                    <summary><h2>FRAGMENT ⚙️</h2></summary>	
+                    <div class="form-control">
+                        <label for="fragmentLengthMin">📐 Length</label>
+                        <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;">
+                            <input type="number" id="fragmentLengthMin" name="fragmentLengthMin" value="${lengthMin}" min="10" required>
+                            <span style="text-align: center; white-space: pre;"> - </span>
+                            <input type="number" id="fragmentLengthMax" name="fragmentLengthMax" value="${lengthMax}" max="500" required>
+                        </div>
+                    </div>
+                    <div class="form-control">
+                        <label for="fragmentIntervalMin">🕞 Interval</label>
+                        <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;">
+                            <input type="number" id="fragmentIntervalMin" name="fragmentIntervalMin"
+                                value="${intervalMin}" max="30" required>
+                            <span style="text-align: center; white-space: pre;"> - </span>
+                            <input type="number" id="fragmentIntervalMax" name="fragmentIntervalMax"
+                                value="${intervalMax}" max="30" required>
+                        </div>
+                    </div>
+                    <div class="form-control">
+                        <label for="fragmentPackets">📦 Packets</label>
+                        <div class="input-with-select">
+                            <select id="fragmentPackets" name="fragmentPackets">
+                                <option value="tlshello" ${fragmentPackets === 'tlshello' ? 'selected' : ''}>tlshello</option>
+                                <option value="1-1" ${fragmentPackets === '1-1' ? 'selected' : ''}>1-1</option>
+                                <option value="1-2" ${fragmentPackets === '1-2' ? 'selected' : ''}>1-2</option>
+                                <option value="1-3" ${fragmentPackets === '1-3' ? 'selected' : ''}>1-3</option>
+                                <option value="1-5" ${fragmentPackets === '1-5' ? 'selected' : ''}>1-5</option>
+                            </select>
+                        </div>
+                    </div>
+                </details>
+                <details>
+                    <summary><h2>ROUTING ⚙️</h2></summary>
+                    <div class="form-control" style="margin-bottom: 20px;">			
+                        <div class="routing">
+                            <input type="checkbox" id="block-ads" name="block-ads" style="margin: 0; grid-column: 2;" value="true" ${blockAds ? 'checked' : ''}>
+                            <label for="block-ads">Block Ads.</label>
+                        </div>
+                        <div class="routing">
+                            <input type="checkbox" id="bypass-iran" name="bypass-iran" style="margin: 0; grid-column: 2;" value="true" ${bypassIran ? 'checked' : ''}>
+                            <label for="bypass-iran">Bypass Iran</label>
+                        </div>
+                        <div class="routing">
+                            <input type="checkbox" id="block-porn" name="block-porn" style="margin: 0; grid-column: 2;" value="true" ${blockPorn ? 'checked' : ''}>
+                            <label for="block-porn">Block Porn</label>
+                        </div>
+                        <div class="routing">
+                            <input type="checkbox" id="bypass-lan" name="bypass-lan" style="margin: 0; grid-column: 2;" value="true" ${bypassLAN ? 'checked' : ''}>
+                            <label for="bypass-lan">Bypass LAN</label>
+                        </div>
+                        <div class="routing">
+                            <input type="checkbox" id="bypass-china" name="bypass-china" style="margin: 0; grid-column: 2;" value="true" ${bypassChina ? 'checked' : ''}>
+                            <label for="bypass-china">Bypass China</label>
+                        </div>
+                        <div class="routing">
+                            <input type="checkbox" id="block-udp-443" name="block-udp-443" style="margin: 0; grid-column: 2;" value="true" ${blockUDP443 ? 'checked' : ''}>
+                            <label for="block-udp-443">Block QUIC</label>
+                        </div>
+                    </div>
+                </details>
+                <details>
+                    <summary><h2>WARP ⚙️</h2></summary>
+                    <div class="form-control">
+                        <label for="wowEndpoint">✨ WoW Endpoints</label>
+                        <input type="text" id="wowEndpoint" name="wowEndpoint" value="${wowEndpoint.replaceAll(",", " , ")}" required>
+                    </div>
+                    <div class="form-control">
+                        <label for="warpEndpoints">✨ Warp Endpoints</label>
+                        <input type="text" id="warpEndpoints" name="warpEndpoints" value="${warpEndpoints.replaceAll(",", " , ")}" required>
+                    </div>
+                    <div class="form-control">
+                        <label for="warpPlusLicense">➕ Warp+ License</label>
+                        <input type="text" id="warpPlusLicense" name="warpPlusLicense" value="${warpPlusLicense}" 
+                            pattern="^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{8}-[a-zA-Z0-9]{8}$" 
+                            title="Please enter a valid Warp Plus license in xxxxxxxx-xxxxxxxx-xxxxxxxx format">
+                    </div>
+                    <div class="form-control">
+                        <label>♻️ Warp Configs</label>
+                        <button id="refreshBtn" type="button" class="button" style="padding: 10px 0;" onclick="getWarpConfigs()">
+                            Update<span class="material-symbols-outlined">autorenew</span>
                         </button>
-                    </a>
-                </div>
-                <div class="form-control">
-					<label for="customCdnAddrs">💀 Custom Addr</label>
-					<input type="text" id="customCdnAddrs" name="customCdnAddrs" value="${customCdnAddrs.replaceAll(",", " , ")}">
-				</div>
-                <div class="form-control">
-					<label for="customCdnHost">💀 Custom Host</label> 
-					<input type="text" id="customCdnHost" name="customCdnHost" value="${customCdnHost}">
-				</div>
-                <div class="form-control">
-					<label for="customCdnSni">💀 Custom SNI</label>
-					<input type="text" id="customCdnSni" name="customCdnSni" value="${customCdnSni}">
-				</div>
-                <div class="form-control">
-					<label for="bestVLESSTrojanInterval">🔄 Best Interval</label>
-					<input type="number" id="bestVLESSTrojanInterval" name="bestVLESSTrojanInterval" min="10" max="90" value="${bestVLESSTrojanInterval}">
-				</div>
-                <div class="form-control" style="padding-top: 10px;">
-					<label>⚙️ Protocols</label>
-					<div style="display: grid; grid-template-columns: 1fr 1fr; align-items: baseline; margin-top: 10px;">
-                        <div style = "display: flex; justify-content: center; align-items: center;">
-                            <input type="checkbox" id="vlessConfigs" name="vlessConfigs" onchange="handleProtocolChange(event)" style="margin: 0; grid-column: 2;" value="true" ${vlessConfigs ? 'checked' : ''}>
-                            <label for="vlessConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">VLESS</label>
-                        </div>
-                        <div style = "display: flex; justify-content: center; align-items: center;">
-                            <input type="checkbox" id="trojanConfigs" name="trojanConfigs" onchange="handleProtocolChange(event)" style="margin: 0; grid-column: 2;" value="true" ${trojanConfigs ? 'checked' : ''}>
-                            <label for="trojanConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">Trojan</label>
-                        </div>
-					</div>
-				</div>
-                <div class="table-container">
-                    <table id="frag-sub-table">
-                        <tr>
-                            <th style="text-wrap: nowrap; background-color: gray;">Config type</th>
-                            <th style="text-wrap: nowrap; background-color: gray;">Ports</th>
-                        </tr>
-                        <tr>
-                            <td style="text-align: center; font-size: larger;"><b>TLS</b></td>
-                            <td style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;">${(await buildPortsBlock()).httpsPortsBlock}</td>    
-                        </tr>
-                        ${hostName.includes('pages.dev') ? '' : `<tr>
-                            <td style="text-align: center; font-size: larger;"><b>Non TLS</b></td>
-                            <td style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;">${(await buildPortsBlock()).httpPortsBlock}</td>    
-                        </tr>`}        
-                    </table>
-                </div>
-                <h2>FRAGMENT SETTINGS ⚙️</h2>	
-				<div class="form-control">
-					<label for="fragmentLengthMin">📐 Length</label>
-					<div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;">
-						<input type="number" id="fragmentLengthMin" name="fragmentLengthMin" value="${lengthMin}" min="10" required>
-						<span style="text-align: center; white-space: pre;"> - </span>
-						<input type="number" id="fragmentLengthMax" name="fragmentLengthMax" value="${lengthMax}" max="500" required>
-					</div>
-				</div>
-				<div class="form-control">
-					<label for="fragmentIntervalMin">🕞 Interval</label>
-					<div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;">
-						<input type="number" id="fragmentIntervalMin" name="fragmentIntervalMin"
-    						value="${intervalMin}" max="30" required>
-						<span style="text-align: center; white-space: pre;"> - </span>
-						<input type="number" id="fragmentIntervalMax" name="fragmentIntervalMax"
-    						value="${intervalMax}" max="30" required>
-					</div>
-				</div>
-                <div class="form-control">
-                    <label for="fragmentPackets">📦 Packets</label>
-                    <div class="input-with-select">
-                        <select id="fragmentPackets" name="fragmentPackets">
-                            <option value="tlshello" ${fragmentPackets === 'tlshello' ? 'selected' : ''}>tlshello</option>
-                            <option value="1-1" ${fragmentPackets === '1-1' ? 'selected' : ''}>1-1</option>
-                            <option value="1-2" ${fragmentPackets === '1-2' ? 'selected' : ''}>1-2</option>
-                            <option value="1-3" ${fragmentPackets === '1-3' ? 'selected' : ''}>1-3</option>
-                            <option value="1-5" ${fragmentPackets === '1-5' ? 'selected' : ''}>1-5</option>
-                        </select>
                     </div>
-                </div>
-                <h2>ROUTING ⚙️</h2>
-				<div class="form-control" style="margin-bottom: 20px;">			
-                    <div class="routing">
-                        <input type="checkbox" id="block-ads" name="block-ads" style="margin: 0; grid-column: 2;" value="true" ${blockAds ? 'checked' : ''}>
-                        <label for="block-ads">Block Ads.</label>
+                    <div class="form-control">
+                        <label style="line-height: 1.5;">🔎 Scan Endpoint</label>
+                        <button type="button" class="button" style="padding: 10px 0;" onclick="copyToClipboard('bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/warp/main/endip/install.sh)', false)">
+                            Copy Script<span class="material-symbols-outlined">terminal</span>
+                        </button>
                     </div>
-                    <div class="routing">
-						<input type="checkbox" id="bypass-iran" name="bypass-iran" style="margin: 0; grid-column: 2;" value="true" ${bypassIran ? 'checked' : ''}>
-                        <label for="bypass-iran">Bypass Iran</label>
-					</div>
-                    <div class="routing">
-						<input type="checkbox" id="block-porn" name="block-porn" style="margin: 0; grid-column: 2;" value="true" ${blockPorn ? 'checked' : ''}>
-                        <label for="block-porn">Block Porn</label>
-					</div>
-                    <div class="routing">
-						<input type="checkbox" id="bypass-lan" name="bypass-lan" style="margin: 0; grid-column: 2;" value="true" ${bypassLAN ? 'checked' : ''}>
-                        <label for="bypass-lan">Bypass LAN</label>
-					</div>
-                    <div class="routing">
-						<input type="checkbox" id="bypass-china" name="bypass-china" style="margin: 0; grid-column: 2;" value="true" ${bypassChina ? 'checked' : ''}>
-                        <label for="bypass-china">Bypass China</label>
-					</div>
-                    <div class="routing">
-						<input type="checkbox" id="block-udp-443" name="block-udp-443" style="margin: 0; grid-column: 2;" value="true" ${blockUDP443 ? 'checked' : ''}>
-                        <label for="block-udp-443">Block QUIC</label>
-					</div>
-				</div>
-                <h2>WARP SETTINGS ⚙️</h2>
-				<div class="form-control">
-                    <label for="wowEndpoint">✨ WoW Endpoints</label>
-                    <input type="text" id="wowEndpoint" name="wowEndpoint" value="${wowEndpoint.replaceAll(",", " , ")}" required>
-				</div>
-				<div class="form-control">
-                    <label for="warpEndpoints">✨ Warp Endpoints</label>
-                    <input type="text" id="warpEndpoints" name="warpEndpoints" value="${warpEndpoints.replaceAll(",", " , ")}" required>
-				</div>
-				<div class="form-control">
-                    <label for="warpPlusLicense">➕ Warp+ License</label>
-                    <input type="text" id="warpPlusLicense" name="warpPlusLicense" value="${warpPlusLicense}" 
-                        pattern="^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{8}-[a-zA-Z0-9]{8}$" 
-                        title="Please enter a valid Warp Plus license in xxxxxxxx-xxxxxxxx-xxxxxxxx format">
-				</div>
-                <div class="form-control">
-                    <label>♻️ Warp Configs</label>
-                    <button id="refreshBtn" type="button" class="button" style="padding: 10px 0;" onclick="getWarpConfigs()">
-                        Update<span class="material-symbols-outlined">autorenew</span>
-                    </button>
-                </div>
-                <div class="form-control">
-                    <label style="line-height: 1.5;">🔎 Scan Endpoint</label>
-                    <button type="button" class="button" style="padding: 10px 0;" onclick="copyToClipboard('bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/warp/main/endip/install.sh)', false)">
-                        Copy Script<span class="material-symbols-outlined">terminal</span>
-                    </button>
-                </div>
-                <div class="form-control">
-					<label for="bestWarpInterval">🔄 Best Interval</label>
-					<input type="number" id="bestWarpInterval" name="bestWarpInterval" min="10" max="90" value="${bestWarpInterval}">
-				</div>
-                <h2>WARP PRO SETTINGS ⚙️</h2>
-                <div class="form-control">
-					<label for="hiddifyNoiseMode">😵‍💫 Hiddify Mode</label>
-					<input type="text" id="hiddifyNoiseMode" name="hiddifyNoiseMode" 
-                        pattern="^(m[1-6]|h_[0-9A-Fa-f]{2}|g_([0-9A-Fa-f]{2}_){2}[0-9A-Fa-f]{2})$" 
-                        title="Enter 'm1-m6', 'h_HEX', 'g_HEX_HEX_HEX' which HEX can be between 00 to ff"
-                        value="${hiddifyNoiseMode}" required>
-				</div>
-                <div class="form-control">
-					<label for="nikaNGNoiseMode">😵‍💫 NikaNG Mode</label>
-					<input type="text" id="nikaNGNoiseMode" name="nikaNGNoiseMode" 
-                        pattern="^(none|quic|random|[0-9A-Fa-f]+)$" 
-                        title="Enter 'none', 'quic', 'random', or any HEX string like 'ee0000000108aaaa'"
-                        value="${nikaNGNoiseMode}" required>
-				</div>
-                <div class="form-control">
-					<label for="noiseCountMin">🎚️ Noise Count</label>
-					<div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;">
-						<input type="number" id="noiseCountMin" name="noiseCountMin"
-    						value="${noiseCountMin}" required>
-						<span style="text-align: center; white-space: pre;"> - </span>
-						<input type="number" id="noiseCountMax" name="noiseCountMax"
-    						value="${noiseCountMax}" required>
-					</div>
-				</div>
-                <div class="form-control">
-					<label for="noiseSizeMin">📏 Noise Size</label>
-					<div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;">
-						<input type="number" id="noiseSizeMin" name="noiseSizeMin"
-    						value="${noiseSizeMin}" required>
-						<span style="text-align: center; white-space: pre;"> - </span>
-						<input type="number" id="noiseSizeMax" name="noiseSizeMax"
-    						value="${noiseSizeMax}" required>
-					</div>
-				</div>
-                <div class="form-control">
-					<label for="noiseDelayMin">🕞 Noise Delay</label>
-					<div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;">
-						<input type="number" id="noiseDelayMin" name="noiseDelayMin"
-    						value="${noiseDelayMin}" required>
-						<span style="text-align: center; white-space: pre;"> - </span>
-						<input type="number" id="noiseDelayMax" name="noiseDelayMax"
-    						value="${noiseDelayMax}" required>
-					</div>
-				</div>
+                    <div class="form-control">
+                        <label for="bestWarpInterval">🔄 Best Interval</label>
+                        <input type="number" id="bestWarpInterval" name="bestWarpInterval" min="10" max="90" value="${bestWarpInterval}">
+                    </div>
+                </details>
+                <details>
+                    <summary><h2>WARP PRO ⚙️</h2></summary>
+                    <div class="form-control">
+                        <label for="hiddifyNoiseMode">😵‍💫 Hiddify Mode</label>
+                        <input type="text" id="hiddifyNoiseMode" name="hiddifyNoiseMode" 
+                            pattern="^(m[1-6]|h_[0-9A-Fa-f]{2}|g_([0-9A-Fa-f]{2}_){2}[0-9A-Fa-f]{2})$" 
+                            title="Enter 'm1-m6', 'h_HEX', 'g_HEX_HEX_HEX' which HEX can be between 00 to ff"
+                            value="${hiddifyNoiseMode}" required>
+                    </div>
+                    <div class="form-control">
+                        <label for="nikaNGNoiseMode">😵‍💫 NikaNG Mode</label>
+                        <input type="text" id="nikaNGNoiseMode" name="nikaNGNoiseMode" 
+                            pattern="^(none|quic|random|[0-9A-Fa-f]+)$" 
+                            title="Enter 'none', 'quic', 'random', or any HEX string like 'ee0000000108aaaa'"
+                            value="${nikaNGNoiseMode}" required>
+                    </div>
+                    <div class="form-control">
+                        <label for="noiseCountMin">🎚️ Noise Count</label>
+                        <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;">
+                            <input type="number" id="noiseCountMin" name="noiseCountMin"
+                                value="${noiseCountMin}" min="1" required>
+                            <span style="text-align: center; white-space: pre;"> - </span>
+                            <input type="number" id="noiseCountMax" name="noiseCountMax"
+                                value="${noiseCountMax}" min="1" required>
+                        </div>
+                    </div>
+                    <div class="form-control">
+                        <label for="noiseSizeMin">📏 Noise Size</label>
+                        <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;">
+                            <input type="number" id="noiseSizeMin" name="noiseSizeMin"
+                                value="${noiseSizeMin}" min="1" required>
+                            <span style="text-align: center; white-space: pre;"> - </span>
+                            <input type="number" id="noiseSizeMax" name="noiseSizeMax"
+                                value="${noiseSizeMax}" min="1" required>
+                        </div>
+                    </div>
+                    <div class="form-control">
+                        <label for="noiseDelayMin">🕞 Noise Delay</label>
+                        <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;">
+                            <input type="number" id="noiseDelayMin" name="noiseDelayMin"
+                                value="${noiseDelayMin}" min="1" required>
+                            <span style="text-align: center; white-space: pre;"> - </span>
+                            <input type="number" id="noiseDelayMax" name="noiseDelayMax"
+                                value="${noiseDelayMax}" min="1" required>
+                        </div>
+                    </div>
+                </details>
 				<div id="apply" class="form-control">
 					<div style="grid-column: 2; width: 100%; display: inline-flex;">
 						<input type="submit" id="applyButton" style="margin-right: 10px;" class="button disabled" value="APPLY SETTINGS 💥" form="configForm">
