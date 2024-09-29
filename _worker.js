@@ -120,7 +120,7 @@ export default {
   
                         let fragConfigs = client === 'hiddify'
                             ? await getSingboxConfig(env, host, client, false, true)
-                            : (await getFragmentConfigs(env, host));
+                            : (await getXrayFragmentConfigs(env, host));
 
                         return new Response(JSON.stringify(fragConfigs, null, 4), { 
                             status: 200,
@@ -3124,6 +3124,7 @@ async function buildXrayDNSObject (remoteDNS, localDNS, blockAds, bypassIran, by
 }
 
 function buildXrayRoutingRules (localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, isChain, isBalancer, isWorkerLess, isWarp) {
+    const isBypass = bypassIran || bypassLAN || bypassChina;
     let rules = [
         {
             inboundTag: [
@@ -3140,16 +3141,17 @@ function buildXrayRoutingRules (localDNS, blockAds, bypassIran, blockPorn, bypas
             port: "53",
             outboundTag: "dns-out",
             type: "field"
-        },
-        {
-            network: "udp",
-            port: "53",
-            outboundTag: "direct",
-            type: "field"
         }
     ];
 
-    if (bypassIran || bypassLAN || bypassChina) {
+    if (isChain || (localDNS !== 'localhost' && isBypass)) rules.push({
+        ip: [localDNS === 'localhost' ? '8.8.8.8' : localDNS],
+        port: "53",
+        outboundTag: "direct",
+        type: "field"
+    });
+
+    if (isBypass) {
         let ipRule = {
             ip: [],
             outboundTag: "direct",
@@ -3488,7 +3490,7 @@ async function buildWorkerLessConfig(remoteDNS, localDNS, lengthMin,  lengthMax,
     return fragConfig;
 }
 
-async function getFragmentConfigs(env, hostName) {
+async function getXrayFragmentConfigs(env, hostName) {
     let Configs = [];
     let outbounds = [];
     let proxySettings = {};
@@ -3585,22 +3587,18 @@ async function getFragmentConfigs(env, hostName) {
                     isDomain(addr)
                         ? fragConfig.dns.servers[1].domains.push(`full:${addr}`)
                         : fragConfig.dns.servers.splice(1,1);
-                } else {
-                    fragConfig.outbounds = [{ ...outbound}, ...fragConfig.outbounds];
-                }
-    
-                Configs.push(fragConfig); 
-                outbound.tag = `prox_${proxyIndex}`;
-                
-                if (chainProxy) {
+
+                    outbound.tag = `prox_${proxyIndex}`;
                     let proxyOut = structuredClone(chainProxy);
                     proxyOut.tag = `out_${proxyIndex}`;
                     proxyOut.streamSettings.sockopt.dialerProxy = `prox_${proxyIndex}`;
                     outbounds.push({...proxyOut}, {...outbound});
                 } else {
+                    fragConfig.outbounds = [{ ...outbound}, ...fragConfig.outbounds];
                     outbounds.push({...outbound});
                 }
     
+                Configs.push(fragConfig);
                 proxyIndex++;
             }
         }
@@ -4003,7 +4001,7 @@ async function getClashConfig (env, hostName, isWarp) {
 
     if (isWarp) {
         config['proxy-groups'][0].proxies = ['💦 Warp Best Ping 🚀', '💦 WoW Best Ping 🚀'];
-        config['proxy-groups'][1].name = ['💦 Warp Best Ping 🚀'];
+        config['proxy-groups'][1].name = '💦 Warp Best Ping 🚀';
         config['proxy-groups'][1].interval = +bestWarpInterval;
         config['proxy-groups'].splice(2, 0, structuredClone(config['proxy-groups'][1]));
         config['proxy-groups'][2].name = '💦 WoW Best Ping 🚀';
@@ -4023,7 +4021,7 @@ async function getClashConfig (env, hostName, isWarp) {
 
     } else {
         config['proxy-groups'][0].proxies = ['💦 Best Ping 💥'];
-        config['proxy-groups'][1].name = ['💦 Best Ping 💥'];
+        config['proxy-groups'][1].name = '💦 Best Ping 💥';
         config['proxy-groups'][1].interval = +bestVLESSTrojanInterval;
     }
 
@@ -4858,7 +4856,7 @@ const singboxConfigTemp = {
                 address: "",
                 address_resolver: "dns-direct",
                 strategy: "prefer_ipv4",
-                detour: "💦 Best Ping 💥",
+                detour: "proxy",
                 tag: "dns-remote"
             },
             {
