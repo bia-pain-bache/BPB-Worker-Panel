@@ -4718,7 +4718,7 @@ async function getNormalConfigs(env, hostName, client) {
         totalAddresses.forEach((addr, index) => {
             const isCustomAddr = index > Addresses.length - 1;
             const configType = isCustomAddr ? 'C' : '';
-            const sni = randomUpperCase(isCustomAddr ? customCdnSni : hostName);
+            const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
             const host = isCustomAddr ? customCdnHost : hostName;
             const path = `${getRandomPath(16)}${proxyIP ? `/${encodeURIComponent(btoa(proxyIP))}` : ''}${earlyData}`;
             const vlessRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, 'VLESS', configType));
