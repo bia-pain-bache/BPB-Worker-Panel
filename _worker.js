@@ -1191,12 +1191,12 @@ function base64ToDecimal (base64) {
     return decimalArray;
 }
 
-async function updateDataset (env, Settings, resetSettings) {
-    let currentProxySettings;
+async function updateDataset (env, newSettings, resetSettings) {
+    let currentSettings;
 
     if (!resetSettings) {
         try {
-            currentProxySettings = await env.bpb.get("proxySettings", {type: 'json'});
+            currentSettings = await env.bpb.get("proxySettings", {type: 'json'});
         } catch (error) {
             console.log(error);
             throw new Error(`An error occurred while getting current values - ${error}`);
@@ -1205,44 +1205,45 @@ async function updateDataset (env, Settings, resetSettings) {
         await env.bpb.delete('warpConfigs');
     }
 
-    const chainProxy = Settings?.get('outProxy');
+    const chainProxy = newSettings?.get('outProxy');
     const proxySettings = {
-        remoteDNS: Settings ? Settings.get('remoteDNS') : currentProxySettings?.remoteDNS || 'https://dns.google/dns-query',
-        localDNS: Settings ? Settings.get('localDNS') : currentProxySettings?.localDNS || '8.8.8.8',
-        lengthMin: Settings ? Settings.get('fragmentLengthMin') : currentProxySettings?.lengthMin || '100',
-        lengthMax: Settings ? Settings.get('fragmentLengthMax') : currentProxySettings?.lengthMax || '200',
-        intervalMin: Settings ? Settings.get('fragmentIntervalMin') : currentProxySettings?.intervalMin || '1',
-        intervalMax: Settings ? Settings.get('fragmentIntervalMax') : currentProxySettings?.intervalMax || '1',
-        fragmentPackets: Settings ? Settings.get('fragmentPackets') : currentProxySettings?.fragmentPackets || 'tlshello',
-        blockAds: Settings ? Settings.get('block-ads') : currentProxySettings?.blockAds || false,
-        bypassIran: Settings ? Settings.get('bypass-iran') : currentProxySettings?.bypassIran || false,
-        blockPorn: Settings ? Settings.get('block-porn') : currentProxySettings?.blockPorn || false,
-        bypassLAN: Settings ? Settings.get('bypass-lan') : currentProxySettings?.bypassLAN || false,
-        bypassChina: Settings ? Settings.get('bypass-china') : currentProxySettings?.bypassChina || false,
-        blockUDP443: Settings ? Settings.get('block-udp-443') : currentProxySettings?.blockUDP443 || false,
-        cleanIPs: Settings ? Settings.get('cleanIPs')?.replaceAll(' ', '') : currentProxySettings?.cleanIPs || '',
-        proxyIP: Settings ? Settings.get('proxyIP')?.trim() : currentProxySettings?.proxyIP || '',
-        ports: Settings ? Settings.getAll('ports[]') : currentProxySettings?.ports || ['443'],
-        vlessConfigs: Settings ? Settings.get('vlessConfigs') : currentProxySettings?.vlessConfigs || true,
-        trojanConfigs: Settings ? Settings.get('trojanConfigs') : currentProxySettings?.trojanConfigs || false,
-        outProxy: Settings ? chainProxy : currentProxySettings?.outProxy || '',
-        outProxyParams: chainProxy ? extractChainProxyParams(chainProxy) : currentProxySettings?.outProxyParams || '',
-        wowEndpoint: Settings ? Settings.get('wowEndpoint')?.replaceAll(' ', '') : currentProxySettings?.wowEndpoint || 'engage.cloudflareclient.com:2408',
-        warpEndpoints: Settings ? Settings.get('warpEndpoints')?.replaceAll(' ', '') : currentProxySettings?.warpEndpoints || 'engage.cloudflareclient.com:2408',
-        hiddifyNoiseMode: Settings ? Settings.get('hiddifyNoiseMode') : currentProxySettings?.hiddifyNoiseMode || 'm4',
-        nikaNGNoiseMode: Settings ? Settings.get('nikaNGNoiseMode') : currentProxySettings?.nikaNGNoiseMode || 'quic',
-        noiseCountMin: Settings ? Settings.get('noiseCountMin') : currentProxySettings?.noiseCountMin || '10',
-        noiseCountMax: Settings ? Settings.get('noiseCountMax') : currentProxySettings?.noiseCountMax || '15',
-        noiseSizeMin: Settings ? Settings.get('noiseSizeMin') : currentProxySettings?.noiseSizeMin || '5',
-        noiseSizeMax: Settings ? Settings.get('noiseSizeMax') : currentProxySettings?.noiseSizeMax || '10',
-        noiseDelayMin: Settings ? Settings.get('noiseDelayMin') : currentProxySettings?.noiseDelayMin || '1',
-        noiseDelayMax: Settings ? Settings.get('noiseDelayMax') : currentProxySettings?.noiseDelayMax || '1',
-        warpPlusLicense: Settings ? Settings.get('warpPlusLicense') : currentProxySettings?.warpPlusLicense || '',
-        customCdnAddrs: Settings ? Settings.get('customCdnAddrs')?.replaceAll(' ', '') : currentProxySettings?.customCdnAddrs || '',
-        customCdnHost: Settings ? Settings.get('customCdnHost')?.trim() : currentProxySettings?.customCdnHost || '',
-        customCdnSni: Settings ? Settings.get('customCdnSni')?.trim() : currentProxySettings?.customCdnSni || '',
-        bestVLESSTrojanInterval: Settings ? Settings.get('bestVLESSTrojanInterval') : currentProxySettings?.bestVLESSTrojanInterval || '30',
-        bestWarpInterval: Settings ? Settings.get('bestWarpInterval') : currentProxySettings?.bestWarpInterval || '30',
+        remoteDNS: newSettings ? newSettings.get('remoteDNS') : currentSettings ? currentSettings.remoteDNS : 'https://dns.google/dns-query',
+        localDNS: newSettings ? newSettings.get('localDNS') : currentSettings ? currentSettings.localDNS : '8.8.8.8',
+        lengthMin: newSettings ? newSettings.get('fragmentLengthMin') : currentSettings ? currentSettings.lengthMin : '100',
+        lengthMax: newSettings ? newSettings.get('fragmentLengthMax') : currentSettings ? currentSettings.lengthMax : '200',
+        intervalMin: newSettings ? newSettings.get('fragmentIntervalMin') : currentSettings ? currentSettings.intervalMin : '1',
+        intervalMax: newSettings ? newSettings.get('fragmentIntervalMax') : currentSettings ? currentSettings.intervalMax : '1',
+        fragmentPackets: newSettings ? newSettings.get('fragmentPackets') : currentSettings ? currentSettings.fragmentPackets : 'tlshello',
+        blockAds: newSettings ? newSettings.get('block-ads') : currentSettings ? currentSettings.blockAds : false,
+        bypassIran: newSettings ? newSettings.get('bypass-iran') : currentSettings ? currentSettings.bypassIran : false,
+        blockPorn: newSettings ? newSettings.get('block-porn') : currentSettings ? currentSettings.blockPorn : false,
+        bypassLAN: newSettings ? newSettings.get('bypass-lan') : currentSettings ? currentSettings.bypassLAN : false,
+        bypassChina: newSettings ? newSettings.get('bypass-china') : currentSettings ? currentSettings.bypassChina : false,
+        blockUDP443: newSettings ? newSettings.get('block-udp-443') : currentSettings ? currentSettings.blockUDP443 : false,
+        cleanIPs: newSettings ? newSettings.get('cleanIPs')?.replaceAll(' ', '') : currentSettings ? currentSettings.cleanIPs : '',
+        enableIPv6: newSettings ? newSettings.get('enableIPv6') : currentSettings ? currentSettings.enableIPv6 : true,
+        proxyIP: newSettings ? newSettings.get('proxyIP')?.trim() : currentSettings ? currentSettings.proxyIP : '',
+        ports: newSettings ? newSettings.getAll('ports[]') : currentSettings ? currentSettings.ports : ['443'],
+        vlessConfigs: newSettings ? newSettings.get('vlessConfigs') : currentSettings ? currentSettings.vlessConfigs : true,
+        trojanConfigs: newSettings ? newSettings.get('trojanConfigs') : currentSettings ? currentSettings.trojanConfigs : false,
+        outProxy: newSettings ? chainProxy : currentSettings ? currentSettings.outProxy : '',
+        outProxyParams: chainProxy ? extractChainProxyParams(chainProxy) : currentSettings ? currentSettings.outProxyParams : '',
+        wowEndpoint: newSettings ? newSettings.get('wowEndpoint')?.replaceAll(' ', '') : currentSettings ? currentSettings.wowEndpoint : 'engage.cloudflareclient.com:2408',
+        warpEndpoints: newSettings ? newSettings.get('warpEndpoints')?.replaceAll(' ', '') : currentSettings ? currentSettings.warpEndpoints : 'engage.cloudflareclient.com:2408',
+        hiddifyNoiseMode: newSettings ? newSettings.get('hiddifyNoiseMode') : currentSettings ? currentSettings.hiddifyNoiseMode : 'm4',
+        nikaNGNoiseMode: newSettings ? newSettings.get('nikaNGNoiseMode') : currentSettings ? currentSettings.nikaNGNoiseMode : 'quic',
+        noiseCountMin: newSettings ? newSettings.get('noiseCountMin') : currentSettings ? currentSettings.noiseCountMin : '10',
+        noiseCountMax: newSettings ? newSettings.get('noiseCountMax') : currentSettings ? currentSettings.noiseCountMax : '15',
+        noiseSizeMin: newSettings ? newSettings.get('noiseSizeMin') : currentSettings ? currentSettings.noiseSizeMin : '5',
+        noiseSizeMax: newSettings ? newSettings.get('noiseSizeMax') : currentSettings ? currentSettings.noiseSizeMax : '10',
+        noiseDelayMin: newSettings ? newSettings.get('noiseDelayMin') : currentSettings ? currentSettings.noiseDelayMin : '1',
+        noiseDelayMax: newSettings ? newSettings.get('noiseDelayMax') : currentSettings ? currentSettings.noiseDelayMax : '1',
+        warpPlusLicense: newSettings ? newSettings.get('warpPlusLicense') : currentSettings ? currentSettings.warpPlusLicense : '',
+        customCdnAddrs: newSettings ? newSettings.get('customCdnAddrs')?.replaceAll(' ', '') : currentSettings ? currentSettings.customCdnAddrs : '',
+        customCdnHost: newSettings ? newSettings.get('customCdnHost')?.trim() : currentSettings ? currentSettings.customCdnHost : '',
+        customCdnSni: newSettings ? newSettings.get('customCdnSni')?.trim() : currentSettings ? currentSettings.customCdnSni : '',
+        bestVLESSTrojanInterval: newSettings ? newSettings.get('bestVLESSTrojanInterval') : currentSettings ? currentSettings.bestVLESSTrojanInterval : '30',
+        bestWarpInterval: newSettings ? newSettings.get('bestWarpInterval') : currentSettings ? currentSettings.bestWarpInterval : '30',
         panelVersion: panelVersion
     };
 
@@ -1299,13 +1300,14 @@ async function resolveDNS (domain) {
     }
 }
 
-async function getConfigAddresses(hostName, cleanIPs) {
+async function getConfigAddresses(hostName, cleanIPs, enableIPv6) {
     const resolved = await resolveDNS(hostName);
+    const defaultIPv6 = enableIPv6 ? resolved.ipv6.map((ip) => `[${ip}]`) : []
     return [
         hostName,
         'www.speedtest.net',
         ...resolved.ipv4,
-        ...resolved.ipv6.map((ip) => `[${ip}]`),
+        ...defaultIPv6,
         ...(cleanIPs ? cleanIPs.split(',') : [])
     ];
 }
@@ -1416,7 +1418,8 @@ async function renderHomePage (env, hostName, fragConfigs) {
         customCdnHost,
         customCdnSni,
         bestVLESSTrojanInterval,
-        bestWarpInterval
+        bestWarpInterval,
+        enableIPv6
     } = proxySettings;
 
     const isWarpReady = warpConfigs ? true : false;
@@ -1709,6 +1712,15 @@ async function renderHomePage (env, hostName, fragConfigs) {
                                 <span class="material-symbols-outlined" style="margin-left: 5px;">open_in_new</span>
                             </button>
                         </a>
+                    </div>
+                    <div class="form-control">
+                        <label for="enableIPv6">🔛 IPv6 Configs</label>
+                        <div class="input-with-select">
+                            <select id="enableIPv6" name="enableIPv6">
+                                <option value="true" ${enableIPv6 ? 'selected' : ''}>Enabled</option>
+                                <option value="" ${!enableIPv6 ? 'selected' : ''}>Disabled</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="form-control">
                         <label for="customCdnAddrs">💀 Custom Addr</label>
@@ -3548,7 +3560,8 @@ async function getXrayFragmentConfigs(env, hostName) {
         ports,
         vlessConfigs,
         trojanConfigs,
-        bestVLESSTrojanInterval
+        bestVLESSTrojanInterval,
+        enableIPv6
     } = proxySettings;
 
     if (outProxy) {
@@ -3578,7 +3591,7 @@ async function getXrayFragmentConfigs(env, hostName) {
     delete config.observatory;
     delete config.routing.balancers;
     let protocolNo = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
-    const Addresses = await getConfigAddresses(hostName, cleanIPs);
+    const Addresses = await getConfigAddresses(hostName, cleanIPs, enableIPv6);
     const domainAddressesRules = Addresses.filter(address => isDomain(address)).map(domain => `full:${domain}`);
     
     for (let i = 0; i < protocolNo; i++) {
@@ -3994,13 +4007,14 @@ async function getClashConfig (env, hostName, isWarp) {
         customCdnHost,
         customCdnSni,
         bestVLESSTrojanInterval,
-        bestWarpInterval
+        bestWarpInterval,
+        enableIPv6
     } = proxySettings; 
 
     let config = structuredClone(clashConfigTemp);
     config.dns = await buildClashDNS(isWarp ? '1.1.1.1' : remoteDNS, localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina);
     config.rules = buildClashRoutingRules(localDNS, blockAds, bypassIran, bypassChina, blockPorn, blockUDP443, bypassLAN, isWarp);
-    const Addresses = (await getConfigAddresses(hostName, cleanIPs));
+    const Addresses = await getConfigAddresses(hostName, cleanIPs, enableIPv6);
     const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
     const totalAddresses = [...Addresses, ...customCdnAddresses];
 
@@ -4535,7 +4549,8 @@ async function getSingboxConfig (env, hostName, client, isWarp, isFragment) {
         customCdnHost,
         customCdnSni,
         bestVLESSTrojanInterval,
-        bestWarpInterval
+        bestWarpInterval,
+        enableIPv6
     } = proxySettings;
 
     let config = structuredClone(singboxConfigTemp);
@@ -4559,7 +4574,7 @@ async function getSingboxConfig (env, hostName, client, isWarp, isFragment) {
     }
 
     let outbound, remark, path;
-    const Addresses = await getConfigAddresses(hostName, cleanIPs);
+    const Addresses = await getConfigAddresses(hostName, cleanIPs, enableIPv6);
     const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
     const totalAddresses = [...Addresses, ...customCdnAddresses];
     config.dns.servers[0].address = remoteDNS;
@@ -4689,8 +4704,8 @@ async function getNormalConfigs(env, hostName, client) {
         throw new Error(`An error occurred while getting normal configs - ${error}`);
     }
 
-    const { cleanIPs, proxyIP, ports, vlessConfigs, trojanConfigs , outProxy, customCdnAddrs, customCdnHost, customCdnSni} = proxySettings;
-    const Addresses = await getConfigAddresses(hostName, cleanIPs);
+    const { cleanIPs, proxyIP, ports, vlessConfigs, trojanConfigs , outProxy, customCdnAddrs, customCdnHost, customCdnSni, enableIPv6} = proxySettings;
+    const Addresses = await getConfigAddresses(hostName, cleanIPs, enableIPv6);
     const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
     const totalAddresses = [...Addresses, ...customCdnAddresses];
     const alpn = client === 'singbox' ? 'http/1.1' : 'h2,http/1.1';
