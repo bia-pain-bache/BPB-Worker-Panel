@@ -3629,6 +3629,7 @@ async function getXrayFragmentConfigs(env, hostName) {
                     outbounds.push({...proxyOut}, {...outbound});
                 } else {
                     fragConfig.outbounds = [{ ...outbound}, ...fragConfig.outbounds];
+                    outbound.tag = `prox_${proxyIndex}`;
                     outbounds.push({...outbound});
                 }
     
