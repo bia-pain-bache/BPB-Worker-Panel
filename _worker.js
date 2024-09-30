@@ -19,7 +19,7 @@ let trojanPassword = `bpb-trojan`;
 // https://emn178.github.io/online-tools/sha224.html
 // https://www.atatus.com/tools/sha224-to-hash
 let hashPassword = 'b5d0a5f7ff7aac227bc68b55ae713131ffdf605ca0da52cce182d513';
-let panelVersion = '2.6.1';
+let panelVersion = '2.6.2';
 
 if (!isValidUUID(userID)) throw new Error(`Invalid UUID: ${userID}`);
 if (!isValidSHA224(hashPassword)) throw new Error(`Invalid Hash password: ${hashPassword}`);
@@ -1274,8 +1274,8 @@ function getRandomPath (length) {
 }
 
 async function resolveDNS (domain) {
-    const dohURLv4 = `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=A`;
-    const dohURLv6 = `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=AAAA`;
+    const dohURLv4 = `${dohURL}?name=${encodeURIComponent(domain)}&type=A`;
+    const dohURLv6 = `${dohURL}?name=${encodeURIComponent(domain)}&type=AAAA`;
 
     try {
         const [ipv4Response, ipv6Response] = await Promise.all([
@@ -1464,7 +1464,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
                 'GRAD' 0,
                 'opsz' 24
             }
-            details { margin-bottom: 10px; }
+            details { border-bottom: 1px solid #ddd; }
             summary {
                 font-weight: bold;
                 cursor: pointer;
@@ -1669,7 +1669,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
             }
             @media only screen and (min-width: 768px) {
                 .form-container { max-width: 70%; }
-                #apply { display: block; margin: 30px auto 0 auto; max-width: 50%; }
+                #apply { display: block; margin: 20px auto 0 auto; max-width: 50%; }
                 .modal-content { width: 30% }
                 .routing { grid-template-columns: 4fr 2fr 6fr 4fr; }
             }
@@ -1802,7 +1802,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
                     </div>
                 </details>
                 <details>
-                    <summary><h2>ROUTING ⚙️</h2></summary>
+                    <summary><h2>ROUTING RULES ⚙️</h2></summary>
                     <div class="form-control" style="margin-bottom: 20px;">			
                         <div class="routing">
                             <input type="checkbox" id="block-ads" name="block-ads" style="margin: 0; grid-column: 2;" value="true" ${blockAds ? 'checked' : ''}>
@@ -1831,7 +1831,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
                     </div>
                 </details>
                 <details>
-                    <summary><h2>WARP ⚙️</h2></summary>
+                    <summary><h2>WARP GENERAL ⚙️</h2></summary>
                     <div class="form-control">
                         <label for="wowEndpoint">✨ WoW Endpoints</label>
                         <input type="text" id="wowEndpoint" name="wowEndpoint" value="${wowEndpoint.replaceAll(",", " , ")}" required>
@@ -3498,7 +3498,7 @@ function buildXrayChainOutbound(chainProxyParams) {
     return proxyOutbound;
 }
 
-async function buildWorkerLessConfig(remoteDNS, localDNS, lengthMin,  lengthMax,  intervalMin,  intervalMax, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443) {
+async function buildWorkerLessConfig(remoteDNS, localDNS, lengthMin,  lengthMax,  intervalMin,  intervalMax, fragmentPackets, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443) {
     let fakeOutbound = buildXrayVLESSOutbound('fake-outbound', 'google.com', 443, userID, 'google.com', '');
     delete fakeOutbound.streamSettings.sockopt;
     fakeOutbound.streamSettings.wsSettings.path = '/';
@@ -3508,6 +3508,7 @@ async function buildWorkerLessConfig(remoteDNS, localDNS, lengthMin,  lengthMax,
     fragConfig.outbounds[0].settings.domainStrategy = 'UseIP';
     fragConfig.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
     fragConfig.outbounds[0].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
+    fragConfig.outbounds[0].settings.fragment.packets = fragmentPackets;
     fragConfig.outbounds = [
         {...fragConfig.outbounds[0]}, 
         {...fakeOutbound}, 
@@ -3684,7 +3685,7 @@ async function getXrayFragmentConfigs(env, hostName) {
 
     bestFragment.observatory.subjectSelector = ["frag"];
     bestFragment.routing.balancers[0].selector = ["frag"];
-    const workerLessConfig = await buildWorkerLessConfig(remoteDNS, localDNS, lengthMin,  lengthMax,  intervalMin,  intervalMax, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443); 
+    const workerLessConfig = await buildWorkerLessConfig(remoteDNS, localDNS, lengthMin,  lengthMax,  intervalMin,  intervalMax, fragmentPackets, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443); 
     Configs.push(bestPing, bestFragment, workerLessConfig);
 
     return Configs;
