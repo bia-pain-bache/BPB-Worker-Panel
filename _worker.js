@@ -3848,7 +3848,7 @@ function buildClashVLESSOutbound (remark, address, port, uuid, host, sni, path) 
 
     if (tls) {
         Object.assign(outbound, {
-            "servername": randomUpperCase(sni),
+            "servername": sni,
             "alpn": ["h2", "http/1.1"],
             "client-fingerprint": "random"
         });
@@ -3872,7 +3872,7 @@ function buildClashTrojanOutbound (remark, address, port, password, host, sni, p
             "max-early-data": 2560,
             "early-data-header-name": "Sec-WebSocket-Protocol"
         },
-        "sni": randomUpperCase(sni),
+        "sni": sni,
         "alpn": ["h2", "http/1.1"],
         "client-fingerprint": "random"
     };
@@ -4078,7 +4078,7 @@ async function getClashConfig (env, hostName, isWarp) {
                 let VLESSOutbound, TrojanOutbound;
                 const isCustomAddr = index > Addresses.length - 1;
                 const configType = isCustomAddr ? 'C' : '';
-                const sni = isCustomAddr ? customCdnSni : hostName;
+                const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
                 const host = isCustomAddr ? customCdnHost : hostName;
 
                 if (vlessConfigs && i === 0) {
@@ -4339,7 +4339,7 @@ function buildSingboxVLESSOutbound (remark, address, port, uuid, host, sni, path
             alpn: "http/1.1",
             enabled: true,
             insecure: false,
-            server_name: randomUpperCase(sni),
+            server_name: sni,
             utls: {
                 enabled: true,
                 fingerprint: "randomized"
@@ -4378,7 +4378,7 @@ function buildSingboxTrojanOutbound (remark, address, port, password, host, sni,
             alpn: "http/1.1",
             enabled: true,
             insecure: false,
-            server_name: randomUpperCase(sni),
+            server_name: sni,
             utls: {
                 enabled: true,
                 fingerprint: "randomized"
@@ -4634,7 +4634,7 @@ async function getSingboxConfig (env, hostName, client, isWarp, isFragment) {
                 let VLESSOutbound, TrojanOutbound;
                 const isCustomAddr = index > Addresses.length - 1;
                 const configType = isCustomAddr ? 'C' : isFragment ? 'F' : '';
-                const sni = isCustomAddr ? customCdnSni : hostName;
+                const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
                 const host = isCustomAddr ? customCdnHost : hostName;
          
                 if (vlessConfigs && i === 0) {
