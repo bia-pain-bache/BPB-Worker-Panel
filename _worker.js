@@ -2956,7 +2956,7 @@ async function buildWarpOutbounds (env, client, proxySettings, warpConfigs) {
     warpEndpoints.split(',').forEach( (endpoint, index) => {
         
         if (client === 'xray' || client === 'nikang') {
-            let xrayOutbound = buildXrayWarpOutbound(`warp-${index + 1}`, warpIPv6, privateKey, publicKey, endpoint, reserved, '');
+            let xrayOutbound = buildXrayWarpOutbound(`prox-${index + 1}`, warpIPv6, privateKey, publicKey, endpoint, reserved, '');
             client === 'nikang' && Object.assign(xrayOutbound.settings, {
                 wnoise: nikaNGNoiseMode,
                 wnoisecount: fakePackets,
@@ -3024,13 +3024,13 @@ async function buildWoWOutbounds (env, client, proxySettings, warpConfigs) {
 
             if (client === 'xray' || client === 'nikang') {
                 let xrayOutbound = buildXrayWarpOutbound(
-                    i === 1 ? `warp-ir_${index + 1}` : `warp-out_${index + 1}`, 
+                    i === 1 ? `proxy` : `chain`,
                     warpIPv6, 
                     privateKey, 
                     publicKey, 
                     endpoint, 
                     reserved, 
-                    i === 1 ? '' : `warp-ir_${index + 1}`
+                    i === 1 ? '' : `proxy`
                 );
 
                 (client === 'nikang' && i === 1) && Object.assign(xrayOutbound.settings, {
@@ -3046,16 +3046,16 @@ async function buildWoWOutbounds (env, client, proxySettings, warpConfigs) {
             if (client === 'singbox' || client === 'hiddify') {
                 let singboxOutbound = buildSingboxWarpOutbound(
                     i === 1
-                    ? `warp-ir_${index + 1}` 
-                    : client === 'hiddify' 
-                        ? `💦 WoW Pro ${index + 1} 🌍` 
-                        : `💦 WoW ${index + 1} 🌍` , 
+                        ? `proxy-${index + 1}` 
+                        : client === 'hiddify' 
+                            ? `💦 WoW Pro ${index + 1} 🌍` 
+                            : `💦 WoW ${index + 1} 🌍` , 
                     warpIPv6, 
                     privateKey, 
                     publicKey, 
                     endpoint, 
                     reserved, 
-                    i === 0 ? `warp-ir_${index + 1}` : ''
+                    i === 0 ? `proxy-${index + 1}` : ''
                 );
                 
                 (client === 'hiddify' && i === 1) && Object.assign(singboxOutbound, {
@@ -3070,13 +3070,13 @@ async function buildWoWOutbounds (env, client, proxySettings, warpConfigs) {
 
             if (client === 'clash') {
                 let clashOutbound = buildClashWarpOutbound(
-                    i === 1 ? `warp-ir_${index + 1}` : `💦 WoW ${index + 1} 🌍`, 
+                    i === 1 ? `proxy-${index + 1}` : `💦 WoW ${index + 1} 🌍`, 
                     warpIPv6, 
                     privateKey, 
                     publicKey, 
                     endpoint,
                     reserved, 
-                    i === 0 ? `warp-ir_${index + 1}` : ''
+                    i === 0 ? `proxy-${index + 1}` : ''
                 );
 
                 wowOutbounds.push(clashOutbound);
@@ -3232,7 +3232,7 @@ function buildXrayRoutingRules (localDNS, blockAds, bypassIran, blockPorn, bypas
     } else  {
         rules.push({
             network: isWarp || isWorkerLess ? "tcp,udp" : "tcp",
-            outboundTag: isChain ? "out" : isWorkerLess ? "fragment" : "proxy",
+            outboundTag: isChain ? "chain" : isWorkerLess ? "fragment" : "proxy",
             type: "field"
         });
     }
@@ -3391,7 +3391,7 @@ function buildXrayChainOutbound(chainProxyParams) {
                 xudpConcurrency: 16,
                 xudpProxyUDP443: "reject"
             },
-            tag: "out"
+            tag: "chain"
         };
     }
 
@@ -3429,7 +3429,7 @@ function buildXrayChainOutbound(chainProxyParams) {
                 tcpNoDelay: true
             }
         },
-        tag: "out"
+        tag: "chain"
     };
     
     if (security === 'tls') {
@@ -3498,7 +3498,7 @@ function buildXrayChainOutbound(chainProxyParams) {
     return proxyOutbound;
 }
 
-async function buildWorkerLessConfig(remoteDNS, localDNS, lengthMin,  lengthMax,  intervalMin,  intervalMax, fragmentPackets, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443) {
+async function buildXrayWorkerLessConfig(remoteDNS, localDNS, lengthMin,  lengthMax,  intervalMin,  intervalMax, fragmentPackets, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443) {
     let fakeOutbound = buildXrayVLESSOutbound('fake-outbound', 'google.com', 443, userID, 'google.com', '');
     delete fakeOutbound.streamSettings.sockopt;
     fakeOutbound.streamSettings.wsSettings.path = '/';
@@ -3622,14 +3622,14 @@ async function getXrayFragmentConfigs(env, hostName) {
                         ? fragConfig.dns.servers[1].domains.push(`full:${addr}`)
                         : fragConfig.dns.servers.splice(1,1);
 
-                    outbound.tag = `prox_${proxyIndex}`;
+                    outbound.tag = `prox-${proxyIndex}`;
                     let proxyOut = structuredClone(chainProxy);
-                    proxyOut.tag = `out_${proxyIndex}`;
-                    proxyOut.streamSettings.sockopt.dialerProxy = `prox_${proxyIndex}`;
+                    proxyOut.tag = `chain-${proxyIndex}`;
+                    proxyOut.streamSettings.sockopt.dialerProxy = `prox-${proxyIndex}`;
                     outbounds.push({...proxyOut}, {...outbound});
                 } else {
                     fragConfig.outbounds = [{ ...outbound}, ...fragConfig.outbounds];
-                    outbound.tag = `prox_${proxyIndex}`;
+                    outbound.tag = `prox-${proxyIndex}`;
                     outbounds.push({...outbound});
                 }
     
@@ -3644,8 +3644,8 @@ async function getXrayFragmentConfigs(env, hostName) {
     bestPing.outbounds = [...outbounds, ...bestPing.outbounds];
     
     if (chainProxy) {
-        bestPing.observatory.subjectSelector = ["out"];
-        bestPing.routing.balancers[0].selector = ["out"];
+        bestPing.observatory.subjectSelector = ["chain"];
+        bestPing.routing.balancers[0].selector = ["chain"];
         bestPing.dns.servers[1].domains = domainAddressesRules;
     }
 
@@ -3654,7 +3654,7 @@ async function getXrayFragmentConfigs(env, hostName) {
     bestFragment.outbounds.splice(0,1);
     bestFragValues.forEach( (fragLength, index) => {
         bestFragment.outbounds.push({
-            tag: `frag_${index + 1}`,
+            tag: `frag-${index + 1}`,
             protocol: "freedom",
             settings: {
                 fragment: {
@@ -3664,7 +3664,7 @@ async function getXrayFragmentConfigs(env, hostName) {
                 }
             },
             proxySettings: {
-                tag: chainProxy ? "out" : "proxy"
+                tag: chainProxy ? "chain" : "proxy"
             }
         });
     });
@@ -3674,7 +3674,7 @@ async function getXrayFragmentConfigs(env, hostName) {
     if (chainProxy) {
         bestFragmentOutbounds[0].streamSettings.sockopt.dialerProxy = 'proxy';
         delete bestFragmentOutbounds[1].streamSettings.sockopt.dialerProxy;
-        bestFragmentOutbounds[0].tag = 'out';
+        bestFragmentOutbounds[0].tag = 'chain';
         bestFragmentOutbounds[1].tag = 'proxy';
         bestFragment.outbounds = [bestFragmentOutbounds[0], bestFragmentOutbounds[1], ...bestFragment.outbounds];
         bestFragment.dns.servers[1].domains = domainAddressesRules;
@@ -3686,7 +3686,7 @@ async function getXrayFragmentConfigs(env, hostName) {
 
     bestFragment.observatory.subjectSelector = ["frag"];
     bestFragment.routing.balancers[0].selector = ["frag"];
-    const workerLessConfig = await buildWorkerLessConfig(remoteDNS, localDNS, lengthMin,  lengthMax,  intervalMin,  intervalMax, fragmentPackets, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443); 
+    const workerLessConfig = await buildXrayWorkerLessConfig(remoteDNS, localDNS, lengthMin,  lengthMax,  intervalMin,  intervalMax, fragmentPackets, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443); 
     Configs.push(bestPing, bestFragment, workerLessConfig);
 
     return Configs;
@@ -3715,15 +3715,15 @@ async function getXrayWarpConfigs (env, client) {
     xrayWarpConfig.dns = await buildXrayDNSObject('1.1.1.1', localDNS, blockAds, bypassIran, bypassChina, bypassLAN, blockPorn, false);
     xrayWarpConfig.routing.rules = buildXrayRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, false, false, true);
     xrayWarpConfig.outbounds.splice(0,1);
-    xrayWarpConfig.routing.rules[xrayWarpConfig.routing.rules.length - 1].outboundTag = 'warp';
+    xrayWarpConfig.routing.rules[xrayWarpConfig.routing.rules.length - 1].outboundTag = 'proxy';
     delete xrayWarpConfig.observatory;
     delete xrayWarpConfig.routing.balancers;
-    xrayWarpBestPing.remarks = client === 'nikang' ? '💦 BPB - Warp Pro Best Ping 🚀' : '💦 BPB - Warp Best Ping 🚀';
+    xrayWarpBestPing.remarks = client === 'nikang' ? '💦 Warp Pro Best Ping 🚀' : '💦 Warp Best Ping 🚀';
     xrayWarpBestPing.dns = await buildXrayDNSObject('1.1.1.1', localDNS, blockAds, bypassIran, bypassChina, bypassLAN, blockPorn, false);
     xrayWarpBestPing.routing.rules = buildXrayRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, true, false, true);
     xrayWarpBestPing.outbounds.splice(0,1);
-    xrayWarpBestPing.routing.balancers[0].selector = ['warp'];
-    xrayWarpBestPing.observatory.subjectSelector = ['warp'];
+    xrayWarpBestPing.routing.balancers[0].selector = ['prox'];
+    xrayWarpBestPing.observatory.subjectSelector = ['prox'];
     xrayWarpBestPing.observatory.probeInterval = `${bestWarpInterval}s`;
     xrayWoWConfigTemp.dns = await buildXrayDNSObject('1.1.1.1', localDNS, blockAds, bypassIran, bypassChina, bypassLAN, blockPorn, false);
     xrayWoWConfigTemp.routing.rules = buildXrayRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, false, false, true);
@@ -3734,25 +3734,33 @@ async function getXrayWarpConfigs (env, client) {
     xrayWarpOutbounds.forEach((outbound, index) => {
         xrayWarpConfigs.push({
             ...xrayWarpConfig,
-            remarks: client === 'nikang' ? `💦 BPB - Warp Pro ${index + 1} 🇮🇷` : `💦 BPB - Warp ${index + 1} 🇮🇷`,
-            outbounds: [{...outbound, tag: 'warp'}, ...xrayWarpConfig.outbounds]
+            remarks: client === 'nikang' ? `💦 Warp Pro ${index + 1} 🇮🇷` : `💦 Warp ${index + 1} 🇮🇷`,
+            outbounds: [{...outbound, tag: 'proxy'}, ...xrayWarpConfig.outbounds]
         });
     });
     
+    let proxyIndex = 1;
     xrayWoWOutbounds.forEach((outbound, index) => {
-        if (outbound.tag.includes('warp-out')) {
+        if (outbound.tag === 'chain') {
             let xrayWoWConfig = structuredClone(xrayWoWConfigTemp);
-            xrayWoWConfig.remarks = client === 'nikang' ? `💦 BPB - WoW Pro ${index/2 + 1} 🌍` : `💦 BPB - WoW ${index/2 + 1} 🌍`;
-            xrayWoWConfig.outbounds = [{...xrayWoWOutbounds[index]}, {...xrayWoWOutbounds[index + 1]}, ...xrayWoWConfig.outbounds];
-            xrayWoWConfig.routing.rules[xrayWoWConfig.routing.rules.length - 1].outboundTag = outbound.tag;
+            const chainOutbound = structuredClone(outbound);
+            const proxyOutbound = structuredClone(xrayWoWOutbounds[index + 1]);
+            xrayWoWConfig.remarks = client === 'nikang' ? `💦 WoW Pro ${proxyIndex} 🌍` : `💦 WoW ${proxyIndex} 🌍`;
+            xrayWoWConfig.routing.rules[xrayWoWConfig.routing.rules.length - 1].outboundTag = 'chain';
+            xrayWoWConfig.outbounds = [ chainOutbound, proxyOutbound, ...xrayWoWConfig.outbounds ];
             xrayWarpConfigs.push(xrayWoWConfig);
+            outbound.tag = `chain-${proxyIndex}`;
+            outbound.streamSettings.sockopt.dialerProxy = `prox-${proxyIndex}`;
+        } else {
+            outbound.tag = `prox-${proxyIndex}`;
+            proxyIndex++;
         }
     });
 
     let xrayWoWBestPing = structuredClone(xrayWarpBestPing);
-    xrayWoWBestPing.remarks = client === 'nikang' ? '💦 BPB - WoW Pro Best Ping 🚀' : '💦 BPB - WoW Best Ping 🚀';
-    xrayWoWBestPing.routing.balancers[0].selector = ['warp-out'];
-    xrayWoWBestPing.observatory.subjectSelector = ['warp-out'];
+    xrayWoWBestPing.remarks = client === 'nikang' ? '💦 WoW Pro Best Ping 🚀' : '💦 WoW Best Ping 🚀';
+    xrayWoWBestPing.routing.balancers[0].selector = ['chain'];
+    xrayWoWBestPing.observatory.subjectSelector = ['chain'];
     xrayWarpBestPing.outbounds = [...xrayWarpOutbounds, ...xrayWarpBestPing.outbounds];
     xrayWoWBestPing.outbounds = [...xrayWoWOutbounds, ...xrayWoWBestPing.outbounds];
     xrayWarpConfigs.push(xrayWarpBestPing, xrayWoWBestPing);
