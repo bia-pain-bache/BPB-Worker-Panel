@@ -1207,7 +1207,7 @@ async function updateDataset (env, newSettings, resetSettings) {
 
     const chainProxy = newSettings?.get('outProxy');
     const proxySettings = {
-        remoteDNS: newSettings ? newSettings.get('remoteDNS') : currentSettings ? currentSettings.remoteDNS : 'https://dns.google/dns-query',
+        remoteDNS: newSettings ? newSettings.get('remoteDNS') : currentSettings ? currentSettings.remoteDNS : 'https://8.8.8.8/dns-query',
         localDNS: newSettings ? newSettings.get('localDNS') : currentSettings ? currentSettings.localDNS : '8.8.8.8',
         lengthMin: newSettings ? newSettings.get('fragmentLengthMin') : currentSettings ? currentSettings.lengthMin : '100',
         lengthMax: newSettings ? newSettings.get('fragmentLengthMax') : currentSettings ? currentSettings.lengthMax : '200',
