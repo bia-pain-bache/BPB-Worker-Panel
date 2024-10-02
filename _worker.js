@@ -19,7 +19,7 @@ let trojanPassword = `bpb-trojan`;
 // https://emn178.github.io/online-tools/sha224.html
 // https://www.atatus.com/tools/sha224-to-hash
 let hashPassword = 'b5d0a5f7ff7aac227bc68b55ae713131ffdf605ca0da52cce182d513';
-let panelVersion = '2.6.2';
+let panelVersion = '2.6.3';
 
 if (!isValidUUID(userID)) throw new Error(`Invalid UUID: ${userID}`);
 if (!isValidSHA224(hashPassword)) throw new Error(`Invalid Hash password: ${hashPassword}`);
@@ -1455,7 +1455,37 @@ async function renderHomePage (env, hostName, fragConfigs) {
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
         <title>Collapsible Sections</title>
 		<style>
-			body { font-family: system-ui; }
+            :root {
+                --color: black;
+                --primary-color: #09639f;
+                --secondary-color: #3498db;
+                --header-color: #09639f; 
+                --background-color: #fff;
+                --form-background-color: #f9f9f9;
+                --table-active-color: #f2f2f2;
+                --hr-text-color: #3b3b3b;
+                --lable-text-color: #333;
+                --border-color: #ddd;
+                --button-color: #09639f;
+                --input-background-color: white;
+                --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+            }
+			body { font-family: system-ui; background-color: var(--background-color); color: var(--color) }
+            body.dark-mode {
+                --color: white;
+                --primary-color: #09639F;
+                --secondary-color: #3498DB;
+                --header-color: #3498DB; 
+                --background-color: #121212;
+                --form-background-color: #121212;
+                --table-active-color: #252525;
+                --hr-text-color: #D5D5D5;
+                --lable-text-color: #DFDFDF;
+                --border-color: #353535;
+                --button-color: #3498DB;
+                --input-background-color: #252525;
+                --header-shadow: 2px 2px 4px rgba(255, 255, 255, 0.25);
+            }
             .material-symbols-outlined {
                 margin-left: 5px;
                 font-variation-settings:
@@ -1464,18 +1494,18 @@ async function renderHomePage (env, hostName, fragConfigs) {
                 'GRAD' 0,
                 'opsz' 24
             }
-            details { border-bottom: 1px solid #ddd; }
+            details { border-bottom: 1px solid var(--border-color); }
             summary {
                 font-weight: bold;
                 cursor: pointer;
                 text-align: center;
                 text-wrap: nowrap;
             }
-            summary::marker { font-size: 1.5rem; color: #09639f; }
+            summary::marker { font-size: 1.5rem; color: var(--secondary-color); }
             summary h2 { display: inline-flex; }
-            h1 { font-size: 2.5em; text-align: center; color: #09639f; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25); }
-			h2 { margin: 30px 0; text-align: center; color: #3b3b3b; }
-			hr { border: 1px solid #ddd; margin: 20px 0; }
+            h1 { font-size: 2.5em; text-align: center; color: var(--header-color); text-shadow: var(--header-shadow); }
+			h2 { margin: 30px 0; text-align: center; color: var(--hr-text-color); }
+			hr { border: 1px solid var(--border-color); margin: 20px 0; }
             .footer {
                 display: flex;
                 font-weight: 600;
@@ -1495,11 +1525,11 @@ async function renderHomePage (env, hostName, fragConfigs) {
 				font-family: Arial, sans-serif;
 			}
             .form-control button {
-                background-color: white;
+                background-color: var(--form-background-color);
                 font-size: 1.1rem;
                 font-weight: 600;
-                color: #09639f;
-                border-color: #09639f;
+                color: var(--button-color);
+                border-color: var(--primary-color);
                 border: 1px solid;
             }
             #apply {display: block; margin-top: 30px;}
@@ -1509,7 +1539,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
 				margin-bottom: 5px;
 				font-size: 110%;
 				font-weight: 600;
-				color: #333;
+				color: var(--lable-text-color);
 			}
 			input[type="text"],
 			input[type="number"],
@@ -1519,11 +1549,11 @@ async function renderHomePage (env, hostName, fragConfigs) {
 				width: 100%;
 				text-align: center;
 				padding: 10px;
-				border: 1px solid #ddd;
+				border: 1px solid var(--border-color);
 				border-radius: 5px;
 				font-size: 16px;
-				color: #333;
-				background-color: #fff;
+				color: var(--lable-text-color);
+				background-color: var(--input-background-color);
 				box-sizing: border-box;
 				transition: border-color 0.3s ease;
 			}	
@@ -1531,7 +1561,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
 			input[type="number"]:focus,
 			input[type="url"]:focus,
 			textarea:focus,
-			select:focus { border-color: #3498db; outline: none; }
+			select:focus { border-color: var(--secondary-color); outline: none; }
 			.button,
 			table button {
 				display: flex;
@@ -1545,13 +1575,14 @@ async function renderHomePage (env, hostName, fragConfigs) {
 				letter-spacing: 1px;
 				border: none;
 				border-radius: 5px;
-				color: #fff;
-				background-color: #09639f;
+				color: white;
+				background-color: var(--primary-color);
 				cursor: pointer;
 				outline: none;
 				box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 				transition: all 0.3s ease;
 			}
+            input[type="checkbox"] { background-color: var(--input-background-color); }
             table button { margin: auto; width: auto; }
             .button.disabled {
                 background-color: #ccc;
@@ -1573,10 +1604,11 @@ async function renderHomePage (env, hostName, fragConfigs) {
 				max-width: 90%;
 				margin: 0 auto;
 				padding: 20px;
-				background: #f9f9f9;
-				border: 1px solid #eaeaea;
+				background: var(--form-background-color);
+				border: 1px solid var(--border-color);
 				border-radius: 10px;
 				box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                margin-bottom: 100px;
 			}
 			.table-container { margin-top: 20px; overflow-x: auto; }
 			table { 
@@ -1587,12 +1619,12 @@ async function renderHomePage (env, hostName, fragConfigs) {
                 overflow: hidden;
                 box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             }
-			th, td { padding: 8px 15px; border-bottom: 1px solid #ddd; }
+			th, td { padding: 8px 15px; border-bottom: 1px solid var(--border-color); }
             td div { display: flex; align-items: center; }
-			th { background-color: #3498db; color: white; font-weight: bold; font-size: 1.1rem; width: 50%;}
-			tr:nth-child(odd) { background-color: #f2f2f2; }
+			th { background-color: var(--secondary-color); color: white; font-weight: bold; font-size: 1.1rem; width: 50%;}
+			tr:nth-child(odd) { background-color: var(--table-active-color); }
             #custom-configs-table td { text-align: center; text-wrap: nowrap; }
-			tr:hover { background-color: #f1f1f1; }
+			tr:hover { background-color: var(--table-active-color); }
             .modal {
                 display: none;
                 position: fixed;
@@ -1605,10 +1637,10 @@ async function renderHomePage (env, hostName, fragConfigs) {
                 background-color: rgba(0, 0, 0, 0.4);
             }
             .modal-content {
-                background-color: #f9f9f9;
+                background-color: var(--form-background-color);
                 margin: auto;
                 padding: 10px 20px 20px;
-                border: 1px solid #eaeaea;
+                border: 1px solid var(--border-color);
                 border-radius: 10px;
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
                 width: 80%;
@@ -1617,7 +1649,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
                 left: 50%;
                 transform: translate(-50%, -50%);
             }
-            .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
+            .close { color: var(--color); float: right; font-size: 28px; font-weight: bold; }
             .close:hover,
             .close:focus { color: black; text-decoration: none; cursor: pointer; }
             .form-control label {
@@ -1625,17 +1657,17 @@ async function renderHomePage (env, hostName, fragConfigs) {
                 margin-bottom: 5px;
                 font-size: 110%;
                 font-weight: 600;
-                color: #333;
+                color: var(--lable-text-color);
                 line-height: 1.3em;
             }
             .form-control input[type="password"] {
                 width: 100%;
                 padding: 10px;
-                border: 1px solid #ddd;
+                border: 1px solid var(--border-color);
                 border-radius: 5px;
                 font-size: 16px;
-                color: #333;
-                background-color: #fff;
+                color: var(--lable-text-color);
+                background-color: var(--input-background-color);
                 box-sizing: border-box;
                 margin-bottom: 15px;
                 transition: border-color 0.3s ease;
@@ -1653,7 +1685,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
                 font-size: 100%;
                 text-wrap: nowrap;
             }
-            .form-control input[type="password"]:focus { border-color: #3498db; outline: none; }
+            .form-control input[type="password"]:focus { border-color: var(--secondary-color); outline: none; }
             #passwordError { color: red; margin-bottom: 10px; }
             .symbol { margin-right: 8px; }
             .modalQR {
@@ -1667,6 +1699,24 @@ async function renderHomePage (env, hostName, fragConfigs) {
                 overflow: auto;
                 background-color: rgba(0, 0, 0, 0.4);
             }
+            .floating-button {
+                position: fixed;
+                bottom: 20px;
+                left: 20px;
+                background-color: var(--color);
+                color: white;
+                border: none;
+                border-radius: 50%;
+                width: 60px;
+                height: 60px;
+                font-size: 24px;
+                cursor: pointer;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                transition: background-color 0.3s, transform 0.3s;
+            }
+            .floating-button:hover { transform: scale(1.1); }
+            body.dark-mode .floating-button { background-color: var(--color); }
+            body.dark-mode .floating-button:hover { transform: scale(1.1); }
             @media only screen and (min-width: 768px) {
                 .form-container { max-width: 70%; }
                 #apply { display: block; margin: 20px auto 0 auto; max-width: 50%; }
@@ -1914,7 +1964,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
 					<div style="grid-column: 2; width: 100%; display: inline-flex;">
 						<input type="submit" id="applyButton" style="margin-right: 10px;" class="button disabled" value="APPLY SETTINGS 💥" form="configForm">
                         <button type="button" id="resetSettings" style="background: none; margin: 0; border: none; cursor: pointer;">
-                            <i class="fa fa-refresh fa-2x fa-border" style="border-radius: .2em;" aria-hidden="true"></i>
+                            <i class="fa fa-refresh fa-2x fa-border" style="border-radius: .2em; border-color: var(--border-color);" aria-hidden="true"></i>
                         </button>
 					</div>
 				</div>
@@ -2263,13 +2313,16 @@ async function renderHomePage (env, hostName, fragConfigs) {
             <hr>
             <div class="footer">
                 <i class="fa fa-github" style="font-size:36px; margin-right: 10px;"></i>
-                <a class="link" href="https://github.com/bia-pain-bache/BPB-Worker-Panel" target="_blank">Github</a>
+                <a class="link" href="https://github.com/bia-pain-bache/BPB-Worker-Panel" style="color: var(--color); text-decoration: underline;" target="_blank">Github</a>
                 <button id="openModalBtn" class="button">Change Password</button>
-                <button type="button" id="logout" style="background: none; margin: 0; border: none; cursor: pointer;">
+                <button type="button" id="logout" style="background: none; color: var(--color); margin: 0; border: none; cursor: pointer;">
                     <i class="fa fa-power-off fa-2x" aria-hidden="true"></i>
                 </button>
             </div>
         </div>
+        <button id="darkModeToggle" class="floating-button">
+            <i id="modeIcon" class="fa fa-2x fa-adjust" style="color: var(--background-color);" aria-hidden="true"></i>
+        </button>
         
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.3/nacl.min.js"></script>
@@ -2293,7 +2346,9 @@ async function renderHomePage (env, hostName, fragConfigs) {
             let modalQR = document.getElementById('myQRModal');
             let qrcodeContainer = document.getElementById('qrcode-container');
             let forcedPassChange = false;
+            const darkModeToggle = document.getElementById('darkModeToggle');
 
+            localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
             ${isPassSet && !isWarpReady} && await getWarpConfigs();
                   
             const hasFormDataChanged = () => {
@@ -2378,6 +2433,14 @@ async function renderHomePage (env, hostName, fragConfigs) {
                     qrcodeContainer.lastElementChild.remove();
                 }
             }
+            darkModeToggle.addEventListener('click', () => {
+                const isDarkMode = document.body.classList.toggle('dark-mode');
+                if (isDarkMode) {
+                    localStorage.setItem('darkMode', 'enabled');
+                } else {
+                    localStorage.setItem('darkMode', 'disabled');                
+                }
+            });
 
             if (${!isPassSet}) {
                 forcedPassChange = true;
@@ -2719,14 +2782,38 @@ async function renderLoginPage () {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Login</title>
     <style>
-
+        :root {
+            --color: black;
+            --primary-color: #09639f;
+            --header-color: #09639f; 
+            --background-color: #fff;
+            --form-background-color: #f9f9f9;
+            --lable-text-color: #333;
+            --h2-color: #3b3b3b;
+            --border-color: #ddd;
+            --input-background-color: white;
+            --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+        }
         html, body { height: 100%; margin: 0; }
         body {
             font-family: system-ui;
-            background-color: #f9f9f9;
+            background-color: var(--background-color);
             position: relative;
             overflow: hidden;
         }
+        body.dark-mode {
+            --color: white;
+            --primary-color: #09639F;
+            --header-color: #3498DB; 
+            --background-color: #121212;
+            --form-background-color: #121212;
+            --lable-text-color: #DFDFDF;
+            --h2-color: #D5D5D5;
+            --border-color: #353535;
+            --input-background-color: #252525;
+            --header-shadow: 2px 2px 4px rgba(255, 255, 255, 0.25);
+        }
+        html, body { height: 100%; margin: 0; }
         .container {
             position: absolute;
             top: 50%;
@@ -2734,11 +2821,11 @@ async function renderLoginPage () {
             transform: translate(-50%, -50%);
             width: 90%;
         }
-        h1 { font-size: 2.5rem; text-align: center; color: #09639f; margin: 0 auto 30px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25); }        
-        h2 {text-align: center;}
+        h1 { font-size: 2.5rem; text-align: center; color: var(--header-color); margin: 0 auto 30px; text-shadow: var(--header-shadow); }        
+        h2 { text-align: center; color: var(--h2-color) }
         .form-container {
-            background: #f9f9f9;
-            border: 1px solid #eaeaea;
+            background: var(--form-background-color);
+            border: 1px solid var(--border-color);
             border-radius: 10px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             padding: 20px;
@@ -2750,15 +2837,16 @@ async function renderLoginPage () {
             padding-right: 20px;
             font-size: 110%;
             font-weight: 600;
-            color: #333;
+            color: var(--lable-text-color);
         }
         input[type="text"],
         input[type="password"] {
             width: 100%;
             padding: 10px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 5px;
-            color: #333;
+            color: var(--lable-text-color);
+            background-color: var(--input-background-color);
         }
         button {
             display: block;
@@ -2768,12 +2856,12 @@ async function renderLoginPage () {
             font-weight: 600;
             border: none;
             border-radius: 5px;
-            color: #fff;
-            background-color: #09639f;
+            color: white;
+            background-color: var(--primary-color);
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
-        button:hover {background-color: #2980b9;}
+        button:hover { background-color: var(--primary-color); }
         @media only screen and (min-width: 768px) {
             .container { width: 30%; }
         }
@@ -2795,6 +2883,9 @@ async function renderLoginPage () {
             </div>
         </div>
     <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
+        });
         document.getElementById('loginForm').addEventListener('submit', async (event) => {
             event.preventDefault();
             const password = document.getElementById('password').value;
@@ -2835,16 +2926,30 @@ function renderErrorPage (message, error, refer) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Error Page</title>
         <style>
-            body,
-            html {
+            :root {
+                --color: black;
+                --header-color: #09639f; 
+                --background-color: #fff;
+                --border-color: #ddd;
+                --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+            }
+            body, html {
                 height: 100%;
                 margin: 0;
                 display: flex;
                 justify-content: center;
                 align-items: center;
                 font-family: system-ui;
+                color: var(--color);
+                background-color: var(--background-color);
             }
-            h1 { font-size: 2.5rem; text-align: center; color: #09639f; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25); }
+            body.dark-mode {
+                --color: white;
+                --header-color: #3498DB; 
+                --background-color: #121212;
+                --header-shadow: 2px 2px 4px rgba(255, 255, 255, 0.25);          
+            }
+            h1 { font-size: 2.5rem; text-align: center; color: var(--header-color); text-shadow: var(--header-shadow); }
             #error-container { text-align: center; }
         </style>
     </head>
@@ -2859,6 +2964,11 @@ function renderErrorPage (message, error, refer) {
                 <p><b>${error ? `⚠️ ${error.stack.toString()}` : ''}</b></p>
             </div>
         </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
+        });
+    </script>
     </body>
     </html>`;
 }
