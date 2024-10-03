@@ -1446,7 +1446,6 @@ async function renderHomePage (env, hostName, fragConfigs) {
     const html = `
     <!DOCTYPE html>
     <html lang="en">
-
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1517,12 +1516,10 @@ async function renderHomePage (env, hostName, fragConfigs) {
             .footer button:hover, .footer button:focus { background: #3b3b3b;}
             .form-control a, a.link { text-decoration: none; }
 			.form-control {
-				margin-bottom: 15px;
-				display: grid;
-				grid-template-columns: 1fr 1fr;
-				align-items: baseline;
-				justify-content: flex-end;
+				margin-bottom: 20px;
 				font-family: Arial, sans-serif;
+                display: flex;
+                flex-direction: column;
 			}
             .form-control button {
                 background-color: var(--form-background-color);
@@ -1582,7 +1579,11 @@ async function renderHomePage (env, hostName, fragConfigs) {
 				box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 				transition: all 0.3s ease;
 			}
-            input[type="checkbox"] { background-color: var(--input-background-color); }
+            input[type="checkbox"] { 
+                background-color: var(--input-background-color);
+                style="margin: 0; 
+                grid-column: 2;"
+            }
             table button { margin: auto; width: auto; }
             .button.disabled {
                 background-color: #ccc;
@@ -1654,7 +1655,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
             .close:focus { color: black; text-decoration: none; cursor: pointer; }
             .form-control label {
                 display: block;
-                margin-bottom: 5px;
+                margin-bottom: 8px;
                 font-size: 110%;
                 font-weight: 600;
                 color: var(--lable-text-color);
@@ -1674,13 +1675,15 @@ async function renderHomePage (env, hostName, fragConfigs) {
             }
             .routing { 
                 display: grid;
-                grid-template-columns: 1fr 3fr 8fr 1fr;
-                justify-content: center;
+                justify-content: flex-start;
+                grid-template-columns: 1fr 1fr 10fr 1fr;
                 margin-bottom: 15px;
             }
+            .form-control .routing input { grid-column: 2 / 3; }
+            #routing-rules.form-control { display: grid; grid-template-columns: 1fr 1fr; }
             .routing label {
                 text-align: left;
-                margin: 0;
+                margin: 0 0 0 10px;
                 font-weight: 400;
                 font-size: 100%;
                 text-wrap: nowrap;
@@ -1715,17 +1718,27 @@ async function renderHomePage (env, hostName, fragConfigs) {
                 transition: background-color 0.3s, transform 0.3s;
             }
             .floating-button:hover { transform: scale(1.1); }
+            .min-max { display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline; width: 100%; }
+            .min-max span { text-align: center; white-space: pre; }
+            .input-with-select { width: 100%; }
             body.dark-mode .floating-button { background-color: var(--color); }
             body.dark-mode .floating-button:hover { transform: scale(1.1); }
             @media only screen and (min-width: 768px) {
                 .form-container { max-width: 70%; }
+                .form-control { 
+                    margin-bottom: 15px;
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    align-items: baseline;
+                    justify-content: flex-end;
+                    font-family: Arial, sans-serif;
+                }
                 #apply { display: block; margin: 20px auto 0 auto; max-width: 50%; }
                 .modal-content { width: 30% }
-                .routing { grid-template-columns: 4fr 2fr 6fr 4fr; }
+                .routing { display: grid; grid-template-columns: 4fr 1fr 3fr 4fr; }
             }
 		</style>
 	</head>
-	
 	<body>
 		<h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
 		<div class="form-container">
@@ -1756,10 +1769,10 @@ async function renderHomePage (env, hostName, fragConfigs) {
                     </div>
                     <div class="form-control">
                         <label>🔎 IP Scanner</label>
-                        <a href="https://scanner.github1.cloud/" id="scanner" name="scanner" target="_blank">
+                        <a href="https://scanner.github1.cloud/" id="scanner" name="scanner" target="_blank" style="width: 100%;">
                             <button type="button" class="button">
                                 Scan now
-                                <span class="material-symbols-outlined" style="margin-left: 5px;">open_in_new</span>
+                                <span class="material-symbols-outlined">open_in_new</span>
                             </button>
                         </a>
                     </div>
@@ -1790,19 +1803,19 @@ async function renderHomePage (env, hostName, fragConfigs) {
                     </div>
                     <div class="form-control" style="padding-top: 10px;">
                         <label>⚙️ Protocols</label>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; align-items: baseline; margin-top: 10px;">
+                        <div style="width: 100%; display: grid; grid-template-columns: 1fr 1fr; align-items: baseline; margin-top: 10px;">
                             <div style = "display: flex; justify-content: center; align-items: center;">
-                                <input type="checkbox" id="vlessConfigs" name="vlessConfigs" onchange="handleProtocolChange(event)" style="margin: 0; grid-column: 2;" value="true" ${vlessConfigs ? 'checked' : ''}>
+                                <input type="checkbox" id="vlessConfigs" name="vlessConfigs" onchange="handleProtocolChange(event)" value="true" ${vlessConfigs ? 'checked' : ''}>
                                 <label for="vlessConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">VLESS</label>
                             </div>
                             <div style = "display: flex; justify-content: center; align-items: center;">
-                                <input type="checkbox" id="trojanConfigs" name="trojanConfigs" onchange="handleProtocolChange(event)" style="margin: 0; grid-column: 2;" value="true" ${trojanConfigs ? 'checked' : ''}>
+                                <input type="checkbox" id="trojanConfigs" name="trojanConfigs" onchange="handleProtocolChange(event)" value="true" ${trojanConfigs ? 'checked' : ''}>
                                 <label for="trojanConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">Trojan</label>
                             </div>
                         </div>
                     </div>
                     <div class="table-container">
-                        <table id="frag-sub-table">
+                        <table id="ports-block">
                             <tr>
                                 <th style="text-wrap: nowrap; background-color: gray;">Config type</th>
                                 <th style="text-wrap: nowrap; background-color: gray;">Ports</th>
@@ -1822,18 +1835,18 @@ async function renderHomePage (env, hostName, fragConfigs) {
                     <summary><h2>FRAGMENT ⚙️</h2></summary>	
                     <div class="form-control">
                         <label for="fragmentLengthMin">📐 Length</label>
-                        <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;">
+                        <div class="min-max">
                             <input type="number" id="fragmentLengthMin" name="fragmentLengthMin" value="${lengthMin}" min="10" required>
-                            <span style="text-align: center; white-space: pre;"> - </span>
+                            <span> - </span>
                             <input type="number" id="fragmentLengthMax" name="fragmentLengthMax" value="${lengthMax}" max="500" required>
                         </div>
                     </div>
                     <div class="form-control">
                         <label for="fragmentIntervalMin">🕞 Interval</label>
-                        <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;">
+                        <div class="min-max">
                             <input type="number" id="fragmentIntervalMin" name="fragmentIntervalMin"
                                 value="${intervalMin}" min="1" max="30" required>
-                            <span style="text-align: center; white-space: pre;"> - </span>
+                            <span> - </span>
                             <input type="number" id="fragmentIntervalMax" name="fragmentIntervalMax"
                                 value="${intervalMax}" min="1" max="30" required>
                         </div>
@@ -1853,30 +1866,30 @@ async function renderHomePage (env, hostName, fragConfigs) {
                 </details>
                 <details>
                     <summary><h2>ROUTING RULES ⚙️</h2></summary>
-                    <div class="form-control" style="margin-bottom: 20px;">			
+                    <div id="routing-rules" class="form-control" style="margin-bottom: 20px;">			
                         <div class="routing">
-                            <input type="checkbox" id="block-ads" name="block-ads" style="margin: 0; grid-column: 2;" value="true" ${blockAds ? 'checked' : ''}>
+                            <input type="checkbox" id="block-ads" name="block-ads" value="true" ${blockAds ? 'checked' : ''}>
                             <label for="block-ads">Block Ads.</label>
                         </div>
                         <div class="routing">
-                            <input type="checkbox" id="bypass-iran" name="bypass-iran" style="margin: 0; grid-column: 2;" value="true" ${bypassIran ? 'checked' : ''}>
+                            <input type="checkbox" id="bypass-iran" name="bypass-iran" value="true" ${bypassIran ? 'checked' : ''}>
                             <label for="bypass-iran">Bypass Iran</label>
                         </div>
                         <div class="routing">
-                            <input type="checkbox" id="block-porn" name="block-porn" style="margin: 0; grid-column: 2;" value="true" ${blockPorn ? 'checked' : ''}>
+                            <input type="checkbox" id="block-porn" name="block-porn" value="true" ${blockPorn ? 'checked' : ''}>
                             <label for="block-porn">Block Porn</label>
                         </div>
                         <div class="routing">
-                            <input type="checkbox" id="bypass-lan" name="bypass-lan" style="margin: 0; grid-column: 2;" value="true" ${bypassLAN ? 'checked' : ''}>
+                            <input type="checkbox" id="bypass-lan" name="bypass-lan" value="true" ${bypassLAN ? 'checked' : ''}>
                             <label for="bypass-lan">Bypass LAN</label>
                         </div>
                         <div class="routing">
-                            <input type="checkbox" id="bypass-china" name="bypass-china" style="margin: 0; grid-column: 2;" value="true" ${bypassChina ? 'checked' : ''}>
-                            <label for="bypass-china">Bypass China</label>
+                            <input type="checkbox" id="block-udp-443" name="block-udp-443" value="true" ${blockUDP443 ? 'checked' : ''}>
+                            <label for="block-udp-443">Block QUIC</label>
                         </div>
                         <div class="routing">
-                            <input type="checkbox" id="block-udp-443" name="block-udp-443" style="margin: 0; grid-column: 2;" value="true" ${blockUDP443 ? 'checked' : ''}>
-                            <label for="block-udp-443">Block QUIC</label>
+                            <input type="checkbox" id="bypass-china" name="bypass-china" value="true" ${bypassChina ? 'checked' : ''}>
+                            <label for="bypass-china">Bypass China</label>
                         </div>
                     </div>
                 </details>
@@ -1931,30 +1944,30 @@ async function renderHomePage (env, hostName, fragConfigs) {
                     </div>
                     <div class="form-control">
                         <label for="noiseCountMin">🎚️ Noise Count</label>
-                        <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;">
+                        <div class="min-max">
                             <input type="number" id="noiseCountMin" name="noiseCountMin"
                                 value="${noiseCountMin}" min="1" required>
-                            <span style="text-align: center; white-space: pre;"> - </span>
+                            <span> - </span>
                             <input type="number" id="noiseCountMax" name="noiseCountMax"
                                 value="${noiseCountMax}" min="1" required>
                         </div>
                     </div>
                     <div class="form-control">
                         <label for="noiseSizeMin">📏 Noise Size</label>
-                        <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;">
+                        <div class="min-max">
                             <input type="number" id="noiseSizeMin" name="noiseSizeMin"
                                 value="${noiseSizeMin}" min="1" required>
-                            <span style="text-align: center; white-space: pre;"> - </span>
+                            <span> - </span>
                             <input type="number" id="noiseSizeMax" name="noiseSizeMax"
                                 value="${noiseSizeMax}" min="1" required>
                         </div>
                     </div>
                     <div class="form-control">
                         <label for="noiseDelayMin">🕞 Noise Delay</label>
-                        <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;">
+                        <div class="min-max">
                             <input type="number" id="noiseDelayMin" name="noiseDelayMin"
                                 value="${noiseDelayMin}" min="1" required>
-                            <span style="text-align: center; white-space: pre;"> - </span>
+                            <span> - </span>
                             <input type="number" id="noiseDelayMax" name="noiseDelayMax"
                                 value="${noiseDelayMax}" min="1" required>
                         </div>
