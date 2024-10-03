@@ -1786,15 +1786,15 @@ async function renderHomePage (env, hostName, fragConfigs) {
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="customCdnAddrs">💀 Custom Addr</label>
+                        <label for="customCdnAddrs">💀 Custom CDN Addrs</label>
                         <input type="text" id="customCdnAddrs" name="customCdnAddrs" value="${customCdnAddrs.replaceAll(",", " , ")}">
                     </div>
                     <div class="form-control">
-                        <label for="customCdnHost">💀 Custom Host</label> 
+                        <label for="customCdnHost">💀 Custom CDN Host</label> 
                         <input type="text" id="customCdnHost" name="customCdnHost" value="${customCdnHost}">
                     </div>
                     <div class="form-control">
-                        <label for="customCdnSni">💀 Custom SNI</label>
+                        <label for="customCdnSni">💀 Custom CDN SNI</label>
                         <input type="text" id="customCdnSni" name="customCdnSni" value="${customCdnSni}">
                     </div>
                     <div class="form-control">
@@ -2110,7 +2110,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
                 <table id="frag-sub-table">
                     <tr>
                         <th style="text-wrap: nowrap;">Application</th>
-                        <th style="text-wrap: nowrap;">Fragment Subscription</th>
+                        <th style="text-wrap: nowrap;">Subscription</th>
                     </tr>
                     <tr>
                         <td style="text-wrap: nowrap;">
