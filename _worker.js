@@ -287,7 +287,7 @@ export default {
 
                     default:
                         // return new Response('Not found', { status: 404 });
-                        url.hostname = 'www.speedtest.net';
+                        url.hostname = 'ruiwang26.top';
                         url.protocol = 'https:';
                         request = new Request(url, request);
                         return await fetch(request);
