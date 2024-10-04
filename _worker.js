@@ -1305,7 +1305,7 @@ async function getConfigAddresses(hostName, cleanIPs, enableIPv6) {
     const defaultIPv6 = enableIPv6 ? resolved.ipv6.map((ip) => `[${ip}]`) : []
     return [
         hostName,
-        'www.speedtest.net',
+        'ruiwang26.top',
         ...resolved.ipv4,
         ...defaultIPv6,
         ...(cleanIPs ? cleanIPs.split(',') : [])
@@ -3237,7 +3237,7 @@ async function buildXrayDNSObject (remoteDNS, localDNS, blockAds, bypassIran, by
 
     if (isWorkerLess) {
         const resolvedCloudflare = await resolveDNS('cloudflare.com');
-        const resolvedCLDomain = await resolveDNS('www.speedtest.net.cdn.cloudflare.net');
+        const resolvedCLDomain = await resolveDNS('ruiwang26.top');
         const resolvedCFNS_1 = await resolveDNS('ben.ns.cloudflare.com');
         const resolvedCFNS_2 = await resolveDNS('lara.ns.cloudflare.com');
         dnsObject.hosts['cloudflare-dns.com'] = [
