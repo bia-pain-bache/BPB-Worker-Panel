@@ -1529,7 +1529,7 @@ async function renderHomePage (env, hostName, fragConfigs) {
                 border-color: var(--primary-color);
                 border: 1px solid;
             }
-            #apply {display: block; margin-top: 30px;}
+            #apply {display: block; margin-top: 20px;}
             input.button {font-weight: 600; padding: 15px 0; font-size: 1.1rem;}
 			label {
 				display: block;
@@ -1865,35 +1865,6 @@ async function renderHomePage (env, hostName, fragConfigs) {
                     </div>
                 </details>
                 <details>
-                    <summary><h2>ROUTING RULES ⚙️</h2></summary>
-                    <div id="routing-rules" class="form-control" style="margin-bottom: 20px;">			
-                        <div class="routing">
-                            <input type="checkbox" id="block-ads" name="block-ads" value="true" ${blockAds ? 'checked' : ''}>
-                            <label for="block-ads">Block Ads.</label>
-                        </div>
-                        <div class="routing">
-                            <input type="checkbox" id="bypass-iran" name="bypass-iran" value="true" ${bypassIran ? 'checked' : ''}>
-                            <label for="bypass-iran">Bypass Iran</label>
-                        </div>
-                        <div class="routing">
-                            <input type="checkbox" id="block-porn" name="block-porn" value="true" ${blockPorn ? 'checked' : ''}>
-                            <label for="block-porn">Block Porn</label>
-                        </div>
-                        <div class="routing">
-                            <input type="checkbox" id="bypass-lan" name="bypass-lan" value="true" ${bypassLAN ? 'checked' : ''}>
-                            <label for="bypass-lan">Bypass LAN</label>
-                        </div>
-                        <div class="routing">
-                            <input type="checkbox" id="block-udp-443" name="block-udp-443" value="true" ${blockUDP443 ? 'checked' : ''}>
-                            <label for="block-udp-443">Block QUIC</label>
-                        </div>
-                        <div class="routing">
-                            <input type="checkbox" id="bypass-china" name="bypass-china" value="true" ${bypassChina ? 'checked' : ''}>
-                            <label for="bypass-china">Bypass China</label>
-                        </div>
-                    </div>
-                </details>
-                <details>
                     <summary><h2>WARP GENERAL ⚙️</h2></summary>
                     <div class="form-control">
                         <label for="wowEndpoint">✨ WoW Endpoints</label>
@@ -1970,6 +1941,35 @@ async function renderHomePage (env, hostName, fragConfigs) {
                             <span> - </span>
                             <input type="number" id="noiseDelayMax" name="noiseDelayMax"
                                 value="${noiseDelayMax}" min="1" required>
+                        </div>
+                    </div>
+                </details>
+                <details>
+                    <summary><h2>ROUTING RULES ⚙️</h2></summary>
+                    <div id="routing-rules" class="form-control" style="margin-bottom: 20px;">			
+                        <div class="routing">
+                            <input type="checkbox" id="block-ads" name="block-ads" value="true" ${blockAds ? 'checked' : ''}>
+                            <label for="block-ads">Block Ads.</label>
+                        </div>
+                        <div class="routing">
+                            <input type="checkbox" id="bypass-iran" name="bypass-iran" value="true" ${bypassIran ? 'checked' : ''}>
+                            <label for="bypass-iran">Bypass Iran</label>
+                        </div>
+                        <div class="routing">
+                            <input type="checkbox" id="block-porn" name="block-porn" value="true" ${blockPorn ? 'checked' : ''}>
+                            <label for="block-porn">Block Porn</label>
+                        </div>
+                        <div class="routing">
+                            <input type="checkbox" id="bypass-lan" name="bypass-lan" value="true" ${bypassLAN ? 'checked' : ''}>
+                            <label for="bypass-lan">Bypass LAN</label>
+                        </div>
+                        <div class="routing">
+                            <input type="checkbox" id="block-udp-443" name="block-udp-443" value="true" ${blockUDP443 ? 'checked' : ''}>
+                            <label for="block-udp-443">Block QUIC</label>
+                        </div>
+                        <div class="routing">
+                            <input type="checkbox" id="bypass-china" name="bypass-china" value="true" ${bypassChina ? 'checked' : ''}>
+                            <label for="bypass-china">Bypass China</label>
                         </div>
                     </div>
                 </details>
@@ -2874,7 +2874,14 @@ async function renderLoginPage () {
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
-        button:hover { background-color: var(--primary-color); }
+        .button:hover,
+        button:focus {
+            background-color: #2980b9;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
+        }
+        button.button:hover { color: white; }
+        .button:active { transform: translateY(1px); box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); }
         @media only screen and (min-width: 768px) {
             .container { width: 30%; }
         }
@@ -3624,7 +3631,7 @@ function buildXrayChainOutbound(chainProxyParams) {
 }
 
 async function buildXrayWorkerLessConfig(proxySettings) {
-    const { remoteDNS, localDNS, lengthMin,  lengthMax,  intervalMin,  intervalMax, fragmentPackets, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443 } = proxySettings;
+    const { lengthMin,  lengthMax,  intervalMin,  intervalMax, fragmentPackets } = proxySettings;
     let fakeOutbound = buildXrayVLESSOutbound('fake-outbound', 'google.com', 443, userID, 'google.com', '');
     delete fakeOutbound.streamSettings.sockopt;
     fakeOutbound.streamSettings.wsSettings.path = '/';
@@ -3729,7 +3736,7 @@ async function getXrayFragmentConfigs(env, hostName) {
                 
                 fragConfig.remarks = remark;
                 if (chainProxy) {
-                    fragConfig.outbounds = [{...chainProxy}, { ...outbound}, ...fragConfig.outbounds];
+                    fragConfig.outbounds.unshift(chainProxy, { ...outbound});
                     isDomain(addr)
                         ? fragConfig.dns.servers[1].domains.push(`full:${addr}`)
                         : fragConfig.dns.servers.splice(1,1);
@@ -3738,11 +3745,11 @@ async function getXrayFragmentConfigs(env, hostName) {
                     let proxyOut = structuredClone(chainProxy);
                     proxyOut.tag = `chain-${proxyIndex}`;
                     proxyOut.streamSettings.sockopt.dialerProxy = `prox-${proxyIndex}`;
-                    outbounds.push({...proxyOut}, {...outbound});
+                    outbounds.push(proxyOut, outbound);
                 } else {
-                    fragConfig.outbounds = [{ ...outbound}, ...fragConfig.outbounds];
+                    fragConfig.outbounds.unshift({ ...outbound});
                     outbound.tag = `prox-${proxyIndex}`;
-                    outbounds.push({...outbound});
+                    outbounds.push(outbound);
                 }
     
                 Configs.push(fragConfig);
@@ -3753,7 +3760,7 @@ async function getXrayFragmentConfigs(env, hostName) {
     
     let bestPing = structuredClone(balancerConfig);
     bestPing.remarks = '💦 BPB F - Best Ping 💥';
-    bestPing.outbounds = [...outbounds, ...bestPing.outbounds];
+    bestPing.outbounds.unshift(...outbounds);
     
     if (chainProxy) {
         bestPing.observatory.subjectSelector = ["chain"];
@@ -3781,19 +3788,19 @@ async function getXrayFragmentConfigs(env, hostName) {
         });
     });
 
-    let bestFragmentOutbounds = structuredClone([{...outbounds[0]}, {...outbounds[1]}]);  
+    let bestFragmentOutbounds = structuredClone([outbounds[0], outbounds[1]]);  
     
     if (chainProxy) {
         bestFragmentOutbounds[0].streamSettings.sockopt.dialerProxy = 'proxy';
         delete bestFragmentOutbounds[1].streamSettings.sockopt.dialerProxy;
         bestFragmentOutbounds[0].tag = 'chain';
         bestFragmentOutbounds[1].tag = 'proxy';
-        bestFragment.outbounds = [bestFragmentOutbounds[0], bestFragmentOutbounds[1], ...bestFragment.outbounds];
+        bestFragment.outbounds.unshift(bestFragmentOutbounds[0], bestFragmentOutbounds[1]);
         bestFragment.dns.servers[1].domains = domainAddressesRules;
     } else {
         delete bestFragmentOutbounds[0].streamSettings.sockopt.dialerProxy;
         bestFragmentOutbounds[0].tag = 'proxy';
-        bestFragment.outbounds = [bestFragmentOutbounds[0], ...bestFragment.outbounds];
+        bestFragment.outbounds.unshift(bestFragmentOutbounds[0]);
     }
 
     bestFragment.observatory.subjectSelector = ["frag"];
@@ -3851,7 +3858,7 @@ async function getXrayWarpConfigs (env, client) {
             const proxyOutbound = structuredClone(xrayWoWOutbounds[index + 1]);
             xrayWoWConfig.remarks = client === 'nikang' ? `💦 WoW Pro ${proxyIndex} 🌍` : `💦 WoW ${proxyIndex} 🌍`;
             xrayWoWConfig.routing.rules[xrayWoWConfig.routing.rules.length - 1].outboundTag = 'chain';
-            xrayWoWConfig.outbounds = [ chainOutbound, proxyOutbound, ...xrayWoWConfig.outbounds ];
+            xrayWoWConfig.outbounds.unshift(chainOutbound, proxyOutbound);
             xrayWarpConfigs.push(xrayWoWConfig);
             outbound.tag = `chain-${proxyIndex}`;
             outbound.streamSettings.sockopt.dialerProxy = `prox-${proxyIndex}`;
@@ -3865,8 +3872,8 @@ async function getXrayWarpConfigs (env, client) {
     xrayWoWBestPing.remarks = client === 'nikang' ? '💦 WoW Pro Best Ping 🚀' : '💦 WoW Best Ping 🚀';
     xrayWoWBestPing.routing.balancers[0].selector = ['chain'];
     xrayWoWBestPing.observatory.subjectSelector = ['chain'];
-    xrayWarpBestPing.outbounds = [...xrayWarpOutbounds, ...xrayWarpBestPing.outbounds];
-    xrayWoWBestPing.outbounds = [...xrayWoWOutbounds, ...xrayWoWBestPing.outbounds];
+    xrayWarpBestPing.outbounds.unshift(...xrayWarpOutbounds);
+    xrayWoWBestPing.outbounds.unshift(...xrayWoWOutbounds);
     xrayWarpConfigs.push(xrayWarpBestPing, xrayWoWBestPing);
 
     return xrayWarpConfigs;
@@ -4796,7 +4803,7 @@ async function getSingboxConfig (env, hostName, client, isWarp, isFragment) {
     const dnsObject = buildSingboxDNS(proxySettings, chainProxyOutbound, isWarp);
     config.dns.servers = dnsObject.servers;
     config.dns.rules = dnsObject.rules;
-    const {rules, rule_set} = buildSingboxRoutingRules (proxySettings, isWarp);
+    const {rules, rule_set} = buildSingboxRoutingRules(proxySettings, isWarp);
     config.route.rules = rules;
     config.route.rule_set = rule_set;
 
@@ -4989,8 +4996,7 @@ const xrayConfigTemp = {
         probeURL: "https://www.gstatic.com/generate_204",
         subjectSelector: ["prox"],
         EnableConcurrency: true,
-    },
-    stats: {},
+    }
 };
 
 const singboxConfigTemp = {
