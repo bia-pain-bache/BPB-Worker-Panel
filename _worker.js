@@ -3210,10 +3210,11 @@ async function buildWoWOutbounds (env, client, proxySettings, warpConfigs) {
     return wowOutbounds;
 }
 
-async function buildXrayDNSObject (remoteDNS, localDNS, blockAds, bypassIran, bypassChina, bypassLAN, blockPorn, isWorkerLess, isChain) {
-
+async function buildXrayDNSObject (proxySettings, isWorkerLess, isChain, isWarp) {
+    const { remoteDNS, localDNS, blockAds, bypassIran, bypassChina, bypassLAN, blockPorn } = proxySettings;
+    const finalRemoteDNS = isWarp ? '1.1.1.1' : isWorkerLess ? 'https://cloudflare-dns.com/dns-query' : remoteDNS;
     const dohPattern = /^(?:[a-zA-Z]+:\/\/)?([^:\/\s?]+)/;
-    const dohMatch = remoteDNS.match(dohPattern);
+    const dohMatch = finalRemoteDNS.match(dohPattern);
     const dohHost = dohMatch ? dohMatch[1] : null;
     const isDOHDomain = isDomain(dohHost);
     let dnsObject = {
@@ -3221,7 +3222,7 @@ async function buildXrayDNSObject (remoteDNS, localDNS, blockAds, bypassIran, by
             "domain:googleapis.cn": ["googleapis.com"]
         },
         servers: [
-            remoteDNS
+            finalRemoteDNS
         ],
         tag: "dns",
     };
@@ -3278,7 +3279,8 @@ async function buildXrayDNSObject (remoteDNS, localDNS, blockAds, bypassIran, by
     return dnsObject;
 }
 
-function buildXrayRoutingRules (localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, isChain, isBalancer, isWorkerLess, isWarp) {
+function buildXrayRoutingRules (proxySettings, isChain, isBalancer, isWorkerLess, isWarp) {
+    const { localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443 } = proxySettings;
     const isBypass = bypassIran || bypassLAN || bypassChina;
     let rules = [
         {
@@ -3299,7 +3301,7 @@ function buildXrayRoutingRules (localDNS, blockAds, bypassIran, blockPorn, bypas
         }
     ];
 
-    if (isChain || (localDNS !== 'localhost' && isBypass)) rules.push({
+    if (!isWorkerLess && (isChain || (localDNS !== 'localhost' && isBypass))) rules.push({
         ip: [localDNS === 'localhost' ? '8.8.8.8' : localDNS],
         port: "53",
         outboundTag: "direct",
@@ -3621,25 +3623,20 @@ function buildXrayChainOutbound(chainProxyParams) {
     return proxyOutbound;
 }
 
-async function buildXrayWorkerLessConfig(remoteDNS, localDNS, lengthMin,  lengthMax,  intervalMin,  intervalMax, fragmentPackets, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443) {
+async function buildXrayWorkerLessConfig(proxySettings) {
+    const { remoteDNS, localDNS, lengthMin,  lengthMax,  intervalMin,  intervalMax, fragmentPackets, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443 } = proxySettings;
     let fakeOutbound = buildXrayVLESSOutbound('fake-outbound', 'google.com', 443, userID, 'google.com', '');
     delete fakeOutbound.streamSettings.sockopt;
     fakeOutbound.streamSettings.wsSettings.path = '/';
     let fragConfig = structuredClone(xrayConfigTemp);
     fragConfig.remarks  = '💦 BPB F - WorkerLess ⭐'
-    fragConfig.dns = await buildXrayDNSObject('https://cloudflare-dns.com/dns-query', localDNS, blockAds, bypassIran, bypassChina, bypassLAN, blockPorn, true);
+    fragConfig.dns = await buildXrayDNSObject(proxySettings, true);
     fragConfig.outbounds[0].settings.domainStrategy = 'UseIP';
     fragConfig.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
     fragConfig.outbounds[0].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
     fragConfig.outbounds[0].settings.fragment.packets = fragmentPackets;
-    fragConfig.outbounds = [
-        {...fragConfig.outbounds[0]}, 
-        {...fakeOutbound}, 
-        {...fragConfig.outbounds[1]}, 
-        {...fragConfig.outbounds[2]}, 
-        {...fragConfig.outbounds[3]}
-    ];
-    fragConfig.routing.rules = buildXrayRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, false, true, false);
+    fragConfig.outbounds.push(fakeOutbound);
+    fragConfig.routing.rules = buildXrayRoutingRules(proxySettings, false, false, true, false);
     delete fragConfig.routing.balancers;
     delete fragConfig.observatory;
 
@@ -3664,19 +3661,11 @@ async function getXrayFragmentConfigs(env, hostName) {
     }
 
     const {
-        remoteDNS, 
-        localDNS, 
         lengthMin, 
         lengthMax, 
         intervalMin, 
         intervalMax,
         fragmentPackets,
-        blockAds,
-        bypassIran,
-        blockPorn,
-        bypassLAN,
-        bypassChina,
-        blockUDP443, 
         cleanIPs,
         proxyIP,
         outProxy,
@@ -3704,13 +3693,13 @@ async function getXrayFragmentConfigs(env, hostName) {
     }
     
     let config = structuredClone(xrayConfigTemp);
-    config.dns = await buildXrayDNSObject(remoteDNS, localDNS, blockAds, bypassIran, bypassChina, bypassLAN, blockPorn, false, chainProxy);
+    config.dns = await buildXrayDNSObject(proxySettings, false, chainProxy, false);
     config.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
     config.outbounds[0].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
     config.outbounds[0].settings.fragment.packets = fragmentPackets;
     let balancerConfig = structuredClone(config);
-    config.routing.rules = buildXrayRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, chainProxy, false, false, false);
-    balancerConfig.routing.rules = buildXrayRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, chainProxy, true, false, false);
+    config.routing.rules = buildXrayRoutingRules(proxySettings, chainProxy, false, false, false);
+    balancerConfig.routing.rules = buildXrayRoutingRules(proxySettings, chainProxy, true, false, false);
     balancerConfig.observatory.probeInterval = `${bestVLESSTrojanInterval}s`;
     delete config.observatory;
     delete config.routing.balancers;
@@ -3809,7 +3798,7 @@ async function getXrayFragmentConfigs(env, hostName) {
 
     bestFragment.observatory.subjectSelector = ["frag"];
     bestFragment.routing.balancers[0].selector = ["frag"];
-    const workerLessConfig = await buildXrayWorkerLessConfig(remoteDNS, localDNS, lengthMin,  lengthMax,  intervalMin,  intervalMax, fragmentPackets, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443); 
+    const workerLessConfig = await buildXrayWorkerLessConfig(proxySettings); 
     Configs.push(bestPing, bestFragment, workerLessConfig);
 
     return Configs;
@@ -3819,9 +3808,8 @@ async function getXrayWarpConfigs (env, client) {
     let proxySettings = {};
     let warpConfigs = [];
     let xrayWarpConfigs = [];
-    let xrayWarpConfig = structuredClone(xrayConfigTemp);
+    let config = structuredClone(xrayConfigTemp);
     let xrayWarpBestPing = structuredClone(xrayConfigTemp);
-    let xrayWoWConfigTemp = structuredClone(xrayConfigTemp);
     
     try {
         proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
@@ -3831,41 +3819,34 @@ async function getXrayWarpConfigs (env, client) {
         throw new Error(`An error occurred while getting fragment configs - ${error}`);
     }
     
-    const { localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, wowEndpoint, warpEndpoints, bestWarpInterval } = proxySettings;
+    const { wowEndpoint, warpEndpoints, bestWarpInterval } = proxySettings;
     const xrayWarpOutbounds = await buildWarpOutbounds(env, client, proxySettings, warpConfigs);
-    const xrayWoWOutbounds = await buildWoWOutbounds(env, client, proxySettings, warpConfigs); 
+    const xrayWoWOutbounds = await buildWoWOutbounds(env, client, proxySettings, warpConfigs);
+    const dnsObject = await buildXrayDNSObject(proxySettings, false, false, true);
     
-    xrayWarpConfig.dns = await buildXrayDNSObject('1.1.1.1', localDNS, blockAds, bypassIran, bypassChina, bypassLAN, blockPorn, false);
-    xrayWarpConfig.routing.rules = buildXrayRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, false, false, true);
-    xrayWarpConfig.outbounds.splice(0,1);
-    xrayWarpConfig.routing.rules[xrayWarpConfig.routing.rules.length - 1].outboundTag = 'proxy';
-    delete xrayWarpConfig.observatory;
-    delete xrayWarpConfig.routing.balancers;
+    config.dns = dnsObject;
+    config.routing.rules = buildXrayRoutingRules(proxySettings, false, false, false, true);
+    config.outbounds.splice(0,1);
+    delete config.observatory;
+    delete config.routing.balancers;
     xrayWarpBestPing.remarks = client === 'nikang' ? '💦 Warp Pro Best Ping 🚀' : '💦 Warp Best Ping 🚀';
-    xrayWarpBestPing.dns = await buildXrayDNSObject('1.1.1.1', localDNS, blockAds, bypassIran, bypassChina, bypassLAN, blockPorn, false);
-    xrayWarpBestPing.routing.rules = buildXrayRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, true, false, true);
+    xrayWarpBestPing.dns = dnsObject;
+    xrayWarpBestPing.routing.rules = buildXrayRoutingRules(proxySettings, false, true, false, true);
     xrayWarpBestPing.outbounds.splice(0,1);
-    xrayWarpBestPing.routing.balancers[0].selector = ['prox'];
-    xrayWarpBestPing.observatory.subjectSelector = ['prox'];
     xrayWarpBestPing.observatory.probeInterval = `${bestWarpInterval}s`;
-    xrayWoWConfigTemp.dns = await buildXrayDNSObject('1.1.1.1', localDNS, blockAds, bypassIran, bypassChina, bypassLAN, blockPorn, false);
-    xrayWoWConfigTemp.routing.rules = buildXrayRoutingRules(localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443, false, false, false, true);
-    xrayWoWConfigTemp.outbounds.splice(0,1);
-    delete xrayWoWConfigTemp.observatory;
-    delete xrayWoWConfigTemp.routing.balancers;
   
     xrayWarpOutbounds.forEach((outbound, index) => {
         xrayWarpConfigs.push({
-            ...xrayWarpConfig,
+            ...config,
             remarks: client === 'nikang' ? `💦 Warp Pro ${index + 1} 🇮🇷` : `💦 Warp ${index + 1} 🇮🇷`,
-            outbounds: [{...outbound, tag: 'proxy'}, ...xrayWarpConfig.outbounds]
+            outbounds: [{...outbound, tag: 'proxy'}, ...config.outbounds]
         });
     });
     
     let proxyIndex = 1;
     xrayWoWOutbounds.forEach((outbound, index) => {
         if (outbound.tag === 'chain') {
-            let xrayWoWConfig = structuredClone(xrayWoWConfigTemp);
+            let xrayWoWConfig = structuredClone(config);
             const chainOutbound = structuredClone(outbound);
             const proxyOutbound = structuredClone(xrayWoWOutbounds[index + 1]);
             xrayWoWConfig.remarks = client === 'nikang' ? `💦 WoW Pro ${proxyIndex} 🌍` : `💦 WoW ${proxyIndex} 🌍`;
@@ -3891,9 +3872,11 @@ async function getXrayWarpConfigs (env, client) {
     return xrayWarpConfigs;
 }
 
-async function buildClashDNS (remoteDNS, localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina) {
+async function buildClashDNS (proxySettings, isWarp) {
+    const { remoteDNS, localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina } = proxySettings;
+    const finalRemoteDNS = isWarp ? '1.1.1.1' : remoteDNS;
     const dohPattern = /^(?:[a-zA-Z]+:\/\/)?([^:\/\s?]+)/;
-    const DNSNameserver = remoteDNS.match(dohPattern)[1];
+    const DNSNameserver = finalRemoteDNS.match(dohPattern)[1];
     const isDOHDomain = isDomain(DNSNameserver);
     let clashLocalDNS = localDNS === 'localhost' ? 'system' : localDNS;
 
@@ -3905,7 +3888,7 @@ async function buildClashDNS (remoteDNS, localDNS, blockAds, bypassIran, blockPo
         "enhanced-mode": "fake-ip",
         "fake-ip-range": "198.18.0.1/16",
         "nameserver": [
-            remoteDNS
+            finalRemoteDNS
         ],
         "proxy-server-nameserver": [clashLocalDNS]
     };
@@ -3934,7 +3917,8 @@ async function buildClashDNS (remoteDNS, localDNS, blockAds, bypassIran, blockPo
     return dns;
 }
 
-function buildClashRoutingRules (localDNS, blockAds, bypassIran, bypassChina, blockPorn, blockUDP443, bypassLAN, isWarp) {
+function buildClashRoutingRules (proxySettings, isWarp) {
+    const { localDNS, blockAds, bypassIran, bypassChina, blockPorn, blockUDP443, bypassLAN } = proxySettings;
     let rules = [];
 
     (localDNS !== 'localhost') && rules.push(`AND,((IP-CIDR,${localDNS}/32),(DST-PORT,53)),DIRECT`);
@@ -4121,17 +4105,9 @@ async function getClashConfig (env, hostName, isWarp) {
     }
 
     const { 
-        remoteDNS,  
-        localDNS, 
         cleanIPs, 
         proxyIP, 
         ports, 
-        blockAds, 
-        bypassIran, 
-        blockPorn, 
-        bypassLAN, 
-        bypassChina, 
-        blockUDP443, 
         vlessConfigs, 
         trojanConfigs, 
         outProxy, 
@@ -4145,8 +4121,8 @@ async function getClashConfig (env, hostName, isWarp) {
     } = proxySettings; 
 
     let config = structuredClone(clashConfigTemp);
-    config.dns = await buildClashDNS(isWarp ? '1.1.1.1' : remoteDNS, localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina);
-    config.rules = buildClashRoutingRules(localDNS, blockAds, bypassIran, bypassChina, blockPorn, blockUDP443, bypassLAN, isWarp);
+    config.dns = await buildClashDNS(proxySettings, isWarp);
+    config.rules = buildClashRoutingRules(proxySettings, isWarp);
     const Addresses = await getConfigAddresses(hostName, cleanIPs, enableIPv6);
     const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
     const totalAddresses = [...Addresses, ...customCdnAddresses];
@@ -4255,15 +4231,29 @@ async function getClashConfig (env, hostName, isWarp) {
     return config;
 }
 
-function buildSingboxDNSRules (blockAds, bypassIran, bypassChina, blockPorn, outboundDomains) {
-    let rules = [
+function buildSingboxDNS (proxySettings, isChain, isWarp) {
+    const { remoteDNS, localDNS, blockAds, bypassIran, bypassChina, blockPorn } = proxySettings;
+    const servers = [
         {
-            domain: [
-                "www.gstatic.com",
-                ...outboundDomains
-            ],
-            server: "dns-direct"
+            address: isWarp ? '1.1.1.1' : remoteDNS,
+            address_resolver: "dns-direct",
+            strategy: "prefer_ipv4",
+            detour: isChain ? 'proxy-1' : "proxy",
+            tag: "dns-remote"
         },
+        {
+            address: localDNS === 'localhost' ? 'local' : localDNS,
+            strategy: "prefer_ipv4",
+            detour: "direct",
+            tag: "dns-direct"
+        },
+        {
+            address: "rcode://success",
+            tag: "dns-block"
+        }
+    ];
+
+    let rules = [
         {
             outbound: "any",
             server: "dns-direct"
@@ -4293,10 +4283,11 @@ function buildSingboxDNSRules (blockAds, bypassIran, bypassChina, blockPorn, out
     blockPorn && blockRules.rule_set.push("geosite-nsfw");
     rules.push(blockRules);
 
-    return rules;
+    return {servers: servers, rules: rules};
 }
 
-function buildSingboxRoutingRules (blockAds, bypassIran, bypassChina, blockPorn, blockUDP443, bypassLAN, isWarp) {
+function buildSingboxRoutingRules (proxySettings, isWarp) {
+    const { blockAds, bypassIran, bypassChina, blockPorn, blockUDP443, bypassLAN } = proxySettings;
     let rules = [
         {
             inbound: "dns-in",
@@ -4647,7 +4638,6 @@ function buildSingboxChainOutbound(chainProxyParams) {
 async function getSingboxConfig (env, hostName, client, isWarp, isFragment) {
     let warpConfigs = [];
     let proxySettings = {};
-    let outboundDomains = [];
     let chainProxyOutbound;
     
     try {
@@ -4670,12 +4660,6 @@ async function getSingboxConfig (env, hostName, client, isWarp, isFragment) {
         lengthMax, 
         intervalMin, 
         intervalMax, 
-        blockAds, 
-        bypassIran, 
-        bypassChina, 
-        blockPorn, 
-        blockUDP443, 
-        bypassLAN, 
         outProxy, 
         outProxyParams,
         customCdnAddrs,
@@ -4692,8 +4676,6 @@ async function getSingboxConfig (env, hostName, client, isWarp, isFragment) {
         const proxyParams = JSON.parse(outProxyParams);      
         try {
             chainProxyOutbound = buildSingboxChainOutbound(proxyParams);
-            isDomain(chainProxyOutbound.server) && outboundDomains.push(chainProxyOutbound.server);
-            config.dns.servers[0].detour = "proxy-1";
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
             chainProxyOutbound = undefined;
@@ -4710,13 +4692,10 @@ async function getSingboxConfig (env, hostName, client, isWarp, isFragment) {
     const Addresses = await getConfigAddresses(hostName, cleanIPs, enableIPv6);
     const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
     const totalAddresses = [...Addresses, ...customCdnAddresses];
-    config.dns.servers[0].address = remoteDNS;
-    config.dns.servers[1].address = localDNS === 'localhost' ? 'local' : localDNS;
 
     if (isWarp) {
         const warpOutbounds = await buildWarpOutbounds(env, client, proxySettings, warpConfigs);
         const WOWOutbounds = await buildWoWOutbounds(env, client, proxySettings, warpConfigs);
-        config.dns.servers[0].address = '1.1.1.1';
         config.outbounds[0].outbounds = client === 'hiddify'
             ? ["💦 Warp Pro Best Ping 🚀", "💦 WoW Pro Best Ping 🚀"]
             : ["💦 Warp Best Ping 🚀", "💦 WoW Best Ping 🚀"];
@@ -4809,14 +4788,15 @@ async function getSingboxConfig (env, hostName, client, isWarp, isFragment) {
                 
                 config.outbounds[0].outbounds.push(remark);
                 config.outbounds[1].outbounds.push(remark);
-                isDomain(addr) && outboundDomains.push(addr);
                 proxyIndex++;
             });
         });
     }
 
-    config.dns.rules = buildSingboxDNSRules(blockAds, bypassIran, bypassChina, blockPorn, new Set(outboundDomains));
-    const {rules, rule_set} = buildSingboxRoutingRules (blockAds, bypassIran, bypassChina, blockPorn, blockUDP443, bypassLAN, isWarp);
+    const dnsObject = buildSingboxDNS(proxySettings, chainProxyOutbound, isWarp);
+    config.dns.servers = dnsObject.servers;
+    config.dns.rules = dnsObject.rules;
+    const {rules, rule_set} = buildSingboxRoutingRules (proxySettings, isWarp);
     config.route.rules = rules;
     config.route.rule_set = rule_set;
 
@@ -5019,25 +4999,7 @@ const singboxConfigTemp = {
         timestamp: true
     },
     dns: {
-        servers: [
-            {
-                address: "",
-                address_resolver: "dns-direct",
-                strategy: "prefer_ipv4",
-                detour: "proxy",
-                tag: "dns-remote"
-            },
-            {
-                address: "",
-                strategy: "prefer_ipv4",
-                detour: "direct",
-                tag: "dns-direct"
-            },
-            {
-                address: "rcode://success",
-                tag: "dns-block"
-            }
-        ],
+        servers: [],
         rules: [],
         independent_cache: true
     },
