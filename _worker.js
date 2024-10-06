@@ -19,7 +19,7 @@ let trojanPassword = `bpb-trojan`;
 // https://emn178.github.io/online-tools/sha224.html
 // https://www.atatus.com/tools/sha224-to-hash
 let hashPassword = 'b5d0a5f7ff7aac227bc68b55ae713131ffdf605ca0da52cce182d513';
-let panelVersion = '2.6.5';
+let panelVersion = '2.6.6';
 
 if (!isValidUUID(userID)) throw new Error(`Invalid UUID: ${userID}`);
 if (!isValidSHA224(hashPassword)) throw new Error(`Invalid Hash password: ${hashPassword}`);
@@ -107,6 +107,18 @@ export default {
                             });                            
                         }
 
+                        if (client === 'xray') {
+                            const xrayFullConfigs = await getXrayCustomConfigs(env, proxySettings, host, false);
+                            return new Response(JSON.stringify(xrayFullConfigs, null, 4), { 
+                                status: 200,
+                                headers: {
+                                    'Content-Type': 'application/json;charset=utf-8',
+                                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                                    'CDN-Cache-Control': 'no-store'
+                                }
+                            });                            
+                        }
+
                         const normalConfigs = await getNormalConfigs(proxySettings, host, client);
                         return new Response(normalConfigs, { 
                             status: 200,
@@ -121,7 +133,7 @@ export default {
   
                         let fragConfigs = client === 'hiddify'
                             ? await getSingboxNormalConfig(env, proxySettings, host, client, true)
-                            : await getXrayFragmentConfigs(env, proxySettings, host);
+                            : await getXrayCustomConfigs(env, proxySettings, host, true);
 
                         return new Response(JSON.stringify(fragConfigs, null, 4), { 
                             status: 200,
@@ -2063,6 +2075,51 @@ async function renderHomePage (proxySettings, warpConfigs, hostName, password) {
                             </button>
 						</td>
 					</tr>
+				</table>
+			</div>
+			<h2>FULL NORMAL SUB 🔗</h2>
+			<div class="table-container">
+				<table id="full-normal-configs-table">
+					<tr>
+						<th>Application</th>
+						<th>Subscription</th>
+					</tr>
+					<tr>
+                        <td>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>v2rayNG</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>NikaNG</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>MahsaNG</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>v2rayN</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>v2rayN-PRO</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Streisand</span>
+                            </div>
+                        </td>
+						<td>
+                            <button onclick="openQR('https://${hostName}/sub/${userID}?app=xray#BPB-Full-Normal', 'Full normal Subscription')" style="margin-bottom: 8px;">
+                                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
+                            </button>
+                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=xray#BPB-Full-Normal', false)">
+                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
+                            </button>
+                        </td>
+					</tr>
                     <tr>
                         <td>
                             <div>
@@ -3374,8 +3431,8 @@ function buildXrayRoutingRules (proxySettings, isChain, isBalancer, isWorkerLess
     return rules;
 }
 
-function buildXrayVLESSOutbound (tag, address, port, uuid, host, proxyIP) {
-    return {
+function buildXrayVLESSOutbound (tag, address, port, uuid, host, proxyIP, isFragment) {
+    let outbound = {
         protocol: "vless",
         settings: {
             vnext: [
@@ -3396,16 +3453,9 @@ function buildXrayVLESSOutbound (tag, address, port, uuid, host, proxyIP) {
         },
         streamSettings: {
             network: "ws",
-            security: "tls",
+            security: "none",
             sockopt: {
-                dialerProxy: "fragment",
                 tcpNoDelay: true
-            },
-            tlsSettings: {
-                allowInsecure: false,
-                fingerprint: "randomized",
-                alpn: ["h2", "http/1.1"],
-                serverName: randomUpperCase(host)
             },
             wsSettings: {
                 headers: {
@@ -3417,10 +3467,26 @@ function buildXrayVLESSOutbound (tag, address, port, uuid, host, proxyIP) {
         },
         tag: tag
     };
+
+    if (defaultHttpsPorts.includes(port.toString())) {
+        outbound.streamSettings.security = "tls";
+        outbound.streamSettings.tlsSettings = {
+            allowInsecure: false,
+            fingerprint: "randomized",
+            alpn: ["h2", "http/1.1"],
+            serverName: randomUpperCase(host)
+        };
+    }
+
+    isFragment
+        ? outbound.streamSettings.sockopt.dialerProxy = "fragment"
+        : outbound.streamSettings.sockopt.tcpKeepAliveIdle = 100;
+    
+    return outbound;
 }
 
-function buildXrayTrojanOutbound (tag, address, port, password, host, proxyIP) {
-    return {
+function buildXrayTrojanOutbound (tag, address, port, password, host, proxyIP, isFragment) {
+    let outbound = {
         protocol: "trojan",
         settings: {
             servers: [
@@ -3434,19 +3500,9 @@ function buildXrayTrojanOutbound (tag, address, port, password, host, proxyIP) {
         },
         streamSettings: {
             network: "ws",
-            security: "tls",
+            security: "none",
             sockopt: {
-                dialerProxy: "fragment",
                 tcpNoDelay: true
-            },
-            tlsSettings: {
-                allowInsecure: false,
-                alpn: [
-                    "h2",
-                    "http/1.1"
-                ],
-                fingerprint: "randomized",
-                serverName: randomUpperCase(host)
             },
             wsSettings: {
                 headers: {
@@ -3457,6 +3513,22 @@ function buildXrayTrojanOutbound (tag, address, port, password, host, proxyIP) {
         },
         tag: tag
     };
+
+    if (defaultHttpsPorts.includes(port.toString())) {
+        outbound.streamSettings.security = "tls";
+        outbound.streamSettings.tlsSettings = {
+            allowInsecure: false,
+            fingerprint: "randomized",
+            alpn: ["h2", "http/1.1"],
+            serverName: randomUpperCase(host)
+        };
+    }
+
+    isFragment
+        ? outbound.streamSettings.sockopt.dialerProxy = "fragment"
+        : outbound.streamSettings.sockopt.tcpKeepAliveIdle = 100;
+    
+    return outbound;
 }
 
 function buildXrayWarpOutbound (remark, ipv6, privateKey, publicKey, endpoint, reserved, chain) {
@@ -3652,7 +3724,7 @@ async function buildXrayWorkerLessConfig(proxySettings) {
     return fragConfig;
 }
 
-async function getXrayFragmentConfigs(env, proxySettings, hostName) {
+async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
     let Configs = [];
     let outbounds = [];
     let chainProxy;
@@ -3695,9 +3767,15 @@ async function getXrayFragmentConfigs(env, proxySettings, hostName) {
     
     let config = structuredClone(xrayConfigTemp);
     config.dns = await buildXrayDNSObject(proxySettings, false, chainProxy, false);
-    config.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
-    config.outbounds[0].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
-    config.outbounds[0].settings.fragment.packets = fragmentPackets;
+
+    if (isFragment) {
+        config.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
+        config.outbounds[0].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
+        config.outbounds[0].settings.fragment.packets = fragmentPackets;
+    } else {
+        config.outbounds.shift();
+    }
+
     let balancerConfig = structuredClone(config);
     config.routing.rules = buildXrayRoutingRules(proxySettings, chainProxy, false, false, false);
     balancerConfig.routing.rules = buildXrayRoutingRules(proxySettings, chainProxy, true, false, false);
@@ -3709,7 +3787,7 @@ async function getXrayFragmentConfigs(env, proxySettings, hostName) {
     const domainAddressesRules = Addresses.filter(address => isDomain(address)).map(domain => `full:${domain}`);
     
     for (let i = 0; i < protocolsNo; i++) {
-        for (let portIndex in ports.filter(port => defaultHttpsPorts.includes(port))) {
+        for (let portIndex in ports.filter(port => isFragment ? defaultHttpsPorts.includes(port) : true)) {
             let port = +ports[portIndex];
             for (let index in Addresses) {
                 
@@ -3717,15 +3795,16 @@ async function getXrayFragmentConfigs(env, proxySettings, hostName) {
                 let outbound;
                 let addr = Addresses[index];
                 let remark;
+                const configType = isFragment ? 'F' : '';
 
                 if (vlessConfigs && i === 0) {
-                    remark = generateRemark(proxyIndex, port, addr, cleanIPs, 'VLESS', 'F');
-                    outbound = buildXrayVLESSOutbound('proxy', addr, port, userID, hostName, proxyIP);
+                    remark = generateRemark(proxyIndex, port, addr, cleanIPs, 'VLESS', configType);
+                    outbound = buildXrayVLESSOutbound('proxy', addr, port, userID, hostName, proxyIP, isFragment);
                 }
                 
                 if (trojanConfigs && !outbound) {
-                    remark = generateRemark(proxyIndex, port, addr, cleanIPs, 'Trojan', 'F', addr);
-                    outbound = buildXrayTrojanOutbound('proxy', addr, port, trojanPassword, hostName, proxyIP);
+                    remark = generateRemark(proxyIndex, port, addr, cleanIPs, 'Trojan', configType);
+                    outbound = buildXrayTrojanOutbound('proxy', addr, port, trojanPassword, hostName, proxyIP, isFragment);
                 }
                 
                 fragConfig.remarks = remark;
@@ -3753,7 +3832,7 @@ async function getXrayFragmentConfigs(env, proxySettings, hostName) {
     }
     
     let bestPing = structuredClone(balancerConfig);
-    bestPing.remarks = '💦 BPB F - Best Ping 💥';
+    bestPing.remarks = isFragment ? '💦 BPB F - Best Ping 💥' : '💦 BPB - Best Ping 💥';
     bestPing.outbounds.unshift(...outbounds);
     
     if (chainProxy) {
@@ -3761,6 +3840,8 @@ async function getXrayFragmentConfigs(env, proxySettings, hostName) {
         bestPing.routing.balancers[0].selector = ["chain"];
         bestPing.dns.servers[1].domains = domainAddressesRules;
     }
+
+    if (!isFragment) return [...Configs, bestPing];
 
     let bestFragment = structuredClone(balancerConfig);
     bestFragment.remarks = '💦 BPB F - Best Fragment 😎';
