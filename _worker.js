@@ -3220,6 +3220,7 @@ async function buildWoWOutbounds (client, proxySettings, warpConfigs) {
 
 async function buildXrayDNSObject (proxySettings, isWorkerLess, isChain, isWarp) {
     const { remoteDNS, localDNS, blockAds, bypassIran, bypassChina, bypassLAN, blockPorn } = proxySettings;
+    const isBypass = bypassIran === 'true' || bypassLAN === 'true' || bypassChina === 'true';
     const finalRemoteDNS = isWarp ? '1.1.1.1' : isWorkerLess ? 'https://cloudflare-dns.com/dns-query' : remoteDNS;
     const dohPattern = /^(?:[a-zA-Z]+:\/\/)?([^:\/\s?]+)/;
     const dohMatch = finalRemoteDNS.match(dohPattern);
@@ -3272,7 +3273,7 @@ async function buildXrayDNSObject (proxySettings, isWorkerLess, isChain, isWarp)
         domains: []
     });
 
-    if (!isWorkerLess && localDNS !== 'localhost' && (bypassIran === 'true' || bypassChina === 'true' || bypassLAN === 'true')) {
+    if (!isWorkerLess && localDNS !== 'localhost' && isBypass) {
         let localDNSServer = {
             address: localDNS,
             domains: [],
@@ -3911,10 +3912,13 @@ function buildClashRoutingRules (proxySettings, isWarp) {
     const { localDNS, blockAds, bypassIran, bypassChina, blockPorn, blockUDP443, bypassLAN } = proxySettings;
     let rules = [];
 
-    (localDNS !== 'localhost') && rules.push(`AND,((IP-CIDR,${localDNS}/32),(DST-PORT,53)),DIRECT`);
-    bypassLAN === 'true' && rules.push('GEOSITE,private,DIRECT', 'GEOIP,private,DIRECT,no-resolve');
-    bypassIran === 'true' && rules.push('GEOSITE,category-ir,DIRECT', 'GEOIP,ir,DIRECT,no-resolve');
-    bypassChina === 'true' && rules.push('GEOSITE,cn,DIRECT', 'GEOIP,cn,DIRECT,no-resolve');
+    localDNS !== 'localhost' && rules.push(`AND,((IP-CIDR,${localDNS}/32),(DST-PORT,53)),DIRECT`);
+    bypassLAN === 'true' && rules.push('GEOSITE,private,DIRECT');
+    bypassIran === 'true' && rules.push('GEOSITE,category-ir,DIRECT');
+    bypassChina === 'true' && rules.push('GEOSITE,cn,DIRECT');
+    bypassLAN === 'true' && rules.push('GEOIP,private,DIRECT,no-resolve');
+    bypassIran === 'true' && rules.push('GEOIP,ir,DIRECT,no-resolve');
+    bypassChina === 'true' && rules.push('GEOIP,cn,DIRECT,no-resolve');
     blockUDP443 === 'true' && isWarp && rules.push('AND,((NETWORK,udp),(DST-PORT,443)),REJECT');
     !isWarp && rules.push('NETWORK,udp,REJECT');
     blockAds === 'true' && rules.push('GEOSITE,category-ads-all,REJECT', 'GEOSITE,category-ads-ir,REJECT');
