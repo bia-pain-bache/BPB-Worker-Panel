@@ -1257,7 +1257,6 @@ async function updateDataset (env, newSettings, resetSettings) {
         trojanConfigs: newSettings?.get('trojanConfigs') ?? currentSettings?.trojanConfigs ?? 'false',
         outProxy: newSettings?.get('outProxy') ?? currentSettings?.outProxy ?? '',
         outProxyParams: extractChainProxyParams(newSettings?.get('outProxy')) ?? currentSettings?.outProxyParams ?? '',
-        wowEndpoint: newSettings?.get('wowEndpoint')?.replaceAll(' ', '') ?? currentSettings?.wowEndpoint ?? 'engage.cloudflareclient.com:2408',
         warpEndpoints: newSettings?.get('warpEndpoints')?.replaceAll(' ', '') ?? currentSettings?.warpEndpoints ?? 'engage.cloudflareclient.com:2408',
         hiddifyNoiseMode: newSettings?.get('hiddifyNoiseMode') ?? currentSettings?.hiddifyNoiseMode ?? 'm4',
         nikaNGNoiseMode: newSettings?.get('nikaNGNoiseMode') ?? currentSettings?.nikaNGNoiseMode ?? 'quic',
@@ -1419,7 +1418,6 @@ async function renderHomePage (proxySettings, warpConfigs, hostName, password) {
         ports,
         vlessConfigs,
         trojanConfigs,
-        wowEndpoint,
         warpEndpoints,
         hiddifyNoiseMode,
         nikaNGNoiseMode,
@@ -1882,10 +1880,6 @@ async function renderHomePage (proxySettings, warpConfigs, hostName, password) {
                 </details>
                 <details>
                     <summary><h2>WARP GENERAL ⚙️</h2></summary>
-                    <div class="form-control">
-                        <label for="wowEndpoint">✨ WoW Endpoints</label>
-                        <input type="text" id="wowEndpoint" name="wowEndpoint" value="${wowEndpoint.replaceAll(",", " , ")}" required>
-                    </div>
                     <div class="form-control">
                         <label for="warpEndpoints">✨ Warp Endpoints</label>
                         <input type="text" id="warpEndpoints" name="warpEndpoints" value="${warpEndpoints.replaceAll(",", " , ")}" required>
@@ -2632,6 +2626,8 @@ async function renderHomePage (proxySettings, warpConfigs, hostName, password) {
             modalQR.style.display = "block";
             let qrcodeDiv = document.createElement("div");
             qrcodeDiv.className = "qrcode";
+            qrcodeDiv.style.padding = "2px";
+            qrcodeDiv.style.backgroundColor = "#ffffff";
             new QRCode(qrcodeDiv, {
                 text: url,
                 width: 256,
@@ -3189,7 +3185,7 @@ async function buildWarpOutbounds (client, proxySettings, warpConfigs) {
 async function buildWoWOutbounds (client, proxySettings, warpConfigs) {
     let wowOutbounds = [];
     const { 
-		wowEndpoint, 
+		warpEndpoints, 
 		nikaNGNoiseMode, 
 		hiddifyNoiseMode, 
 		noiseCountMin, 
@@ -3200,7 +3196,7 @@ async function buildWoWOutbounds (client, proxySettings, warpConfigs) {
 		noiseDelayMax 
 	} = proxySettings;
 
-    wowEndpoint.split(',').forEach( (endpoint, index) => {      
+    warpEndpoints.split(',').forEach( (endpoint, index) => {      
         for (let i = 0; i < 2; i++) {
             const warpIPv6 = `${warpConfigs[i].account.config.interface.addresses.v6}/128`;
             const publicKey = warpConfigs[i].account.config.peers[0].public_key;
