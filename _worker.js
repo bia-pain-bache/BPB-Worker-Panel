@@ -2552,7 +2552,7 @@ async function renderHomePage (proxySettings, warpConfigs, hostName, password) {
                 const confirmReset = confirm('⚠️ Are you sure?');
                 if(!confirmReset) return;
             }
-                
+
             const refreshBtn = document.getElementById('refreshBtn');
             const warpKeys = [
                 generateKeyPair(),
@@ -3397,9 +3397,9 @@ function buildXrayRoutingRules (proxySettings, isChain, isBalancer, isWorkerLess
         };
 
         if (!isWorkerLess) {
-            bypassLAN === 'true' && domainRule.domain.push("geosite:private") && ipRule.ip.push("geoip:private");
-            bypassIran === 'true' && domainRule.domain.push("geosite:category-ir") && ipRule.ip.push("geoip:ir");
-            bypassChina === 'true' && domainRule.domain.push("geosite:cn") && ipRule.ip.push("geoip:cn");
+            bypassLAN && domainRule.domain.push("geosite:private") && ipRule.ip.push("geoip:private");
+            bypassIran && domainRule.domain.push("geosite:category-ir") && ipRule.ip.push("geoip:ir");
+            bypassChina && domainRule.domain.push("geosite:cn") && ipRule.ip.push("geoip:cn");
             rules.push(domainRule, ipRule);
         }
     }
