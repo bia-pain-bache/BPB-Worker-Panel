@@ -1222,7 +1222,6 @@ async function getDataset(env) {
 
 async function updateDataset (env, newSettings, resetSettings) {
     let currentSettings;
-
     if (!resetSettings) {
         try {
             currentSettings = await env.bpb.get("proxySettings", {type: 'json'});
@@ -1234,15 +1233,14 @@ async function updateDataset (env, newSettings, resetSettings) {
         await env.bpb.delete('warpConfigs');
     }
 
-    function validateField(field) {
+    const validateField = (field) => {
         const fieldValue = newSettings?.get(field);
-        if (!fieldValue) return null;
+        if (fieldValue === undefined) return null;
         if (fieldValue === 'true') return true;
         if (fieldValue === 'false') return false;
         return fieldValue;
     }
 
-    const chainProxy = validateField('outProxy');
     const proxySettings = {
         remoteDNS: validateField('remoteDNS') ?? currentSettings?.remoteDNS ?? 'https://8.8.8.8/dns-query',
         localDNS: validateField('localDNS') ?? currentSettings?.localDNS ?? '8.8.8.8',
@@ -1260,7 +1258,7 @@ async function updateDataset (env, newSettings, resetSettings) {
         cleanIPs: validateField('cleanIPs')?.replaceAll(' ', '') ?? currentSettings?.cleanIPs ?? '',
         enableIPv6: validateField('enableIPv6') ?? currentSettings?.enableIPv6 ?? true,
         proxyIP: validateField('proxyIP')?.trim() ?? currentSettings?.proxyIP ?? '',
-        ports: newSettings?.getAll('ports[]') ?? currentSettings?.ports ?? ['443'],
+        ports: validateField('ports')?.split(',') ?? currentSettings?.ports ?? ['443'],
         vlessConfigs: validateField('vlessConfigs') ?? currentSettings?.vlessConfigs ?? true,
         trojanConfigs: validateField('trojanConfigs') ?? currentSettings?.trojanConfigs ?? false,
         outProxy: validateField('outProxy') ?? currentSettings?.outProxy ?? '',
@@ -2156,6 +2154,10 @@ async function renderHomePage (proxySettings, warpConfigs, hostName, password) {
                                 <span class="material-symbols-outlined symbol">verified</span>
                                 <span>FlClash</span>
                             </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Stash</span>
+                            </div>
                         </td>
                         <td>
                             <button onclick="openQR('https://${hostName}/sub/${userID}?app=clash#BPB-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
@@ -2297,6 +2299,10 @@ async function renderHomePage (proxySettings, warpConfigs, hostName, password) {
                             <div>
                                 <span class="material-symbols-outlined symbol">verified</span>
                                 <span>FlClash</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-outlined symbol">verified</span>
+                                <span>Stash</span>
                             </div>
                         </td>
                         <td>
@@ -2474,7 +2480,7 @@ async function renderHomePage (proxySettings, warpConfigs, hostName, password) {
                 qrcodeContainer.lastElementChild.remove();
             });
             resetSettings.addEventListener('click', async () => {
-                const confirmReset = confirm('⚠️ Are you sure?');
+                const confirmReset = confirm('⚠️ This will reset all panel settings.\\nAre you sure?');
                 if(!confirmReset) return;
                 const formData = new FormData();
                 formData.append('resetSettings', 'true');
@@ -2702,7 +2708,7 @@ async function renderHomePage (proxySettings, warpConfigs, hostName, password) {
             const validIPDomain = /^((?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,})|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|\\[(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,7}:\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}\\]|\\[[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}\\]|\\[:(?::[a-fA-F0-9]{1,4}){1,7}\\]|\\[\\](?:::[a-fA-F0-9]{1,4}){1,7}\\])$/i;
             const checkedPorts = Array.from(document.querySelectorAll('input[id^="port-"]:checked')).map(input => input.id.split('-')[1]);
             const validEndpoint = /^(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|\\[(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,7}:\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}\\]|\\[[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}\\]|\\[:(?::[a-fA-F0-9]{1,4}){1,7}\\]|\\[::(?::[a-fA-F0-9]{1,4}){0,7}\\]):(?:[0-9]{1,5})$/;
-            checkedPorts.forEach(port => formData.append('ports[]', port));
+            formData.append('ports', checkedPorts);
             configForm.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
                 !formData.has(checkbox.name) && formData.append(checkbox.name, 'false');    
             });
