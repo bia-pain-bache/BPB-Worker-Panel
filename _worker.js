@@ -1228,50 +1228,58 @@ async function updateDataset (env, newSettings, resetSettings) {
             currentSettings = await env.bpb.get("proxySettings", {type: 'json'});
         } catch (error) {
             console.log(error);
-            throw new Error(`An error occurred while getting current values - ${error}`);
+            throw new Error(`An error occurred while getting current KV settings - ${error}`);
         }
     } else {
         await env.bpb.delete('warpConfigs');
     }
 
-    const chainProxy = newSettings?.get('outProxy');
+    function validateField(field) {
+        const fieldValue = newSettings?.get(field);
+        if (!fieldValue) return null;
+        if (fieldValue === 'true') return true;
+        if (fieldValue === 'false') return false;
+        return fieldValue;
+    }
+
+    const chainProxy = validateField('outProxy');
     const proxySettings = {
-        remoteDNS: newSettings?.get('remoteDNS') ?? currentSettings?.remoteDNS ?? 'https://8.8.8.8/dns-query',
-        localDNS: newSettings?.get('localDNS') ?? currentSettings?.localDNS ?? '8.8.8.8',
-        lengthMin: newSettings?.get('fragmentLengthMin') ?? currentSettings?.lengthMin ?? '100',
-        lengthMax: newSettings?.get('fragmentLengthMax') ?? currentSettings?.lengthMax ?? '200',
-        intervalMin: newSettings?.get('fragmentIntervalMin') ?? currentSettings?.intervalMin ?? '1',
-        intervalMax: newSettings?.get('fragmentIntervalMax') ?? currentSettings?.intervalMax ?? '1',
-        fragmentPackets: newSettings?.get('fragmentPackets') ?? currentSettings?.fragmentPackets ?? 'tlshello',
-        blockAds: newSettings?.get('block-ads') ?? currentSettings?.blockAds ?? 'false',
-        bypassIran: newSettings?.get('bypass-iran') ?? currentSettings?.bypassIran ?? 'false',
-        blockPorn: newSettings?.get('block-porn') ?? currentSettings?.blockPorn ?? 'false',
-        bypassLAN: newSettings?.get('bypass-lan') ?? currentSettings?.bypassLAN ?? 'false',
-        bypassChina: newSettings?.get('bypass-china') ?? currentSettings?.bypassChina ?? 'false',
-        blockUDP443: newSettings?.get('block-udp-443') ?? currentSettings?.blockUDP443 ?? 'false',
-        cleanIPs: newSettings?.get('cleanIPs')?.replaceAll(' ', '') ?? currentSettings?.cleanIPs ?? '',
-        enableIPv6: newSettings?.get('enableIPv6') ?? currentSettings?.enableIPv6 ?? 'true',
-        proxyIP: newSettings?.get('proxyIP')?.trim() ?? currentSettings?.proxyIP ?? '',
+        remoteDNS: validateField('remoteDNS') ?? currentSettings?.remoteDNS ?? 'https://8.8.8.8/dns-query',
+        localDNS: validateField('localDNS') ?? currentSettings?.localDNS ?? '8.8.8.8',
+        lengthMin: validateField('fragmentLengthMin') ?? currentSettings?.lengthMin ?? '100',
+        lengthMax: validateField('fragmentLengthMax') ?? currentSettings?.lengthMax ?? '200',
+        intervalMin: validateField('fragmentIntervalMin') ?? currentSettings?.intervalMin ?? '1',
+        intervalMax: validateField('fragmentIntervalMax') ?? currentSettings?.intervalMax ?? '1',
+        fragmentPackets: validateField('fragmentPackets') ?? currentSettings?.fragmentPackets ?? 'tlshello',
+        blockAds: validateField('block-ads') ?? currentSettings?.blockAds ?? false,
+        bypassIran: validateField('bypass-iran') ?? currentSettings?.bypassIran ?? false,
+        blockPorn: validateField('block-porn') ?? currentSettings?.blockPorn ?? false,
+        bypassLAN: validateField('bypass-lan') ?? currentSettings?.bypassLAN ?? false,
+        bypassChina: validateField('bypass-china') ?? currentSettings?.bypassChina ?? false,
+        blockUDP443: validateField('block-udp-443') ?? currentSettings?.blockUDP443 ?? false,
+        cleanIPs: validateField('cleanIPs')?.replaceAll(' ', '') ?? currentSettings?.cleanIPs ?? '',
+        enableIPv6: validateField('enableIPv6') ?? currentSettings?.enableIPv6 ?? true,
+        proxyIP: validateField('proxyIP')?.trim() ?? currentSettings?.proxyIP ?? '',
         ports: newSettings?.getAll('ports[]') ?? currentSettings?.ports ?? ['443'],
-        vlessConfigs: newSettings?.get('vlessConfigs') ?? currentSettings?.vlessConfigs ?? 'true',
-        trojanConfigs: newSettings?.get('trojanConfigs') ?? currentSettings?.trojanConfigs ?? 'false',
-        outProxy: newSettings?.get('outProxy') ?? currentSettings?.outProxy ?? '',
-        outProxyParams: extractChainProxyParams(newSettings?.get('outProxy')) ?? currentSettings?.outProxyParams ?? '',
-        warpEndpoints: newSettings?.get('warpEndpoints')?.replaceAll(' ', '') ?? currentSettings?.warpEndpoints ?? 'engage.cloudflareclient.com:2408',
-        hiddifyNoiseMode: newSettings?.get('hiddifyNoiseMode') ?? currentSettings?.hiddifyNoiseMode ?? 'm4',
-        nikaNGNoiseMode: newSettings?.get('nikaNGNoiseMode') ?? currentSettings?.nikaNGNoiseMode ?? 'quic',
-        noiseCountMin: newSettings?.get('noiseCountMin') ?? currentSettings?.noiseCountMin ?? '10',
-        noiseCountMax: newSettings?.get('noiseCountMax') ?? currentSettings?.noiseCountMax ?? '15',
-        noiseSizeMin: newSettings?.get('noiseSizeMin') ?? currentSettings?.noiseSizeMin ?? '5',
-        noiseSizeMax: newSettings?.get('noiseSizeMax') ?? currentSettings?.noiseSizeMax ?? '10',
-        noiseDelayMin: newSettings?.get('noiseDelayMin') ?? currentSettings?.noiseDelayMin ?? '1',
-        noiseDelayMax: newSettings?.get('noiseDelayMax') ?? currentSettings?.noiseDelayMax ?? '1',
-        warpPlusLicense: newSettings?.get('warpPlusLicense') ?? currentSettings?.warpPlusLicense ?? '',
-        customCdnAddrs: newSettings?.get('customCdnAddrs')?.replaceAll(' ', '') ?? currentSettings?.customCdnAddrs ?? '',
-        customCdnHost: newSettings?.get('customCdnHost')?.trim() ?? currentSettings?.customCdnHost ?? '',
-        customCdnSni: newSettings?.get('customCdnSni')?.trim() ?? currentSettings?.customCdnSni ?? '',
-        bestVLESSTrojanInterval: newSettings?.get('bestVLESSTrojanInterval') ?? currentSettings?.bestVLESSTrojanInterval ?? '30',
-        bestWarpInterval: newSettings?.get('bestWarpInterval') ?? currentSettings?.bestWarpInterval ?? '30',
+        vlessConfigs: validateField('vlessConfigs') ?? currentSettings?.vlessConfigs ?? true,
+        trojanConfigs: validateField('trojanConfigs') ?? currentSettings?.trojanConfigs ?? false,
+        outProxy: validateField('outProxy') ?? currentSettings?.outProxy ?? '',
+        outProxyParams: extractChainProxyParams(validateField('outProxy')) ?? currentSettings?.outProxyParams ?? '',
+        warpEndpoints: validateField('warpEndpoints')?.replaceAll(' ', '') ?? currentSettings?.warpEndpoints ?? 'engage.cloudflareclient.com:2408',
+        hiddifyNoiseMode: validateField('hiddifyNoiseMode') ?? currentSettings?.hiddifyNoiseMode ?? 'm4',
+        nikaNGNoiseMode: validateField('nikaNGNoiseMode') ?? currentSettings?.nikaNGNoiseMode ?? 'quic',
+        noiseCountMin: validateField('noiseCountMin') ?? currentSettings?.noiseCountMin ?? '10',
+        noiseCountMax: validateField('noiseCountMax') ?? currentSettings?.noiseCountMax ?? '15',
+        noiseSizeMin: validateField('noiseSizeMin') ?? currentSettings?.noiseSizeMin ?? '5',
+        noiseSizeMax: validateField('noiseSizeMax') ?? currentSettings?.noiseSizeMax ?? '10',
+        noiseDelayMin: validateField('noiseDelayMin') ?? currentSettings?.noiseDelayMin ?? '1',
+        noiseDelayMax: validateField('noiseDelayMax') ?? currentSettings?.noiseDelayMax ?? '1',
+        warpPlusLicense: validateField('warpPlusLicense') ?? currentSettings?.warpPlusLicense ?? '',
+        customCdnAddrs: validateField('customCdnAddrs')?.replaceAll(' ', '') ?? currentSettings?.customCdnAddrs ?? '',
+        customCdnHost: validateField('customCdnHost')?.trim() ?? currentSettings?.customCdnHost ?? '',
+        customCdnSni: validateField('customCdnSni')?.trim() ?? currentSettings?.customCdnSni ?? '',
+        bestVLESSTrojanInterval: validateField('bestVLESSTrojanInterval') ?? currentSettings?.bestVLESSTrojanInterval ?? '30',
+        bestWarpInterval: validateField('bestWarpInterval') ?? currentSettings?.bestWarpInterval ?? '30',
         panelVersion: panelVersion
     };
 
@@ -1439,7 +1447,7 @@ async function renderHomePage (proxySettings, warpConfigs, hostName, password) {
     const isWarpReady = warpConfigs ? true : false;
     const isPassSet = password ? password.length >= 8 : false;
     const isWarpPlus = warpPlusLicense ? true : false;
-    let activeProtocols = (vlessConfigs === 'true') + (trojanConfigs === 'true');
+    let activeProtocols = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
 
     const buildPortsBlock = async () => {
         let httpPortsBlock = '';
@@ -1794,8 +1802,8 @@ async function renderHomePage (proxySettings, warpConfigs, hostName, password) {
                         <label for="enableIPv6">🔛 IPv6 Configs</label>
                         <div class="input-with-select">
                             <select id="enableIPv6" name="enableIPv6">
-                                <option value="true" ${enableIPv6 === 'true' ? 'selected' : ''}>Enabled</option>
-                                <option value="false" ${enableIPv6 !== 'true' ? 'selected' : ''}>Disabled</option>
+                                <option value="true" ${enableIPv6 ? 'selected' : ''}>Enabled</option>
+                                <option value="false" ${!enableIPv6 ? 'selected' : ''}>Disabled</option>
                             </select>
                         </div>
                     </div>
@@ -1819,11 +1827,11 @@ async function renderHomePage (proxySettings, warpConfigs, hostName, password) {
                         <label>⚙️ Protocols</label>
                         <div style="width: 100%; display: grid; grid-template-columns: 1fr 1fr; align-items: baseline; margin-top: 10px;">
                             <div style = "display: flex; justify-content: center; align-items: center;">
-                                <input type="checkbox" id="vlessConfigs" name="vlessConfigs" onchange="handleProtocolChange(event)" value="true" ${vlessConfigs === 'true' ? 'checked' : ''}>
+                                <input type="checkbox" id="vlessConfigs" name="vlessConfigs" onchange="handleProtocolChange(event)" value="true" ${vlessConfigs ? 'checked' : ''}>
                                 <label for="vlessConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">VLESS</label>
                             </div>
                             <div style = "display: flex; justify-content: center; align-items: center;">
-                                <input type="checkbox" id="trojanConfigs" name="trojanConfigs" onchange="handleProtocolChange(event)" value="true" ${trojanConfigs === 'true' ? 'checked' : ''}>
+                                <input type="checkbox" id="trojanConfigs" name="trojanConfigs" onchange="handleProtocolChange(event)" value="true" ${trojanConfigs ? 'checked' : ''}>
                                 <label for="trojanConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">Trojan</label>
                             </div>
                         </div>
@@ -1958,27 +1966,27 @@ async function renderHomePage (proxySettings, warpConfigs, hostName, password) {
                     <summary><h2>ROUTING RULES ⚙️</h2></summary>
                     <div id="routing-rules" class="form-control" style="margin-bottom: 20px;">			
                         <div class="routing">
-                            <input type="checkbox" id="block-ads" name="block-ads" value="true" ${blockAds === 'true' ? 'checked' : ''}>
+                            <input type="checkbox" id="block-ads" name="block-ads" value="true" ${blockAds ? 'checked' : ''}>
                             <label for="block-ads">Block Ads.</label>
                         </div>
                         <div class="routing">
-                            <input type="checkbox" id="bypass-iran" name="bypass-iran" value="true" ${bypassIran === 'true' ? 'checked' : ''}>
+                            <input type="checkbox" id="bypass-iran" name="bypass-iran" value="true" ${bypassIran ? 'checked' : ''}>
                             <label for="bypass-iran">Bypass Iran</label>
                         </div>
                         <div class="routing">
-                            <input type="checkbox" id="block-porn" name="block-porn" value="true" ${blockPorn === 'true' ? 'checked' : ''}>
+                            <input type="checkbox" id="block-porn" name="block-porn" value="true" ${blockPorn ? 'checked' : ''}>
                             <label for="block-porn">Block Porn</label>
                         </div>
                         <div class="routing">
-                            <input type="checkbox" id="bypass-lan" name="bypass-lan" value="true" ${bypassLAN === 'true' ? 'checked' : ''}>
+                            <input type="checkbox" id="bypass-lan" name="bypass-lan" value="true" ${bypassLAN ? 'checked' : ''}>
                             <label for="bypass-lan">Bypass LAN</label>
                         </div>
                         <div class="routing">
-                            <input type="checkbox" id="block-udp-443" name="block-udp-443" value="true" ${blockUDP443 === 'true' ? 'checked' : ''}>
+                            <input type="checkbox" id="block-udp-443" name="block-udp-443" value="true" ${blockUDP443 ? 'checked' : ''}>
                             <label for="block-udp-443">Block QUIC</label>
                         </div>
                         <div class="routing">
-                            <input type="checkbox" id="bypass-china" name="bypass-china" value="true" ${bypassChina === 'true' ? 'checked' : ''}>
+                            <input type="checkbox" id="bypass-china" name="bypass-china" value="true" ${bypassChina ? 'checked' : ''}>
                             <label for="bypass-china">Bypass China</label>
                         </div>
                     </div>
@@ -2539,8 +2547,12 @@ async function renderHomePage (proxySettings, warpConfigs, hostName, password) {
                 alert('⚠️ First APPLY SETTINGS and then update Warp configs!');
                 return false;
             }
-            const confirmReset = confirm('⚠️ Are you sure?');
-            if(!confirmReset) return;
+
+            if (${isWarpReady}) {
+                const confirmReset = confirm('⚠️ Are you sure?');
+                if(!confirmReset) return;
+            }
+                
             const refreshBtn = document.getElementById('refreshBtn');
             const warpKeys = [
                 generateKeyPair(),
@@ -2667,7 +2679,6 @@ async function renderHomePage (proxySettings, warpConfigs, hostName, password) {
             const customCdnHost = document.getElementById('customCdnHost').value;
             const customCdnSni = document.getElementById('customCdnSni').value;
             const isCustomCdn = customCdnAddrs.length > 0 || customCdnHost !== '' || customCdnSni !== '';
-            const wowEndpoint = document.getElementById('wowEndpoint').value?.replaceAll(' ', '').split(',');
             const warpEndpoints = document.getElementById('warpEndpoints').value?.replaceAll(' ', '').split(',');
             const noiseCountMin = getValue('noiseCountMin');
             const noiseCountMax = getValue('noiseCountMax');
@@ -2703,7 +2714,7 @@ async function renderHomePage (proxySettings, warpConfigs, hostName, password) {
                 }
             });
 
-            const invalidEndpoints = [...wowEndpoint, ...warpEndpoints]?.filter(value => {
+            const invalidEndpoints = warpEndpoints?.filter(value => {
                 if (value !== "") {
                     const trimmedValue = value.trim();
                     return !validEndpoint.test(trimmedValue);
@@ -3275,7 +3286,7 @@ async function buildWoWOutbounds (client, proxySettings, warpConfigs) {
 
 async function buildXrayDNS (proxySettings, isWorkerLess, isChain, isWarp) {
     const { remoteDNS, localDNS, blockAds, bypassIran, bypassChina, bypassLAN, blockPorn } = proxySettings;
-    const isBypass = bypassIran === 'true' || bypassLAN === 'true' || bypassChina === 'true';
+    const isBypass = bypassIran || bypassLAN || bypassChina;
     const finalRemoteDNS = isWarp ? '1.1.1.1' : isWorkerLess ? 'https://cloudflare-dns.com/dns-query' : remoteDNS;
     const dohPattern = /^(?:[a-zA-Z]+:\/\/)?([^:\/\s?]+)/;
     const dohMatch = finalRemoteDNS.match(dohPattern);
@@ -3314,12 +3325,12 @@ async function buildXrayDNS (proxySettings, isWorkerLess, isChain, isWarp) {
         ];
     }
 
-    if (blockAds === 'true') {
+    if (blockAds) {
         dnsObject.hosts["geosite:category-ads-all"] = ["127.0.0.1"];
         dnsObject.hosts["geosite:category-ads-ir"] = ["127.0.0.1"];
     }
 
-    if (blockPorn === 'true') {
+    if (blockPorn) {
         dnsObject.hosts["geosite:category-porn"] = ["127.0.0.1"];
     }
 
@@ -3334,9 +3345,9 @@ async function buildXrayDNS (proxySettings, isWorkerLess, isChain, isWarp) {
             domains: [],
             expectIPs: []
         };
-        bypassLAN === 'true' && localDNSServer.domains.push("geosite:private") && localDNSServer.expectIPs.push("geoip:private");
-        bypassIran === 'true' && localDNSServer.domains.push("geosite:category-ir") && localDNSServer.expectIPs.push("geoip:ir"); 
-        bypassChina === 'true' && localDNSServer.domains.push("geosite:cn") && localDNSServer.expectIPs.push("geoip:cn");
+        bypassLAN && localDNSServer.domains.push("geosite:private") && localDNSServer.expectIPs.push("geoip:private");
+        bypassIran && localDNSServer.domains.push("geosite:category-ir") && localDNSServer.expectIPs.push("geoip:ir"); 
+        bypassChina && localDNSServer.domains.push("geosite:cn") && localDNSServer.expectIPs.push("geoip:cn");
         dnsObject.servers.push(localDNSServer);
     }
 
@@ -3345,7 +3356,7 @@ async function buildXrayDNS (proxySettings, isWorkerLess, isChain, isWarp) {
 
 function buildXrayRoutingRules (proxySettings, isChain, isBalancer, isWorkerLess, isWarp) {
     const { localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443 } = proxySettings;
-    const isBypass = bypassIran === 'true' || bypassLAN === 'true' || bypassChina === 'true';
+    const isBypass = bypassIran || bypassLAN || bypassChina;
     let rules = [
         {
             inboundTag: [
@@ -3393,19 +3404,19 @@ function buildXrayRoutingRules (proxySettings, isChain, isBalancer, isWorkerLess
         }
     }
 
-    if (blockAds === 'true' || blockPorn === 'true') {
+    if (blockAds || blockPorn) {
         let rule = {
             domain: [],
             outboundTag: "block",
             type: "field",
         };
 
-        blockAds === 'true' && rule.domain.push("geosite:category-ads-all", "geosite:category-ads-ir");
-        blockPorn === 'true' && rule.domain.push("geosite:category-porn");
+        blockAds && rule.domain.push("geosite:category-ads-all", "geosite:category-ads-ir");
+        blockPorn && rule.domain.push("geosite:category-porn");
         rules.push(rule);
     }
 
-    blockUDP443 === 'true' && isWarp && !isWorkerLess && rules.push({
+    blockUDP443 && isWarp && !isWorkerLess && rules.push({
         network: "udp",
         port: "443",
         outboundTag: "block",
@@ -3783,7 +3794,7 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
     balancerConfig.observatory.probeInterval = `${bestVLESSTrojanInterval}s`;
     delete config.observatory;
     delete config.routing.balancers;
-    let protocolsNo = (vlessConfigs === 'true') + (trojanConfigs === 'true');
+    let protocolsNo = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
     const Addresses = await getConfigAddresses(hostName, cleanIPs, enableIPv6);
     const domainAddressesRules = Addresses.filter(address => isDomain(address)).map(domain => `full:${domain}`);
     const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
@@ -3893,7 +3904,7 @@ async function getXrayWarpConfigs (proxySettings, warpConfigs, client) {
     let xrayWarpConfigs = [];
     let config = structuredClone(xrayConfigTemp);
     let xrayWarpBestPing = structuredClone(xrayConfigTemp);    
-    const { wowEndpoint, warpEndpoints, bestWarpInterval } = proxySettings;
+    const { warpEndpoints, bestWarpInterval } = proxySettings;
     const xrayWarpOutbounds = await buildWarpOutbounds(client, proxySettings, warpConfigs);
     const xrayWoWOutbounds = await buildWoWOutbounds(client, proxySettings, warpConfigs);
     const dnsObject = await buildXrayDNS(proxySettings, false, false, true);
@@ -3978,11 +3989,11 @@ async function buildClashDNS (proxySettings, isWarp) {
     }
     
     let geosites = [];
-    bypassIran === 'true' && geosites.push('category-ir');
-    bypassChina === 'true' && geosites.push('cn');
-    bypassLAN === 'true' && geosites.push('private');
+    bypassIran && geosites.push('category-ir');
+    bypassChina && geosites.push('cn');
+    bypassLAN && geosites.push('private');
 
-    if (bypassIran === 'true' || bypassChina === 'true' || bypassLAN === 'true') { 
+    if (bypassIran || bypassChina || bypassLAN) { 
         dns['nameserver-policy'] = {
             [`geosite:${geosites.join(',')}`]: [clashLocalDNS],
             'www.gstatic.com': [clashLocalDNS]
@@ -3997,16 +4008,16 @@ function buildClashRoutingRules (proxySettings, isWarp) {
     let rules = [];
 
     localDNS !== 'localhost' && rules.push(`AND,((IP-CIDR,${localDNS}/32),(DST-PORT,53)),DIRECT`);
-    bypassLAN === 'true' && rules.push('GEOSITE,private,DIRECT');
-    bypassIran === 'true' && rules.push('GEOSITE,category-ir,DIRECT');
-    bypassChina === 'true' && rules.push('GEOSITE,cn,DIRECT');
-    bypassLAN === 'true' && rules.push('GEOIP,private,DIRECT,no-resolve');
-    bypassIran === 'true' && rules.push('GEOIP,ir,DIRECT,no-resolve');
-    bypassChina === 'true' && rules.push('GEOIP,cn,DIRECT,no-resolve');
-    blockUDP443 === 'true' && isWarp && rules.push('AND,((NETWORK,udp),(DST-PORT,443)),REJECT');
+    bypassLAN && rules.push('GEOSITE,private,DIRECT');
+    bypassIran && rules.push('GEOSITE,category-ir,DIRECT');
+    bypassChina && rules.push('GEOSITE,cn,DIRECT');
+    bypassLAN && rules.push('GEOIP,private,DIRECT,no-resolve');
+    bypassIran && rules.push('GEOIP,ir,DIRECT,no-resolve');
+    bypassChina && rules.push('GEOIP,cn,DIRECT,no-resolve');
+    blockUDP443 && isWarp && rules.push('AND,((NETWORK,udp),(DST-PORT,443)),REJECT');
     !isWarp && rules.push('NETWORK,udp,REJECT');
-    blockAds === 'true' && rules.push('GEOSITE,category-ads-all,REJECT', 'GEOSITE,category-ads-ir,REJECT');
-    blockPorn === 'true' && rules.push('GEOSITE,category-porn,REJECT');
+    blockAds && rules.push('GEOSITE,category-ads-all,REJECT', 'GEOSITE,category-ads-ir,REJECT');
+    blockPorn && rules.push('GEOSITE,category-porn,REJECT');
     rules.push('MATCH,✅ Selector');
 
     return rules;
@@ -4239,7 +4250,7 @@ async function getClashNormalConfig (env, proxySettings, hostName) {
         }
     }
 
-    let protocolsNo = (vlessConfigs === 'true') + (trojanConfigs === 'true');
+    let protocolsNo = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
     let proxyIndex = 1;
 
     for (let i = 0; i < protocolsNo; i++) {
@@ -4338,9 +4349,9 @@ function buildSingBoxDNS (proxySettings, isChain, isWarp) {
         server: "dns-direct"
     }
     
-    bypassIran === 'true' && bypassRules.rule_set.push("geosite-ir");
-    bypassChina === 'true' && bypassRules.rule_set.push("geosite-cn");
-    (bypassIran === 'true' || bypassChina === 'true') && rules.push(bypassRules);
+    bypassIran && bypassRules.rule_set.push("geosite-ir");
+    bypassChina && bypassRules.rule_set.push("geosite-cn");
+    (bypassIran || bypassChina) && rules.push(bypassRules);
 
     let blockRules = {
         disable_cache: true,
@@ -4352,8 +4363,8 @@ function buildSingBoxDNS (proxySettings, isChain, isWarp) {
         server: "dns-block"
     };
 
-    blockAds === 'true' && blockRules.rule_set.push("geosite-category-ads-all");
-    blockPorn === 'true' && blockRules.rule_set.push("geosite-nsfw");
+    blockAds && blockRules.rule_set.push("geosite-category-ads-all");
+    blockPorn && blockRules.rule_set.push("geosite-nsfw");
     rules.push(blockRules);
 
     return {servers: servers, rules: rules};
@@ -4411,7 +4422,7 @@ function buildSingBoxRoutingRules (proxySettings, isWarp) {
         }
     ];
 
-    if (bypassIran === 'true') {
+    if (bypassIran) {
         rules.push({
             rule_set: ["geosite-ir", "geoip-ir"],
             outbound: "direct"
@@ -4433,7 +4444,7 @@ function buildSingBoxRoutingRules (proxySettings, isWarp) {
         });
     }
 
-    if (bypassChina === 'true') {
+    if (bypassChina) {
         rules.push({
             rule_set: ["geosite-cn", "geoip-cn"],
             outbound: "direct"
@@ -4455,7 +4466,7 @@ function buildSingBoxRoutingRules (proxySettings, isWarp) {
         });
     }
     
-    bypassLAN === 'true' && rules.push({
+    bypassLAN && rules.push({
         ip_is_private: true,
         outbound: "direct"
     });
@@ -4465,7 +4476,7 @@ function buildSingBoxRoutingRules (proxySettings, isWarp) {
         outbound: "block"
     });
 
-    blockUDP443 === 'true' && isWarp && rules.push({
+    blockUDP443 && isWarp && rules.push({
         network: "udp",
         port: 443,
         protocol: "quic",
@@ -4483,7 +4494,7 @@ function buildSingBoxRoutingRules (proxySettings, isWarp) {
         outbound: "block"
     };
     
-    if (blockAds === 'true') { 
+    if (blockAds) { 
         blockRuleSet.rule_set.push("geosite-category-ads-all");
         ruleSet.push({
             type: "remote",
@@ -4494,7 +4505,7 @@ function buildSingBoxRoutingRules (proxySettings, isWarp) {
         });
     }
 
-    if (blockPorn === 'true') { 
+    if (blockPorn) { 
         blockRuleSet.rule_set.push("geosite-nsfw");
         ruleSet.push({
             type: "remote",
@@ -4791,7 +4802,7 @@ async function getSingBoxCustomConfig(env, proxySettings, hostName, client, isFr
     const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
     const totalAddresses = [...Addresses, ...customCdnAddresses];
     const totalPorts = ports.filter(port => isFragment ? defaultHttpsPorts.includes(port) : true);
-    let protocolsNo = (vlessConfigs === 'true') + (trojanConfigs === 'true');
+    let protocolsNo = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
     let proxyIndex = 1;
 
     for (let i = 0; i < protocolsNo; i++) {
