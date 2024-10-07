@@ -3910,7 +3910,7 @@ async function getXrayWarpConfigs (proxySettings, warpConfigs, client) {
     let xrayWarpConfigs = [];
     let config = structuredClone(xrayConfigTemp);
     let xrayWarpBestPing = structuredClone(xrayConfigTemp);    
-    const { warpEndpoints, bestWarpInterval } = proxySettings;
+    const { bestWarpInterval } = proxySettings;
     const xrayWarpOutbounds = await buildWarpOutbounds(client, proxySettings, warpConfigs);
     const xrayWoWOutbounds = await buildWoWOutbounds(client, proxySettings, warpConfigs);
     const dnsObject = await buildXrayDNS(proxySettings, false, false, true);
@@ -4728,9 +4728,9 @@ function buildSingBoxChainOutbound(chainProxyParams) {
 async function getSingBoxWarpConfig(proxySettings, warpConfigs, client) {
     let config = structuredClone(singboxConfigTemp);
     const dnsObject = buildSingBoxDNS(proxySettings, false, true);
+    const {rules, rule_set} = buildSingBoxRoutingRules(proxySettings, true);
     config.dns.servers = dnsObject.servers;
     config.dns.rules = dnsObject.rules;
-    const {rules, rule_set} = buildSingBoxRoutingRules(proxySettings, true);
     config.route.rules = rules;
     config.route.rule_set = rule_set;
 
@@ -4784,9 +4784,7 @@ async function getSingBoxCustomConfig(env, proxySettings, hostName, client, isFr
         bestVLESSTrojanInterval,
         enableIPv6
     } = proxySettings;
-
-    let config = structuredClone(singboxConfigTemp);
-    
+ 
     if (outProxy) {
         const proxyParams = JSON.parse(outProxyParams);      
         try {
@@ -4802,8 +4800,18 @@ async function getSingBoxCustomConfig(env, proxySettings, hostName, client, isFr
             throw new Error(error);
         }
     }
-
+    
     let outbound, remark, path;
+    let config = structuredClone(singboxConfigTemp);
+    const dnsObject = buildSingBoxDNS(proxySettings, chainProxyOutbound, false);
+    const {rules, rule_set} = buildSingBoxRoutingRules(proxySettings, false);
+    config.dns.servers = dnsObject.servers;
+    config.dns.rules = dnsObject.rules;
+    config.route.rules = rules;
+    config.route.rule_set = rule_set;
+    config.outbounds[0].outbounds = ['💦 Best Ping 💥'];
+    config.outbounds[1].interval = `${bestVLESSTrojanInterval}s`;
+    config.outbounds[1].tag = '💦 Best Ping 💥';
     const Addresses = await getConfigAddresses(hostName, cleanIPs, enableIPv6);
     const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
     const totalAddresses = [...Addresses, ...customCdnAddresses];
@@ -4875,13 +4883,6 @@ async function getSingBoxCustomConfig(env, proxySettings, hostName, client, isFr
             });
         });
     }
-
-    const dnsObject = buildSingBoxDNS(proxySettings, chainProxyOutbound, false);
-    config.dns.servers = dnsObject.servers;
-    config.dns.rules = dnsObject.rules;
-    const {rules, rule_set} = buildSingBoxRoutingRules(proxySettings, false);
-    config.route.rules = rules;
-    config.route.rule_set = rule_set;
 
     return config;
 }
@@ -5110,15 +5111,14 @@ const singboxConfigTemp = {
         {
             type: "selector",
             tag: "proxy",
-            outbounds: ["💦 Best Ping 💥"]
+            outbounds: []
         },
         {
             type: "urltest",
-            tag: "💦 Best Ping 💥",
+            tag: "",
             outbounds: [],
             url: "https://www.gstatic.com/generate_204",
-            interval: "30s",
-            tolerance: 50
+            interval: ""
         },
         {
             type: "direct",
