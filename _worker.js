@@ -1244,6 +1244,19 @@ async function updateDataset (env, newSettings, resetSettings) {
     const proxySettings = {
         remoteDNS: validateField('remoteDNS') ?? currentSettings?.remoteDNS ?? 'https://8.8.8.8/dns-query',
         localDNS: validateField('localDNS') ?? currentSettings?.localDNS ?? '8.8.8.8',
+        vlessTrojanFakeDNS: validateField('vlessTrojanFakeDNS') ?? currentSettings?.vlessTrojanFakeDNS ?? false,
+        proxyIP: validateField('proxyIP')?.trim() ?? currentSettings?.proxyIP ?? '',
+        outProxy: validateField('outProxy') ?? currentSettings?.outProxy ?? '',
+        outProxyParams: extractChainProxyParams(validateField('outProxy')) ?? currentSettings?.outProxyParams ?? '',
+        cleanIPs: validateField('cleanIPs')?.replaceAll(' ', '') ?? currentSettings?.cleanIPs ?? '',
+        enableIPv6: validateField('enableIPv6') ?? currentSettings?.enableIPv6 ?? true,
+        customCdnAddrs: validateField('customCdnAddrs')?.replaceAll(' ', '') ?? currentSettings?.customCdnAddrs ?? '',
+        customCdnHost: validateField('customCdnHost')?.trim() ?? currentSettings?.customCdnHost ?? '',
+        customCdnSni: validateField('customCdnSni')?.trim() ?? currentSettings?.customCdnSni ?? '',
+        bestVLESSTrojanInterval: validateField('bestVLESSTrojanInterval') ?? currentSettings?.bestVLESSTrojanInterval ?? '30',
+        vlessConfigs: validateField('vlessConfigs') ?? currentSettings?.vlessConfigs ?? true,
+        trojanConfigs: validateField('trojanConfigs') ?? currentSettings?.trojanConfigs ?? false,
+        ports: validateField('ports')?.split(',') ?? currentSettings?.ports ?? ['443'],
         lengthMin: validateField('fragmentLengthMin') ?? currentSettings?.lengthMin ?? '100',
         lengthMax: validateField('fragmentLengthMax') ?? currentSettings?.lengthMax ?? '200',
         intervalMin: validateField('fragmentIntervalMin') ?? currentSettings?.intervalMin ?? '1',
@@ -1255,15 +1268,10 @@ async function updateDataset (env, newSettings, resetSettings) {
         bypassLAN: validateField('bypass-lan') ?? currentSettings?.bypassLAN ?? false,
         bypassChina: validateField('bypass-china') ?? currentSettings?.bypassChina ?? false,
         blockUDP443: validateField('block-udp-443') ?? currentSettings?.blockUDP443 ?? false,
-        cleanIPs: validateField('cleanIPs')?.replaceAll(' ', '') ?? currentSettings?.cleanIPs ?? '',
-        enableIPv6: validateField('enableIPv6') ?? currentSettings?.enableIPv6 ?? true,
-        proxyIP: validateField('proxyIP')?.trim() ?? currentSettings?.proxyIP ?? '',
-        ports: validateField('ports')?.split(',') ?? currentSettings?.ports ?? ['443'],
-        vlessConfigs: validateField('vlessConfigs') ?? currentSettings?.vlessConfigs ?? true,
-        trojanConfigs: validateField('trojanConfigs') ?? currentSettings?.trojanConfigs ?? false,
-        outProxy: validateField('outProxy') ?? currentSettings?.outProxy ?? '',
-        outProxyParams: extractChainProxyParams(validateField('outProxy')) ?? currentSettings?.outProxyParams ?? '',
         warpEndpoints: validateField('warpEndpoints')?.replaceAll(' ', '') ?? currentSettings?.warpEndpoints ?? 'engage.cloudflareclient.com:2408',
+        warpFakeDNS: validateField('warpFakeDNS') ?? currentSettings?.warpFakeDNS ?? false,
+        warpPlusLicense: validateField('warpPlusLicense') ?? currentSettings?.warpPlusLicense ?? '',
+        bestWarpInterval: validateField('bestWarpInterval') ?? currentSettings?.bestWarpInterval ?? '30',
         hiddifyNoiseMode: validateField('hiddifyNoiseMode') ?? currentSettings?.hiddifyNoiseMode ?? 'm4',
         nikaNGNoiseMode: validateField('nikaNGNoiseMode') ?? currentSettings?.nikaNGNoiseMode ?? 'quic',
         noiseCountMin: validateField('noiseCountMin') ?? currentSettings?.noiseCountMin ?? '10',
@@ -1272,12 +1280,6 @@ async function updateDataset (env, newSettings, resetSettings) {
         noiseSizeMax: validateField('noiseSizeMax') ?? currentSettings?.noiseSizeMax ?? '10',
         noiseDelayMin: validateField('noiseDelayMin') ?? currentSettings?.noiseDelayMin ?? '1',
         noiseDelayMax: validateField('noiseDelayMax') ?? currentSettings?.noiseDelayMax ?? '1',
-        warpPlusLicense: validateField('warpPlusLicense') ?? currentSettings?.warpPlusLicense ?? '',
-        customCdnAddrs: validateField('customCdnAddrs')?.replaceAll(' ', '') ?? currentSettings?.customCdnAddrs ?? '',
-        customCdnHost: validateField('customCdnHost')?.trim() ?? currentSettings?.customCdnHost ?? '',
-        customCdnSni: validateField('customCdnSni')?.trim() ?? currentSettings?.customCdnSni ?? '',
-        bestVLESSTrojanInterval: validateField('bestVLESSTrojanInterval') ?? currentSettings?.bestVLESSTrojanInterval ?? '30',
-        bestWarpInterval: validateField('bestWarpInterval') ?? currentSettings?.bestWarpInterval ?? '30',
         panelVersion: panelVersion
     };
 
@@ -1406,25 +1408,28 @@ async function Authenticate (request, env) {
 async function renderHomePage (proxySettings, warpConfigs, hostName, password) {
     const {
         remoteDNS, 
-        localDNS, 
+        localDNS,
+        vlessTrojanFakeDNS, 
+        proxyIP, 
+        outProxy,
+        cleanIPs, 
+        enableIPv6,
+        customCdnAddrs,
+        customCdnHost,
+        customCdnSni,
+        bestVLESSTrojanInterval,
+        vlessConfigs,
+        trojanConfigs,
+        ports,
         lengthMin, 
         lengthMax, 
         intervalMin, 
         intervalMax,
         fragmentPackets, 
-        blockAds, 
-        bypassIran,
-        blockPorn,
-        bypassLAN,
-        bypassChina,
-        blockUDP443,
-        cleanIPs, 
-        proxyIP, 
-        outProxy,
-        ports,
-        vlessConfigs,
-        trojanConfigs,
         warpEndpoints,
+        warpFakeDNS,
+        warpPlusLicense,
+        bestWarpInterval,
         hiddifyNoiseMode,
         nikaNGNoiseMode,
         noiseCountMin,
@@ -1433,13 +1438,12 @@ async function renderHomePage (proxySettings, warpConfigs, hostName, password) {
         noiseSizeMax,
         noiseDelayMin,
         noiseDelayMax,
-        warpPlusLicense,
-        customCdnAddrs,
-        customCdnHost,
-        customCdnSni,
-        bestVLESSTrojanInterval,
-        bestWarpInterval,
-        enableIPv6
+        blockAds, 
+        bypassIran,
+        blockPorn,
+        bypassLAN,
+        bypassChina,
+        blockUDP443
     } = proxySettings;
 
     const isWarpReady = warpConfigs ? true : false;
@@ -1776,6 +1780,15 @@ async function renderHomePage (proxySettings, warpConfigs, hostName, password) {
                             title="Please enter a valid DNS IP Address or localhost!"  required>
                     </div>
                     <div class="form-control">
+                        <label for="vlessTrojanFakeDNS">🧢 Fake DNS</label>
+                        <div class="input-with-select">
+                            <select id="vlessTrojanFakeDNS" name="vlessTrojanFakeDNS">
+                                <option value="true" ${vlessTrojanFakeDNS ? 'selected' : ''}>Enabled</option>
+                                <option value="false" ${!vlessTrojanFakeDNS ? 'selected' : ''}>Disabled</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-control">
                         <label for="proxyIP">📍 Proxy IP</label>
                         <input type="text" id="proxyIP" name="proxyIP" value="${proxyIP}">
                     </div>
@@ -1895,6 +1908,15 @@ async function renderHomePage (proxySettings, warpConfigs, hostName, password) {
                         <button type="button" class="button" style="padding: 10px 0;" onclick="copyToClipboard('bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/warp/main/endip/install.sh)', false)">
                             Copy Script<span class="material-symbols-outlined">terminal</span>
                         </button>
+                    </div>
+                    <div class="form-control">
+                        <label for="warpFakeDNS">🧢 Fake DNS</label>
+                        <div class="input-with-select">
+                            <select id="warpFakeDNS" name="warpFakeDNS">
+                                <option value="true" ${warpFakeDNS ? 'selected' : ''}>Enabled</option>
+                                <option value="false" ${!warpFakeDNS ? 'selected' : ''}>Disabled</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="form-control">
                         <label for="warpPlusLicense">➕ Warp+ License</label>
@@ -3291,8 +3313,9 @@ async function buildWoWOutbounds (client, proxySettings, warpConfigs) {
 }
 
 async function buildXrayDNS (proxySettings, isWorkerLess, isChain, isWarp) {
-    const { remoteDNS, localDNS, blockAds, bypassIran, bypassChina, bypassLAN, blockPorn } = proxySettings;
+    const { remoteDNS, localDNS, vlessTrojanFakeDNS, warpFakeDNS, blockAds, bypassIran, bypassChina, bypassLAN, blockPorn } = proxySettings;
     const isBypass = bypassIran || bypassLAN || bypassChina;
+    const isFakeDNS = vlessTrojanFakeDNS || warpFakeDNS;
     const finalRemoteDNS = isWarp ? '1.1.1.1' : isWorkerLess ? 'https://cloudflare-dns.com/dns-query' : remoteDNS;
     const dohPattern = /^(?:[a-zA-Z]+:\/\/)?([^:\/\s?]+)/;
     const dohMatch = finalRemoteDNS.match(dohPattern);
@@ -3345,7 +3368,7 @@ async function buildXrayDNS (proxySettings, isWorkerLess, isChain, isWarp) {
         domains: []
     });
 
-    if (!isWorkerLess && localDNS !== 'localhost' && isBypass) {
+    if (!isWorkerLess && isBypass) {
         let localDNSServer = {
             address: localDNS,
             domains: [],
@@ -3355,8 +3378,13 @@ async function buildXrayDNS (proxySettings, isWorkerLess, isChain, isWarp) {
         bypassIran && localDNSServer.domains.push("geosite:category-ir") && localDNSServer.expectIPs.push("geoip:ir"); 
         bypassChina && localDNSServer.domains.push("geosite:cn") && localDNSServer.expectIPs.push("geoip:cn");
         dnsObject.servers.push(localDNSServer);
+        isFakeDNS && dnsObject.servers.unshift({
+            address: "fakedns",
+            domains: localDNSServer.domains
+        })
     }
 
+    isFakeDNS && !isBypass && dnsObject.servers.unshift("fakedns");
     return dnsObject;
 }
 
@@ -3720,23 +3748,29 @@ function buildXrayChainOutbound(chainProxyParams) {
 }
 
 async function buildXrayWorkerLessConfig(proxySettings) {
-    const { lengthMin,  lengthMax,  intervalMin,  intervalMax, fragmentPackets } = proxySettings;
+    const { vlessTrojanFakeDNS, lengthMin,  lengthMax,  intervalMin,  intervalMax, fragmentPackets } = proxySettings;
     let fakeOutbound = buildXrayVLESSOutbound('fake-outbound', 'google.com', '443', userID, 'google.com', 'google.com', '', true, false);
     delete fakeOutbound.streamSettings.sockopt;
     fakeOutbound.streamSettings.wsSettings.path = '/';
-    let fragConfig = structuredClone(xrayConfigTemp);
-    fragConfig.remarks  = '💦 BPB F - WorkerLess ⭐'
-    fragConfig.dns = await buildXrayDNS(proxySettings, true);
-    fragConfig.outbounds[0].settings.domainStrategy = 'UseIP';
-    fragConfig.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
-    fragConfig.outbounds[0].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
-    fragConfig.outbounds[0].settings.fragment.packets = fragmentPackets;
-    fragConfig.outbounds.push(fakeOutbound);
-    fragConfig.routing.rules = buildXrayRoutingRules(proxySettings, false, false, true, false);
-    delete fragConfig.routing.balancers;
-    delete fragConfig.observatory;
+    let config = structuredClone(xrayConfigTemp);
+    config.remarks  = '💦 BPB F - WorkerLess ⭐'
+    config.dns = await buildXrayDNS(proxySettings, true);
+    config.outbounds[0].settings.domainStrategy = 'UseIP';
+    config.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
+    config.outbounds[0].settings.fragment.interval = `${intervalMin}-${intervalMax}`;
+    config.outbounds[0].settings.fragment.packets = fragmentPackets;
+    config.outbounds.push(fakeOutbound);
+    config.routing.rules = buildXrayRoutingRules(proxySettings, false, false, true, false);
+    delete config.routing.balancers;
+    delete config.observatory;
+    if (vlessTrojanFakeDNS) {
+        config.inbounds[0].sniffing.destOverride.push("fakedns");
+        config.inbounds[1].sniffing.destOverride.push("fakedns");
+    } else {
+        delete config.fakedns; 
+    }
 
-    return fragConfig;
+    return config;
 }
 
 async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
@@ -3749,6 +3783,7 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
                             '40-60', '50-70', '60-80', '70-90', '80-100', '100-200'];
 
     const {
+        vlessTrojanFakeDNS,
         lengthMin, 
         lengthMax, 
         intervalMin, 
@@ -3785,6 +3820,12 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
     
     let config = structuredClone(xrayConfigTemp);
     config.dns = await buildXrayDNS(proxySettings, false, chainProxy, false);
+    if (vlessTrojanFakeDNS) {
+        config.inbounds[0].sniffing.destOverride.push("fakedns");
+        config.inbounds[1].sniffing.destOverride.push("fakedns");
+    } else {
+        delete config.fakedns; 
+    }
 
     if (isFragment) {
         config.outbounds[0].settings.fragment.length = `${lengthMin}-${lengthMax}`;
@@ -3908,23 +3949,28 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
 
 async function getXrayWarpConfigs (proxySettings, warpConfigs, client) {
     let xrayWarpConfigs = [];
+    const { warpFakeDNS, bestWarpInterval } = proxySettings;
     let config = structuredClone(xrayConfigTemp);
-    let xrayWarpBestPing = structuredClone(xrayConfigTemp);    
-    const { bestWarpInterval } = proxySettings;
-    const xrayWarpOutbounds = await buildWarpOutbounds(client, proxySettings, warpConfigs);
-    const xrayWoWOutbounds = await buildWoWOutbounds(client, proxySettings, warpConfigs);
-    const dnsObject = await buildXrayDNS(proxySettings, false, false, true);
-    
-    config.dns = dnsObject;
-    config.routing.rules = buildXrayRoutingRules(proxySettings, false, false, false, true);
+    config.dns = await buildXrayDNS(proxySettings, false, false, true);
     config.outbounds.splice(0,1);
+    
+    if (warpFakeDNS) {
+        config.inbounds[0].sniffing.destOverride.push("fakedns");
+        config.inbounds[1].sniffing.destOverride.push("fakedns");
+    } else {
+        delete config.fakedns; 
+    }
+
+    let xrayWarpBestPing = structuredClone(config);    
     delete config.observatory;
     delete config.routing.balancers;
-    xrayWarpBestPing.remarks = client === 'nikang' ? '💦 Warp Pro Best Ping 🚀' : '💦 Warp Best Ping 🚀';
-    xrayWarpBestPing.dns = dnsObject;
+    config.routing.rules = buildXrayRoutingRules(proxySettings, false, false, false, true);
     xrayWarpBestPing.routing.rules = buildXrayRoutingRules(proxySettings, false, true, false, true);
-    xrayWarpBestPing.outbounds.splice(0,1);
+    xrayWarpBestPing.remarks = client === 'nikang' ? '💦 Warp Pro Best Ping 🚀' : '💦 Warp Best Ping 🚀';
     xrayWarpBestPing.observatory.probeInterval = `${bestWarpInterval}s`;
+    const xrayWarpOutbounds = await buildWarpOutbounds(client, proxySettings, warpConfigs);
+    const xrayWoWOutbounds = await buildWoWOutbounds(client, proxySettings, warpConfigs);
+
   
     xrayWarpOutbounds.forEach((outbound, index) => {
         xrayWarpConfigs.push({
@@ -3964,7 +4010,7 @@ async function getXrayWarpConfigs (proxySettings, warpConfigs, client) {
 }
 
 async function buildClashDNS (proxySettings, isWarp) {
-    const { remoteDNS, localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina } = proxySettings;
+    const { remoteDNS, localDNS, vlessTrojanFakeDNS, warpFakeDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina } = proxySettings;
     const finalRemoteDNS = isWarp ? '1.1.1.1' : remoteDNS;
     const dohPattern = /^(?:[a-zA-Z]+:\/\/)?([^:\/\s?]+)/;
     const DNSNameserver = finalRemoteDNS.match(dohPattern)[1];
@@ -3976,8 +4022,6 @@ async function buildClashDNS (proxySettings, isWarp) {
         "listen": "0.0.0.0:1053",
         "ipv6": true,
         "respect-rules": true,
-        "enhanced-mode": "fake-ip",
-        "fake-ip-range": "198.18.0.1/16",
         "nameserver": [
             finalRemoteDNS
         ],
@@ -4005,6 +4049,11 @@ async function buildClashDNS (proxySettings, isWarp) {
             'www.gstatic.com': [clashLocalDNS]
         };
     }
+
+    if (vlessTrojanFakeDNS || warpFakeDNS) {
+        dns["enhanced-mode"] = "fake-ip";
+        dns["fake-ip-range"] = "198.18.0.1/16";
+    } 
 
     return dns;
 }
@@ -4322,7 +4371,8 @@ async function getClashNormalConfig (env, proxySettings, hostName) {
 }
 
 function buildSingBoxDNS (proxySettings, isChain, isWarp) {
-    const { remoteDNS, localDNS, blockAds, bypassIran, bypassChina, blockPorn } = proxySettings;
+    const { remoteDNS, localDNS, vlessTrojanFakeDNS, warpFakeDNS, blockAds, bypassIran, bypassChina, blockPorn } = proxySettings;
+    let fakeip;
     const servers = [
         {
             address: isWarp ? '1.1.1.1' : remoteDNS,
@@ -4373,7 +4423,30 @@ function buildSingBoxDNS (proxySettings, isChain, isWarp) {
     blockPorn && blockRules.rule_set.push("geosite-nsfw");
     rules.push(blockRules);
 
-    return {servers: servers, rules: rules};
+    if (vlessTrojanFakeDNS || warpFakeDNS) {
+        servers.push({
+            address: "fakeip",
+            tag: "dns-fake"
+        });
+
+        rules.push({
+            disable_cache: true,
+            inbound: "tun-in",
+            query_type: [
+              "A",
+              "AAAA"
+            ],
+            server: "dns-fake"
+        });
+
+        fakeip = {
+            enabled: true,
+            inet4_range: "198.18.0.0/15",
+            inet6_range: "fc00::/18"
+        };
+    }
+
+    return {servers, rules, fakeip};
 }
 
 function buildSingBoxRoutingRules (proxySettings, isWarp) {
@@ -4731,6 +4804,7 @@ async function getSingBoxWarpConfig(proxySettings, warpConfigs, client) {
     const {rules, rule_set} = buildSingBoxRoutingRules(proxySettings, true);
     config.dns.servers = dnsObject.servers;
     config.dns.rules = dnsObject.rules;
+    if (dnsObject.fakeip) config.dns.fakeip = dnsObject.fakeip;
     config.route.rules = rules;
     config.route.rule_set = rule_set;
 
@@ -4807,6 +4881,7 @@ async function getSingBoxCustomConfig(env, proxySettings, hostName, client, isFr
     const {rules, rule_set} = buildSingBoxRoutingRules(proxySettings, false);
     config.dns.servers = dnsObject.servers;
     config.dns.rules = dnsObject.rules;
+    if (dnsObject.fakeip) config.dns.fakeip = dnsObject.fakeip;
     config.route.rules = rules;
     config.route.rule_set = rule_set;
     config.outbounds[0].outbounds = ['💦 Best Ping 💥'];
@@ -4950,6 +5025,16 @@ const xrayConfigTemp = {
         loglevel: "warning",
     },
     dns: {},
+    fakedns: [
+        {
+            ipPool: "198.18.0.0/15",
+            poolSize: 32768
+        },
+        {
+            ipPool: "fc00::/18",
+            poolSize: 32768
+        }
+    ],
     inbounds: [
         {
             port: 10808,
@@ -5064,7 +5149,8 @@ const xrayConfigTemp = {
         probeURL: "https://www.gstatic.com/generate_204",
         subjectSelector: ["prox"],
         EnableConcurrency: true,
-    }
+    },
+    stats: {}
 };
 
 const singboxConfigTemp = {
@@ -5149,7 +5235,8 @@ const singboxConfigTemp = {
     },
     experimental: {
         cache_file: {
-            enabled: true
+            enabled: true,
+            store_fakeip: true
         },
         clash_api: {
             external_controller: "0.0.0.0:9090",
