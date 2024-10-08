@@ -3315,7 +3315,7 @@ async function buildWoWOutbounds (client, proxySettings, warpConfigs) {
 async function buildXrayDNS (proxySettings, isWorkerLess, isChain, isWarp) {
     const { remoteDNS, localDNS, vlessTrojanFakeDNS, warpFakeDNS, blockAds, bypassIran, bypassChina, bypassLAN, blockPorn } = proxySettings;
     const isBypass = bypassIran || bypassLAN || bypassChina;
-    const isFakeDNS = vlessTrojanFakeDNS || warpFakeDNS;
+    const isFakeDNS = (vlessTrojanFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
     const finalRemoteDNS = isWarp ? '1.1.1.1' : isWorkerLess ? 'https://cloudflare-dns.com/dns-query' : remoteDNS;
     const dohPattern = /^(?:[a-zA-Z]+:\/\/)?([^:\/\s?]+)/;
     const dohMatch = finalRemoteDNS.match(dohPattern);
@@ -3384,7 +3384,7 @@ async function buildXrayDNS (proxySettings, isWorkerLess, isChain, isWarp) {
         })
     }
 
-    isFakeDNS && !isBypass && dnsObject.servers.unshift("fakedns");
+    isFakeDNS && (!isBypass || isWorkerLess) && dnsObject.servers.unshift("fakedns");
     return dnsObject;
 }
 
@@ -3778,6 +3778,7 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
     let outbounds = [];
     let chainProxy;
     let proxyIndex = 1;
+    let chainDnsServerOrder = 1;
     const bestFragValues = ['10-20', '20-30', '30-40', '40-50', '50-60', '60-70', 
                             '70-80', '80-90', '90-100', '10-30', '20-40', '30-50', 
                             '40-60', '50-70', '60-80', '70-90', '80-100', '100-200'];
@@ -3807,6 +3808,7 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
         const proxyParams = JSON.parse(outProxyParams);
         try {
             chainProxy = buildXrayChainOutbound(proxyParams);
+            vlessTrojanFakeDNS && chainDnsServerOrder++;
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
             chainProxy = undefined;
@@ -3872,8 +3874,8 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
                 if (chainProxy) {
                     fragConfig.outbounds.unshift(chainProxy, { ...outbound});
                     isDomain(addr)
-                        ? fragConfig.dns.servers[1].domains.push(`full:${addr}`)
-                        : fragConfig.dns.servers.splice(1,1);
+                        ? fragConfig.dns.servers[chainDnsServerOrder].domains.push(`full:${addr}`)
+                        : fragConfig.dns.servers.splice(chainDnsServerOrder, 1);
 
                     outbound.tag = `prox-${proxyIndex}`;
                     let proxyOut = structuredClone(chainProxy);
@@ -3899,7 +3901,7 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
     if (chainProxy) {
         bestPing.observatory.subjectSelector = ["chain"];
         bestPing.routing.balancers[0].selector = ["chain"];
-        bestPing.dns.servers[1].domains = domainAddressesRules;
+        bestPing.dns.servers[vlessTrojanFakeDNS ? 2 : 1].domains = domainAddressesRules;
     }
 
     if (!isFragment) return [...Configs, bestPing];
@@ -3932,7 +3934,7 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
         bestFragmentOutbounds[0].tag = 'chain';
         bestFragmentOutbounds[1].tag = 'proxy';
         bestFragment.outbounds.unshift(bestFragmentOutbounds[0], bestFragmentOutbounds[1]);
-        bestFragment.dns.servers[1].domains = domainAddressesRules;
+        bestFragment.dns.servers[chainDnsServerOrder].domains = domainAddressesRules;
     } else {
         delete bestFragmentOutbounds[0].streamSettings.sockopt.dialerProxy;
         bestFragmentOutbounds[0].tag = 'proxy';
@@ -4016,6 +4018,7 @@ async function buildClashDNS (proxySettings, isWarp) {
     const DNSNameserver = finalRemoteDNS.match(dohPattern)[1];
     const isDOHDomain = isDomain(DNSNameserver);
     let clashLocalDNS = localDNS === 'localhost' ? 'system' : localDNS;
+    const isFakeDNS = (vlessTrojanFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
 
     let dns = {
         "enable": true,
@@ -4050,7 +4053,7 @@ async function buildClashDNS (proxySettings, isWarp) {
         };
     }
 
-    if (vlessTrojanFakeDNS || warpFakeDNS) {
+    if (isFakeDNS) {
         dns["enhanced-mode"] = "fake-ip";
         dns["fake-ip-range"] = "198.18.0.1/16";
     } 
@@ -4373,6 +4376,7 @@ async function getClashNormalConfig (env, proxySettings, hostName) {
 function buildSingBoxDNS (proxySettings, isChain, isWarp) {
     const { remoteDNS, localDNS, vlessTrojanFakeDNS, warpFakeDNS, blockAds, bypassIran, bypassChina, blockPorn } = proxySettings;
     let fakeip;
+    const isFakeDNS = (vlessTrojanFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
     const servers = [
         {
             address: isWarp ? '1.1.1.1' : remoteDNS,
@@ -4423,7 +4427,7 @@ function buildSingBoxDNS (proxySettings, isChain, isWarp) {
     blockPorn && blockRules.rule_set.push("geosite-nsfw");
     rules.push(blockRules);
 
-    if (vlessTrojanFakeDNS || warpFakeDNS) {
+    if (isFakeDNS) {
         servers.push({
             address: "fakeip",
             tag: "dns-fake"
