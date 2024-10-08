@@ -2,13 +2,10 @@
 // <!--GAMFC-->version base on commit 43fad05dcdae3b723c53c226f8181fc5bd47223e, time is 2023-06-22 15:20:02 UTC<!--GAMFC-END-->.
 // @ts-ignore
 // https://github.com/bia-pain-bache/BPB-Worker-Panel
-
 import { connect } from 'cloudflare:sockets';
-
 // How to generate your own UUID:
 // https://www.uuidgenerator.net/
 let userID = '89b3cbba-e6ac-485a-9481-976a0415eab9';
-
 // https://www.nslookup.io/domains/bpb.yousef.isegaro.com/dns-records/
 const proxyIPs= ['bpb.yousef.isegaro.com'];
 const defaultHttpPorts = ['80', '8080', '2052', '2082', '2086', '2095', '8880'];
@@ -20,10 +17,8 @@ let trojanPassword = `bpb-trojan`;
 // https://www.atatus.com/tools/sha224-to-hash
 let hashPassword = 'b5d0a5f7ff7aac227bc68b55ae713131ffdf605ca0da52cce182d513';
 let panelVersion = '2.6.4';
-
 if (!isValidUUID(userID)) throw new Error(`Invalid UUID: ${userID}`);
 if (!isValidSHA224(hashPassword)) throw new Error(`Invalid Hash password: ${hashPassword}`);
-
 export default {
     /**
      * @param {import("@cloudflare/workers-types").Request} request
