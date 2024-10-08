@@ -3778,7 +3778,7 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
     let outbounds = [];
     let chainProxy;
     let proxyIndex = 1;
-    let chainDnsServerOrder = 1;
+    let chainDnsServerIndex = 1;
     const bestFragValues = ['10-20', '20-30', '30-40', '40-50', '50-60', '60-70', 
                             '70-80', '80-90', '90-100', '10-30', '20-40', '30-50', 
                             '40-60', '50-70', '60-80', '70-90', '80-100', '100-200'];
@@ -3808,7 +3808,7 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
         const proxyParams = JSON.parse(outProxyParams);
         try {
             chainProxy = buildXrayChainOutbound(proxyParams);
-            vlessTrojanFakeDNS && chainDnsServerOrder++;
+            vlessTrojanFakeDNS && chainDnsServerIndex++;
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
             chainProxy = undefined;
@@ -3853,7 +3853,7 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
     for (let i = 0; i < protocolsNo; i++) {
         totalPorts.forEach(port =>  {
             totalAddresses.forEach ( (addr, index) => {
-                let fragConfig = structuredClone(config);
+                let customConfig = structuredClone(config);
                 const isCustomAddr = customCdnAddresses.includes(addr);
                 const configType = isCustomAddr ? 'C' : isFragment ? 'F' : '';
                 const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
@@ -3870,12 +3870,12 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
                     outbound = buildXrayTrojanOutbound('proxy', addr, port, trojanPassword, host, sni, proxyIP, isFragment, isCustomAddr);
                 }
                 
-                fragConfig.remarks = remark;
+                customConfig.remarks = remark;
                 if (chainProxy) {
-                    fragConfig.outbounds.unshift(chainProxy, { ...outbound});
+                    customConfig.outbounds.unshift(chainProxy, { ...outbound});
                     isDomain(addr)
-                        ? fragConfig.dns.servers[chainDnsServerOrder].domains.push(`full:${addr}`)
-                        : fragConfig.dns.servers.splice(chainDnsServerOrder, 1);
+                        ? customConfig.dns.servers[chainDnsServerIndex].domains.push(`full:${addr}`)
+                        : customConfig.dns.servers.splice(chainDnsServerIndex, 1);
 
                     outbound.tag = `prox-${proxyIndex}`;
                     let proxyOut = structuredClone(chainProxy);
@@ -3883,12 +3883,12 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
                     proxyOut.streamSettings.sockopt.dialerProxy = `prox-${proxyIndex}`;
                     outbounds.push(proxyOut, outbound);
                 } else {
-                    fragConfig.outbounds.unshift({ ...outbound});
+                    customConfig.outbounds.unshift({ ...outbound});
                     outbound.tag = `prox-${proxyIndex}`;
                     outbounds.push(outbound);
                 }
     
-                Configs.push(fragConfig);
+                Configs.push(customConfig);
                 proxyIndex++;
             });
         });
@@ -3934,7 +3934,7 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
         bestFragmentOutbounds[0].tag = 'chain';
         bestFragmentOutbounds[1].tag = 'proxy';
         bestFragment.outbounds.unshift(bestFragmentOutbounds[0], bestFragmentOutbounds[1]);
-        bestFragment.dns.servers[chainDnsServerOrder].domains = domainAddressesRules;
+        bestFragment.dns.servers[chainDnsServerIndex].domains = domainAddressesRules;
     } else {
         delete bestFragmentOutbounds[0].streamSettings.sockopt.dialerProxy;
         bestFragmentOutbounds[0].tag = 'proxy';
@@ -5231,7 +5231,7 @@ const singboxConfigTemp = {
         final: "proxy"
     },
     ntp: {
-        enabled: false,
+        enabled: true,
         server: "time.apple.com",
         server_port: 123,
         detour: "direct",
