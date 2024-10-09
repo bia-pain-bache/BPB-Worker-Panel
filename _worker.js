@@ -2436,6 +2436,7 @@ async function renderHomePage (proxySettings, warpConfigs, hostName, password) {
         let activeHttpsPortsNo = ${ports.filter(port => defaultHttpsPorts.includes(port)).length};
         let activeProtocols = ${activeProtocols};
         const warpPlusLicense = '${warpPlusLicense}';
+        localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
 
 		document.addEventListener('DOMContentLoaded', async () => {
             const configForm = document.getElementById('configForm');            
@@ -2451,8 +2452,6 @@ async function renderHomePage (proxySettings, warpConfigs, hostName, password) {
             let qrcodeContainer = document.getElementById('qrcode-container');
             let forcedPassChange = false;
             const darkModeToggle = document.getElementById('darkModeToggle');
-
-            localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
             ${isPassSet && !isWarpReady} && await getWarpConfigs();
                   
             const hasFormDataChanged = () => {
@@ -3005,9 +3004,7 @@ async function renderLoginPage () {
             </div>
         </div>
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
-        });
+        localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
         document.getElementById('loginForm').addEventListener('submit', async (event) => {
             event.preventDefault();
             const password = document.getElementById('password').value;
@@ -3088,9 +3085,7 @@ function renderErrorPage (message, error, refer) {
             </div>
         </div>
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
-        });
+        localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
     </script>
     </body>
     </html>`;
