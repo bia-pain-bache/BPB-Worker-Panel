@@ -3865,7 +3865,7 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
                 
                 customConfig.remarks = remark;
                 if (chainProxy) {
-                    customConfig.outbounds.unshift(chainProxy, { ...outbound});
+                    customConfig.outbounds.unshift(chainProxy, {...outbound});
                     isDomain(addr)
                         ? customConfig.dns.servers[chainDnsServerIndex].domains.push(`full:${addr}`)
                         : customConfig.dns.servers.splice(chainDnsServerIndex, 1);
@@ -4889,7 +4889,7 @@ async function getSingBoxCustomConfig(env, proxySettings, hostName, client, isFr
     const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
     const totalAddresses = [...Addresses, ...customCdnAddresses];
     const totalPorts = ports.filter(port => isFragment ? defaultHttpsPorts.includes(port) : true);
-    let remark, path;
+    let remark;
     let proxyIndex = 1;
     const protocols = [
         ...(vlessConfigs ? ['VLESS'] : []),
