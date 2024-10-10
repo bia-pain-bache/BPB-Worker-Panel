@@ -4907,7 +4907,6 @@ async function getSingBoxCustomConfig(env, proxySettings, hostName, client, isFr
          
                 if (protocol === 'VLESS') {
                     remark = generateRemark(proxyIndex, port, addr, cleanIPs, protocol, configType);
-                    path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
                     VLESSOutbound = buildSingBoxVLESSOutbound (
                         proxySettings,
                         chainProxyOutbound ? `proxy-${proxyIndex}` : remark, 
@@ -4923,7 +4922,6 @@ async function getSingBoxCustomConfig(env, proxySettings, hostName, client, isFr
                 
                 if (protocol === 'Trojan') {
                     remark = generateRemark(proxyIndex, port, addr, cleanIPs, protocol, configType);
-                    path = `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
                     TrojanOutbound = buildSingBoxTrojanOutbound (
                         proxySettings,
                         chainProxyOutbound ? `proxy-${proxyIndex}` : remark, 

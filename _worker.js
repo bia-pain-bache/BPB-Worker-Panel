@@ -2862,7 +2862,7 @@ var require_sha256 = __commonJS({
   }
 });
 
-// src/_worker.js
+// src/worker.js
 var import_tweetnacl = __toESM(require_nacl_fast());
 var import_js_sha256 = __toESM(require_sha256());
 import { connect } from "cloudflare:sockets";
@@ -6088,7 +6088,7 @@ function buildXrayChainOutbound(chainProxyParams) {
       tag: "chain"
     };
   }
-  const { hostName, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, spx, headerType, host, path: path2, authority, serviceName, mode } = chainProxyParams;
+  const { hostName, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, spx, headerType, host, path, authority, serviceName, mode } = chainProxyParams;
   let proxyOutbound = {
     mux: {
       concurrency: 8,
@@ -6144,7 +6144,7 @@ function buildXrayChainOutbound(chainProxyParams) {
     };
   }
   if (headerType === "http") {
-    const httpPaths = path2?.split(",");
+    const httpPaths = path?.split(",");
     const httpHosts = host?.split(",");
     proxyOutbound.streamSettings.tcpSettings = {
       header: {
@@ -6173,7 +6173,7 @@ function buildXrayChainOutbound(chainProxyParams) {
   if (type === "ws")
     proxyOutbound.streamSettings.wsSettings = {
       headers: { Host: host },
-      path: path2
+      path
     };
   if (type === "grpc") {
     delete proxyOutbound.mux;
@@ -6500,7 +6500,7 @@ function buildClashRoutingRules(proxySettings, isWarp) {
   rules.push("MATCH,\u2705 Selector");
   return rules;
 }
-function buildClashVLESSOutbound(remark, address, port, host, sni, path2, allowInsecure) {
+function buildClashVLESSOutbound(remark, address, port, host, sni, path, allowInsecure) {
   const tls = defaultHttpsPorts.includes(port) ? true : false;
   const addr = isIPv6(address) ? address.replace(/\[|\]/g, "") : address;
   let outbound = {
@@ -6513,7 +6513,7 @@ function buildClashVLESSOutbound(remark, address, port, host, sni, path2, allowI
     "network": "ws",
     "udp": false,
     "ws-opts": {
-      "path": path2,
+      "path": path,
       "headers": { "host": host },
       "max-early-data": 2560,
       "early-data-header-name": "Sec-WebSocket-Protocol"
@@ -6529,7 +6529,7 @@ function buildClashVLESSOutbound(remark, address, port, host, sni, path2, allowI
   }
   return outbound;
 }
-function buildClashTrojanOutbound(remark, address, port, host, sni, path2, allowInsecure) {
+function buildClashTrojanOutbound(remark, address, port, host, sni, path, allowInsecure) {
   const addr = isIPv6(address) ? address.replace(/\[|\]/g, "") : address;
   return {
     "name": remark,
@@ -6540,7 +6540,7 @@ function buildClashTrojanOutbound(remark, address, port, host, sni, path2, allow
     "network": "ws",
     "udp": false,
     "ws-opts": {
-      "path": path2,
+      "path": path,
       "headers": { "host": host },
       "max-early-data": 2560,
       "early-data-header-name": "Sec-WebSocket-Protocol"
@@ -6588,7 +6588,7 @@ function buildClashChainOutbound(chainProxyParams) {
       "password": pass
     };
   }
-  const { hostName, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, spx, headerType, host, path: path2, authority, serviceName, mode } = chainProxyParams;
+  const { hostName, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, spx, headerType, host, path, authority, serviceName, mode } = chainProxyParams;
   let chainOutbound = {
     "name": "\u{1F4A6} Chain Best Ping \u{1F4A5}",
     "type": "vless",
@@ -6620,7 +6620,7 @@ function buildClashChainOutbound(chainProxyParams) {
       }
     });
   if (headerType === "http") {
-    const httpPaths = path2?.split(",");
+    const httpPaths = path?.split(",");
     chainOutbound["http-opts"] = {
       "method": "GET",
       "path": httpPaths,
@@ -6631,8 +6631,8 @@ function buildClashChainOutbound(chainProxyParams) {
     };
   }
   if (type === "ws") {
-    const wsPath = path2?.split("?ed=")[0];
-    const earlyData = +path2?.split("?ed=")[1];
+    const wsPath = path?.split("?ed=")[0];
+    const earlyData = +path?.split("?ed=")[1];
     chainOutbound["ws-opts"] = {
       "path": wsPath,
       "headers": {
@@ -6674,7 +6674,7 @@ async function getClashWarpConfig(proxySettings, warpConfigs) {
   return config;
 }
 async function getClashNormalConfig(env, proxySettings, hostName) {
-  let remark, path2;
+  let remark, path;
   let chainProxy;
   const {
     cleanIPs,
@@ -6730,14 +6730,14 @@ async function getClashNormalConfig(env, proxySettings, hostName) {
         const host = isCustomAddr ? customCdnHost : hostName;
         if (protocol === "VLESS") {
           remark = generateRemark(proxyIndex, port, addr, cleanIPs, protocol, configType).replace(" : ", " - ");
-          path2 = `/${getRandomPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}`;
+          path = `/${getRandomPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}`;
           VLESSOutbound = buildClashVLESSOutbound(
             chainProxy ? `proxy-${proxyIndex}` : remark,
             addr,
             port,
             host,
             sni,
-            path2,
+            path,
             isCustomAddr
           );
           config.proxies.push(VLESSOutbound);
@@ -6746,14 +6746,14 @@ async function getClashNormalConfig(env, proxySettings, hostName) {
         }
         if (protocol === "Trojan" && defaultHttpsPorts.includes(port)) {
           remark = generateRemark(proxyIndex, port, addr, cleanIPs, protocol, configType).replace(" : ", " - ");
-          path2 = `/tr${getRandomPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}`;
+          path = `/tr${getRandomPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}`;
           TrojanOutbound = buildClashTrojanOutbound(
             chainProxy ? `proxy-${proxyIndex}` : remark,
             addr,
             port,
             host,
             sni,
-            path2,
+            path,
             isCustomAddr
           );
           config.proxies.push(TrojanOutbound);
@@ -6990,7 +6990,7 @@ function buildSingBoxRoutingRules(proxySettings, isWarp) {
 }
 function buildSingBoxVLESSOutbound(proxySettings, remark, address, port, host, sni, allowInsecure, isFragment) {
   const { lengthMin, lengthMax, intervalMin, intervalMax, proxyIP: proxyIP2 } = proxySettings;
-  const path2 = `/${getRandomPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}`;
+  const path = `/${getRandomPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}`;
   const tls = defaultHttpsPorts.includes(port) ? true : false;
   let outbound = {
     type: "vless",
@@ -7013,7 +7013,7 @@ function buildSingBoxVLESSOutbound(proxySettings, remark, address, port, host, s
       headers: {
         Host: host
       },
-      path: path2,
+      path,
       type: "ws"
     },
     tag: remark
@@ -7030,7 +7030,7 @@ function buildSingBoxVLESSOutbound(proxySettings, remark, address, port, host, s
 }
 function buildSingBoxTrojanOutbound(proxySettings, remark, address, port, host, sni, allowInsecure, isFragment) {
   const { lengthMin, lengthMax, intervalMin, intervalMax, proxyIP: proxyIP2 } = proxySettings;
-  const path2 = `/tr${getRandomPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}`;
+  const path = `/tr${getRandomPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}`;
   const tls = defaultHttpsPorts.includes(port) ? true : false;
   let outbound = {
     type: "trojan",
@@ -7053,7 +7053,7 @@ function buildSingBoxTrojanOutbound(proxySettings, remark, address, port, host, 
       headers: {
         Host: host
       },
-      path: path2,
+      path,
       type: "ws"
     },
     tag: remark
@@ -7107,7 +7107,7 @@ function buildSingBoxChainOutbound(chainProxyParams) {
     });
     return chainOutbound2;
   }
-  const { hostName, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, spx, headerType, host, path: path2, authority, serviceName, mode } = chainProxyParams;
+  const { hostName, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, spx, headerType, host, path, authority, serviceName, mode } = chainProxyParams;
   let chainOutbound = {
     type: "vless",
     tag: "",
@@ -7144,7 +7144,7 @@ function buildSingBoxChainOutbound(chainProxyParams) {
     chainOutbound.transport = {
       type: "http",
       host: httpHosts,
-      path: path2,
+      path,
       method: "GET",
       headers: {
         "Connection": ["keep-alive"],
@@ -7153,8 +7153,8 @@ function buildSingBoxChainOutbound(chainProxyParams) {
     };
   }
   if (type === "ws") {
-    const wsPath = path2?.split("?ed=")[0];
-    const earlyData = +path2?.split("?ed=")[1] || 0;
+    const wsPath = path?.split("?ed=")[0];
+    const earlyData = +path?.split("?ed=")[1] || 0;
     chainOutbound.transport = {
       type: "ws",
       path: wsPath,
@@ -7269,7 +7269,6 @@ async function getSingBoxCustomConfig(env, proxySettings, hostName, client, isFr
         const host = isCustomAddr ? customCdnHost : hostName;
         if (protocol === "VLESS") {
           remark = generateRemark(proxyIndex, port, addr, cleanIPs, protocol, configType);
-          path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ""}`;
           VLESSOutbound = buildSingBoxVLESSOutbound(
             proxySettings,
             chainProxyOutbound ? `proxy-${proxyIndex}` : remark,
@@ -7284,7 +7283,6 @@ async function getSingBoxCustomConfig(env, proxySettings, hostName, client, isFr
         }
         if (protocol === "Trojan") {
           remark = generateRemark(proxyIndex, port, addr, cleanIPs, protocol, configType);
-          path = `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ""}`;
           TrojanOutbound = buildSingBoxTrojanOutbound(
             proxySettings,
             chainProxyOutbound ? `proxy-${proxyIndex}` : remark,
@@ -7330,17 +7328,17 @@ async function getNormalConfigs(proxySettings, hostName, client) {
       const configType = isCustomAddr ? "C" : "";
       const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
       const host = isCustomAddr ? customCdnHost : hostName;
-      const path2 = `${getRandomPath(16)}${proxyIP2 ? `/${encodeURIComponent(btoa(proxyIP2))}` : ""}${earlyData}`;
+      const path = `${getRandomPath(16)}${proxyIP2 ? `/${encodeURIComponent(btoa(proxyIP2))}` : ""}${earlyData}`;
       const trojanIndex = vlessConfigs ? proxyIndex + totalCount : proxyIndex;
       const vlessRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, "VLESS", configType));
       const trojanRemark = encodeURIComponent(generateRemark(trojanIndex, port, addr, cleanIPs, "Trojan", configType));
       const tlsFields = defaultHttpsPorts.includes(port) ? `&security=tls&sni=${sni}&fp=randomized&alpn=${alpn}` : "&security=none";
       if (vlessConfigs) {
-        vlessConfs += `${atob("dmxlc3M")}://${userID}@${addr}:${port}?path=/${path2}&encryption=none&host=${host}&type=ws${tlsFields}#${vlessRemark}
+        vlessConfs += `${atob("dmxlc3M")}://${userID}@${addr}:${port}?path=/${path}&encryption=none&host=${host}&type=ws${tlsFields}#${vlessRemark}
 `;
       }
       if (trojanConfigs) {
-        trojanConfs += `${atob("dHJvamFu")}://${trojanPass}@${addr}:${port}?path=/tr${path2}&host=${host}&type=ws${tlsFields}#${trojanRemark}
+        trojanConfs += `${atob("dHJvamFu")}://${trojanPass}@${addr}:${port}?path=/tr${path}&host=${host}&type=ws${tlsFields}#${trojanRemark}
 `;
       }
       proxyIndex++;
@@ -7663,4 +7661,4 @@ js-sha256/src/sha256.js:
    * @license MIT
    *)
 */
-//# sourceMappingURL=_worker.js.map
+//# sourceMappingURL=worker.js.map
