@@ -2873,12 +2873,8 @@ var defaultHttpPorts = ["80", "8080", "2052", "2082", "2086", "2095", "8880"];
 var defaultHttpsPorts = ["443", "8443", "2053", "2083", "2087", "2096"];
 var proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 var dohURL = "https://cloudflare-dns.com/dns-query";
-var hashPassword = import_js_sha256.default.sha224(trojanPassword);
+var hashPassword;
 var panelVersion = "2.6.7";
-if (!isValidUUID(userID))
-  throw new Error(`Invalid UUID: ${userID}`);
-if (!isValidSHA224(hashPassword))
-  throw new Error(`Invalid Hash password: ${hashPassword}`);
 var worker_default = {
   /**
    * @param {import("@cloudflare/workers-types").Request} request
@@ -2886,12 +2882,15 @@ var worker_default = {
    * @param {import("@cloudflare/workers-types").ExecutionContext} ctx
    * @returns {Promise<Response>}
    */
-  async fetch(request, env, ctx) {
+  async fetch(request, env) {
     try {
       userID = env.UUID || userID;
       proxyIP = env.PROXYIP || proxyIP;
       dohURL = env.DNS_RESOLVER_URL || dohURL;
       trojanPassword = env.TROJAN_PASS || trojanPassword;
+      hashPassword = import_js_sha256.default.sha224(trojanPassword);
+      if (!isValidUUID(userID))
+        throw new Error(`Invalid UUID: ${userID}`);
       const upgradeHeader = request.headers.get("Upgrade");
       const url = new URL(request.url);
       if (!upgradeHeader || upgradeHeader !== "websocket") {
@@ -2917,7 +2916,7 @@ var worker_default = {
               return new Response("Unauthorized", { status: 401 });
             if (request.method === "POST") {
               try {
-                const { error: warpPlusError, configs } = await fetchWgConfig(env, settings);
+                const { error: warpPlusError } = await fetchWgConfig(env, settings);
                 if (warpPlusError) {
                   return new Response(warpPlusError, { status: 400 });
                 } else {
@@ -3608,10 +3607,6 @@ function base64ToArrayBuffer(base64Str) {
 function isValidUUID(uuid) {
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return uuidRegex.test(uuid);
-}
-function isValidSHA224(hash) {
-  const sha224Regex = /^[0-9a-f]{56}$/i;
-  return sha224Regex.test(hash);
 }
 var WS_READY_STATE_OPEN = 1;
 var WS_READY_STATE_CLOSING = 2;

@@ -14,11 +14,8 @@ const defaultHttpPorts = ['80', '8080', '2052', '2082', '2086', '2095', '8880'];
 const defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
 let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 let dohURL = 'https://cloudflare-dns.com/dns-query';
-let hashPassword = sha256.sha224(trojanPassword);;
+let hashPassword;
 let panelVersion = '2.6.7';
-
-if (!isValidUUID(userID)) throw new Error(`Invalid UUID: ${userID}`);
-if (!isValidSHA224(hashPassword)) throw new Error(`Invalid Hash password: ${hashPassword}`);
 
 export default {
     /**
@@ -27,12 +24,14 @@ export default {
      * @param {import("@cloudflare/workers-types").ExecutionContext} ctx
      * @returns {Promise<Response>}
      */
-    async fetch(request, env, ctx) {
+    async fetch(request, env) {
         try {          
             userID = env.UUID || userID;
             proxyIP = env.PROXYIP || proxyIP;
             dohURL = env.DNS_RESOLVER_URL || dohURL;
             trojanPassword = env.TROJAN_PASS || trojanPassword;
+            hashPassword = sha256.sha224(trojanPassword);
+            if (!isValidUUID(userID)) throw new Error(`Invalid UUID: ${userID}`);
             const upgradeHeader = request.headers.get('Upgrade');
             const url = new URL(request.url);
             
@@ -58,13 +57,12 @@ export default {
                         });
                         
                     case '/update-warp':
-
                         const Auth = await Authenticate(request, env); 
                         if (!Auth) return new Response('Unauthorized', { status: 401 });
 
                         if (request.method === 'POST') {
                             try {
-                                const {error: warpPlusError, configs } = await fetchWgConfig(env, settings);
+                                const { error: warpPlusError } = await fetchWgConfig(env, settings);
                                 if (warpPlusError) {
                                     return new Response(warpPlusError, { status: 400 });
                                 } else {
@@ -80,7 +78,6 @@ export default {
                         }
 
                     case `/sub/${userID}`:
-
                         if (client === 'sfa') {
                             const BestPingSFA = await getSingBoxCustomConfig(env, settings, host, client, false);
                             return new Response(JSON.stringify(BestPingSFA, null, 4), { 
@@ -128,7 +125,6 @@ export default {
                         });                        
 
                     case `/fragsub/${userID}`:
-  
                         let fragConfigs = client === 'hiddify'
                             ? await getSingBoxCustomConfig(env, settings, host, client, true)
                             : await getXrayCustomConfigs(env, settings, host, true);
@@ -143,7 +139,6 @@ export default {
                         });
 
                     case `/warpsub/${userID}`:
-
                         if (client === 'clash') {
                             const clashWarpConfig = await getClashWarpConfig(settings, warpConfigs);
                             return new Response(JSON.stringify(clashWarpConfig, null, 4), { 
@@ -179,7 +174,6 @@ export default {
                         });
 
                     case '/panel':
-
                         const pwd = await env.bpb.get('pwd');
                         const isAuth = await Authenticate(request, env); 
                         
@@ -196,7 +190,6 @@ export default {
                         
                         if (pwd && !isAuth) return Response.redirect(`${url.origin}/login`, 302);
                         const homePage = await renderHomePage(settings, warpConfigs, host, pwd);
-
                         return new Response(homePage, {
                             status: 200,
                             headers: {
@@ -211,7 +204,6 @@ export default {
                         });
                                                       
                     case '/login':
-
                         if (typeof env.bpb !== 'object') {
                             const errorPage = renderErrorPage('KV Dataset is not properly set!', null, true);
                             return new Response(errorPage, { status: 200, headers: {'Content-Type': 'text/html'}});
@@ -232,8 +224,7 @@ export default {
 
                             if (password === savedPass) {
                                 const jwtToken = generateJWTToken(password, secretKey);
-                                const cookieHeader = `jwtToken=${jwtToken}; HttpOnly; Secure; Max-Age=${7 * 24 * 60 * 60}; Path=/; SameSite=Strict`;
-                                
+                                const cookieHeader = `jwtToken=${jwtToken}; HttpOnly; Secure; Max-Age=${7 * 24 * 60 * 60}; Path=/; SameSite=Strict`;                 
                                 return new Response('Success', {
                                     status: 200,
                                     headers: {
@@ -247,7 +238,6 @@ export default {
                         }
                         
                         const loginPage = await renderLoginPage();
-
                         return new Response(loginPage, {
                             status: 200,
                             headers: {
@@ -261,8 +251,7 @@ export default {
                             }
                         });
                     
-                    case '/logout':
-                                    
+                    case '/logout':                        
                         return new Response('Success', {
                             status: 200,
                             headers: {
@@ -272,14 +261,12 @@ export default {
                         });        
 
                     case '/panel/password':
-
                         const oldPwd = await env.bpb.get('pwd');
                         let passAuth = await Authenticate(request, env);
                         if (oldPwd && !passAuth) return new Response('Unauthorized!', { status: 401 });           
                         const newPwd = await request.text();
                         if (newPwd === oldPwd) return new Response('Please enter a new Password!', { status: 400 });
                         await env.bpb.put('pwd', newPwd);
-
                         return new Response('Success', {
                             status: 200,
                             headers: {
@@ -296,7 +283,9 @@ export default {
                         return await fetch(request);
                 }
             } else {
-                return url.pathname.startsWith('/tr') ? await trojanOverWSHandler(request) : await vlessOverWSHandler(request);
+                return url.pathname.startsWith('/tr') 
+                    ? await trojanOverWSHandler(request) 
+                    : await vlessOverWSHandler(request);
             }
         } catch (err) {
             const errorPage = renderErrorPage('Something went wrong!', err, false);
@@ -982,11 +971,6 @@ function base64ToArrayBuffer(base64Str) {
 function isValidUUID(uuid) {
 	const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 	return uuidRegex.test(uuid);
-}
-
-function isValidSHA224(hash) {
-    const sha224Regex = /^[0-9a-f]{56}$/i;
-    return sha224Regex.test(hash);
 }
 
 const WS_READY_STATE_OPEN = 1;
