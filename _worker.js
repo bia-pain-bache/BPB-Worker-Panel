@@ -287,7 +287,8 @@ export default {
 
                     default:
                         // return new Response('Not found', { status: 404 });
-                        url.hostname = 'www.speedtest.net';
+                        //url.hostname = 'www.speedtest.net';
+			url.hostname = 'www.baidu.com';
                         url.protocol = 'https:';
                         request = new Request(url, request);
                         return await fetch(request);
@@ -1305,7 +1306,8 @@ async function getConfigAddresses(hostName, cleanIPs, enableIPv6) {
     const defaultIPv6 = enableIPv6 ? resolved.ipv6.map((ip) => `[${ip}]`) : []
     return [
         hostName,
-        'www.speedtest.net',
+        //'www.speedtest.net',
+	'www.baidu.com',
         ...resolved.ipv4,
         ...defaultIPv6,
         ...(cleanIPs ? cleanIPs.split(',') : [])
@@ -3237,7 +3239,8 @@ async function buildXrayDNSObject (remoteDNS, localDNS, blockAds, bypassIran, by
 
     if (isWorkerLess) {
         const resolvedCloudflare = await resolveDNS('cloudflare.com');
-        const resolvedCLDomain = await resolveDNS('www.speedtest.net.cdn.cloudflare.net');
+        //const resolvedCLDomain = await resolveDNS('www.speedtest.net.cdn.cloudflare.net');
+	const resolvedCLDomain = await resolveDNS('www.baidu.com.cdn.cloudflare.net');
         const resolvedCFNS_1 = await resolveDNS('ben.ns.cloudflare.com');
         const resolvedCFNS_2 = await resolveDNS('lara.ns.cloudflare.com');
         dnsObject.hosts['cloudflare-dns.com'] = [
