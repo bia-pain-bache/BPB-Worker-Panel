@@ -2,6 +2,7 @@
 import { connect } from 'cloudflare:sockets';
 import nacl from 'tweetnacl';
 import sha256 from 'js-sha256';
+import { SignJWT, jwtVerify } from 'jose';
 
 // How to generate your own UUID:
 // https://www.uuidgenerator.net/
@@ -15,7 +16,7 @@ const defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
 let proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 let dohURL = 'https://cloudflare-dns.com/dns-query';
 let hashPassword;
-let panelVersion = '2.6.7';
+let panelVersion = '2.6.8';
 
 export default {
     /**
@@ -59,7 +60,6 @@ export default {
                     case '/update-warp':
                         const Auth = await Authenticate(request, env); 
                         if (!Auth) return new Response('Unauthorized', { status: 401 });
-
                         if (request.method === 'POST') {
                             try {
                                 const { error: warpPlusError } = await fetchWgConfig(env, settings);
@@ -176,9 +176,8 @@ export default {
                     case '/panel':
                         const pwd = await env.bpb.get('pwd');
                         const isAuth = await Authenticate(request, env); 
-                        
                         if (request.method === 'POST') {     
-                            if (!isAuth) return new Response('Unauthorized', { status: 401 });
+                            if (!isAuth) return new Response('Unauthorized or expired session!', { status: 401 });
                             const formData = await request.formData();
                             const isReset = formData.get('resetSettings') === 'true';             
                             isReset 
@@ -211,7 +210,6 @@ export default {
 
                         const loginAuth = await Authenticate(request, env);
                         if (loginAuth) return Response.redirect(`${url.origin}/panel`, 302);
-
                         let secretKey = await env.bpb.get('secretKey');
                         if (!secretKey) {
                             secretKey = generateSecretKey();
@@ -223,7 +221,7 @@ export default {
                             const savedPass = await env.bpb.get('pwd');
 
                             if (password === savedPass) {
-                                const jwtToken = generateJWTToken(password, secretKey);
+                                const jwtToken = await generateJWTToken(secretKey);
                                 const cookieHeader = `jwtToken=${jwtToken}; HttpOnly; Secure; Max-Age=${7 * 24 * 60 * 60}; Path=/; SameSite=Strict`;                 
                                 return new Response('Success', {
                                     status: 200,
@@ -1348,64 +1346,42 @@ async function getConfigAddresses(hostName, cleanIPs, enableIPv6) {
     ];
 }
 
-function generateJWTToken (password, secretKey) {
-    const header = {
-        alg: 'HS256',
-        typ: 'JWT'
-    };
-
-    const payload = {
-        exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60),
-        data: { password }
-    };
-    const encodedHeader = btoa(JSON.stringify(header));
-    const encodedPayload = btoa(JSON.stringify(payload));
-    const signature = btoa(crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${encodedHeader}.${encodedPayload}.${secretKey}`)));
-
-    return `Bearer ${encodedHeader}.${encodedPayload}.${signature}`;
+async function generateJWTToken (secretKey) {
+    const secret = new TextEncoder().encode(secretKey);
+    return await new SignJWT({ userID })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setIssuedAt()
+        .setExpirationTime('24h')
+        .sign(secret);
 }
 
 function generateSecretKey () {
-    const bytes = new Uint8Array(32);
-    crypto.getRandomValues(bytes);
-    return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+    const key = nacl.randomBytes(32);
+    return Array.from(key, byte => byte.toString(16).padStart(2, '0')).join('');
 }
   
 async function Authenticate (request, env) {
-    
     try {
         const secretKey = await env.bpb.get('secretKey');
-        const cookie = request.headers.get('Cookie');
-        const cookieMatch = cookie ? cookie.match(/(^|;\s*)jwtToken=([^;]*)/) : null;
-        const token = cookieMatch ? cookieMatch.pop() : null;
+        const secret = new TextEncoder().encode(secretKey);
+        const cookie = request.headers.get('Cookie')?.match(/(^|;\s*)jwtToken=([^;]*)/);
+        const token = cookie ? cookie[2] : null;
 
         if (!token) {
-            console.log('token');
+            console.log('Unauthorized: Token not available!');
             return false;
         }
 
-        const tokenWithoutBearer = token.startsWith('Bearer ') ? token.slice(7) : token;
-        const [encodedHeader, encodedPayload, signature] = tokenWithoutBearer.split('.');
-        const payload = JSON.parse(atob(encodedPayload));
-
-        const expectedSignature = btoa(crypto.subtle.digest(
-            'SHA-256',
-            new TextEncoder().encode(`${encodedHeader}.${encodedPayload}.${secretKey}`)
-        ));
-
-        if (signature !== expectedSignature) return false;
-
-        const now = Math.floor(Date.now() / 1000);
-        if (payload.exp < now) return false;
-
+        const { payload } = await jwtVerify(token, secret);
+        console.log(`Successfully logined, User ID: ${payload.userID}`);
         return true;
     } catch (error) {
         console.log(error);
-        throw new Error(`An error occurred while authentication - ${error}`);
+        return false;
     }
 }
 
-async function renderHomePage (proxySettings, warpConfigs, hostName, password) {
+async function renderHomePage (proxySettings, hostName, password) {
     const {
         remoteDNS, 
         localDNS,
