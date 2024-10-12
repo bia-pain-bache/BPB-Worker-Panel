@@ -5371,18 +5371,19 @@ async function renderHomePage(proxySettings, hostName, password) {
 			}
 			.table-container { margin-top: 20px; overflow-x: auto; }
 			table { 
-                width: 100%; 
-                border-collapse: collapse; 
+                width: 100%;
+                border: 1px solid var(--border-color);
+                border-collapse: separate;
+                border-spacing: 0; 
+                border-radius: 10px;
                 margin-bottom: 20px;
-                border-radius: 7px;
                 overflow: hidden;
                 box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             }
-			th, td { padding: 8px 15px; border-bottom: 1px solid var(--border-color); }
+			th, td { padding: 10px; border-bottom: 1px solid var(--border-color); }
             td div { display: flex; align-items: center; }
 			th { background-color: var(--secondary-color); color: white; font-weight: bold; font-size: 1.1rem; width: 50%;}
-			tr:nth-child(odd) { background-color: var(--table-active-color); }
-            #custom-configs-table td { text-align: center; text-wrap: nowrap; }
+            td:last-child { background-color: var(--table-active-color); }               
 			tr:hover { background-color: var(--table-active-color); }
             .modal {
                 display: none;
