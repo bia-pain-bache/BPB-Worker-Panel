@@ -4246,7 +4246,8 @@ var worker_default = {
             }
             if (pwd && !isAuth)
               return Response.redirect(`${url.origin}/login`, 302);
-            const homePage = await renderHomePage(settings, warpConfigs, host, pwd);
+            const isPassSet = pwd?.length >= 8;
+            const homePage = await renderHomePage(settings, host, isPassSet);
             return new Response(homePage, {
               status: 200,
               headers: {
@@ -5045,11 +5046,12 @@ async function updateDataset(env, newSettings, resetSettings) {
     intervalMin: validateField("fragmentIntervalMin") ?? currentSettings?.intervalMin ?? "1",
     intervalMax: validateField("fragmentIntervalMax") ?? currentSettings?.intervalMax ?? "1",
     fragmentPackets: validateField("fragmentPackets") ?? currentSettings?.fragmentPackets ?? "tlshello",
-    blockAds: validateField("block-ads") ?? currentSettings?.blockAds ?? false,
-    bypassIran: validateField("bypass-iran") ?? currentSettings?.bypassIran ?? false,
-    blockPorn: validateField("block-porn") ?? currentSettings?.blockPorn ?? false,
     bypassLAN: validateField("bypass-lan") ?? currentSettings?.bypassLAN ?? false,
+    bypassIran: validateField("bypass-iran") ?? currentSettings?.bypassIran ?? false,
     bypassChina: validateField("bypass-china") ?? currentSettings?.bypassChina ?? false,
+    bypassRussia: validateField("bypass-russia") ?? currentSettings?.bypassRussia ?? false,
+    blockAds: validateField("block-ads") ?? currentSettings?.blockAds ?? false,
+    blockPorn: validateField("block-porn") ?? currentSettings?.blockPorn ?? false,
     blockUDP443: validateField("block-udp-443") ?? currentSettings?.blockUDP443 ?? false,
     warpEndpoints: validateField("warpEndpoints")?.replaceAll(" ", "") ?? currentSettings?.warpEndpoints ?? "engage.cloudflareclient.com:2408",
     warpFakeDNS: validateField("warpFakeDNS") ?? currentSettings?.warpFakeDNS ?? false,
@@ -5144,7 +5146,7 @@ async function Authenticate(request, env) {
     return false;
   }
 }
-async function renderHomePage(proxySettings, hostName, password) {
+async function renderHomePage(proxySettings, hostName, isPassSet) {
   const {
     remoteDNS,
     localDNS,
@@ -5177,14 +5179,14 @@ async function renderHomePage(proxySettings, hostName, password) {
     noiseSizeMax,
     noiseDelayMin,
     noiseDelayMax,
-    blockAds,
-    bypassIran,
-    blockPorn,
     bypassLAN,
+    bypassIran,
     bypassChina,
+    bypassRussia,
+    blockAds,
+    blockPorn,
     blockUDP443
   } = proxySettings;
-  const isPassSet = password ? password.length >= 8 : false;
   const isWarpPlus = warpPlusLicense ? true : false;
   let activeProtocols = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
   const buildPortsBlock = async () => {
@@ -5725,6 +5727,10 @@ async function renderHomePage(proxySettings, hostName, password) {
                     <summary><h2>ROUTING RULES \u2699\uFE0F</h2></summary>
                     <div id="routing-rules" class="form-control" style="margin-bottom: 20px;">			
                         <div class="routing">
+                            <input type="checkbox" id="bypass-lan" name="bypass-lan" value="true" ${bypassLAN ? "checked" : ""}>
+                            <label for="bypass-lan">Bypass LAN</label>
+                        </div>
+                        <div class="routing">
                             <input type="checkbox" id="block-ads" name="block-ads" value="true" ${blockAds ? "checked" : ""}>
                             <label for="block-ads">Block Ads.</label>
                         </div>
@@ -5737,16 +5743,16 @@ async function renderHomePage(proxySettings, hostName, password) {
                             <label for="block-porn">Block Porn</label>
                         </div>
                         <div class="routing">
-                            <input type="checkbox" id="bypass-lan" name="bypass-lan" value="true" ${bypassLAN ? "checked" : ""}>
-                            <label for="bypass-lan">Bypass LAN</label>
+                            <input type="checkbox" id="bypass-china" name="bypass-china" value="true" ${bypassChina ? "checked" : ""}>
+                            <label for="bypass-china">Bypass China</label>
                         </div>
                         <div class="routing">
                             <input type="checkbox" id="block-udp-443" name="block-udp-443" value="true" ${blockUDP443 ? "checked" : ""}>
                             <label for="block-udp-443">Block QUIC</label>
                         </div>
                         <div class="routing">
-                            <input type="checkbox" id="bypass-china" name="bypass-china" value="true" ${bypassChina ? "checked" : ""}>
-                            <label for="bypass-china">Bypass China</label>
+                            <input type="checkbox" id="bypass-russia" name="bypass-russia" value="true" ${bypassRussia ? "checked" : ""}>
+                            <label for="bypass-russia">Bypass Russia</label>
                         </div>
                     </div>
                 </details>
@@ -6982,8 +6988,8 @@ async function buildWoWOutbounds(client, proxySettings, warpConfigs) {
   return wowOutbounds;
 }
 async function buildXrayDNS(proxySettings, isWorkerLess, isChain, isWarp) {
-  const { remoteDNS, localDNS, vlessTrojanFakeDNS, warpFakeDNS, blockAds, bypassIran, bypassChina, bypassLAN, blockPorn } = proxySettings;
-  const isBypass = bypassIran || bypassLAN || bypassChina;
+  const { remoteDNS, localDNS, vlessTrojanFakeDNS, warpFakeDNS, blockAds, bypassIran, bypassChina, bypassLAN, blockPorn, bypassRussia } = proxySettings;
+  const isBypass = bypassIran || bypassLAN || bypassChina || bypassRussia;
   const isFakeDNS = vlessTrojanFakeDNS && !isWarp || warpFakeDNS && isWarp;
   const finalRemoteDNS = isWarp ? "1.1.1.1" : isWorkerLess ? "https://cloudflare-dns.com/dns-query" : remoteDNS;
   const dohPattern = /^(?:[a-zA-Z]+:\/\/)?([^:\/\s?]+)/;
@@ -7041,6 +7047,7 @@ async function buildXrayDNS(proxySettings, isWorkerLess, isChain, isWarp) {
     bypassLAN && localDNSServer.domains.push("geosite:private") && localDNSServer.expectIPs.push("geoip:private");
     bypassIran && localDNSServer.domains.push("geosite:category-ir") && localDNSServer.expectIPs.push("geoip:ir");
     bypassChina && localDNSServer.domains.push("geosite:cn") && localDNSServer.expectIPs.push("geoip:cn");
+    bypassRussia && localDNSServer.domains.push("geosite:category-ru") && localDNSServer.expectIPs.push("geoip:ru");
     dnsObject.servers.push(localDNSServer);
     isFakeDNS && dnsObject.servers.unshift({
       address: "fakedns",
@@ -7051,8 +7058,8 @@ async function buildXrayDNS(proxySettings, isWorkerLess, isChain, isWarp) {
   return dnsObject;
 }
 function buildXrayRoutingRules(proxySettings, isChain, isBalancer, isWorkerLess, isWarp) {
-  const { localDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina, blockUDP443 } = proxySettings;
-  const isBypass = bypassIran || bypassLAN || bypassChina;
+  const { localDNS, bypassLAN, bypassIran, bypassChina, bypassRussia, blockAds, blockPorn, blockUDP443 } = proxySettings;
+  const isBypass = bypassIran || bypassLAN || bypassChina || bypassRussia;
   let rules = [
     {
       inboundTag: [
@@ -7093,6 +7100,7 @@ function buildXrayRoutingRules(proxySettings, isChain, isBalancer, isWorkerLess,
       bypassLAN && domainRule.domain.push("geosite:private") && ipRule.ip.push("geoip:private");
       bypassIran && domainRule.domain.push("geosite:category-ir") && ipRule.ip.push("geoip:ir");
       bypassChina && domainRule.domain.push("geosite:cn") && ipRule.ip.push("geoip:cn");
+      bypassRussia && domainRule.domain.push("geosite:category-ru") && ipRule.ip.push("geoip:ru");
       rules.push(domainRule, ipRule);
     }
   }
@@ -7635,7 +7643,7 @@ async function getXrayWarpConfigs(proxySettings, warpConfigs, client) {
   return xrayWarpConfigs;
 }
 async function buildClashDNS(proxySettings, isWarp) {
-  const { remoteDNS, localDNS, vlessTrojanFakeDNS, warpFakeDNS, blockAds, bypassIran, blockPorn, bypassLAN, bypassChina } = proxySettings;
+  const { remoteDNS, localDNS, vlessTrojanFakeDNS, warpFakeDNS, bypassLAN, bypassIran, bypassChina, bypassRussia } = proxySettings;
   const finalRemoteDNS = isWarp ? "1.1.1.1" : remoteDNS;
   const dohPattern = /^(?:[a-zA-Z]+:\/\/)?([^:\/\s?]+)/;
   const DNSNameserver = finalRemoteDNS.match(dohPattern)[1];
@@ -7662,10 +7670,11 @@ async function buildClashDNS(proxySettings, isWarp) {
     };
   }
   let geosites = [];
+  bypassLAN && geosites.push("private");
   bypassIran && geosites.push("category-ir");
   bypassChina && geosites.push("cn");
-  bypassLAN && geosites.push("private");
-  if (bypassIran || bypassChina || bypassLAN) {
+  bypassRussia && geosites.push("category-ru");
+  if (bypassIran || bypassChina || bypassLAN || bypassRussia) {
     dns["nameserver-policy"] = {
       [`geosite:${geosites.join(",")}`]: [clashLocalDNS],
       "www.gstatic.com": [clashLocalDNS]
@@ -7678,15 +7687,17 @@ async function buildClashDNS(proxySettings, isWarp) {
   return dns;
 }
 function buildClashRoutingRules(proxySettings, isWarp) {
-  const { localDNS, blockAds, bypassIran, bypassChina, blockPorn, blockUDP443, bypassLAN } = proxySettings;
+  const { localDNS, bypassLAN, bypassIran, bypassChina, bypassRussia, blockAds, blockPorn, blockUDP443 } = proxySettings;
   let rules = [];
   localDNS !== "localhost" && rules.push(`AND,((IP-CIDR,${localDNS}/32),(DST-PORT,53)),DIRECT`);
   bypassLAN && rules.push("GEOSITE,private,DIRECT");
   bypassIran && rules.push("GEOSITE,category-ir,DIRECT");
   bypassChina && rules.push("GEOSITE,cn,DIRECT");
+  bypassRussia && rules.push("GEOSITE,category-ru,DIRECT");
   bypassLAN && rules.push("GEOIP,private,DIRECT,no-resolve");
   bypassIran && rules.push("GEOIP,ir,DIRECT,no-resolve");
   bypassChina && rules.push("GEOIP,cn,DIRECT,no-resolve");
+  bypassRussia && rules.push("GEOIP,ru,DIRECT,no-resolve");
   blockUDP443 && isWarp && rules.push("AND,((NETWORK,udp),(DST-PORT,443)),REJECT");
   !isWarp && rules.push("NETWORK,udp,REJECT");
   blockAds && rules.push("GEOSITE,category-ads-all,REJECT", "GEOSITE,category-ads-ir,REJECT");
@@ -7967,7 +7978,7 @@ async function getClashNormalConfig(env, proxySettings, hostName) {
   return config;
 }
 function buildSingBoxDNS(proxySettings, isChain, isWarp) {
-  const { remoteDNS, localDNS, vlessTrojanFakeDNS, warpFakeDNS, blockAds, bypassIran, bypassChina, blockPorn } = proxySettings;
+  const { remoteDNS, localDNS, vlessTrojanFakeDNS, warpFakeDNS, bypassIran, bypassChina, bypassRussia, blockAds, blockPorn } = proxySettings;
   let fakeip;
   const isFakeDNS = vlessTrojanFakeDNS && !isWarp || warpFakeDNS && isWarp;
   const servers = [
@@ -8001,7 +8012,8 @@ function buildSingBoxDNS(proxySettings, isChain, isWarp) {
   };
   bypassIran && bypassRules.rule_set.push("geosite-ir");
   bypassChina && bypassRules.rule_set.push("geosite-cn");
-  (bypassIran || bypassChina) && rules.push(bypassRules);
+  bypassRussia && bypassRules.rule_set.push("geosite-category-ru");
+  (bypassIran || bypassChina || bypassRussia) && rules.push(bypassRules);
   let blockRules = {
     disable_cache: true,
     rule_set: [
@@ -8037,7 +8049,7 @@ function buildSingBoxDNS(proxySettings, isChain, isWarp) {
   return { servers, rules, fakeip };
 }
 function buildSingBoxRoutingRules(proxySettings, isWarp) {
-  const { blockAds, bypassIran, bypassChina, blockPorn, blockUDP443, bypassLAN } = proxySettings;
+  const { bypassLAN, bypassIran, bypassChina, bypassRussia, blockAds, blockPorn, blockUDP443 } = proxySettings;
   let rules = [
     {
       inbound: "dns-in",
@@ -8126,6 +8138,28 @@ function buildSingBoxRoutingRules(proxySettings, isWarp) {
         tag: "geoip-cn",
         format: "binary",
         url: "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-cn.srs",
+        download_detour: "direct"
+      }
+    );
+  }
+  if (bypassRussia) {
+    rules.push({
+      rule_set: ["geosite-category-ru", "geoip-ru"],
+      outbound: "direct"
+    });
+    ruleSet.push(
+      {
+        type: "remote",
+        tag: "geosite-category-ru",
+        format: "binary",
+        url: "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-category-ru.srs",
+        download_detour: "direct"
+      },
+      {
+        type: "remote",
+        tag: "geoip-ru",
+        format: "binary",
+        url: "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-ru.srs",
         download_detour: "direct"
       }
     );
