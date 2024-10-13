@@ -1206,13 +1206,14 @@ async function getDataset(env) {
         throw new Error(`An error occurred while getting KV - ${error}`);
     }
 
-    const isUpdated = panelVersion === proxySettings?.panelVersion;
-    if (!proxySettings || !isUpdated) {
+    if (!proxySettings) {
         proxySettings = await updateDataset(env);
         const { error, configs } = await fetchWgConfig(env, proxySettings);
-        warpConfigs = configs;
         if (error) throw new Error(`An error occurred while getting Warp configs - ${error}`);
+        warpConfigs = configs;
     }
+    
+    if (panelVersion !== proxySettings.panelVersion) proxySettings = await updateDataset(env);
     return {kvNotFound: false, proxySettings, warpConfigs}
 }
 
