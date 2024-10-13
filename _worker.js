@@ -4247,7 +4247,7 @@ var worker_default = {
             if (pwd && !isAuth)
               return Response.redirect(`${url.origin}/login`, 302);
             const isPassSet = pwd?.length >= 8;
-            const homePage = await renderHomePage(settings, host, isPassSet);
+            const homePage = renderHomePage(settings, host, isPassSet);
             return new Response(homePage, {
               status: 200,
               headers: {
@@ -4290,7 +4290,7 @@ var worker_default = {
                 return new Response("Method Not Allowed", { status: 405 });
               }
             }
-            const loginPage = await renderLoginPage();
+            const loginPage = renderLoginPage();
             return new Response(loginPage, {
               status: 200,
               headers: {
@@ -4982,8 +4982,7 @@ function base64ToDecimal(base64) {
   return decimalArray;
 }
 async function getDataset(env) {
-  let proxySettings = {};
-  let warpConfigs;
+  let proxySettings, warpConfigs;
   if (typeof env.bpb !== "object") {
     return { kvNotFound: true, proxySettings: null, warpConfigs: null };
   }
@@ -4997,7 +4996,8 @@ async function getDataset(env) {
   const isUpdated = panelVersion === proxySettings?.panelVersion;
   if (!proxySettings || !isUpdated) {
     proxySettings = await updateDataset(env);
-    const { error, configs: warpConfigs2 } = await fetchWgConfig(env, proxySettings);
+    const { error, configs } = await fetchWgConfig(env, proxySettings);
+    warpConfigs = configs;
     if (error)
       throw new Error(`An error occurred while getting Warp configs - ${error}`);
   }
@@ -5146,7 +5146,7 @@ async function Authenticate(request, env) {
     return false;
   }
 }
-async function renderHomePage(proxySettings, hostName, isPassSet) {
+function renderHomePage(proxySettings, hostName, isPassSet) {
   const {
     remoteDNS,
     localDNS,
@@ -5189,20 +5189,16 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
   } = proxySettings;
   const isWarpPlus = warpPlusLicense ? true : false;
   let activeProtocols = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
-  const buildPortsBlock = async () => {
-    let httpPortsBlock = "";
-    let httpsPortsBlock = "";
-    [...defaultHttpPorts, ...defaultHttpsPorts].forEach((port) => {
-      let id = `port-${port}`;
-      let portBlock = `
-                <div class="routing" style="grid-template-columns: 1fr 2fr; margin-right: 10px;">
-                    <input type="checkbox" id=${id} name=${port} onchange="handlePortChange(event)" value="true" ${ports.includes(port) ? "checked" : ""}>
-                    <label style="margin-bottom: 3px;" for=${id}>${port}</label>
-                </div>`;
-      defaultHttpPorts.includes(port) ? httpPortsBlock += portBlock : httpsPortsBlock += portBlock;
-    });
-    return { httpPortsBlock, httpsPortsBlock };
-  };
+  let httpPortsBlock = "", httpsPortsBlock = "";
+  [...defaultHttpPorts, ...defaultHttpsPorts].forEach((port) => {
+    let id = `port-${port}`;
+    let portBlock = `
+            <div class="routing" style="grid-template-columns: 1fr 2fr; margin-right: 10px;">
+                <input type="checkbox" id=${id} name=${port} onchange="handlePortChange(event)" value="true" ${ports.includes(port) ? "checked" : ""}>
+                <label style="margin-bottom: 3px;" for=${id}>${port}</label>
+            </div>`;
+    defaultHttpPorts.includes(port) ? httpPortsBlock += portBlock : httpsPortsBlock += portBlock;
+  });
   const html = `
     <!DOCTYPE html>
     <html lang="en">
@@ -5229,7 +5225,7 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
                 --input-background-color: white;
                 --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
             }
-			body { font-family: system-ui; background-color: var(--background-color); color: var(--color) }
+            body { font-family: system-ui; background-color: var(--background-color); color: var(--color) }
             body.dark-mode {
                 --color: white;
                 --primary-color: #09639F;
@@ -5263,8 +5259,8 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
             summary::marker { font-size: 1.5rem; color: var(--secondary-color); }
             summary h2 { display: inline-flex; }
             h1 { font-size: 2.5em; text-align: center; color: var(--header-color); text-shadow: var(--header-shadow); }
-			h2 { margin: 30px 0; text-align: center; color: var(--hr-text-color); }
-			hr { border: 1px solid var(--border-color); margin: 20px 0; }
+            h2 { margin: 30px 0; text-align: center; color: var(--hr-text-color); }
+            hr { border: 1px solid var(--border-color); margin: 20px 0; }
             .footer {
                 display: flex;
                 font-weight: 600;
@@ -5275,12 +5271,12 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
             .footer button {margin: 0 20px; background: #212121; max-width: fit-content;}
             .footer button:hover, .footer button:focus { background: #3b3b3b;}
             .form-control a, a.link { text-decoration: none; }
-			.form-control {
-				margin-bottom: 20px;
-				font-family: Arial, sans-serif;
+            .form-control {
+                margin-bottom: 20px;
+                font-family: Arial, sans-serif;
                 display: flex;
                 flex-direction: column;
-			}
+            }
             .form-control button {
                 background-color: var(--form-background-color);
                 font-size: 1.1rem;
@@ -5291,54 +5287,54 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
             }
             #apply {display: block; margin-top: 20px;}
             input.button {font-weight: 600; padding: 15px 0; font-size: 1.1rem;}
-			label {
-				display: block;
-				margin-bottom: 5px;
-				font-size: 110%;
-				font-weight: 600;
-				color: var(--lable-text-color);
-			}
-			input[type="text"],
-			input[type="number"],
-			input[type="url"],
-			textarea,
-			select {
-				width: 100%;
-				text-align: center;
-				padding: 10px;
-				border: 1px solid var(--border-color);
-				border-radius: 5px;
-				font-size: 16px;
-				color: var(--lable-text-color);
-				background-color: var(--input-background-color);
-				box-sizing: border-box;
-				transition: border-color 0.3s ease;
-			}	
-			input[type="text"]:focus,
-			input[type="number"]:focus,
-			input[type="url"]:focus,
-			textarea:focus,
-			select:focus { border-color: var(--secondary-color); outline: none; }
-			.button,
-			table button {
-				display: flex;
+            label {
+                display: block;
+                margin-bottom: 5px;
+                font-size: 110%;
+                font-weight: 600;
+                color: var(--lable-text-color);
+            }
+            input[type="text"],
+            input[type="number"],
+            input[type="url"],
+            textarea,
+            select {
+                width: 100%;
+                text-align: center;
+                padding: 10px;
+                border: 1px solid var(--border-color);
+                border-radius: 5px;
+                font-size: 16px;
+                color: var(--lable-text-color);
+                background-color: var(--input-background-color);
+                box-sizing: border-box;
+                transition: border-color 0.3s ease;
+            }	
+            input[type="text"]:focus,
+            input[type="number"]:focus,
+            input[type="url"]:focus,
+            textarea:focus,
+            select:focus { border-color: var(--secondary-color); outline: none; }
+            .button,
+            table button {
+                display: flex;
                 align-items: center;
                 justify-content: center;
                 width: 100%;
-				white-space: nowrap;
-				padding: 10px 15px;
-				font-size: 16px;
+                white-space: nowrap;
+                padding: 10px 15px;
+                font-size: 16px;
                 font-weight: 600;
-				letter-spacing: 1px;
-				border: none;
-				border-radius: 5px;
-				color: white;
-				background-color: var(--primary-color);
-				cursor: pointer;
-				outline: none;
-				box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-				transition: all 0.3s ease;
-			}
+                letter-spacing: 1px;
+                border: none;
+                border-radius: 5px;
+                color: white;
+                background-color: var(--primary-color);
+                cursor: pointer;
+                outline: none;
+                box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+                transition: all 0.3s ease;
+            }
             input[type="checkbox"] { 
                 background-color: var(--input-background-color);
                 style="margin: 0; 
@@ -5351,28 +5347,28 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
                 box-shadow: none;
                 pointer-events: none;
             }
-			.button:hover,
-			table button:hover,
-			table button:focus {
-				background-color: #2980b9;
-				box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
-				transform: translateY(-2px);
-			}
+            .button:hover,
+            table button:hover,
+            table button:focus {
+                background-color: #2980b9;
+                box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+                transform: translateY(-2px);
+            }
             button.button:hover { color: white; }
-			.button:active,
-			table button:active { transform: translateY(1px); box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); }
-			.form-container {
-				max-width: 90%;
-				margin: 0 auto;
-				padding: 20px;
-				background: var(--form-background-color);
-				border: 1px solid var(--border-color);
-				border-radius: 10px;
-				box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            .button:active,
+            table button:active { transform: translateY(1px); box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); }
+            .form-container {
+                max-width: 90%;
+                margin: 0 auto;
+                padding: 20px;
+                background: var(--form-background-color);
+                border: 1px solid var(--border-color);
+                border-radius: 10px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
                 margin-bottom: 100px;
-			}
-			.table-container { margin-top: 20px; overflow-x: auto; }
-			table { 
+            }
+            .table-container { margin-top: 20px; overflow-x: auto; }
+            table { 
                 width: 100%;
                 border: 1px solid var(--border-color);
                 border-collapse: separate;
@@ -5382,11 +5378,11 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
                 overflow: hidden;
                 box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             }
-			th, td { padding: 10px; border-bottom: 1px solid var(--border-color); }
+            th, td { padding: 10px; border-bottom: 1px solid var(--border-color); }
             td div { display: flex; align-items: center; }
-			th { background-color: var(--secondary-color); color: white; font-weight: bold; font-size: 1.1rem; width: 50%;}
+            th { background-color: var(--secondary-color); color: white; font-weight: bold; font-size: 1.1rem; width: 50%;}
             td:last-child { background-color: var(--table-active-color); }               
-			tr:hover { background-color: var(--table-active-color); }
+            tr:hover { background-color: var(--table-active-color); }
             .modal {
                 display: none;
                 position: fixed;
@@ -5501,8 +5497,8 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
 		</style>
 	</head>
 	<body>
-		<h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> \u{1F4A6}</h1>
-		<div class="form-container">
+        <h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> \u{1F4A6}</h1>
+        <div class="form-container">
             <form id="configForm">
                 <details open>
                     <summary><h2>VLESS / TROJAN \u2699\uFE0F</h2></summary>
@@ -5593,13 +5589,13 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
                             <tr>
                                 <td style="text-align: center; font-size: larger;"><b>TLS</b></td>
                                 <td>
-                                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;">${(await buildPortsBlock()).httpsPortsBlock}</div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;">${httpsPortsBlock}</div>
                                 </td>    
                             </tr>
                             ${hostName.includes("pages.dev") ? "" : `<tr>
                                 <td style="text-align: center; font-size: larger;"><b>Non TLS</b></td>
                                 <td>
-                                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;">${(await buildPortsBlock()).httpPortsBlock}</div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;">${httpPortsBlock}</div>
                                 </td>    
                             </tr>`}        
                         </table>
@@ -5756,24 +5752,24 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
                         </div>
                     </div>
                 </details>
-				<div id="apply" class="form-control">
-					<div style="grid-column: 2; width: 100%; display: inline-flex;">
-						<input type="submit" id="applyButton" style="margin-right: 10px;" class="button disabled" value="APPLY SETTINGS \u{1F4A5}" form="configForm">
+                <div id="apply" class="form-control">
+                    <div style="grid-column: 2; width: 100%; display: inline-flex;">
+                        <input type="submit" id="applyButton" style="margin-right: 10px;" class="button disabled" value="APPLY SETTINGS \u{1F4A5}" form="configForm">
                         <button type="button" id="resetSettings" style="background: none; margin: 0; border: none; cursor: pointer;">
                             <i class="fa fa-refresh fa-2x fa-border" style="border-radius: .2em; border-color: var(--border-color);" aria-hidden="true"></i>
                         </button>
-					</div>
-				</div>
-			</form>
+                    </div>
+                </div>
+            </form>
             <hr>            
-			<h2>NORMAL SUB \u{1F517}</h2>
-			<div class="table-container">
-				<table id="normal-configs-table">
-					<tr>
-						<th>Application</th>
-						<th>Subscription</th>
-					</tr>
-					<tr>
+            <h2>NORMAL SUB \u{1F517}</h2>
+            <div class="table-container">
+                <table id="normal-configs-table">
+                    <tr>
+                        <th>Application</th>
+                        <th>Subscription</th>
+                    </tr>
+                    <tr>
                         <td>
                             <div>
                                 <span class="material-symbols-outlined symbol">verified</span>
@@ -5812,7 +5808,7 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
                                 <span>Nekoray (Xray)</span>
                             </div>
                         </td>
-						<td>
+                        <td>
                             <button onclick="openQR('https://${hostName}/sub/${userID}#BPB-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
@@ -5820,8 +5816,8 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
-					</tr>
-					<tr>
+                    </tr>
+                    <tr>
                         <td>
                             <div>
                                 <span class="material-symbols-outlined symbol">verified</span>
@@ -5836,22 +5832,22 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
                                 <span>Karing</span>
                             </div>
                         </td>
-						<td>
+                        <td>
                             <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=singbox#BPB-Normal', false)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
-						</td>
-					</tr>
-				</table>
-			</div>
-			<h2>FULL NORMAL SUB \u{1F517}</h2>
-			<div class="table-container">
-				<table id="full-normal-configs-table">
-					<tr>
-						<th>Application</th>
-						<th>Subscription</th>
-					</tr>
-					<tr>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <h2>FULL NORMAL SUB \u{1F517}</h2>
+            <div class="table-container">
+                <table id="full-normal-configs-table">
+                    <tr>
+                        <th>Application</th>
+                        <th>Subscription</th>
+                    </tr>
+                    <tr>
                         <td>
                             <div>
                                 <span class="material-symbols-outlined symbol">verified</span>
@@ -5878,7 +5874,7 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
                                 <span>Streisand</span>
                             </div>
                         </td>
-						<td>
+                        <td>
                             <button onclick="openQR('https://${hostName}/sub/${userID}?app=xray#BPB-Full-Normal', 'Full normal Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
@@ -5886,7 +5882,7 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
-					</tr>
+                    </tr>
                     <tr>
                         <td>
                             <div>
@@ -5895,10 +5891,10 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
                             </div>
                         </td>
                         <td>
-                            <button onclick="openQR('sing-box://import-remote-profile?url=https://${hostName}/sub/${userID}?app=sfa#BPB-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
+                            <button onclick="openQR('sing-box://import-remote-profile?url=https://${hostName}/sub/${userID}?app=sfa#BPB-Full-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
-                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=sfa#BPB-Normal', false)">
+                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=sfa#BPB-Full-Normal', false)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
@@ -5927,18 +5923,18 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
                             </div>
                         </td>
                         <td>
-                            <button onclick="openQR('https://${hostName}/sub/${userID}?app=clash#BPB-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
+                            <button onclick="openQR('https://${hostName}/sub/${userID}?app=clash#BPB-Full-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
-                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=clash#BPB-Normal', false)">
+                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=clash#BPB-Full-Normal', false)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
                     </tr>
-				</table>
-			</div>
-			<h2>FRAGMENT SUB \u26D3\uFE0F</h2>
-			<div class="table-container">
+                </table>
+            </div>
+            <h2>FRAGMENT SUB \u26D3\uFE0F</h2>
+            <div class="table-container">
                 <table id="frag-sub-table">
                     <tr>
                         <th style="text-wrap: nowrap;">Application</th>
@@ -5999,13 +5995,13 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
                 </table>
             </div>
             <h2>WARP SUB \u{1F517}</h2>
-			<div class="table-container">
-				<table id="normal-configs-table">
-					<tr>
-						<th>Application</th>
-						<th>Subscription</th>
-					</tr>
-					<tr>
+            <div class="table-container">
+                <table id="normal-configs-table">
+                    <tr>
+                        <th>Application</th>
+                        <th>Subscription</th>
+                    </tr>
+                    <tr>
                         <td>
                             <div>
                                 <span class="material-symbols-outlined symbol">verified</span>
@@ -6020,7 +6016,7 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
                                 <span>Streisand</span>
                             </div>
                         </td>
-						<td>
+                        <td>
                             <button onclick="openQR('https://${hostName}/warpsub/${userID}?app=xray#BPB-Warp', 'Warp Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
@@ -6028,8 +6024,8 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
-					</tr>
-					<tr>
+                    </tr>
+                    <tr>
                         <td>
                             <div>
                                 <span class="material-symbols-outlined symbol">verified</span>
@@ -6040,15 +6036,15 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
                                 <span>Singbox</span>
                             </div>
                         </td>
-						<td>
+                        <td>
                             <button onclick="openQR('sing-box://import-remote-profile?url=https://${hostName}/warpsub/${userID}?app=singbox#BPB-Warp', 'Warp Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
                             <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID}?app=singbox#BPB-Warp', false)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
-						</td>
-					</tr>
+                        </td>
+                    </tr>
                     <tr>
                         <td>
                             <div>
@@ -6081,16 +6077,16 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
                             </button>
                         </td>
                     </tr>
-				</table>
-			</div>
+                </table>
+            </div>
             <h2>WARP PRO SUB \u{1F517}</h2>
-			<div class="table-container">
-				<table id="warp-pro-configs-table">
-					<tr>
-						<th>Application</th>
-						<th>Subscription</th>
-					</tr>
-					<tr>
+            <div class="table-container">
+                <table id="warp-pro-configs-table">
+                    <tr>
+                        <th>Application</th>
+                        <th>Subscription</th>
+                    </tr>
+                    <tr>
                         <td>
                             <div>
                                 <span class="material-symbols-outlined symbol">verified</span>
@@ -6105,7 +6101,7 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
                                 <span>v2rayN-PRO</span>
                             </div>
                         </td>
-						<td>
+                        <td>
                             <button onclick="openQR('https://${hostName}/warpsub/${userID}?app=nikang#BPB-Warp-Pro', 'Warp Pro Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
@@ -6113,25 +6109,25 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
-					</tr>
-					<tr>
+                    </tr>
+                    <tr>
                         <td>
                             <div>
                                 <span class="material-symbols-outlined symbol">verified</span>
                                 <span>Hiddify</span>
                             </div>
                         </td>
-						<td>
+                        <td>
                             <button onclick="openQR('sing-box://import-remote-profile?url=https://${hostName}/warpsub/${userID}?app=hiddify#BPB-Warp-Pro', 'Warp Pro Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
                             <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID}?app=hiddify#BPB-Warp-Pro', false)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
-						</td>
-					</tr>
-				</table>
-			</div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
             <div id="myModal" class="modal">
                 <div class="modal-content">
                     <span class="close">&times;</span>
@@ -6171,8 +6167,7 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
         </div>
         <button id="darkModeToggle" class="floating-button">
             <i id="modeIcon" class="fa fa-2x fa-adjust" style="color: var(--background-color);" aria-hidden="true"></i>
-        </button>
-        
+        </button>   
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
 	<script>
         const defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
@@ -6182,7 +6177,7 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
         const warpPlusLicense = '${warpPlusLicense}';
         localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
 
-		document.addEventListener('DOMContentLoaded', async () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const configForm = document.getElementById('configForm');            
             const modal = document.getElementById('myModal');
             const changePass = document.getElementById('openModalBtn');
@@ -6196,7 +6191,7 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
             let qrcodeContainer = document.getElementById('qrcode-container');
             let forcedPassChange = false;
             const darkModeToggle = document.getElementById('darkModeToggle');
-                  
+                    
             const hasFormDataChanged = () => {
                 const currentFormData = new FormData(configForm);
                 const currentFormDataEntries = [...currentFormData.entries()];
@@ -6217,16 +6212,16 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
 
                 return nonCheckboxFieldsChanged || checkboxFieldsChanged;
             };
-          
+            
             const enableApplyButton = () => {
                 const isChanged = hasFormDataChanged();
                 applyButton.disabled = !isChanged;
                 applyButton.classList.toggle('disabled', !isChanged);
             };
-                      
+                        
             passwordChangeForm.addEventListener('submit', event => resetPassword(event));
             document.getElementById('logout').addEventListener('click', event => logout(event));
-			configForm.addEventListener('submit', (event) => applySettings(event, configForm));
+            configForm.addEventListener('submit', (event) => applySettings(event, configForm));
             configForm.addEventListener('input', enableApplyButton);
             configForm.addEventListener('change', enableApplyButton);
             changePass.addEventListener('click', () => {
@@ -6292,7 +6287,7 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
                 forcedPassChange = true;
                 changePass.click();
             }
-		});
+        });
 
         const getWarpConfigs = async () => {
             const license = document.getElementById('warpPlusLicense').value;
@@ -6394,16 +6389,16 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
             qrcodeContainer.appendChild(qrcodeDiv);
         }
 
-		const copyToClipboard = (text, decode) => {
+        const copyToClipboard = (text, decode) => {
             const textarea = document.createElement('textarea');
             const value = decode ? decodeURIComponent(text) : text;
-			textarea.value = value;
-			document.body.appendChild(textarea);
-			textarea.select();
-			document.execCommand('copy');
-			document.body.removeChild(textarea);
-			alert('\u{1F4CB} Copied to clipboard:\\n\\n' +  value);
-		}
+            textarea.value = value;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            alert('\u{1F4CB} Copied to clipboard:\\n\\n' +  value);
+        }
 
         const applySettings = async (event, configForm) => {
             event.preventDefault();
@@ -6461,7 +6456,7 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
                     return !validEndpoint.test(trimmedValue);
                 }
             });
-    
+
             if (invalidIPs.length) {
                 alert('\u26D4 Invalid IPs or Domains \u{1FAE4}\\n\\n' + invalidIPs.map(ip => '\u26A0\uFE0F ' + ip).join('\\n'));
                 return false;
@@ -6548,7 +6543,7 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
             const passwordError = document.getElementById('passwordError');             
             const newPassword = newPasswordInput.value;
             const confirmPassword = confirmPasswordInput.value;
-    
+
             if (newPassword !== confirmPassword) {
                 passwordError.textContent = "Passwords do not match";
                 return false;
@@ -6599,8 +6594,8 @@ async function renderHomePage(proxySettings, hostName, isPassSet) {
 	</html>`;
   return html;
 }
-async function renderLoginPage() {
-  const html = `
+function renderLoginPage() {
+  return `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -6744,7 +6739,6 @@ async function renderLoginPage() {
     <\/script>
     </body>
     </html>`;
-  return html;
 }
 function renderErrorPage(message2, error, refer) {
   return `
@@ -8006,14 +8000,16 @@ function buildSingBoxDNS(proxySettings, isChain, isWarp) {
       server: "dns-direct"
     }
   ];
-  let bypassRules = {
-    rule_set: [],
-    server: "dns-direct"
-  };
-  bypassIran && bypassRules.rule_set.push("geosite-ir");
-  bypassChina && bypassRules.rule_set.push("geosite-cn");
-  bypassRussia && bypassRules.rule_set.push("geosite-category-ru");
-  (bypassIran || bypassChina || bypassRussia) && rules.push(bypassRules);
+  if (bypassIran || bypassChina || bypassRussia) {
+    let bypassRules = {
+      rule_set: [],
+      server: "dns-direct"
+    };
+    bypassIran && bypassRules.rule_set.push("geosite-ir");
+    bypassChina && bypassRules.rule_set.push("geosite-cn");
+    bypassRussia && bypassRules.rule_set.push("geosite-category-ru");
+    rules.push(bypassRules);
+  }
   let blockRules = {
     disable_cache: true,
     rule_set: [
@@ -8538,9 +8534,7 @@ async function getSingBoxCustomConfig(env, proxySettings, hostName, client, isFr
   return config;
 }
 async function getNormalConfigs(proxySettings, hostName, client) {
-  let vlessConfs = "";
-  let trojanConfs = "";
-  let chainProxy = "";
+  let vlessConfs = "", trojanConfs = "", chainProxy = "";
   let proxyIndex = 1;
   const { cleanIPs, proxyIP: proxyIP2, ports, vlessConfigs, trojanConfigs, outProxy, customCdnAddrs, customCdnHost, customCdnSni, enableIPv6 } = proxySettings;
   const Addresses = await getConfigAddresses(hostName, cleanIPs, enableIPv6);
