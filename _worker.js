@@ -5202,14 +5202,14 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
   const html = `
     <!DOCTYPE html>
     <html lang="en">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>BPB Panel ${panelVersion}</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
         <title>Collapsible Sections</title>
-		<style>
+        <style>
             :root {
                 --color: black;
                 --primary-color: #09639f;
@@ -5494,9 +5494,9 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
                 .modal-content { width: 30% }
                 .routing { display: grid; grid-template-columns: 4fr 1fr 3fr 4fr; }
             }
-		</style>
-	</head>
-	<body>
+        </style>
+    </head>
+    <body>
         <h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> \u{1F4A6}</h1>
         <div class="form-container">
             <form id="configForm">
@@ -6169,7 +6169,7 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
             <i id="modeIcon" class="fa fa-2x fa-adjust" style="color: var(--background-color);" aria-hidden="true"></i>
         </button>   
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
-	<script>
+    <script>
         const defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
         let activePortsNo = ${ports.length};
         let activeHttpsPortsNo = ${ports.filter((port) => defaultHttpsPorts.includes(port)).length};
@@ -6589,9 +6589,9 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
                 console.error('Error:', error);
             }
         }
-	<\/script>
-	</body>	
-	</html>`;
+    <\/script>
+    </body>	
+    </html>`;
   return html;
 }
 function renderLoginPage() {
