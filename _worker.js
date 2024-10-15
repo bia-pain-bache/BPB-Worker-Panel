@@ -7002,8 +7002,19 @@ async function buildWoWOutbounds(client, proxySettings, warpConfigs) {
   return wowOutbounds;
 }
 async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isWorkerLess, isWarp) {
-  const { remoteDNS, resolvedRemoteDNS, localDNS, vlessTrojanFakeDNS, warpFakeDNS, blockAds, bypassIran, bypassChina, bypassLAN, blockPorn, bypassRussia } = proxySettings;
-  const isBypass = bypassIran || bypassLAN || bypassChina || bypassRussia;
+  const {
+    remoteDNS,
+    resolvedRemoteDNS,
+    localDNS,
+    vlessTrojanFakeDNS,
+    warpFakeDNS,
+    blockAds,
+    bypassIran,
+    bypassChina,
+    blockPorn,
+    bypassRussia
+  } = proxySettings;
+  const isBypass = bypassIran || bypassChina || bypassRussia;
   const isFakeDNS = vlessTrojanFakeDNS && !isWarp || warpFakeDNS && isWarp;
   const outboundDomains = outboundAddrs.filter((address) => isDomain(address));
   const isOutboundRule = outboundDomains.length > 0;
@@ -7054,7 +7065,6 @@ async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isW
     expectIPs: []
   };
   if (!isWorkerLess && isBypass) {
-    bypassLAN && localDNSServer.domains.push("geosite:private") && localDNSServer.expectIPs.push("geoip:private");
     bypassIran && localDNSServer.domains.push("geosite:category-ir") && localDNSServer.expectIPs.push("geoip:ir");
     bypassChina && localDNSServer.domains.push("geosite:cn") && localDNSServer.expectIPs.push("geoip:cn");
     bypassRussia && localDNSServer.domains.push("geosite:category-ru") && localDNSServer.expectIPs.push("geoip:ru");
@@ -7412,7 +7422,17 @@ function buildXrayChainOutbound(chainProxyParams) {
   return proxyOutbound;
 }
 function buildXrayConfig(proxySettings, remark, isFragment, isBalancer, isChain, balancerFallback, isWarp) {
-  const { vlessTrojanFakeDNS, warpFakeDNS, bestVLESSTrojanInterval, bestWarpInterval, lengthMin, lengthMax, intervalMin, intervalMax, fragmentPackets } = proxySettings;
+  const {
+    vlessTrojanFakeDNS,
+    warpFakeDNS,
+    bestVLESSTrojanInterval,
+    bestWarpInterval,
+    lengthMin,
+    lengthMax,
+    intervalMin,
+    intervalMax,
+    fragmentPackets
+  } = proxySettings;
   let config = structuredClone(xrayConfigTemp);
   config.remarks = remark;
   if (vlessTrojanFakeDNS || warpFakeDNS) {
@@ -7770,7 +7790,7 @@ function buildClashChainOutbound(chainProxyParams) {
       "password": pass
     };
   }
-  const { hostName, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, spx, headerType, host, path, authority, serviceName, mode } = chainProxyParams;
+  const { hostName, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = chainProxyParams;
   let chainOutbound = {
     "name": "\u{1F4A6} Chain Best Ping \u{1F4A5}",
     "type": "vless",

@@ -3280,8 +3280,20 @@ async function buildWoWOutbounds (client, proxySettings, warpConfigs) {
 }
 
 async function buildXrayDNS (proxySettings, outboundAddrs, domainToStaticIPs, isWorkerLess, isWarp) {
-    const { remoteDNS, resolvedRemoteDNS, localDNS, vlessTrojanFakeDNS, warpFakeDNS, blockAds, bypassIran, bypassChina, bypassLAN, blockPorn, bypassRussia } = proxySettings;
-    const isBypass = bypassIran || bypassLAN || bypassChina || bypassRussia;
+    const { 
+        remoteDNS, 
+        resolvedRemoteDNS, 
+        localDNS, 
+        vlessTrojanFakeDNS, 
+        warpFakeDNS, 
+        blockAds, 
+        bypassIran, 
+        bypassChina,
+        blockPorn, 
+        bypassRussia 
+    } = proxySettings;
+
+    const isBypass = bypassIran || bypassChina || bypassRussia;
     const isFakeDNS = (vlessTrojanFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
     const outboundDomains = outboundAddrs.filter(address => isDomain(address));
     const isOutboundRule = outboundDomains.length > 0;
@@ -3337,7 +3349,6 @@ async function buildXrayDNS (proxySettings, outboundAddrs, domainToStaticIPs, is
     };
 
     if (!isWorkerLess && isBypass) {
-        bypassLAN && localDNSServer.domains.push("geosite:private") && localDNSServer.expectIPs.push("geoip:private");
         bypassIran && localDNSServer.domains.push("geosite:category-ir") && localDNSServer.expectIPs.push("geoip:ir"); 
         bypassChina && localDNSServer.domains.push("geosite:cn") && localDNSServer.expectIPs.push("geoip:cn");
         bypassRussia && localDNSServer.domains.push("geosite:category-ru") && localDNSServer.expectIPs.push("geoip:ru");
@@ -3724,7 +3735,18 @@ function buildXrayChainOutbound(chainProxyParams) {
 }
 
 function buildXrayConfig (proxySettings, remark, isFragment, isBalancer, isChain, balancerFallback, isWarp) {
-    const { vlessTrojanFakeDNS, warpFakeDNS, bestVLESSTrojanInterval, bestWarpInterval, lengthMin, lengthMax, intervalMin, intervalMax, fragmentPackets } = proxySettings;
+    const { 
+        vlessTrojanFakeDNS, 
+        warpFakeDNS, 
+        bestVLESSTrojanInterval, 
+        bestWarpInterval, 
+        lengthMin, 
+        lengthMax, 
+        intervalMin, 
+        intervalMax, 
+        fragmentPackets 
+    } = proxySettings;
+
     let config = structuredClone(xrayConfigTemp);
     config.remarks = remark;
 
@@ -3770,8 +3792,8 @@ async function buildXrayBestPingConfig(proxySettings, totalAddresses, chainProxy
 
 async function buildXrayBestFragmentConfig(proxySettings, hostName, chainProxy, outbounds) {
     const bestFragValues = ['10-20', '20-30', '30-40', '40-50', '50-60', '60-70', 
-        '70-80', '80-90', '90-100', '10-30', '20-40', '30-50', 
-        '40-60', '50-70', '60-80', '70-90', '80-100', '100-200'];
+                            '70-80', '80-90', '90-100', '10-30', '20-40', '30-50', 
+                            '40-60', '50-70', '60-80', '70-90', '80-100', '100-200'];
 
     let config = buildXrayConfig(proxySettings, '💦 BPB F - Best Fragment 😎', true, true, chainProxy, undefined, false);
     config.dns = await buildXrayDNS(proxySettings, [hostName], hostName);
@@ -4112,7 +4134,7 @@ function buildClashChainOutbound(chainProxyParams) {
         };
     }
 
-    const { hostName, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, spx, headerType, host, path, authority, serviceName, mode } = chainProxyParams;
+    const { hostName, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = chainProxyParams;
     let chainOutbound = {
         "name": "💦 Chain Best Ping 💥",
         "type": "vless",
