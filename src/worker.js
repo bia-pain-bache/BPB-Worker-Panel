@@ -3263,6 +3263,8 @@ async function buildXrayDNS (proxySettings, outboundDomains, isWorkerLess, isCha
     const { remoteDNS, localDNS, vlessTrojanFakeDNS, warpFakeDNS, blockAds, bypassIran, bypassChina, bypassLAN, blockPorn, bypassRussia } = proxySettings;
     const isBypass = bypassIran || bypassLAN || bypassChina || bypassRussia;
     const isFakeDNS = (vlessTrojanFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
+    const outboundRules = outboundDomains.map(domain => `full:${domain}`);
+    const isOutboundRules = outboundRules.length > 0;
     const finalRemoteDNS = isWarp ? '1.1.1.1' : isWorkerLess ? 'https://cloudflare-dns.com/dns-query' : remoteDNS;
     const dohPattern = /^(?:[a-zA-Z]+:\/\/)?([^:\/\s?]+)/;
     const dohMatch = finalRemoteDNS.match(dohPattern);
@@ -3312,27 +3314,37 @@ async function buildXrayDNS (proxySettings, outboundDomains, isWorkerLess, isCha
 
     !isWorkerLess && dnsObject.servers.push({
         address: localDNS === 'localhost' ? '8.8.8.8' : localDNS,
-        domains: outboundDomains.map(domain => `full:${domain}`)
+        domains: outboundRules
     });
 
+    let localDNSServer = {
+        address: localDNS,
+        domains: [],
+        expectIPs: []
+    };
+
     if (!isWorkerLess && isBypass) {
-        let localDNSServer = {
-            address: localDNS,
-            domains: [],
-            expectIPs: []
-        };
         bypassLAN && localDNSServer.domains.push("geosite:private") && localDNSServer.expectIPs.push("geoip:private");
         bypassIran && localDNSServer.domains.push("geosite:category-ir") && localDNSServer.expectIPs.push("geoip:ir"); 
         bypassChina && localDNSServer.domains.push("geosite:cn") && localDNSServer.expectIPs.push("geoip:cn");
         bypassRussia && localDNSServer.domains.push("geosite:category-ru") && localDNSServer.expectIPs.push("geoip:ru");
         dnsObject.servers.push(localDNSServer);
-        isFakeDNS && dnsObject.servers.unshift({
-            address: "fakedns",
-            domains: localDNSServer.domains
-        })
     }
 
-    isFakeDNS && (!isBypass || isWorkerLess) && dnsObject.servers.unshift("fakedns");
+    if (isFakeDNS) { 
+        if ((isBypass || isOutboundRules) && !isWorkerLess) {
+            dnsObject.servers.unshift({
+                address: "fakedns",
+                domains: [
+                    ...localDNSServer.domains,
+                    ...outboundRules
+                ]
+            });
+        } else {
+            dnsObject.servers.unshift("fakedns");
+        }
+    }
+
     return dnsObject;
 }
 
@@ -3702,7 +3714,7 @@ async function buildXrayWorkerLessConfig(proxySettings) {
     delete fakeOutbound.streamSettings.sockopt;
     fakeOutbound.streamSettings.wsSettings.path = '/';
     let config = structuredClone(xrayConfigTemp);
-    config.dns = await buildXrayDNS(proxySettings, undefined, true);
+    config.dns = await buildXrayDNS(proxySettings, [], true);
     config.routing.rules = buildXrayRoutingRules(proxySettings, false, false, true, false);
     config.remarks  = '💦 BPB F - WorkerLess ⭐'
     const fragmentSettings = config.outbounds[0].settings;
@@ -3729,7 +3741,7 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
     let protocols = [];
     let chainProxy;
     let proxyIndex = 1;
-    let chainDnsServerIndex = 1;
+    let domainDnsServerIndex = 1;
     const bestFragValues = ['10-20', '20-30', '30-40', '40-50', '50-60', '60-70', 
                             '70-80', '80-90', '90-100', '10-30', '20-40', '30-50', 
                             '40-60', '50-70', '60-80', '70-90', '80-100', '100-200'];
@@ -3759,7 +3771,6 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
         const proxyParams = JSON.parse(outProxyParams);
         try {
             chainProxy = buildXrayChainOutbound(proxyParams);
-            vlessTrojanFakeDNS && chainDnsServerIndex++;
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
             chainProxy = undefined;
@@ -3770,7 +3781,8 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
             }));
         }
     }
-
+    
+    vlessTrojanFakeDNS && domainDnsServerIndex++;
     const Addresses = await getConfigAddresses(hostName, cleanIPs, enableIPv6);
     const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
     const totalAddresses = isFragment ? [...Addresses] : [...Addresses, ...customCdnAddresses];
@@ -3807,9 +3819,19 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
         totalPorts.forEach ( port =>  {
             totalAddresses.forEach ( addr => {
                 let customConfig = structuredClone(config);
-                isDomain(addr) 
-                    ? customConfig.dns.servers[1].domains = [`full:${addr}`]
-                    : customConfig.dns.servers.splice(1, 1);
+                const fakeDNSServer = customConfig.dns.servers[0];
+                if (isDomain(addr)) {
+                    customConfig.dns.servers[domainDnsServerIndex].domains = [`full:${addr}`];
+                    if (vlessTrojanFakeDNS && typeof fakeDNSServer === 'object') {
+                        fakeDNSServer.domains = fakeDNSServer.domains.filter(domain => !domain.includes('full') || domain === `full:${addr}`);
+                    }
+                } else {
+                    customConfig.dns.servers.splice(domainDnsServerIndex, 1);
+                    if (vlessTrojanFakeDNS && typeof fakeDNSServer === 'object') {
+                        fakeDNSServer.domains = fakeDNSServer.domains.filter(domain => !domain.includes('full'));
+                        if (fakeDNSServer.domains.length === 0) customConfig.dns.servers[0] = 'fakedns';
+                    }
+                }
                 const isCustomAddr = customCdnAddresses.includes(addr);
                 const configType = isCustomAddr ? 'C' : isFragment ? 'F' : '';
                 const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
@@ -3857,7 +3879,7 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
         ...resolvedHost.ipv4,
         ...resolvedHost.ipv6
     ];
-    bestFragment.dns.servers.splice(1, 1);
+    bestFragment.dns.servers.splice(domainDnsServerIndex, 1);
     bestFragment.remarks = '💦 BPB F - Best Fragment 😎';
     const fragment = bestFragment.outbounds.shift();
     let bestFragOutbounds = [];
@@ -3891,9 +3913,12 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
 
 async function getXrayWarpConfigs (proxySettings, warpConfigs, client) {
     let xrayWarpConfigs = [];
-    const { warpFakeDNS, bestWarpInterval } = proxySettings;
+    let domainDnsServerIndex = 1;
+    const { warpFakeDNS, warpEndpoints, bestWarpInterval } = proxySettings;
+    warpFakeDNS && domainDnsServerIndex++;
+    const domainAddressesRules = warpEndpoints.split(',').map(endpoint => endpoint.split(':')[0]).filter(address => isDomain(address));
     let config = structuredClone(xrayConfigTemp);
-    config.dns = await buildXrayDNS(proxySettings, false, false, true);
+    config.dns = await buildXrayDNS(proxySettings, domainAddressesRules, false, false, true);
     config.outbounds.splice(0,1);
     
     if (warpFakeDNS) {
@@ -3906,32 +3931,59 @@ async function getXrayWarpConfigs (proxySettings, warpConfigs, client) {
     let xrayWarpBestPing = structuredClone(config);    
     delete config.observatory;
     delete config.routing.balancers;
-    config.routing.rules = buildXrayRoutingRules(proxySettings, false, false, false, true);
+    config.routing.rules = buildXrayRoutingRules(proxySettings, true, false, false, true);
     xrayWarpBestPing.routing.rules = buildXrayRoutingRules(proxySettings, false, true, false, true);
     const proIndicator = client === 'nikang' ? ' Pro ' : ' ';
     xrayWarpBestPing.remarks = `💦 Warp${proIndicator}Best Ping 🚀`;
     xrayWarpBestPing.observatory.probeInterval = `${bestWarpInterval}s`;
     const xrayWarpOutbounds = await buildWarpOutbounds(client, proxySettings, warpConfigs);
     const xrayWoWOutbounds = await buildWoWOutbounds(client, proxySettings, warpConfigs);
-  
     xrayWarpOutbounds.forEach((outbound, index) => {
-        xrayWarpConfigs.push({
-            ...config,
-            remarks: `💦 Warp${proIndicator}${index + 1} 🇮🇷`,
-            outbounds: [{...outbound, tag: 'proxy'}, ...config.outbounds]
-        });
+        let warpConfig = structuredClone(config);
+        const endpoint = outbound.settings.peers[0].endpoint.split(':')[0];
+        const fakeDNSServer = warpConfig.dns.servers[0];
+        if (isDomain(endpoint)) {
+            warpConfig.dns.servers[domainDnsServerIndex].domains = [`full:${endpoint}`];
+            if (warpFakeDNS && typeof fakeDNSServer === 'object') {
+                fakeDNSServer.domains = fakeDNSServer.domains.filter(domain => !domain.includes('full') || domain === `full:${endpoint}`);
+            }
+        } else {
+            warpConfig.dns.servers.splice(domainDnsServerIndex, 1);
+            if (warpFakeDNS && typeof fakeDNSServer === 'object') {
+                fakeDNSServer.domains = fakeDNSServer.domains.filter(domain => !domain.includes('full'));
+                if (fakeDNSServer.domains.length === 0) warpConfig.dns.servers[0] = 'fakedns'; 
+            }
+        }    
+        warpConfig.remarks = `💦 Warp${proIndicator}${index + 1} 🇮🇷`;
+        warpConfig.routing.rules[warpConfig.routing.rules.length - 1].outboundTag = 'proxy';
+        warpConfig.outbounds.unshift({...outbound, tag: 'proxy'});  
+        xrayWarpConfigs.push(warpConfig);
     });
     
     let proxyIndex = 1;
     xrayWoWOutbounds.forEach((outbound, index) => {
+        let WoWConfig = structuredClone(config);
+        const endpoint = outbound.settings.peers[0].endpoint.split(':')[0];
+        const fakeDNSServer = WoWConfig.dns.servers[0];
+        if (isDomain(endpoint)) {
+            WoWConfig.dns.servers[domainDnsServerIndex].domains = [`full:${endpoint}`];
+            if (warpFakeDNS && typeof fakeDNSServer === 'object') {
+                fakeDNSServer.domains = fakeDNSServer.domains.filter(domain => !domain.includes('full') || domain === `full:${endpoint}`);
+            }
+        } else {
+            WoWConfig.dns.servers.splice(domainDnsServerIndex, 1);
+            if (warpFakeDNS && typeof fakeDNSServer === 'object') {
+                fakeDNSServer.domains = fakeDNSServer.domains.filter(domain => !domain.includes('full'));
+                if (fakeDNSServer.domains.length === 0) WoWConfig.dns.servers[0] = 'fakedns';
+            }
+        }
+
         if (outbound.tag === 'chain') {
-            let xrayWoWConfig = structuredClone(config);
             const chainOutbound = structuredClone(outbound);
             const proxyOutbound = structuredClone(xrayWoWOutbounds[index + 1]);
-            xrayWoWConfig.remarks = `💦 WoW${proIndicator}${proxyIndex} 🌍`;
-            xrayWoWConfig.routing.rules[xrayWoWConfig.routing.rules.length - 1].outboundTag = 'chain';
-            xrayWoWConfig.outbounds.unshift(chainOutbound, proxyOutbound);
-            xrayWarpConfigs.push(xrayWoWConfig);
+            WoWConfig.remarks = `💦 WoW${proIndicator}${proxyIndex} 🌍`;
+            WoWConfig.outbounds.unshift(chainOutbound, proxyOutbound);
+            xrayWarpConfigs.push(WoWConfig);
             outbound.tag = `chain-${proxyIndex}`;
             outbound.streamSettings.sockopt.dialerProxy = `prox-${proxyIndex}`;
         } else {
