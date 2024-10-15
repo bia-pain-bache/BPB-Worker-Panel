@@ -2229,10 +2229,10 @@ function renderHomePage (proxySettings, hostName, isPassSet) {
                             </div>
                         </td>
                         <td>
-                            <button onclick="openQR('https://${hostName}/fragsub/${userID}#BPB Fragment', 'Fragment Subscription')" style="margin-bottom: 8px;">
+                            <button onclick="openQR('https://${hostName}/fragsub/${userID}#BPB-Fragment', 'Fragment Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
-                            <button onclick="copyToClipboard('https://${hostName}/fragsub/${userID}#BPB Fragment', true)">
+                            <button onclick="copyToClipboard('https://${hostName}/fragsub/${userID}#BPB-Fragment', true)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
@@ -2330,10 +2330,10 @@ function renderHomePage (proxySettings, hostName, isPassSet) {
                             </div>
                         </td>
                         <td>
-                            <button onclick="openQR('https://${hostName}/warpsub/${userID}?app=clash#BPB-WARP', 'Warp Subscription')" style="margin-bottom: 8px;">
+                            <button onclick="openQR('https://${hostName}/warpsub/${userID}?app=clash#BPB-Warp', 'Warp Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
-                            <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID}?app=clash#BPB-WARP', false)">
+                            <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID}?app=clash#BPB-Warp', false)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
@@ -3338,7 +3338,7 @@ async function buildXrayDNS (proxySettings, outboundAddrs, domainToStaticIPs, is
         dnsObject.hosts["geosite:category-porn"] = ["127.0.0.1"];
     }
 
-    !isWorkerLess && isOutboundRule && !domainToStaticIPs && dnsObject.servers.push({
+    !isWorkerLess && isOutboundRule && dnsObject.servers.push({
         address: localDNS === 'localhost' ? '8.8.8.8' : localDNS,
         domains: outboundRules
     });
@@ -3373,9 +3373,9 @@ async function buildXrayDNS (proxySettings, outboundAddrs, domainToStaticIPs, is
     return dnsObject;
 }
 
-function buildXrayRoutingRules (proxySettings, outboundAddrs, isChain, isBalancer, isWorkerLess, isWarp) {
+function buildXrayRoutingRules (proxySettings, outboundAddrs, isChain, isBalancer, isWorkerLess) {
     const { localDNS, bypassLAN, bypassIran, bypassChina, bypassRussia, blockAds, blockPorn, blockUDP443 } = proxySettings;
-    const isBypass = bypassIran || bypassLAN || bypassChina || bypassRussia;
+    const isBypass = bypassIran || bypassChina || bypassRussia;
     const outboundDomains = outboundAddrs.filter(address => isDomain(address));
     const isOutboundRule = outboundDomains.length > 0;
     let rules = [
@@ -3438,7 +3438,7 @@ function buildXrayRoutingRules (proxySettings, outboundAddrs, isChain, isBalance
         rules.push(rule);
     }
 
-    blockUDP443 && isWarp && !isWorkerLess && rules.push({
+    blockUDP443 && rules.push({
         network: "udp",
         port: "443",
         outboundTag: "block",
@@ -3797,7 +3797,7 @@ async function buildXrayBestFragmentConfig(proxySettings, hostName, chainProxy, 
                             '40-60', '50-70', '60-80', '70-90', '80-100', '100-200'];
 
     let config = buildXrayConfig(proxySettings, '💦 BPB F - Best Fragment 😎', true, true, chainProxy, undefined, false);
-    config.dns = await buildXrayDNS(proxySettings, [hostName], hostName);
+    config.dns = await buildXrayDNS(proxySettings, [], hostName);
     config.routing.rules = buildXrayRoutingRules(proxySettings, [], chainProxy, true, false, false);
     const fragment = config.outbounds.shift();
     let bestFragOutbounds = [];
@@ -4031,8 +4031,7 @@ function buildClashRoutingRules (proxySettings, isWarp) {
     bypassIran && rules.push('GEOIP,ir,DIRECT,no-resolve');
     bypassChina && rules.push('GEOIP,cn,DIRECT,no-resolve');
     bypassRussia && rules.push('GEOIP,ru,DIRECT,no-resolve');
-    blockUDP443 && isWarp && rules.push('AND,((NETWORK,udp),(DST-PORT,443)),REJECT');
-    !isWarp && rules.push('NETWORK,udp,REJECT');
+    blockUDP443 && rules.push('AND,((NETWORK,udp),(DST-PORT,443)),REJECT');
     blockAds && rules.push('GEOSITE,category-ads-all,REJECT', 'GEOSITE,category-ads-ir,REJECT');
     blockPorn && rules.push('GEOSITE,category-porn,REJECT');
     rules.push('MATCH,✅ Selector');
@@ -4541,13 +4540,8 @@ function buildSingBoxRoutingRules (proxySettings, isWarp) {
         ip_is_private: true,
         outbound: "direct"
     });
-    
-    !isWarp && rules.push({
-        network: "udp",
-        outbound: "block"
-    });
 
-    blockUDP443 && isWarp && rules.push({
+    blockUDP443 && rules.push({
         network: "udp",
         port: 443,
         protocol: "quic",
