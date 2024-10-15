@@ -1239,7 +1239,7 @@ async function updateDataset (env, newSettings, resetSettings) {
     }
 
     const remoteDNSPattern = /^(?:[a-zA-Z]+:\/\/)?([^:\/\s?]+)/;
-    const remoteDNS = validateField('remoteDNS') ?? currentSettings?.remoteDNS;
+    const remoteDNS = validateField('remoteDNS') ?? currentSettings?.remoteDNS ?? 'https://8.8.8.8/dns-query';
     const serverMatch = remoteDNS.match(remoteDNSPattern);
     const remoteDNSServer = serverMatch ? serverMatch[1] : undefined;
     const isServerDomain = isDomain(remoteDNSServer);
@@ -1258,7 +1258,7 @@ async function updateDataset (env, newSettings, resetSettings) {
     } 
 
     const proxySettings = {
-        remoteDNS: remoteDNS ?? 'https://8.8.8.8/dns-query',
+        remoteDNS: remoteDNS,
         resolvedRemoteDNS: resolvedRemoteDNS ?? {},
         localDNS: validateField('localDNS') ?? currentSettings?.localDNS ?? '8.8.8.8',
         vlessTrojanFakeDNS: validateField('vlessTrojanFakeDNS') ?? currentSettings?.vlessTrojanFakeDNS ?? false,
@@ -1448,15 +1448,17 @@ function renderHomePage (proxySettings, hostName, isPassSet) {
     const isWarpPlus = warpPlusLicense ? true : false;
     let activeProtocols = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
     let httpPortsBlock = '', httpsPortsBlock = '';
+    const allPorts = [...(hostName.includes('workers.dev') ? defaultHttpPorts : []), ...defaultHttpsPorts];
 
-    [...defaultHttpPorts, ...defaultHttpsPorts].forEach(port => {
+    allPorts.forEach(port => {
         let id = `port-${port}`;
+        const isChecked = ports.includes(port) ? 'checked' : '';
         let portBlock = `
             <div class="routing" style="grid-template-columns: 1fr 2fr; margin-right: 10px;">
-                <input type="checkbox" id=${id} name=${port} onchange="handlePortChange(event)" value="true" ${ports.includes(port) ? 'checked' : ''}>
+                <input type="checkbox" id=${id} name=${port} onchange="handlePortChange(event)" value="true" ${isChecked}>
                 <label style="margin-bottom: 3px;" for=${id}>${port}</label>
             </div>`;
-        defaultHttpPorts.includes(port) ? httpPortsBlock += portBlock : httpsPortsBlock += portBlock;
+        defaultHttpsPorts.includes(port) ? httpsPortsBlock += portBlock : httpPortsBlock += portBlock;
     });
 
     const html = `
@@ -1636,7 +1638,6 @@ function renderHomePage (proxySettings, hostName, isPassSet) {
                 border-radius: 10px;
                 margin-bottom: 20px;
                 overflow: hidden;
-                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             }
             th, td { padding: 10px; border-bottom: 1px solid var(--border-color); }
             td div { display: flex; align-items: center; }
@@ -1852,7 +1853,7 @@ function renderHomePage (proxySettings, hostName, isPassSet) {
                                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;">${httpsPortsBlock}</div>
                                 </td>    
                             </tr>
-                            ${hostName.includes('pages.dev') ? '' : `<tr>
+                            ${!httpPortsBlock ? '' : `<tr>
                                 <td style="text-align: center; font-size: larger;"><b>Non TLS</b></td>
                                 <td>
                                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;">${httpPortsBlock}</div>
