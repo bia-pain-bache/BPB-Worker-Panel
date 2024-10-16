@@ -7818,7 +7818,7 @@ function buildClashWarpOutbound(remark, ipv6, privateKey, publicKey, endpoint, r
   };
 }
 function buildClashChainOutbound(chainProxyParams) {
-  if (chainProxyParams.protocol !== "vless") {
+  if (["socks", "http"].includes(chainProxyParams.protocol)) {
     const { protocol, host: host2, port: port2, user, pass } = chainProxyParams;
     const proxyType = protocol === "socks" ? "socks5" : protocol;
     return {
@@ -8372,7 +8372,7 @@ function buildSingBoxWarpOutbound(remark, ipv6, privateKey, publicKey, endpoint,
   };
 }
 function buildSingBoxChainOutbound(chainProxyParams) {
-  if (chainProxyParams.protocol !== "vless") {
+  if (["socks", "http"].includes(chainProxyParams.protocol)) {
     const { protocol, host: host2, port: port2, user, pass } = chainProxyParams;
     let chainOutbound2 = {
       type: protocol,
