@@ -7293,7 +7293,7 @@ function buildXrayWarpOutbound(remark, ipv6, privateKey, publicKey, endpoint, re
   return outbound;
 }
 function buildXrayChainOutbound(chainProxyParams) {
-  if (chainProxyParams.protocol !== "vless") {
+  if (["socks", "http"].includes(chainProxyParams.protocol)) {
     const { protocol, host: host2, port: port2, user, pass } = chainProxyParams;
     return {
       protocol,
