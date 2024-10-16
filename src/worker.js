@@ -2704,11 +2704,10 @@ function renderHomePage (proxySettings, hostName, isPassSet) {
                 return false;
             }
 
-            if (isCustomCdn && !(customCdnAddrs && customCdnHost && customCdnSni)) {
-                alert('⛔ All "Custom" fields should be filled! 🫤');               
+            if (isCustomCdn && !(customCdnAddrs.length > 0 && customCdnHost && customCdnSni)) {
+                alert('⛔ All "Custom" fields should be filled or deleted together! 🫤');               
                 return false;
             }
-
 
             try {
                 document.body.style.cursor = 'wait';

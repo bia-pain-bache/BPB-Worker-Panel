@@ -6469,11 +6469,10 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
                 return false;
             }
 
-            if (isCustomCdn && !(customCdnAddrs && customCdnHost && customCdnSni)) {
-                alert('\u26D4 All "Custom" fields should be filled! \u{1FAE4}');               
+            if (isCustomCdn && !(customCdnAddrs.length > 0 && customCdnHost && customCdnSni)) {
+                alert('\u26D4 All "Custom" fields should be filled or deleted together! \u{1FAE4}');               
                 return false;
             }
-
 
             try {
                 document.body.style.cursor = 'wait';
