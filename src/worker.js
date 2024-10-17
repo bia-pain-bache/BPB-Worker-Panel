@@ -3375,7 +3375,7 @@ function buildXrayRoutingRules (proxySettings, outboundAddrs, isChain, isBalance
         blockUDP443 
     } = proxySettings;
 
-    const isBypass = bypassIran || bypassChina || bypassRussia;
+    const isBypass = bypassIran || bypassChina || bypassRussia || bypassLAN;
     const outboundDomains = outboundAddrs.filter(address => isDomain(address));
     const isOutboundRule = outboundDomains.length > 0;
     let rules = [
@@ -3404,7 +3404,7 @@ function buildXrayRoutingRules (proxySettings, outboundAddrs, isChain, isBalance
         type: "field"
     });
 
-    if (isBypass) {
+    if (isBypass && !isWorkerLess) {
         let ipRule = {
             ip: [],
             outboundTag: "direct",
@@ -3417,13 +3417,11 @@ function buildXrayRoutingRules (proxySettings, outboundAddrs, isChain, isBalance
             type: "field",
         };
 
-        if (!isWorkerLess) {
-            bypassLAN && domainRule.domain.push("geosite:private") && ipRule.ip.push("geoip:private");
-            bypassIran && domainRule.domain.push("geosite:category-ir") && ipRule.ip.push("geoip:ir");
-            bypassChina && domainRule.domain.push("geosite:cn") && ipRule.ip.push("geoip:cn");
-            bypassRussia && domainRule.domain.push("geosite:category-ru") && ipRule.ip.push("geoip:ru");
-            rules.push(domainRule, ipRule);
-        }
+        bypassLAN && domainRule.domain.push("geosite:private") && ipRule.ip.push("geoip:private");
+        bypassIran && domainRule.domain.push("geosite:category-ir") && ipRule.ip.push("geoip:ir");
+        bypassChina && domainRule.domain.push("geosite:cn") && ipRule.ip.push("geoip:cn");
+        bypassRussia && domainRule.domain.push("geosite:category-ru") && ipRule.ip.push("geoip:ru");
+        rules.push(domainRule, ipRule);
     }
 
     blockUDP443 && rules.push({
