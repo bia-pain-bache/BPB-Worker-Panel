@@ -3289,19 +3289,21 @@ async function buildXrayDNS (proxySettings, outboundAddrs, domainToStaticIPs, is
     const outboundDomains = outboundAddrs.filter(address => isDomain(address));
     const isOutboundRule = outboundDomains.length > 0;
     const outboundRules = outboundDomains.map(domain => `full:${domain}`);
-    const finalRemoteDNS = isWarp ? '1.1.1.1' : isWorkerLess ? 'https://cloudflare-dns.com/dns-query' : remoteDNS;
-    const staticIPs = domainToStaticIPs ? await resolveDNS(domainToStaticIPs) : undefined;
-
+    const finalRemoteDNS = isWarp 
+        ? ['1.1.1.1', '1.0.0.1', '2606:4700:4700::1111', '2606:4700:4700::1001'] 
+        : isWorkerLess 
+            ? ['https://cloudflare-dns.com/dns-query']
+            : [remoteDNS];
+            
     let dnsObject = {
         hosts: {
             "domain:googleapis.cn": ["googleapis.com"]
         },
-        servers: [
-            finalRemoteDNS
-        ],
+        servers: finalRemoteDNS,
         tag: "dns",
     };
-
+            
+    const staticIPs = domainToStaticIPs ? await resolveDNS(domainToStaticIPs) : undefined;
     if (staticIPs) dnsObject.hosts[domainToStaticIPs] = [...staticIPs.ipv4, ...staticIPs.ipv6];
     if (resolvedRemoteDNS.server && !isWorkerLess && !isWarp) dnsObject.hosts[resolvedRemoteDNS.server] = resolvedRemoteDNS.staticIPs;
     if (isWorkerLess) {
@@ -3766,9 +3768,10 @@ function buildXrayConfig (proxySettings, remark, isFragment, isBalancer, isChain
         fragmentPackets 
     } = proxySettings;
 
+    const isFakeDNS = (vlessTrojanFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
     let config = structuredClone(xrayConfigTemp);
     config.remarks = remark;
-    if (vlessTrojanFakeDNS || warpFakeDNS) {
+    if (isFakeDNS) {
         config.inbounds[0].sniffing.destOverride.push("fakedns");
         config.inbounds[1].sniffing.destOverride.push("fakedns");
     } else {
@@ -4003,7 +4006,9 @@ async function buildClashDNS (proxySettings, isWarp) {
         bypassRussia 
     } = proxySettings;
 
-    const finalRemoteDNS = isWarp ? '1.1.1.1' : remoteDNS;
+    const finalRemoteDNS = isWarp 
+        ? ['1.1.1.1', '1.0.0.1', '2606:4700:4700::1111', '2606:4700:4700::1001'] 
+        : [remoteDNS];
     let clashLocalDNS = localDNS === 'localhost' ? 'system' : localDNS;
     const isFakeDNS = (vlessTrojanFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
 
@@ -4012,9 +4017,7 @@ async function buildClashDNS (proxySettings, isWarp) {
         "listen": "0.0.0.0:1053",
         "ipv6": true,
         "respect-rules": true,
-        "nameserver": [
-            finalRemoteDNS
-        ],
+        "nameserver": finalRemoteDNS,
         "proxy-server-nameserver": [clashLocalDNS]
     };
     
