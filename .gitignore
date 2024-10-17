@@ -6,4 +6,8 @@
 !location.json
 !_worker.js
 !docs/
-!docs/assets/images
+!docs/**
+!.github/
+!.github/**
+!src/
+!src/**
