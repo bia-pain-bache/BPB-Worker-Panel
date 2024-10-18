@@ -6863,139 +6863,15 @@ async function fetchWgConfig(env, proxySettings) {
   await env.bpb.put("warpConfigs", configs);
   return { error: null, configs };
 }
-async function buildWarpOutbounds(client, proxySettings, warpConfigs) {
-  let warpOutbounds = [];
-  const {
-    warpEndpoints,
-    nikaNGNoiseMode,
-    hiddifyNoiseMode,
-    noiseCountMin,
-    noiseCountMax,
-    noiseSizeMin,
-    noiseSizeMax,
-    noiseDelayMin,
-    noiseDelayMax
-  } = proxySettings;
-  const warpConfig = warpConfigs[0].account.config;
-  const warpIPv6 = `${warpConfig.interface.addresses.v6}/128`;
-  const reserved = warpConfig.client_id;
-  const publicKey = warpConfig.peers[0].public_key;
-  const privateKey = warpConfigs[0].privateKey;
-  const fakePackets = noiseCountMin === noiseCountMax ? noiseCountMin : `${noiseCountMin}-${noiseCountMax}`;
-  const wPayloadSize = noiseSizeMin === noiseSizeMax ? noiseSizeMin : `${noiseSizeMin}-${noiseSizeMax}`;
-  const wNoiseDelay = noiseDelayMin === noiseDelayMax ? noiseDelayMin : `${noiseDelayMin}-${noiseDelayMax}`;
-  const proIndicator = client === "hiddify" ? " Pro " : " ";
-  warpEndpoints.split(",").forEach((endpoint, index) => {
-    if (client === "xray" || client === "nikang") {
-      let xrayOutbound = buildXrayWarpOutbound(`proxy`, warpIPv6, privateKey, publicKey, endpoint, reserved, "");
-      client === "nikang" && Object.assign(xrayOutbound.settings, {
-        wnoise: nikaNGNoiseMode,
-        wnoisecount: fakePackets,
-        wpayloadsize: wPayloadSize,
-        wnoisedelay: wNoiseDelay
-      });
-      warpOutbounds.push(xrayOutbound);
-    }
-    if (client === "singbox" || client === "hiddify") {
-      let singboxOutbound = buildSingBoxWarpOutbound(
-        `\u{1F4A6} ${index + 1} - Warp${proIndicator}\u{1F1EE}\u{1F1F7}`,
-        warpIPv6,
-        privateKey,
-        publicKey,
-        endpoint,
-        reserved,
-        ""
-      );
-      client === "hiddify" && Object.assign(singboxOutbound, {
-        fake_packets_mode: hiddifyNoiseMode,
-        fake_packets: fakePackets,
-        fake_packets_size: wPayloadSize,
-        fake_packets_delay: wNoiseDelay
-      });
-      warpOutbounds.push(singboxOutbound);
-    }
-    if (client === "clash") {
-      let clashOutbound = buildClashWarpOutbound(`\u{1F4A6} ${index + 1} - Warp \u{1F1EE}\u{1F1F7}`, warpIPv6, privateKey, publicKey, endpoint, reserved, "");
-      warpOutbounds.push(clashOutbound);
-    }
-  });
-  return warpOutbounds;
-}
-async function buildWoWOutbounds(client, proxySettings, warpConfigs) {
-  let wowOutbounds = [];
-  const {
-    warpEndpoints,
-    nikaNGNoiseMode,
-    hiddifyNoiseMode,
-    noiseCountMin,
-    noiseCountMax,
-    noiseSizeMin,
-    noiseSizeMax,
-    noiseDelayMin,
-    noiseDelayMax
-  } = proxySettings;
-  warpEndpoints.split(",").forEach((endpoint, index) => {
-    for (let i = 0; i < 2; i++) {
-      const warpConfig = warpConfigs[i].account.config;
-      const warpIPv6 = `${warpConfig.interface.addresses.v6}/128`;
-      const reserved = warpConfig.client_id;
-      const publicKey = warpConfig.peers[0].public_key;
-      const privateKey = warpConfigs[i].privateKey;
-      const fakePackets = noiseCountMin === noiseCountMax ? noiseCountMin : `${noiseCountMin}-${noiseCountMax}`;
-      const wPayloadSize = noiseSizeMin === noiseSizeMax ? noiseSizeMin : `${noiseSizeMin}-${noiseSizeMax}`;
-      const wNoiseDelay = noiseDelayMin === noiseDelayMax ? noiseDelayMin : `${noiseDelayMin}-${noiseDelayMax}`;
-      const proIndicator = client === "hiddify" ? " Pro " : " ";
-      if (client === "xray" || client === "nikang") {
-        let xrayOutbound = buildXrayWarpOutbound(
-          i === 1 ? `proxy` : `chain`,
-          warpIPv6,
-          privateKey,
-          publicKey,
-          endpoint,
-          reserved,
-          i === 1 ? "" : `proxy`
-        );
-        client === "nikang" && i === 1 && Object.assign(xrayOutbound.settings, {
-          wnoise: nikaNGNoiseMode,
-          wnoisecount: fakePackets,
-          wpayloadsize: wPayloadSize,
-          wnoisedelay: wNoiseDelay
-        });
-        wowOutbounds.push(xrayOutbound);
-      }
-      if (client === "singbox" || client === "hiddify") {
-        let singboxOutbound = buildSingBoxWarpOutbound(
-          i === 1 ? `proxy-${index + 1}` : `\u{1F4A6} ${index + 1} - WoW${proIndicator}\u{1F30D}`,
-          warpIPv6,
-          privateKey,
-          publicKey,
-          endpoint,
-          reserved,
-          i === 0 ? `proxy-${index + 1}` : ""
-        );
-        client === "hiddify" && i === 1 && Object.assign(singboxOutbound, {
-          fake_packets_mode: hiddifyNoiseMode,
-          fake_packets: fakePackets,
-          fake_packets_size: wPayloadSize,
-          fake_packets_delay: wNoiseDelay
-        });
-        wowOutbounds.push(singboxOutbound);
-      }
-      if (client === "clash") {
-        let clashOutbound = buildClashWarpOutbound(
-          i === 1 ? `proxy-${index + 1}` : `\u{1F4A6} ${index + 1} - WoW \u{1F30D}`,
-          warpIPv6,
-          privateKey,
-          publicKey,
-          endpoint,
-          reserved,
-          i === 0 ? `proxy-${index + 1}` : ""
-        );
-        wowOutbounds.push(clashOutbound);
-      }
-    }
-  });
-  return wowOutbounds;
+function extractWireguardParams(warpConfigs, isWoW) {
+  const index = isWoW ? 1 : 0;
+  const warpConfig = warpConfigs[index].account.config;
+  return {
+    warpIPv6: `${warpConfig.interface.addresses.v6}/128`,
+    reserved: warpConfig.client_id,
+    publicKey: warpConfig.peers[0].public_key,
+    privateKey: warpConfigs[index].privateKey
+  };
 }
 async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isWorkerLess, isWarp) {
   const {
@@ -7015,7 +6891,7 @@ async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isW
   const outboundDomains = outboundAddrs.filter((address) => isDomain(address));
   const isOutboundRule = outboundDomains.length > 0;
   const outboundRules = outboundDomains.map((domain) => `full:${domain}`);
-  const finalRemoteDNS = isWarp ? ["1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001"] : isWorkerLess ? ["https://cloudflare-dns.com/dns-query"] : [remoteDNS];
+  const finalRemoteDNS = isWarp ? ["1.1.1.1", "1.0.0.1"] : isWorkerLess ? ["https://cloudflare-dns.com/dns-query"] : [remoteDNS];
   let dnsObject = {
     hosts: {
       "domain:googleapis.cn": ["googleapis.com"]
@@ -7258,13 +7134,28 @@ function buildXrayTrojanOutbound(tag2, address, port, host, sni, proxyIP2, isFra
   }
   return outbound;
 }
-function buildXrayWarpOutbound(remark, ipv6, privateKey, publicKey, endpoint, reserved, chain) {
+function buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, isChain, client) {
+  const {
+    nikaNGNoiseMode,
+    noiseCountMin,
+    noiseCountMax,
+    noiseSizeMin,
+    noiseSizeMax,
+    noiseDelayMin,
+    noiseDelayMax
+  } = proxySettings;
+  const {
+    warpIPv6,
+    reserved,
+    publicKey,
+    privateKey
+  } = extractWireguardParams(warpConfigs, isChain);
   let outbound = {
     protocol: "wireguard",
     settings: {
       address: [
         "172.16.0.2/32",
-        ipv6
+        warpIPv6
       ],
       mtu: 1280,
       peers: [
@@ -7279,14 +7170,20 @@ function buildXrayWarpOutbound(remark, ipv6, privateKey, publicKey, endpoint, re
     },
     streamSettings: {
       sockopt: {
-        dialerProxy: chain,
+        dialerProxy: "proxy",
         tcpKeepAliveIdle: 100,
         tcpNoDelay: true
       }
     },
-    tag: remark
+    tag: isChain ? "chain" : "proxy"
   };
-  !chain && delete outbound.streamSettings;
+  !isChain && delete outbound.streamSettings;
+  client === "nikang" && !isChain && Object.assign(outbound.settings, {
+    wnoise: nikaNGNoiseMode,
+    wnoisecount: noiseCountMin === noiseCountMax ? noiseCountMin : `${noiseCountMin}-${noiseCountMax}`,
+    wpayloadsize: noiseSizeMin === noiseSizeMax ? noiseSizeMin : `${noiseSizeMin}-${noiseSizeMax}`,
+    wnoisedelay: noiseDelayMin === noiseDelayMax ? noiseDelayMin : `${noiseDelayMin}-${noiseDelayMax}`
+  });
   return outbound;
 }
 function buildXrayChainOutbound(chainProxyParams) {
@@ -7624,38 +7521,34 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
 }
 async function getXrayWarpConfigs(proxySettings, warpConfigs, client) {
   let xrayWarpConfigs = [];
+  let xrayWoWConfigs = [];
+  let xrayWarpOutbounds = [];
+  let xrayWoWOutbounds = [];
   const { warpEndpoints } = proxySettings;
   const outboundDomains = warpEndpoints.split(",").map((endpoint) => endpoint.split(":")[0]).filter((address) => isDomain(address));
   const proIndicator = client === "nikang" ? " Pro " : " ";
-  const xrayWarpOutbounds = await buildWarpOutbounds(client, proxySettings, warpConfigs);
-  const xrayWoWOutbounds = await buildWoWOutbounds(client, proxySettings, warpConfigs);
-  for (const [index, outbound] of xrayWarpOutbounds.entries()) {
-    const endpoint = outbound.settings.peers[0].endpoint.split(":")[0];
-    const proxyOutbound = structuredClone(outbound);
+  for (const [index, endpoint] of warpEndpoints.split(",").entries()) {
+    const endpointHost = endpoint.split(":")[0];
     let warpConfig = buildXrayConfig(proxySettings, `\u{1F4A6} ${index + 1} - Warp${proIndicator}\u{1F1EE}\u{1F1F7}`, false, false, false, void 0, true);
-    warpConfig.dns = await buildXrayDNS(proxySettings, [endpoint], void 0, false, true);
-    warpConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpoint], false, false, false);
-    warpConfig.outbounds.unshift(proxyOutbound);
+    let WoWConfig = buildXrayConfig(proxySettings, `\u{1F4A6} ${index + 1} - WoW${proIndicator}\u{1F30D}`, false, false, true, void 0, true);
+    warpConfig.dns = WoWConfig.dns = await buildXrayDNS(proxySettings, [endpointHost], void 0, false, true);
+    warpConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpointHost], false, false, false);
+    WoWConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpointHost], true, false, false);
+    const warpOutbound = buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, false, client);
+    const WoWOutbound = buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, true, client);
+    warpOutbound.settings.peers[0].endpoint = endpoint;
+    WoWOutbound.settings.peers[0].endpoint = endpoint;
+    warpConfig.outbounds.unshift(warpOutbound);
+    WoWConfig.outbounds.unshift(WoWOutbound, warpOutbound);
     xrayWarpConfigs.push(warpConfig);
-    outbound.tag = `prox-${index + 1}`;
-  }
-  let proxyIndex = 1;
-  for (const [index, outbound] of xrayWoWOutbounds.entries()) {
-    const endpoint = outbound.settings.peers[0].endpoint.split(":")[0];
-    let WoWConfig = buildXrayConfig(proxySettings, `\u{1F4A6} ${proxyIndex} - WoW${proIndicator}\u{1F30D}`, false, false, true, void 0, true);
-    WoWConfig.dns = await buildXrayDNS(proxySettings, [endpoint], void 0, false, true);
-    WoWConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpoint], true, false, false);
-    if (outbound.tag === "chain") {
-      const chainOutbound = structuredClone(outbound);
-      const proxyOutbound = structuredClone(xrayWoWOutbounds[index + 1]);
-      WoWConfig.outbounds.unshift(chainOutbound, proxyOutbound);
-      xrayWarpConfigs.push(WoWConfig);
-      outbound.tag = `chain-${proxyIndex}`;
-      outbound.streamSettings.sockopt.dialerProxy = `prox-${proxyIndex}`;
-    } else {
-      outbound.tag = `prox-${proxyIndex}`;
-      proxyIndex++;
-    }
+    xrayWoWConfigs.push(WoWConfig);
+    const proxyOutbound = structuredClone(warpOutbound);
+    proxyOutbound.tag = `prox-${index + 1}`;
+    const chainOutbound = structuredClone(WoWOutbound);
+    chainOutbound.tag = `chain-${index + 1}`;
+    chainOutbound.streamSettings.sockopt.dialerProxy = `prox-${index + 1}`;
+    xrayWarpOutbounds.push(proxyOutbound);
+    xrayWoWOutbounds.push(chainOutbound);
   }
   const dnsObject = await buildXrayDNS(proxySettings, outboundDomains, void 0, false, true);
   let xrayWarpBestPing = buildXrayConfig(proxySettings, `\u{1F4A6} Warp${proIndicator}- Best Ping \u{1F680}`, false, true, false, void 0, true);
@@ -7665,9 +7558,8 @@ async function getXrayWarpConfigs(proxySettings, warpConfigs, client) {
   let xrayWoWBestPing = buildXrayConfig(proxySettings, `\u{1F4A6} WoW${proIndicator}- Best Ping \u{1F680}`, false, true, true, void 0, true);
   xrayWoWBestPing.dns = dnsObject;
   xrayWoWBestPing.routing.rules = buildXrayRoutingRules(proxySettings, outboundDomains, true, true, false);
-  xrayWoWBestPing.outbounds.unshift(...xrayWoWOutbounds);
-  xrayWarpConfigs.push(xrayWarpBestPing, xrayWoWBestPing);
-  return xrayWarpConfigs;
+  xrayWoWBestPing.outbounds.unshift(...xrayWoWOutbounds, ...xrayWarpOutbounds);
+  return [...xrayWarpConfigs, ...xrayWoWConfigs, xrayWarpBestPing, xrayWoWBestPing];
 }
 async function buildClashDNS(proxySettings, isWarp) {
   const {
@@ -7681,7 +7573,7 @@ async function buildClashDNS(proxySettings, isWarp) {
     bypassChina,
     bypassRussia
   } = proxySettings;
-  const finalRemoteDNS = isWarp ? ["1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001"] : [remoteDNS];
+  const finalRemoteDNS = isWarp ? ["1.1.1.1", "1.0.0.1"] : [remoteDNS];
   let clashLocalDNS = localDNS === "localhost" ? "system" : localDNS;
   const isFakeDNS = vlessTrojanFakeDNS && !isWarp || warpFakeDNS && isWarp;
   let dns = {
@@ -7792,16 +7684,22 @@ function buildClashTrojanOutbound(remark, address, port, host, sni, path, allowI
     "skip-cert-verify": allowInsecure
   };
 }
-function buildClashWarpOutbound(remark, ipv6, privateKey, publicKey, endpoint, reserved, chain) {
+function buildClashWarpOutbound(warpConfigs, remark, endpoint, chain) {
   const ipv6Regex = /\[(.*?)\]/;
   const portRegex = /[^:]*$/;
   const endpointServer = endpoint.includes("[") ? endpoint.match(ipv6Regex)[1] : endpoint.split(":")[0];
   const endpointPort = endpoint.includes("[") ? +endpoint.match(portRegex)[0] : +endpoint.split(":")[1];
+  const {
+    warpIPv6,
+    reserved,
+    publicKey,
+    privateKey
+  } = extractWireguardParams(warpConfigs, chain);
   return {
     "name": remark,
     "type": "wireguard",
     "ip": "172.16.0.2/32",
-    "ipv6": ipv6,
+    "ipv6": warpIPv6,
     "private-key": privateKey,
     "server": endpointServer,
     "port": endpointPort,
@@ -7890,6 +7788,7 @@ function buildClashChainOutbound(chainProxyParams) {
   return chainOutbound;
 }
 async function getClashWarpConfig(proxySettings, warpConfigs) {
+  const { warpEndpoints } = proxySettings;
   let config = structuredClone(clashConfigTemp);
   config.dns = await buildClashDNS(proxySettings, true);
   config.rules = buildClashRoutingRules(proxySettings);
@@ -7901,17 +7800,19 @@ async function getClashWarpConfig(proxySettings, warpConfigs) {
   config["proxy-groups"].push(structuredClone(warpUrlTest));
   const WoWUrlTest = config["proxy-groups"][2];
   WoWUrlTest.name = "\u{1F4A6} WoW - Best Ping \u{1F680}";
-  const clashWarpOutbounds = await buildWarpOutbounds("clash", proxySettings, warpConfigs);
-  const clashWOWpOutbounds = await buildWoWOutbounds("clash", proxySettings, warpConfigs);
-  config.proxies = [...clashWarpOutbounds, ...clashWOWpOutbounds];
-  clashWarpOutbounds.forEach((outbound) => {
-    selector.proxies.push(outbound["name"]);
-    warpUrlTest.proxies.push(outbound["name"]);
+  let warpRemarks = [], WoWRemarks = [];
+  warpEndpoints.split(",").forEach((endpoint, index) => {
+    const warpRemark = `\u{1F4A6} ${index + 1} - Warp \u{1F1EE}\u{1F1F7}`;
+    const WoWRemark = `\u{1F4A6} ${index + 1} - WoW \u{1F30D}`;
+    const warpOutbound = buildClashWarpOutbound(warpConfigs, warpRemark, endpoint, "");
+    const WoWOutbound = buildClashWarpOutbound(warpConfigs, WoWRemark, endpoint, warpRemark);
+    config.proxies.push(WoWOutbound, warpOutbound);
+    warpRemarks.push(warpRemark);
+    WoWRemarks.push(WoWRemark);
+    warpUrlTest.proxies.push(warpRemark);
+    WoWUrlTest.proxies.push(WoWRemark);
   });
-  clashWOWpOutbounds.forEach((outbound) => {
-    outbound["name"].includes("WoW") && selector.proxies.push(outbound["name"]);
-    outbound["name"].includes("WoW") && WoWUrlTest.proxies.push(outbound["name"]);
-  });
+  selector.proxies.push(...warpRemarks, ...WoWRemarks);
   return config;
 }
 async function getClashNormalConfig(env, proxySettings, hostName) {
@@ -8348,15 +8249,30 @@ function buildSingBoxTrojanOutbound(proxySettings, remark, address, port, host, 
     };
   return outbound;
 }
-function buildSingBoxWarpOutbound(remark, ipv6, privateKey, publicKey, endpoint, reserved, chain) {
+function buildSingBoxWarpOutbound(proxySettings, warpConfigs, remark, endpoint, chain, client) {
   const ipv6Regex = /\[(.*?)\]/;
   const portRegex = /[^:]*$/;
   const endpointServer = endpoint.includes("[") ? endpoint.match(ipv6Regex)[1] : endpoint.split(":")[0];
   const endpointPort = endpoint.includes("[") ? +endpoint.match(portRegex)[0] : +endpoint.split(":")[1];
-  return {
+  const {
+    hiddifyNoiseMode,
+    noiseCountMin,
+    noiseCountMax,
+    noiseSizeMin,
+    noiseSizeMax,
+    noiseDelayMin,
+    noiseDelayMax
+  } = proxySettings;
+  const {
+    warpIPv6,
+    reserved,
+    publicKey,
+    privateKey
+  } = extractWireguardParams(warpConfigs, chain);
+  let outbound = {
     local_address: [
       "172.16.0.2/32",
-      ipv6
+      warpIPv6
     ],
     mtu: 1280,
     peer_public_key: publicKey,
@@ -8368,6 +8284,13 @@ function buildSingBoxWarpOutbound(remark, ipv6, privateKey, publicKey, endpoint,
     detour: chain,
     tag: remark
   };
+  client === "hiddify" && Object.assign(outbound, {
+    fake_packets_mode: hiddifyNoiseMode,
+    fake_packets: noiseCountMin === noiseCountMax ? noiseCountMin : `${noiseCountMin}-${noiseCountMax}`,
+    fake_packets_size: noiseSizeMin === noiseSizeMax ? noiseSizeMin : `${noiseSizeMin}-${noiseSizeMax}`,
+    fake_packets_delay: noiseDelayMin === noiseDelayMax ? noiseDelayMin : `${noiseDelayMin}-${noiseDelayMax}`
+  });
+  return outbound;
 }
 function buildSingBoxChainOutbound(chainProxyParams) {
   if (["socks", "http"].includes(chainProxyParams.protocol)) {
@@ -8451,6 +8374,7 @@ function buildSingBoxChainOutbound(chainProxyParams) {
   return chainOutbound;
 }
 async function getSingBoxWarpConfig(proxySettings, warpConfigs, client) {
+  const { warpEndpoints } = proxySettings;
   let config = structuredClone(singboxConfigTemp);
   const dnsObject = buildSingBoxDNS(proxySettings, false, true);
   const { rules, rule_set } = buildSingBoxRoutingRules(proxySettings);
@@ -8462,27 +8386,27 @@ async function getSingBoxWarpConfig(proxySettings, warpConfigs, client) {
   config.route.rule_set = rule_set;
   const selector = config.outbounds[0];
   const warpUrlTest = config.outbounds[1];
-  const warpOutbounds = await buildWarpOutbounds(client, proxySettings, warpConfigs);
-  const WOWOutbounds = await buildWoWOutbounds(client, proxySettings, warpConfigs);
   const proIndicator = client === "hiddify" ? " Pro " : " ";
   selector.outbounds = [`\u{1F4A6} Warp${proIndicator}- Best Ping \u{1F680}`, `\u{1F4A6} WoW${proIndicator}- Best Ping \u{1F680}`];
   config.outbounds.splice(2, 0, structuredClone(warpUrlTest));
   const WoWUrlTest = config.outbounds[2];
   warpUrlTest.tag = `\u{1F4A6} Warp${proIndicator}- Best Ping \u{1F680}`;
-  WoWUrlTest.tag = `\u{1F4A6} WoW${proIndicator}- Best Ping \u{1F680}`;
-  config.outbounds.push(...warpOutbounds, ...WOWOutbounds);
-  warpOutbounds.forEach((outbound) => {
-    selector.outbounds.push(outbound.tag);
-    warpUrlTest.outbounds.push(outbound.tag);
-  });
-  WOWOutbounds.forEach((outbound) => {
-    if (outbound.tag.includes("WoW")) {
-      selector.outbounds.push(outbound.tag);
-      WoWUrlTest.outbounds.push(outbound.tag);
-    }
-  });
   warpUrlTest.interval = `${proxySettings.bestWarpInterval}s`;
+  WoWUrlTest.tag = `\u{1F4A6} WoW${proIndicator}- Best Ping \u{1F680}`;
   WoWUrlTest.interval = `${proxySettings.bestWarpInterval}s`;
+  let warpRemarks = [], WoWRemarks = [];
+  warpEndpoints.split(",").forEach((endpoint, index) => {
+    const warpRemark = `\u{1F4A6} ${index + 1} - Warp \u{1F1EE}\u{1F1F7}`;
+    const WoWRemark = `\u{1F4A6} ${index + 1} - WoW \u{1F30D}`;
+    const warpOutbound = buildSingBoxWarpOutbound(proxySettings, warpConfigs, warpRemark, endpoint, "", client);
+    const WoWOutbound = buildSingBoxWarpOutbound(proxySettings, warpConfigs, WoWRemark, endpoint, warpRemark, client);
+    config.outbounds.push(WoWOutbound, warpOutbound);
+    warpRemarks.push(warpRemark);
+    WoWRemarks.push(WoWRemark);
+    warpUrlTest.outbounds.push(warpRemark);
+    WoWUrlTest.outbounds.push(WoWRemark);
+  });
+  selector.outbounds.push(...warpRemarks, ...WoWRemarks);
   return config;
 }
 async function getSingBoxCustomConfig(env, proxySettings, hostName, client, isFragment) {
