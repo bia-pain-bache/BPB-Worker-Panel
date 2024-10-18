@@ -4093,7 +4093,7 @@ var defaultHttpsPorts = ["443", "8443", "2053", "2083", "2087", "2096"];
 var proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 var dohURL = "https://cloudflare-dns.com/dns-query";
 var hashPassword;
-var panelVersion = "2.6.9";
+var panelVersion = "2.7";
 var worker_default = {
   /**
    * @param {import("@cloudflare/workers-types").Request} request
@@ -6884,6 +6884,7 @@ async function buildWarpOutbounds(client, proxySettings, warpConfigs) {
   const fakePackets = noiseCountMin === noiseCountMax ? noiseCountMin : `${noiseCountMin}-${noiseCountMax}`;
   const wPayloadSize = noiseSizeMin === noiseSizeMax ? noiseSizeMin : `${noiseSizeMin}-${noiseSizeMax}`;
   const wNoiseDelay = noiseDelayMin === noiseDelayMax ? noiseDelayMin : `${noiseDelayMin}-${noiseDelayMax}`;
+  const proIndicator = client === "hiddify" ? " Pro " : " ";
   warpEndpoints.split(",").forEach((endpoint, index) => {
     if (client === "xray" || client === "nikang") {
       let xrayOutbound = buildXrayWarpOutbound(`proxy`, warpIPv6, privateKey, publicKey, endpoint, reserved, "");
@@ -6897,7 +6898,7 @@ async function buildWarpOutbounds(client, proxySettings, warpConfigs) {
     }
     if (client === "singbox" || client === "hiddify") {
       let singboxOutbound = buildSingBoxWarpOutbound(
-        client === "hiddify" ? `\u{1F4A6} Warp Pro ${index + 1} \u{1F1EE}\u{1F1F7}` : `\u{1F4A6} Warp ${index + 1} \u{1F1EE}\u{1F1F7}`,
+        `\u{1F4A6} ${index + 1} - Warp${proIndicator}\u{1F1EE}\u{1F1F7}`,
         warpIPv6,
         privateKey,
         publicKey,
@@ -6914,7 +6915,7 @@ async function buildWarpOutbounds(client, proxySettings, warpConfigs) {
       warpOutbounds.push(singboxOutbound);
     }
     if (client === "clash") {
-      let clashOutbound = buildClashWarpOutbound(`\u{1F4A6} Warp ${index + 1} \u{1F1EE}\u{1F1F7}`, warpIPv6, privateKey, publicKey, endpoint, reserved, "");
+      let clashOutbound = buildClashWarpOutbound(`\u{1F4A6} ${index + 1} - Warp \u{1F1EE}\u{1F1F7}`, warpIPv6, privateKey, publicKey, endpoint, reserved, "");
       warpOutbounds.push(clashOutbound);
     }
   });
@@ -6943,6 +6944,7 @@ async function buildWoWOutbounds(client, proxySettings, warpConfigs) {
       const fakePackets = noiseCountMin === noiseCountMax ? noiseCountMin : `${noiseCountMin}-${noiseCountMax}`;
       const wPayloadSize = noiseSizeMin === noiseSizeMax ? noiseSizeMin : `${noiseSizeMin}-${noiseSizeMax}`;
       const wNoiseDelay = noiseDelayMin === noiseDelayMax ? noiseDelayMin : `${noiseDelayMin}-${noiseDelayMax}`;
+      const proIndicator = client === "hiddify" ? " Pro " : " ";
       if (client === "xray" || client === "nikang") {
         let xrayOutbound = buildXrayWarpOutbound(
           i === 1 ? `proxy` : `chain`,
@@ -6963,7 +6965,7 @@ async function buildWoWOutbounds(client, proxySettings, warpConfigs) {
       }
       if (client === "singbox" || client === "hiddify") {
         let singboxOutbound = buildSingBoxWarpOutbound(
-          i === 1 ? `proxy-${index + 1}` : client === "hiddify" ? `\u{1F4A6} WoW Pro ${index + 1} \u{1F30D}` : `\u{1F4A6} WoW ${index + 1} \u{1F30D}`,
+          i === 1 ? `proxy-${index + 1}` : `\u{1F4A6} ${index + 1} - WoW${proIndicator}\u{1F30D}`,
           warpIPv6,
           privateKey,
           publicKey,
@@ -6981,7 +6983,7 @@ async function buildWoWOutbounds(client, proxySettings, warpConfigs) {
       }
       if (client === "clash") {
         let clashOutbound = buildClashWarpOutbound(
-          i === 1 ? `proxy-${index + 1}` : `\u{1F4A6} WoW ${index + 1} \u{1F30D}`,
+          i === 1 ? `proxy-${index + 1}` : `\u{1F4A6} ${index + 1} - WoW \u{1F30D}`,
           warpIPv6,
           privateKey,
           publicKey,
@@ -7549,7 +7551,6 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
   let outbounds = [];
   let protocols = [];
   let chainProxy;
-  let proxyIndex = 1;
   const {
     proxyIP: proxyIP2,
     outProxy,
@@ -7583,14 +7584,16 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
   const totalPorts = ports.filter((port) => isFragment ? defaultHttpsPorts.includes(port) : true);
   vlessConfigs && protocols.push("VLESS");
   trojanConfigs && protocols.push("Trojan");
+  let proxyIndex = 1;
   for (const protocol of protocols) {
+    let protocolIndex = 1;
     for (const port of totalPorts) {
       for (const addr of totalAddresses) {
         const isCustomAddr = customCdnAddresses.includes(addr);
         const configType = isCustomAddr ? "C" : isFragment ? "F" : "";
         const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
         const host = isCustomAddr ? customCdnHost : hostName;
-        const remark = generateRemark(proxyIndex, port, addr, cleanIPs, protocol, configType);
+        const remark = generateRemark(protocolIndex, port, addr, cleanIPs, protocol, configType);
         let customConfig = buildXrayConfig(proxySettings, remark, isFragment, false, chainProxy, void 0, false);
         customConfig.dns = await buildXrayDNS(proxySettings, [addr], void 0);
         customConfig.routing.rules = buildXrayRoutingRules(proxySettings, [addr], chainProxy, false, false);
@@ -7607,6 +7610,7 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
         outbounds.push(outbound);
         configs.push(customConfig);
         proxyIndex++;
+        protocolIndex++;
       }
     }
   }
@@ -7628,7 +7632,7 @@ async function getXrayWarpConfigs(proxySettings, warpConfigs, client) {
   for (const [index, outbound] of xrayWarpOutbounds.entries()) {
     const endpoint = outbound.settings.peers[0].endpoint.split(":")[0];
     const proxyOutbound = structuredClone(outbound);
-    let warpConfig = buildXrayConfig(proxySettings, `\u{1F4A6} Warp${proIndicator}${index + 1} \u{1F1EE}\u{1F1F7}`, false, false, false, void 0, true);
+    let warpConfig = buildXrayConfig(proxySettings, `\u{1F4A6} ${index + 1} - Warp${proIndicator}\u{1F1EE}\u{1F1F7}`, false, false, false, void 0, true);
     warpConfig.dns = await buildXrayDNS(proxySettings, [endpoint], void 0, false, true);
     warpConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpoint], false, false, false);
     warpConfig.outbounds.unshift(proxyOutbound);
@@ -7638,7 +7642,7 @@ async function getXrayWarpConfigs(proxySettings, warpConfigs, client) {
   let proxyIndex = 1;
   for (const [index, outbound] of xrayWoWOutbounds.entries()) {
     const endpoint = outbound.settings.peers[0].endpoint.split(":")[0];
-    let WoWConfig = buildXrayConfig(proxySettings, `\u{1F4A6} WoW${proIndicator}${proxyIndex} \u{1F30D}`, false, false, true, void 0, true);
+    let WoWConfig = buildXrayConfig(proxySettings, `\u{1F4A6} ${proxyIndex} - WoW${proIndicator}\u{1F30D}`, false, false, true, void 0, true);
     WoWConfig.dns = await buildXrayDNS(proxySettings, [endpoint], void 0, false, true);
     WoWConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpoint], true, false, false);
     if (outbound.tag === "chain") {
@@ -7654,11 +7658,11 @@ async function getXrayWarpConfigs(proxySettings, warpConfigs, client) {
     }
   }
   const dnsObject = await buildXrayDNS(proxySettings, outboundDomains, void 0, false, true);
-  let xrayWarpBestPing = buildXrayConfig(proxySettings, `\u{1F4A6} Warp${proIndicator}Best Ping \u{1F680}`, false, true, false, void 0, true);
+  let xrayWarpBestPing = buildXrayConfig(proxySettings, `\u{1F4A6} Warp${proIndicator}- Best Ping \u{1F680}`, false, true, false, void 0, true);
   xrayWarpBestPing.dns = dnsObject;
   xrayWarpBestPing.routing.rules = buildXrayRoutingRules(proxySettings, outboundDomains, false, true, false);
   xrayWarpBestPing.outbounds.unshift(...xrayWarpOutbounds);
-  let xrayWoWBestPing = buildXrayConfig(proxySettings, `\u{1F4A6} WoW${proIndicator}Best Ping \u{1F680}`, false, true, true, void 0, true);
+  let xrayWoWBestPing = buildXrayConfig(proxySettings, `\u{1F4A6} WoW${proIndicator}- Best Ping \u{1F680}`, false, true, true, void 0, true);
   xrayWoWBestPing.dns = dnsObject;
   xrayWoWBestPing.routing.rules = buildXrayRoutingRules(proxySettings, outboundDomains, true, true, false);
   xrayWoWBestPing.outbounds.unshift(...xrayWoWOutbounds);
@@ -7891,12 +7895,12 @@ async function getClashWarpConfig(proxySettings, warpConfigs) {
   config.rules = buildClashRoutingRules(proxySettings);
   const selector = config["proxy-groups"][0];
   const warpUrlTest = config["proxy-groups"][1];
-  selector.proxies = ["\u{1F4A6} Warp Best Ping \u{1F680}", "\u{1F4A6} WoW Best Ping \u{1F680}"];
-  warpUrlTest.name = "\u{1F4A6} Warp Best Ping \u{1F680}";
+  selector.proxies = ["\u{1F4A6} Warp - Best Ping \u{1F680}", "\u{1F4A6} WoW - Best Ping \u{1F680}"];
+  warpUrlTest.name = "\u{1F4A6} Warp - Best Ping \u{1F680}";
   warpUrlTest.interval = +proxySettings.bestWarpInterval;
   config["proxy-groups"].push(structuredClone(warpUrlTest));
   const WoWUrlTest = config["proxy-groups"][2];
-  WoWUrlTest.name = "\u{1F4A6} WoW Best Ping \u{1F680}";
+  WoWUrlTest.name = "\u{1F4A6} WoW - Best Ping \u{1F680}";
   const clashWarpOutbounds = await buildWarpOutbounds("clash", proxySettings, warpConfigs);
   const clashWOWpOutbounds = await buildWoWOutbounds("clash", proxySettings, warpConfigs);
   config.proxies = [...clashWarpOutbounds, ...clashWOWpOutbounds];
@@ -7911,7 +7915,6 @@ async function getClashWarpConfig(proxySettings, warpConfigs) {
   return config;
 }
 async function getClashNormalConfig(env, proxySettings, hostName) {
-  let remark, path;
   let chainProxy;
   const {
     cleanIPs,
@@ -7952,12 +7955,13 @@ async function getClashNormalConfig(env, proxySettings, hostName) {
   const Addresses = await getConfigAddresses(hostName, cleanIPs, enableIPv6);
   const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(",") : [];
   const totalAddresses = [...Addresses, ...customCdnAddresses];
-  let proxyIndex = 1;
+  let proxyIndex = 1, path;
   const protocols = [
     ...vlessConfigs ? ["VLESS"] : [],
     ...trojanConfigs ? ["Trojan"] : []
   ];
   protocols.forEach((protocol) => {
+    let protocolIndex = 1;
     ports.forEach((port) => {
       totalAddresses.forEach((addr) => {
         let VLESSOutbound, TrojanOutbound;
@@ -7965,8 +7969,8 @@ async function getClashNormalConfig(env, proxySettings, hostName) {
         const configType = isCustomAddr ? "C" : "";
         const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
         const host = isCustomAddr ? customCdnHost : hostName;
+        const remark = generateRemark(protocolIndex, port, addr, cleanIPs, protocol, configType).replace(" : ", " - ");
         if (protocol === "VLESS") {
-          remark = generateRemark(proxyIndex, port, addr, cleanIPs, protocol, configType).replace(" : ", " - ");
           path = `/${getRandomPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}`;
           VLESSOutbound = buildClashVLESSOutbound(
             chainProxy ? `proxy-${proxyIndex}` : remark,
@@ -7982,7 +7986,6 @@ async function getClashNormalConfig(env, proxySettings, hostName) {
           urlTest.proxies.push(remark);
         }
         if (protocol === "Trojan" && defaultHttpsPorts.includes(port)) {
-          remark = generateRemark(proxyIndex, port, addr, cleanIPs, protocol, configType).replace(" : ", " - ");
           path = `/tr${getRandomPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}`;
           TrojanOutbound = buildClashTrojanOutbound(
             chainProxy ? `proxy-${proxyIndex}` : remark,
@@ -8004,6 +8007,7 @@ async function getClashNormalConfig(env, proxySettings, hostName) {
           config.proxies.push(chain);
         }
         proxyIndex++;
+        protocolIndex++;
       });
     });
   });
@@ -8461,11 +8465,11 @@ async function getSingBoxWarpConfig(proxySettings, warpConfigs, client) {
   const warpOutbounds = await buildWarpOutbounds(client, proxySettings, warpConfigs);
   const WOWOutbounds = await buildWoWOutbounds(client, proxySettings, warpConfigs);
   const proIndicator = client === "hiddify" ? " Pro " : " ";
-  selector.outbounds = [`\u{1F4A6} Warp${proIndicator}Best Ping \u{1F680}`, `\u{1F4A6} WoW${proIndicator}Best Ping \u{1F680}`];
+  selector.outbounds = [`\u{1F4A6} Warp${proIndicator}- Best Ping \u{1F680}`, `\u{1F4A6} WoW${proIndicator}- Best Ping \u{1F680}`];
   config.outbounds.splice(2, 0, structuredClone(warpUrlTest));
   const WoWUrlTest = config.outbounds[2];
-  warpUrlTest.tag = `\u{1F4A6} Warp${proIndicator}Best Ping \u{1F680}`;
-  WoWUrlTest.tag = `\u{1F4A6} WoW${proIndicator}Best Ping \u{1F680}`;
+  warpUrlTest.tag = `\u{1F4A6} Warp${proIndicator}- Best Ping \u{1F680}`;
+  WoWUrlTest.tag = `\u{1F4A6} WoW${proIndicator}- Best Ping \u{1F680}`;
   config.outbounds.push(...warpOutbounds, ...WOWOutbounds);
   warpOutbounds.forEach((outbound) => {
     selector.outbounds.push(outbound.tag);
@@ -8529,13 +8533,13 @@ async function getSingBoxCustomConfig(env, proxySettings, hostName, client, isFr
   const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(",") : [];
   const totalAddresses = [...Addresses, ...customCdnAddresses];
   const totalPorts = ports.filter((port) => isFragment ? defaultHttpsPorts.includes(port) : true);
-  let remark;
   let proxyIndex = 1;
   const protocols = [
     ...vlessConfigs ? ["VLESS"] : [],
     ...trojanConfigs ? ["Trojan"] : []
   ];
   protocols.forEach((protocol) => {
+    let protocolIndex = 1;
     totalPorts.forEach((port) => {
       totalAddresses.forEach((addr) => {
         let VLESSOutbound, TrojanOutbound;
@@ -8543,8 +8547,8 @@ async function getSingBoxCustomConfig(env, proxySettings, hostName, client, isFr
         const configType = isCustomAddr ? "C" : isFragment ? "F" : "";
         const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
         const host = isCustomAddr ? customCdnHost : hostName;
+        const remark = generateRemark(protocolIndex, port, addr, cleanIPs, protocol, configType);
         if (protocol === "VLESS") {
-          remark = generateRemark(proxyIndex, port, addr, cleanIPs, protocol, configType);
           VLESSOutbound = buildSingBoxVLESSOutbound(
             proxySettings,
             chainProxyOutbound ? `proxy-${proxyIndex}` : remark,
@@ -8558,7 +8562,6 @@ async function getSingBoxCustomConfig(env, proxySettings, hostName, client, isFr
           config.outbounds.push(VLESSOutbound);
         }
         if (protocol === "Trojan") {
-          remark = generateRemark(proxyIndex, port, addr, cleanIPs, protocol, configType);
           TrojanOutbound = buildSingBoxTrojanOutbound(
             proxySettings,
             chainProxyOutbound ? `proxy-${proxyIndex}` : remark,
@@ -8580,6 +8583,7 @@ async function getSingBoxCustomConfig(env, proxySettings, hostName, client, isFr
         selector.outbounds.push(remark);
         urlTest.outbounds.push(remark);
         proxyIndex++;
+        protocolIndex++;
       });
     });
   });
@@ -8603,7 +8607,6 @@ async function getNormalConfigs(proxySettings, hostName, client) {
   const Addresses = await getConfigAddresses(hostName, cleanIPs, enableIPv6);
   const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(",") : [];
   const totalAddresses = [...Addresses, ...customCdnAddresses];
-  const totalCount = totalAddresses.length * ports.length;
   const alpn = client === "singbox" ? "http/1.1" : "h2,http/1.1";
   const trojanPass = encodeURIComponent(trojanPassword);
   const earlyData = client === "singbox" ? "&eh=Sec-WebSocket-Protocol&ed=2560" : encodeURIComponent("?ed=2560");
@@ -8614,9 +8617,8 @@ async function getNormalConfigs(proxySettings, hostName, client) {
       const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
       const host = isCustomAddr ? customCdnHost : hostName;
       const path = `${getRandomPath(16)}${proxyIP2 ? `/${encodeURIComponent(btoa(proxyIP2))}` : ""}${earlyData}`;
-      const trojanIndex = vlessConfigs ? proxyIndex + totalCount : proxyIndex;
       const vlessRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, "VLESS", configType));
-      const trojanRemark = encodeURIComponent(generateRemark(trojanIndex, port, addr, cleanIPs, "Trojan", configType));
+      const trojanRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, "Trojan", configType));
       const tlsFields = defaultHttpsPorts.includes(port) ? `&security=tls&sni=${sni}&fp=randomized&alpn=${alpn}` : "&security=none";
       if (vlessConfigs) {
         vlessConfs += `${atob("dmxlc3M")}://${userID}@${addr}:${port}?path=/${path}&encryption=none&host=${host}&type=ws${tlsFields}#${vlessRemark}
