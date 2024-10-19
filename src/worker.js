@@ -1719,7 +1719,7 @@ function renderHomePage (proxySettings, hostName, isPassSet) {
         </style>
     </head>
     <body>
-        <h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
+        <h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> </h1>
         <div class="form-container">
             <form id="configForm">
                 <details open>
