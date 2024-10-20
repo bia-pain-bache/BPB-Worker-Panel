@@ -4093,7 +4093,7 @@ var defaultHttpsPorts = ["443", "8443", "2053", "2083", "2087", "2096"];
 var proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 var dohURL = "https://cloudflare-dns.com/dns-query";
 var hashPassword;
-var panelVersion = "2.7";
+var panelVersion = "2.7.1";
 var worker_default = {
   /**
    * @param {import("@cloudflare/workers-types").Request} request
@@ -4994,16 +4994,17 @@ async function updateDataset(env, newSettings, resetSettings) {
     return fieldValue;
   };
   const remoteDNS = validateField("remoteDNS") ?? currentSettings?.remoteDNS ?? "https://8.8.8.8/dns-query";
+  const enableIPv6 = validateField("enableIPv6") ?? currentSettings?.enableIPv6 ?? true;
   const url = new URL(remoteDNS);
   const remoteDNSServer = url.hostname;
   const isServerDomain = isDomain(remoteDNSServer);
-  let resolvedRemoteDNS;
+  let resolvedRemoteDNS = {};
   if (isServerDomain) {
     try {
       const resolvedDomain = await resolveDNS(remoteDNSServer);
       resolvedRemoteDNS = {
         server: remoteDNSServer,
-        staticIPs: [...resolvedDomain.ipv4, ...resolvedDomain.ipv6]
+        staticIPs: enableIPv6 ? [...resolvedDomain.ipv4, ...resolvedDomain.ipv6] : resolvedDomain.ipv4
       };
     } catch (error) {
       console.log(error);
@@ -5012,14 +5013,14 @@ async function updateDataset(env, newSettings, resetSettings) {
   }
   const proxySettings = {
     remoteDNS,
-    resolvedRemoteDNS: resolvedRemoteDNS ?? {},
+    resolvedRemoteDNS,
     localDNS: validateField("localDNS") ?? currentSettings?.localDNS ?? "8.8.8.8",
     vlessTrojanFakeDNS: validateField("vlessTrojanFakeDNS") ?? currentSettings?.vlessTrojanFakeDNS ?? false,
     proxyIP: validateField("proxyIP")?.trim() ?? currentSettings?.proxyIP ?? "",
     outProxy: validateField("outProxy") ?? currentSettings?.outProxy ?? "",
     outProxyParams: extractChainProxyParams(validateField("outProxy")) ?? currentSettings?.outProxyParams ?? "",
     cleanIPs: validateField("cleanIPs")?.replaceAll(" ", "") ?? currentSettings?.cleanIPs ?? "",
-    enableIPv6: validateField("enableIPv6") ?? currentSettings?.enableIPv6 ?? true,
+    enableIPv6,
     customCdnAddrs: validateField("customCdnAddrs")?.replaceAll(" ", "") ?? currentSettings?.customCdnAddrs ?? "",
     customCdnHost: validateField("customCdnHost")?.trim() ?? currentSettings?.customCdnHost ?? "",
     customCdnSni: validateField("customCdnSni")?.trim() ?? currentSettings?.customCdnSni ?? "",
@@ -5041,6 +5042,7 @@ async function updateDataset(env, newSettings, resetSettings) {
     blockUDP443: validateField("block-udp-443") ?? currentSettings?.blockUDP443 ?? false,
     warpEndpoints: validateField("warpEndpoints")?.replaceAll(" ", "") ?? currentSettings?.warpEndpoints ?? "engage.cloudflareclient.com:2408",
     warpFakeDNS: validateField("warpFakeDNS") ?? currentSettings?.warpFakeDNS ?? false,
+    warpEnableIPv6: validateField("warpEnableIPv6") ?? currentSettings?.warpEnableIPv6 ?? true,
     warpPlusLicense: validateField("warpPlusLicense") ?? currentSettings?.warpPlusLicense ?? "",
     bestWarpInterval: validateField("bestWarpInterval") ?? currentSettings?.bestWarpInterval ?? "30",
     hiddifyNoiseMode: validateField("hiddifyNoiseMode") ?? currentSettings?.hiddifyNoiseMode ?? "m4",
@@ -5155,6 +5157,7 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
     fragmentPackets,
     warpEndpoints,
     warpFakeDNS,
+    warpEnableIPv6,
     warpPlusLicense,
     bestWarpInterval,
     hiddifyNoiseMode,
@@ -5530,7 +5533,7 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
                         </a>
                     </div>
                     <div class="form-control">
-                        <label for="enableIPv6">\u{1F51B} IPv6 Configs</label>
+                        <label for="enableIPv6">\u{1F51B} IPv6</label>
                         <div class="input-with-select">
                             <select id="enableIPv6" name="enableIPv6">
                                 <option value="true" ${enableIPv6 ? "selected" : ""}>Enabled</option>
@@ -5639,6 +5642,15 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
                             <select id="warpFakeDNS" name="warpFakeDNS">
                                 <option value="true" ${warpFakeDNS ? "selected" : ""}>Enabled</option>
                                 <option value="false" ${!warpFakeDNS ? "selected" : ""}>Disabled</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-control">
+                        <label for="warpEnableIPv6">\u{1F51B} IPv6</label>
+                        <div class="input-with-select">
+                            <select id="warpEnableIPv6" name="warpEnableIPv6">
+                                <option value="true" ${warpEnableIPv6 ? "selected" : ""}>Enabled</option>
+                                <option value="false" ${!warpEnableIPv6 ? "selected" : ""}>Disabled</option>
                             </select>
                         </div>
                     </div>
@@ -6879,7 +6891,9 @@ async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isW
     resolvedRemoteDNS,
     localDNS,
     vlessTrojanFakeDNS,
+    enableIPv6,
     warpFakeDNS,
+    warpEnableIPv6,
     blockAds,
     bypassIran,
     bypassChina,
@@ -6888,20 +6902,23 @@ async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isW
   } = proxySettings;
   const isBypass = bypassIran || bypassChina || bypassRussia;
   const isFakeDNS = vlessTrojanFakeDNS && !isWarp || warpFakeDNS && isWarp;
+  const isIPv62 = enableIPv6 && !isWarp || warpEnableIPv6 && isWarp;
   const outboundDomains = outboundAddrs.filter((address) => isDomain(address));
   const isOutboundRule = outboundDomains.length > 0;
   const outboundRules = outboundDomains.map((domain) => `full:${domain}`);
-  const finalRemoteDNS = isWarp ? ["1.1.1.1", "1.0.0.1"] : isWorkerLess ? ["https://cloudflare-dns.com/dns-query"] : [remoteDNS];
+  const warpRemoteDNS = warpEnableIPv6 ? ["1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001"] : ["1.1.1.1", "1.0.0.1"];
+  const finalRemoteDNS = isWarp ? warpRemoteDNS : isWorkerLess ? ["https://cloudflare-dns.com/dns-query"] : [remoteDNS];
   let dnsObject = {
     hosts: {
       "domain:googleapis.cn": ["googleapis.com"]
     },
     servers: finalRemoteDNS,
+    queryStrategy: isIPv62 ? "UseIP" : "UseIPv4",
     tag: "dns"
   };
   const staticIPs = domainToStaticIPs ? await resolveDNS(domainToStaticIPs) : void 0;
   if (staticIPs)
-    dnsObject.hosts[domainToStaticIPs] = [...staticIPs.ipv4, ...staticIPs.ipv6];
+    dnsObject.hosts[domainToStaticIPs] = enableIPv6 ? [...staticIPs.ipv4, ...staticIPs.ipv6] : staticIPs.ipv4;
   if (resolvedRemoteDNS.server && !isWorkerLess && !isWarp)
     dnsObject.hosts[resolvedRemoteDNS.server] = resolvedRemoteDNS.staticIPs;
   if (isWorkerLess) {
@@ -7341,7 +7358,9 @@ function buildXrayChainOutbound(chainProxyParams) {
 function buildXrayConfig(proxySettings, remark, isFragment, isBalancer, isChain, balancerFallback, isWarp) {
   const {
     vlessTrojanFakeDNS,
+    enableIPv6,
     warpFakeDNS,
+    warpEnableIPv6,
     bestVLESSTrojanInterval,
     bestWarpInterval,
     lengthMin,
@@ -7351,11 +7370,13 @@ function buildXrayConfig(proxySettings, remark, isFragment, isBalancer, isChain,
     fragmentPackets
   } = proxySettings;
   const isFakeDNS = vlessTrojanFakeDNS && !isWarp || warpFakeDNS && isWarp;
+  const isIPv62 = enableIPv6 && !isWarp || warpEnableIPv6 && isWarp;
   let config = structuredClone(xrayConfigTemp);
   config.remarks = remark;
   if (isFakeDNS) {
     config.inbounds[0].sniffing.destOverride.push("fakedns");
     config.inbounds[1].sniffing.destOverride.push("fakedns");
+    !isIPv62 && config.fakedns.pop();
   } else {
     delete config.fakedns;
   }
@@ -7567,21 +7588,24 @@ async function buildClashDNS(proxySettings, isWarp) {
     resolvedRemoteDNS,
     localDNS,
     vlessTrojanFakeDNS,
+    enableIPv6,
     warpFakeDNS,
+    warpEnableIPv6,
     bypassLAN,
     bypassIran,
     bypassChina,
     bypassRussia
   } = proxySettings;
-  const finalRemoteDNS = isWarp ? ["1.1.1.1", "1.0.0.1"] : [remoteDNS];
+  const warpRemoteDNS = warpEnableIPv6 ? ["1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001"] : ["1.1.1.1", "1.0.0.1"];
   let clashLocalDNS = localDNS === "localhost" ? "system" : localDNS;
   const isFakeDNS = vlessTrojanFakeDNS && !isWarp || warpFakeDNS && isWarp;
+  const isIPv62 = enableIPv6 && !isWarp || warpEnableIPv6 && isWarp;
   let dns = {
     "enable": true,
     "listen": "0.0.0.0:1053",
-    "ipv6": true,
+    "ipv6": isIPv62,
     "respect-rules": true,
-    "nameserver": finalRemoteDNS,
+    "nameserver": isWarp ? warpRemoteDNS : [remoteDNS],
     "proxy-server-nameserver": [clashLocalDNS]
   };
   if (resolvedRemoteDNS.server && !isWarp) {
@@ -7919,7 +7943,9 @@ function buildSingBoxDNS(proxySettings, isChain, isWarp) {
     remoteDNS,
     localDNS,
     vlessTrojanFakeDNS,
+    enableIPv6,
     warpFakeDNS,
+    warpEnableIPv6,
     bypassIran,
     bypassChina,
     bypassRussia,
@@ -7928,17 +7954,18 @@ function buildSingBoxDNS(proxySettings, isChain, isWarp) {
   } = proxySettings;
   let fakeip;
   const isFakeDNS = vlessTrojanFakeDNS && !isWarp || warpFakeDNS && isWarp;
+  const isIPv62 = enableIPv6 && !isWarp || warpEnableIPv6 && isWarp;
   const servers = [
     {
       address: isWarp ? "1.1.1.1" : remoteDNS,
       address_resolver: "dns-direct",
-      strategy: "prefer_ipv4",
+      strategy: isIPv62 ? "prefer_ipv4" : "ipv4_only",
       detour: isChain ? "proxy-1" : "proxy",
       tag: "dns-remote"
     },
     {
       address: localDNS === "localhost" ? "local" : localDNS,
-      strategy: "prefer_ipv4",
+      strategy: isIPv62 ? "prefer_ipv4" : "ipv4_only",
       detour: "direct",
       tag: "dns-direct"
     },
@@ -7991,9 +8018,10 @@ function buildSingBoxDNS(proxySettings, isChain, isWarp) {
     });
     fakeip = {
       enabled: true,
-      inet4_range: "198.18.0.0/15",
-      inet6_range: "fc00::/18"
+      inet4_range: "198.18.0.0/15"
     };
+    if (isIPv62)
+      fakeip.inet6_range = "fc00::/18";
   }
   return { servers, rules, fakeip };
 }
