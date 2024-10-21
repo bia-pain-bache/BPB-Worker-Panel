@@ -189,7 +189,7 @@ export default {
                         
                         if (pwd && !isAuth) return Response.redirect(`${url.origin}/login`, 302);
                         const isPassSet = pwd?.length >= 8;
-                        const homePage = renderHomePage(settings, host, isPassSet);
+                        const homePage = renderHomePage(request, settings, host, isPassSet);
                         return new Response(homePage, {
                             status: 200,
                             headers: {
@@ -199,7 +199,9 @@ export default {
                                 'Access-Control-Allow-Headers': 'Content-Type, Authorization',
                                 'X-Content-Type-Options': 'nosniff',
                                 'X-Frame-Options': 'DENY',
-                                'Referrer-Policy': 'strict-origin-when-cross-origin'
+                                'Referrer-Policy': 'strict-origin-when-cross-origin',
+                                'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                                'CDN-Cache-Control': 'no-store'
                             }
                         });
                                                       
@@ -1366,7 +1368,7 @@ async function Authenticate (request, env) {
     }
 }
 
-function renderHomePage (proxySettings, hostName, isPassSet) {
+function renderHomePage (request, proxySettings, hostName, isPassSet) {
     const {
         remoteDNS, 
         localDNS,
@@ -1705,6 +1707,9 @@ function renderHomePage (proxySettings, hostName, isPassSet) {
             .input-with-select { width: 100%; }
             body.dark-mode .floating-button { background-color: var(--color); }
             body.dark-mode .floating-button:hover { transform: scale(1.1); }
+            #ips th { background-color: var(--hr-text-color); color: var(--background-color); width: unset; }
+            #ips td { background-color: unset; }
+            #ips td:first-child { background-color: var(--table-active-color); }
             @media only screen and (min-width: 768px) {
                 .form-container { max-width: 70%; }
                 .form-control { 
@@ -2390,6 +2395,31 @@ function renderHomePage (proxySettings, hostName, isPassSet) {
                 </div>
             </div>
             <hr>
+            <h2>YOUR IP 💡</h2>
+            <div class="table-container">
+                <table id="ips" style="text-align: center; margin-bottom: 15px;">
+                    <tr>
+                        <th>Address</th>
+                        <th>Your IP</th>
+                        <th>Country</th>
+                        <th>City</th>
+                    </tr>
+                    <tr>
+                        <td>Cloudflare</td>
+                        <td>${request.headers.get('cf-connecting-ip') || 'Failed!'}</td>
+                        <td><b id="cfCountry"></b></td>
+                        <td><b>${request.cf.city}</b></td>
+                    </tr>
+                    <tr>
+                        <td>Others</td>
+                        <td id="ip"></td>
+                        <td><b id="country"></b></td>
+                        <td><b id="city"></b></td>
+                    </tr>
+                </table>
+            </div>
+            <div id="ipError" style="color: red; margin-bottom: 10px;"></div>
+            <hr>
             <div class="footer">
                 <i class="fa fa-github" style="font-size:36px; margin-right: 10px;"></i>
                 <a class="link" href="https://github.com/bia-pain-bache/BPB-Worker-Panel" style="color: var(--color); text-decoration: underline;" target="_blank">Github</a>
@@ -2413,11 +2443,9 @@ function renderHomePage (proxySettings, hostName, isPassSet) {
 
         document.addEventListener('DOMContentLoaded', async () => {
             const configForm = document.getElementById('configForm');            
-            const modal = document.getElementById('myModal');
             const changePass = document.getElementById('openModalBtn');
             const closeBtn = document.querySelector(".close");
-            const passwordChangeForm = document.getElementById('passwordChangeForm');            
-            const applyBtn = document.getElementById('applyButton');         
+            const passwordChangeForm = document.getElementById('passwordChangeForm');                    
             const initialFormData = new FormData(configForm);
             const closeQR = document.getElementById('closeQRModal');
             const resetSettings = document.getElementById('resetSettings');
@@ -2459,6 +2487,7 @@ function renderHomePage (proxySettings, hostName, isPassSet) {
             configForm.addEventListener('input', enableApplyButton);
             configForm.addEventListener('change', enableApplyButton);
             changePass.addEventListener('click', () => {
+                const modal = document.getElementById('myModal');
                 forcedPassChange ? closeBtn.style.display = 'none' : closeBtn.style.display = '';
                 modal.style.display = "block";
                 document.body.style.overflow = "hidden";
@@ -2520,6 +2549,23 @@ function renderHomePage (proxySettings, hostName, isPassSet) {
             if (${!isPassSet}) {
                 forcedPassChange = true;
                 changePass.click();
+            }
+
+            let regionNames = new Intl.DisplayNames(['en'], {type: 'region'});
+            const cfRegionName = regionNames.of('${request.cf.country}');
+            document.getElementById('cfCountry').textContent = cfRegionName;
+            try {
+                const apiResponse = await fetch('https://ipinfo.io/json');
+                const { ip, country, city } = await apiResponse.json();
+                document.getElementById('ip').textContent = ip;
+                document.getElementById('country').textContent = regionNames.of(country);
+                document.getElementById('city').textContent = city;
+            } catch (error) {
+                console.error('Error fetching IP address:', error);
+                document.getElementById('ip').textContent = 'Failed!';
+                document.getElementById('country').textContent = 'Failed!';
+                document.getElementById('city').textContent = 'Failed!';
+                document.getElementById('ipError').textContent = '⚠️ IP info blocked by an Ad-blocker or extension. Please disable and refresh the page.';
             }
         });
 
