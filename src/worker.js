@@ -3181,7 +3181,7 @@ function extractWireguardParams(warpConfigs, isWoW) {
     };
 }
 
-async function buildXrayDNS (proxySettings, outboundAddrs, domainToStaticIPs, isWorkerLess, isWarp) {
+async function buildXrayDNS (proxySettings, outboundAddrs, domainToStaticIPs, isWorkerLess, isBalancer, isWarp) {
     const { 
         remoteDNS, 
         resolvedRemoteDNS, 
@@ -3198,56 +3198,59 @@ async function buildXrayDNS (proxySettings, outboundAddrs, domainToStaticIPs, is
     } = proxySettings;
 
     const isBypass = bypassIran || bypassChina || bypassRussia;
+    const bypassRules = [
+        { rule: bypassIran, domain: "geosite:category-ir", ip: "geoip:ir" },
+        { rule: bypassChina, domain: "geosite:cn", ip: "geoip:cn" },
+        { rule: bypassRussia, domain: "geosite:category-ru", ip: "geoip:ru" }
+    ];
+
+    const hosts = [
+        { rule: true, host: "domain:googleapis.cn", address: ["googleapis.com"] },
+        { rule: blockAds, host: "geosite:category-ads-all", address: ["127.0.0.1"] },
+        { rule: blockAds, host: "geosite:category-ads-ir", address: ["127.0.0.1"] },
+        { rule: blockPorn, host: "geosite:category-porn", address: ["127.0.0.1"] }
+    ];
+
     const isFakeDNS = (vlessTrojanFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
     const isIPv6 = (enableIPv6 && !isWarp) || (warpEnableIPv6 && isWarp);
     const outboundDomains = outboundAddrs.filter(address => isDomain(address));
     const isOutboundRule = outboundDomains.length > 0;
     const outboundRules = outboundDomains.map(domain => `full:${domain}`);
-    const warpRemoteDNS = warpEnableIPv6 
-        ? ['1.1.1.1', '1.0.0.1', '2606:4700:4700::1111', '2606:4700:4700::1001'] 
-        : ['1.1.1.1', '1.0.0.1'];
-    const finalRemoteDNS = isWarp 
-        ? warpRemoteDNS 
-        : isWorkerLess 
-            ? ['https://cloudflare-dns.com/dns-query']
+    isBalancer && outboundRules.push("full:www.gstatic.com");
+    const finalRemoteDNS = isWorkerLess
+        ? ['https://cloudflare-dns.com/dns-query']
+        : isWarp
+            ? warpEnableIPv6 
+                ? ['1.1.1.1', '1.0.0.1', '2606:4700:4700::1111', '2606:4700:4700::1001'] 
+                : ['1.1.1.1', '1.0.0.1']
             : [remoteDNS];
-            
+
+    const dnsHost = {};
+    hosts.forEach( ({ rule, host, address}) => {
+        if (rule) dnsHost[host] = address; 
+    });
+    
+    const staticIPs = domainToStaticIPs ? await resolveDNS(domainToStaticIPs) : undefined;
+    if (staticIPs) dnsHost[domainToStaticIPs] = enableIPv6 ? [...staticIPs.ipv4, ...staticIPs.ipv6] : staticIPs.ipv4;
+    if (resolvedRemoteDNS.server && !isWorkerLess && !isWarp) dnsHost[resolvedRemoteDNS.server] = resolvedRemoteDNS.staticIPs;
+    if (isWorkerLess) {
+        const domains = ['cloudflare-dns.com', 'cloudflare.com', 'dash.cloudflare.com'];
+        const resolved = await Promise.all(domains.map(resolveDNS));
+        const hostIPv4 = resolved.flatMap(r => r.ipv4);
+        const hostIPv6 = enableIPv6 ? resolved.flatMap(r => r.ipv6) : [];
+        dnsHost['cloudflare-dns.com'] = [
+            ...hostIPv4,
+            ...hostIPv6
+        ];
+    }
+
     let dnsObject = {
-        hosts: {
-            "domain:googleapis.cn": ["googleapis.com"]
-        },
+        hosts: dnsHost,
         servers: finalRemoteDNS,
         queryStrategy: isIPv6 ? "UseIP" : "UseIPv4",
         tag: "dns",
     };
-            
-    const staticIPs = domainToStaticIPs ? await resolveDNS(domainToStaticIPs) : undefined;
-    if (staticIPs) dnsObject.hosts[domainToStaticIPs] = enableIPv6 ? [...staticIPs.ipv4, ...staticIPs.ipv6] : staticIPs.ipv4;
-    if (resolvedRemoteDNS.server && !isWorkerLess && !isWarp) dnsObject.hosts[resolvedRemoteDNS.server] = resolvedRemoteDNS.staticIPs;
-    if (isWorkerLess) {
-        const resolvedDOH = await resolveDNS('cloudflare-dns.com');
-        const resolvedCloudflare = await resolveDNS('cloudflare.com');
-        const resolvedCLDomain = await resolveDNS('www.speedtest.net.cdn.cloudflare.net');
-        const resolvedCFNS_1 = await resolveDNS('ben.ns.cloudflare.com');
-        const resolvedCFNS_2 = await resolveDNS('lara.ns.cloudflare.com');
-        dnsObject.hosts['cloudflare-dns.com'] = [
-            ...resolvedDOH.ipv4, 
-            ...resolvedCloudflare.ipv4, 
-            ...resolvedCLDomain.ipv4,
-            ...resolvedCFNS_1.ipv4,
-            ...resolvedCFNS_2.ipv4
-        ];
-    }
-
-    if (blockAds) {
-        dnsObject.hosts["geosite:category-ads-all"] = ["127.0.0.1"];
-        dnsObject.hosts["geosite:category-ads-ir"] = ["127.0.0.1"];
-    }
-
-    if (blockPorn) {
-        dnsObject.hosts["geosite:category-porn"] = ["127.0.0.1"];
-    }
-
+      
     isOutboundRule && dnsObject.servers.push({
         address: localDNS === 'localhost' ? '8.8.8.8' : localDNS,
         domains: outboundRules
@@ -3260,9 +3263,13 @@ async function buildXrayDNS (proxySettings, outboundAddrs, domainToStaticIPs, is
     };
 
     if (!isWorkerLess && isBypass) {
-        bypassIran && localDNSServer.domains.push("geosite:category-ir") && localDNSServer.expectIPs.push("geoip:ir"); 
-        bypassChina && localDNSServer.domains.push("geosite:cn") && localDNSServer.expectIPs.push("geoip:cn");
-        bypassRussia && localDNSServer.domains.push("geosite:category-ru") && localDNSServer.expectIPs.push("geoip:ru");
+        bypassRules.forEach(({ rule, domain, ip }) => {
+            if (rule) {
+                localDNSServer.domains.push(domain);
+                localDNSServer.expectIPs.push(ip);
+            }
+        });
+
         dnsObject.servers.push(localDNSServer);
     }
 
@@ -3295,7 +3302,16 @@ function buildXrayRoutingRules (proxySettings, outboundAddrs, isChain, isBalance
         blockUDP443 
     } = proxySettings;
 
-    const isBypass = bypassIran || bypassChina || bypassRussia || bypassLAN;
+    const isBlock = blockAds || blockPorn;
+    const isBypass = bypassIran || bypassChina || bypassRussia;
+    const geoRules = [
+        { rule: bypassLAN, type: "direct", domain: "geosite:private", ip: "geoip:private" },
+        { rule: bypassIran, type: "direct", domain: "geosite:category-ir", ip: "geoip:ir" },
+        { rule: bypassChina, type: "direct", domain: "geosite:cn", ip: "geoip:cn" },
+        { rule: blockAds, type: "block", domain: "geosite:category-ads-all" },
+        { rule: blockAds, type: "block", domain: "geosite:category-ads-ir" },
+        { rule: blockPorn, type: "block", domain: "geosite:category-porn" }
+    ];
     const outboundDomains = outboundAddrs.filter(address => isDomain(address));
     const isOutboundRule = outboundDomains.length > 0;
     let rules = [
@@ -3324,24 +3340,34 @@ function buildXrayRoutingRules (proxySettings, outboundAddrs, isChain, isBalance
         type: "field"
     });
 
-    if (isBypass && !isWorkerLess) {
-        let ipRule = {
-            ip: [],
-            outboundTag: "direct",
-            type: "field",
-        };
+    if (isBypass || isBlock) {
+        const createRule = (type, outbound) => ({
+            [type]: [],
+            outboundTag: outbound,
+            type: "field"
+        });
 
-        let domainRule = {
-            domain: [],
-            outboundTag: "direct",
-            type: "field",
-        };
+        let geositeDirectRule, geoipDirectRule;
+        if (!isWorkerLess) {
+            geositeDirectRule = createRule("domain", "direct");
+            geoipDirectRule = createRule("ip", "direct");
+        }
 
-        bypassLAN && domainRule.domain.push("geosite:private") && ipRule.ip.push("geoip:private");
-        bypassIran && domainRule.domain.push("geosite:category-ir") && ipRule.ip.push("geoip:ir");
-        bypassChina && domainRule.domain.push("geosite:cn") && ipRule.ip.push("geoip:cn");
-        bypassRussia && domainRule.domain.push("geosite:category-ru") && ipRule.ip.push("geoip:ru");
-        rules.push(domainRule, ipRule);
+        let geositeBlockRule = createRule("domain", "block");
+        geoRules.forEach(({ rule, type, domain, ip }) => {
+            if (rule) {
+                if (type === 'direct') {
+                    geositeDirectRule?.domain.push(domain);
+                    geoipDirectRule?.ip?.push(ip);
+                } else {
+                    geositeBlockRule.domain.push(domain);
+                }
+            }
+        });
+        
+        isWorkerLess
+            ? rules.push(geositeBlockRule)
+            : rules.push(geositeDirectRule, geoipDirectRule, geositeBlockRule);
     }
 
     blockUDP443 && rules.push({
@@ -3350,18 +3376,6 @@ function buildXrayRoutingRules (proxySettings, outboundAddrs, isChain, isBalance
         outboundTag: "block",
         type: "field",
     });
-
-    if (blockAds || blockPorn) {
-        let rule = {
-            domain: [],
-            outboundTag: "block",
-            type: "field",
-        };
-
-        blockAds && rule.domain.push("geosite:category-ads-all", "geosite:category-ads-ir");
-        blockPorn && rule.domain.push("geosite:category-porn");
-        rules.push(rule);
-    }
 
     if (isBalancer) {
         rules.push({
@@ -3750,7 +3764,7 @@ function buildXrayConfig (proxySettings, remark, isFragment, isBalancer, isChain
 async function buildXrayBestPingConfig(proxySettings, totalAddresses, chainProxy, outbounds, isFragment) {
     const remark = isFragment ? '💦 BPB F - Best Ping 💥' : '💦 BPB - Best Ping 💥';
     let config = buildXrayConfig(proxySettings, remark, isFragment, true, chainProxy, chainProxy ? 'chain-2' : 'prox-2');
-    config.dns = await buildXrayDNS(proxySettings, totalAddresses, undefined);
+    config.dns = await buildXrayDNS(proxySettings, totalAddresses, undefined, false, true, false);
     config.routing.rules = buildXrayRoutingRules(proxySettings, totalAddresses, chainProxy, true, false);
     config.outbounds.unshift(...outbounds);
 
@@ -3763,7 +3777,7 @@ async function buildXrayBestFragmentConfig(proxySettings, hostName, chainProxy, 
                             '40-60', '50-70', '60-80', '70-90', '80-100', '100-200'];
 
     let config = buildXrayConfig(proxySettings, '💦 BPB F - Best Fragment 😎', true, true, chainProxy, undefined, false);
-    config.dns = await buildXrayDNS(proxySettings, [], hostName);
+    config.dns = await buildXrayDNS(proxySettings, [], hostName, false, true, false);
     config.routing.rules = buildXrayRoutingRules(proxySettings, [], chainProxy, true, false);
     const fragment = config.outbounds.shift();
     let bestFragOutbounds = [];
@@ -3798,7 +3812,6 @@ async function buildXrayWorkerLessConfig(proxySettings) {
     delete fakeOutbound.streamSettings.sockopt;
     fakeOutbound.streamSettings.wsSettings.path = '/';
     config.outbounds.push(fakeOutbound);
-
     return config;
 }
 
@@ -3921,7 +3934,7 @@ async function getXrayWarpConfigs (proxySettings, warpConfigs, client) {
         xrayWoWOutbounds.push(chainOutbound);
     }
 
-    const dnsObject = await buildXrayDNS(proxySettings, outboundDomains, undefined, false, true);
+    const dnsObject = await buildXrayDNS(proxySettings, outboundDomains, undefined, false, true, true);
     let xrayWarpBestPing = buildXrayConfig(proxySettings, `💦 Warp${proIndicator}- Best Ping 🚀`, false, true, false, undefined, true);
     xrayWarpBestPing.dns = dnsObject;    
     xrayWarpBestPing.routing.rules = buildXrayRoutingRules(proxySettings, outboundDomains, false, true, false);
@@ -3942,7 +3955,6 @@ async function buildClashDNS (proxySettings, isWarp) {
         enableIPv6, 
         warpFakeDNS,
         warpEnableIPv6,
-        bypassLAN, 
         bypassIran, 
         bypassChina, 
         bypassRussia 
@@ -3954,6 +3966,12 @@ async function buildClashDNS (proxySettings, isWarp) {
     let clashLocalDNS = localDNS === 'localhost' ? 'system' : localDNS;
     const isFakeDNS = (vlessTrojanFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
     const isIPv6 = (enableIPv6 && !isWarp) || (warpEnableIPv6 && isWarp);
+    const isBypass = bypassIran || bypassChina || bypassRussia;
+    const bypassRules = [
+        { rule: bypassIran, geosite: "category-ir" },
+        { rule: bypassChina, geosite: "cn" },
+        { rule: bypassRussia, geosite: "category-ru" }
+    ];
 
     let dns = {
         "enable": true,
@@ -3970,13 +3988,12 @@ async function buildClashDNS (proxySettings, isWarp) {
         };
     }
     
-    let geosites = [];
-    bypassLAN && geosites.push('private');
-    bypassIran && geosites.push('category-ir');
-    bypassChina && geosites.push('cn');
-    bypassRussia && geosites.push('category-ru');
+    if (isBypass) { 
+        let geosites = [];
+        bypassRules.forEach(({ rule, geosite }) => {
+            rule && geosites.push(geosite)
+        });
 
-    if (bypassIran || bypassChina || bypassLAN || bypassRussia) { 
         dns['nameserver-policy'] = {
             [`geosite:${geosites.join(',')}`]: [clashLocalDNS],
             'www.gstatic.com': [clashLocalDNS]
@@ -4004,18 +4021,35 @@ function buildClashRoutingRules (proxySettings) {
         blockUDP443 
     } = proxySettings;
 
+    const isBypass = bypassIran || bypassChina || bypassLAN || bypassRussia;
+    const isBlock = blockAds || blockPorn;
+    let geositeDirectRules = [], geoipDirectRules = [], geositeBlockRules = [];
+    const geoRules = [
+        { rule: bypassLAN, type: "direct", geosite: "private", geoip: "private" },
+        { rule: bypassIran, type: "direct", geosite: "category-ir", geoip: "ir" },
+        { rule: bypassChina, type: "direct", geosite: "cn", geoip: "cn" },
+        { rule: bypassRussia, type: "direct", geosite: "category-ru", geoip: "ru" },
+        { rule: blockAds, type: "block", geosite: "category-ads-all" },
+        { rule: blockAds, type: "block", geosite: "category-ads-ir" },
+        { rule: blockPorn, type: "block", geosite: "category-porn" }
+    ];
+
+    if (isBypass || isBlock) {
+        geoRules.forEach(({ rule, type, geosite, geoip }) => {
+            if (rule) {
+                if (type === 'direct') {
+                    geositeDirectRules.push(`GEOSITE,${geosite},DIRECT`);
+                    geoipDirectRules.push(`GEOIP,${geoip},DIRECT,no-resolve`);
+                } else {
+                    geositeBlockRules.push(`GEOSITE,${geosite},REJECT`);
+                }
+            }
+        });
+    }
+    
     localDNS !== 'localhost' && rules.push(`AND,((IP-CIDR,${localDNS}/32),(DST-PORT,53)),DIRECT`);
-    bypassLAN && rules.push('GEOSITE,private,DIRECT');
-    bypassIran && rules.push('GEOSITE,category-ir,DIRECT');
-    bypassChina && rules.push('GEOSITE,cn,DIRECT');
-    bypassRussia && rules.push('GEOSITE,category-ru,DIRECT');
-    bypassLAN && rules.push('GEOIP,private,DIRECT,no-resolve');
-    bypassIran && rules.push('GEOIP,ir,DIRECT,no-resolve');
-    bypassChina && rules.push('GEOIP,cn,DIRECT,no-resolve');
-    bypassRussia && rules.push('GEOIP,ru,DIRECT,no-resolve');
+    rules.push(...geositeDirectRules, ...geoipDirectRules, ...geositeBlockRules);
     blockUDP443 && rules.push('AND,((NETWORK,udp),(DST-PORT,443)),REJECT');
-    blockAds && rules.push('GEOSITE,category-ads-all,REJECT', 'GEOSITE,category-ads-ir,REJECT');
-    blockPorn && rules.push('GEOSITE,category-porn,REJECT');
     rules.push('MATCH,✅ Selector');
 
     return rules;
@@ -4344,6 +4378,16 @@ function buildSingBoxDNS (proxySettings, isChain, isWarp) {
     let fakeip;
     const isFakeDNS = (vlessTrojanFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
     const isIPv6 = (enableIPv6 && !isWarp) || (warpEnableIPv6 && isWarp);
+    const geoRules = [
+        { rule: bypassIran, type: "direct", ruleSet: "geosite-ir" },
+        { rule: bypassChina, type: "direct", ruleSet: "geosite-cn" },
+        { rule: bypassRussia, type: "direct", ruleSet: "geosite-category-ru" },
+        { rule: true, type: "block", ruleSet: "geosite-malware" },
+        { rule: true, type: "block", ruleSet: "geosite-phishing" },
+        { rule: true, type: "block", ruleSet: "geosite-cryptominers" },
+        { rule: blockAds, type: "block", ruleSet: "geosite-category-ads-all" },
+        { rule: blockPorn, type: "block", ruleSet: "geosite-nsfw" }
+    ];
     const servers = [
         {
             address: isWarp ? '1.1.1.1' : remoteDNS,
@@ -4368,34 +4412,42 @@ function buildSingBoxDNS (proxySettings, isChain, isWarp) {
         {
             outbound: "any",
             server: "dns-direct"
+        },
+        {
+            domain: "www.gstatic.com",
+            server: "dns-direct"
+        },
+        {
+            clash_mode: "block",
+            server: "dns-block"
+        },
+        {
+            clash_mode: "direct",
+            server: "dns-direct"
+        },
+        {
+            clash_mode: "global",
+            server: "dns-remote"
         }
     ];
 
-    if (bypassIran || bypassChina || bypassRussia) {
-        let bypassRules = {
-            rule_set: [],
-            server: "dns-direct"
-        };
-        bypassIran && bypassRules.rule_set.push("geosite-ir");
-        bypassChina && bypassRules.rule_set.push("geosite-cn");
-        bypassRussia && bypassRules.rule_set.push("geosite-category-ru");
-        rules.push(bypassRules);
-    }
-
-    let blockRules = {
+    let bypassRule = {
+        rule_set: [],
+        server: "dns-direct"
+    };
+    
+    let blockRule = {
         disable_cache: true,
-        rule_set: [
-            "geosite-malware",
-            "geosite-phishing",
-            "geosite-cryptominers"
-        ],
+        rule_set: [],
         server: "dns-block"
     };
 
-    blockAds && blockRules.rule_set.push("geosite-category-ads-all");
-    blockPorn && blockRules.rule_set.push("geosite-nsfw");
-    rules.push(blockRules);
+    geoRules.forEach(({ rule, type, ruleSet }) => {
+        rule && type === 'direct' && bypassRule.rule_set.push(ruleSet);
+        rule && type === 'block' && blockRule.rule_set.push(ruleSet);
+    });
 
+    rules.push(bypassRule, blockRule);
     if (isFakeDNS) {
         servers.push({
             address: "fakeip",
@@ -4443,118 +4495,139 @@ function buildSingBoxRoutingRules (proxySettings) {
             network: "udp",
             port: 53,
             outbound: "dns-out"
+        },
+        {
+            clash_mode: "direct",
+            outbound: "direct"
+        },
+        {
+            clash_mode: "block",
+            outbound: "block"
+        },
+        {
+            clash_mode: "global",
+            outbound: "proxy"
         }
     ];
 
-    let ruleSet = [
-        {
-            type: "remote",
-            tag: "geosite-malware",
-            format: "binary",
-            url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-malware.srs",
-            download_detour: "direct"
+    const geoRules = [
+        { 
+            rule: bypassIran,
+            type: "direct",
+            ruleSet: { 
+                geosite: "geosite-ir", 
+                geoip: "geoip-ir", 
+                geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-ir.srs", 
+                geoipURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-ir.srs"
+            }
         },
-        {
-            type: "remote",
-            tag: "geosite-phishing",
-            format: "binary",
-            url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-phishing.srs",
-            download_detour: "direct"
+        { 
+            rule: bypassChina,
+            type: "direct",
+            ruleSet: { 
+                geosite: "geosite-cn", 
+                geoip: "geoip-cn", 
+                geositeURL: "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-cn.srs", 
+                geoipURL: "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-cn.srs"
+            }
         },
-        {
-            type: "remote",
-            tag: "geosite-cryptominers",
-            format: "binary",
-            url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-cryptominers.srs",
-            download_detour: "direct"
+        { 
+            rule: bypassRussia,
+            type: "direct", 
+            ruleSet: { 
+                geosite: "geosite-category-ru",
+                geoip: "geoip-ru", 
+                geositeURL: "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-category-ru.srs", 
+                geoipURL: "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-ru.srs"
+            }
         },
-        {
-            type: "remote",
-            tag: "geoip-malware",
-            format: "binary",
-            url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-malware.srs",
-            download_detour: "direct"
+        { 
+            rule: true,
+            type: "block", 
+            ruleSet: { 
+                geosite: "geosite-malware", 
+                geoip: "geoip-malware", 
+                geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-malware.srs", 
+                geoipURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-malware.srs"
+            }
         },
-        {
-            type: "remote",
-            tag: "geoip-phishing",
-            format: "binary",
-            url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-phishing.srs",
-            download_detour: "direct"
-        }
+        { 
+            rule: true,
+            type: "block",
+            ruleSet: { 
+                geosite: "geosite-phishing", 
+                geoip: "geoip-phishing", 
+                geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-phishing.srs", 
+                geoipURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-phishing.srs"
+            }
+        },
+        { 
+            rule: true,
+            type: "block",
+            ruleSet: { 
+                geosite: "geosite-cryptominers", 
+                geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-cryptominers.srs", 
+            }
+        },
+        { 
+            rule: blockAds,
+            type: "block",
+            ruleSet: { 
+                geosite: "geosite-category-ads-all", 
+                geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-category-ads-all.srs", 
+            }
+        },
+        { 
+            rule: blockPorn,
+            type: "block", 
+            ruleSet: { 
+                geosite: "geosite-nsfw", 
+                geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-nsfw.srs", 
+            }
+        },
     ];
 
-    if (bypassIran) {
-        rules.push({
-            rule_set: ["geosite-ir", "geoip-ir"],
-            outbound: "direct"
-        });
-
-        ruleSet.push({
-            type: "remote",
-            tag: "geosite-ir",
-            format: "binary",
-            url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-ir.srs",
-            download_detour: "direct"
-        },
-        {
-            type: "remote",
-            tag: "geoip-ir",
-            format: "binary",
-            url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-ir.srs",
-            download_detour: "direct"
-        });
-    }
-
-    if (bypassChina) {
-        rules.push({
-            rule_set: ["geosite-cn", "geoip-cn"],
-            outbound: "direct"
-        });
-
-        ruleSet.push({
-            type: "remote",
-            tag: "geosite-cn",
-            format: "binary",
-            url: "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-cn.srs",
-            download_detour: "direct"
-        },
-        {
-            type: "remote",
-            tag: "geoip-cn",
-            format: "binary",
-            url: "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-cn.srs",
-            download_detour: "direct"
-        });
-    }
-    
-    if (bypassRussia) {
-        rules.push({
-            rule_set: ["geosite-category-ru", "geoip-ru"],
-            outbound: "direct"
-        });
-
-        ruleSet.push({
-            type: "remote",
-            tag: "geosite-category-ru",
-            format: "binary",
-            url: "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-category-ru.srs",
-            download_detour: "direct"
-        },
-        {
-            type: "remote",
-            tag: "geoip-ru",
-            format: "binary",
-            url: "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-ru.srs",
-            download_detour: "direct"
-        });
-    }
-    
     bypassLAN && rules.push({
         ip_is_private: true,
         outbound: "direct"
     });
 
+    const createRule = (outbound) => ({
+        rule_set: [],
+        outbound
+    });
+
+    const routingRuleSet = {
+        type: "remote",
+        tag: "",
+        format: "binary",
+        url: "",
+        download_detour: "direct"
+    };
+
+    let geositeDirectRule = createRule("direct");
+    let geoipDirectRule = createRule("direct");
+    let geositeBlockRule = createRule("block");
+    let geoipBlockRule = createRule("block");
+    let ruleSets = [];
+
+    geoRules.forEach(({ rule, type, ruleSet }) => {
+        const { geosite, geoip, geositeURL, geoipURL } = ruleSet;
+        if (rule) {
+            type === 'direct' 
+                ? geositeDirectRule.rule_set.push(geosite)
+                : geositeBlockRule.rule_set.push(geosite);
+            ruleSets.push({...routingRuleSet, tag: geosite, url: geositeURL});
+            if (geoip) {
+                type === 'direct'
+                    ? geoipDirectRule.rule_set.push(geoip)
+                    : geoipBlockRule.rule_set.push(geoip);
+                ruleSets.push({...routingRuleSet, tag: geoip, url: geoipURL});
+            }
+        }
+    });
+
+    rules.push(geositeDirectRule, geoipDirectRule, geositeBlockRule, geoipBlockRule);
     blockUDP443 && rules.push({
         network: "udp",
         port: 443,
@@ -4562,47 +4635,13 @@ function buildSingBoxRoutingRules (proxySettings) {
         outbound: "block"
     });
     
-    let blockRuleSet = {
-        rule_set: [
-            "geosite-malware",
-            "geosite-phishing",
-            "geosite-cryptominers",
-            "geoip-malware",
-            "geoip-phishing"
-        ],
-        outbound: "block"
-    };
-    
-    if (blockAds) { 
-        blockRuleSet.rule_set.push("geosite-category-ads-all");
-        ruleSet.push({
-            type: "remote",
-            tag: "geosite-category-ads-all",
-            format: "binary",
-            url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-category-ads-all.srs",
-            download_detour: "direct"
-        });
-    }
-
-    if (blockPorn) { 
-        blockRuleSet.rule_set.push("geosite-nsfw");
-        ruleSet.push({
-            type: "remote",
-            tag: "geosite-nsfw",
-            format: "binary",
-            url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-nsfw.srs",
-            download_detour: "direct"
-        });
-    }
-
-    rules.push(blockRuleSet);
     rules.push({
         ip_cidr: ["224.0.0.0/3", "ff00::/8"],
         source_ip_cidr: ["224.0.0.0/3", "ff00::/8"],
         outbound: "block"
     });
 
-    return {rules: rules, rule_set: ruleSet};
+    return {rules: rules, rule_set: ruleSets};
 }
 
 function buildSingBoxVLESSOutbound (proxySettings, remark, address, port, host, sni, allowInsecure, isFragment) {
@@ -5263,7 +5302,7 @@ const singboxConfigTemp = {
             store_fakeip: true
         },
         clash_api: {
-            external_controller: "0.0.0.0:9090",
+            external_controller: "127.0.0.1:9090",
             external_ui: "yacd",
             external_ui_download_url: "https://github.com/MetaCubeX/Yacd-meta/archive/gh-pages.zip",
             external_ui_download_detour: "direct",
