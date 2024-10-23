@@ -4122,13 +4122,6 @@ var worker_default = {
           return new Response(errorPage, { status: 200, headers: { "Content-Type": "text/html" } });
         }
         switch (url.pathname) {
-          case "/cf":
-            return new Response(JSON.stringify(request.cf, null, 4), {
-              status: 200,
-              headers: {
-                "Content-Type": "application/json;charset=utf-8"
-              }
-            });
           case "/update-warp":
             const Auth = await Authenticate(request, env);
             if (!Auth)
@@ -4933,7 +4926,7 @@ function generateRemark(index, port, address, cleanIPs, protocol, configType) {
   return `\u{1F4A6} ${index} - ${protocol}${type} - ${addressType} : ${port}`;
 }
 function isDomain(address) {
-  const domainPattern = /^(?!\-)(?:[A-Za-z0-9\-]{1,63}\.?)+[A-Za-z]{2,}$/;
+  const domainPattern = /^(?!\-)(?:[A-Za-z0-9\-]{1,63}\.)+[A-Za-z]{2,}$/;
   return domainPattern.test(address);
 }
 function isIPv4(address) {
@@ -5506,8 +5499,8 @@ function renderHomePage(request, proxySettings, hostName, isPassSet) {
                     <div class="form-control">
                         <label for="localDNS">\u{1F3DA}\uFE0F Local DNS</label>
                         <input type="text" id="localDNS" name="localDNS" value="${localDNS}"
-                            pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|localhost$"
-                            title="Please enter a valid DNS IP Address or localhost!"  required>
+                            pattern="^(?:\\d{1,3}\\.){3}\\d{1,3}$"
+                            title="Please enter a valid DNS IP Address!"  required>
                     </div>
                     <div class="form-control">
                         <label for="vlessTrojanFakeDNS">\u{1F9E2} Fake DNS</label>
@@ -6166,7 +6159,7 @@ function renderHomePage(request, proxySettings, hostName, isPassSet) {
             <div class="table-container">
                 <table id="ips" style="text-align: center; margin-bottom: 15px; text-wrap-mode: nowrap;">
                     <tr>
-                        <th>Address</th>
+                        <th>Target</th>
                         <th>Your IP</th>
                         <th>Country</th>
                         <th>City</th>
@@ -6188,7 +6181,6 @@ function renderHomePage(request, proxySettings, hostName, isPassSet) {
                     </tr>
                 </table>
             </div>
-            <div id="ipError" style="color: red; margin-bottom: 10px;"></div>
             <hr>
             <div class="footer">
                 <i class="fa fa-github" style="font-size:36px; margin-right: 10px;"></i>
@@ -7001,7 +6993,7 @@ async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isW
     tag: "dns"
   };
   isOutboundRule && dnsObject.servers.push({
-    address: localDNS === "localhost" ? "8.8.8.8" : localDNS,
+    address: localDNS,
     domains: outboundRules
   });
   let localDNSServer = {
@@ -7074,9 +7066,9 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
       type: "field"
     }
   ];
-  if (!isWorkerLess && (isOutboundRule || localDNS !== "localhost" && isBypass))
+  if (!isWorkerLess && (isOutboundRule || isBypass))
     rules.push({
-      ip: [localDNS === "localhost" ? "8.8.8.8" : localDNS],
+      ip: [localDNS],
       port: "53",
       outboundTag: "direct",
       type: "field"
@@ -7103,7 +7095,8 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
         }
       }
     });
-    isWorkerLess ? rules.push(geositeBlockRule) : rules.push(geositeDirectRule, geoipDirectRule, geositeBlockRule);
+    !isWorkerLess && isBypass && rules.push(geositeDirectRule, geoipDirectRule);
+    isBlock && rules.push(geositeBlockRule);
   }
   blockUDP443 && rules.push({
     network: "udp",
@@ -7663,7 +7656,6 @@ async function buildClashDNS(proxySettings, isWarp) {
     bypassRussia
   } = proxySettings;
   const warpRemoteDNS = warpEnableIPv6 ? ["1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001"] : ["1.1.1.1", "1.0.0.1"];
-  let clashLocalDNS = localDNS === "localhost" ? "system" : localDNS;
   const isFakeDNS = vlessTrojanFakeDNS && !isWarp || warpFakeDNS && isWarp;
   const isIPv62 = enableIPv6 && !isWarp || warpEnableIPv6 && isWarp;
   const isBypass = bypassIran || bypassChina || bypassRussia;
@@ -7678,7 +7670,7 @@ async function buildClashDNS(proxySettings, isWarp) {
     "ipv6": isIPv62,
     "respect-rules": true,
     "nameserver": isWarp ? warpRemoteDNS : [remoteDNS],
-    "proxy-server-nameserver": [clashLocalDNS]
+    "proxy-server-nameserver": [localDNS]
   };
   if (resolvedRemoteDNS.server && !isWarp) {
     dns["hosts"] = {
@@ -7691,8 +7683,8 @@ async function buildClashDNS(proxySettings, isWarp) {
       rule && geosites.push(geosite);
     });
     dns["nameserver-policy"] = {
-      [`geosite:${geosites.join(",")}`]: [clashLocalDNS],
-      "www.gstatic.com": [clashLocalDNS]
+      [`geosite:${geosites.join(",")}`]: [localDNS],
+      "www.gstatic.com": [localDNS]
     };
   }
   if (isFakeDNS)
@@ -7704,7 +7696,6 @@ async function buildClashDNS(proxySettings, isWarp) {
   return dns;
 }
 function buildClashRoutingRules(proxySettings) {
-  let rules = [];
   const {
     localDNS,
     bypassLAN,
@@ -7739,8 +7730,12 @@ function buildClashRoutingRules(proxySettings) {
       }
     });
   }
-  localDNS !== "localhost" && rules.push(`AND,((IP-CIDR,${localDNS}/32),(DST-PORT,53)),DIRECT`);
-  rules.push(...geositeDirectRules, ...geoipDirectRules, ...geositeBlockRules);
+  let rules = [
+    `AND,((IP-CIDR,${localDNS}/32),(DST-PORT,53)),DIRECT`,
+    ...geositeDirectRules,
+    ...geoipDirectRules,
+    ...geositeBlockRules
+  ];
   blockUDP443 && rules.push("AND,((NETWORK,udp),(DST-PORT,443)),REJECT");
   rules.push("MATCH,\u2705 Selector");
   return rules;
@@ -8062,7 +8057,7 @@ function buildSingBoxDNS(proxySettings, isChain, isWarp) {
       tag: "dns-remote"
     },
     {
-      address: localDNS === "localhost" ? "local" : localDNS,
+      address: localDNS,
       strategy: isIPv62 ? "prefer_ipv4" : "ipv4_only",
       detour: "direct",
       tag: "dns-direct"
@@ -8141,6 +8136,7 @@ function buildSingBoxRoutingRules(proxySettings) {
     blockPorn,
     blockUDP443
   } = proxySettings;
+  const isBypass = bypassIran || bypassChina || bypassRussia;
   let rules = [
     {
       inbound: "dns-in",
@@ -8271,7 +8267,8 @@ function buildSingBoxRoutingRules(proxySettings) {
       }
     }
   });
-  rules.push(geositeDirectRule, geoipDirectRule, geositeBlockRule, geoipBlockRule);
+  isBypass && rules.push(geositeDirectRule, geoipDirectRule);
+  rules.push(geositeBlockRule, geoipBlockRule);
   blockUDP443 && rules.push({
     network: "udp",
     port: 443,
