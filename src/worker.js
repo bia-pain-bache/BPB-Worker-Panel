@@ -54,7 +54,7 @@ export default {
                             status: 200,
                             headers: {
                                 'Content-Type': 'application/json;charset=utf-8',
-                            },
+                            }
                         });
                         
                     case '/update-warp':
@@ -1360,7 +1360,7 @@ async function Authenticate (request, env) {
         }
 
         const { payload } = await jwtVerify(token, secret);
-        console.log(`Successfully logined, User ID: ${payload.userID}`);
+        console.log(`Successfully authenticated, User ID: ${payload.userID}`);
         return true;
     } catch (error) {
         console.log(error);
@@ -1415,6 +1415,8 @@ function renderHomePage (request, proxySettings, hostName, isPassSet) {
     let activeProtocols = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
     let httpPortsBlock = '', httpsPortsBlock = '';
     const allPorts = [...(hostName.includes('workers.dev') ? defaultHttpPorts : []), ...defaultHttpsPorts];
+    let regionNames = new Intl.DisplayNames(['en'], {type: 'region'});
+    const cfCountry = regionNames.of(request.cf.country);
 
     allPorts.forEach(port => {
         let id = `port-${port}`;
@@ -1764,9 +1766,9 @@ function renderHomePage (request, proxySettings, hostName, isPassSet) {
                         <input type="text" id="cleanIPs" name="cleanIPs" value="${cleanIPs.replaceAll(",", " , ")}">
                     </div>
                     <div class="form-control">
-                        <label>🔎 IP Scanner</label>
-                        <a href="https://scanner.github1.cloud/" id="scanner" name="scanner" target="_blank" style="width: 100%;">
-                            <button type="button" class="button">
+                        <label for="scanner">🔎 IP Scanner</label>
+                        <a href="https://scanner.github1.cloud/" name="scanner" target="_blank" style="width: 100%;">
+                            <button type="button" id="scanner" class="button">
                                 Scan now
                                 <span class="material-symbols-outlined">open_in_new</span>
                             </button>
@@ -1798,7 +1800,7 @@ function renderHomePage (request, proxySettings, hostName, isPassSet) {
                         <input type="number" id="bestVLESSTrojanInterval" name="bestVLESSTrojanInterval" min="10" max="90" value="${bestVLESSTrojanInterval}">
                     </div>
                     <div class="form-control" style="padding-top: 10px;">
-                        <label>⚙️ Protocols</label>
+                        <label for="vlessConfigs">⚙️ Protocols</label>
                         <div style="width: 100%; display: grid; grid-template-columns: 1fr 1fr; align-items: baseline; margin-top: 10px;">
                             <div style = "display: flex; justify-content: center; align-items: center;">
                                 <input type="checkbox" id="vlessConfigs" name="vlessConfigs" onchange="handleProtocolChange(event)" value="true" ${vlessConfigs ? 'checked' : ''}>
@@ -1871,8 +1873,8 @@ function renderHomePage (request, proxySettings, hostName, isPassSet) {
                         <input type="text" id="warpEndpoints" name="warpEndpoints" value="${warpEndpoints.replaceAll(",", " , ")}" required>
                     </div>
                     <div class="form-control">
-                        <label style="line-height: 1.5;">🔎 Scan Endpoint</label>
-                        <button type="button" class="button" style="padding: 10px 0;" onclick="copyToClipboard('bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/warp/main/endip/install.sh)', false)">
+                        <label for="endpointScanner" style="line-height: 1.5;">🔎 Scan Endpoint</label>
+                        <button type="button" id="endpointScanner" class="button" style="padding: 10px 0;" onclick="copyToClipboard('bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/warp/main/endip/install.sh)', false)">
                             Copy Script<span class="material-symbols-outlined">terminal</span>
                         </button>
                     </div>
@@ -1901,7 +1903,7 @@ function renderHomePage (request, proxySettings, hostName, isPassSet) {
                             title="Please enter a valid Warp Plus license in xxxxxxxx-xxxxxxxx-xxxxxxxx format">
                     </div>
                     <div class="form-control">
-                        <label>♻️ Warp Configs</label>
+                        <label for="refreshBtn">♻️ Warp Configs</label>
                         <button id="refreshBtn" type="button" class="button" style="padding: 10px 0;" onclick="getWarpConfigs()">
                             Update<span class="material-symbols-outlined">autorenew</span>
                         </button>
@@ -2397,24 +2399,27 @@ function renderHomePage (request, proxySettings, hostName, isPassSet) {
             <hr>
             <h2>YOUR IP 💡</h2>
             <div class="table-container">
-                <table id="ips" style="text-align: center; margin-bottom: 15px;">
+                <table id="ips" style="text-align: center; margin-bottom: 15px; text-wrap-mode: nowrap;">
                     <tr>
                         <th>Address</th>
                         <th>Your IP</th>
                         <th>Country</th>
                         <th>City</th>
+                        <th>ISP</th>
                     </tr>
                     <tr>
                         <td>Cloudflare</td>
-                        <td>${request.headers.get('cf-connecting-ip') || 'Failed!'}</td>
-                        <td><b id="cfCountry"></b></td>
-                        <td><b>${request.cf.city}</b></td>
+                        <td>${request.headers.get('cf-connecting-ip') || 'Not found!'}</td>
+                        <td><b>${cfCountry || 'Not found!'}</b></td>
+                        <td><b>${request.cf.city || 'Not found!'}</b></td>
+                        <td><b>${request.cf.asOrganization || 'Not found!'}</b></td>
                     </tr>
                     <tr>
                         <td>Others</td>
                         <td id="ip"></td>
                         <td><b id="country"></b></td>
                         <td><b id="city"></b></td>
+                        <td><b id="isp"></b></td>
                     </tr>
                 </table>
             </div>
@@ -2447,6 +2452,7 @@ function renderHomePage (request, proxySettings, hostName, isPassSet) {
             const closeBtn = document.querySelector(".close");
             const passwordChangeForm = document.getElementById('passwordChangeForm');                    
             const initialFormData = new FormData(configForm);
+            const modal = document.getElementById('myModal');
             const closeQR = document.getElementById('closeQRModal');
             const resetSettings = document.getElementById('resetSettings');
             let modalQR = document.getElementById('myQRModal');
@@ -2487,7 +2493,6 @@ function renderHomePage (request, proxySettings, hostName, isPassSet) {
             configForm.addEventListener('input', enableApplyButton);
             configForm.addEventListener('change', enableApplyButton);
             changePass.addEventListener('click', () => {
-                const modal = document.getElementById('myModal');
                 forcedPassChange ? closeBtn.style.display = 'none' : closeBtn.style.display = '';
                 modal.style.display = "block";
                 document.body.style.overflow = "hidden";
@@ -2551,23 +2556,26 @@ function renderHomePage (request, proxySettings, hostName, isPassSet) {
                 changePass.click();
             }
 
-            let regionNames = new Intl.DisplayNames(['en'], {type: 'region'});
-            const cfRegionName = regionNames.of('${request.cf.country}');
-            document.getElementById('cfCountry').textContent = cfRegionName;
-            try {
-                const apiResponse = await fetch('https://ipinfo.io/json');
-                const { ip, country, city } = await apiResponse.json();
+            await fetchIPInfo();
+        });
+
+        const fetchIPInfo = async () => {
+            const updateUI = (ip = 'Not found!', country = 'Not found!', city = 'Not found!', isp = 'Not found!') => {
                 document.getElementById('ip').textContent = ip;
-                document.getElementById('country').textContent = regionNames.of(country);
+                document.getElementById('country').textContent = country;
                 document.getElementById('city').textContent = city;
+                document.getElementById('isp').textContent = isp;
+            };
+
+            try {
+                const response = await fetch('https://ipwho.is/');
+                const { ip, country, city, connection } = await response.json();
+                updateUI(ip, country, city, connection.isp);
             } catch (error) {
                 console.error('Error fetching IP address:', error);
-                document.getElementById('ip').textContent = 'Failed!';
-                document.getElementById('country').textContent = 'Failed!';
-                document.getElementById('city').textContent = 'Failed!';
-                document.getElementById('ipError').textContent = '⚠️ IP info blocked by an Ad-blocker or extension. Please disable and refresh the page.';
+                updateUI();
             }
-        });
+        }
 
         const getWarpConfigs = async () => {
             const license = document.getElementById('warpPlusLicense').value;
@@ -2783,7 +2791,7 @@ function renderHomePage (request, proxySettings, hostName, isPassSet) {
 
                 if (response.ok) {
                     alert('✅ Parameters applied successfully 😎');
-                    window.location.reload(true);
+                    window.location.reload();
                 } else {
                     const errorMessage = await response.text();
                     console.error(errorMessage, response.status);
