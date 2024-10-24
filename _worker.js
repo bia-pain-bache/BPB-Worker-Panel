@@ -6991,7 +6991,6 @@ async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isW
     queryStrategy: isIPv62 ? "UseIP" : "UseIPv4",
     tag: "dns"
   };
-  isFakeDNS && dnsObject.servers.unshift("fakedns");
   isOutboundRule && dnsObject.servers.push({
     address: localDNS,
     domains: outboundRules
@@ -7009,6 +7008,19 @@ async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isW
       }
     });
     dnsObject.servers.push(localDNSServer);
+  }
+  if (isFakeDNS) {
+    if ((isBypass || isOutboundRule) && !isWorkerLess) {
+      dnsObject.servers.unshift({
+        address: "fakedns",
+        domains: [
+          ...localDNSServer.domains,
+          ...outboundRules
+        ]
+      });
+    } else {
+      dnsObject.servers.unshift("fakedns");
+    }
   }
   return dnsObject;
 }
