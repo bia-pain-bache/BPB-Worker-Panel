@@ -6952,7 +6952,7 @@ async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isW
     { rule: bypassChina, domain: "geosite:cn", ip: "geoip:cn" },
     { rule: bypassRussia, domain: "geosite:category-ru", ip: "geoip:ru" }
   ];
-  const hostsRules = [
+  const blockRules = [
     { rule: blockAds, host: "geosite:category-ads-all", address: ["127.0.0.1"] },
     { rule: blockAds, host: "geosite:category-ads-ir", address: ["127.0.0.1"] },
     { rule: blockPorn, host: "geosite:category-porn", address: ["127.0.0.1"] }
@@ -6965,7 +6965,7 @@ async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isW
   isBalancer && outboundRules.push("full:www.gstatic.com");
   const finalRemoteDNS = isWorkerLess ? ["https://cloudflare-dns.com/dns-query"] : isWarp ? warpEnableIPv6 ? ["1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001"] : ["1.1.1.1", "1.0.0.1"] : [remoteDNS];
   const dnsHost = {};
-  isBlock && hostsRules.forEach(({ rule, host, address }) => {
+  isBlock && blockRules.forEach(({ rule, host, address }) => {
     if (rule)
       dnsHost[host] = address;
   });
@@ -7010,17 +7010,8 @@ async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isW
     dnsObject.servers.push(localDNSServer);
   }
   if (isFakeDNS) {
-    if ((isBypass || isOutboundRule) && !isWorkerLess) {
-      dnsObject.servers.unshift({
-        address: "fakedns",
-        domains: [
-          ...localDNSServer.domains,
-          ...outboundRules
-        ]
-      });
-    } else {
-      dnsObject.servers.unshift("fakedns");
-    }
+    const fakeDNSServer = isBypass && !isWorkerLess ? { address: "fakedns", domains: localDNSServer.domains } : "fakedns";
+    dnsObject.servers.unshift(fakeDNSServer);
   }
   return dnsObject;
 }
