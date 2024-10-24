@@ -4227,7 +4227,6 @@ var worker_default = {
               }
             });
           case "/panel":
-            const pwd = await env.bpb.get("pwd");
             const isAuth = await Authenticate(request, env);
             if (request.method === "POST") {
               if (!isAuth)
@@ -4237,6 +4236,7 @@ var worker_default = {
               isReset ? await updateDataset(env, null, true) : await updateDataset(env, formData);
               return new Response("Success", { status: 200 });
             }
+            const pwd = await env.bpb.get("pwd");
             if (pwd && !isAuth)
               return Response.redirect(`${url.origin}/login`, 302);
             const isPassSet = pwd?.length >= 8;
@@ -5178,16 +5178,16 @@ function renderHomePage(request, proxySettings, hostName, isPassSet) {
   let regionNames = new Intl.DisplayNames(["en"], { type: "region" });
   const cfCountry = regionNames.of(request.cf.country);
   allPorts.forEach((port) => {
-    let id = `port-${port}`;
+    const id = `port-${port}`;
     const isChecked = ports.includes(port) ? "checked" : "";
-    let portBlock = `
+    const portBlock = `
             <div class="routing" style="grid-template-columns: 1fr 2fr; margin-right: 10px;">
                 <input type="checkbox" id=${id} name=${port} onchange="handlePortChange(event)" value="true" ${isChecked}>
                 <label style="margin-bottom: 3px;" for=${id}>${port}</label>
             </div>`;
     defaultHttpsPorts.includes(port) ? httpsPortsBlock += portBlock : httpPortsBlock += portBlock;
   });
-  const html = `
+  return `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -6636,7 +6636,6 @@ function renderHomePage(request, proxySettings, hostName, isPassSet) {
     <\/script>
     </body>	
     </html>`;
-  return html;
 }
 function renderLoginPage() {
   return `
@@ -6992,6 +6991,7 @@ async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isW
     queryStrategy: isIPv62 ? "UseIP" : "UseIPv4",
     tag: "dns"
   };
+  isFakeDNS && dnsObject.servers.unshift("fakedns");
   isOutboundRule && dnsObject.servers.push({
     address: localDNS,
     domains: outboundRules
@@ -7009,19 +7009,6 @@ async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isW
       }
     });
     dnsObject.servers.push(localDNSServer);
-  }
-  if (isFakeDNS) {
-    if ((isBypass || isOutboundRule) && !isWorkerLess) {
-      dnsObject.servers.unshift({
-        address: "fakedns",
-        domains: [
-          ...localDNSServer.domains,
-          ...outboundRules
-        ]
-      });
-    } else {
-      dnsObject.servers.unshift("fakedns");
-    }
   }
   return dnsObject;
 }
@@ -8038,6 +8025,7 @@ function buildSingBoxDNS(proxySettings, isChain, isWarp) {
   let fakeip;
   const isFakeDNS = vlessTrojanFakeDNS && !isWarp || warpFakeDNS && isWarp;
   const isIPv62 = enableIPv6 && !isWarp || warpEnableIPv6 && isWarp;
+  const isBypass = bypassIran || bypassChina || bypassRussia;
   const geoRules = [
     { rule: bypassIran, type: "direct", ruleSet: "geosite-ir" },
     { rule: bypassChina, type: "direct", ruleSet: "geosite-cn" },
@@ -8102,6 +8090,7 @@ function buildSingBoxDNS(proxySettings, isChain, isWarp) {
     rule && type === "direct" && bypassRule.rule_set.push(ruleSet);
     rule && type === "block" && blockRule.rule_set.push(ruleSet);
   });
+  isBypass && rules.push(bypassRule);
   rules.push(bypassRule, blockRule);
   if (isFakeDNS) {
     servers.push({
@@ -8251,24 +8240,26 @@ function buildSingBoxRoutingRules(proxySettings) {
     url: "",
     download_detour: "direct"
   };
-  let geositeDirectRule = createRule("direct");
-  let geoipDirectRule = createRule("direct");
-  let geositeBlockRule = createRule("block");
-  let geoipBlockRule = createRule("block");
+  let directRule = createRule("direct");
+  ;
+  let blockRule = createRule("block");
   let ruleSets = [];
   geoRules.forEach(({ rule, type, ruleSet }) => {
     const { geosite, geoip, geositeURL, geoipURL } = ruleSet;
     if (rule) {
-      type === "direct" ? geositeDirectRule.rule_set.push(geosite) : geositeBlockRule.rule_set.push(geosite);
-      ruleSets.push({ ...routingRuleSet, tag: geosite, url: geositeURL });
-      if (geoip) {
-        type === "direct" ? geoipDirectRule.rule_set.push(geoip) : geoipBlockRule.rule_set.push(geoip);
-        ruleSets.push({ ...routingRuleSet, tag: geoip, url: geoipURL });
+      if (type === "direct") {
+        directRule.rule_set.unshift(geosite);
+        directRule.rule_set.push(geoip);
+      } else {
+        blockRule.rule_set.unshift(geosite);
+        geoip && blockRule.rule_set.push(geoip);
       }
+      ruleSets.push({ ...routingRuleSet, tag: geosite, url: geositeURL });
+      geoip && ruleSets.push({ ...routingRuleSet, tag: geoip, url: geoipURL });
     }
   });
-  isBypass && rules.push(geositeDirectRule, geoipDirectRule);
-  rules.push(geositeBlockRule, geoipBlockRule);
+  isBypass && rules.push(directRule);
+  rules.push(blockRule);
   blockUDP443 && rules.push({
     network: "udp",
     port: 443,
