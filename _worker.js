@@ -5024,6 +5024,8 @@ async function updateDataset(env, newSettings, resetSettings) {
     customCdnHost: validateField("customCdnHost")?.trim() ?? currentSettings?.customCdnHost ?? "",
     customCdnSni: validateField("customCdnSni")?.trim() ?? currentSettings?.customCdnSni ?? "",
     bestVLESSTrojanInterval: validateField("bestVLESSTrojanInterval") ?? currentSettings?.bestVLESSTrojanInterval ?? "30",
+    customRuleBlockSites: validateField("customRuleBlockSites")?.trim() ?? currentSettings?.customRuleBlockSites ?? "",
+    customRuleBypassSites: validateField("customRuleBypassSites")?.trim() ?? currentSettings?.customRuleBypassSites ?? "",
     vlessConfigs: validateField("vlessConfigs") ?? currentSettings?.vlessConfigs ?? true,
     trojanConfigs: validateField("trojanConfigs") ?? currentSettings?.trojanConfigs ?? false,
     ports: validateField("ports")?.split(",") ?? currentSettings?.ports ?? ["443"],
@@ -5145,6 +5147,8 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
     customCdnHost,
     customCdnSni,
     bestVLESSTrojanInterval,
+    customRuleBlockSites,
+    customRuleBypassSites,
     vlessConfigs,
     trojanConfigs,
     ports,
@@ -5553,6 +5557,14 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
                     <div class="form-control">
                         <label for="bestVLESSTrojanInterval">\u{1F504} Best Interval</label>
                         <input type="number" id="bestVLESSTrojanInterval" name="bestVLESSTrojanInterval" min="10" max="90" value="${bestVLESSTrojanInterval}">
+                    </div>
+                    <div class="form-control">
+                        <label for="customRuleBlockSites">\u{1F171} Custom Rules: Block Sites</label>
+                        <input type="text" id="customRuleBlockSites" name="customRuleBlockSites" value="${customRuleBlockSites}">
+                    </div>
+                    <div class="form-control">
+                        <label for="customRuleBypassSites">\u{1F17F} Custom Rules: Bypass Sites</label>
+                        <input type="text" id="customRuleBypassSites" name="customRuleBypassSites" value="${customRuleBypassSites}">
                     </div>
                     <div class="form-control" style="padding-top: 10px;">
                         <label>\u2699\uFE0F Protocols</label>
@@ -6402,6 +6414,8 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
             const customCdnHost = document.getElementById('customCdnHost').value;
             const customCdnSni = document.getElementById('customCdnSni').value;
             const isCustomCdn = customCdnAddrs.length > 0 || customCdnHost !== '' || customCdnSni !== '';
+            const customRuleBlockSites = document.getElementById('customRuleBlockSites').value?.split(',').filter(addr => addr !== '');
+            const customRuleBypassSites = document.getElementById('customRuleBypassSites').value?.split(',').filter(addr => addr !== '');
             const warpEndpoints = document.getElementById('warpEndpoints').value?.replaceAll(' ', '').split(',');
             const noiseCountMin = getValue('noiseCountMin');
             const noiseCountMax = getValue('noiseCountMax');
@@ -6964,9 +6978,11 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
     bypassRussia,
     blockAds,
     blockPorn,
-    blockUDP443
+    blockUDP443,
+    customRuleBlockSites,
+    customRuleBypassSites
   } = proxySettings;
-  const isBypass = bypassIran || bypassChina || bypassRussia || bypassLAN;
+  const isBypass = bypassIran || bypassChina || bypassRussia || bypassLAN || customRuleBypassSites;
   const outboundDomains = outboundAddrs.filter((address) => isDomain(address));
   const isOutboundRule = outboundDomains.length > 0;
   let rules = [
@@ -7009,6 +7025,7 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
     bypassIran && domainRule.domain.push("geosite:category-ir") && ipRule.ip.push("geoip:ir");
     bypassChina && domainRule.domain.push("geosite:cn") && ipRule.ip.push("geoip:cn");
     bypassRussia && domainRule.domain.push("geosite:category-ru") && ipRule.ip.push("geoip:ru");
+    customRuleBypassSites && domainRule.domain.push(...(customRuleBypassSites.split(',')));
     rules.push(domainRule, ipRule);
   }
   blockUDP443 && rules.push({
@@ -7017,7 +7034,7 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
     outboundTag: "block",
     type: "field"
   });
-  if (blockAds || blockPorn) {
+  if (blockAds || blockPorn || customRuleBlockSites) {
     let rule = {
       domain: [],
       outboundTag: "block",
@@ -7025,6 +7042,7 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
     };
     blockAds && rule.domain.push("geosite:category-ads-all", "geosite:category-ads-ir");
     blockPorn && rule.domain.push("geosite:category-porn");
+    customRuleBlockSites && rule.domain.push(...(customRuleBlockSites.split(',')));
     rules.push(rule);
   }
   if (isBalancer) {
@@ -7616,7 +7634,9 @@ function buildClashRoutingRules(proxySettings) {
     bypassRussia,
     blockAds,
     blockPorn,
-    blockUDP443
+    blockUDP443,
+    customRuleBlockSites,
+    customRuleBypassSites
   } = proxySettings;
   localDNS !== "localhost" && rules.push(`AND,((IP-CIDR,${localDNS}/32),(DST-PORT,53)),DIRECT`);
   bypassLAN && rules.push("GEOSITE,private,DIRECT");
@@ -7630,6 +7650,8 @@ function buildClashRoutingRules(proxySettings) {
   blockUDP443 && rules.push("AND,((NETWORK,udp),(DST-PORT,443)),REJECT");
   blockAds && rules.push("GEOSITE,category-ads-all,REJECT", "GEOSITE,category-ads-ir,REJECT");
   blockPorn && rules.push("GEOSITE,category-porn,REJECT");
+  customRuleBypassSites && customRuleBypassSites.split(',').map(url => rules.push("DOMAIN-SUFFIX," + url + ",DIRECT"));
+  customRuleBlockSites && customRuleBlockSites.split(',').map(url => rules.push("DOMAIN-SUFFIX," + url + ",REJECT"));
   rules.push("MATCH,\u2705 Selector");
   return rules;
 }
@@ -8005,7 +8027,9 @@ function buildSingBoxRoutingRules(proxySettings) {
     bypassRussia,
     blockAds,
     blockPorn,
-    blockUDP443
+    blockUDP443,
+    customRuleBlockSites,
+    customRuleBypassSites
   } = proxySettings;
   let rules = [
     {
@@ -8018,6 +8042,12 @@ function buildSingBoxRoutingRules(proxySettings) {
       outbound: "dns-out"
     }
   ];
+  if (customRuleBlockSites) {
+    rules.push({
+      domain_suffix: customRuleBlockSites.split(','),
+      outbound: "block"
+    });
+  }
   let ruleSet = [
     {
       type: "remote",
@@ -8120,6 +8150,12 @@ function buildSingBoxRoutingRules(proxySettings) {
         download_detour: "direct"
       }
     );
+  }
+  if (customRuleBypassSites) {
+    rules.push({
+      domain_suffix: customRuleBypassSites.split(','),
+      outbound: "direct"
+    });
   }
   bypassLAN && rules.push({
     ip_is_private: true,
