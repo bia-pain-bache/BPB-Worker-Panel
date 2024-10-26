@@ -21,9 +21,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Install Wrangler
-        run: npm install -g wrangler
-
       - name: Build project
         run: npm run build
 
