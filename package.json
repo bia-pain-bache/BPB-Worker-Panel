@@ -5,6 +5,6 @@
     "tweetnacl": "^1.0.3"
   },
   "scripts": {
-    "build": "npx wrangler deploy ./src/worker.js --name bpb-worker-panel --compatibility-flag nodejs_compat --compatibility-date 2024-10-26 --dry-run --outdir=dist && cp ./dist/worker.js ./_worker.js"
+    "build": "npx wrangler deploy ./src/worker.js --name bpb-worker-panel --compatibility-flag [nodejs_compat] --compatibility-date 2024-10-26 --dry-run --outdir=dist && cp ./dist/worker.js ./_worker.js"
   }
 }
