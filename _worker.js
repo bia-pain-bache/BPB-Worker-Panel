@@ -4192,7 +4192,7 @@ var defaultHttpsPorts = ["443", "8443", "2053", "2083", "2087", "2096"];
 var proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 var dohURL = "https://cloudflare-dns.com/dns-query";
 var hashPassword;
-var panelVersion = "2.7.1";
+var panelVersion = "2.7.2";
 var worker_default = {
   /**
    * @param {import("@cloudflare/workers-types").Request} request
