@@ -8271,11 +8271,11 @@ function renderHomePage(request, proxySettings, hostName, isPassSet) {
                         <th>ISP</th>
                     </tr>
                     <tr>
-                        <td>Cloudflare</td>
-                        <td>${request.headers.get("cf-connecting-ip") || "Not found!"}</td>
-                        <td><b>${cfCountry || "Not found!"}</b></td>
-                        <td><b>${request.cf.city || "Not found!"}</b></td>
-                        <td><b>${request.cf.asOrganization || "Not found!"}</b></td>
+                        <td>Cloudflare CDN</td>
+                        <td>${request.headers.get("cf-connecting-ip") || "-"}</td>
+                        <td><b>${cfCountry || "-"}</b></td>
+                        <td><b>${request.cf.city || "-"}</b></td>
+                        <td><b>${request.cf.asOrganization.toUpperCase() || "-"}</b></td>
                     </tr>
                     <tr>
                         <td>Others</td>
@@ -8422,11 +8422,11 @@ function renderHomePage(request, proxySettings, hostName, isPassSet) {
         });
 
         const fetchIPInfo = async () => {
-            const updateUI = (ip = 'Not found!', country = 'Not found!', city = 'Not found!', isp = 'Not found!') => {
+            const updateUI = (ip = '-', country = '-', city = '-', isp = '-') => {
                 document.getElementById('ip').textContent = ip;
                 document.getElementById('country').textContent = country;
                 document.getElementById('city').textContent = city;
-                document.getElementById('isp').textContent = isp;
+                document.getElementById('isp').textContent = isp.toUpperCase();
             };
 
             try {
