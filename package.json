@@ -6,6 +6,6 @@
       "tweetnacl": "^1.0.3"
     },
     "scripts": {
-      "build": "npx wrangler deploy --dry-run --outdir=dist && cp ./dist/worker.js ./_worker.js"
+      "build": "npx wrangler deploy ./src/worker.js --dry-run --outdir=dist && cp ./dist/worker.js ./_worker.js"
     }
 }
