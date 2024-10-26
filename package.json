@@ -1,11 +1,11 @@
 {
-    "dependencies": {
-      "jose": "^5.9.4",
-      "js-sha256": "^0.11.0",
-      "jsonwebtoken": "^9.0.2",
-      "tweetnacl": "^1.0.3"
-    },
-    "scripts": {
-      "build": "npx wrangler deploy ./src/worker.js --dry-run --outdir=dist && cp ./dist/worker.js ./_worker.js"
-    }
+  "dependencies": {
+    "jose": "^5.9.4",
+    "js-sha256": "^0.11.0",
+    "jsonwebtoken": "^9.0.2",
+    "tweetnacl": "^1.0.3"
+  },
+  "scripts": {
+    "build": "npx wrangler deploy ./src/worker.js --name bpb-worker-panel --compatibility-flag nodejs_compat --compatibility-date 2024-10-26 --dry-run --outdir=dist && cp ./dist/worker.js ./_worker.js"
+  }
 }
