@@ -1,22 +1,9 @@
-function __cf_cjs(esm) {
-  const cjs = 'default' in esm ? esm.default : {};
-	for (const [k, v] of Object.entries(esm)) {
-		if (k !== 'default') {
-			Object.defineProperty(cjs, k, {
-				enumerable: true,
-				value: v,
-			});
-		}
-	}
-	return cjs;
-}
 var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
   get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
@@ -25,15 +12,8 @@ var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require
     return require.apply(this, arguments);
   throw new Error('Dynamic require of "' + x + '" is not supported');
 });
-var __esm = (fn2, res) => function __init() {
-  return fn2 && (res = (0, fn2[__getOwnPropNames(fn2)[0]])(fn2 = 0)), res;
-};
 var __commonJS = (cb, mod) => function __require2() {
   return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
-};
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
 };
 var __copyProps = (to, from, except, desc) => {
   if (from && typeof from === "object" || typeof from === "function") {
@@ -51,1770 +31,16 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
-var __publicField = (obj, key, value) => {
-  __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-  return value;
-};
 
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/_virtual_unenv_global_polyfill-clear$immediate.js
-var init_virtual_unenv_global_polyfill_clear_immediate = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/_virtual_unenv_global_polyfill-clear$immediate.js"() {
-    init_cloudflare();
-    globalThis.clearImmediate = clearImmediateFallback;
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/_internal/utils.mjs
-function createNotImplementedError(name) {
-  return new Error(`[unenv] ${name} is not implemented yet!`);
-}
-function notImplemented(name) {
-  const fn2 = /* @__PURE__ */ __name(() => {
-    throw createNotImplementedError(name);
-  }, "fn");
-  return Object.assign(fn2, { __unenv__: true });
-}
-function notImplementedClass(name) {
-  return class {
-    __unenv__ = true;
-    constructor() {
-      throw new Error(`[unenv] ${name} is not implemented yet!`);
-    }
-  };
-}
-var init_utils = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/_internal/utils.mjs"() {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
-    __name(createNotImplementedError, "createNotImplementedError");
-    __name(notImplemented, "notImplemented");
-    __name(notImplementedClass, "notImplementedClass");
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/mock/noop.mjs
-var noop_default;
-var init_noop = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/mock/noop.mjs"() {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
-    noop_default = Object.assign(() => {
-    }, { __unenv__: true });
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/timers/internal/immediate.mjs
-var Immediate;
-var init_immediate = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/timers/internal/immediate.mjs"() {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
-    Immediate = class {
-      _onImmediate;
-      _timeout;
-      constructor(callback, args) {
-        this._onImmediate = callback;
-        if ("setTimeout" in globalThis) {
-          this._timeout = setTimeout(callback, 0, ...args);
-        } else {
-          callback(...args);
-        }
-      }
-      ref() {
-        this._timeout?.ref();
-        return this;
-      }
-      unref() {
-        this._timeout?.unref();
-        return this;
-      }
-      hasRef() {
-        return this._timeout?.hasRef() ?? false;
-      }
-      [Symbol.dispose]() {
-        if ("clearTimeout" in globalThis) {
-          clearTimeout(this._timeout);
-        }
-      }
-    };
-    __name(Immediate, "Immediate");
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/timers/internal/set-immediate.mjs
-function setImmediateFallbackPromises(value) {
-  return new Promise((res) => {
-    res(value);
-  });
-}
-function setImmediateFallback(callback, ...args) {
-  return new Immediate(callback, args);
-}
-function clearImmediateFallback(immediate) {
-  immediate?.[Symbol.dispose]();
-}
-var init_set_immediate = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/timers/internal/set-immediate.mjs"() {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
-    init_immediate();
-    __name(setImmediateFallbackPromises, "setImmediateFallbackPromises");
-    __name(setImmediateFallback, "setImmediateFallback");
-    setImmediateFallback.__promisify__ = setImmediateFallbackPromises;
-    __name(clearImmediateFallback, "clearImmediateFallback");
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/timers/$cloudflare.mjs
-var init_cloudflare = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/timers/$cloudflare.mjs"() {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
-    init_set_immediate();
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/_virtual_unenv_global_polyfill-set$immediate.js
-var init_virtual_unenv_global_polyfill_set_immediate = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/_virtual_unenv_global_polyfill-set$immediate.js"() {
-    init_cloudflare();
-    globalThis.setImmediate = setImmediateFallback;
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/mock/proxy.mjs
-function createMock(name, overrides = {}) {
-  fn.prototype.name = name;
-  const props = {};
-  return new Proxy(fn, {
-    get(_target, prop) {
-      if (prop === "caller") {
-        return null;
-      }
-      if (prop === "__createMock__") {
-        return createMock;
-      }
-      if (prop === "__unenv__") {
-        return true;
-      }
-      if (prop in overrides) {
-        return overrides[prop];
-      }
-      return props[prop] = props[prop] || createMock(`${name}.${prop.toString()}`);
-    },
-    apply(_target, _this, _args) {
-      return createMock(`${name}()`);
-    },
-    construct(_target, _args, _newT) {
-      return createMock(`[${name}]`);
-    },
-    // @ts-ignore (ES6-only - removed in ES7)
-    // https://github.com/tc39/ecma262/issues/161
-    enumerate() {
-      return [];
-    }
-  });
-}
-var fn, proxy_default;
-var init_proxy = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/mock/proxy.mjs"() {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
-    fn = /* @__PURE__ */ __name(function() {
-    }, "fn");
-    __name(createMock, "createMock");
-    proxy_default = createMock("mock");
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/console/index.mjs
-import { Writable } from "node:stream";
-var _console, _ignoreErrors, _stderr, _stdout, log, info, trace, debug, table, error, warn, createTask, assert, clear, count, countReset, dir, dirxml, group, groupEnd, groupCollapsed, profile, profileEnd, time, timeEnd, timeLog, timeStamp, Console;
-var init_console = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/console/index.mjs"() {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
-    init_proxy();
-    init_noop();
-    init_utils();
-    init_proxy();
-    init_noop();
-    _console = globalThis.console;
-    _ignoreErrors = true;
-    _stderr = new Writable();
-    _stdout = new Writable();
-    log = _console?.log ?? noop_default;
-    info = _console?.info ?? log;
-    trace = _console?.trace ?? info;
-    debug = _console?.debug ?? log;
-    table = _console?.table ?? log;
-    error = _console?.error ?? log;
-    warn = _console?.warn ?? error;
-    createTask = _console?.createTask ?? notImplemented("console.createTask");
-    assert = notImplemented("console.assert");
-    clear = _console?.clear ?? noop_default;
-    count = _console?.count ?? noop_default;
-    countReset = _console?.countReset ?? noop_default;
-    dir = _console?.dir ?? noop_default;
-    dirxml = _console?.dirxml ?? noop_default;
-    group = _console?.group ?? noop_default;
-    groupEnd = _console?.groupEnd ?? noop_default;
-    groupCollapsed = _console?.groupCollapsed ?? noop_default;
-    profile = _console?.profile ?? noop_default;
-    profileEnd = _console?.profileEnd ?? noop_default;
-    time = _console?.time ?? noop_default;
-    timeEnd = _console?.timeEnd ?? noop_default;
-    timeLog = _console?.timeLog ?? noop_default;
-    timeStamp = _console?.timeStamp ?? noop_default;
-    Console = _console?.Console ?? proxy_default.__createMock__("console.Console");
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/console/$cloudflare.mjs
-var workerdConsole, assert2, clear2, context, count2, countReset2, createTask2, debug2, dir2, dirxml2, error2, group2, groupCollapsed2, groupEnd2, info2, log2, profile2, profileEnd2, table2, time2, timeEnd2, timeLog2, timeStamp2, trace2, warn2, cloudflare_default;
-var init_cloudflare2 = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/console/$cloudflare.mjs"() {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
-    init_console();
-    workerdConsole = globalThis["console"];
-    ({
-      assert: assert2,
-      clear: clear2,
-      context: (
-        // @ts-expect-error undocumented public API
-        context
-      ),
-      count: count2,
-      countReset: countReset2,
-      createTask: (
-        // @ts-expect-error undocumented public API
-        createTask2
-      ),
-      debug: debug2,
-      dir: dir2,
-      dirxml: dirxml2,
-      error: error2,
-      group: group2,
-      groupCollapsed: groupCollapsed2,
-      groupEnd: groupEnd2,
-      info: info2,
-      log: log2,
-      profile: profile2,
-      profileEnd: profileEnd2,
-      table: table2,
-      time: time2,
-      timeEnd: timeEnd2,
-      timeLog: timeLog2,
-      timeStamp: timeStamp2,
-      trace: trace2,
-      warn: warn2
-    } = workerdConsole);
-    Object.assign(workerdConsole, {
-      Console,
-      _ignoreErrors,
-      _stderr,
-      _stderrErrorHandler: noop_default,
-      _stdout,
-      _stdoutErrorHandler: noop_default,
-      _times: proxy_default
-    });
-    cloudflare_default = workerdConsole;
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/_virtual_unenv_global_polyfill-console.js
-var init_virtual_unenv_global_polyfill_console = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/_virtual_unenv_global_polyfill-console.js"() {
-    init_cloudflare2();
-    globalThis.console = cloudflare_default;
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/web/performance/_entry.mjs
-var _supportedEntryTypes, _PerformanceEntry, PerformanceEntry, _PerformanceMark, PerformanceMark, _PerformanceMeasure, PerformanceMeasure, _PerformanceResourceTiming, PerformanceResourceTiming;
-var init_entry = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/web/performance/_entry.mjs"() {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
-    _supportedEntryTypes = [
-      "event",
-      // PerformanceEntry
-      "mark",
-      // PerformanceMark
-      "measure",
-      // PerformanceMeasure
-      "resource"
-      // PerformanceResourceTiming
-    ];
-    _PerformanceEntry = class {
-      __unenv__ = true;
-      detail;
-      entryType = "event";
-      name;
-      startTime;
-      constructor(name, options) {
-        this.name = name;
-        this.startTime = options?.startTime || performance.now();
-        this.detail = options?.detail;
-      }
-      get duration() {
-        return performance.now() - this.startTime;
-      }
-      toJSON() {
-        return {
-          name: this.name,
-          entryType: this.entryType,
-          startTime: this.startTime,
-          duration: this.duration,
-          detail: this.detail
-        };
-      }
-    };
-    __name(_PerformanceEntry, "_PerformanceEntry");
-    PerformanceEntry = globalThis.PerformanceEntry || _PerformanceEntry;
-    _PerformanceMark = class extends _PerformanceEntry {
-      entryType = "mark";
-    };
-    __name(_PerformanceMark, "_PerformanceMark");
-    PerformanceMark = globalThis.PerformanceMark || _PerformanceMark;
-    _PerformanceMeasure = class extends _PerformanceEntry {
-      entryType = "measure";
-    };
-    __name(_PerformanceMeasure, "_PerformanceMeasure");
-    PerformanceMeasure = globalThis.PerformanceMeasure || _PerformanceMeasure;
-    _PerformanceResourceTiming = class extends _PerformanceEntry {
-      entryType = "resource";
-      serverTiming = [];
-      connectEnd = 0;
-      connectStart = 0;
-      decodedBodySize = 0;
-      domainLookupEnd = 0;
-      domainLookupStart = 0;
-      encodedBodySize = 0;
-      fetchStart = 0;
-      initiatorType = "";
-      name = "";
-      nextHopProtocol = "";
-      redirectEnd = 0;
-      redirectStart = 0;
-      requestStart = 0;
-      responseEnd = 0;
-      responseStart = 0;
-      secureConnectionStart = 0;
-      startTime = 0;
-      transferSize = 0;
-      workerStart = 0;
-    };
-    __name(_PerformanceResourceTiming, "_PerformanceResourceTiming");
-    PerformanceResourceTiming = globalThis.PerformanceResourceTiming || _PerformanceResourceTiming;
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/web/performance/_performance.mjs
-var _timeOrigin, _Performance, Performance, performance2;
-var init_performance = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/web/performance/_performance.mjs"() {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
-    init_utils();
-    init_proxy();
-    init_entry();
-    _timeOrigin = Date.now();
-    _Performance = class {
-      __unenv__ = true;
-      timeOrigin = _timeOrigin;
-      eventCounts = /* @__PURE__ */ new Map();
-      _entries = [];
-      _resourceTimingBufferSize = 0;
-      navigation = proxy_default.__createMock__("PerformanceNavigation");
-      timing = proxy_default.__createMock__("PerformanceTiming");
-      onresourcetimingbufferfull = null;
-      now() {
-        if (globalThis?.performance?.now && this.timeOrigin === _timeOrigin) {
-          return globalThis.performance.now();
-        }
-        return Date.now() - this.timeOrigin;
-      }
-      clearMarks(markName) {
-        this._entries = markName ? this._entries.filter((e) => e.name !== markName) : this._entries.filter((e) => e.entryType !== "mark");
-      }
-      clearMeasures(measureName) {
-        this._entries = measureName ? this._entries.filter((e) => e.name !== measureName) : this._entries.filter((e) => e.entryType !== "measure");
-      }
-      clearResourceTimings() {
-        this._entries = this._entries.filter(
-          (e) => e.entryType !== "resource" || e.entryType !== "navigation"
-        );
-      }
-      getEntries() {
-        return this._entries;
-      }
-      getEntriesByName(name, type) {
-        return this._entries.filter(
-          (e) => e.name === name && (!type || e.entryType === type)
-        );
-      }
-      getEntriesByType(type) {
-        return this._entries.filter(
-          (e) => e.entryType === type
-        );
-      }
-      mark(name, options) {
-        const entry = new _PerformanceMark(name, options);
-        this._entries.push(entry);
-        return entry;
-      }
-      measure(measureName, startOrMeasureOptions, endMark) {
-        let start;
-        let end;
-        if (typeof startOrMeasureOptions === "string") {
-          start = this.getEntriesByName(startOrMeasureOptions, "mark")[0]?.startTime;
-          end = this.getEntriesByName(endMark, "mark")[0]?.startTime;
-        } else {
-          start = Number.parseFloat(startOrMeasureOptions?.start) || performance2.now();
-          end = Number.parseFloat(startOrMeasureOptions?.end) || performance2.now();
-        }
-        const entry = new _PerformanceMeasure(measureName, {
-          startTime: start,
-          detail: { start, end }
-        });
-        this._entries.push(entry);
-        return entry;
-      }
-      setResourceTimingBufferSize(maxSize) {
-        this._resourceTimingBufferSize = maxSize;
-      }
-      toJSON() {
-        return this;
-      }
-      addEventListener(type, listener, options) {
-        throw createNotImplementedError("Performance.addEventListener");
-      }
-      removeEventListener(type, listener, options) {
-        throw createNotImplementedError("Performance.removeEventListener");
-      }
-      dispatchEvent(event) {
-        throw createNotImplementedError("Performance.dispatchEvent");
-      }
-    };
-    __name(_Performance, "_Performance");
-    Performance = globalThis.Performance || _Performance;
-    performance2 = globalThis.performance || new Performance();
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/web/performance/_observer.mjs
-var _PerformanceObserver, PerformanceObserver, _PerformanceObserverEntryList, PerformanceObserverEntryList;
-var init_observer = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/web/performance/_observer.mjs"() {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
-    init_utils();
-    init_entry();
-    _PerformanceObserver = class {
-      __unenv__ = true;
-      _callback = null;
-      constructor(callback) {
-        this._callback = callback;
-      }
-      takeRecords() {
-        return [];
-      }
-      disconnect() {
-        throw createNotImplementedError("PerformanceObserver.disconnect");
-      }
-      observe(options) {
-        throw createNotImplementedError("PerformanceObserver.observe");
-      }
-    };
-    __name(_PerformanceObserver, "_PerformanceObserver");
-    __publicField(_PerformanceObserver, "supportedEntryTypes", _supportedEntryTypes);
-    PerformanceObserver = globalThis.PerformanceObserver || _PerformanceObserver;
-    _PerformanceObserverEntryList = class {
-      __unenv__ = true;
-      getEntries() {
-        return [];
-      }
-      getEntriesByName(_name, _type) {
-        return [];
-      }
-      getEntriesByType(type) {
-        return [];
-      }
-    };
-    __name(_PerformanceObserverEntryList, "_PerformanceObserverEntryList");
-    PerformanceObserverEntryList = globalThis.PerformanceObserverEntryList || _PerformanceObserverEntryList;
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/web/performance/index.mjs
-var init_performance2 = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/web/performance/index.mjs"() {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
-    init_performance();
-    init_observer();
-    init_entry();
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/polyfill/global-this.mjs
-function getGlobal() {
-  if (typeof globalThis !== "undefined") {
-    return globalThis;
-  }
-  if (typeof self !== "undefined") {
-    return self;
-  }
-  if (typeof window !== "undefined") {
-    return window;
-  }
-  if (typeof global !== "undefined") {
-    return global;
-  }
-  return {};
-}
-var global_this_default;
-var init_global_this = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/polyfill/global-this.mjs"() {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
-    __name(getGlobal, "getGlobal");
-    global_this_default = getGlobal();
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/polyfill/performance.mjs
-var performance_default;
-var init_performance3 = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/polyfill/performance.mjs"() {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
-    init_performance2();
-    init_global_this();
-    global_this_default.performance = global_this_default.performance || performance2;
-    global_this_default.Performance = global_this_default.Performance || Performance;
-    global_this_default.PerformanceEntry = global_this_default.PerformanceEntry || PerformanceEntry;
-    global_this_default.PerformanceMark = global_this_default.PerformanceMark || PerformanceMark;
-    global_this_default.PerformanceMeasure = global_this_default.PerformanceMeasure || PerformanceMeasure;
-    global_this_default.PerformanceObserver = global_this_default.PerformanceObserver || PerformanceObserver;
-    global_this_default.PerformanceObserverEntryList = global_this_default.PerformanceObserverEntryList || PerformanceObserverEntryList;
-    global_this_default.PerformanceResourceTiming = global_this_default.PerformanceResourceTiming || PerformanceResourceTiming;
-    performance_default = global_this_default.performance;
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/_virtual_unenv_global_polyfill-performance.js
-var init_virtual_unenv_global_polyfill_performance = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/_virtual_unenv_global_polyfill-performance.js"() {
-    init_performance3();
-    globalThis.performance = performance_default;
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/mock/empty.mjs
-var empty_default;
-var init_empty = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/mock/empty.mjs"() {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
-    empty_default = Object.freeze(
-      Object.create(null, {
-        __unenv__: { get: () => true }
-      })
-    );
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/process/internal/env.mjs
-var _envShim, _processEnv, _getEnv, env;
-var init_env = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/process/internal/env.mjs"() {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
-    _envShim = /* @__PURE__ */ Object.create(null);
-    _processEnv = globalThis.process?.env;
-    _getEnv = /* @__PURE__ */ __name((useShim) => _processEnv || globalThis.__env__ || (useShim ? _envShim : globalThis), "_getEnv");
-    env = new Proxy(_envShim, {
-      get(_, prop) {
-        const env22 = _getEnv();
-        return env22[prop] ?? _envShim[prop];
-      },
-      has(_, prop) {
-        const env22 = _getEnv();
-        return prop in env22 || prop in _envShim;
-      },
-      set(_, prop, value) {
-        const env22 = _getEnv(true);
-        env22[prop] = value;
-        return true;
-      },
-      deleteProperty(_, prop) {
-        const env22 = _getEnv(true);
-        delete env22[prop];
-        return true;
-      },
-      ownKeys() {
-        const env22 = _getEnv();
-        return Object.keys(env22);
-      }
-    });
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/process/internal/time.mjs
-function _createNextTickWithTimeout() {
-  let queue = [];
-  let draining = false;
-  let currentQueue;
-  let queueIndex = -1;
-  function cleanUpNextTick() {
-    if (!draining || !currentQueue) {
-      return;
-    }
-    draining = false;
-    if (currentQueue.length > 0) {
-      queue = [...currentQueue, ...queue];
-    } else {
-      queueIndex = -1;
-    }
-    if (queue.length > 0) {
-      drainQueue();
-    }
-  }
-  __name(cleanUpNextTick, "cleanUpNextTick");
-  function drainQueue() {
-    if (draining) {
-      return;
-    }
-    const timeout = setTimeout(cleanUpNextTick);
-    draining = true;
-    let len = queue.length;
-    while (len) {
-      currentQueue = queue;
-      queue = [];
-      while (++queueIndex < len) {
-        if (currentQueue) {
-          currentQueue[queueIndex]();
-        }
-      }
-      queueIndex = -1;
-      len = queue.length;
-    }
-    currentQueue = void 0;
-    draining = false;
-    clearTimeout(timeout);
-  }
-  __name(drainQueue, "drainQueue");
-  const nextTick22 = /* @__PURE__ */ __name((cb, ...args) => {
-    queue.push(cb.bind(void 0, ...args));
-    if (queue.length === 1 && !draining) {
-      setTimeout(drainQueue);
-    }
-  }, "nextTick2");
-  return nextTick22;
-}
-var hrtime, nextTick;
-var init_time = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/process/internal/time.mjs"() {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
-    hrtime = Object.assign(
-      /* @__PURE__ */ __name(function hrtime2(startTime) {
-        const now = Date.now();
-        const seconds = Math.trunc(now / 1e3);
-        const nanos = now % 1e3 * 1e6;
-        if (startTime) {
-          let diffSeconds = seconds - startTime[0];
-          let diffNanos = nanos - startTime[0];
-          if (diffNanos < 0) {
-            diffSeconds = diffSeconds - 1;
-            diffNanos = 1e9 + diffNanos;
-          }
-          return [diffSeconds, diffNanos];
-        }
-        return [seconds, nanos];
-      }, "hrtime2"),
-      {
-        bigint: /* @__PURE__ */ __name(function bigint() {
-          return BigInt(Date.now() * 1e6);
-        }, "bigint")
-      }
-    );
-    nextTick = globalThis.queueMicrotask ? (cb, ...args) => {
-      globalThis.queueMicrotask(cb.bind(void 0, ...args));
-    } : _createNextTickWithTimeout();
-    __name(_createNextTickWithTimeout, "_createNextTickWithTimeout");
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/process/internal/process.mjs
-function noop() {
-  return process2;
-}
-var title, argv, version, versions, on, addListener, once, off, removeListener, removeAllListeners, emit, prependListener, prependOnceListener, listeners, listenerCount, binding, _cwd, cwd, chdir, umask, getegid, geteuid, getgid, getuid, getgroups, getBuiltinModule, abort, allowedNodeEnvironmentFlags, arch, argv0, config, connected, constrainedMemory, availableMemory, cpuUsage, debugPort, dlopen, disconnect, emitWarning, eventNames, execArgv, execPath, exit, features, getActiveResourcesInfo, getMaxListeners, kill, memoryUsage, pid, platform, ppid, rawListeners, release, report, resourceUsage, setegid, seteuid, setgid, setgroups, setuid, setMaxListeners, setSourceMapsEnabled, stdout, stderr, stdin, traceDeprecation, uptime, exitCode, setUncaughtExceptionCaptureCallback, hasUncaughtExceptionCaptureCallback, sourceMapsEnabled, loadEnvFile, mainModule, permission, channel, throwDeprecation, assert3, openStdin, _debugEnd, _debugProcess, _fatalException, _getActiveHandles, _getActiveRequests, _kill, _preload_modules, _rawDebug, _startProfilerIdleNotifier, _stopProfilerIdleNotifier, _tickCallback, _linkedBinding, domain, initgroups, moduleLoadList, reallyExit, _exiting, _events, _eventsCount, _maxListeners, process2;
-var init_process = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/process/internal/process.mjs"() {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
-    init_proxy();
-    init_empty();
-    init_utils();
-    init_env();
-    init_time();
-    init_time();
-    title = "unenv";
-    argv = [];
-    version = "";
-    versions = {
-      ares: "",
-      http_parser: "",
-      icu: "",
-      modules: "",
-      node: "",
-      openssl: "",
-      uv: "",
-      v8: "",
-      zlib: ""
-    };
-    __name(noop, "noop");
-    on = noop;
-    addListener = noop;
-    once = noop;
-    off = noop;
-    removeListener = noop;
-    removeAllListeners = noop;
-    emit = /* @__PURE__ */ __name(function emit2(event) {
-      if (event === "message" || event === "multipleResolves") {
-        return process2;
-      }
-      return false;
-    }, "emit2");
-    prependListener = noop;
-    prependOnceListener = noop;
-    listeners = /* @__PURE__ */ __name(function(name) {
-      return [];
-    }, "listeners");
-    listenerCount = /* @__PURE__ */ __name(() => 0, "listenerCount");
-    binding = /* @__PURE__ */ __name(function(name) {
-      throw new Error("[unenv] process.binding is not supported");
-    }, "binding");
-    _cwd = "/";
-    cwd = /* @__PURE__ */ __name(function cwd2() {
-      return _cwd;
-    }, "cwd2");
-    chdir = /* @__PURE__ */ __name(function chdir2(dir3) {
-      _cwd = dir3;
-    }, "chdir2");
-    umask = /* @__PURE__ */ __name(function umask2() {
-      return 0;
-    }, "umask2");
-    getegid = /* @__PURE__ */ __name(function getegid2() {
-      return 1e3;
-    }, "getegid2");
-    geteuid = /* @__PURE__ */ __name(function geteuid2() {
-      return 1e3;
-    }, "geteuid2");
-    getgid = /* @__PURE__ */ __name(function getgid2() {
-      return 1e3;
-    }, "getgid2");
-    getuid = /* @__PURE__ */ __name(function getuid2() {
-      return 1e3;
-    }, "getuid2");
-    getgroups = /* @__PURE__ */ __name(function getgroups2() {
-      return [];
-    }, "getgroups2");
-    getBuiltinModule = /* @__PURE__ */ __name((_name) => void 0, "getBuiltinModule");
-    abort = notImplemented("process.abort");
-    allowedNodeEnvironmentFlags = /* @__PURE__ */ new Set();
-    arch = "";
-    argv0 = "";
-    config = empty_default;
-    connected = false;
-    constrainedMemory = /* @__PURE__ */ __name(() => 0, "constrainedMemory");
-    availableMemory = /* @__PURE__ */ __name(() => 0, "availableMemory");
-    cpuUsage = notImplemented("process.cpuUsage");
-    debugPort = 0;
-    dlopen = notImplemented("process.dlopen");
-    disconnect = noop;
-    emitWarning = noop;
-    eventNames = notImplemented("process.eventNames");
-    execArgv = [];
-    execPath = "";
-    exit = notImplemented("process.exit");
-    features = /* @__PURE__ */ Object.create({
-      inspector: void 0,
-      debug: void 0,
-      uv: void 0,
-      ipv6: void 0,
-      tls_alpn: void 0,
-      tls_sni: void 0,
-      tls_ocsp: void 0,
-      tls: void 0,
-      cached_builtins: void 0
-    });
-    getActiveResourcesInfo = /* @__PURE__ */ __name(() => [], "getActiveResourcesInfo");
-    getMaxListeners = notImplemented(
-      "process.getMaxListeners"
-    );
-    kill = notImplemented("process.kill");
-    memoryUsage = Object.assign(
-      () => ({
-        arrayBuffers: 0,
-        rss: 0,
-        external: 0,
-        heapTotal: 0,
-        heapUsed: 0
-      }),
-      { rss: () => 0 }
-    );
-    pid = 1e3;
-    platform = "";
-    ppid = 1e3;
-    rawListeners = notImplemented(
-      "process.rawListeners"
-    );
-    release = /* @__PURE__ */ Object.create({
-      name: "",
-      lts: "",
-      sourceUrl: void 0,
-      headersUrl: void 0
-    });
-    report = /* @__PURE__ */ Object.create({
-      compact: void 0,
-      directory: void 0,
-      filename: void 0,
-      getReport: notImplemented("process.report.getReport"),
-      reportOnFatalError: void 0,
-      reportOnSignal: void 0,
-      reportOnUncaughtException: void 0,
-      signal: void 0,
-      writeReport: notImplemented("process.report.writeReport")
-    });
-    resourceUsage = notImplemented(
-      "process.resourceUsage"
-    );
-    setegid = notImplemented("process.setegid");
-    seteuid = notImplemented("process.seteuid");
-    setgid = notImplemented("process.setgid");
-    setgroups = notImplemented("process.setgroups");
-    setuid = notImplemented("process.setuid");
-    setMaxListeners = notImplemented(
-      "process.setMaxListeners"
-    );
-    setSourceMapsEnabled = notImplemented("process.setSourceMapsEnabled");
-    stdout = proxy_default.__createMock__("process.stdout");
-    stderr = proxy_default.__createMock__("process.stderr");
-    stdin = proxy_default.__createMock__("process.stdin");
-    traceDeprecation = false;
-    uptime = /* @__PURE__ */ __name(() => 0, "uptime");
-    exitCode = 0;
-    setUncaughtExceptionCaptureCallback = notImplemented("process.setUncaughtExceptionCaptureCallback");
-    hasUncaughtExceptionCaptureCallback = /* @__PURE__ */ __name(() => false, "hasUncaughtExceptionCaptureCallback");
-    sourceMapsEnabled = false;
-    loadEnvFile = notImplemented(
-      "process.loadEnvFile"
-    );
-    mainModule = void 0;
-    permission = {
-      has: () => false
-    };
-    channel = {
-      ref() {
-      },
-      unref() {
-      }
-    };
-    throwDeprecation = false;
-    assert3 = notImplemented("process.assert");
-    openStdin = notImplemented("process.openStdin");
-    _debugEnd = notImplemented("process._debugEnd");
-    _debugProcess = notImplemented("process._debugProcess");
-    _fatalException = notImplemented("process._fatalException");
-    _getActiveHandles = notImplemented("process._getActiveHandles");
-    _getActiveRequests = notImplemented("process._getActiveRequests");
-    _kill = notImplemented("process._kill");
-    _preload_modules = [];
-    _rawDebug = notImplemented("process._rawDebug");
-    _startProfilerIdleNotifier = notImplemented(
-      "process._startProfilerIdleNotifier"
-    );
-    _stopProfilerIdleNotifier = notImplemented(
-      "process.__stopProfilerIdleNotifier"
-    );
-    _tickCallback = notImplemented("process._tickCallback");
-    _linkedBinding = notImplemented("process._linkedBinding");
-    domain = proxy_default.__createMock__("process.domain");
-    initgroups = notImplemented("process.initgroups");
-    moduleLoadList = [];
-    reallyExit = noop;
-    _exiting = false;
-    _events = [];
-    _eventsCount = 0;
-    _maxListeners = 0;
-    process2 = {
-      // @ts-expect-error
-      _events,
-      _eventsCount,
-      _exiting,
-      _maxListeners,
-      _debugEnd,
-      _debugProcess,
-      _fatalException,
-      _getActiveHandles,
-      _getActiveRequests,
-      _kill,
-      _preload_modules,
-      _rawDebug,
-      _startProfilerIdleNotifier,
-      _stopProfilerIdleNotifier,
-      _tickCallback,
-      domain,
-      initgroups,
-      moduleLoadList,
-      reallyExit,
-      exitCode,
-      abort,
-      addListener,
-      allowedNodeEnvironmentFlags,
-      hasUncaughtExceptionCaptureCallback,
-      setUncaughtExceptionCaptureCallback,
-      loadEnvFile,
-      sourceMapsEnabled,
-      throwDeprecation,
-      mainModule,
-      permission,
-      channel,
-      arch,
-      argv,
-      argv0,
-      assert: assert3,
-      binding,
-      chdir,
-      config,
-      connected,
-      constrainedMemory,
-      availableMemory,
-      cpuUsage,
-      cwd,
-      debugPort,
-      dlopen,
-      disconnect,
-      emit,
-      emitWarning,
-      env,
-      eventNames,
-      execArgv,
-      execPath,
-      exit,
-      features,
-      getBuiltinModule,
-      getegid,
-      geteuid,
-      getgid,
-      getgroups,
-      getuid,
-      getActiveResourcesInfo,
-      getMaxListeners,
-      hrtime,
-      kill,
-      listeners,
-      listenerCount,
-      memoryUsage,
-      nextTick,
-      on,
-      off,
-      once,
-      openStdin,
-      pid,
-      platform,
-      ppid,
-      prependListener,
-      prependOnceListener,
-      rawListeners,
-      release,
-      removeAllListeners,
-      removeListener,
-      report,
-      resourceUsage,
-      setegid,
-      seteuid,
-      setgid,
-      setgroups,
-      setuid,
-      setMaxListeners,
-      setSourceMapsEnabled,
-      stderr,
-      stdin,
-      stdout,
-      title,
-      traceDeprecation,
-      umask,
-      uptime,
-      version,
-      versions
-    };
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/process/$cloudflare.mjs
-var unpatchedGlobalThisProcess, getBuiltinModule2, workerdProcess, env2, nextTick2, _process, cloudflare_default2;
-var init_cloudflare3 = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/process/$cloudflare.mjs"() {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
-    init_process();
-    unpatchedGlobalThisProcess = globalThis["process"];
-    getBuiltinModule2 = unpatchedGlobalThisProcess.getBuiltinModule;
-    workerdProcess = getBuiltinModule2("node:process");
-    ({ env: env2, nextTick: nextTick2 } = workerdProcess);
-    _process = {
-      /**
-       * manually unroll unenv-polyfilled-symbols to make it tree-shakeable
-       */
-      // @ts-expect-error (not typed)
-      _debugEnd,
-      _debugProcess,
-      _events,
-      _eventsCount,
-      _exiting,
-      _fatalException,
-      _getActiveHandles,
-      _getActiveRequests,
-      _kill,
-      _linkedBinding,
-      _maxListeners,
-      _preload_modules,
-      _rawDebug,
-      _startProfilerIdleNotifier,
-      _stopProfilerIdleNotifier,
-      _tickCallback,
-      abort,
-      addListener,
-      allowedNodeEnvironmentFlags,
-      arch,
-      argv,
-      argv0,
-      assert: assert3,
-      availableMemory,
-      binding,
-      chdir,
-      config,
-      constrainedMemory,
-      cpuUsage,
-      cwd,
-      debugPort,
-      dlopen,
-      domain,
-      emit,
-      emitWarning,
-      eventNames,
-      execArgv,
-      execPath,
-      exit,
-      exitCode,
-      features,
-      getActiveResourcesInfo,
-      getMaxListeners,
-      getegid,
-      geteuid,
-      getgid,
-      getgroups,
-      getuid,
-      hasUncaughtExceptionCaptureCallback,
-      hrtime,
-      initgroups,
-      kill,
-      listenerCount,
-      listeners,
-      loadEnvFile,
-      memoryUsage,
-      moduleLoadList,
-      off,
-      on,
-      once,
-      openStdin,
-      pid,
-      platform,
-      ppid,
-      prependListener,
-      prependOnceListener,
-      rawListeners,
-      reallyExit,
-      release,
-      removeAllListeners,
-      removeListener,
-      report,
-      resourceUsage,
-      setMaxListeners,
-      setSourceMapsEnabled,
-      setUncaughtExceptionCaptureCallback,
-      setegid,
-      seteuid,
-      setgid,
-      setgroups,
-      setuid,
-      sourceMapsEnabled,
-      stderr,
-      stdin,
-      stdout,
-      title,
-      umask,
-      uptime,
-      version,
-      versions,
-      /**
-       * manually unroll workerd-polyfilled-symbols to make it tree-shakeable
-       */
-      env: env2,
-      getBuiltinModule: getBuiltinModule2,
-      nextTick: nextTick2
-    };
-    cloudflare_default2 = _process;
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/_virtual_unenv_global_polyfill-process.js
-var init_virtual_unenv_global_polyfill_process = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/_virtual_unenv_global_polyfill-process.js"() {
-    init_cloudflare3();
-    globalThis.process = cloudflare_default2;
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/crypto/internal/web.mjs
-var web_exports = {};
-__export(web_exports, {
-  getRandomValues: () => getRandomValues,
-  randomUUID: () => randomUUID,
-  subtle: () => subtle
-});
-var subtle, randomUUID, getRandomValues;
-var init_web = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/crypto/internal/web.mjs"() {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
-    subtle = globalThis.crypto?.subtle;
-    randomUUID = /* @__PURE__ */ __name(() => {
-      return globalThis.crypto?.randomUUID();
-    }, "randomUUID");
-    getRandomValues = /* @__PURE__ */ __name((array) => {
-      return globalThis.crypto?.getRandomValues(array);
-    }, "getRandomValues");
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/crypto/internal/node.mjs
-var node_exports = {};
-__export(node_exports, {
-  Certificate: () => Certificate,
-  Cipher: () => Cipher,
-  Cipheriv: () => Cipheriv,
-  Decipher: () => Decipher,
-  Decipheriv: () => Decipheriv,
-  DiffieHellman: () => DiffieHellman,
-  DiffieHellmanGroup: () => DiffieHellmanGroup,
-  ECDH: () => ECDH,
-  Hash: () => Hash,
-  Hmac: () => Hmac,
-  KeyObject: () => KeyObject,
-  Sign: () => Sign,
-  Verify: () => Verify,
-  X509Certificate: () => X509Certificate,
-  checkPrime: () => checkPrime,
-  checkPrimeSync: () => checkPrimeSync,
-  constants: () => constants,
-  createCipher: () => createCipher,
-  createCipheriv: () => createCipheriv,
-  createDecipher: () => createDecipher,
-  createDecipheriv: () => createDecipheriv,
-  createDiffieHellman: () => createDiffieHellman,
-  createDiffieHellmanGroup: () => createDiffieHellmanGroup,
-  createECDH: () => createECDH,
-  createHash: () => createHash,
-  createHmac: () => createHmac,
-  createPrivateKey: () => createPrivateKey,
-  createPublicKey: () => createPublicKey,
-  createSecretKey: () => createSecretKey,
-  createSign: () => createSign,
-  createVerify: () => createVerify,
-  diffieHellman: () => diffieHellman,
-  fips: () => fips,
-  generateKey: () => generateKey,
-  generateKeyPair: () => generateKeyPair,
-  generateKeyPairSync: () => generateKeyPairSync,
-  generateKeySync: () => generateKeySync,
-  generatePrime: () => generatePrime,
-  generatePrimeSync: () => generatePrimeSync,
-  getCipherInfo: () => getCipherInfo,
-  getCiphers: () => getCiphers,
-  getCurves: () => getCurves,
-  getDiffieHellman: () => getDiffieHellman,
-  getFips: () => getFips,
-  getHashes: () => getHashes,
-  hash: () => hash,
-  hkdf: () => hkdf,
-  hkdfSync: () => hkdfSync,
-  pbkdf2: () => pbkdf2,
-  pbkdf2Sync: () => pbkdf2Sync,
-  privateDecrypt: () => privateDecrypt,
-  privateEncrypt: () => privateEncrypt,
-  pseudoRandomBytes: () => pseudoRandomBytes,
-  publicDecrypt: () => publicDecrypt,
-  publicEncrypt: () => publicEncrypt,
-  randomBytes: () => randomBytes,
-  randomFill: () => randomFill,
-  randomFillSync: () => randomFillSync,
-  randomInt: () => randomInt,
-  scrypt: () => scrypt,
-  scryptSync: () => scryptSync,
-  secureHeapUsed: () => secureHeapUsed,
-  setEngine: () => setEngine,
-  setFips: () => setFips,
-  sign: () => sign,
-  timingSafeEqual: () => timingSafeEqual,
-  verify: () => verify,
-  webcrypto: () => webcrypto
-});
-var MAX_RANDOM_VALUE_BYTES, webcrypto, randomBytes, fips, constants, checkPrime, checkPrimeSync, createCipher, createDecipher, pseudoRandomBytes, createCipheriv, createDecipheriv, createDiffieHellman, createDiffieHellmanGroup, createECDH, createHash, createHmac, createPrivateKey, createPublicKey, createSecretKey, createSign, createVerify, diffieHellman, generatePrime, generatePrimeSync, getCiphers, getCipherInfo, getCurves, getDiffieHellman, getHashes, hkdf, hkdfSync, pbkdf2, pbkdf2Sync, generateKeyPair, generateKeyPairSync, generateKey, generateKeySync, privateDecrypt, privateEncrypt, publicDecrypt, publicEncrypt, randomFill, randomFillSync, randomInt, scrypt, scryptSync, sign, setEngine, timingSafeEqual, getFips, setFips, verify, secureHeapUsed, hash, Certificate, Cipher, Cipheriv, Decipher, Decipheriv, DiffieHellman, DiffieHellmanGroup, ECDH, Hash, Hmac, KeyObject, Sign, Verify, X509Certificate;
-var init_node = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/crypto/internal/node.mjs"() {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
-    init_utils();
-    init_web();
-    MAX_RANDOM_VALUE_BYTES = 65536;
-    webcrypto = new Proxy(
-      globalThis.crypto,
-      {
-        get(_, key) {
-          if (key === "CryptoKey") {
-            return globalThis.CryptoKey;
-          }
-          if (typeof globalThis.crypto[key] === "function") {
-            return globalThis.crypto[key].bind(globalThis.crypto);
-          }
-          return globalThis.crypto[key];
-        }
-      }
-    );
-    randomBytes = /* @__PURE__ */ __name((size, cb) => {
-      const bytes = Buffer.alloc(size, 0, void 0);
-      for (let generated = 0; generated < size; generated += MAX_RANDOM_VALUE_BYTES) {
-        getRandomValues(
-          Uint8Array.prototype.slice.call(
-            bytes,
-            generated,
-            generated + MAX_RANDOM_VALUE_BYTES
-          )
-        );
-      }
-      if (typeof cb === "function") {
-        cb(null, bytes);
-        return void 0;
-      }
-      return bytes;
-    }, "randomBytes");
-    fips = false;
-    constants = {};
-    checkPrime = notImplemented("crypto.checkPrime");
-    checkPrimeSync = notImplemented(
-      "crypto.checkPrimeSync"
-    );
-    createCipher = notImplemented("crypto.createCipher");
-    createDecipher = notImplemented("crypto.createDecipher");
-    pseudoRandomBytes = notImplemented("crypto.pseudoRandomBytes");
-    createCipheriv = notImplemented(
-      "crypto.createCipheriv"
-    );
-    createDecipheriv = notImplemented("crypto.createDecipheriv");
-    createDiffieHellman = notImplemented("crypto.createDiffieHellman");
-    createDiffieHellmanGroup = notImplemented("crypto.createDiffieHellmanGroup");
-    createECDH = notImplemented("crypto.createECDH");
-    createHash = notImplemented("crypto.createHash");
-    createHmac = notImplemented("crypto.createHmac");
-    createPrivateKey = notImplemented("crypto.createPrivateKey");
-    createPublicKey = notImplemented("crypto.createPublicKey");
-    createSecretKey = notImplemented("crypto.createSecretKey");
-    createSign = notImplemented("crypto.createSign");
-    createVerify = notImplemented(
-      "crypto.createVerify"
-    );
-    diffieHellman = notImplemented(
-      "crypto.diffieHellman"
-    );
-    generatePrime = notImplemented(
-      "crypto.generatePrime"
-    );
-    generatePrimeSync = notImplemented("crypto.generatePrimeSync");
-    getCiphers = notImplemented("crypto.getCiphers");
-    getCipherInfo = notImplemented(
-      "crypto.getCipherInfo"
-    );
-    getCurves = notImplemented("crypto.getCurves");
-    getDiffieHellman = notImplemented("crypto.getDiffieHellman");
-    getHashes = notImplemented("crypto.getHashes");
-    hkdf = notImplemented("crypto.hkdf");
-    hkdfSync = notImplemented("crypto.hkdfSync");
-    pbkdf2 = notImplemented("crypto.pbkdf2");
-    pbkdf2Sync = notImplemented("crypto.pbkdf2Sync");
-    generateKeyPair = notImplemented("crypto.generateKeyPair");
-    generateKeyPairSync = notImplemented("crypto.generateKeyPairSync");
-    generateKey = notImplemented("crypto.generateKey");
-    generateKeySync = notImplemented("crypto.generateKeySync");
-    privateDecrypt = notImplemented(
-      "crypto.privateDecrypt"
-    );
-    privateEncrypt = notImplemented(
-      "crypto.privateEncrypt"
-    );
-    publicDecrypt = notImplemented(
-      "crypto.publicDecrypt"
-    );
-    publicEncrypt = notImplemented(
-      "crypto.publicEncrypt"
-    );
-    randomFill = notImplemented("crypto.randomFill");
-    randomFillSync = notImplemented(
-      "crypto.randomFillSync"
-    );
-    randomInt = notImplemented("crypto.randomInt");
-    scrypt = notImplemented("crypto.scrypt");
-    scryptSync = notImplemented("crypto.scryptSync");
-    sign = notImplemented("crypto.sign");
-    setEngine = notImplemented("crypto.setEngine");
-    timingSafeEqual = notImplemented("crypto.timingSafeEqual");
-    getFips = notImplemented("crypto.getFips");
-    setFips = notImplemented("crypto.setFips");
-    verify = notImplemented("crypto.verify");
-    secureHeapUsed = notImplemented(
-      "crypto.secureHeapUsed"
-    );
-    hash = notImplemented("crypto.hash");
-    Certificate = notImplementedClass(
-      "crypto.Certificate"
-    );
-    Cipher = notImplementedClass(
-      "crypto.Cipher"
-    );
-    Cipheriv = notImplementedClass(
-      "crypto.Cipheriv"
-      // @ts-expect-error not typed yet
-    );
-    Decipher = notImplementedClass(
-      "crypto.Decipher"
-    );
-    Decipheriv = notImplementedClass(
-      "crypto.Decipheriv"
-      // @ts-expect-error not typed yet
-    );
-    DiffieHellman = notImplementedClass(
-      "crypto.DiffieHellman"
-    );
-    DiffieHellmanGroup = notImplementedClass(
-      "crypto.DiffieHellmanGroup"
-    );
-    ECDH = notImplementedClass(
-      "crypto.ECDH"
-    );
-    Hash = notImplementedClass(
-      "crypto.Hash"
-    );
-    Hmac = notImplementedClass(
-      "crypto.Hmac"
-    );
-    KeyObject = notImplementedClass(
-      "crypto.KeyObject"
-    );
-    Sign = notImplementedClass(
-      "crypto.Sign"
-    );
-    Verify = notImplementedClass(
-      "crypto.Verify"
-    );
-    X509Certificate = notImplementedClass(
-      "crypto.X509Certificate"
-    );
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/crypto/internal/constants.mjs
-var constants2, constants_default;
-var init_constants = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/crypto/internal/constants.mjs"() {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
-    constants2 = {
-      ALPN_ENABLED: 1,
-      // Node.js v18 only
-      DH_CHECK_P_NOT_PRIME: 1,
-      DH_CHECK_P_NOT_SAFE_PRIME: 2,
-      DH_NOT_SUITABLE_GENERATOR: 8,
-      DH_UNABLE_TO_CHECK_GENERATOR: 4,
-      ENGINE_METHOD_ALL: 65535,
-      ENGINE_METHOD_CIPHERS: 64,
-      ENGINE_METHOD_DH: 4,
-      ENGINE_METHOD_DIGESTS: 128,
-      ENGINE_METHOD_DSA: 2,
-      ENGINE_METHOD_EC: 2048,
-      ENGINE_METHOD_NONE: 0,
-      ENGINE_METHOD_PKEY_ASN1_METHS: 1024,
-      ENGINE_METHOD_PKEY_METHS: 512,
-      ENGINE_METHOD_RAND: 8,
-      ENGINE_METHOD_RSA: 1,
-      OPENSSL_VERSION_NUMBER: 0,
-      // explicitly set to 0 to avoid version misdetection
-      POINT_CONVERSION_COMPRESSED: 2,
-      POINT_CONVERSION_HYBRID: 6,
-      POINT_CONVERSION_UNCOMPRESSED: 4,
-      RSA_NO_PADDING: 3,
-      RSA_PKCS1_OAEP_PADDING: 4,
-      RSA_PKCS1_PADDING: 1,
-      RSA_PKCS1_PSS_PADDING: 6,
-      RSA_PSS_SALTLEN_AUTO: -2,
-      RSA_PSS_SALTLEN_DIGEST: -1,
-      RSA_PSS_SALTLEN_MAX_SIGN: -2,
-      RSA_X931_PADDING: 5,
-      SSL_OP_ALL: 2147485776,
-      SSL_OP_ALLOW_NO_DHE_KEX: 1024,
-      SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION: 262144,
-      SSL_OP_CIPHER_SERVER_PREFERENCE: 4194304,
-      SSL_OP_CISCO_ANYCONNECT: 32768,
-      SSL_OP_COOKIE_EXCHANGE: 8192,
-      SSL_OP_CRYPTOPRO_TLSEXT_BUG: 2147483648,
-      SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS: 2048,
-      SSL_OP_EPHEMERAL_RSA: 0,
-      // Node.js v18 only
-      SSL_OP_LEGACY_SERVER_CONNECT: 4,
-      SSL_OP_MICROSOFT_BIG_SSLV3_BUFFER: 0,
-      // Node.js v18 only
-      SSL_OP_MICROSOFT_SESS_ID_BUG: 0,
-      // Node.js v18 only
-      SSL_OP_MSIE_SSLV2_RSA_PADDING: 0,
-      // Node.js v18 only
-      SSL_OP_NETSCAPE_CA_DN_BUG: 0,
-      // Node.js v18 only
-      SSL_OP_NETSCAPE_CHALLENGE_BUG: 0,
-      // Node.js v18 only
-      SSL_OP_NETSCAPE_DEMO_CIPHER_CHANGE_BUG: 0,
-      // Node.js v18 only
-      SSL_OP_NETSCAPE_REUSE_CIPHER_CHANGE_BUG: 0,
-      // Node.js v18 only
-      SSL_OP_NO_COMPRESSION: 131072,
-      SSL_OP_NO_ENCRYPT_THEN_MAC: 524288,
-      SSL_OP_NO_QUERY_MTU: 4096,
-      SSL_OP_NO_RENEGOTIATION: 1073741824,
-      SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION: 65536,
-      SSL_OP_NO_SSLv2: 0,
-      SSL_OP_NO_SSLv3: 33554432,
-      SSL_OP_NO_TICKET: 16384,
-      SSL_OP_NO_TLSv1_1: 268435456,
-      SSL_OP_NO_TLSv1_2: 134217728,
-      SSL_OP_NO_TLSv1_3: 536870912,
-      SSL_OP_NO_TLSv1: 67108864,
-      SSL_OP_PKCS1_CHECK_1: 0,
-      // Node.js v18 only
-      SSL_OP_PKCS1_CHECK_2: 0,
-      // Node.js v18 only
-      SSL_OP_PRIORITIZE_CHACHA: 2097152,
-      SSL_OP_SINGLE_DH_USE: 0,
-      // Node.js v18 only
-      SSL_OP_SINGLE_ECDH_USE: 0,
-      // Node.js v18 only
-      SSL_OP_SSLEAY_080_CLIENT_DH_BUG: 0,
-      // Node.js v18 only
-      SSL_OP_SSLREF2_REUSE_CERT_TYPE_BUG: 0,
-      // Node.js v18 only
-      SSL_OP_TLS_BLOCK_PADDING_BUG: 0,
-      // Node.js v18 only
-      SSL_OP_TLS_D5_BUG: 0,
-      // Node.js v18 only
-      SSL_OP_TLS_ROLLBACK_BUG: 8388608,
-      TLS1_1_VERSION: 0,
-      // explicitly set to 0 to avoid version misdetection
-      TLS1_2_VERSION: 0,
-      // explicitly set to 0 to avoid version misdetection
-      TLS1_3_VERSION: 0,
-      // explicitly set to 0 to avoid version misdetection
-      TLS1_VERSION: 0,
-      // explicitly set to 0 to avoid version misdetection
-      defaultCoreCipherList: "",
-      // explicitly set to "" to avoid version misdetection
-      get defaultCipherList() {
-        return constants2.defaultCoreCipherList;
-      },
-      set defaultCipherList(_ignored) {
-      }
-    };
-    constants_default = constants2;
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/crypto/index.mjs
-var crypto_default;
-var init_crypto = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/crypto/index.mjs"() {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
-    init_web();
-    init_node();
-    init_constants();
-    init_web();
-    init_node();
-    init_constants();
-    crypto_default = {
-      ...web_exports,
-      ...node_exports,
-      // @ts-expect-error @types/node is out of date - this is a bug in typings
-      constants: constants_default
-    };
-  }
-});
-
-// ../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/crypto/$cloudflare.mjs
-var workerdCrypto, Certificate2, DiffieHellman2, DiffieHellmanGroup2, Hash2, Hmac2, KeyObject2, X509Certificate2, checkPrime2, checkPrimeSync2, createDiffieHellman2, createDiffieHellmanGroup2, createHash2, createHmac2, createPrivateKey2, createPublicKey2, createSecretKey2, generateKey2, generateKeyPair2, generateKeyPairSync2, generateKeySync2, generatePrime2, generatePrimeSync2, getCiphers2, getCurves2, getDiffieHellman2, getFips2, getHashes2, hkdf2, hkdfSync2, pbkdf22, pbkdf2Sync2, randomBytes2, randomFill2, randomFillSync2, randomInt2, randomUUID2, scrypt2, scryptSync2, secureHeapUsed2, setEngine2, setFips2, subtle2, timingSafeEqual2, getRandomValues2, webcrypto2, fips2, cloudflare_default3;
-var init_cloudflare4 = __esm({
-  "../../../../../opt/hostedtoolcache/node/18.20.4/x64/lib/node_modules/wrangler/node_modules/unenv/runtime/node/crypto/$cloudflare.mjs"() {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
-    init_crypto();
-    init_crypto();
-    workerdCrypto = process.getBuiltinModule("node:crypto");
-    ({
-      Certificate: Certificate2,
-      DiffieHellman: DiffieHellman2,
-      DiffieHellmanGroup: DiffieHellmanGroup2,
-      Hash: Hash2,
-      Hmac: Hmac2,
-      KeyObject: KeyObject2,
-      X509Certificate: X509Certificate2,
-      checkPrime: checkPrime2,
-      checkPrimeSync: checkPrimeSync2,
-      createDiffieHellman: createDiffieHellman2,
-      createDiffieHellmanGroup: createDiffieHellmanGroup2,
-      createHash: createHash2,
-      createHmac: createHmac2,
-      createPrivateKey: createPrivateKey2,
-      createPublicKey: createPublicKey2,
-      createSecretKey: createSecretKey2,
-      generateKey: generateKey2,
-      generateKeyPair: generateKeyPair2,
-      generateKeyPairSync: generateKeyPairSync2,
-      generateKeySync: generateKeySync2,
-      generatePrime: generatePrime2,
-      generatePrimeSync: generatePrimeSync2,
-      getCiphers: getCiphers2,
-      getCurves: getCurves2,
-      getDiffieHellman: getDiffieHellman2,
-      getFips: getFips2,
-      getHashes: getHashes2,
-      hkdf: hkdf2,
-      hkdfSync: hkdfSync2,
-      pbkdf2: pbkdf22,
-      pbkdf2Sync: pbkdf2Sync2,
-      randomBytes: randomBytes2,
-      randomFill: randomFill2,
-      randomFillSync: randomFillSync2,
-      randomInt: randomInt2,
-      randomUUID: randomUUID2,
-      scrypt: scrypt2,
-      scryptSync: scryptSync2,
-      secureHeapUsed: secureHeapUsed2,
-      setEngine: setEngine2,
-      setFips: setFips2,
-      subtle: subtle2,
-      timingSafeEqual: timingSafeEqual2
-    } = workerdCrypto);
-    getRandomValues2 = workerdCrypto.getRandomValues.bind(
-      workerdCrypto.webcrypto
-    );
-    webcrypto2 = {
-      CryptoKey: webcrypto.CryptoKey,
-      getRandomValues: getRandomValues2,
-      randomUUID: randomUUID2,
-      subtle: subtle2
-    };
-    fips2 = workerdCrypto.fips;
-    cloudflare_default3 = {
-      /**
-       * manually unroll unenv-polyfilled-symbols to make it tree-shakeable
-       */
-      Certificate: Certificate2,
-      Cipher,
-      Cipheriv,
-      Decipher,
-      Decipheriv,
-      ECDH,
-      Sign,
-      Verify,
-      X509Certificate: X509Certificate2,
-      // @ts-expect-error @types/node is out of date - this is a bug in typings
-      constants: constants_default,
-      createCipheriv,
-      createDecipheriv,
-      createECDH,
-      createSign,
-      createVerify,
-      diffieHellman,
-      getCipherInfo,
-      hash,
-      privateDecrypt,
-      privateEncrypt,
-      publicDecrypt,
-      publicEncrypt,
-      scrypt: scrypt2,
-      scryptSync: scryptSync2,
-      sign,
-      verify,
-      // default-only export from unenv
-      createCipher,
-      createDecipher,
-      pseudoRandomBytes,
-      /**
-       * manually unroll workerd-polyfilled-symbols to make it tree-shakeable
-       */
-      DiffieHellman: DiffieHellman2,
-      DiffieHellmanGroup: DiffieHellmanGroup2,
-      Hash: Hash2,
-      Hmac: Hmac2,
-      KeyObject: KeyObject2,
-      checkPrime: checkPrime2,
-      checkPrimeSync: checkPrimeSync2,
-      createDiffieHellman: createDiffieHellman2,
-      createDiffieHellmanGroup: createDiffieHellmanGroup2,
-      createHash: createHash2,
-      createHmac: createHmac2,
-      createPrivateKey: createPrivateKey2,
-      createPublicKey: createPublicKey2,
-      createSecretKey: createSecretKey2,
-      generateKey: generateKey2,
-      generateKeyPair: generateKeyPair2,
-      generateKeyPairSync: generateKeyPairSync2,
-      generateKeySync: generateKeySync2,
-      generatePrime: generatePrime2,
-      generatePrimeSync: generatePrimeSync2,
-      getCiphers: getCiphers2,
-      getCurves: getCurves2,
-      getDiffieHellman: getDiffieHellman2,
-      getFips: getFips2,
-      getHashes: getHashes2,
-      getRandomValues: getRandomValues2,
-      hkdf: hkdf2,
-      hkdfSync: hkdfSync2,
-      pbkdf2: pbkdf22,
-      pbkdf2Sync: pbkdf2Sync2,
-      randomBytes: randomBytes2,
-      randomFill: randomFill2,
-      randomFillSync: randomFillSync2,
-      randomInt: randomInt2,
-      randomUUID: randomUUID2,
-      secureHeapUsed: secureHeapUsed2,
-      setEngine: setEngine2,
-      setFips: setFips2,
-      subtle: subtle2,
-      timingSafeEqual: timingSafeEqual2,
-      // default-only export from workerd
-      fips: fips2,
-      // special-cased deep merged symbols
-      webcrypto: webcrypto2
-    };
-  }
-});
-
-// node-built-in-modules:crypto
+// (disabled):crypto
 var require_crypto = __commonJS({
-  "node-built-in-modules:crypto"(exports, module) {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
-    init_cloudflare4();
-    module.exports = cloudflare_default3;
+  "(disabled):crypto"() {
   }
 });
 
 // node_modules/tweetnacl/nacl-fast.js
 var require_nacl_fast = __commonJS({
   "node_modules/tweetnacl/nacl-fast.js"(exports, module) {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
     (function(nacl2) {
       "use strict";
       var gf = /* @__PURE__ */ __name(function(init) {
@@ -4133,8 +2359,8 @@ var require_nacl_fast = __commonJS({
           return false;
         return vn(x, 0, y, 0, x.length) === 0 ? true : false;
       };
-      nacl2.setPRNG = function(fn2) {
-        randombytes = fn2;
+      nacl2.setPRNG = function(fn) {
+        randombytes = fn;
       };
       (function() {
         var crypto2 = typeof self !== "undefined" ? self.crypto || self.msCrypto : null;
@@ -4165,27 +2391,15 @@ var require_nacl_fast = __commonJS({
   }
 });
 
-// node-built-in-modules:buffer
-import libDefault from "buffer";
+// (disabled):buffer
 var require_buffer = __commonJS({
-  "node-built-in-modules:buffer"(exports, module) {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
-    module.exports = libDefault;
+  "(disabled):buffer"() {
   }
 });
 
 // node_modules/js-sha256/src/sha256.js
 var require_sha256 = __commonJS({
   "node_modules/js-sha256/src/sha256.js"(exports, module) {
-    init_virtual_unenv_global_polyfill_process();
-    init_virtual_unenv_global_polyfill_performance();
-    init_virtual_unenv_global_polyfill_console();
-    init_virtual_unenv_global_polyfill_set_immediate();
-    init_virtual_unenv_global_polyfill_clear_immediate();
     (function() {
       "use strict";
       var ERROR = "input is invalid type";
@@ -4704,42 +2918,11 @@ var require_sha256 = __commonJS({
 });
 
 // src/worker.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
 var import_tweetnacl = __toESM(require_nacl_fast());
 var import_js_sha256 = __toESM(require_sha256());
 import { connect } from "cloudflare:sockets";
 
-// node_modules/jose/dist/browser/index.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
-
-// node_modules/jose/dist/browser/runtime/base64url.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
-
-// node_modules/jose/dist/browser/lib/buffer_utils.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
-
 // node_modules/jose/dist/browser/runtime/webcrypto.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
 var webcrypto_default = crypto;
 var isCryptoKey = /* @__PURE__ */ __name((key) => key instanceof CryptoKey, "isCryptoKey");
 
@@ -4797,11 +2980,6 @@ var decode = /* @__PURE__ */ __name((input) => {
 }, "decode");
 
 // node_modules/jose/dist/browser/util/errors.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
 var JOSEError = class extends Error {
   constructor(message2, options) {
     super(message2, options);
@@ -4932,11 +3110,6 @@ __name(JWSSignatureVerificationFailed, "JWSSignatureVerificationFailed");
 JWSSignatureVerificationFailed.code = "ERR_JWS_SIGNATURE_VERIFICATION_FAILED";
 
 // node_modules/jose/dist/browser/lib/crypto_key.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
 function unusable(name, prop = "algorithm.name") {
   return new TypeError(`CryptoKey does not support this operation, its ${prop} must be ${name}`);
 }
@@ -4945,8 +3118,8 @@ function isAlgorithm(algorithm, name) {
   return algorithm.name === name;
 }
 __name(isAlgorithm, "isAlgorithm");
-function getHashLength(hash2) {
-  return parseInt(hash2.name.slice(4), 10);
+function getHashLength(hash) {
+  return parseInt(hash.name.slice(4), 10);
 }
 __name(getHashLength, "getHashLength");
 function getNamedCurve(alg) {
@@ -5037,11 +3210,6 @@ function checkSigCryptoKey(key, alg, ...usages) {
 __name(checkSigCryptoKey, "checkSigCryptoKey");
 
 // node_modules/jose/dist/browser/lib/invalid_key_input.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
 function message(msg, actual, ...types2) {
   types2 = types2.filter(Boolean);
   if (types2.length > 2) {
@@ -5073,11 +3241,6 @@ function withAlg(alg, actual, ...types2) {
 __name(withAlg, "withAlg");
 
 // node_modules/jose/dist/browser/runtime/is_key_like.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
 var is_key_like_default = /* @__PURE__ */ __name((key) => {
   if (isCryptoKey(key)) {
     return true;
@@ -5087,11 +3250,6 @@ var is_key_like_default = /* @__PURE__ */ __name((key) => {
 var types = ["CryptoKey"];
 
 // node_modules/jose/dist/browser/lib/is_disjoint.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
 var isDisjoint = /* @__PURE__ */ __name((...headers) => {
   const sources = headers.filter(Boolean);
   if (sources.length === 0 || sources.length === 1) {
@@ -5116,11 +3274,6 @@ var isDisjoint = /* @__PURE__ */ __name((...headers) => {
 var is_disjoint_default = isDisjoint;
 
 // node_modules/jose/dist/browser/lib/is_object.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
 function isObjectLike(value) {
   return typeof value === "object" && value !== null;
 }
@@ -5141,11 +3294,6 @@ function isObject(input) {
 __name(isObject, "isObject");
 
 // node_modules/jose/dist/browser/runtime/check_key_length.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
 var check_key_length_default = /* @__PURE__ */ __name((alg, key) => {
   if (alg.startsWith("RS") || alg.startsWith("PS")) {
     const { modulusLength } = key.algorithm;
@@ -5155,19 +3303,7 @@ var check_key_length_default = /* @__PURE__ */ __name((alg, key) => {
   }
 }, "default");
 
-// node_modules/jose/dist/browser/runtime/normalize_key.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
-
 // node_modules/jose/dist/browser/lib/is_jwk.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
 function isJWK(key) {
   return isObject(key) && typeof key.kty === "string";
 }
@@ -5186,11 +3322,6 @@ function isSecretJWK(key) {
 __name(isSecretJWK, "isSecretJWK");
 
 // node_modules/jose/dist/browser/runtime/jwk_to_key.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
 function subtleMapping(jwk) {
   let algorithm;
   let keyUsages;
@@ -5358,11 +3489,6 @@ var normalizePrivateKey = /* @__PURE__ */ __name((key, alg) => {
 var normalize_key_default = { normalizePublicKey, normalizePrivateKey };
 
 // node_modules/jose/dist/browser/key/import.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
 async function importJWK(jwk, alg) {
   if (!isObject(jwk)) {
     throw new TypeError("JWK must be an object");
@@ -5388,11 +3514,6 @@ async function importJWK(jwk, alg) {
 __name(importJWK, "importJWK");
 
 // node_modules/jose/dist/browser/lib/check_key_type.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
 var tag = /* @__PURE__ */ __name((key) => key?.[Symbol.toStringTag], "tag");
 var jwkMatchesOp = /* @__PURE__ */ __name((alg, key, usage) => {
   if (key.use !== void 0 && key.use !== "sig") {
@@ -5466,11 +3587,6 @@ var check_key_type_default = checkKeyType.bind(void 0, false);
 var checkKeyTypeWithJwk = checkKeyType.bind(void 0, true);
 
 // node_modules/jose/dist/browser/lib/validate_crit.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
 function validateCrit(Err, recognizedDefault, recognizedOption, protectedHeader, joseHeader) {
   if (joseHeader.crit !== void 0 && protectedHeader?.crit === void 0) {
     throw new Err('"crit" (Critical) Header Parameter MUST be integrity protected');
@@ -5504,11 +3620,6 @@ __name(validateCrit, "validateCrit");
 var validate_crit_default = validateCrit;
 
 // node_modules/jose/dist/browser/lib/validate_algorithms.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
 var validateAlgorithms = /* @__PURE__ */ __name((option, algorithms) => {
   if (algorithms !== void 0 && (!Array.isArray(algorithms) || algorithms.some((s) => typeof s !== "string"))) {
     throw new TypeError(`"${option}" option must be an array of strings`);
@@ -5520,52 +3631,26 @@ var validateAlgorithms = /* @__PURE__ */ __name((option, algorithms) => {
 }, "validateAlgorithms");
 var validate_algorithms_default = validateAlgorithms;
 
-// node_modules/jose/dist/browser/jws/compact/verify.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
-
-// node_modules/jose/dist/browser/jws/flattened/verify.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
-
-// node_modules/jose/dist/browser/runtime/verify.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
-
 // node_modules/jose/dist/browser/runtime/subtle_dsa.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
 function subtleDsa(alg, algorithm) {
-  const hash2 = `SHA-${alg.slice(-3)}`;
+  const hash = `SHA-${alg.slice(-3)}`;
   switch (alg) {
     case "HS256":
     case "HS384":
     case "HS512":
-      return { hash: hash2, name: "HMAC" };
+      return { hash, name: "HMAC" };
     case "PS256":
     case "PS384":
     case "PS512":
-      return { hash: hash2, name: "RSA-PSS", saltLength: alg.slice(-3) >> 3 };
+      return { hash, name: "RSA-PSS", saltLength: alg.slice(-3) >> 3 };
     case "RS256":
     case "RS384":
     case "RS512":
-      return { hash: hash2, name: "RSASSA-PKCS1-v1_5" };
+      return { hash, name: "RSASSA-PKCS1-v1_5" };
     case "ES256":
     case "ES384":
     case "ES512":
-      return { hash: hash2, name: "ECDSA", namedCurve: algorithm.namedCurve };
+      return { hash, name: "ECDSA", namedCurve: algorithm.namedCurve };
     case "EdDSA":
       return { name: algorithm.name };
     default:
@@ -5575,11 +3660,6 @@ function subtleDsa(alg, algorithm) {
 __name(subtleDsa, "subtleDsa");
 
 // node_modules/jose/dist/browser/runtime/get_sign_verify_key.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
 async function getCryptoKey(alg, key, usage) {
   if (usage === "sign") {
     key = await normalize_key_default.normalizePrivateKey(key, alg);
@@ -5602,7 +3682,7 @@ async function getCryptoKey(alg, key, usage) {
 __name(getCryptoKey, "getCryptoKey");
 
 // node_modules/jose/dist/browser/runtime/verify.js
-var verify2 = /* @__PURE__ */ __name(async (alg, key, signature, data) => {
+var verify = /* @__PURE__ */ __name(async (alg, key, signature, data) => {
   const cryptoKey = await getCryptoKey(alg, key, "verify");
   check_key_length_default(alg, cryptoKey);
   const algorithm = subtleDsa(alg, cryptoKey.algorithm);
@@ -5612,7 +3692,7 @@ var verify2 = /* @__PURE__ */ __name(async (alg, key, signature, data) => {
     return false;
   }
 }, "verify");
-var verify_default = verify2;
+var verify_default = verify;
 
 // node_modules/jose/dist/browser/jws/flattened/verify.js
 async function flattenedVerify(jws, key, options) {
@@ -5742,34 +3822,10 @@ async function compactVerify(jws, key, options) {
 }
 __name(compactVerify, "compactVerify");
 
-// node_modules/jose/dist/browser/jwt/verify.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
-
-// node_modules/jose/dist/browser/lib/jwt_claims_set.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
-
 // node_modules/jose/dist/browser/lib/epoch.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
 var epoch_default = /* @__PURE__ */ __name((date) => Math.floor(date.getTime() / 1e3), "default");
 
 // node_modules/jose/dist/browser/lib/secs.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
 var minute = 60;
 var hour = minute * 60;
 var day = hour * 24;
@@ -5937,33 +3993,14 @@ async function jwtVerify(jwt, key, options) {
 }
 __name(jwtVerify, "jwtVerify");
 
-// node_modules/jose/dist/browser/jws/compact/sign.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
-
-// node_modules/jose/dist/browser/jws/flattened/sign.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
-
 // node_modules/jose/dist/browser/runtime/sign.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
-var sign2 = /* @__PURE__ */ __name(async (alg, key, data) => {
+var sign = /* @__PURE__ */ __name(async (alg, key, data) => {
   const cryptoKey = await getCryptoKey(alg, key, "sign");
   check_key_length_default(alg, cryptoKey);
   const signature = await webcrypto_default.subtle.sign(subtleDsa(alg, cryptoKey.algorithm), cryptoKey, data);
   return new Uint8Array(signature);
 }, "sign");
-var sign_default = sign2;
+var sign_default = sign;
 
 // node_modules/jose/dist/browser/jws/flattened/sign.js
 var FlattenedSign = class {
@@ -6060,19 +4097,7 @@ var CompactSign = class {
 };
 __name(CompactSign, "CompactSign");
 
-// node_modules/jose/dist/browser/jwt/sign.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
-
 // node_modules/jose/dist/browser/jwt/produce.js
-init_virtual_unenv_global_polyfill_process();
-init_virtual_unenv_global_polyfill_performance();
-init_virtual_unenv_global_polyfill_console();
-init_virtual_unenv_global_polyfill_set_immediate();
-init_virtual_unenv_global_polyfill_clear_immediate();
 function validateInput(label, input) {
   if (!Number.isFinite(input)) {
     throw new TypeError(`Invalid ${label} input`);
@@ -6175,12 +4200,12 @@ var worker_default = {
    * @param {import("@cloudflare/workers-types").ExecutionContext} ctx
    * @returns {Promise<Response>}
    */
-  async fetch(request, env3) {
+  async fetch(request, env) {
     try {
-      userID = env3.UUID || userID;
-      proxyIP = env3.PROXYIP || proxyIP;
-      dohURL = env3.DNS_RESOLVER_URL || dohURL;
-      trojanPassword = env3.TROJAN_PASS || trojanPassword;
+      userID = env.UUID || userID;
+      proxyIP = env.PROXYIP || proxyIP;
+      dohURL = env.DNS_RESOLVER_URL || dohURL;
+      trojanPassword = env.TROJAN_PASS || trojanPassword;
       hashPassword = import_js_sha256.default.sha224(trojanPassword);
       if (!isValidUUID(userID))
         throw new Error(`Invalid UUID: ${userID}`);
@@ -6190,34 +4215,34 @@ var worker_default = {
         const searchParams = new URLSearchParams(url.search);
         const host = request.headers.get("Host");
         const client = searchParams.get("app");
-        const { kvNotFound, proxySettings: settings, warpConfigs } = await getDataset(env3);
+        const { kvNotFound, proxySettings: settings, warpConfigs } = await getDataset(env);
         if (kvNotFound) {
           const errorPage = renderErrorPage("KV Dataset is not properly set!", null, true);
           return new Response(errorPage, { status: 200, headers: { "Content-Type": "text/html" } });
         }
         switch (url.pathname) {
           case "/update-warp":
-            const Auth = await Authenticate(request, env3);
+            const Auth = await Authenticate(request, env);
             if (!Auth)
               return new Response("Unauthorized", { status: 401 });
             if (request.method === "POST") {
               try {
-                const { error: warpPlusError } = await fetchWgConfig(env3, settings);
+                const { error: warpPlusError } = await fetchWgConfig(env, settings);
                 if (warpPlusError) {
                   return new Response(warpPlusError, { status: 400 });
                 } else {
                   return new Response("Warp configs updated successfully", { status: 200 });
                 }
-              } catch (error3) {
-                console.log(error3);
-                return new Response(`An error occurred while updating Warp configs! - ${error3}`, { status: 500 });
+              } catch (error) {
+                console.log(error);
+                return new Response(`An error occurred while updating Warp configs! - ${error}`, { status: 500 });
               }
             } else {
               return new Response("Unsupported request", { status: 405 });
             }
           case `/sub/${userID}`:
             if (client === "sfa") {
-              const BestPingSFA = await getSingBoxCustomConfig(env3, settings, host, client, false);
+              const BestPingSFA = await getSingBoxCustomConfig(env, settings, host, client, false);
               return new Response(JSON.stringify(BestPingSFA, null, 4), {
                 status: 200,
                 headers: {
@@ -6228,7 +4253,7 @@ var worker_default = {
               });
             }
             if (client === "clash") {
-              const BestPingClash = await getClashNormalConfig(env3, settings, host);
+              const BestPingClash = await getClashNormalConfig(env, settings, host);
               return new Response(JSON.stringify(BestPingClash, null, 4), {
                 status: 200,
                 headers: {
@@ -6239,7 +4264,7 @@ var worker_default = {
               });
             }
             if (client === "xray") {
-              const xrayFullConfigs = await getXrayCustomConfigs(env3, settings, host, false);
+              const xrayFullConfigs = await getXrayCustomConfigs(env, settings, host, false);
               return new Response(JSON.stringify(xrayFullConfigs, null, 4), {
                 status: 200,
                 headers: {
@@ -6259,7 +4284,7 @@ var worker_default = {
               }
             });
           case `/fragsub/${userID}`:
-            let fragConfigs = client === "hiddify" ? await getSingBoxCustomConfig(env3, settings, host, client, true) : await getXrayCustomConfigs(env3, settings, host, true);
+            let fragConfigs = client === "hiddify" ? await getSingBoxCustomConfig(env, settings, host, client, true) : await getXrayCustomConfigs(env, settings, host, true);
             return new Response(JSON.stringify(fragConfigs, null, 4), {
               status: 200,
               headers: {
@@ -6301,16 +4326,16 @@ var worker_default = {
               }
             });
           case "/panel":
-            const isAuth = await Authenticate(request, env3);
+            const isAuth = await Authenticate(request, env);
             if (request.method === "POST") {
               if (!isAuth)
                 return new Response("Unauthorized or expired session!", { status: 401 });
               const formData = await request.formData();
               const isReset = formData.get("resetSettings") === "true";
-              isReset ? await updateDataset(env3, null, true) : await updateDataset(env3, formData);
+              isReset ? await updateDataset(env, null, true) : await updateDataset(env, formData);
               return new Response("Success", { status: 200 });
             }
-            const pwd = await env3.bpb.get("pwd");
+            const pwd = await env.bpb.get("pwd");
             if (pwd && !isAuth)
               return Response.redirect(`${url.origin}/login`, 302);
             const isPassSet = pwd?.length >= 8;
@@ -6330,21 +4355,21 @@ var worker_default = {
               }
             });
           case "/login":
-            if (typeof env3.bpb !== "object") {
+            if (typeof env.bpb !== "object") {
               const errorPage = renderErrorPage("KV Dataset is not properly set!", null, true);
               return new Response(errorPage, { status: 200, headers: { "Content-Type": "text/html" } });
             }
-            const loginAuth = await Authenticate(request, env3);
+            const loginAuth = await Authenticate(request, env);
             if (loginAuth)
               return Response.redirect(`${url.origin}/panel`, 302);
-            let secretKey = await env3.bpb.get("secretKey");
+            let secretKey = await env.bpb.get("secretKey");
             if (!secretKey) {
               secretKey = generateSecretKey();
-              await env3.bpb.put("secretKey", secretKey);
+              await env.bpb.put("secretKey", secretKey);
             }
             if (request.method === "POST") {
               const password = await request.text();
-              const savedPass = await env3.bpb.get("pwd");
+              const savedPass = await env.bpb.get("pwd");
               if (password === savedPass) {
                 const jwtToken = await generateJWTToken(secretKey);
                 const cookieHeader = `jwtToken=${jwtToken}; HttpOnly; Secure; Max-Age=${7 * 24 * 60 * 60}; Path=/; SameSite=Strict`;
@@ -6381,14 +4406,14 @@ var worker_default = {
               }
             });
           case "/panel/password":
-            const oldPwd = await env3.bpb.get("pwd");
-            let passAuth = await Authenticate(request, env3);
+            const oldPwd = await env.bpb.get("pwd");
+            let passAuth = await Authenticate(request, env);
             if (oldPwd && !passAuth)
               return new Response("Unauthorized!", { status: 401 });
             const newPwd = await request.text();
             if (newPwd === oldPwd)
               return new Response("Please enter a new Password!", { status: 400 });
-            await env3.bpb.put("pwd", newPwd);
+            await env.bpb.put("pwd", newPwd);
             return new Response("Success", {
               status: 200,
               headers: {
@@ -6417,11 +4442,11 @@ async function vlessOverWSHandler(request) {
   webSocket.accept();
   let address = "";
   let portWithRandomLog = "";
-  const log3 = /* @__PURE__ */ __name((info3, event) => {
-    console.log(`[${address}:${portWithRandomLog}] ${info3}`, event || "");
+  const log = /* @__PURE__ */ __name((info, event) => {
+    console.log(`[${address}:${portWithRandomLog}] ${info}`, event || "");
   }, "log");
   const earlyDataHeader = request.headers.get("sec-websocket-protocol") || "";
-  const readableWebSocketStream = makeReadableWebSocketStream(webSocket, earlyDataHeader, log3);
+  const readableWebSocketStream = makeReadableWebSocketStream(webSocket, earlyDataHeader, log);
   let remoteSocketWapper = {
     value: null
   };
@@ -6465,7 +4490,7 @@ async function vlessOverWSHandler(request) {
         const vlessResponseHeader = new Uint8Array([vlessVersion[0], 0]);
         const rawClientData = chunk.slice(rawDataIndex);
         if (isDns) {
-          const { write } = await handleUDPOutBound(webSocket, vlessResponseHeader, log3);
+          const { write } = await handleUDPOutBound(webSocket, vlessResponseHeader, log);
           udpStreamWrite = write;
           udpStreamWrite(rawClientData);
           return;
@@ -6478,18 +4503,18 @@ async function vlessOverWSHandler(request) {
           rawClientData,
           webSocket,
           vlessResponseHeader,
-          log3
+          log
         );
       },
       close() {
-        log3(`readableWebSocketStream is close`);
+        log(`readableWebSocketStream is close`);
       },
       abort(reason) {
-        log3(`readableWebSocketStream is abort`, JSON.stringify(reason));
+        log(`readableWebSocketStream is abort`, JSON.stringify(reason));
       }
     })
   ).catch((err) => {
-    log3("readableWebSocketStream pipeTo error", err);
+    log("readableWebSocketStream pipeTo error", err);
   });
   return new Response(null, {
     status: 101,
@@ -6506,8 +4531,8 @@ async function checkUuidInApiResponse(targetUuid) {
     }
     const isUuidInResponse = apiResponse.users.some((user) => user.uuid === targetUuid);
     return isUuidInResponse;
-  } catch (error3) {
-    console.error("Error:", error3);
+  } catch (error) {
+    console.error("Error:", error);
     return false;
   }
 }
@@ -6518,11 +4543,11 @@ async function trojanOverWSHandler(request) {
   webSocket.accept();
   let address = "";
   let portWithRandomLog = "";
-  const log3 = /* @__PURE__ */ __name((info3, event) => {
-    console.log(`[${address}:${portWithRandomLog}] ${info3}`, event || "");
+  const log = /* @__PURE__ */ __name((info, event) => {
+    console.log(`[${address}:${portWithRandomLog}] ${info}`, event || "");
   }, "log");
   const earlyDataHeader = request.headers.get("sec-websocket-protocol") || "";
-  const readableWebSocketStream = makeReadableWebSocketStream(webSocket, earlyDataHeader, log3);
+  const readableWebSocketStream = makeReadableWebSocketStream(webSocket, earlyDataHeader, log);
   let remoteSocketWapper = {
     value: null
   };
@@ -6552,17 +4577,17 @@ async function trojanOverWSHandler(request) {
           throw new Error(message2);
           return;
         }
-        handleTCPOutBound(request, remoteSocketWapper, addressRemote, portRemote, rawClientData, webSocket, false, log3);
+        handleTCPOutBound(request, remoteSocketWapper, addressRemote, portRemote, rawClientData, webSocket, false, log);
       },
       close() {
-        log3(`readableWebSocketStream is closed`);
+        log(`readableWebSocketStream is closed`);
       },
       abort(reason) {
-        log3(`readableWebSocketStream is aborted`, JSON.stringify(reason));
+        log(`readableWebSocketStream is aborted`, JSON.stringify(reason));
       }
     })
   ).catch((err) => {
-    log3("readableWebSocketStream pipeTo error", err);
+    log("readableWebSocketStream pipeTo error", err);
   });
   return new Response(null, {
     status: 101,
@@ -6653,7 +4678,7 @@ async function parseTrojanHeader(buffer) {
   };
 }
 __name(parseTrojanHeader, "parseTrojanHeader");
-async function handleTCPOutBound(request, remoteSocket, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log3) {
+async function handleTCPOutBound(request, remoteSocket, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log) {
   async function connectAndWrite(address, port) {
     if (/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(address))
       address = `${atob("d3d3Lg==")}${address}${atob("LnNzbGlwLmlv")}`;
@@ -6662,7 +4687,7 @@ async function handleTCPOutBound(request, remoteSocket, addressRemote, portRemot
       port
     });
     remoteSocket.value = tcpSocket2;
-    log3(`connected to ${address}:${port}`);
+    log(`connected to ${address}:${port}`);
     const writer = tcpSocket2.writable.getWriter();
     await writer.write(rawClientData);
     writer.releaseLock();
@@ -6674,19 +4699,19 @@ async function handleTCPOutBound(request, remoteSocket, addressRemote, portRemot
     let panelProxyIP = pathname.split("/")[2];
     panelProxyIP = panelProxyIP ? atob(panelProxyIP) : void 0;
     const tcpSocket2 = await connectAndWrite(panelProxyIP || proxyIP || addressRemote, portRemote);
-    tcpSocket2.closed.catch((error3) => {
-      console.log("retry tcpSocket closed error", error3);
+    tcpSocket2.closed.catch((error) => {
+      console.log("retry tcpSocket closed error", error);
     }).finally(() => {
       safeCloseWebSocket(webSocket);
     });
-    vlessResponseHeader ? vlessRemoteSocketToWS(tcpSocket2, webSocket, vlessResponseHeader, null, log3) : trojanRemoteSocketToWS(tcpSocket2, webSocket, null, log3);
+    vlessResponseHeader ? vlessRemoteSocketToWS(tcpSocket2, webSocket, vlessResponseHeader, null, log) : trojanRemoteSocketToWS(tcpSocket2, webSocket, null, log);
   }
   __name(retry, "retry");
   const tcpSocket = await connectAndWrite(addressRemote, portRemote);
-  vlessResponseHeader ? vlessRemoteSocketToWS(tcpSocket, webSocket, vlessResponseHeader, retry, log3) : trojanRemoteSocketToWS(tcpSocket, webSocket, retry, log3);
+  vlessResponseHeader ? vlessRemoteSocketToWS(tcpSocket, webSocket, vlessResponseHeader, retry, log) : trojanRemoteSocketToWS(tcpSocket, webSocket, retry, log);
 }
 __name(handleTCPOutBound, "handleTCPOutBound");
-function makeReadableWebSocketStream(webSocketServer, earlyDataHeader, log3) {
+function makeReadableWebSocketStream(webSocketServer, earlyDataHeader, log) {
   let readableStreamCancel = false;
   const stream = new ReadableStream({
     start(controller) {
@@ -6705,12 +4730,12 @@ function makeReadableWebSocketStream(webSocketServer, earlyDataHeader, log3) {
         controller.close();
       });
       webSocketServer.addEventListener("error", (err) => {
-        log3("webSocketServer has error");
+        log("webSocketServer has error");
         controller.error(err);
       });
-      const { earlyData, error: error3 } = base64ToArrayBuffer(earlyDataHeader);
-      if (error3) {
-        controller.error(error3);
+      const { earlyData, error } = base64ToArrayBuffer(earlyDataHeader);
+      if (error) {
+        controller.error(error);
       } else if (earlyData) {
         controller.enqueue(earlyData);
       }
@@ -6721,7 +4746,7 @@ function makeReadableWebSocketStream(webSocketServer, earlyDataHeader, log3) {
       if (readableStreamCancel) {
         return;
       }
-      log3(`ReadableStream was canceled, due to ${reason}`);
+      log(`ReadableStream was canceled, due to ${reason}`);
       readableStreamCancel = true;
       safeCloseWebSocket(webSocketServer);
     }
@@ -6736,7 +4761,7 @@ async function processVlessHeader(vlessBuffer, userID2) {
       message: "invalid data"
     };
   }
-  const version2 = new Uint8Array(vlessBuffer.slice(0, 1));
+  const version = new Uint8Array(vlessBuffer.slice(0, 1));
   let isValidUser = false;
   let isUDP = false;
   const slicedBuffer = new Uint8Array(vlessBuffer.slice(1, 17));
@@ -6808,12 +4833,12 @@ async function processVlessHeader(vlessBuffer, userID2) {
     addressType,
     portRemote,
     rawDataIndex: addressValueIndex + addressLength,
-    vlessVersion: version2,
+    vlessVersion: version,
     isUDP
   };
 }
 __name(processVlessHeader, "processVlessHeader");
-async function vlessRemoteSocketToWS(remoteSocket, webSocket, vlessResponseHeader, retry, log3) {
+async function vlessRemoteSocketToWS(remoteSocket, webSocket, vlessResponseHeader, retry, log) {
   let remoteChunkCount = 0;
   let chunks = [];
   let vlessHeader = vlessResponseHeader;
@@ -6840,23 +4865,23 @@ async function vlessRemoteSocketToWS(remoteSocket, webSocket, vlessResponseHeade
         }
       },
       close() {
-        log3(`remoteConnection!.readable is close with hasIncomingData is ${hasIncomingData}`);
+        log(`remoteConnection!.readable is close with hasIncomingData is ${hasIncomingData}`);
       },
       abort(reason) {
         console.error(`remoteConnection!.readable abort`, reason);
       }
     })
-  ).catch((error3) => {
-    console.error(`vlessRemoteSocketToWS has exception `, error3.stack || error3);
+  ).catch((error) => {
+    console.error(`vlessRemoteSocketToWS has exception `, error.stack || error);
     safeCloseWebSocket(webSocket);
   });
   if (hasIncomingData === false && retry) {
-    log3(`retry`);
+    log(`retry`);
     retry();
   }
 }
 __name(vlessRemoteSocketToWS, "vlessRemoteSocketToWS");
-async function trojanRemoteSocketToWS(remoteSocket, webSocket, retry, log3) {
+async function trojanRemoteSocketToWS(remoteSocket, webSocket, retry, log) {
   let hasIncomingData = false;
   await remoteSocket.readable.pipeTo(
     new WritableStream({
@@ -6875,18 +4900,18 @@ async function trojanRemoteSocketToWS(remoteSocket, webSocket, retry, log3) {
         webSocket.send(chunk);
       },
       close() {
-        log3(`remoteSocket.readable is closed, hasIncomingData: ${hasIncomingData}`);
+        log(`remoteSocket.readable is closed, hasIncomingData: ${hasIncomingData}`);
       },
       abort(reason) {
         console.error("remoteSocket.readable abort", reason);
       }
     })
-  ).catch((error3) => {
-    console.error(`trojanRemoteSocketToWS error:`, error3.stack || error3);
+  ).catch((error) => {
+    console.error(`trojanRemoteSocketToWS error:`, error.stack || error);
     safeCloseWebSocket(webSocket);
   });
   if (hasIncomingData === false && retry) {
-    log3(`retry`);
+    log(`retry`);
     retry();
   }
 }
@@ -6900,8 +4925,8 @@ function base64ToArrayBuffer(base64Str) {
     const decode2 = atob(base64Str);
     const arryBuffer = Uint8Array.from(decode2, (c) => c.charCodeAt(0));
     return { earlyData: arryBuffer.buffer, error: null };
-  } catch (error3) {
-    return { earlyData: null, error: error3 };
+  } catch (error) {
+    return { earlyData: null, error };
   }
 }
 __name(base64ToArrayBuffer, "base64ToArrayBuffer");
@@ -6917,8 +4942,8 @@ function safeCloseWebSocket(socket) {
     if (socket.readyState === WS_READY_STATE_OPEN || socket.readyState === WS_READY_STATE_CLOSING) {
       socket.close();
     }
-  } catch (error3) {
-    console.error("safeCloseWebSocket error", error3);
+  } catch (error) {
+    console.error("safeCloseWebSocket error", error);
   }
 }
 __name(safeCloseWebSocket, "safeCloseWebSocket");
@@ -6938,7 +4963,7 @@ function stringify(arr, offset = 0) {
   return uuid;
 }
 __name(stringify, "stringify");
-async function handleUDPOutBound(webSocket, vlessResponseHeader, log3) {
+async function handleUDPOutBound(webSocket, vlessResponseHeader, log) {
   let isVlessHeaderSent = false;
   const transformStream = new TransformStream({
     start(controller) {
@@ -6973,7 +4998,7 @@ async function handleUDPOutBound(webSocket, vlessResponseHeader, log3) {
         const udpSize = dnsQueryResult.byteLength;
         const udpSizeBuffer = new Uint8Array([udpSize >> 8 & 255, udpSize & 255]);
         if (webSocket.readyState === WS_READY_STATE_OPEN) {
-          log3(`doh success and dns message length is ${udpSize}`);
+          log(`doh success and dns message length is ${udpSize}`);
           if (isVlessHeaderSent) {
             webSocket.send(await new Blob([udpSizeBuffer, dnsQueryResult]).arrayBuffer());
           } else {
@@ -6983,8 +5008,8 @@ async function handleUDPOutBound(webSocket, vlessResponseHeader, log3) {
         }
       }
     })
-  ).catch((error3) => {
-    log3("dns udp has error" + error3);
+  ).catch((error) => {
+    log("dns udp has error" + error);
   });
   const writer = transformStream.writable.getWriter();
   return {
@@ -6998,7 +5023,7 @@ async function handleUDPOutBound(webSocket, vlessResponseHeader, log3) {
   };
 }
 __name(handleUDPOutBound, "handleUDPOutBound");
-var generateKeyPair3 = /* @__PURE__ */ __name(() => {
+var generateKeyPair = /* @__PURE__ */ __name(() => {
   const base64Encode = /* @__PURE__ */ __name((array) => btoa(String.fromCharCode.apply(null, array)), "base64Encode");
   let privateKey = import_tweetnacl.default.randomBytes(32);
   privateKey[0] &= 248;
@@ -7039,41 +5064,41 @@ function base64ToDecimal(base64) {
   return decimalArray;
 }
 __name(base64ToDecimal, "base64ToDecimal");
-async function getDataset(env3) {
+async function getDataset(env) {
   let proxySettings, warpConfigs;
-  if (typeof env3.bpb !== "object") {
+  if (typeof env.bpb !== "object") {
     return { kvNotFound: true, proxySettings: null, warpConfigs: null };
   }
   try {
-    proxySettings = await env3.bpb.get("proxySettings", { type: "json" });
-    warpConfigs = await env3.bpb.get("warpConfigs", { type: "json" });
-  } catch (error3) {
-    console.log(error3);
-    throw new Error(`An error occurred while getting KV - ${error3}`);
+    proxySettings = await env.bpb.get("proxySettings", { type: "json" });
+    warpConfigs = await env.bpb.get("warpConfigs", { type: "json" });
+  } catch (error) {
+    console.log(error);
+    throw new Error(`An error occurred while getting KV - ${error}`);
   }
   if (!proxySettings) {
-    proxySettings = await updateDataset(env3);
-    const { error: error3, configs } = await fetchWgConfig(env3, proxySettings);
-    if (error3)
-      throw new Error(`An error occurred while getting Warp configs - ${error3}`);
+    proxySettings = await updateDataset(env);
+    const { error, configs } = await fetchWgConfig(env, proxySettings);
+    if (error)
+      throw new Error(`An error occurred while getting Warp configs - ${error}`);
     warpConfigs = configs;
   }
   if (panelVersion !== proxySettings.panelVersion)
-    proxySettings = await updateDataset(env3);
+    proxySettings = await updateDataset(env);
   return { kvNotFound: false, proxySettings, warpConfigs };
 }
 __name(getDataset, "getDataset");
-async function updateDataset(env3, newSettings, resetSettings) {
+async function updateDataset(env, newSettings, resetSettings) {
   let currentSettings;
   if (!resetSettings) {
     try {
-      currentSettings = await env3.bpb.get("proxySettings", { type: "json" });
-    } catch (error3) {
-      console.log(error3);
-      throw new Error(`An error occurred while getting current KV settings - ${error3}`);
+      currentSettings = await env.bpb.get("proxySettings", { type: "json" });
+    } catch (error) {
+      console.log(error);
+      throw new Error(`An error occurred while getting current KV settings - ${error}`);
     }
   } else {
-    await env3.bpb.delete("warpConfigs");
+    await env.bpb.delete("warpConfigs");
   }
   const validateField = /* @__PURE__ */ __name((field) => {
     const fieldValue = newSettings?.get(field);
@@ -7098,9 +5123,9 @@ async function updateDataset(env3, newSettings, resetSettings) {
         server: remoteDNSServer,
         staticIPs: enableIPv6 ? [...resolvedDomain.ipv4, ...resolvedDomain.ipv6] : resolvedDomain.ipv4
       };
-    } catch (error3) {
-      console.log(error3);
-      throw new Error(`An error occurred while resolving remote DNS server, please try agian! - ${error3}`);
+    } catch (error) {
+      console.log(error);
+      throw new Error(`An error occurred while resolving remote DNS server, please try agian! - ${error}`);
     }
   }
   const proxySettings = {
@@ -7148,10 +5173,10 @@ async function updateDataset(env3, newSettings, resetSettings) {
     panelVersion
   };
   try {
-    await env3.bpb.put("proxySettings", JSON.stringify(proxySettings));
-  } catch (error3) {
-    console.log(error3);
-    throw new Error(`An error occurred while updating KV - ${error3}`);
+    await env.bpb.put("proxySettings", JSON.stringify(proxySettings));
+  } catch (error) {
+    console.log(error);
+    throw new Error(`An error occurred while updating KV - ${error}`);
   }
   return proxySettings;
 }
@@ -7174,9 +5199,9 @@ function getRandomPath(length) {
   return result;
 }
 __name(getRandomPath, "getRandomPath");
-async function resolveDNS(domain2) {
-  const dohURLv4 = `${dohURL}?name=${encodeURIComponent(domain2)}&type=A`;
-  const dohURLv6 = `${dohURL}?name=${encodeURIComponent(domain2)}&type=AAAA`;
+async function resolveDNS(domain) {
+  const dohURLv4 = `${dohURL}?name=${encodeURIComponent(domain)}&type=A`;
+  const dohURLv6 = `${dohURL}?name=${encodeURIComponent(domain)}&type=AAAA`;
   try {
     const [ipv4Response, ipv6Response] = await Promise.all([
       fetch(dohURLv4, { headers: { accept: "application/dns-json" } }),
@@ -7187,9 +5212,9 @@ async function resolveDNS(domain2) {
     const ipv4 = ipv4Addresses.Answer ? ipv4Addresses.Answer.map((record) => record.data) : [];
     const ipv6 = ipv6Addresses.Answer ? ipv6Addresses.Answer.map((record) => record.data) : [];
     return { ipv4, ipv6 };
-  } catch (error3) {
-    console.error("Error resolving DNS:", error3);
-    throw new Error(`An error occurred while resolving DNS - ${error3}`);
+  } catch (error) {
+    console.error("Error resolving DNS:", error);
+    throw new Error(`An error occurred while resolving DNS - ${error}`);
   }
 }
 __name(resolveDNS, "resolveDNS");
@@ -7215,9 +5240,9 @@ function generateSecretKey() {
   return Array.from(key, (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 __name(generateSecretKey, "generateSecretKey");
-async function Authenticate(request, env3) {
+async function Authenticate(request, env) {
   try {
-    const secretKey = await env3.bpb.get("secretKey");
+    const secretKey = await env.bpb.get("secretKey");
     const secret = new TextEncoder().encode(secretKey);
     const cookie = request.headers.get("Cookie")?.match(/(^|;\s*)jwtToken=([^;]*)/);
     const token = cookie ? cookie[2] : null;
@@ -7228,8 +5253,8 @@ async function Authenticate(request, env3) {
     const { payload } = await jwtVerify(token, secret);
     console.log(`Successfully authenticated, User ID: ${payload.userID}`);
     return true;
-  } catch (error3) {
-    console.log(error3);
+  } catch (error) {
+    console.log(error);
     return false;
   }
 }
@@ -8890,7 +6915,7 @@ function renderLoginPage() {
     </html>`;
 }
 __name(renderLoginPage, "renderLoginPage");
-function renderErrorPage(message2, error3, refer) {
+function renderErrorPage(message2, error, refer) {
   return `
     <!DOCTYPE html>
     <html lang="en">
@@ -8933,7 +6958,7 @@ function renderErrorPage(message2, error3, refer) {
             <div id="error-message">
                 <h2>${message2} ${refer ? 'Please try again or refer to <a href="https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/README.md">documents</a>' : ""}
                 </h2>
-                <p><b>${error3 ? `\u26A0\uFE0F ${error3.stack.toString()}` : ""}</b></p>
+                <p><b>${error ? `\u26A0\uFE0F ${error.stack.toString()}` : ""}</b></p>
             </div>
         </div>
     <script>
@@ -8972,11 +6997,11 @@ function extractChainProxyParams(chainProxy) {
   return JSON.stringify(configParams);
 }
 __name(extractChainProxyParams, "extractChainProxyParams");
-async function fetchWgConfig(env3, proxySettings) {
+async function fetchWgConfig(env, proxySettings) {
   let warpConfigs = [];
   const apiBaseUrl = "https://api.cloudflareclient.com/v0a4005/reg";
   const { warpPlusLicense } = proxySettings;
-  const warpKeys = [generateKeyPair3(), generateKeyPair3()];
+  const warpKeys = [generateKeyPair(), generateKeyPair()];
   for (let i = 0; i < 2; i++) {
     const accountResponse = await fetch(apiBaseUrl, {
       method: "POST",
@@ -9026,7 +7051,7 @@ async function fetchWgConfig(env3, proxySettings) {
     }
   }
   const configs = JSON.stringify(warpConfigs);
-  await env3.bpb.put("warpConfigs", configs);
+  await env.bpb.put("warpConfigs", configs);
   return { error: null, configs };
 }
 __name(fetchWgConfig, "fetchWgConfig");
@@ -9072,7 +7097,7 @@ async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isW
   const isIPv62 = enableIPv6 && !isWarp || warpEnableIPv6 && isWarp;
   const outboundDomains = outboundAddrs.filter((address) => isDomain(address));
   const isOutboundRule = outboundDomains.length > 0;
-  const outboundRules = outboundDomains.map((domain2) => `full:${domain2}`);
+  const outboundRules = outboundDomains.map((domain) => `full:${domain}`);
   isBalancer && outboundRules.push("full:www.gstatic.com");
   const finalRemoteDNS = isWorkerLess ? ["https://cloudflare-dns.com/dns-query"] : isWarp ? warpEnableIPv6 ? ["1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001"] : ["1.1.1.1", "1.0.0.1"] : [remoteDNS];
   const dnsHost = {};
@@ -9112,9 +7137,9 @@ async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isW
     expectIPs: []
   };
   if (!isWorkerLess && isBypass) {
-    bypassRules.forEach(({ rule, domain: domain2, ip }) => {
+    bypassRules.forEach(({ rule, domain, ip }) => {
       if (rule) {
-        localDNSServer.domains.push(domain2);
+        localDNSServer.domains.push(domain);
         localDNSServer.expectIPs.push(ip);
       }
     });
@@ -9187,13 +7212,13 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
       geoipDirectRule = createRule("ip", "direct");
     }
     let geositeBlockRule = createRule("domain", "block");
-    geoRules.forEach(({ rule, type, domain: domain2, ip }) => {
+    geoRules.forEach(({ rule, type, domain, ip }) => {
       if (rule) {
         if (type === "direct") {
-          geositeDirectRule?.domain.push(domain2);
+          geositeDirectRule?.domain.push(domain);
           geoipDirectRule?.ip?.push(ip);
         } else {
-          geositeBlockRule.domain.push(domain2);
+          geositeBlockRule.domain.push(domain);
         }
       }
     });
@@ -9538,44 +7563,44 @@ function buildXrayConfig(proxySettings, remark, isFragment, isBalancer, isChain,
   } = proxySettings;
   const isFakeDNS = vlessTrojanFakeDNS && !isWarp || warpFakeDNS && isWarp;
   const isIPv62 = enableIPv6 && !isWarp || warpEnableIPv6 && isWarp;
-  let config2 = structuredClone(xrayConfigTemp);
-  config2.remarks = remark;
+  let config = structuredClone(xrayConfigTemp);
+  config.remarks = remark;
   if (isFakeDNS) {
-    config2.inbounds[0].sniffing.destOverride.push("fakedns");
-    config2.inbounds[1].sniffing.destOverride.push("fakedns");
-    !isIPv62 && config2.fakedns.pop();
+    config.inbounds[0].sniffing.destOverride.push("fakedns");
+    config.inbounds[1].sniffing.destOverride.push("fakedns");
+    !isIPv62 && config.fakedns.pop();
   } else {
-    delete config2.fakedns;
+    delete config.fakedns;
   }
   if (isFragment) {
-    const fragment = config2.outbounds[0].settings.fragment;
+    const fragment = config.outbounds[0].settings.fragment;
     fragment.length = `${lengthMin}-${lengthMax}`;
     fragment.interval = `${intervalMin}-${intervalMax}`;
     fragment.packets = fragmentPackets;
   } else {
-    config2.outbounds.shift();
+    config.outbounds.shift();
   }
   if (isBalancer) {
     const interval = isWarp ? bestWarpInterval : bestVLESSTrojanInterval;
-    config2.observatory.probeInterval = `${interval}s`;
-    config2.observatory.subjectSelector = [isChain ? "chain" : "prox"];
-    config2.routing.balancers[0].selector = [isChain ? "chain" : "prox"];
+    config.observatory.probeInterval = `${interval}s`;
+    config.observatory.subjectSelector = [isChain ? "chain" : "prox"];
+    config.routing.balancers[0].selector = [isChain ? "chain" : "prox"];
     if (balancerFallback)
-      config2.routing.balancers[0].fallbackTag = balancerFallback;
+      config.routing.balancers[0].fallbackTag = balancerFallback;
   } else {
-    delete config2.observatory;
-    delete config2.routing.balancers;
+    delete config.observatory;
+    delete config.routing.balancers;
   }
-  return config2;
+  return config;
 }
 __name(buildXrayConfig, "buildXrayConfig");
 async function buildXrayBestPingConfig(proxySettings, totalAddresses, chainProxy, outbounds, isFragment) {
   const remark = isFragment ? "\u{1F4A6} BPB F - Best Ping \u{1F4A5}" : "\u{1F4A6} BPB - Best Ping \u{1F4A5}";
-  let config2 = buildXrayConfig(proxySettings, remark, isFragment, true, chainProxy, chainProxy ? "chain-2" : "prox-2");
-  config2.dns = await buildXrayDNS(proxySettings, totalAddresses, void 0, false, true, false);
-  config2.routing.rules = buildXrayRoutingRules(proxySettings, totalAddresses, chainProxy, true, false);
-  config2.outbounds.unshift(...outbounds);
-  return config2;
+  let config = buildXrayConfig(proxySettings, remark, isFragment, true, chainProxy, chainProxy ? "chain-2" : "prox-2");
+  config.dns = await buildXrayDNS(proxySettings, totalAddresses, void 0, false, true, false);
+  config.routing.rules = buildXrayRoutingRules(proxySettings, totalAddresses, chainProxy, true, false);
+  config.outbounds.unshift(...outbounds);
+  return config;
 }
 __name(buildXrayBestPingConfig, "buildXrayBestPingConfig");
 async function buildXrayBestFragmentConfig(proxySettings, hostName, chainProxy, outbounds) {
@@ -9599,10 +7624,10 @@ async function buildXrayBestFragmentConfig(proxySettings, hostName, chainProxy, 
     "80-100",
     "100-200"
   ];
-  let config2 = buildXrayConfig(proxySettings, "\u{1F4A6} BPB F - Best Fragment \u{1F60E}", true, true, chainProxy, void 0, false);
-  config2.dns = await buildXrayDNS(proxySettings, [], hostName, false, true, false);
-  config2.routing.rules = buildXrayRoutingRules(proxySettings, [], chainProxy, true, false);
-  const fragment = config2.outbounds.shift();
+  let config = buildXrayConfig(proxySettings, "\u{1F4A6} BPB F - Best Fragment \u{1F60E}", true, true, chainProxy, void 0, false);
+  config.dns = await buildXrayDNS(proxySettings, [], hostName, false, true, false);
+  config.routing.rules = buildXrayRoutingRules(proxySettings, [], chainProxy, true, false);
+  const fragment = config.outbounds.shift();
   let bestFragOutbounds = [];
   bestFragValues.forEach((fragLength, index) => {
     if (chainProxy) {
@@ -9620,22 +7645,22 @@ async function buildXrayBestFragmentConfig(proxySettings, hostName, chainProxy, 
     fragmentOutbound.settings.fragment.interval = "1-1";
     bestFragOutbounds.push(proxyOutbound, fragmentOutbound);
   });
-  config2.outbounds.unshift(...bestFragOutbounds);
-  return config2;
+  config.outbounds.unshift(...bestFragOutbounds);
+  return config;
 }
 __name(buildXrayBestFragmentConfig, "buildXrayBestFragmentConfig");
 async function buildXrayWorkerLessConfig(proxySettings) {
-  let config2 = buildXrayConfig(proxySettings, "\u{1F4A6} BPB F - WorkerLess \u2B50", true, false, false, void 0, false);
-  config2.dns = await buildXrayDNS(proxySettings, [], void 0, true);
-  config2.routing.rules = buildXrayRoutingRules(proxySettings, [], false, false, true);
+  let config = buildXrayConfig(proxySettings, "\u{1F4A6} BPB F - WorkerLess \u2B50", true, false, false, void 0, false);
+  config.dns = await buildXrayDNS(proxySettings, [], void 0, true);
+  config.routing.rules = buildXrayRoutingRules(proxySettings, [], false, false, true);
   let fakeOutbound = buildXrayVLESSOutbound("fake-outbound", "google.com", "443", userID, "google.com", "google.com", "", true, false);
   delete fakeOutbound.streamSettings.sockopt;
   fakeOutbound.streamSettings.wsSettings.path = "/";
-  config2.outbounds.push(fakeOutbound);
-  return config2;
+  config.outbounds.push(fakeOutbound);
+  return config;
 }
 __name(buildXrayWorkerLessConfig, "buildXrayWorkerLessConfig");
-async function getXrayCustomConfigs(env3, proxySettings, hostName, isFragment) {
+async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
   let configs = [];
   let outbounds = [];
   let protocols = [];
@@ -9657,10 +7682,10 @@ async function getXrayCustomConfigs(env3, proxySettings, hostName, isFragment) {
     const proxyParams = JSON.parse(outProxyParams);
     try {
       chainProxy = buildXrayChainOutbound(proxyParams);
-    } catch (error3) {
-      console.log("An error occured while parsing chain proxy: ", error3);
+    } catch (error) {
+      console.log("An error occured while parsing chain proxy: ", error);
       chainProxy = void 0;
-      await env3.bpb.put("proxySettings", JSON.stringify({
+      await env.bpb.put("proxySettings", JSON.stringify({
         ...proxySettings,
         outProxy: "",
         outProxyParams: {}
@@ -10015,16 +8040,16 @@ function buildClashChainOutbound(chainProxyParams) {
 __name(buildClashChainOutbound, "buildClashChainOutbound");
 async function getClashWarpConfig(proxySettings, warpConfigs) {
   const { warpEndpoints } = proxySettings;
-  let config2 = structuredClone(clashConfigTemp);
-  config2.dns = await buildClashDNS(proxySettings, true);
-  config2.rules = buildClashRoutingRules(proxySettings);
-  const selector = config2["proxy-groups"][0];
-  const warpUrlTest = config2["proxy-groups"][1];
+  let config = structuredClone(clashConfigTemp);
+  config.dns = await buildClashDNS(proxySettings, true);
+  config.rules = buildClashRoutingRules(proxySettings);
+  const selector = config["proxy-groups"][0];
+  const warpUrlTest = config["proxy-groups"][1];
   selector.proxies = ["\u{1F4A6} Warp - Best Ping \u{1F680}", "\u{1F4A6} WoW - Best Ping \u{1F680}"];
   warpUrlTest.name = "\u{1F4A6} Warp - Best Ping \u{1F680}";
   warpUrlTest.interval = +proxySettings.bestWarpInterval;
-  config2["proxy-groups"].push(structuredClone(warpUrlTest));
-  const WoWUrlTest = config2["proxy-groups"][2];
+  config["proxy-groups"].push(structuredClone(warpUrlTest));
+  const WoWUrlTest = config["proxy-groups"][2];
   WoWUrlTest.name = "\u{1F4A6} WoW - Best Ping \u{1F680}";
   let warpRemarks = [], WoWRemarks = [];
   warpEndpoints.split(",").forEach((endpoint, index) => {
@@ -10032,17 +8057,17 @@ async function getClashWarpConfig(proxySettings, warpConfigs) {
     const WoWRemark = `\u{1F4A6} ${index + 1} - WoW \u{1F30D}`;
     const warpOutbound = buildClashWarpOutbound(warpConfigs, warpRemark, endpoint, "");
     const WoWOutbound = buildClashWarpOutbound(warpConfigs, WoWRemark, endpoint, warpRemark);
-    config2.proxies.push(WoWOutbound, warpOutbound);
+    config.proxies.push(WoWOutbound, warpOutbound);
     warpRemarks.push(warpRemark);
     WoWRemarks.push(WoWRemark);
     warpUrlTest.proxies.push(warpRemark);
     WoWUrlTest.proxies.push(WoWRemark);
   });
   selector.proxies.push(...warpRemarks, ...WoWRemarks);
-  return config2;
+  return config;
 }
 __name(getClashWarpConfig, "getClashWarpConfig");
-async function getClashNormalConfig(env3, proxySettings, hostName) {
+async function getClashNormalConfig(env, proxySettings, hostName) {
   let chainProxy;
   const {
     cleanIPs,
@@ -10062,21 +8087,21 @@ async function getClashNormalConfig(env3, proxySettings, hostName) {
     const proxyParams = JSON.parse(outProxyParams);
     try {
       chainProxy = buildClashChainOutbound(proxyParams);
-    } catch (error3) {
-      console.log("An error occured while parsing chain proxy: ", error3);
+    } catch (error) {
+      console.log("An error occured while parsing chain proxy: ", error);
       chainProxy = void 0;
-      await env3.bpb.put("proxySettings", JSON.stringify({
+      await env.bpb.put("proxySettings", JSON.stringify({
         ...proxySettings,
         outProxy: "",
         outProxyParams: {}
       }));
     }
   }
-  let config2 = structuredClone(clashConfigTemp);
-  config2.dns = await buildClashDNS(proxySettings, false);
-  config2.rules = buildClashRoutingRules(proxySettings);
-  const selector = config2["proxy-groups"][0];
-  const urlTest = config2["proxy-groups"][1];
+  let config = structuredClone(clashConfigTemp);
+  config.dns = await buildClashDNS(proxySettings, false);
+  config.rules = buildClashRoutingRules(proxySettings);
+  const selector = config["proxy-groups"][0];
+  const urlTest = config["proxy-groups"][1];
   selector.proxies = ["\u{1F4A6} Best Ping \u{1F4A5}"];
   urlTest.name = "\u{1F4A6} Best Ping \u{1F4A5}";
   urlTest.interval = +bestVLESSTrojanInterval;
@@ -10109,7 +8134,7 @@ async function getClashNormalConfig(env3, proxySettings, hostName) {
             path,
             isCustomAddr
           );
-          config2.proxies.push(VLESSOutbound);
+          config.proxies.push(VLESSOutbound);
           selector.proxies.push(remark);
           urlTest.proxies.push(remark);
         }
@@ -10124,7 +8149,7 @@ async function getClashNormalConfig(env3, proxySettings, hostName) {
             path,
             isCustomAddr
           );
-          config2.proxies.push(TrojanOutbound);
+          config.proxies.push(TrojanOutbound);
           selector.proxies.push(remark);
           urlTest.proxies.push(remark);
         }
@@ -10132,14 +8157,14 @@ async function getClashNormalConfig(env3, proxySettings, hostName) {
           let chain = structuredClone(chainProxy);
           chain["name"] = remark;
           chain["dialer-proxy"] = `proxy-${proxyIndex}`;
-          config2.proxies.push(chain);
+          config.proxies.push(chain);
         }
         proxyIndex++;
         protocolIndex++;
       });
     });
   });
-  return config2;
+  return config;
 }
 __name(getClashNormalConfig, "getClashNormalConfig");
 function buildSingBoxDNS(proxySettings, isChain, isWarp) {
@@ -10619,21 +8644,21 @@ function buildSingBoxChainOutbound(chainProxyParams) {
 __name(buildSingBoxChainOutbound, "buildSingBoxChainOutbound");
 async function getSingBoxWarpConfig(proxySettings, warpConfigs, client) {
   const { warpEndpoints } = proxySettings;
-  let config2 = structuredClone(singboxConfigTemp);
+  let config = structuredClone(singboxConfigTemp);
   const dnsObject = buildSingBoxDNS(proxySettings, false, true);
   const { rules, rule_set } = buildSingBoxRoutingRules(proxySettings);
-  config2.dns.servers = dnsObject.servers;
-  config2.dns.rules = dnsObject.rules;
+  config.dns.servers = dnsObject.servers;
+  config.dns.rules = dnsObject.rules;
   if (dnsObject.fakeip)
-    config2.dns.fakeip = dnsObject.fakeip;
-  config2.route.rules = rules;
-  config2.route.rule_set = rule_set;
-  const selector = config2.outbounds[0];
-  const warpUrlTest = config2.outbounds[1];
+    config.dns.fakeip = dnsObject.fakeip;
+  config.route.rules = rules;
+  config.route.rule_set = rule_set;
+  const selector = config.outbounds[0];
+  const warpUrlTest = config.outbounds[1];
   const proIndicator = client === "hiddify" ? " Pro " : " ";
   selector.outbounds = [`\u{1F4A6} Warp${proIndicator}- Best Ping \u{1F680}`, `\u{1F4A6} WoW${proIndicator}- Best Ping \u{1F680}`];
-  config2.outbounds.splice(2, 0, structuredClone(warpUrlTest));
-  const WoWUrlTest = config2.outbounds[2];
+  config.outbounds.splice(2, 0, structuredClone(warpUrlTest));
+  const WoWUrlTest = config.outbounds[2];
   warpUrlTest.tag = `\u{1F4A6} Warp${proIndicator}- Best Ping \u{1F680}`;
   warpUrlTest.interval = `${proxySettings.bestWarpInterval}s`;
   WoWUrlTest.tag = `\u{1F4A6} WoW${proIndicator}- Best Ping \u{1F680}`;
@@ -10644,17 +8669,17 @@ async function getSingBoxWarpConfig(proxySettings, warpConfigs, client) {
     const WoWRemark = `\u{1F4A6} ${index + 1} - WoW \u{1F30D}`;
     const warpOutbound = buildSingBoxWarpOutbound(proxySettings, warpConfigs, warpRemark, endpoint, "", client);
     const WoWOutbound = buildSingBoxWarpOutbound(proxySettings, warpConfigs, WoWRemark, endpoint, warpRemark, client);
-    config2.outbounds.push(WoWOutbound, warpOutbound);
+    config.outbounds.push(WoWOutbound, warpOutbound);
     warpRemarks.push(warpRemark);
     WoWRemarks.push(WoWRemark);
     warpUrlTest.outbounds.push(warpRemark);
     WoWUrlTest.outbounds.push(WoWRemark);
   });
   selector.outbounds.push(...warpRemarks, ...WoWRemarks);
-  return config2;
+  return config;
 }
 __name(getSingBoxWarpConfig, "getSingBoxWarpConfig");
-async function getSingBoxCustomConfig(env3, proxySettings, hostName, client, isFragment) {
+async function getSingBoxCustomConfig(env, proxySettings, hostName, client, isFragment) {
   let chainProxyOutbound;
   const {
     cleanIPs,
@@ -10673,27 +8698,27 @@ async function getSingBoxCustomConfig(env3, proxySettings, hostName, client, isF
     const proxyParams = JSON.parse(outProxyParams);
     try {
       chainProxyOutbound = buildSingBoxChainOutbound(proxyParams);
-    } catch (error3) {
-      console.log("An error occured while parsing chain proxy: ", error3);
+    } catch (error) {
+      console.log("An error occured while parsing chain proxy: ", error);
       chainProxyOutbound = void 0;
-      await env3.bpb.put("proxySettings", JSON.stringify({
+      await env.bpb.put("proxySettings", JSON.stringify({
         ...proxySettings,
         outProxy: "",
         outProxyParams: {}
       }));
     }
   }
-  let config2 = structuredClone(singboxConfigTemp);
+  let config = structuredClone(singboxConfigTemp);
   const dnsObject = buildSingBoxDNS(proxySettings, chainProxyOutbound, false);
   const { rules, rule_set } = buildSingBoxRoutingRules(proxySettings);
-  config2.dns.servers = dnsObject.servers;
-  config2.dns.rules = dnsObject.rules;
+  config.dns.servers = dnsObject.servers;
+  config.dns.rules = dnsObject.rules;
   if (dnsObject.fakeip)
-    config2.dns.fakeip = dnsObject.fakeip;
-  config2.route.rules = rules;
-  config2.route.rule_set = rule_set;
-  const selector = config2.outbounds[0];
-  const urlTest = config2.outbounds[1];
+    config.dns.fakeip = dnsObject.fakeip;
+  config.route.rules = rules;
+  config.route.rule_set = rule_set;
+  const selector = config.outbounds[0];
+  const urlTest = config.outbounds[1];
   selector.outbounds = ["\u{1F4A6} Best Ping \u{1F4A5}"];
   urlTest.interval = `${bestVLESSTrojanInterval}s`;
   urlTest.tag = "\u{1F4A6} Best Ping \u{1F4A5}";
@@ -10727,7 +8752,7 @@ async function getSingBoxCustomConfig(env3, proxySettings, hostName, client, isF
             isCustomAddr,
             isFragment
           );
-          config2.outbounds.push(VLESSOutbound);
+          config.outbounds.push(VLESSOutbound);
         }
         if (protocol === "Trojan") {
           TrojanOutbound = buildSingBoxTrojanOutbound(
@@ -10740,13 +8765,13 @@ async function getSingBoxCustomConfig(env3, proxySettings, hostName, client, isF
             isCustomAddr,
             isFragment
           );
-          config2.outbounds.push(TrojanOutbound);
+          config.outbounds.push(TrojanOutbound);
         }
         if (chainProxyOutbound) {
           let chain = structuredClone(chainProxyOutbound);
           chain.tag = remark;
           chain.detour = `proxy-${proxyIndex}`;
-          config2.outbounds.push(chain);
+          config.outbounds.push(chain);
         }
         selector.outbounds.push(remark);
         urlTest.outbounds.push(remark);
@@ -10755,7 +8780,7 @@ async function getSingBoxCustomConfig(env3, proxySettings, hostName, client, isF
       });
     });
   });
-  return config2;
+  return config;
 }
 __name(getSingBoxCustomConfig, "getSingBoxCustomConfig");
 async function getNormalConfigs(proxySettings, hostName, client) {
