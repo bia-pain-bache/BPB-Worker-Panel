@@ -11,3 +11,4 @@
 !.github/**
 !src/
 !src/**
+!package.json

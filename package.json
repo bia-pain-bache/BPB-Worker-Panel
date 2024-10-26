@@ -1,0 +1,11 @@
+{
+    "dependencies": {
+      "jose": "^5.9.4",
+      "js-sha256": "^0.11.0",
+      "jsonwebtoken": "^9.0.2",
+      "tweetnacl": "^1.0.3"
+    },
+    "scripts": {
+      "build": "npx wrangler deploy --dry-run --outdir=dist && cp ./dist/worker.js ./_worker.js"
+    }
+}

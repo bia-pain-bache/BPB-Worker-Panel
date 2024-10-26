@@ -11,12 +11,12 @@ jobs:
 
     steps:
       - name: Check out the code
-        uses: actions/checkout@latest
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@latest
+        uses: actions/setup-node@v4
         with:
-          node-version: "latest"
+          node-version: "18"
 
       - name: Install dependencies
         run: npm install
@@ -25,9 +25,7 @@ jobs:
         run: npm install -g wrangler
 
       - name: Build project
-        run: |
-          npx wrangler deploy --dry-run --outdir=dist
-          cp ./dist/worker.js ./_worker.js
+        run: npm run build
 
       - name: Commit and push built worker
         run: |
