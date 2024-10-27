@@ -5142,6 +5142,8 @@ async function updateDataset(env, newSettings, resetSettings) {
     customCdnHost: validateField("customCdnHost")?.trim() ?? currentSettings?.customCdnHost ?? "",
     customCdnSni: validateField("customCdnSni")?.trim() ?? currentSettings?.customCdnSni ?? "",
     bestVLESSTrojanInterval: validateField("bestVLESSTrojanInterval") ?? currentSettings?.bestVLESSTrojanInterval ?? "30",
+    customRuleBlockSites: validateField("customRuleBlockSites")?.trim() ?? currentSettings?.customRuleBlockSites ?? "",
+    customRuleBypassSites: validateField("customRuleBypassSites")?.trim() ?? currentSettings?.customRuleBypassSites ?? "",
     vlessConfigs: validateField("vlessConfigs") ?? currentSettings?.vlessConfigs ?? true,
     trojanConfigs: validateField("trojanConfigs") ?? currentSettings?.trojanConfigs ?? false,
     ports: validateField("ports")?.split(",") ?? currentSettings?.ports ?? ["443"],
@@ -5272,6 +5274,8 @@ function renderHomePage(request, proxySettings, hostName, isPassSet) {
     customCdnHost,
     customCdnSni,
     bestVLESSTrojanInterval,
+    customRuleBlockSites,
+    customRuleBypassSites,
     vlessConfigs,
     trojanConfigs,
     ports,
@@ -5686,6 +5690,14 @@ function renderHomePage(request, proxySettings, hostName, isPassSet) {
                     <div class="form-control">
                         <label for="bestVLESSTrojanInterval">\u{1F504} Best Interval</label>
                         <input type="number" id="bestVLESSTrojanInterval" name="bestVLESSTrojanInterval" min="10" max="90" value="${bestVLESSTrojanInterval}">
+                    </div>
+                    <div class="form-control">
+                        <label for="customRuleBlockSites">\u{1F7E0} Custom Rules: Block Sites</label>
+                        <input type="text" id="customRuleBlockSites" name="customRuleBlockSites" value="${customRuleBlockSites}">
+                    </div>
+                    <div class="form-control">
+                        <label for="customRuleBypassSites">\u{1F7E2} Custom Rules: Bypass Sites</label>
+                        <input type="text" id="customRuleBypassSites" name="customRuleBypassSites" value="${customRuleBypassSites}">
                     </div>
                     <div class="form-control" style="padding-top: 10px;">
                         <label for="vlessConfigs">\u2699\uFE0F Protocols</label>
@@ -6590,6 +6602,8 @@ function renderHomePage(request, proxySettings, hostName, isPassSet) {
             const customCdnHost = document.getElementById('customCdnHost').value;
             const customCdnSni = document.getElementById('customCdnSni').value;
             const isCustomCdn = customCdnAddrs.length > 0 || customCdnHost !== '' || customCdnSni !== '';
+            const customRuleBlockSites = document.getElementById('customRuleBlockSites').value?.split(',').filter(addr => addr !== '');
+            const customRuleBypassSites = document.getElementById('customRuleBypassSites').value?.split(',').filter(addr => addr !== '');
             const warpEndpoints = document.getElementById('warpEndpoints').value?.replaceAll(' ', '').split(',');
             const noiseCountMin = getValue('noiseCountMin');
             const noiseCountMax = getValue('noiseCountMax');
@@ -7161,7 +7175,9 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
     bypassRussia,
     blockAds,
     blockPorn,
-    blockUDP443
+    blockUDP443,
+    customRuleBlockSites,
+    customRuleBypassSites
   } = proxySettings;
   const isBlock = blockAds || blockPorn;
   const isBypass = bypassIran || bypassChina || bypassRussia;
@@ -7200,30 +7216,46 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
       outboundTag: "direct",
       type: "field"
     });
-  if (isBypass || isBlock) {
+  if (isBypass || isBlock || customRuleBlockSites || customRuleBypassSites) {
     const createRule = /* @__PURE__ */ __name((type, outbound) => ({
       [type]: [],
       outboundTag: outbound,
       type: "field"
     }), "createRule");
-    let geositeDirectRule, geoipDirectRule;
-    if (!isWorkerLess) {
-      geositeDirectRule = createRule("domain", "direct");
-      geoipDirectRule = createRule("ip", "direct");
+    if (customRuleBlockSites) {
+      let customSiteBlockRule = createRule("domain", "block");
+      customRuleBlockSites.split(",").forEach(
+        (domainName) => customSiteBlockRule.domain.push(domainName.trim())
+      );
+      rules.push(customSiteBlockRule);
     }
-    let geositeBlockRule = createRule("domain", "block");
-    geoRules.forEach(({ rule, type, domain, ip }) => {
-      if (rule) {
-        if (type === "direct") {
-          geositeDirectRule?.domain.push(domain);
-          geoipDirectRule?.ip?.push(ip);
-        } else {
-          geositeBlockRule.domain.push(domain);
-        }
+    if (customRuleBypassSites) {
+      let customSiteBypassRule = createRule("domain", "direct");
+      customRuleBypassSites.split(",").forEach(
+        (domainName) => customSiteBypassRule.domain.push(domainName.trim())
+      );
+      rules.push(customSiteBypassRule);
+    }
+    if (isBypass || isBlock) {
+      let geositeDirectRule, geoipDirectRule;
+      if (!isWorkerLess) {
+        geositeDirectRule = createRule("domain", "direct");
+        geoipDirectRule = createRule("ip", "direct");
       }
-    });
-    !isWorkerLess && isBypass && rules.push(geositeDirectRule, geoipDirectRule);
-    isBlock && rules.push(geositeBlockRule);
+      let geositeBlockRule = createRule("domain", "block");
+      geoRules.forEach(({ rule, type, domain, ip }) => {
+        if (rule) {
+          if (type === "direct") {
+            geositeDirectRule?.domain.push(domain);
+            geoipDirectRule?.ip?.push(ip);
+          } else {
+            geositeBlockRule.domain.push(domain);
+          }
+        }
+      });
+      !isWorkerLess && isBypass && rules.push(geositeDirectRule, geoipDirectRule);
+      isBlock && rules.push(geositeBlockRule);
+    }
   }
   blockUDP443 && rules.push({
     network: "udp",
@@ -7843,10 +7875,23 @@ function buildClashRoutingRules(proxySettings) {
     bypassRussia,
     blockAds,
     blockPorn,
-    blockUDP443
+    blockUDP443,
+    customRuleBlockSites,
+    customRuleBypassSites
   } = proxySettings;
   const isBypass = bypassIran || bypassChina || bypassLAN || bypassRussia;
   const isBlock = blockAds || blockPorn;
+  let customSiteBlockRules = [], customSiteBypassRules = [];
+  if (customRuleBlockSites) {
+    customRuleBlockSites.split(",").forEach(
+      (domainName) => customSiteBlockRules.push(`DOMAIN-SUFFIX,${domainName},REJECT`)
+    );
+  }
+  if (customRuleBypassSites) {
+    customRuleBypassSites.split(",").forEach(
+      (domainName) => customSiteBypassRules.push(`DOMAIN-SUFFIX,${domainName},DIRECT`)
+    );
+  }
   let geositeDirectRules = [], geoipDirectRules = [], geositeBlockRules = [];
   const geoRules = [
     { rule: bypassLAN, type: "direct", geosite: "private", geoip: "private" },
@@ -7871,6 +7916,8 @@ function buildClashRoutingRules(proxySettings) {
   }
   let rules = [
     `AND,((IP-CIDR,${localDNS}/32),(DST-PORT,53)),DIRECT`,
+    ...customSiteBlockRules,
+    ...customSiteBypassRules,
     ...geositeDirectRules,
     ...geoipDirectRules,
     ...geositeBlockRules
@@ -8283,7 +8330,9 @@ function buildSingBoxRoutingRules(proxySettings) {
     bypassRussia,
     blockAds,
     blockPorn,
-    blockUDP443
+    blockUDP443,
+    customRuleBlockSites,
+    customRuleBypassSites
   } = proxySettings;
   const isBypass = bypassIran || bypassChina || bypassRussia;
   let rules = [
@@ -8387,6 +8436,14 @@ function buildSingBoxRoutingRules(proxySettings) {
   ];
   bypassLAN && rules.push({
     ip_is_private: true,
+    outbound: "direct"
+  });
+  customRuleBlockSites && rules.push({
+    domain_suffix: customRuleBlockSites.split(",").map((item) => item.trim()),
+    outbound: "block"
+  });
+  customRuleBypassSites && rules.push({
+    domain_suffix: customRuleBypassSites.split(",").map((item) => item.trim()),
     outbound: "direct"
   });
   const createRule = /* @__PURE__ */ __name((outbound) => ({
