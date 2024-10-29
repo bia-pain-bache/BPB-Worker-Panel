@@ -3251,13 +3251,15 @@ async function buildXrayDNS (proxySettings, outboundAddrs, domainToStaticIPs, is
       
     isOutboundRule && dnsObject.servers.push({
         address: localDNS,
-        domains: outboundRules
+        domains: outboundRules,
+        skipFallback: true
     });
 
     let localDNSServer = {
         address: localDNS,
         domains: [],
-        expectIPs: []
+        expectIPs: [],
+        skipFallback: true
     };
 
     if (!isWorkerLess && isBypass) {
@@ -4059,7 +4061,7 @@ function buildClashVLESSOutbound (remark, address, port, host, sni, path, allowI
         "uuid": userID,
         "tls": tls,
         "network": "ws",
-        "udp": false,
+        "udp": true,
         "ws-opts": {
             "path": path,
             "headers": { "host": host },
@@ -4089,7 +4091,7 @@ function buildClashTrojanOutbound (remark, address, port, host, sni, path, allow
         "port": +port,
         "password": trojanPassword,
         "network": "ws",
-        "udp": false,
+        "udp": true,
         "ws-opts": {
             "path": path,
             "headers": { "host": host },
@@ -4215,8 +4217,9 @@ function buildClashChainOutbound(chainProxyParams) {
 }
 
 async function getClashWarpConfig(proxySettings, warpConfigs) {
-    const { warpEndpoints } = proxySettings;
+    const { warpEndpoints, warpEnableIPv6 } = proxySettings;
     let config = structuredClone(clashConfigTemp);
+    config.ipv6 = warpEnableIPv6;
     config.dns = await buildClashDNS(proxySettings, true);
     config.rules = buildClashRoutingRules(proxySettings);
     const selector = config['proxy-groups'][0];
@@ -4278,6 +4281,7 @@ async function getClashNormalConfig (env, proxySettings, hostName) {
     }
 
     let config = structuredClone(clashConfigTemp);
+    config.ipv6 = enableIPv6;
     config.dns = await buildClashDNS(proxySettings, false);
     config.rules = buildClashRoutingRules(proxySettings);
     const selector = config['proxy-groups'][0];
@@ -4640,13 +4644,14 @@ function buildSingBoxRoutingRules (proxySettings) {
 }
 
 function buildSingBoxVLESSOutbound (proxySettings, remark, address, port, host, sni, allowInsecure, isFragment) {
-    const { lengthMin, lengthMax, intervalMin, intervalMax, proxyIP } = proxySettings;
+    const { enableIPv6, lengthMin, lengthMax, intervalMin, intervalMax, proxyIP } = proxySettings;
     const path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
     const tls = defaultHttpsPorts.includes(port) ? true : false;
     let outbound =  {
         type: "vless",
         server: address,
         server_port: +port,
+        domain_strategy: enableIPv6 ? "prefer_ipv4" : "ipv4_only",
         uuid: userID,
         tls: {
             alpn: "http/1.1",
@@ -4681,7 +4686,7 @@ function buildSingBoxVLESSOutbound (proxySettings, remark, address, port, host, 
 }
 
 function buildSingBoxTrojanOutbound (proxySettings, remark, address, port, host, sni, allowInsecure, isFragment) {
-    const { lengthMin, lengthMax, intervalMin, intervalMax, proxyIP } = proxySettings;
+    const { enableIPv6, lengthMin, lengthMax, intervalMin, intervalMax, proxyIP } = proxySettings;
     const path = `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
     const tls = defaultHttpsPorts.includes(port) ? true : false;
     let outbound = {
@@ -4689,6 +4694,7 @@ function buildSingBoxTrojanOutbound (proxySettings, remark, address, port, host,
         password: trojanPassword,
         server: address,
         server_port: +port,
+        domain_strategy: enableIPv6 ? "prefer_ipv4" : "ipv4_only",
         tls: {
             alpn: "http/1.1",
             enabled: true,
@@ -4727,6 +4733,7 @@ function buildSingBoxWarpOutbound (proxySettings, warpConfigs, remark, endpoint,
     const endpointServer = endpoint.includes('[') ? endpoint.match(ipv6Regex)[1] : endpoint.split(':')[0];
     const endpointPort = endpoint.includes('[') ? +endpoint.match(portRegex)[0] : +endpoint.split(':')[1];
     const { 
+        warpEnableIPv6,
 		hiddifyNoiseMode, 
 		noiseCountMin, 
 		noiseCountMax, 
@@ -4754,6 +4761,7 @@ function buildSingBoxWarpOutbound (proxySettings, warpConfigs, remark, endpoint,
         reserved: reserved,
         server: endpointServer,
         server_port: endpointPort,
+        domain_strategy: warpEnableIPv6 ? "prefer_ipv4" : "ipv4_only",
         type: "wireguard",
         detour: chain,
         tag: remark
@@ -4783,11 +4791,7 @@ function buildSingBoxChainOutbound (chainProxyParams) {
             detour: ""
         };
     
-        protocol === 'socks' && Object.assign(chainOutbound, {
-            version: "5",
-            network: "tcp"
-        });
-    
+        if (protocol === 'socks') chainOutbound.version = "5";
         return chainOutbound;
     }
 
@@ -4799,7 +4803,6 @@ function buildSingBoxChainOutbound (chainProxyParams) {
         server_port: +port,
         uuid: uuid,
         flow: flow,
-        network: "tcp",
         detour: ""
     };
 
@@ -5232,8 +5235,10 @@ const singboxConfigTemp = {
         {
             type: "tun",
             tag: "tun-in",
-            inet4_address: "172.19.0.1/28",
-            inet6_address: "fdfe:dcba:9876::1/126",
+            address: [
+                "172.18.0.1/28",
+                "fdfe:dcba:9876::1/126"
+            ],
             mtu: 9000,
             auto_route: true,
             strict_route: true,
@@ -5317,7 +5322,7 @@ const clashConfigTemp = {
     "dns": {},
     "tun": {
         "enable": true,
-        "stack": "system",
+        "stack": "mixed",
         "auto-route": true,
         "auto-redirect": true,
         "auto-detect-interface": true,
