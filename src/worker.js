@@ -4039,6 +4039,7 @@ function buildClashRoutingRules (proxySettings) {
     }
     
     let rules = [
+        `AND,((IN-NAME,mixed-in),(DST-PORT,53)),dns-out`,
         `AND,((IP-CIDR,${localDNS}/32),(DST-PORT,53)),DIRECT`,
         ...geositeDirectRules, 
         ...geoipDirectRules, 
@@ -5303,7 +5304,7 @@ const singboxConfigTemp = {
         clash_api: {
             external_controller: "127.0.0.1:9090",
             external_ui: "yacd",
-            external_ui_download_url: "https://github.com/MetaCubeX/Yacd-meta/archive/gh-pages.zip",
+            external_ui_download_url: "https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip",
             external_ui_download_detour: "direct",
             default_mode: "rule"
         }
@@ -5311,7 +5312,6 @@ const singboxConfigTemp = {
 };
 
 const clashConfigTemp = {
-    "mixed-port": 7890,
     "ipv6": true,
     "allow-lan": true,
     "mode": "rule",
@@ -5319,7 +5319,22 @@ const clashConfigTemp = {
     "keep-alive-interval": 30,
     "unified-delay": false,
     "external-controller": "127.0.0.1:9090",
+    "external-ui-url": "https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip",
+    "external-ui": "ui",
+    "profile": {
+        "store-selected": true,
+        "store-fake-ip": true
+    },
     "dns": {},
+    "listeners": [
+        {
+            "name": "mixed-in",
+            "type": "mixed",
+            "port": 7892,
+            "listen": "0.0.0.0",
+            "udp": true
+        }
+    ],
     "tun": {
         "enable": true,
         "stack": "mixed",
@@ -5349,7 +5364,12 @@ const clashConfigTemp = {
             }
         }
     },
-    "proxies": [],
+    "proxies": [
+        {
+            "name": "dns-out",
+            "type": "dns"
+        }
+    ],
     "proxy-groups": [
         {
             "name": "✅ Selector",
