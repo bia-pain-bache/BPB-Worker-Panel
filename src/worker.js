@@ -7,11 +7,12 @@ import { generateJWTToken, generateSecretKey, Authenticate } from './authenticat
 import { renderHomePage } from './pages/homePage.js';
 import { renderLoginPage } from './pages/loginPage.js';
 import { renderErrorPage } from './pages/errorPage.js';
-import { getXrayCustomConfigs, getXrayWarpConfigs } from './cores/xray.js';
-import { getSingBoxCustomConfig, getSingBoxWarpConfig } from './cores/sing-box.js';
-import { getClashNormalConfig, getClashWarpConfig } from './cores/clash.js';
-import { getNormalConfigs } from './cores/normalConfigs.js';
-globalThis.hostName = '';
+import { getXrayCustomConfigs, getXrayWarpConfigs } from './cores-configs/xray.js';
+import { getSingBoxCustomConfig, getSingBoxWarpConfig } from './cores-configs/sing-box.js';
+import { getClashNormalConfig, getClashWarpConfig } from './cores-configs/clash.js';
+import { getNormalConfigs } from './cores-configs/normalConfigs.js';
+import { configs } from './helpers/config.js';
+import { isValidUUID } from './helpers/helpers.js';
 
 export default {
     async fetch(request, env) {
@@ -19,23 +20,24 @@ export default {
             const upgradeHeader = request.headers.get('Upgrade');
             const url = new URL(request.url);
             if (!upgradeHeader || upgradeHeader !== 'websocket') {
-                globalThis.hostName = request.headers.get('Host');
+                const userID = env.UUID || configs.userID;
+                if (!isValidUUID(userID)) throw new Error(`Invalid UUID: ${userID}`);
+                const hostName = request.headers.get('Host');
                 const searchParams = new URLSearchParams(url.search);
                 const client = searchParams.get('app');
-                const { kvNotFound, proxySettings: settings, warpConfigs } = await getDataset(env);
+                const { kvNotFound, proxySettings, warpConfigs } = await getDataset(env);
                 if (kvNotFound) {
                     const errorPage = renderErrorPage('KV Dataset is not properly set!', null, true);
                     return new Response(errorPage, { status: 200, headers: {'Content-Type': 'text/html'}});
                 } 
 
-                switch (url.pathname) {
-                        
+                switch (url.pathname) {                    
                     case '/update-warp':
                         const Auth = await Authenticate(request, env); 
                         if (!Auth) return new Response('Unauthorized', { status: 401 });
                         if (request.method === 'POST') {
                             try {
-                                const { error: warpPlusError } = await fetchWgConfig(env, settings);
+                                const { error: warpPlusError } = await fetchWgConfig(env, proxySettings);
                                 if (warpPlusError) {
                                     return new Response(warpPlusError, { status: 400 });
                                 } else {
@@ -52,7 +54,7 @@ export default {
 
                     case `/sub/${userID}`:
                         if (client === 'sfa') {
-                            const BestPingSFA = await getSingBoxCustomConfig(env, settings, false);
+                            const BestPingSFA = await getSingBoxCustomConfig(env, hostName, proxySettings, false);
                             return new Response(JSON.stringify(BestPingSFA, null, 4), { 
                                 status: 200,
                                 headers: {
@@ -64,7 +66,7 @@ export default {
                         }
                         
                         if (client === 'clash') {
-                            const BestPingClash = await getClashNormalConfig(env, settings);
+                            const BestPingClash = await getClashNormalConfig(env, hostName, proxySettings);
                             return new Response(JSON.stringify(BestPingClash, null, 4), { 
                                 status: 200,
                                 headers: {
@@ -76,7 +78,7 @@ export default {
                         }
 
                         if (client === 'xray') {
-                            const xrayFullConfigs = await getXrayCustomConfigs(env, settings, false);
+                            const xrayFullConfigs = await getXrayCustomConfigs(env, hostName, proxySettings, false);
                             return new Response(JSON.stringify(xrayFullConfigs, null, 4), { 
                                 status: 200,
                                 headers: {
@@ -87,7 +89,7 @@ export default {
                             });                            
                         }
 
-                        const normalConfigs = await getNormalConfigs(env, settings, client);
+                        const normalConfigs = await getNormalConfigs(env, hostName, proxySettings, client);
                         return new Response(normalConfigs, { 
                             status: 200,
                             headers: {
@@ -99,8 +101,8 @@ export default {
 
                     case `/fragsub/${userID}`:
                         let fragConfigs = client === 'hiddify'
-                            ? await getSingBoxCustomConfig(env, settings, true)
-                            : await getXrayCustomConfigs(env, settings, true);
+                            ? await getSingBoxCustomConfig(env, hostName, proxySettings, true)
+                            : await getXrayCustomConfigs(env, hostName, proxySettings, true);
 
                         return new Response(JSON.stringify(fragConfigs, null, 4), { 
                             status: 200,
@@ -113,7 +115,7 @@ export default {
 
                     case `/warpsub/${userID}`:
                         if (client === 'clash') {
-                            const clashWarpConfig = await getClashWarpConfig(settings, warpConfigs);
+                            const clashWarpConfig = await getClashWarpConfig(proxySettings, warpConfigs);
                             return new Response(JSON.stringify(clashWarpConfig, null, 4), { 
                                 status: 200,
                                 headers: {
@@ -125,7 +127,7 @@ export default {
                         }
                         
                         if (client === 'singbox' || client === 'hiddify') {
-                            const singboxWarpConfig = await getSingBoxWarpConfig(settings, warpConfigs, client);
+                            const singboxWarpConfig = await getSingBoxWarpConfig(proxySettings, warpConfigs, client);
                             return new Response(JSON.stringify(singboxWarpConfig, null, 4), { 
                                 status: 200,
                                 headers: {
@@ -136,7 +138,7 @@ export default {
                             });                            
                         }
 
-                        const warpConfig = await getXrayWarpConfigs(settings, warpConfigs, client);
+                        const warpConfig = await getXrayWarpConfigs(proxySettings, warpConfigs, client);
                         return new Response(JSON.stringify(warpConfig, null, 4), { 
                             status: 200,
                             headers: {
@@ -162,7 +164,7 @@ export default {
                         const pwd = await env.bpb.get('pwd');
                         if (pwd && !isAuth) return Response.redirect(`${url.origin}/login`, 302);
                         const isPassSet = pwd?.length >= 8;
-                        const homePage = renderHomePage(request, env, settings, isPassSet);
+                        const homePage = renderHomePage(request, env, hostName, proxySettings, isPassSet);
                         return new Response(homePage, {
                             status: 200,
                             headers: {
@@ -197,7 +199,7 @@ export default {
                             const savedPass = await env.bpb.get('pwd');
 
                             if (password === savedPass) {
-                                const jwtToken = await generateJWTToken(secretKey);
+                                const jwtToken = await generateJWTToken(env, secretKey);
                                 const cookieHeader = `jwtToken=${jwtToken}; HttpOnly; Secure; Max-Age=${7 * 24 * 60 * 60}; Path=/; SameSite=Strict`;                 
                                 return new Response('Success', {
                                     status: 200,

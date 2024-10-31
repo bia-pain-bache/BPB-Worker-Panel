@@ -13,7 +13,6 @@ export async function vlessOverWSHandler(request, env) {
     /** @type {import("@cloudflare/workers-types").WebSocket[]} */
     // @ts-ignore
 	userID = env.UUID || userID;
-    if (!isValidUUID(userID)) throw new Error(`Invalid UUID: ${userID}`);
 	proxyIP = env.PROXYIP || proxyIP;
     const webSocketPair = new WebSocketPair();
     const [client, webSocket] = Object.values(webSocketPair);

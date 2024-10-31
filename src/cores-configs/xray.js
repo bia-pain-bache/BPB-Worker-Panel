@@ -1,4 +1,4 @@
-import { resolveDNS, isDomain, isValidUUID } from '../helpers/helpers.js';
+import { resolveDNS, isDomain } from '../helpers/helpers.js';
 import { getConfigAddresses, extractWireguardParams, base64ToDecimal, generateRemark, randomUpperCase, getRandomPath } from './helpers.js';
 import { configs } from '../helpers/config.js';
 let userID = configs.userID;
@@ -634,11 +634,9 @@ async function buildXrayWorkerLessConfig(proxySettings) {
     return config;
 }
 
-export async function getXrayCustomConfigs(env, proxySettings, isFragment) {
+export async function getXrayCustomConfigs(env, hostName, proxySettings, isFragment) {
     userID = env.UUID || userID;
-    if (!isValidUUID(userID)) throw new Error(`Invalid UUID: ${userID}`);
     trojanPassword = env.TROJAN_PASS || trojanPassword;
-    const hostName = globalThis.hostName;
     let configs = [];
     let outbounds = [];
     let protocols = [];
@@ -737,7 +735,7 @@ export async function getXrayWarpConfigs (proxySettings, warpConfigs, client) {
         const endpointHost = endpoint.split(':')[0];
         let warpConfig = buildXrayConfig(proxySettings, `💦 ${index + 1} - Warp${proIndicator}🇮🇷`, false, false, false, undefined, true);
         let WoWConfig = buildXrayConfig(proxySettings, `💦 ${index + 1} - WoW${proIndicator}🌍`, false, false, true, undefined, true);
-        warpConfig.dns = WoWConfig.dns = await buildXrayDNS(proxySettings, [endpointHost], undefined, false, true);    
+        warpConfig.dns = WoWConfig.dns = await buildXrayDNS(proxySettings, [endpointHost], undefined, false, false, true);    
         warpConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpointHost], false, false, false);
         WoWConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpointHost], true, false, false);
         const warpOutbound = buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, false, client);

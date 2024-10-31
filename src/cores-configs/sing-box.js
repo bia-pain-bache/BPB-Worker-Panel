@@ -1,6 +1,5 @@
 import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath } from './helpers.js';
 import { configs } from '../helpers/config.js';
-import { isValidUUID } from '../helpers/helpers.js';
 let userID = configs.userID;
 let trojanPassword = configs.userID;
 const defaultHttpsPorts = configs.defaultHttpsPorts;
@@ -550,12 +549,10 @@ export async function getSingBoxWarpConfig (proxySettings, warpConfigs, client) 
     return config;
 }
 
-export async function getSingBoxCustomConfig(env, proxySettings, isFragment) {
+export async function getSingBoxCustomConfig(env, hostName, proxySettings, isFragment) {
     let chainProxyOutbound;
     userID = env.UUID || userID;
-    if (!isValidUUID(userID)) throw new Error(`Invalid UUID: ${userID}`);
     trojanPassword = env.TROJAN_PASS || trojanPassword;
-    const hostName = globalThis.hostName;
     const { 
         cleanIPs,  
         ports, 
