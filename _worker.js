@@ -2921,10 +2921,10 @@ var require_nacl_fast = __commonJS({
 import { connect } from "cloudflare:sockets";
 
 // src/helpers/config.js
+var proxyIPs = ["bpb.yousef.isegaro.com"];
 var configs = {
   userID: "89b3cbba-e6ac-485a-9481-976a0415eab9",
   dohURL: "https://cloudflare-dns.com/dns-query",
-  proxyIPs: ["bpb.yousef.isegaro.com"],
   proxyIP: proxyIPs[Math.floor(Math.random() * proxyIPs.length)],
   trojanPassword: "bpb-trojan",
   defaultHttpPorts: ["80", "8080", "2052", "2082", "2086", "2095", "8880"],
@@ -2966,12 +2966,10 @@ __name(isDomain, "isDomain");
 
 // src/protocols/vless.js
 var proxyIP = configs.proxyIP;
-var userID2 = configs.userID;
+var userID = configs.userID;
 var dohURL2 = configs.dohURL;
 async function vlessOverWSHandler(request, env) {
-  userID2 = env.UUID || userID2;
-  if (!isValidUUID(userID2))
-    throw new Error(`Invalid UUID: ${userID2}`);
+  userID = env.UUID || userID;
   proxyIP = env.PROXYIP || proxyIP;
   const webSocketPair = new WebSocketPair();
   const [client, webSocket] = Object.values(webSocketPair);
@@ -3008,7 +3006,7 @@ async function vlessOverWSHandler(request, env) {
           rawDataIndex,
           vlessVersion = new Uint8Array([0, 0]),
           isUDP
-        } = await processVlessHeader(chunk, userID2);
+        } = await processVlessHeader(chunk, userID);
         address = addressRemote;
         portWithRandomLog = `${portRemote}--${Math.random()} ${isUDP ? "udp " : "tcp "} `;
         if (hasError) {
@@ -3738,6 +3736,7 @@ var generateKeyPair = /* @__PURE__ */ __name(() => {
 }, "generateKeyPair");
 
 // src/kv/handlers.js
+var { panelVersion } = configs;
 async function getDataset(env) {
   let proxySettings, warpConfigs;
   if (typeof env.bpb !== "object") {
@@ -5147,13 +5146,16 @@ var SignJWT = class extends ProduceJWT {
 __name(SignJWT, "SignJWT");
 
 // src/authentication/auth.js
-async function generateJWTToken(secretKey) {
+var import_tweetnacl2 = __toESM(require_nacl_fast());
+var userID2 = configs.userID;
+async function generateJWTToken(env, secretKey) {
+  userID2 = env.UUID || userID2;
   const secret = new TextEncoder().encode(secretKey);
-  return await new SignJWT({ userID }).setProtectedHeader({ alg: "HS256" }).setIssuedAt().setExpirationTime("24h").sign(secret);
+  return await new SignJWT({ userID: userID2 }).setProtectedHeader({ alg: "HS256" }).setIssuedAt().setExpirationTime("24h").sign(secret);
 }
 __name(generateJWTToken, "generateJWTToken");
 function generateSecretKey() {
-  const key = nacl.randomBytes(32);
+  const key = import_tweetnacl2.default.randomBytes(32);
   return Array.from(key, (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 __name(generateSecretKey, "generateSecretKey");
@@ -5180,11 +5182,8 @@ __name(Authenticate, "Authenticate");
 // src/pages/homePage.js
 var { defaultHttpPorts, defaultHttpsPorts, panelVersion: panelVersion2 } = configs;
 var userID3 = configs.userID;
-function renderHomePage(request, env, proxySettings, isPassSet) {
-  const hostName = globalThis.hostName;
+function renderHomePage(request, env, hostName, proxySettings, isPassSet) {
   userID3 = env.UUID || userID3;
-  if (!isValidUUID(userID3))
-    throw new Error(`Invalid UUID: ${userID3}`);
   const {
     remoteDNS,
     localDNS,
@@ -5231,7 +5230,9 @@ function renderHomePage(request, env, proxySettings, isPassSet) {
   let httpPortsBlock = "", httpsPortsBlock = "";
   const allPorts = [...hostName.includes("workers.dev") ? defaultHttpPorts : [], ...defaultHttpsPorts];
   let regionNames = new Intl.DisplayNames(["en"], { type: "region" });
-  const cfCountry = regionNames.of(request.cf.country);
+  const countryCode = request.cf.country;
+  const flag = String.fromCodePoint(...[...countryCode].map((c) => 127462 + c.charCodeAt(0) - 65));
+  const cfCountry = `${regionNames.of(countryCode)} ${flag}`;
   allPorts.forEach((port) => {
     const id = `port-${port}`;
     const isChecked = ports.includes(port) ? "checked" : "";
@@ -5268,7 +5269,7 @@ function renderHomePage(request, env, proxySettings, isPassSet) {
                 --input-background-color: white;
                 --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
             }
-            body { font-family: system-ui; background-color: var(--background-color); color: var(--color) }
+            body { font-family: Twemoji Country Flags, system-ui; background-color: var(--background-color); color: var(--color) }
             body.dark-mode {
                 --color: white;
                 --primary-color: #09639F;
@@ -6248,7 +6249,11 @@ function renderHomePage(request, env, proxySettings, isPassSet) {
         </div>
         <button id="darkModeToggle" class="floating-button">
             <i id="modeIcon" class="fa fa-2x fa-adjust" style="color: var(--background-color);" aria-hidden="true"></i>
-        </button>   
+        </button>
+    <script type="module" defer>
+        import { polyfillCountryFlagEmojis } from "https://cdn.skypack.dev/country-flag-emoji-polyfill";
+        polyfillCountryFlagEmojis();
+    <\/script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
     <script>
         const defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
@@ -6372,17 +6377,18 @@ function renderHomePage(request, env, proxySettings, isPassSet) {
         });
 
         const fetchIPInfo = async () => {
-            const updateUI = (ip = '-', country = '-', city = '-', isp = '-') => {
+            const updateUI = (ip = '-', country = '-', country_code = '-', city = '-', isp = '-') => {
+                const flag = String.fromCodePoint(...[...country_code].map(c => 0x1F1E6 + c.charCodeAt(0) - 65));
                 document.getElementById('ip').textContent = ip;
-                document.getElementById('country').textContent = country;
+                document.getElementById('country').textContent = country + ' ' + flag;
                 document.getElementById('city').textContent = city;
                 document.getElementById('isp').textContent = isp.toUpperCase();
             };
 
             try {
                 const response = await fetch('https://ipwho.is/');
-                const { ip, country, city, connection } = await response.json();
-                updateUI(ip, country, city, connection.isp);
+                const { ip, country, country_code, city, connection } = await response.json();
+                updateUI(ip, country, country_code, city, connection.isp);
             } catch (error) {
                 console.error('Error fetching IP address:', error);
                 updateUI();
@@ -6900,7 +6906,7 @@ function renderErrorPage(message2, error, refer) {
 }
 __name(renderErrorPage, "renderErrorPage");
 
-// src/cores/helpers.js
+// src/cores-configs/helpers.js
 async function getConfigAddresses(hostName, cleanIPs, enableIPv6) {
   const resolved = await resolveDNS(hostName);
   const defaultIPv6 = enableIPv6 ? resolved.ipv6.map((ip) => `[${ip}]`) : [];
@@ -6967,7 +6973,7 @@ function isIPv6(address) {
 }
 __name(isIPv6, "isIPv6");
 
-// src/cores/xray.js
+// src/cores-configs/xray.js
 var userID4 = configs.userID;
 var trojanPassword2 = configs.userID;
 var defaultHttpsPorts2 = configs.defaultHttpsPorts;
@@ -7567,12 +7573,9 @@ async function buildXrayWorkerLessConfig(proxySettings) {
   return config;
 }
 __name(buildXrayWorkerLessConfig, "buildXrayWorkerLessConfig");
-async function getXrayCustomConfigs(env, proxySettings, isFragment) {
+async function getXrayCustomConfigs(env, hostName, proxySettings, isFragment) {
   userID4 = env.UUID || userID4;
-  if (!isValidUUID(userID4))
-    throw new Error(`Invalid UUID: ${userID4}`);
   trojanPassword2 = env.TROJAN_PASS || trojanPassword2;
-  const hostName = globalThis.hostName;
   let configs2 = [];
   let outbounds = [];
   let protocols = [];
@@ -7661,7 +7664,7 @@ async function getXrayWarpConfigs(proxySettings, warpConfigs, client) {
     const endpointHost = endpoint.split(":")[0];
     let warpConfig = buildXrayConfig(proxySettings, `\u{1F4A6} ${index + 1} - Warp${proIndicator}\u{1F1EE}\u{1F1F7}`, false, false, false, void 0, true);
     let WoWConfig = buildXrayConfig(proxySettings, `\u{1F4A6} ${index + 1} - WoW${proIndicator}\u{1F30D}`, false, false, true, void 0, true);
-    warpConfig.dns = WoWConfig.dns = await buildXrayDNS(proxySettings, [endpointHost], void 0, false, true);
+    warpConfig.dns = WoWConfig.dns = await buildXrayDNS(proxySettings, [endpointHost], void 0, false, false, true);
     warpConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpointHost], false, false, false);
     WoWConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpointHost], true, false, false);
     const warpOutbound = buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, false, client);
@@ -7825,7 +7828,7 @@ var xrayConfigTemp = {
   stats: {}
 };
 
-// src/cores/sing-box.js
+// src/cores-configs/sing-box.js
 var userID5 = configs.userID;
 var trojanPassword3 = configs.userID;
 var defaultHttpsPorts3 = configs.defaultHttpsPorts;
@@ -8342,13 +8345,10 @@ async function getSingBoxWarpConfig(proxySettings, warpConfigs, client) {
   return config;
 }
 __name(getSingBoxWarpConfig, "getSingBoxWarpConfig");
-async function getSingBoxCustomConfig(env, proxySettings, isFragment) {
+async function getSingBoxCustomConfig(env, hostName, proxySettings, isFragment) {
   let chainProxyOutbound;
   userID5 = env.UUID || userID5;
-  if (!isValidUUID(userID5))
-    throw new Error(`Invalid UUID: ${userID5}`);
   trojanPassword3 = env.TROJAN_PASS || trojanPassword3;
-  const hostName = globalThis.hostName;
   const {
     cleanIPs,
     ports,
@@ -8548,7 +8548,7 @@ var singboxConfigTemp = {
   }
 };
 
-// src/cores/clash.js
+// src/cores-configs/clash.js
 var userID6 = configs.userID;
 var trojanPassword4 = configs.userID;
 var defaultHttpsPorts4 = configs.defaultHttpsPorts;
@@ -8840,13 +8840,10 @@ async function getClashWarpConfig(proxySettings, warpConfigs) {
   return config;
 }
 __name(getClashWarpConfig, "getClashWarpConfig");
-async function getClashNormalConfig(env, proxySettings) {
+async function getClashNormalConfig(env, hostName, proxySettings) {
   let chainProxy;
   userID6 = env.UUID || userID6;
-  if (!isValidUUID(userID6))
-    throw new Error(`Invalid UUID: ${userID6}`);
   trojanPassword4 = env.TROJAN_PASS || trojanPassword4;
-  const hostName = globalThis.hostName;
   const {
     cleanIPs,
     proxyIP: proxyIP3,
@@ -9012,16 +9009,13 @@ var clashConfigTemp = {
   }
 };
 
-// src/cores/normalConfigs.js
+// src/cores-configs/normalConfigs.js
 var userID7 = configs.userID;
 var trojanPassword5 = configs.userID;
 var defaultHttpsPorts5 = configs.defaultHttpsPorts;
-async function getNormalConfigs(env, proxySettings, client) {
+async function getNormalConfigs(env, hostName, proxySettings, client) {
   userID7 = env.UUID || userID7;
-  if (!isValidUUID(userID7))
-    throw new Error(`Invalid UUID: ${userID7}`);
   trojanPassword5 = env.TROJAN_PASS || trojanPassword5;
-  const hostName = globalThis.hostName;
   const {
     cleanIPs,
     proxyIP: proxyIP3,
@@ -9079,17 +9073,19 @@ async function getNormalConfigs(env, proxySettings, client) {
 __name(getNormalConfigs, "getNormalConfigs");
 
 // src/worker.js
-globalThis.hostName = "";
 var worker_default = {
   async fetch(request, env) {
     try {
       const upgradeHeader = request.headers.get("Upgrade");
       const url = new URL(request.url);
       if (!upgradeHeader || upgradeHeader !== "websocket") {
-        globalThis.hostName = request.headers.get("Host");
+        const userID8 = env.UUID || configs.userID;
+        if (!isValidUUID(userID8))
+          throw new Error(`Invalid UUID: ${userID8}`);
+        const hostName = request.headers.get("Host");
         const searchParams = new URLSearchParams(url.search);
         const client = searchParams.get("app");
-        const { kvNotFound, proxySettings: settings, warpConfigs } = await getDataset(env);
+        const { kvNotFound, proxySettings, warpConfigs } = await getDataset(env);
         if (kvNotFound) {
           const errorPage = renderErrorPage("KV Dataset is not properly set!", null, true);
           return new Response(errorPage, { status: 200, headers: { "Content-Type": "text/html" } });
@@ -9101,7 +9097,7 @@ var worker_default = {
               return new Response("Unauthorized", { status: 401 });
             if (request.method === "POST") {
               try {
-                const { error: warpPlusError } = await fetchWgConfig(env, settings);
+                const { error: warpPlusError } = await fetchWgConfig(env, proxySettings);
                 if (warpPlusError) {
                   return new Response(warpPlusError, { status: 400 });
                 } else {
@@ -9114,9 +9110,9 @@ var worker_default = {
             } else {
               return new Response("Unsupported request", { status: 405 });
             }
-          case `/sub/${userID}`:
+          case `/sub/${userID8}`:
             if (client === "sfa") {
-              const BestPingSFA = await getSingBoxCustomConfig(env, settings, false);
+              const BestPingSFA = await getSingBoxCustomConfig(env, hostName, proxySettings, false);
               return new Response(JSON.stringify(BestPingSFA, null, 4), {
                 status: 200,
                 headers: {
@@ -9127,7 +9123,7 @@ var worker_default = {
               });
             }
             if (client === "clash") {
-              const BestPingClash = await getClashNormalConfig(env, settings);
+              const BestPingClash = await getClashNormalConfig(env, hostName, proxySettings);
               return new Response(JSON.stringify(BestPingClash, null, 4), {
                 status: 200,
                 headers: {
@@ -9138,7 +9134,7 @@ var worker_default = {
               });
             }
             if (client === "xray") {
-              const xrayFullConfigs = await getXrayCustomConfigs(env, settings, false);
+              const xrayFullConfigs = await getXrayCustomConfigs(env, hostName, proxySettings, false);
               return new Response(JSON.stringify(xrayFullConfigs, null, 4), {
                 status: 200,
                 headers: {
@@ -9148,7 +9144,7 @@ var worker_default = {
                 }
               });
             }
-            const normalConfigs = await getNormalConfigs(env, settings, client);
+            const normalConfigs = await getNormalConfigs(env, hostName, proxySettings, client);
             return new Response(normalConfigs, {
               status: 200,
               headers: {
@@ -9157,8 +9153,8 @@ var worker_default = {
                 "CDN-Cache-Control": "no-store"
               }
             });
-          case `/fragsub/${userID}`:
-            let fragConfigs = client === "hiddify" ? await getSingBoxCustomConfig(env, settings, true) : await getXrayCustomConfigs(env, settings, true);
+          case `/fragsub/${userID8}`:
+            let fragConfigs = client === "hiddify" ? await getSingBoxCustomConfig(env, hostName, proxySettings, true) : await getXrayCustomConfigs(env, hostName, proxySettings, true);
             return new Response(JSON.stringify(fragConfigs, null, 4), {
               status: 200,
               headers: {
@@ -9167,9 +9163,9 @@ var worker_default = {
                 "CDN-Cache-Control": "no-store"
               }
             });
-          case `/warpsub/${userID}`:
+          case `/warpsub/${userID8}`:
             if (client === "clash") {
-              const clashWarpConfig = await getClashWarpConfig(settings, warpConfigs);
+              const clashWarpConfig = await getClashWarpConfig(proxySettings, warpConfigs);
               return new Response(JSON.stringify(clashWarpConfig, null, 4), {
                 status: 200,
                 headers: {
@@ -9180,7 +9176,7 @@ var worker_default = {
               });
             }
             if (client === "singbox" || client === "hiddify") {
-              const singboxWarpConfig = await getSingBoxWarpConfig(settings, warpConfigs, client);
+              const singboxWarpConfig = await getSingBoxWarpConfig(proxySettings, warpConfigs, client);
               return new Response(JSON.stringify(singboxWarpConfig, null, 4), {
                 status: 200,
                 headers: {
@@ -9190,7 +9186,7 @@ var worker_default = {
                 }
               });
             }
-            const warpConfig = await getXrayWarpConfigs(settings, warpConfigs, client);
+            const warpConfig = await getXrayWarpConfigs(proxySettings, warpConfigs, client);
             return new Response(JSON.stringify(warpConfig, null, 4), {
               status: 200,
               headers: {
@@ -9213,7 +9209,7 @@ var worker_default = {
             if (pwd && !isAuth)
               return Response.redirect(`${url.origin}/login`, 302);
             const isPassSet = pwd?.length >= 8;
-            const homePage = renderHomePage(request, env, settings, isPassSet);
+            const homePage = renderHomePage(request, env, hostName, proxySettings, isPassSet);
             return new Response(homePage, {
               status: 200,
               headers: {
@@ -9245,7 +9241,7 @@ var worker_default = {
               const password = await request.text();
               const savedPass = await env.bpb.get("pwd");
               if (password === savedPass) {
-                const jwtToken = await generateJWTToken(secretKey);
+                const jwtToken = await generateJWTToken(env, secretKey);
                 const cookieHeader = `jwtToken=${jwtToken}; HttpOnly; Secure; Max-Age=${7 * 24 * 60 * 60}; Path=/; SameSite=Strict`;
                 return new Response("Success", {
                   status: 200,
