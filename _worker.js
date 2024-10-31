@@ -38,10 +38,536 @@ var require_crypto = __commonJS({
   }
 });
 
+// (disabled):buffer
+var require_buffer = __commonJS({
+  "(disabled):buffer"() {
+  }
+});
+
+// node_modules/js-sha256/src/sha256.js
+var require_sha256 = __commonJS({
+  "node_modules/js-sha256/src/sha256.js"(exports, module) {
+    (function() {
+      "use strict";
+      var ERROR = "input is invalid type";
+      var WINDOW = typeof window === "object";
+      var root = WINDOW ? window : {};
+      if (root.JS_SHA256_NO_WINDOW) {
+        WINDOW = false;
+      }
+      var WEB_WORKER = !WINDOW && typeof self === "object";
+      var NODE_JS = !root.JS_SHA256_NO_NODE_JS && typeof process === "object" && process.versions && process.versions.node;
+      if (NODE_JS) {
+        root = global;
+      } else if (WEB_WORKER) {
+        root = self;
+      }
+      var COMMON_JS = !root.JS_SHA256_NO_COMMON_JS && typeof module === "object" && module.exports;
+      var AMD = typeof define === "function" && define.amd;
+      var ARRAY_BUFFER = !root.JS_SHA256_NO_ARRAY_BUFFER && typeof ArrayBuffer !== "undefined";
+      var HEX_CHARS = "0123456789abcdef".split("");
+      var EXTRA = [-2147483648, 8388608, 32768, 128];
+      var SHIFT = [24, 16, 8, 0];
+      var K = [
+        1116352408,
+        1899447441,
+        3049323471,
+        3921009573,
+        961987163,
+        1508970993,
+        2453635748,
+        2870763221,
+        3624381080,
+        310598401,
+        607225278,
+        1426881987,
+        1925078388,
+        2162078206,
+        2614888103,
+        3248222580,
+        3835390401,
+        4022224774,
+        264347078,
+        604807628,
+        770255983,
+        1249150122,
+        1555081692,
+        1996064986,
+        2554220882,
+        2821834349,
+        2952996808,
+        3210313671,
+        3336571891,
+        3584528711,
+        113926993,
+        338241895,
+        666307205,
+        773529912,
+        1294757372,
+        1396182291,
+        1695183700,
+        1986661051,
+        2177026350,
+        2456956037,
+        2730485921,
+        2820302411,
+        3259730800,
+        3345764771,
+        3516065817,
+        3600352804,
+        4094571909,
+        275423344,
+        430227734,
+        506948616,
+        659060556,
+        883997877,
+        958139571,
+        1322822218,
+        1537002063,
+        1747873779,
+        1955562222,
+        2024104815,
+        2227730452,
+        2361852424,
+        2428436474,
+        2756734187,
+        3204031479,
+        3329325298
+      ];
+      var OUTPUT_TYPES = ["hex", "array", "digest", "arrayBuffer"];
+      var blocks = [];
+      if (root.JS_SHA256_NO_NODE_JS || !Array.isArray) {
+        Array.isArray = function(obj) {
+          return Object.prototype.toString.call(obj) === "[object Array]";
+        };
+      }
+      if (ARRAY_BUFFER && (root.JS_SHA256_NO_ARRAY_BUFFER_IS_VIEW || !ArrayBuffer.isView)) {
+        ArrayBuffer.isView = function(obj) {
+          return typeof obj === "object" && obj.buffer && obj.buffer.constructor === ArrayBuffer;
+        };
+      }
+      var createOutputMethod = /* @__PURE__ */ __name(function(outputType, is224) {
+        return function(message2) {
+          return new Sha256(is224, true).update(message2)[outputType]();
+        };
+      }, "createOutputMethod");
+      var createMethod = /* @__PURE__ */ __name(function(is224) {
+        var method = createOutputMethod("hex", is224);
+        if (NODE_JS) {
+          method = nodeWrap(method, is224);
+        }
+        method.create = function() {
+          return new Sha256(is224);
+        };
+        method.update = function(message2) {
+          return method.create().update(message2);
+        };
+        for (var i = 0; i < OUTPUT_TYPES.length; ++i) {
+          var type = OUTPUT_TYPES[i];
+          method[type] = createOutputMethod(type, is224);
+        }
+        return method;
+      }, "createMethod");
+      var nodeWrap = /* @__PURE__ */ __name(function(method, is224) {
+        var crypto2 = require_crypto();
+        var Buffer2 = require_buffer().Buffer;
+        var algorithm = is224 ? "sha224" : "sha256";
+        var bufferFrom;
+        if (Buffer2.from && !root.JS_SHA256_NO_BUFFER_FROM) {
+          bufferFrom = Buffer2.from;
+        } else {
+          bufferFrom = /* @__PURE__ */ __name(function(message2) {
+            return new Buffer2(message2);
+          }, "bufferFrom");
+        }
+        var nodeMethod = /* @__PURE__ */ __name(function(message2) {
+          if (typeof message2 === "string") {
+            return crypto2.createHash(algorithm).update(message2, "utf8").digest("hex");
+          } else {
+            if (message2 === null || message2 === void 0) {
+              throw new Error(ERROR);
+            } else if (message2.constructor === ArrayBuffer) {
+              message2 = new Uint8Array(message2);
+            }
+          }
+          if (Array.isArray(message2) || ArrayBuffer.isView(message2) || message2.constructor === Buffer2) {
+            return crypto2.createHash(algorithm).update(bufferFrom(message2)).digest("hex");
+          } else {
+            return method(message2);
+          }
+        }, "nodeMethod");
+        return nodeMethod;
+      }, "nodeWrap");
+      var createHmacOutputMethod = /* @__PURE__ */ __name(function(outputType, is224) {
+        return function(key, message2) {
+          return new HmacSha256(key, is224, true).update(message2)[outputType]();
+        };
+      }, "createHmacOutputMethod");
+      var createHmacMethod = /* @__PURE__ */ __name(function(is224) {
+        var method = createHmacOutputMethod("hex", is224);
+        method.create = function(key) {
+          return new HmacSha256(key, is224);
+        };
+        method.update = function(key, message2) {
+          return method.create(key).update(message2);
+        };
+        for (var i = 0; i < OUTPUT_TYPES.length; ++i) {
+          var type = OUTPUT_TYPES[i];
+          method[type] = createHmacOutputMethod(type, is224);
+        }
+        return method;
+      }, "createHmacMethod");
+      function Sha256(is224, sharedMemory) {
+        if (sharedMemory) {
+          blocks[0] = blocks[16] = blocks[1] = blocks[2] = blocks[3] = blocks[4] = blocks[5] = blocks[6] = blocks[7] = blocks[8] = blocks[9] = blocks[10] = blocks[11] = blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
+          this.blocks = blocks;
+        } else {
+          this.blocks = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        }
+        if (is224) {
+          this.h0 = 3238371032;
+          this.h1 = 914150663;
+          this.h2 = 812702999;
+          this.h3 = 4144912697;
+          this.h4 = 4290775857;
+          this.h5 = 1750603025;
+          this.h6 = 1694076839;
+          this.h7 = 3204075428;
+        } else {
+          this.h0 = 1779033703;
+          this.h1 = 3144134277;
+          this.h2 = 1013904242;
+          this.h3 = 2773480762;
+          this.h4 = 1359893119;
+          this.h5 = 2600822924;
+          this.h6 = 528734635;
+          this.h7 = 1541459225;
+        }
+        this.block = this.start = this.bytes = this.hBytes = 0;
+        this.finalized = this.hashed = false;
+        this.first = true;
+        this.is224 = is224;
+      }
+      __name(Sha256, "Sha256");
+      Sha256.prototype.update = function(message2) {
+        if (this.finalized) {
+          return;
+        }
+        var notString, type = typeof message2;
+        if (type !== "string") {
+          if (type === "object") {
+            if (message2 === null) {
+              throw new Error(ERROR);
+            } else if (ARRAY_BUFFER && message2.constructor === ArrayBuffer) {
+              message2 = new Uint8Array(message2);
+            } else if (!Array.isArray(message2)) {
+              if (!ARRAY_BUFFER || !ArrayBuffer.isView(message2)) {
+                throw new Error(ERROR);
+              }
+            }
+          } else {
+            throw new Error(ERROR);
+          }
+          notString = true;
+        }
+        var code, index = 0, i, length = message2.length, blocks2 = this.blocks;
+        while (index < length) {
+          if (this.hashed) {
+            this.hashed = false;
+            blocks2[0] = this.block;
+            this.block = blocks2[16] = blocks2[1] = blocks2[2] = blocks2[3] = blocks2[4] = blocks2[5] = blocks2[6] = blocks2[7] = blocks2[8] = blocks2[9] = blocks2[10] = blocks2[11] = blocks2[12] = blocks2[13] = blocks2[14] = blocks2[15] = 0;
+          }
+          if (notString) {
+            for (i = this.start; index < length && i < 64; ++index) {
+              blocks2[i >>> 2] |= message2[index] << SHIFT[i++ & 3];
+            }
+          } else {
+            for (i = this.start; index < length && i < 64; ++index) {
+              code = message2.charCodeAt(index);
+              if (code < 128) {
+                blocks2[i >>> 2] |= code << SHIFT[i++ & 3];
+              } else if (code < 2048) {
+                blocks2[i >>> 2] |= (192 | code >>> 6) << SHIFT[i++ & 3];
+                blocks2[i >>> 2] |= (128 | code & 63) << SHIFT[i++ & 3];
+              } else if (code < 55296 || code >= 57344) {
+                blocks2[i >>> 2] |= (224 | code >>> 12) << SHIFT[i++ & 3];
+                blocks2[i >>> 2] |= (128 | code >>> 6 & 63) << SHIFT[i++ & 3];
+                blocks2[i >>> 2] |= (128 | code & 63) << SHIFT[i++ & 3];
+              } else {
+                code = 65536 + ((code & 1023) << 10 | message2.charCodeAt(++index) & 1023);
+                blocks2[i >>> 2] |= (240 | code >>> 18) << SHIFT[i++ & 3];
+                blocks2[i >>> 2] |= (128 | code >>> 12 & 63) << SHIFT[i++ & 3];
+                blocks2[i >>> 2] |= (128 | code >>> 6 & 63) << SHIFT[i++ & 3];
+                blocks2[i >>> 2] |= (128 | code & 63) << SHIFT[i++ & 3];
+              }
+            }
+          }
+          this.lastByteIndex = i;
+          this.bytes += i - this.start;
+          if (i >= 64) {
+            this.block = blocks2[16];
+            this.start = i - 64;
+            this.hash();
+            this.hashed = true;
+          } else {
+            this.start = i;
+          }
+        }
+        if (this.bytes > 4294967295) {
+          this.hBytes += this.bytes / 4294967296 << 0;
+          this.bytes = this.bytes % 4294967296;
+        }
+        return this;
+      };
+      Sha256.prototype.finalize = function() {
+        if (this.finalized) {
+          return;
+        }
+        this.finalized = true;
+        var blocks2 = this.blocks, i = this.lastByteIndex;
+        blocks2[16] = this.block;
+        blocks2[i >>> 2] |= EXTRA[i & 3];
+        this.block = blocks2[16];
+        if (i >= 56) {
+          if (!this.hashed) {
+            this.hash();
+          }
+          blocks2[0] = this.block;
+          blocks2[16] = blocks2[1] = blocks2[2] = blocks2[3] = blocks2[4] = blocks2[5] = blocks2[6] = blocks2[7] = blocks2[8] = blocks2[9] = blocks2[10] = blocks2[11] = blocks2[12] = blocks2[13] = blocks2[14] = blocks2[15] = 0;
+        }
+        blocks2[14] = this.hBytes << 3 | this.bytes >>> 29;
+        blocks2[15] = this.bytes << 3;
+        this.hash();
+      };
+      Sha256.prototype.hash = function() {
+        var a = this.h0, b = this.h1, c = this.h2, d = this.h3, e = this.h4, f = this.h5, g = this.h6, h = this.h7, blocks2 = this.blocks, j, s0, s1, maj, t1, t2, ch, ab, da, cd, bc;
+        for (j = 16; j < 64; ++j) {
+          t1 = blocks2[j - 15];
+          s0 = (t1 >>> 7 | t1 << 25) ^ (t1 >>> 18 | t1 << 14) ^ t1 >>> 3;
+          t1 = blocks2[j - 2];
+          s1 = (t1 >>> 17 | t1 << 15) ^ (t1 >>> 19 | t1 << 13) ^ t1 >>> 10;
+          blocks2[j] = blocks2[j - 16] + s0 + blocks2[j - 7] + s1 << 0;
+        }
+        bc = b & c;
+        for (j = 0; j < 64; j += 4) {
+          if (this.first) {
+            if (this.is224) {
+              ab = 300032;
+              t1 = blocks2[0] - 1413257819;
+              h = t1 - 150054599 << 0;
+              d = t1 + 24177077 << 0;
+            } else {
+              ab = 704751109;
+              t1 = blocks2[0] - 210244248;
+              h = t1 - 1521486534 << 0;
+              d = t1 + 143694565 << 0;
+            }
+            this.first = false;
+          } else {
+            s0 = (a >>> 2 | a << 30) ^ (a >>> 13 | a << 19) ^ (a >>> 22 | a << 10);
+            s1 = (e >>> 6 | e << 26) ^ (e >>> 11 | e << 21) ^ (e >>> 25 | e << 7);
+            ab = a & b;
+            maj = ab ^ a & c ^ bc;
+            ch = e & f ^ ~e & g;
+            t1 = h + s1 + ch + K[j] + blocks2[j];
+            t2 = s0 + maj;
+            h = d + t1 << 0;
+            d = t1 + t2 << 0;
+          }
+          s0 = (d >>> 2 | d << 30) ^ (d >>> 13 | d << 19) ^ (d >>> 22 | d << 10);
+          s1 = (h >>> 6 | h << 26) ^ (h >>> 11 | h << 21) ^ (h >>> 25 | h << 7);
+          da = d & a;
+          maj = da ^ d & b ^ ab;
+          ch = h & e ^ ~h & f;
+          t1 = g + s1 + ch + K[j + 1] + blocks2[j + 1];
+          t2 = s0 + maj;
+          g = c + t1 << 0;
+          c = t1 + t2 << 0;
+          s0 = (c >>> 2 | c << 30) ^ (c >>> 13 | c << 19) ^ (c >>> 22 | c << 10);
+          s1 = (g >>> 6 | g << 26) ^ (g >>> 11 | g << 21) ^ (g >>> 25 | g << 7);
+          cd = c & d;
+          maj = cd ^ c & a ^ da;
+          ch = g & h ^ ~g & e;
+          t1 = f + s1 + ch + K[j + 2] + blocks2[j + 2];
+          t2 = s0 + maj;
+          f = b + t1 << 0;
+          b = t1 + t2 << 0;
+          s0 = (b >>> 2 | b << 30) ^ (b >>> 13 | b << 19) ^ (b >>> 22 | b << 10);
+          s1 = (f >>> 6 | f << 26) ^ (f >>> 11 | f << 21) ^ (f >>> 25 | f << 7);
+          bc = b & c;
+          maj = bc ^ b & d ^ cd;
+          ch = f & g ^ ~f & h;
+          t1 = e + s1 + ch + K[j + 3] + blocks2[j + 3];
+          t2 = s0 + maj;
+          e = a + t1 << 0;
+          a = t1 + t2 << 0;
+          this.chromeBugWorkAround = true;
+        }
+        this.h0 = this.h0 + a << 0;
+        this.h1 = this.h1 + b << 0;
+        this.h2 = this.h2 + c << 0;
+        this.h3 = this.h3 + d << 0;
+        this.h4 = this.h4 + e << 0;
+        this.h5 = this.h5 + f << 0;
+        this.h6 = this.h6 + g << 0;
+        this.h7 = this.h7 + h << 0;
+      };
+      Sha256.prototype.hex = function() {
+        this.finalize();
+        var h0 = this.h0, h1 = this.h1, h2 = this.h2, h3 = this.h3, h4 = this.h4, h5 = this.h5, h6 = this.h6, h7 = this.h7;
+        var hex = HEX_CHARS[h0 >>> 28 & 15] + HEX_CHARS[h0 >>> 24 & 15] + HEX_CHARS[h0 >>> 20 & 15] + HEX_CHARS[h0 >>> 16 & 15] + HEX_CHARS[h0 >>> 12 & 15] + HEX_CHARS[h0 >>> 8 & 15] + HEX_CHARS[h0 >>> 4 & 15] + HEX_CHARS[h0 & 15] + HEX_CHARS[h1 >>> 28 & 15] + HEX_CHARS[h1 >>> 24 & 15] + HEX_CHARS[h1 >>> 20 & 15] + HEX_CHARS[h1 >>> 16 & 15] + HEX_CHARS[h1 >>> 12 & 15] + HEX_CHARS[h1 >>> 8 & 15] + HEX_CHARS[h1 >>> 4 & 15] + HEX_CHARS[h1 & 15] + HEX_CHARS[h2 >>> 28 & 15] + HEX_CHARS[h2 >>> 24 & 15] + HEX_CHARS[h2 >>> 20 & 15] + HEX_CHARS[h2 >>> 16 & 15] + HEX_CHARS[h2 >>> 12 & 15] + HEX_CHARS[h2 >>> 8 & 15] + HEX_CHARS[h2 >>> 4 & 15] + HEX_CHARS[h2 & 15] + HEX_CHARS[h3 >>> 28 & 15] + HEX_CHARS[h3 >>> 24 & 15] + HEX_CHARS[h3 >>> 20 & 15] + HEX_CHARS[h3 >>> 16 & 15] + HEX_CHARS[h3 >>> 12 & 15] + HEX_CHARS[h3 >>> 8 & 15] + HEX_CHARS[h3 >>> 4 & 15] + HEX_CHARS[h3 & 15] + HEX_CHARS[h4 >>> 28 & 15] + HEX_CHARS[h4 >>> 24 & 15] + HEX_CHARS[h4 >>> 20 & 15] + HEX_CHARS[h4 >>> 16 & 15] + HEX_CHARS[h4 >>> 12 & 15] + HEX_CHARS[h4 >>> 8 & 15] + HEX_CHARS[h4 >>> 4 & 15] + HEX_CHARS[h4 & 15] + HEX_CHARS[h5 >>> 28 & 15] + HEX_CHARS[h5 >>> 24 & 15] + HEX_CHARS[h5 >>> 20 & 15] + HEX_CHARS[h5 >>> 16 & 15] + HEX_CHARS[h5 >>> 12 & 15] + HEX_CHARS[h5 >>> 8 & 15] + HEX_CHARS[h5 >>> 4 & 15] + HEX_CHARS[h5 & 15] + HEX_CHARS[h6 >>> 28 & 15] + HEX_CHARS[h6 >>> 24 & 15] + HEX_CHARS[h6 >>> 20 & 15] + HEX_CHARS[h6 >>> 16 & 15] + HEX_CHARS[h6 >>> 12 & 15] + HEX_CHARS[h6 >>> 8 & 15] + HEX_CHARS[h6 >>> 4 & 15] + HEX_CHARS[h6 & 15];
+        if (!this.is224) {
+          hex += HEX_CHARS[h7 >>> 28 & 15] + HEX_CHARS[h7 >>> 24 & 15] + HEX_CHARS[h7 >>> 20 & 15] + HEX_CHARS[h7 >>> 16 & 15] + HEX_CHARS[h7 >>> 12 & 15] + HEX_CHARS[h7 >>> 8 & 15] + HEX_CHARS[h7 >>> 4 & 15] + HEX_CHARS[h7 & 15];
+        }
+        return hex;
+      };
+      Sha256.prototype.toString = Sha256.prototype.hex;
+      Sha256.prototype.digest = function() {
+        this.finalize();
+        var h0 = this.h0, h1 = this.h1, h2 = this.h2, h3 = this.h3, h4 = this.h4, h5 = this.h5, h6 = this.h6, h7 = this.h7;
+        var arr = [
+          h0 >>> 24 & 255,
+          h0 >>> 16 & 255,
+          h0 >>> 8 & 255,
+          h0 & 255,
+          h1 >>> 24 & 255,
+          h1 >>> 16 & 255,
+          h1 >>> 8 & 255,
+          h1 & 255,
+          h2 >>> 24 & 255,
+          h2 >>> 16 & 255,
+          h2 >>> 8 & 255,
+          h2 & 255,
+          h3 >>> 24 & 255,
+          h3 >>> 16 & 255,
+          h3 >>> 8 & 255,
+          h3 & 255,
+          h4 >>> 24 & 255,
+          h4 >>> 16 & 255,
+          h4 >>> 8 & 255,
+          h4 & 255,
+          h5 >>> 24 & 255,
+          h5 >>> 16 & 255,
+          h5 >>> 8 & 255,
+          h5 & 255,
+          h6 >>> 24 & 255,
+          h6 >>> 16 & 255,
+          h6 >>> 8 & 255,
+          h6 & 255
+        ];
+        if (!this.is224) {
+          arr.push(h7 >>> 24 & 255, h7 >>> 16 & 255, h7 >>> 8 & 255, h7 & 255);
+        }
+        return arr;
+      };
+      Sha256.prototype.array = Sha256.prototype.digest;
+      Sha256.prototype.arrayBuffer = function() {
+        this.finalize();
+        var buffer = new ArrayBuffer(this.is224 ? 28 : 32);
+        var dataView = new DataView(buffer);
+        dataView.setUint32(0, this.h0);
+        dataView.setUint32(4, this.h1);
+        dataView.setUint32(8, this.h2);
+        dataView.setUint32(12, this.h3);
+        dataView.setUint32(16, this.h4);
+        dataView.setUint32(20, this.h5);
+        dataView.setUint32(24, this.h6);
+        if (!this.is224) {
+          dataView.setUint32(28, this.h7);
+        }
+        return buffer;
+      };
+      function HmacSha256(key, is224, sharedMemory) {
+        var i, type = typeof key;
+        if (type === "string") {
+          var bytes = [], length = key.length, index = 0, code;
+          for (i = 0; i < length; ++i) {
+            code = key.charCodeAt(i);
+            if (code < 128) {
+              bytes[index++] = code;
+            } else if (code < 2048) {
+              bytes[index++] = 192 | code >>> 6;
+              bytes[index++] = 128 | code & 63;
+            } else if (code < 55296 || code >= 57344) {
+              bytes[index++] = 224 | code >>> 12;
+              bytes[index++] = 128 | code >>> 6 & 63;
+              bytes[index++] = 128 | code & 63;
+            } else {
+              code = 65536 + ((code & 1023) << 10 | key.charCodeAt(++i) & 1023);
+              bytes[index++] = 240 | code >>> 18;
+              bytes[index++] = 128 | code >>> 12 & 63;
+              bytes[index++] = 128 | code >>> 6 & 63;
+              bytes[index++] = 128 | code & 63;
+            }
+          }
+          key = bytes;
+        } else {
+          if (type === "object") {
+            if (key === null) {
+              throw new Error(ERROR);
+            } else if (ARRAY_BUFFER && key.constructor === ArrayBuffer) {
+              key = new Uint8Array(key);
+            } else if (!Array.isArray(key)) {
+              if (!ARRAY_BUFFER || !ArrayBuffer.isView(key)) {
+                throw new Error(ERROR);
+              }
+            }
+          } else {
+            throw new Error(ERROR);
+          }
+        }
+        if (key.length > 64) {
+          key = new Sha256(is224, true).update(key).array();
+        }
+        var oKeyPad = [], iKeyPad = [];
+        for (i = 0; i < 64; ++i) {
+          var b = key[i] || 0;
+          oKeyPad[i] = 92 ^ b;
+          iKeyPad[i] = 54 ^ b;
+        }
+        Sha256.call(this, is224, sharedMemory);
+        this.update(iKeyPad);
+        this.oKeyPad = oKeyPad;
+        this.inner = true;
+        this.sharedMemory = sharedMemory;
+      }
+      __name(HmacSha256, "HmacSha256");
+      HmacSha256.prototype = new Sha256();
+      HmacSha256.prototype.finalize = function() {
+        Sha256.prototype.finalize.call(this);
+        if (this.inner) {
+          this.inner = false;
+          var innerHash = this.array();
+          Sha256.call(this, this.is224, this.sharedMemory);
+          this.update(this.oKeyPad);
+          this.update(innerHash);
+          Sha256.prototype.finalize.call(this);
+        }
+      };
+      var exports2 = createMethod();
+      exports2.sha256 = exports2;
+      exports2.sha224 = createMethod(true);
+      exports2.sha256.hmac = createHmacMethod();
+      exports2.sha224.hmac = createHmacMethod(true);
+      if (COMMON_JS) {
+        module.exports = exports2;
+      } else {
+        root.sha256 = exports2.sha256;
+        root.sha224 = exports2.sha224;
+        if (AMD) {
+          define(function() {
+            return exports2;
+          });
+        }
+      }
+    })();
+  }
+});
+
 // node_modules/tweetnacl/nacl-fast.js
 var require_nacl_fast = __commonJS({
   "node_modules/tweetnacl/nacl-fast.js"(exports, module) {
-    (function(nacl2) {
+    (function(nacl3) {
       "use strict";
       var gf = /* @__PURE__ */ __name(function(init) {
         var i, r = new Float64Array(16);
@@ -2102,7 +2628,7 @@ var require_nacl_fast = __commonJS({
       }
       __name(crypto_sign_open, "crypto_sign_open");
       var crypto_secretbox_KEYBYTES = 32, crypto_secretbox_NONCEBYTES = 24, crypto_secretbox_ZEROBYTES = 32, crypto_secretbox_BOXZEROBYTES = 16, crypto_scalarmult_BYTES = 32, crypto_scalarmult_SCALARBYTES = 32, crypto_box_PUBLICKEYBYTES = 32, crypto_box_SECRETKEYBYTES = 32, crypto_box_BEFORENMBYTES = 32, crypto_box_NONCEBYTES = crypto_secretbox_NONCEBYTES, crypto_box_ZEROBYTES = crypto_secretbox_ZEROBYTES, crypto_box_BOXZEROBYTES = crypto_secretbox_BOXZEROBYTES, crypto_sign_BYTES = 64, crypto_sign_PUBLICKEYBYTES = 32, crypto_sign_SECRETKEYBYTES = 64, crypto_sign_SEEDBYTES = 32, crypto_hash_BYTES = 64;
-      nacl2.lowlevel = {
+      nacl3.lowlevel = {
         crypto_core_hsalsa20,
         crypto_stream_xor,
         crypto_stream,
@@ -2184,12 +2710,12 @@ var require_nacl_fast = __commonJS({
           arr[i] = 0;
       }
       __name(cleanup, "cleanup");
-      nacl2.randomBytes = function(n) {
+      nacl3.randomBytes = function(n) {
         var b = new Uint8Array(n);
         randombytes(b, n);
         return b;
       };
-      nacl2.secretbox = function(msg, nonce, key) {
+      nacl3.secretbox = function(msg, nonce, key) {
         checkArrayTypes(msg, nonce, key);
         checkLengths(key, nonce);
         var m = new Uint8Array(crypto_secretbox_ZEROBYTES + msg.length);
@@ -2199,7 +2725,7 @@ var require_nacl_fast = __commonJS({
         crypto_secretbox(c, m, m.length, nonce, key);
         return c.subarray(crypto_secretbox_BOXZEROBYTES);
       };
-      nacl2.secretbox.open = function(box, nonce, key) {
+      nacl3.secretbox.open = function(box, nonce, key) {
         checkArrayTypes(box, nonce, key);
         checkLengths(key, nonce);
         var c = new Uint8Array(crypto_secretbox_BOXZEROBYTES + box.length);
@@ -2212,10 +2738,10 @@ var require_nacl_fast = __commonJS({
           return null;
         return m.subarray(crypto_secretbox_ZEROBYTES);
       };
-      nacl2.secretbox.keyLength = crypto_secretbox_KEYBYTES;
-      nacl2.secretbox.nonceLength = crypto_secretbox_NONCEBYTES;
-      nacl2.secretbox.overheadLength = crypto_secretbox_BOXZEROBYTES;
-      nacl2.scalarMult = function(n, p) {
+      nacl3.secretbox.keyLength = crypto_secretbox_KEYBYTES;
+      nacl3.secretbox.nonceLength = crypto_secretbox_NONCEBYTES;
+      nacl3.secretbox.overheadLength = crypto_secretbox_BOXZEROBYTES;
+      nacl3.scalarMult = function(n, p) {
         checkArrayTypes(n, p);
         if (n.length !== crypto_scalarmult_SCALARBYTES)
           throw new Error("bad n size");
@@ -2225,7 +2751,7 @@ var require_nacl_fast = __commonJS({
         crypto_scalarmult(q, n, p);
         return q;
       };
-      nacl2.scalarMult.base = function(n) {
+      nacl3.scalarMult.base = function(n) {
         checkArrayTypes(n);
         if (n.length !== crypto_scalarmult_SCALARBYTES)
           throw new Error("bad n size");
@@ -2233,32 +2759,32 @@ var require_nacl_fast = __commonJS({
         crypto_scalarmult_base(q, n);
         return q;
       };
-      nacl2.scalarMult.scalarLength = crypto_scalarmult_SCALARBYTES;
-      nacl2.scalarMult.groupElementLength = crypto_scalarmult_BYTES;
-      nacl2.box = function(msg, nonce, publicKey, secretKey) {
-        var k = nacl2.box.before(publicKey, secretKey);
-        return nacl2.secretbox(msg, nonce, k);
+      nacl3.scalarMult.scalarLength = crypto_scalarmult_SCALARBYTES;
+      nacl3.scalarMult.groupElementLength = crypto_scalarmult_BYTES;
+      nacl3.box = function(msg, nonce, publicKey, secretKey) {
+        var k = nacl3.box.before(publicKey, secretKey);
+        return nacl3.secretbox(msg, nonce, k);
       };
-      nacl2.box.before = function(publicKey, secretKey) {
+      nacl3.box.before = function(publicKey, secretKey) {
         checkArrayTypes(publicKey, secretKey);
         checkBoxLengths(publicKey, secretKey);
         var k = new Uint8Array(crypto_box_BEFORENMBYTES);
         crypto_box_beforenm(k, publicKey, secretKey);
         return k;
       };
-      nacl2.box.after = nacl2.secretbox;
-      nacl2.box.open = function(msg, nonce, publicKey, secretKey) {
-        var k = nacl2.box.before(publicKey, secretKey);
-        return nacl2.secretbox.open(msg, nonce, k);
+      nacl3.box.after = nacl3.secretbox;
+      nacl3.box.open = function(msg, nonce, publicKey, secretKey) {
+        var k = nacl3.box.before(publicKey, secretKey);
+        return nacl3.secretbox.open(msg, nonce, k);
       };
-      nacl2.box.open.after = nacl2.secretbox.open;
-      nacl2.box.keyPair = function() {
+      nacl3.box.open.after = nacl3.secretbox.open;
+      nacl3.box.keyPair = function() {
         var pk = new Uint8Array(crypto_box_PUBLICKEYBYTES);
         var sk = new Uint8Array(crypto_box_SECRETKEYBYTES);
         crypto_box_keypair(pk, sk);
         return { publicKey: pk, secretKey: sk };
       };
-      nacl2.box.keyPair.fromSecretKey = function(secretKey) {
+      nacl3.box.keyPair.fromSecretKey = function(secretKey) {
         checkArrayTypes(secretKey);
         if (secretKey.length !== crypto_box_SECRETKEYBYTES)
           throw new Error("bad secret key size");
@@ -2266,12 +2792,12 @@ var require_nacl_fast = __commonJS({
         crypto_scalarmult_base(pk, secretKey);
         return { publicKey: pk, secretKey: new Uint8Array(secretKey) };
       };
-      nacl2.box.publicKeyLength = crypto_box_PUBLICKEYBYTES;
-      nacl2.box.secretKeyLength = crypto_box_SECRETKEYBYTES;
-      nacl2.box.sharedKeyLength = crypto_box_BEFORENMBYTES;
-      nacl2.box.nonceLength = crypto_box_NONCEBYTES;
-      nacl2.box.overheadLength = nacl2.secretbox.overheadLength;
-      nacl2.sign = function(msg, secretKey) {
+      nacl3.box.publicKeyLength = crypto_box_PUBLICKEYBYTES;
+      nacl3.box.secretKeyLength = crypto_box_SECRETKEYBYTES;
+      nacl3.box.sharedKeyLength = crypto_box_BEFORENMBYTES;
+      nacl3.box.nonceLength = crypto_box_NONCEBYTES;
+      nacl3.box.overheadLength = nacl3.secretbox.overheadLength;
+      nacl3.sign = function(msg, secretKey) {
         checkArrayTypes(msg, secretKey);
         if (secretKey.length !== crypto_sign_SECRETKEYBYTES)
           throw new Error("bad secret key size");
@@ -2279,7 +2805,7 @@ var require_nacl_fast = __commonJS({
         crypto_sign(signedMsg, msg, msg.length, secretKey);
         return signedMsg;
       };
-      nacl2.sign.open = function(signedMsg, publicKey) {
+      nacl3.sign.open = function(signedMsg, publicKey) {
         checkArrayTypes(signedMsg, publicKey);
         if (publicKey.length !== crypto_sign_PUBLICKEYBYTES)
           throw new Error("bad public key size");
@@ -2292,14 +2818,14 @@ var require_nacl_fast = __commonJS({
           m[i] = tmp[i];
         return m;
       };
-      nacl2.sign.detached = function(msg, secretKey) {
-        var signedMsg = nacl2.sign(msg, secretKey);
+      nacl3.sign.detached = function(msg, secretKey) {
+        var signedMsg = nacl3.sign(msg, secretKey);
         var sig = new Uint8Array(crypto_sign_BYTES);
         for (var i = 0; i < sig.length; i++)
           sig[i] = signedMsg[i];
         return sig;
       };
-      nacl2.sign.detached.verify = function(msg, sig, publicKey) {
+      nacl3.sign.detached.verify = function(msg, sig, publicKey) {
         checkArrayTypes(msg, sig, publicKey);
         if (sig.length !== crypto_sign_BYTES)
           throw new Error("bad signature size");
@@ -2314,13 +2840,13 @@ var require_nacl_fast = __commonJS({
           sm[i + crypto_sign_BYTES] = msg[i];
         return crypto_sign_open(m, sm, sm.length, publicKey) >= 0;
       };
-      nacl2.sign.keyPair = function() {
+      nacl3.sign.keyPair = function() {
         var pk = new Uint8Array(crypto_sign_PUBLICKEYBYTES);
         var sk = new Uint8Array(crypto_sign_SECRETKEYBYTES);
         crypto_sign_keypair(pk, sk);
         return { publicKey: pk, secretKey: sk };
       };
-      nacl2.sign.keyPair.fromSecretKey = function(secretKey) {
+      nacl3.sign.keyPair.fromSecretKey = function(secretKey) {
         checkArrayTypes(secretKey);
         if (secretKey.length !== crypto_sign_SECRETKEYBYTES)
           throw new Error("bad secret key size");
@@ -2329,7 +2855,7 @@ var require_nacl_fast = __commonJS({
           pk[i] = secretKey[32 + i];
         return { publicKey: pk, secretKey: new Uint8Array(secretKey) };
       };
-      nacl2.sign.keyPair.fromSeed = function(seed) {
+      nacl3.sign.keyPair.fromSeed = function(seed) {
         checkArrayTypes(seed);
         if (seed.length !== crypto_sign_SEEDBYTES)
           throw new Error("bad seed size");
@@ -2340,18 +2866,18 @@ var require_nacl_fast = __commonJS({
         crypto_sign_keypair(pk, sk, true);
         return { publicKey: pk, secretKey: sk };
       };
-      nacl2.sign.publicKeyLength = crypto_sign_PUBLICKEYBYTES;
-      nacl2.sign.secretKeyLength = crypto_sign_SECRETKEYBYTES;
-      nacl2.sign.seedLength = crypto_sign_SEEDBYTES;
-      nacl2.sign.signatureLength = crypto_sign_BYTES;
-      nacl2.hash = function(msg) {
+      nacl3.sign.publicKeyLength = crypto_sign_PUBLICKEYBYTES;
+      nacl3.sign.secretKeyLength = crypto_sign_SECRETKEYBYTES;
+      nacl3.sign.seedLength = crypto_sign_SEEDBYTES;
+      nacl3.sign.signatureLength = crypto_sign_BYTES;
+      nacl3.hash = function(msg) {
         checkArrayTypes(msg);
         var h = new Uint8Array(crypto_hash_BYTES);
         crypto_hash(h, msg, msg.length);
         return h;
       };
-      nacl2.hash.hashLength = crypto_hash_BYTES;
-      nacl2.verify = function(x, y) {
+      nacl3.hash.hashLength = crypto_hash_BYTES;
+      nacl3.verify = function(x, y) {
         checkArrayTypes(x, y);
         if (x.length === 0 || y.length === 0)
           return false;
@@ -2359,14 +2885,14 @@ var require_nacl_fast = __commonJS({
           return false;
         return vn(x, 0, y, 0, x.length) === 0 ? true : false;
       };
-      nacl2.setPRNG = function(fn) {
+      nacl3.setPRNG = function(fn) {
         randombytes = fn;
       };
       (function() {
         var crypto2 = typeof self !== "undefined" ? self.crypto || self.msCrypto : null;
         if (crypto2 && crypto2.getRandomValues) {
           var QUOTA = 65536;
-          nacl2.setPRNG(function(x, n) {
+          nacl3.setPRNG(function(x, n) {
             var i, v = new Uint8Array(n);
             for (i = 0; i < n; i += QUOTA) {
               crypto2.getRandomValues(v.subarray(i, i + Math.min(n - i, QUOTA)));
@@ -2378,7 +2904,7 @@ var require_nacl_fast = __commonJS({
         } else if (typeof __require !== "undefined") {
           crypto2 = require_crypto();
           if (crypto2 && crypto2.randomBytes) {
-            nacl2.setPRNG(function(x, n) {
+            nacl3.setPRNG(function(x, n) {
               var i, v = crypto2.randomBytes(n);
               for (i = 0; i < n; i++)
                 x[i] = v[i];
@@ -2391,536 +2917,973 @@ var require_nacl_fast = __commonJS({
   }
 });
 
-// (disabled):buffer
-var require_buffer = __commonJS({
-  "(disabled):buffer"() {
-  }
-});
-
-// node_modules/js-sha256/src/sha256.js
-var require_sha256 = __commonJS({
-  "node_modules/js-sha256/src/sha256.js"(exports, module) {
-    (function() {
-      "use strict";
-      var ERROR = "input is invalid type";
-      var WINDOW = typeof window === "object";
-      var root = WINDOW ? window : {};
-      if (root.JS_SHA256_NO_WINDOW) {
-        WINDOW = false;
-      }
-      var WEB_WORKER = !WINDOW && typeof self === "object";
-      var NODE_JS = !root.JS_SHA256_NO_NODE_JS && typeof process === "object" && process.versions && process.versions.node;
-      if (NODE_JS) {
-        root = global;
-      } else if (WEB_WORKER) {
-        root = self;
-      }
-      var COMMON_JS = !root.JS_SHA256_NO_COMMON_JS && typeof module === "object" && module.exports;
-      var AMD = typeof define === "function" && define.amd;
-      var ARRAY_BUFFER = !root.JS_SHA256_NO_ARRAY_BUFFER && typeof ArrayBuffer !== "undefined";
-      var HEX_CHARS = "0123456789abcdef".split("");
-      var EXTRA = [-2147483648, 8388608, 32768, 128];
-      var SHIFT = [24, 16, 8, 0];
-      var K = [
-        1116352408,
-        1899447441,
-        3049323471,
-        3921009573,
-        961987163,
-        1508970993,
-        2453635748,
-        2870763221,
-        3624381080,
-        310598401,
-        607225278,
-        1426881987,
-        1925078388,
-        2162078206,
-        2614888103,
-        3248222580,
-        3835390401,
-        4022224774,
-        264347078,
-        604807628,
-        770255983,
-        1249150122,
-        1555081692,
-        1996064986,
-        2554220882,
-        2821834349,
-        2952996808,
-        3210313671,
-        3336571891,
-        3584528711,
-        113926993,
-        338241895,
-        666307205,
-        773529912,
-        1294757372,
-        1396182291,
-        1695183700,
-        1986661051,
-        2177026350,
-        2456956037,
-        2730485921,
-        2820302411,
-        3259730800,
-        3345764771,
-        3516065817,
-        3600352804,
-        4094571909,
-        275423344,
-        430227734,
-        506948616,
-        659060556,
-        883997877,
-        958139571,
-        1322822218,
-        1537002063,
-        1747873779,
-        1955562222,
-        2024104815,
-        2227730452,
-        2361852424,
-        2428436474,
-        2756734187,
-        3204031479,
-        3329325298
-      ];
-      var OUTPUT_TYPES = ["hex", "array", "digest", "arrayBuffer"];
-      var blocks = [];
-      if (root.JS_SHA256_NO_NODE_JS || !Array.isArray) {
-        Array.isArray = function(obj) {
-          return Object.prototype.toString.call(obj) === "[object Array]";
-        };
-      }
-      if (ARRAY_BUFFER && (root.JS_SHA256_NO_ARRAY_BUFFER_IS_VIEW || !ArrayBuffer.isView)) {
-        ArrayBuffer.isView = function(obj) {
-          return typeof obj === "object" && obj.buffer && obj.buffer.constructor === ArrayBuffer;
-        };
-      }
-      var createOutputMethod = /* @__PURE__ */ __name(function(outputType, is224) {
-        return function(message2) {
-          return new Sha256(is224, true).update(message2)[outputType]();
-        };
-      }, "createOutputMethod");
-      var createMethod = /* @__PURE__ */ __name(function(is224) {
-        var method = createOutputMethod("hex", is224);
-        if (NODE_JS) {
-          method = nodeWrap(method, is224);
-        }
-        method.create = function() {
-          return new Sha256(is224);
-        };
-        method.update = function(message2) {
-          return method.create().update(message2);
-        };
-        for (var i = 0; i < OUTPUT_TYPES.length; ++i) {
-          var type = OUTPUT_TYPES[i];
-          method[type] = createOutputMethod(type, is224);
-        }
-        return method;
-      }, "createMethod");
-      var nodeWrap = /* @__PURE__ */ __name(function(method, is224) {
-        var crypto2 = require_crypto();
-        var Buffer2 = require_buffer().Buffer;
-        var algorithm = is224 ? "sha224" : "sha256";
-        var bufferFrom;
-        if (Buffer2.from && !root.JS_SHA256_NO_BUFFER_FROM) {
-          bufferFrom = Buffer2.from;
-        } else {
-          bufferFrom = /* @__PURE__ */ __name(function(message2) {
-            return new Buffer2(message2);
-          }, "bufferFrom");
-        }
-        var nodeMethod = /* @__PURE__ */ __name(function(message2) {
-          if (typeof message2 === "string") {
-            return crypto2.createHash(algorithm).update(message2, "utf8").digest("hex");
-          } else {
-            if (message2 === null || message2 === void 0) {
-              throw new Error(ERROR);
-            } else if (message2.constructor === ArrayBuffer) {
-              message2 = new Uint8Array(message2);
-            }
-          }
-          if (Array.isArray(message2) || ArrayBuffer.isView(message2) || message2.constructor === Buffer2) {
-            return crypto2.createHash(algorithm).update(bufferFrom(message2)).digest("hex");
-          } else {
-            return method(message2);
-          }
-        }, "nodeMethod");
-        return nodeMethod;
-      }, "nodeWrap");
-      var createHmacOutputMethod = /* @__PURE__ */ __name(function(outputType, is224) {
-        return function(key, message2) {
-          return new HmacSha256(key, is224, true).update(message2)[outputType]();
-        };
-      }, "createHmacOutputMethod");
-      var createHmacMethod = /* @__PURE__ */ __name(function(is224) {
-        var method = createHmacOutputMethod("hex", is224);
-        method.create = function(key) {
-          return new HmacSha256(key, is224);
-        };
-        method.update = function(key, message2) {
-          return method.create(key).update(message2);
-        };
-        for (var i = 0; i < OUTPUT_TYPES.length; ++i) {
-          var type = OUTPUT_TYPES[i];
-          method[type] = createHmacOutputMethod(type, is224);
-        }
-        return method;
-      }, "createHmacMethod");
-      function Sha256(is224, sharedMemory) {
-        if (sharedMemory) {
-          blocks[0] = blocks[16] = blocks[1] = blocks[2] = blocks[3] = blocks[4] = blocks[5] = blocks[6] = blocks[7] = blocks[8] = blocks[9] = blocks[10] = blocks[11] = blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
-          this.blocks = blocks;
-        } else {
-          this.blocks = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-        }
-        if (is224) {
-          this.h0 = 3238371032;
-          this.h1 = 914150663;
-          this.h2 = 812702999;
-          this.h3 = 4144912697;
-          this.h4 = 4290775857;
-          this.h5 = 1750603025;
-          this.h6 = 1694076839;
-          this.h7 = 3204075428;
-        } else {
-          this.h0 = 1779033703;
-          this.h1 = 3144134277;
-          this.h2 = 1013904242;
-          this.h3 = 2773480762;
-          this.h4 = 1359893119;
-          this.h5 = 2600822924;
-          this.h6 = 528734635;
-          this.h7 = 1541459225;
-        }
-        this.block = this.start = this.bytes = this.hBytes = 0;
-        this.finalized = this.hashed = false;
-        this.first = true;
-        this.is224 = is224;
-      }
-      __name(Sha256, "Sha256");
-      Sha256.prototype.update = function(message2) {
-        if (this.finalized) {
-          return;
-        }
-        var notString, type = typeof message2;
-        if (type !== "string") {
-          if (type === "object") {
-            if (message2 === null) {
-              throw new Error(ERROR);
-            } else if (ARRAY_BUFFER && message2.constructor === ArrayBuffer) {
-              message2 = new Uint8Array(message2);
-            } else if (!Array.isArray(message2)) {
-              if (!ARRAY_BUFFER || !ArrayBuffer.isView(message2)) {
-                throw new Error(ERROR);
-              }
-            }
-          } else {
-            throw new Error(ERROR);
-          }
-          notString = true;
-        }
-        var code, index = 0, i, length = message2.length, blocks2 = this.blocks;
-        while (index < length) {
-          if (this.hashed) {
-            this.hashed = false;
-            blocks2[0] = this.block;
-            this.block = blocks2[16] = blocks2[1] = blocks2[2] = blocks2[3] = blocks2[4] = blocks2[5] = blocks2[6] = blocks2[7] = blocks2[8] = blocks2[9] = blocks2[10] = blocks2[11] = blocks2[12] = blocks2[13] = blocks2[14] = blocks2[15] = 0;
-          }
-          if (notString) {
-            for (i = this.start; index < length && i < 64; ++index) {
-              blocks2[i >>> 2] |= message2[index] << SHIFT[i++ & 3];
-            }
-          } else {
-            for (i = this.start; index < length && i < 64; ++index) {
-              code = message2.charCodeAt(index);
-              if (code < 128) {
-                blocks2[i >>> 2] |= code << SHIFT[i++ & 3];
-              } else if (code < 2048) {
-                blocks2[i >>> 2] |= (192 | code >>> 6) << SHIFT[i++ & 3];
-                blocks2[i >>> 2] |= (128 | code & 63) << SHIFT[i++ & 3];
-              } else if (code < 55296 || code >= 57344) {
-                blocks2[i >>> 2] |= (224 | code >>> 12) << SHIFT[i++ & 3];
-                blocks2[i >>> 2] |= (128 | code >>> 6 & 63) << SHIFT[i++ & 3];
-                blocks2[i >>> 2] |= (128 | code & 63) << SHIFT[i++ & 3];
-              } else {
-                code = 65536 + ((code & 1023) << 10 | message2.charCodeAt(++index) & 1023);
-                blocks2[i >>> 2] |= (240 | code >>> 18) << SHIFT[i++ & 3];
-                blocks2[i >>> 2] |= (128 | code >>> 12 & 63) << SHIFT[i++ & 3];
-                blocks2[i >>> 2] |= (128 | code >>> 6 & 63) << SHIFT[i++ & 3];
-                blocks2[i >>> 2] |= (128 | code & 63) << SHIFT[i++ & 3];
-              }
-            }
-          }
-          this.lastByteIndex = i;
-          this.bytes += i - this.start;
-          if (i >= 64) {
-            this.block = blocks2[16];
-            this.start = i - 64;
-            this.hash();
-            this.hashed = true;
-          } else {
-            this.start = i;
-          }
-        }
-        if (this.bytes > 4294967295) {
-          this.hBytes += this.bytes / 4294967296 << 0;
-          this.bytes = this.bytes % 4294967296;
-        }
-        return this;
-      };
-      Sha256.prototype.finalize = function() {
-        if (this.finalized) {
-          return;
-        }
-        this.finalized = true;
-        var blocks2 = this.blocks, i = this.lastByteIndex;
-        blocks2[16] = this.block;
-        blocks2[i >>> 2] |= EXTRA[i & 3];
-        this.block = blocks2[16];
-        if (i >= 56) {
-          if (!this.hashed) {
-            this.hash();
-          }
-          blocks2[0] = this.block;
-          blocks2[16] = blocks2[1] = blocks2[2] = blocks2[3] = blocks2[4] = blocks2[5] = blocks2[6] = blocks2[7] = blocks2[8] = blocks2[9] = blocks2[10] = blocks2[11] = blocks2[12] = blocks2[13] = blocks2[14] = blocks2[15] = 0;
-        }
-        blocks2[14] = this.hBytes << 3 | this.bytes >>> 29;
-        blocks2[15] = this.bytes << 3;
-        this.hash();
-      };
-      Sha256.prototype.hash = function() {
-        var a = this.h0, b = this.h1, c = this.h2, d = this.h3, e = this.h4, f = this.h5, g = this.h6, h = this.h7, blocks2 = this.blocks, j, s0, s1, maj, t1, t2, ch, ab, da, cd, bc;
-        for (j = 16; j < 64; ++j) {
-          t1 = blocks2[j - 15];
-          s0 = (t1 >>> 7 | t1 << 25) ^ (t1 >>> 18 | t1 << 14) ^ t1 >>> 3;
-          t1 = blocks2[j - 2];
-          s1 = (t1 >>> 17 | t1 << 15) ^ (t1 >>> 19 | t1 << 13) ^ t1 >>> 10;
-          blocks2[j] = blocks2[j - 16] + s0 + blocks2[j - 7] + s1 << 0;
-        }
-        bc = b & c;
-        for (j = 0; j < 64; j += 4) {
-          if (this.first) {
-            if (this.is224) {
-              ab = 300032;
-              t1 = blocks2[0] - 1413257819;
-              h = t1 - 150054599 << 0;
-              d = t1 + 24177077 << 0;
-            } else {
-              ab = 704751109;
-              t1 = blocks2[0] - 210244248;
-              h = t1 - 1521486534 << 0;
-              d = t1 + 143694565 << 0;
-            }
-            this.first = false;
-          } else {
-            s0 = (a >>> 2 | a << 30) ^ (a >>> 13 | a << 19) ^ (a >>> 22 | a << 10);
-            s1 = (e >>> 6 | e << 26) ^ (e >>> 11 | e << 21) ^ (e >>> 25 | e << 7);
-            ab = a & b;
-            maj = ab ^ a & c ^ bc;
-            ch = e & f ^ ~e & g;
-            t1 = h + s1 + ch + K[j] + blocks2[j];
-            t2 = s0 + maj;
-            h = d + t1 << 0;
-            d = t1 + t2 << 0;
-          }
-          s0 = (d >>> 2 | d << 30) ^ (d >>> 13 | d << 19) ^ (d >>> 22 | d << 10);
-          s1 = (h >>> 6 | h << 26) ^ (h >>> 11 | h << 21) ^ (h >>> 25 | h << 7);
-          da = d & a;
-          maj = da ^ d & b ^ ab;
-          ch = h & e ^ ~h & f;
-          t1 = g + s1 + ch + K[j + 1] + blocks2[j + 1];
-          t2 = s0 + maj;
-          g = c + t1 << 0;
-          c = t1 + t2 << 0;
-          s0 = (c >>> 2 | c << 30) ^ (c >>> 13 | c << 19) ^ (c >>> 22 | c << 10);
-          s1 = (g >>> 6 | g << 26) ^ (g >>> 11 | g << 21) ^ (g >>> 25 | g << 7);
-          cd = c & d;
-          maj = cd ^ c & a ^ da;
-          ch = g & h ^ ~g & e;
-          t1 = f + s1 + ch + K[j + 2] + blocks2[j + 2];
-          t2 = s0 + maj;
-          f = b + t1 << 0;
-          b = t1 + t2 << 0;
-          s0 = (b >>> 2 | b << 30) ^ (b >>> 13 | b << 19) ^ (b >>> 22 | b << 10);
-          s1 = (f >>> 6 | f << 26) ^ (f >>> 11 | f << 21) ^ (f >>> 25 | f << 7);
-          bc = b & c;
-          maj = bc ^ b & d ^ cd;
-          ch = f & g ^ ~f & h;
-          t1 = e + s1 + ch + K[j + 3] + blocks2[j + 3];
-          t2 = s0 + maj;
-          e = a + t1 << 0;
-          a = t1 + t2 << 0;
-          this.chromeBugWorkAround = true;
-        }
-        this.h0 = this.h0 + a << 0;
-        this.h1 = this.h1 + b << 0;
-        this.h2 = this.h2 + c << 0;
-        this.h3 = this.h3 + d << 0;
-        this.h4 = this.h4 + e << 0;
-        this.h5 = this.h5 + f << 0;
-        this.h6 = this.h6 + g << 0;
-        this.h7 = this.h7 + h << 0;
-      };
-      Sha256.prototype.hex = function() {
-        this.finalize();
-        var h0 = this.h0, h1 = this.h1, h2 = this.h2, h3 = this.h3, h4 = this.h4, h5 = this.h5, h6 = this.h6, h7 = this.h7;
-        var hex = HEX_CHARS[h0 >>> 28 & 15] + HEX_CHARS[h0 >>> 24 & 15] + HEX_CHARS[h0 >>> 20 & 15] + HEX_CHARS[h0 >>> 16 & 15] + HEX_CHARS[h0 >>> 12 & 15] + HEX_CHARS[h0 >>> 8 & 15] + HEX_CHARS[h0 >>> 4 & 15] + HEX_CHARS[h0 & 15] + HEX_CHARS[h1 >>> 28 & 15] + HEX_CHARS[h1 >>> 24 & 15] + HEX_CHARS[h1 >>> 20 & 15] + HEX_CHARS[h1 >>> 16 & 15] + HEX_CHARS[h1 >>> 12 & 15] + HEX_CHARS[h1 >>> 8 & 15] + HEX_CHARS[h1 >>> 4 & 15] + HEX_CHARS[h1 & 15] + HEX_CHARS[h2 >>> 28 & 15] + HEX_CHARS[h2 >>> 24 & 15] + HEX_CHARS[h2 >>> 20 & 15] + HEX_CHARS[h2 >>> 16 & 15] + HEX_CHARS[h2 >>> 12 & 15] + HEX_CHARS[h2 >>> 8 & 15] + HEX_CHARS[h2 >>> 4 & 15] + HEX_CHARS[h2 & 15] + HEX_CHARS[h3 >>> 28 & 15] + HEX_CHARS[h3 >>> 24 & 15] + HEX_CHARS[h3 >>> 20 & 15] + HEX_CHARS[h3 >>> 16 & 15] + HEX_CHARS[h3 >>> 12 & 15] + HEX_CHARS[h3 >>> 8 & 15] + HEX_CHARS[h3 >>> 4 & 15] + HEX_CHARS[h3 & 15] + HEX_CHARS[h4 >>> 28 & 15] + HEX_CHARS[h4 >>> 24 & 15] + HEX_CHARS[h4 >>> 20 & 15] + HEX_CHARS[h4 >>> 16 & 15] + HEX_CHARS[h4 >>> 12 & 15] + HEX_CHARS[h4 >>> 8 & 15] + HEX_CHARS[h4 >>> 4 & 15] + HEX_CHARS[h4 & 15] + HEX_CHARS[h5 >>> 28 & 15] + HEX_CHARS[h5 >>> 24 & 15] + HEX_CHARS[h5 >>> 20 & 15] + HEX_CHARS[h5 >>> 16 & 15] + HEX_CHARS[h5 >>> 12 & 15] + HEX_CHARS[h5 >>> 8 & 15] + HEX_CHARS[h5 >>> 4 & 15] + HEX_CHARS[h5 & 15] + HEX_CHARS[h6 >>> 28 & 15] + HEX_CHARS[h6 >>> 24 & 15] + HEX_CHARS[h6 >>> 20 & 15] + HEX_CHARS[h6 >>> 16 & 15] + HEX_CHARS[h6 >>> 12 & 15] + HEX_CHARS[h6 >>> 8 & 15] + HEX_CHARS[h6 >>> 4 & 15] + HEX_CHARS[h6 & 15];
-        if (!this.is224) {
-          hex += HEX_CHARS[h7 >>> 28 & 15] + HEX_CHARS[h7 >>> 24 & 15] + HEX_CHARS[h7 >>> 20 & 15] + HEX_CHARS[h7 >>> 16 & 15] + HEX_CHARS[h7 >>> 12 & 15] + HEX_CHARS[h7 >>> 8 & 15] + HEX_CHARS[h7 >>> 4 & 15] + HEX_CHARS[h7 & 15];
-        }
-        return hex;
-      };
-      Sha256.prototype.toString = Sha256.prototype.hex;
-      Sha256.prototype.digest = function() {
-        this.finalize();
-        var h0 = this.h0, h1 = this.h1, h2 = this.h2, h3 = this.h3, h4 = this.h4, h5 = this.h5, h6 = this.h6, h7 = this.h7;
-        var arr = [
-          h0 >>> 24 & 255,
-          h0 >>> 16 & 255,
-          h0 >>> 8 & 255,
-          h0 & 255,
-          h1 >>> 24 & 255,
-          h1 >>> 16 & 255,
-          h1 >>> 8 & 255,
-          h1 & 255,
-          h2 >>> 24 & 255,
-          h2 >>> 16 & 255,
-          h2 >>> 8 & 255,
-          h2 & 255,
-          h3 >>> 24 & 255,
-          h3 >>> 16 & 255,
-          h3 >>> 8 & 255,
-          h3 & 255,
-          h4 >>> 24 & 255,
-          h4 >>> 16 & 255,
-          h4 >>> 8 & 255,
-          h4 & 255,
-          h5 >>> 24 & 255,
-          h5 >>> 16 & 255,
-          h5 >>> 8 & 255,
-          h5 & 255,
-          h6 >>> 24 & 255,
-          h6 >>> 16 & 255,
-          h6 >>> 8 & 255,
-          h6 & 255
-        ];
-        if (!this.is224) {
-          arr.push(h7 >>> 24 & 255, h7 >>> 16 & 255, h7 >>> 8 & 255, h7 & 255);
-        }
-        return arr;
-      };
-      Sha256.prototype.array = Sha256.prototype.digest;
-      Sha256.prototype.arrayBuffer = function() {
-        this.finalize();
-        var buffer = new ArrayBuffer(this.is224 ? 28 : 32);
-        var dataView = new DataView(buffer);
-        dataView.setUint32(0, this.h0);
-        dataView.setUint32(4, this.h1);
-        dataView.setUint32(8, this.h2);
-        dataView.setUint32(12, this.h3);
-        dataView.setUint32(16, this.h4);
-        dataView.setUint32(20, this.h5);
-        dataView.setUint32(24, this.h6);
-        if (!this.is224) {
-          dataView.setUint32(28, this.h7);
-        }
-        return buffer;
-      };
-      function HmacSha256(key, is224, sharedMemory) {
-        var i, type = typeof key;
-        if (type === "string") {
-          var bytes = [], length = key.length, index = 0, code;
-          for (i = 0; i < length; ++i) {
-            code = key.charCodeAt(i);
-            if (code < 128) {
-              bytes[index++] = code;
-            } else if (code < 2048) {
-              bytes[index++] = 192 | code >>> 6;
-              bytes[index++] = 128 | code & 63;
-            } else if (code < 55296 || code >= 57344) {
-              bytes[index++] = 224 | code >>> 12;
-              bytes[index++] = 128 | code >>> 6 & 63;
-              bytes[index++] = 128 | code & 63;
-            } else {
-              code = 65536 + ((code & 1023) << 10 | key.charCodeAt(++i) & 1023);
-              bytes[index++] = 240 | code >>> 18;
-              bytes[index++] = 128 | code >>> 12 & 63;
-              bytes[index++] = 128 | code >>> 6 & 63;
-              bytes[index++] = 128 | code & 63;
-            }
-          }
-          key = bytes;
-        } else {
-          if (type === "object") {
-            if (key === null) {
-              throw new Error(ERROR);
-            } else if (ARRAY_BUFFER && key.constructor === ArrayBuffer) {
-              key = new Uint8Array(key);
-            } else if (!Array.isArray(key)) {
-              if (!ARRAY_BUFFER || !ArrayBuffer.isView(key)) {
-                throw new Error(ERROR);
-              }
-            }
-          } else {
-            throw new Error(ERROR);
-          }
-        }
-        if (key.length > 64) {
-          key = new Sha256(is224, true).update(key).array();
-        }
-        var oKeyPad = [], iKeyPad = [];
-        for (i = 0; i < 64; ++i) {
-          var b = key[i] || 0;
-          oKeyPad[i] = 92 ^ b;
-          iKeyPad[i] = 54 ^ b;
-        }
-        Sha256.call(this, is224, sharedMemory);
-        this.update(iKeyPad);
-        this.oKeyPad = oKeyPad;
-        this.inner = true;
-        this.sharedMemory = sharedMemory;
-      }
-      __name(HmacSha256, "HmacSha256");
-      HmacSha256.prototype = new Sha256();
-      HmacSha256.prototype.finalize = function() {
-        Sha256.prototype.finalize.call(this);
-        if (this.inner) {
-          this.inner = false;
-          var innerHash = this.array();
-          Sha256.call(this, this.is224, this.sharedMemory);
-          this.update(this.oKeyPad);
-          this.update(innerHash);
-          Sha256.prototype.finalize.call(this);
-        }
-      };
-      var exports2 = createMethod();
-      exports2.sha256 = exports2;
-      exports2.sha224 = createMethod(true);
-      exports2.sha256.hmac = createHmacMethod();
-      exports2.sha224.hmac = createHmacMethod(true);
-      if (COMMON_JS) {
-        module.exports = exports2;
-      } else {
-        root.sha256 = exports2.sha256;
-        root.sha224 = exports2.sha224;
-        if (AMD) {
-          define(function() {
-            return exports2;
-          });
-        }
-      }
-    })();
-  }
-});
-
-// src/worker.js
-var import_tweetnacl = __toESM(require_nacl_fast());
-var import_js_sha256 = __toESM(require_sha256());
+// src/protocols/vless.js
 import { connect } from "cloudflare:sockets";
+
+// src/helpers/config.js
+var configs = {
+  userID: "89b3cbba-e6ac-485a-9481-976a0415eab9",
+  dohURL: "https://cloudflare-dns.com/dns-query",
+  proxyIPs: ["bpb.yousef.isegaro.com"],
+  proxyIP: proxyIPs[Math.floor(Math.random() * proxyIPs.length)],
+  trojanPassword: "bpb-trojan",
+  defaultHttpPorts: ["80", "8080", "2052", "2082", "2086", "2095", "8880"],
+  defaultHttpsPorts: ["443", "8443", "2053", "2083", "2087", "2096"],
+  panelVersion: "2.7.2"
+};
+
+// src/helpers/helpers.js
+var { dohURL } = configs;
+function isValidUUID(uuid) {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+}
+__name(isValidUUID, "isValidUUID");
+async function resolveDNS(domain) {
+  const dohURLv4 = `${dohURL}?name=${encodeURIComponent(domain)}&type=A`;
+  const dohURLv6 = `${dohURL}?name=${encodeURIComponent(domain)}&type=AAAA`;
+  try {
+    const [ipv4Response, ipv6Response] = await Promise.all([
+      fetch(dohURLv4, { headers: { accept: "application/dns-json" } }),
+      fetch(dohURLv6, { headers: { accept: "application/dns-json" } })
+    ]);
+    const ipv4Addresses = await ipv4Response.json();
+    const ipv6Addresses = await ipv6Response.json();
+    const ipv4 = ipv4Addresses.Answer ? ipv4Addresses.Answer.map((record) => record.data) : [];
+    const ipv6 = ipv6Addresses.Answer ? ipv6Addresses.Answer.map((record) => record.data) : [];
+    return { ipv4, ipv6 };
+  } catch (error) {
+    console.error("Error resolving DNS:", error);
+    throw new Error(`An error occurred while resolving DNS - ${error}`);
+  }
+}
+__name(resolveDNS, "resolveDNS");
+function isDomain(address) {
+  const domainPattern = /^(?!\-)(?:[A-Za-z0-9\-]{1,63}\.)+[A-Za-z]{2,}$/;
+  return domainPattern.test(address);
+}
+__name(isDomain, "isDomain");
+
+// src/protocols/vless.js
+var proxyIP = configs.proxyIP;
+var userID2 = configs.userID;
+var dohURL2 = configs.dohURL;
+async function vlessOverWSHandler(request, env) {
+  userID2 = env.UUID || userID2;
+  if (!isValidUUID(userID2))
+    throw new Error(`Invalid UUID: ${userID2}`);
+  proxyIP = env.PROXYIP || proxyIP;
+  const webSocketPair = new WebSocketPair();
+  const [client, webSocket] = Object.values(webSocketPair);
+  webSocket.accept();
+  let address = "";
+  let portWithRandomLog = "";
+  const log = /* @__PURE__ */ __name((info, event) => {
+    console.log(`[${address}:${portWithRandomLog}] ${info}`, event || "");
+  }, "log");
+  const earlyDataHeader = request.headers.get("sec-websocket-protocol") || "";
+  const readableWebSocketStream = makeReadableWebSocketStream(webSocket, earlyDataHeader, log);
+  let remoteSocketWapper = {
+    value: null
+  };
+  let udpStreamWrite = null;
+  let isDns = false;
+  readableWebSocketStream.pipeTo(
+    new WritableStream({
+      async write(chunk, controller) {
+        if (isDns && udpStreamWrite) {
+          return udpStreamWrite(chunk);
+        }
+        if (remoteSocketWapper.value) {
+          const writer = remoteSocketWapper.value.writable.getWriter();
+          await writer.write(chunk);
+          writer.releaseLock();
+          return;
+        }
+        const {
+          hasError,
+          message: message2,
+          portRemote = 443,
+          addressRemote = "",
+          rawDataIndex,
+          vlessVersion = new Uint8Array([0, 0]),
+          isUDP
+        } = await processVlessHeader(chunk, userID2);
+        address = addressRemote;
+        portWithRandomLog = `${portRemote}--${Math.random()} ${isUDP ? "udp " : "tcp "} `;
+        if (hasError) {
+          throw new Error(message2);
+          return;
+        }
+        if (isUDP) {
+          if (portRemote === 53) {
+            isDns = true;
+          } else {
+            throw new Error("UDP proxy only enable for DNS which is port 53");
+            return;
+          }
+        }
+        const vlessResponseHeader = new Uint8Array([vlessVersion[0], 0]);
+        const rawClientData = chunk.slice(rawDataIndex);
+        if (isDns) {
+          const { write } = await handleUDPOutBound(webSocket, vlessResponseHeader, log);
+          udpStreamWrite = write;
+          udpStreamWrite(rawClientData);
+          return;
+        }
+        handleTCPOutBound(
+          request,
+          remoteSocketWapper,
+          addressRemote,
+          portRemote,
+          rawClientData,
+          webSocket,
+          vlessResponseHeader,
+          log
+        );
+      },
+      close() {
+        log(`readableWebSocketStream is close`);
+      },
+      abort(reason) {
+        log(`readableWebSocketStream is abort`, JSON.stringify(reason));
+      }
+    })
+  ).catch((err) => {
+    log("readableWebSocketStream pipeTo error", err);
+  });
+  return new Response(null, {
+    status: 101,
+    // @ts-ignore
+    webSocket: client
+  });
+}
+__name(vlessOverWSHandler, "vlessOverWSHandler");
+async function checkUuidInApiResponse(targetUuid) {
+  try {
+    const apiResponse = await getApiResponse();
+    if (!apiResponse) {
+      return false;
+    }
+    const isUuidInResponse = apiResponse.users.some((user) => user.uuid === targetUuid);
+    return isUuidInResponse;
+  } catch (error) {
+    console.error("Error:", error);
+    return false;
+  }
+}
+__name(checkUuidInApiResponse, "checkUuidInApiResponse");
+async function handleTCPOutBound(request, remoteSocket, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log) {
+  async function connectAndWrite(address, port) {
+    if (/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(address))
+      address = `${atob("d3d3Lg==")}${address}${atob("LnNzbGlwLmlv")}`;
+    const tcpSocket2 = connect({
+      hostname: address,
+      port
+    });
+    remoteSocket.value = tcpSocket2;
+    log(`connected to ${address}:${port}`);
+    const writer = tcpSocket2.writable.getWriter();
+    await writer.write(rawClientData);
+    writer.releaseLock();
+    return tcpSocket2;
+  }
+  __name(connectAndWrite, "connectAndWrite");
+  async function retry() {
+    const { pathname } = new URL(request.url);
+    let panelProxyIP = pathname.split("/")[2];
+    panelProxyIP = panelProxyIP ? atob(panelProxyIP) : void 0;
+    const tcpSocket2 = await connectAndWrite(panelProxyIP || proxyIP || addressRemote, portRemote);
+    tcpSocket2.closed.catch((error) => {
+      console.log("retry tcpSocket closed error", error);
+    }).finally(() => {
+      safeCloseWebSocket(webSocket);
+    });
+    vlessRemoteSocketToWS(tcpSocket2, webSocket, vlessResponseHeader, null, log);
+  }
+  __name(retry, "retry");
+  const tcpSocket = await connectAndWrite(addressRemote, portRemote);
+  vlessRemoteSocketToWS(tcpSocket, webSocket, vlessResponseHeader, retry, log);
+}
+__name(handleTCPOutBound, "handleTCPOutBound");
+function makeReadableWebSocketStream(webSocketServer, earlyDataHeader, log) {
+  let readableStreamCancel = false;
+  const stream = new ReadableStream({
+    start(controller) {
+      webSocketServer.addEventListener("message", (event) => {
+        if (readableStreamCancel) {
+          return;
+        }
+        const message2 = event.data;
+        controller.enqueue(message2);
+      });
+      webSocketServer.addEventListener("close", () => {
+        safeCloseWebSocket(webSocketServer);
+        if (readableStreamCancel) {
+          return;
+        }
+        controller.close();
+      });
+      webSocketServer.addEventListener("error", (err) => {
+        log("webSocketServer has error");
+        controller.error(err);
+      });
+      const { earlyData, error } = base64ToArrayBuffer(earlyDataHeader);
+      if (error) {
+        controller.error(error);
+      } else if (earlyData) {
+        controller.enqueue(earlyData);
+      }
+    },
+    pull(controller) {
+    },
+    cancel(reason) {
+      if (readableStreamCancel) {
+        return;
+      }
+      log(`ReadableStream was canceled, due to ${reason}`);
+      readableStreamCancel = true;
+      safeCloseWebSocket(webSocketServer);
+    }
+  });
+  return stream;
+}
+__name(makeReadableWebSocketStream, "makeReadableWebSocketStream");
+async function processVlessHeader(vlessBuffer, userID8) {
+  if (vlessBuffer.byteLength < 24) {
+    return {
+      hasError: true,
+      message: "invalid data"
+    };
+  }
+  const version = new Uint8Array(vlessBuffer.slice(0, 1));
+  let isValidUser = false;
+  let isUDP = false;
+  const slicedBuffer = new Uint8Array(vlessBuffer.slice(1, 17));
+  const slicedBufferString = stringify(slicedBuffer);
+  const uuids = userID8.includes(",") ? userID8.split(",") : [userID8];
+  const checkUuidInApi = await checkUuidInApiResponse(slicedBufferString);
+  isValidUser = uuids.some((userUuid) => checkUuidInApi || slicedBufferString === userUuid.trim());
+  console.log(`checkUuidInApi: ${await checkUuidInApiResponse(slicedBufferString)}, userID: ${slicedBufferString}`);
+  if (!isValidUser) {
+    return {
+      hasError: true,
+      message: "invalid user"
+    };
+  }
+  const optLength = new Uint8Array(vlessBuffer.slice(17, 18))[0];
+  const command = new Uint8Array(vlessBuffer.slice(18 + optLength, 18 + optLength + 1))[0];
+  if (command === 1) {
+  } else if (command === 2) {
+    isUDP = true;
+  } else {
+    return {
+      hasError: true,
+      message: `command ${command} is not support, command 01-tcp,02-udp,03-mux`
+    };
+  }
+  const portIndex = 18 + optLength + 1;
+  const portBuffer = vlessBuffer.slice(portIndex, portIndex + 2);
+  const portRemote = new DataView(portBuffer).getUint16(0);
+  let addressIndex = portIndex + 2;
+  const addressBuffer = new Uint8Array(vlessBuffer.slice(addressIndex, addressIndex + 1));
+  const addressType = addressBuffer[0];
+  let addressLength = 0;
+  let addressValueIndex = addressIndex + 1;
+  let addressValue = "";
+  switch (addressType) {
+    case 1:
+      addressLength = 4;
+      addressValue = new Uint8Array(vlessBuffer.slice(addressValueIndex, addressValueIndex + addressLength)).join(".");
+      break;
+    case 2:
+      addressLength = new Uint8Array(vlessBuffer.slice(addressValueIndex, addressValueIndex + 1))[0];
+      addressValueIndex += 1;
+      addressValue = new TextDecoder().decode(vlessBuffer.slice(addressValueIndex, addressValueIndex + addressLength));
+      break;
+    case 3:
+      addressLength = 16;
+      const dataView = new DataView(vlessBuffer.slice(addressValueIndex, addressValueIndex + addressLength));
+      const ipv6 = [];
+      for (let i = 0; i < 8; i++) {
+        ipv6.push(dataView.getUint16(i * 2).toString(16));
+      }
+      addressValue = ipv6.join(":");
+      break;
+    default:
+      return {
+        hasError: true,
+        message: `invild  addressType is ${addressType}`
+      };
+  }
+  if (!addressValue) {
+    return {
+      hasError: true,
+      message: `addressValue is empty, addressType is ${addressType}`
+    };
+  }
+  return {
+    hasError: false,
+    addressRemote: addressValue,
+    addressType,
+    portRemote,
+    rawDataIndex: addressValueIndex + addressLength,
+    vlessVersion: version,
+    isUDP
+  };
+}
+__name(processVlessHeader, "processVlessHeader");
+async function vlessRemoteSocketToWS(remoteSocket, webSocket, vlessResponseHeader, retry, log) {
+  let remoteChunkCount = 0;
+  let chunks = [];
+  let vlessHeader = vlessResponseHeader;
+  let hasIncomingData = false;
+  await remoteSocket.readable.pipeTo(
+    new WritableStream({
+      start() {
+      },
+      /**
+       *
+       * @param {Uint8Array} chunk
+       * @param {*} controller
+       */
+      async write(chunk, controller) {
+        hasIncomingData = true;
+        if (webSocket.readyState !== WS_READY_STATE_OPEN) {
+          controller.error("webSocket.readyState is not open, maybe close");
+        }
+        if (vlessHeader) {
+          webSocket.send(await new Blob([vlessHeader, chunk]).arrayBuffer());
+          vlessHeader = null;
+        } else {
+          webSocket.send(chunk);
+        }
+      },
+      close() {
+        log(`remoteConnection!.readable is close with hasIncomingData is ${hasIncomingData}`);
+      },
+      abort(reason) {
+        console.error(`remoteConnection!.readable abort`, reason);
+      }
+    })
+  ).catch((error) => {
+    console.error(`vlessRemoteSocketToWS has exception `, error.stack || error);
+    safeCloseWebSocket(webSocket);
+  });
+  if (hasIncomingData === false && retry) {
+    log(`retry`);
+    retry();
+  }
+}
+__name(vlessRemoteSocketToWS, "vlessRemoteSocketToWS");
+function base64ToArrayBuffer(base64Str) {
+  if (!base64Str) {
+    return { earlyData: null, error: null };
+  }
+  try {
+    base64Str = base64Str.replace(/-/g, "+").replace(/_/g, "/");
+    const decode2 = atob(base64Str);
+    const arryBuffer = Uint8Array.from(decode2, (c) => c.charCodeAt(0));
+    return { earlyData: arryBuffer.buffer, error: null };
+  } catch (error) {
+    return { earlyData: null, error };
+  }
+}
+__name(base64ToArrayBuffer, "base64ToArrayBuffer");
+var WS_READY_STATE_OPEN = 1;
+var WS_READY_STATE_CLOSING = 2;
+function safeCloseWebSocket(socket) {
+  try {
+    if (socket.readyState === WS_READY_STATE_OPEN || socket.readyState === WS_READY_STATE_CLOSING) {
+      socket.close();
+    }
+  } catch (error) {
+    console.error("safeCloseWebSocket error", error);
+  }
+}
+__name(safeCloseWebSocket, "safeCloseWebSocket");
+var byteToHex = [];
+for (let i = 0; i < 256; ++i) {
+  byteToHex.push((i + 256).toString(16).slice(1));
+}
+function unsafeStringify(arr, offset = 0) {
+  return (byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + "-" + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + "-" + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + "-" + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + "-" + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]]).toLowerCase();
+}
+__name(unsafeStringify, "unsafeStringify");
+function stringify(arr, offset = 0) {
+  const uuid = unsafeStringify(arr, offset);
+  if (!isValidUUID(uuid)) {
+    throw TypeError("Stringified UUID is invalid");
+  }
+  return uuid;
+}
+__name(stringify, "stringify");
+async function handleUDPOutBound(webSocket, vlessResponseHeader, log) {
+  let isVlessHeaderSent = false;
+  const transformStream = new TransformStream({
+    start(controller) {
+    },
+    transform(chunk, controller) {
+      for (let index = 0; index < chunk.byteLength; ) {
+        const lengthBuffer = chunk.slice(index, index + 2);
+        const udpPakcetLength = new DataView(lengthBuffer).getUint16(0);
+        const udpData = new Uint8Array(chunk.slice(index + 2, index + 2 + udpPakcetLength));
+        index = index + 2 + udpPakcetLength;
+        controller.enqueue(udpData);
+      }
+    },
+    flush(controller) {
+    }
+  });
+  transformStream.readable.pipeTo(
+    new WritableStream({
+      async write(chunk) {
+        const resp = await fetch(
+          dohURL2,
+          // dns server url
+          {
+            method: "POST",
+            headers: {
+              "content-type": "application/dns-message"
+            },
+            body: chunk
+          }
+        );
+        const dnsQueryResult = await resp.arrayBuffer();
+        const udpSize = dnsQueryResult.byteLength;
+        const udpSizeBuffer = new Uint8Array([udpSize >> 8 & 255, udpSize & 255]);
+        if (webSocket.readyState === WS_READY_STATE_OPEN) {
+          log(`doh success and dns message length is ${udpSize}`);
+          if (isVlessHeaderSent) {
+            webSocket.send(await new Blob([udpSizeBuffer, dnsQueryResult]).arrayBuffer());
+          } else {
+            webSocket.send(await new Blob([vlessResponseHeader, udpSizeBuffer, dnsQueryResult]).arrayBuffer());
+            isVlessHeaderSent = true;
+          }
+        }
+      }
+    })
+  ).catch((error) => {
+    log("dns udp has error" + error);
+  });
+  const writer = transformStream.writable.getWriter();
+  return {
+    /**
+     *
+     * @param {Uint8Array} chunk
+    */
+    write(chunk) {
+      writer.write(chunk);
+    }
+  };
+}
+__name(handleUDPOutBound, "handleUDPOutBound");
+
+// src/protocols/trojan.js
+import { connect as connect2 } from "cloudflare:sockets";
+var import_js_sha256 = __toESM(require_sha256());
+var proxyIP2 = configs.proxyIP;
+var trojanPassword = configs.trojanPassword;
+async function trojanOverWSHandler(request, env) {
+  proxyIP2 = env.PROXYIP || proxyIP2;
+  trojanPassword = env.TROJAN_PASS || trojanPassword;
+  const webSocketPair = new WebSocketPair();
+  const [client, webSocket] = Object.values(webSocketPair);
+  webSocket.accept();
+  let address = "";
+  let portWithRandomLog = "";
+  const log = /* @__PURE__ */ __name((info, event) => {
+    console.log(`[${address}:${portWithRandomLog}] ${info}`, event || "");
+  }, "log");
+  const earlyDataHeader = request.headers.get("sec-websocket-protocol") || "";
+  const readableWebSocketStream = makeReadableWebSocketStream2(webSocket, earlyDataHeader, log);
+  let remoteSocketWapper = {
+    value: null
+  };
+  let udpStreamWrite = null;
+  readableWebSocketStream.pipeTo(
+    new WritableStream({
+      async write(chunk, controller) {
+        if (udpStreamWrite) {
+          return udpStreamWrite(chunk);
+        }
+        if (remoteSocketWapper.value) {
+          const writer = remoteSocketWapper.value.writable.getWriter();
+          await writer.write(chunk);
+          writer.releaseLock();
+          return;
+        }
+        const {
+          hasError,
+          message: message2,
+          portRemote = 443,
+          addressRemote = "",
+          rawClientData
+        } = await parseTrojanHeader(chunk);
+        address = addressRemote;
+        portWithRandomLog = `${portRemote}--${Math.random()} tcp`;
+        if (hasError) {
+          throw new Error(message2);
+          return;
+        }
+        handleTCPOutBound2(request, remoteSocketWapper, addressRemote, portRemote, rawClientData, webSocket, log);
+      },
+      close() {
+        log(`readableWebSocketStream is closed`);
+      },
+      abort(reason) {
+        log(`readableWebSocketStream is aborted`, JSON.stringify(reason));
+      }
+    })
+  ).catch((err) => {
+    log("readableWebSocketStream pipeTo error", err);
+  });
+  return new Response(null, {
+    status: 101,
+    // @ts-ignore
+    webSocket: client
+  });
+}
+__name(trojanOverWSHandler, "trojanOverWSHandler");
+async function parseTrojanHeader(buffer) {
+  if (buffer.byteLength < 56) {
+    return {
+      hasError: true,
+      message: "invalid data"
+    };
+  }
+  let crLfIndex = 56;
+  if (new Uint8Array(buffer.slice(56, 57))[0] !== 13 || new Uint8Array(buffer.slice(57, 58))[0] !== 10) {
+    return {
+      hasError: true,
+      message: "invalid header format (missing CR LF)"
+    };
+  }
+  const password = new TextDecoder().decode(buffer.slice(0, crLfIndex));
+  if (password !== import_js_sha256.default.sha224(trojanPassword)) {
+    return {
+      hasError: true,
+      message: "invalid password"
+    };
+  }
+  const socks5DataBuffer = buffer.slice(crLfIndex + 2);
+  if (socks5DataBuffer.byteLength < 6) {
+    return {
+      hasError: true,
+      message: "invalid SOCKS5 request data"
+    };
+  }
+  const view = new DataView(socks5DataBuffer);
+  const cmd = view.getUint8(0);
+  if (cmd !== 1) {
+    return {
+      hasError: true,
+      message: "unsupported command, only TCP (CONNECT) is allowed"
+    };
+  }
+  const atype = view.getUint8(1);
+  let addressLength = 0;
+  let addressIndex = 2;
+  let address = "";
+  switch (atype) {
+    case 1:
+      addressLength = 4;
+      address = new Uint8Array(socks5DataBuffer.slice(addressIndex, addressIndex + addressLength)).join(".");
+      break;
+    case 3:
+      addressLength = new Uint8Array(socks5DataBuffer.slice(addressIndex, addressIndex + 1))[0];
+      addressIndex += 1;
+      address = new TextDecoder().decode(socks5DataBuffer.slice(addressIndex, addressIndex + addressLength));
+      break;
+    case 4:
+      addressLength = 16;
+      const dataView = new DataView(socks5DataBuffer.slice(addressIndex, addressIndex + addressLength));
+      const ipv6 = [];
+      for (let i = 0; i < 8; i++) {
+        ipv6.push(dataView.getUint16(i * 2).toString(16));
+      }
+      address = ipv6.join(":");
+      break;
+    default:
+      return {
+        hasError: true,
+        message: `invalid addressType is ${atype}`
+      };
+  }
+  if (!address) {
+    return {
+      hasError: true,
+      message: `address is empty, addressType is ${atype}`
+    };
+  }
+  const portIndex = addressIndex + addressLength;
+  const portBuffer = socks5DataBuffer.slice(portIndex, portIndex + 2);
+  const portRemote = new DataView(portBuffer).getUint16(0);
+  return {
+    hasError: false,
+    addressRemote: address,
+    portRemote,
+    rawClientData: socks5DataBuffer.slice(portIndex + 4)
+  };
+}
+__name(parseTrojanHeader, "parseTrojanHeader");
+async function handleTCPOutBound2(request, remoteSocket, addressRemote, portRemote, rawClientData, webSocket, log) {
+  async function connectAndWrite(address, port) {
+    if (/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(address))
+      address = `${atob("d3d3Lg==")}${address}${atob("LnNzbGlwLmlv")}`;
+    const tcpSocket2 = connect2({
+      hostname: address,
+      port
+    });
+    remoteSocket.value = tcpSocket2;
+    log(`connected to ${address}:${port}`);
+    const writer = tcpSocket2.writable.getWriter();
+    await writer.write(rawClientData);
+    writer.releaseLock();
+    return tcpSocket2;
+  }
+  __name(connectAndWrite, "connectAndWrite");
+  async function retry() {
+    const { pathname } = new URL(request.url);
+    let panelProxyIP = pathname.split("/")[2];
+    panelProxyIP = panelProxyIP ? atob(panelProxyIP) : void 0;
+    const tcpSocket2 = await connectAndWrite(panelProxyIP || proxyIP2 || addressRemote, portRemote);
+    tcpSocket2.closed.catch((error) => {
+      console.log("retry tcpSocket closed error", error);
+    }).finally(() => {
+      safeCloseWebSocket2(webSocket);
+    });
+    trojanRemoteSocketToWS(tcpSocket2, webSocket, null, log);
+  }
+  __name(retry, "retry");
+  const tcpSocket = await connectAndWrite(addressRemote, portRemote);
+  trojanRemoteSocketToWS(tcpSocket, webSocket, retry, log);
+}
+__name(handleTCPOutBound2, "handleTCPOutBound");
+function makeReadableWebSocketStream2(webSocketServer, earlyDataHeader, log) {
+  let readableStreamCancel = false;
+  const stream = new ReadableStream({
+    start(controller) {
+      webSocketServer.addEventListener("message", (event) => {
+        if (readableStreamCancel) {
+          return;
+        }
+        const message2 = event.data;
+        controller.enqueue(message2);
+      });
+      webSocketServer.addEventListener("close", () => {
+        safeCloseWebSocket2(webSocketServer);
+        if (readableStreamCancel) {
+          return;
+        }
+        controller.close();
+      });
+      webSocketServer.addEventListener("error", (err) => {
+        log("webSocketServer has error");
+        controller.error(err);
+      });
+      const { earlyData, error } = base64ToArrayBuffer2(earlyDataHeader);
+      if (error) {
+        controller.error(error);
+      } else if (earlyData) {
+        controller.enqueue(earlyData);
+      }
+    },
+    pull(controller) {
+    },
+    cancel(reason) {
+      if (readableStreamCancel) {
+        return;
+      }
+      log(`ReadableStream was canceled, due to ${reason}`);
+      readableStreamCancel = true;
+      safeCloseWebSocket2(webSocketServer);
+    }
+  });
+  return stream;
+}
+__name(makeReadableWebSocketStream2, "makeReadableWebSocketStream");
+async function trojanRemoteSocketToWS(remoteSocket, webSocket, retry, log) {
+  let hasIncomingData = false;
+  await remoteSocket.readable.pipeTo(
+    new WritableStream({
+      start() {
+      },
+      /**
+       *
+       * @param {Uint8Array} chunk
+       * @param {*} controller
+       */
+      async write(chunk, controller) {
+        hasIncomingData = true;
+        if (webSocket.readyState !== WS_READY_STATE_OPEN2) {
+          controller.error("webSocket connection is not open");
+        }
+        webSocket.send(chunk);
+      },
+      close() {
+        log(`remoteSocket.readable is closed, hasIncomingData: ${hasIncomingData}`);
+      },
+      abort(reason) {
+        console.error("remoteSocket.readable abort", reason);
+      }
+    })
+  ).catch((error) => {
+    console.error(`trojanRemoteSocketToWS error:`, error.stack || error);
+    safeCloseWebSocket2(webSocket);
+  });
+  if (hasIncomingData === false && retry) {
+    log(`retry`);
+    retry();
+  }
+}
+__name(trojanRemoteSocketToWS, "trojanRemoteSocketToWS");
+function base64ToArrayBuffer2(base64Str) {
+  if (!base64Str) {
+    return { earlyData: null, error: null };
+  }
+  try {
+    base64Str = base64Str.replace(/-/g, "+").replace(/_/g, "/");
+    const decode2 = atob(base64Str);
+    const arryBuffer = Uint8Array.from(decode2, (c) => c.charCodeAt(0));
+    return { earlyData: arryBuffer.buffer, error: null };
+  } catch (error) {
+    return { earlyData: null, error };
+  }
+}
+__name(base64ToArrayBuffer2, "base64ToArrayBuffer");
+var WS_READY_STATE_OPEN2 = 1;
+var WS_READY_STATE_CLOSING2 = 2;
+function safeCloseWebSocket2(socket) {
+  try {
+    if (socket.readyState === WS_READY_STATE_OPEN2 || socket.readyState === WS_READY_STATE_CLOSING2) {
+      socket.close();
+    }
+  } catch (error) {
+    console.error("safeCloseWebSocket error", error);
+  }
+}
+__name(safeCloseWebSocket2, "safeCloseWebSocket");
+
+// src/protocols/warp.js
+var import_tweetnacl = __toESM(require_nacl_fast());
+async function fetchWgConfig(env, proxySettings) {
+  let warpConfigs = [];
+  const apiBaseUrl = "https://api.cloudflareclient.com/v0a4005/reg";
+  const { warpPlusLicense } = proxySettings;
+  const warpKeys = [generateKeyPair(), generateKeyPair()];
+  for (let i = 0; i < 2; i++) {
+    const accountResponse = await fetch(apiBaseUrl, {
+      method: "POST",
+      headers: {
+        "User-Agent": "insomnia/8.6.1",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        key: warpKeys[i].publicKey,
+        install_id: "",
+        fcm_token: "",
+        tos: (/* @__PURE__ */ new Date()).toISOString(),
+        type: "Android",
+        model: "PC",
+        locale: "en_US",
+        warp_enabled: true
+      })
+    });
+    const accountData = await accountResponse.json();
+    warpConfigs.push({
+      privateKey: warpKeys[i].privateKey,
+      account: accountData
+    });
+    if (warpPlusLicense) {
+      const response = await fetch(`${apiBaseUrl}/${accountData.id}/account`, {
+        method: "PUT",
+        headers: {
+          "User-Agent": "insomnia/8.6.1",
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${accountData.token}`
+        },
+        body: JSON.stringify({
+          key: warpKeys[i].publicKey,
+          install_id: "",
+          fcm_token: "",
+          tos: (/* @__PURE__ */ new Date()).toISOString(),
+          type: "Android",
+          model: "PC",
+          locale: "en_US",
+          warp_enabled: true,
+          license: warpPlusLicense
+        })
+      });
+      const responseData = await response.json();
+      if (response.status !== 200 && !responseData.success)
+        return { error: responseData.errors[0]?.message, configs: null };
+    }
+  }
+  const configs2 = JSON.stringify(warpConfigs);
+  await env.bpb.put("warpConfigs", configs2);
+  return { error: null, configs: configs2 };
+}
+__name(fetchWgConfig, "fetchWgConfig");
+var generateKeyPair = /* @__PURE__ */ __name(() => {
+  const base64Encode = /* @__PURE__ */ __name((array) => btoa(String.fromCharCode.apply(null, array)), "base64Encode");
+  let privateKey = import_tweetnacl.default.randomBytes(32);
+  privateKey[0] &= 248;
+  privateKey[31] &= 127;
+  privateKey[31] |= 64;
+  let publicKey = import_tweetnacl.default.scalarMult.base(privateKey);
+  const publicKeyBase64 = base64Encode(publicKey);
+  const privateKeyBase64 = base64Encode(privateKey);
+  return { publicKey: publicKeyBase64, privateKey: privateKeyBase64 };
+}, "generateKeyPair");
+
+// src/kv/handlers.js
+async function getDataset(env) {
+  let proxySettings, warpConfigs;
+  if (typeof env.bpb !== "object") {
+    return { kvNotFound: true, proxySettings: null, warpConfigs: null };
+  }
+  try {
+    proxySettings = await env.bpb.get("proxySettings", { type: "json" });
+    warpConfigs = await env.bpb.get("warpConfigs", { type: "json" });
+  } catch (error) {
+    console.log(error);
+    throw new Error(`An error occurred while getting KV - ${error}`);
+  }
+  if (!proxySettings) {
+    proxySettings = await updateDataset(env);
+    const { error, configs: configs2 } = await fetchWgConfig(env, proxySettings);
+    if (error)
+      throw new Error(`An error occurred while getting Warp configs - ${error}`);
+    warpConfigs = configs2;
+  }
+  if (panelVersion !== proxySettings.panelVersion)
+    proxySettings = await updateDataset(env);
+  return { kvNotFound: false, proxySettings, warpConfigs };
+}
+__name(getDataset, "getDataset");
+async function updateDataset(env, newSettings, resetSettings) {
+  let currentSettings;
+  if (!resetSettings) {
+    try {
+      currentSettings = await env.bpb.get("proxySettings", { type: "json" });
+    } catch (error) {
+      console.log(error);
+      throw new Error(`An error occurred while getting current KV settings - ${error}`);
+    }
+  } else {
+    await env.bpb.delete("warpConfigs");
+  }
+  const validateField = /* @__PURE__ */ __name((field) => {
+    const fieldValue = newSettings?.get(field);
+    if (fieldValue === void 0)
+      return null;
+    if (fieldValue === "true")
+      return true;
+    if (fieldValue === "false")
+      return false;
+    return fieldValue;
+  }, "validateField");
+  const remoteDNS = validateField("remoteDNS") ?? currentSettings?.remoteDNS ?? "https://8.8.8.8/dns-query";
+  const enableIPv6 = validateField("enableIPv6") ?? currentSettings?.enableIPv6 ?? true;
+  const url = new URL(remoteDNS);
+  const remoteDNSServer = url.hostname;
+  const isServerDomain = isDomain(remoteDNSServer);
+  let resolvedRemoteDNS = {};
+  if (isServerDomain) {
+    try {
+      const resolvedDomain = await resolveDNS(remoteDNSServer);
+      resolvedRemoteDNS = {
+        server: remoteDNSServer,
+        staticIPs: enableIPv6 ? [...resolvedDomain.ipv4, ...resolvedDomain.ipv6] : resolvedDomain.ipv4
+      };
+    } catch (error) {
+      console.log(error);
+      throw new Error(`An error occurred while resolving remote DNS server, please try agian! - ${error}`);
+    }
+  }
+  const proxySettings = {
+    remoteDNS,
+    resolvedRemoteDNS,
+    localDNS: validateField("localDNS") ?? currentSettings?.localDNS ?? "8.8.8.8",
+    vlessTrojanFakeDNS: validateField("vlessTrojanFakeDNS") ?? currentSettings?.vlessTrojanFakeDNS ?? false,
+    proxyIP: validateField("proxyIP")?.trim() ?? currentSettings?.proxyIP ?? "",
+    outProxy: validateField("outProxy") ?? currentSettings?.outProxy ?? "",
+    outProxyParams: extractChainProxyParams(validateField("outProxy")) ?? currentSettings?.outProxyParams ?? {},
+    cleanIPs: validateField("cleanIPs")?.replaceAll(" ", "") ?? currentSettings?.cleanIPs ?? "",
+    enableIPv6,
+    customCdnAddrs: validateField("customCdnAddrs")?.replaceAll(" ", "") ?? currentSettings?.customCdnAddrs ?? "",
+    customCdnHost: validateField("customCdnHost")?.trim() ?? currentSettings?.customCdnHost ?? "",
+    customCdnSni: validateField("customCdnSni")?.trim() ?? currentSettings?.customCdnSni ?? "",
+    bestVLESSTrojanInterval: validateField("bestVLESSTrojanInterval") ?? currentSettings?.bestVLESSTrojanInterval ?? "30",
+    vlessConfigs: validateField("vlessConfigs") ?? currentSettings?.vlessConfigs ?? true,
+    trojanConfigs: validateField("trojanConfigs") ?? currentSettings?.trojanConfigs ?? false,
+    ports: validateField("ports")?.split(",") ?? currentSettings?.ports ?? ["443"],
+    lengthMin: validateField("fragmentLengthMin") ?? currentSettings?.lengthMin ?? "100",
+    lengthMax: validateField("fragmentLengthMax") ?? currentSettings?.lengthMax ?? "200",
+    intervalMin: validateField("fragmentIntervalMin") ?? currentSettings?.intervalMin ?? "1",
+    intervalMax: validateField("fragmentIntervalMax") ?? currentSettings?.intervalMax ?? "1",
+    fragmentPackets: validateField("fragmentPackets") ?? currentSettings?.fragmentPackets ?? "tlshello",
+    bypassLAN: validateField("bypass-lan") ?? currentSettings?.bypassLAN ?? false,
+    bypassIran: validateField("bypass-iran") ?? currentSettings?.bypassIran ?? false,
+    bypassChina: validateField("bypass-china") ?? currentSettings?.bypassChina ?? false,
+    bypassRussia: validateField("bypass-russia") ?? currentSettings?.bypassRussia ?? false,
+    blockAds: validateField("block-ads") ?? currentSettings?.blockAds ?? false,
+    blockPorn: validateField("block-porn") ?? currentSettings?.blockPorn ?? false,
+    blockUDP443: validateField("block-udp-443") ?? currentSettings?.blockUDP443 ?? false,
+    warpEndpoints: validateField("warpEndpoints")?.replaceAll(" ", "") ?? currentSettings?.warpEndpoints ?? "engage.cloudflareclient.com:2408",
+    warpFakeDNS: validateField("warpFakeDNS") ?? currentSettings?.warpFakeDNS ?? false,
+    warpEnableIPv6: validateField("warpEnableIPv6") ?? currentSettings?.warpEnableIPv6 ?? true,
+    warpPlusLicense: validateField("warpPlusLicense") ?? currentSettings?.warpPlusLicense ?? "",
+    bestWarpInterval: validateField("bestWarpInterval") ?? currentSettings?.bestWarpInterval ?? "30",
+    hiddifyNoiseMode: validateField("hiddifyNoiseMode") ?? currentSettings?.hiddifyNoiseMode ?? "m4",
+    nikaNGNoiseMode: validateField("nikaNGNoiseMode") ?? currentSettings?.nikaNGNoiseMode ?? "quic",
+    noiseCountMin: validateField("noiseCountMin") ?? currentSettings?.noiseCountMin ?? "10",
+    noiseCountMax: validateField("noiseCountMax") ?? currentSettings?.noiseCountMax ?? "15",
+    noiseSizeMin: validateField("noiseSizeMin") ?? currentSettings?.noiseSizeMin ?? "5",
+    noiseSizeMax: validateField("noiseSizeMax") ?? currentSettings?.noiseSizeMax ?? "10",
+    noiseDelayMin: validateField("noiseDelayMin") ?? currentSettings?.noiseDelayMin ?? "1",
+    noiseDelayMax: validateField("noiseDelayMax") ?? currentSettings?.noiseDelayMax ?? "1",
+    panelVersion
+  };
+  try {
+    await env.bpb.put("proxySettings", JSON.stringify(proxySettings));
+  } catch (error) {
+    console.log(error);
+    throw new Error(`An error occurred while updating KV - ${error}`);
+  }
+  return proxySettings;
+}
+__name(updateDataset, "updateDataset");
+function extractChainProxyParams(chainProxy) {
+  let configParams = {};
+  if (!chainProxy)
+    return {};
+  let url = new URL(chainProxy);
+  const protocol = url.protocol.slice(0, -1);
+  if (protocol === "vless") {
+    const params = new URLSearchParams(url.search);
+    configParams = {
+      protocol,
+      uuid: url.username,
+      hostName: url.hostname,
+      port: url.port
+    };
+    params.forEach((value, key) => {
+      configParams[key] = value;
+    });
+  } else {
+    configParams = {
+      protocol,
+      user: url.username,
+      pass: url.password,
+      host: url.host,
+      port: url.port
+    };
+  }
+  return JSON.stringify(configParams);
+}
+__name(extractChainProxyParams, "extractChainProxyParams");
 
 // node_modules/jose/dist/browser/runtime/webcrypto.js
 var webcrypto_default = crypto;
@@ -4183,1060 +5146,14 @@ var SignJWT = class extends ProduceJWT {
 };
 __name(SignJWT, "SignJWT");
 
-// src/worker.js
-var userID = "89b3cbba-e6ac-485a-9481-976a0415eab9";
-var trojanPassword = `bpb-trojan`;
-var proxyIPs = ["bpb.yousef.isegaro.com"];
-var defaultHttpPorts = ["80", "8080", "2052", "2082", "2086", "2095", "8880"];
-var defaultHttpsPorts = ["443", "8443", "2053", "2083", "2087", "2096"];
-var proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
-var dohURL = "https://cloudflare-dns.com/dns-query";
-var hashPassword;
-var panelVersion = "2.7.2";
-var worker_default = {
-  /**
-   * @param {import("@cloudflare/workers-types").Request} request
-   * @param {{UUID: string, PROXYIP: string, DNS_RESOLVER_URL: string}} env
-   * @param {import("@cloudflare/workers-types").ExecutionContext} ctx
-   * @returns {Promise<Response>}
-   */
-  async fetch(request, env) {
-    try {
-      userID = env.UUID || userID;
-      proxyIP = env.PROXYIP || proxyIP;
-      dohURL = env.DNS_RESOLVER_URL || dohURL;
-      trojanPassword = env.TROJAN_PASS || trojanPassword;
-      hashPassword = import_js_sha256.default.sha224(trojanPassword);
-      if (!isValidUUID(userID))
-        throw new Error(`Invalid UUID: ${userID}`);
-      const upgradeHeader = request.headers.get("Upgrade");
-      const url = new URL(request.url);
-      if (!upgradeHeader || upgradeHeader !== "websocket") {
-        const searchParams = new URLSearchParams(url.search);
-        const host = request.headers.get("Host");
-        const client = searchParams.get("app");
-        const { kvNotFound, proxySettings: settings, warpConfigs } = await getDataset(env);
-        if (kvNotFound) {
-          const errorPage = renderErrorPage("KV Dataset is not properly set!", null, true);
-          return new Response(errorPage, { status: 200, headers: { "Content-Type": "text/html" } });
-        }
-        switch (url.pathname) {
-          case "/update-warp":
-            const Auth = await Authenticate(request, env);
-            if (!Auth)
-              return new Response("Unauthorized", { status: 401 });
-            if (request.method === "POST") {
-              try {
-                const { error: warpPlusError } = await fetchWgConfig(env, settings);
-                if (warpPlusError) {
-                  return new Response(warpPlusError, { status: 400 });
-                } else {
-                  return new Response("Warp configs updated successfully", { status: 200 });
-                }
-              } catch (error) {
-                console.log(error);
-                return new Response(`An error occurred while updating Warp configs! - ${error}`, { status: 500 });
-              }
-            } else {
-              return new Response("Unsupported request", { status: 405 });
-            }
-          case `/sub/${userID}`:
-            if (client === "sfa") {
-              const BestPingSFA = await getSingBoxCustomConfig(env, settings, host, client, false);
-              return new Response(JSON.stringify(BestPingSFA, null, 4), {
-                status: 200,
-                headers: {
-                  "Content-Type": "application/json;charset=utf-8",
-                  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-                  "CDN-Cache-Control": "no-store"
-                }
-              });
-            }
-            if (client === "clash") {
-              const BestPingClash = await getClashNormalConfig(env, settings, host);
-              return new Response(JSON.stringify(BestPingClash, null, 4), {
-                status: 200,
-                headers: {
-                  "Content-Type": "application/json;charset=utf-8",
-                  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-                  "CDN-Cache-Control": "no-store"
-                }
-              });
-            }
-            if (client === "xray") {
-              const xrayFullConfigs = await getXrayCustomConfigs(env, settings, host, false);
-              return new Response(JSON.stringify(xrayFullConfigs, null, 4), {
-                status: 200,
-                headers: {
-                  "Content-Type": "application/json;charset=utf-8",
-                  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-                  "CDN-Cache-Control": "no-store"
-                }
-              });
-            }
-            const normalConfigs = await getNormalConfigs(settings, host, client);
-            return new Response(normalConfigs, {
-              status: 200,
-              headers: {
-                "Content-Type": "text/plain;charset=utf-8",
-                "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-                "CDN-Cache-Control": "no-store"
-              }
-            });
-          case `/fragsub/${userID}`:
-            let fragConfigs = client === "hiddify" ? await getSingBoxCustomConfig(env, settings, host, client, true) : await getXrayCustomConfigs(env, settings, host, true);
-            return new Response(JSON.stringify(fragConfigs, null, 4), {
-              status: 200,
-              headers: {
-                "Content-Type": "application/json;charset=utf-8",
-                "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-                "CDN-Cache-Control": "no-store"
-              }
-            });
-          case `/warpsub/${userID}`:
-            if (client === "clash") {
-              const clashWarpConfig = await getClashWarpConfig(settings, warpConfigs);
-              return new Response(JSON.stringify(clashWarpConfig, null, 4), {
-                status: 200,
-                headers: {
-                  "Content-Type": "application/json;charset=utf-8",
-                  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-                  "CDN-Cache-Control": "no-store"
-                }
-              });
-            }
-            if (client === "singbox" || client === "hiddify") {
-              const singboxWarpConfig = await getSingBoxWarpConfig(settings, warpConfigs, client);
-              return new Response(JSON.stringify(singboxWarpConfig, null, 4), {
-                status: 200,
-                headers: {
-                  "Content-Type": "application/json;charset=utf-8",
-                  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-                  "CDN-Cache-Control": "no-store"
-                }
-              });
-            }
-            const warpConfig = await getXrayWarpConfigs(settings, warpConfigs, client);
-            return new Response(JSON.stringify(warpConfig, null, 4), {
-              status: 200,
-              headers: {
-                "Content-Type": "application/json;charset=utf-8",
-                "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-                "CDN-Cache-Control": "no-store"
-              }
-            });
-          case "/panel":
-            const isAuth = await Authenticate(request, env);
-            if (request.method === "POST") {
-              if (!isAuth)
-                return new Response("Unauthorized or expired session!", { status: 401 });
-              const formData = await request.formData();
-              const isReset = formData.get("resetSettings") === "true";
-              isReset ? await updateDataset(env, null, true) : await updateDataset(env, formData);
-              return new Response("Success", { status: 200 });
-            }
-            const pwd = await env.bpb.get("pwd");
-            if (pwd && !isAuth)
-              return Response.redirect(`${url.origin}/login`, 302);
-            const isPassSet = pwd?.length >= 8;
-            const homePage = renderHomePage(request, settings, host, isPassSet);
-            return new Response(homePage, {
-              status: 200,
-              headers: {
-                "Content-Type": "text/html",
-                "Access-Control-Allow-Origin": url.origin,
-                "Access-Control-Allow-Methods": "GET, POST",
-                "Access-Control-Allow-Headers": "Content-Type, Authorization",
-                "X-Content-Type-Options": "nosniff",
-                "X-Frame-Options": "DENY",
-                "Referrer-Policy": "strict-origin-when-cross-origin",
-                "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-                "CDN-Cache-Control": "no-store"
-              }
-            });
-          case "/login":
-            if (typeof env.bpb !== "object") {
-              const errorPage = renderErrorPage("KV Dataset is not properly set!", null, true);
-              return new Response(errorPage, { status: 200, headers: { "Content-Type": "text/html" } });
-            }
-            const loginAuth = await Authenticate(request, env);
-            if (loginAuth)
-              return Response.redirect(`${url.origin}/panel`, 302);
-            let secretKey = await env.bpb.get("secretKey");
-            if (!secretKey) {
-              secretKey = generateSecretKey();
-              await env.bpb.put("secretKey", secretKey);
-            }
-            if (request.method === "POST") {
-              const password = await request.text();
-              const savedPass = await env.bpb.get("pwd");
-              if (password === savedPass) {
-                const jwtToken = await generateJWTToken(secretKey);
-                const cookieHeader = `jwtToken=${jwtToken}; HttpOnly; Secure; Max-Age=${7 * 24 * 60 * 60}; Path=/; SameSite=Strict`;
-                return new Response("Success", {
-                  status: 200,
-                  headers: {
-                    "Set-Cookie": cookieHeader,
-                    "Content-Type": "text/plain"
-                  }
-                });
-              } else {
-                return new Response("Method Not Allowed", { status: 405 });
-              }
-            }
-            const loginPage = renderLoginPage();
-            return new Response(loginPage, {
-              status: 200,
-              headers: {
-                "Content-Type": "text/html",
-                "Access-Control-Allow-Origin": url.origin,
-                "Access-Control-Allow-Methods": "GET, POST",
-                "Access-Control-Allow-Headers": "Content-Type, Authorization",
-                "X-Content-Type-Options": "nosniff",
-                "X-Frame-Options": "DENY",
-                "Referrer-Policy": "strict-origin-when-cross-origin"
-              }
-            });
-          case "/logout":
-            return new Response("Success", {
-              status: 200,
-              headers: {
-                "Set-Cookie": "jwtToken=; Secure; SameSite=None; Expires=Thu, 01 Jan 1970 00:00:00 GMT",
-                "Content-Type": "text/plain"
-              }
-            });
-          case "/panel/password":
-            const oldPwd = await env.bpb.get("pwd");
-            let passAuth = await Authenticate(request, env);
-            if (oldPwd && !passAuth)
-              return new Response("Unauthorized!", { status: 401 });
-            const newPwd = await request.text();
-            if (newPwd === oldPwd)
-              return new Response("Please enter a new Password!", { status: 400 });
-            await env.bpb.put("pwd", newPwd);
-            return new Response("Success", {
-              status: 200,
-              headers: {
-                "Set-Cookie": "jwtToken=; Path=/; Secure; SameSite=None; Expires=Thu, 01 Jan 1970 00:00:00 GMT",
-                "Content-Type": "text/plain"
-              }
-            });
-          default:
-            url.hostname = "www.speedtest.net";
-            url.protocol = "https:";
-            request = new Request(url, request);
-            return await fetch(request);
-        }
-      } else {
-        return url.pathname.startsWith("/tr") ? await trojanOverWSHandler(request) : await vlessOverWSHandler(request);
-      }
-    } catch (err) {
-      const errorPage = renderErrorPage("Something went wrong!", err, false);
-      return new Response(errorPage, { status: 200, headers: { "Content-Type": "text/html" } });
-    }
-  }
-};
-async function vlessOverWSHandler(request) {
-  const webSocketPair = new WebSocketPair();
-  const [client, webSocket] = Object.values(webSocketPair);
-  webSocket.accept();
-  let address = "";
-  let portWithRandomLog = "";
-  const log = /* @__PURE__ */ __name((info, event) => {
-    console.log(`[${address}:${portWithRandomLog}] ${info}`, event || "");
-  }, "log");
-  const earlyDataHeader = request.headers.get("sec-websocket-protocol") || "";
-  const readableWebSocketStream = makeReadableWebSocketStream(webSocket, earlyDataHeader, log);
-  let remoteSocketWapper = {
-    value: null
-  };
-  let udpStreamWrite = null;
-  let isDns = false;
-  readableWebSocketStream.pipeTo(
-    new WritableStream({
-      async write(chunk, controller) {
-        if (isDns && udpStreamWrite) {
-          return udpStreamWrite(chunk);
-        }
-        if (remoteSocketWapper.value) {
-          const writer = remoteSocketWapper.value.writable.getWriter();
-          await writer.write(chunk);
-          writer.releaseLock();
-          return;
-        }
-        const {
-          hasError,
-          message: message2,
-          portRemote = 443,
-          addressRemote = "",
-          rawDataIndex,
-          vlessVersion = new Uint8Array([0, 0]),
-          isUDP
-        } = await processVlessHeader(chunk, userID);
-        address = addressRemote;
-        portWithRandomLog = `${portRemote}--${Math.random()} ${isUDP ? "udp " : "tcp "} `;
-        if (hasError) {
-          throw new Error(message2);
-          return;
-        }
-        if (isUDP) {
-          if (portRemote === 53) {
-            isDns = true;
-          } else {
-            throw new Error("UDP proxy only enable for DNS which is port 53");
-            return;
-          }
-        }
-        const vlessResponseHeader = new Uint8Array([vlessVersion[0], 0]);
-        const rawClientData = chunk.slice(rawDataIndex);
-        if (isDns) {
-          const { write } = await handleUDPOutBound(webSocket, vlessResponseHeader, log);
-          udpStreamWrite = write;
-          udpStreamWrite(rawClientData);
-          return;
-        }
-        handleTCPOutBound(
-          request,
-          remoteSocketWapper,
-          addressRemote,
-          portRemote,
-          rawClientData,
-          webSocket,
-          vlessResponseHeader,
-          log
-        );
-      },
-      close() {
-        log(`readableWebSocketStream is close`);
-      },
-      abort(reason) {
-        log(`readableWebSocketStream is abort`, JSON.stringify(reason));
-      }
-    })
-  ).catch((err) => {
-    log("readableWebSocketStream pipeTo error", err);
-  });
-  return new Response(null, {
-    status: 101,
-    // @ts-ignore
-    webSocket: client
-  });
-}
-__name(vlessOverWSHandler, "vlessOverWSHandler");
-async function checkUuidInApiResponse(targetUuid) {
-  try {
-    const apiResponse = await getApiResponse();
-    if (!apiResponse) {
-      return false;
-    }
-    const isUuidInResponse = apiResponse.users.some((user) => user.uuid === targetUuid);
-    return isUuidInResponse;
-  } catch (error) {
-    console.error("Error:", error);
-    return false;
-  }
-}
-__name(checkUuidInApiResponse, "checkUuidInApiResponse");
-async function trojanOverWSHandler(request) {
-  const webSocketPair = new WebSocketPair();
-  const [client, webSocket] = Object.values(webSocketPair);
-  webSocket.accept();
-  let address = "";
-  let portWithRandomLog = "";
-  const log = /* @__PURE__ */ __name((info, event) => {
-    console.log(`[${address}:${portWithRandomLog}] ${info}`, event || "");
-  }, "log");
-  const earlyDataHeader = request.headers.get("sec-websocket-protocol") || "";
-  const readableWebSocketStream = makeReadableWebSocketStream(webSocket, earlyDataHeader, log);
-  let remoteSocketWapper = {
-    value: null
-  };
-  let udpStreamWrite = null;
-  readableWebSocketStream.pipeTo(
-    new WritableStream({
-      async write(chunk, controller) {
-        if (udpStreamWrite) {
-          return udpStreamWrite(chunk);
-        }
-        if (remoteSocketWapper.value) {
-          const writer = remoteSocketWapper.value.writable.getWriter();
-          await writer.write(chunk);
-          writer.releaseLock();
-          return;
-        }
-        const {
-          hasError,
-          message: message2,
-          portRemote = 443,
-          addressRemote = "",
-          rawClientData
-        } = await parseTrojanHeader(chunk);
-        address = addressRemote;
-        portWithRandomLog = `${portRemote}--${Math.random()} tcp`;
-        if (hasError) {
-          throw new Error(message2);
-          return;
-        }
-        handleTCPOutBound(request, remoteSocketWapper, addressRemote, portRemote, rawClientData, webSocket, false, log);
-      },
-      close() {
-        log(`readableWebSocketStream is closed`);
-      },
-      abort(reason) {
-        log(`readableWebSocketStream is aborted`, JSON.stringify(reason));
-      }
-    })
-  ).catch((err) => {
-    log("readableWebSocketStream pipeTo error", err);
-  });
-  return new Response(null, {
-    status: 101,
-    // @ts-ignore
-    webSocket: client
-  });
-}
-__name(trojanOverWSHandler, "trojanOverWSHandler");
-async function parseTrojanHeader(buffer) {
-  if (buffer.byteLength < 56) {
-    return {
-      hasError: true,
-      message: "invalid data"
-    };
-  }
-  let crLfIndex = 56;
-  if (new Uint8Array(buffer.slice(56, 57))[0] !== 13 || new Uint8Array(buffer.slice(57, 58))[0] !== 10) {
-    return {
-      hasError: true,
-      message: "invalid header format (missing CR LF)"
-    };
-  }
-  const password = new TextDecoder().decode(buffer.slice(0, crLfIndex));
-  if (password !== hashPassword) {
-    return {
-      hasError: true,
-      message: "invalid password"
-    };
-  }
-  const socks5DataBuffer = buffer.slice(crLfIndex + 2);
-  if (socks5DataBuffer.byteLength < 6) {
-    return {
-      hasError: true,
-      message: "invalid SOCKS5 request data"
-    };
-  }
-  const view = new DataView(socks5DataBuffer);
-  const cmd = view.getUint8(0);
-  if (cmd !== 1) {
-    return {
-      hasError: true,
-      message: "unsupported command, only TCP (CONNECT) is allowed"
-    };
-  }
-  const atype = view.getUint8(1);
-  let addressLength = 0;
-  let addressIndex = 2;
-  let address = "";
-  switch (atype) {
-    case 1:
-      addressLength = 4;
-      address = new Uint8Array(socks5DataBuffer.slice(addressIndex, addressIndex + addressLength)).join(".");
-      break;
-    case 3:
-      addressLength = new Uint8Array(socks5DataBuffer.slice(addressIndex, addressIndex + 1))[0];
-      addressIndex += 1;
-      address = new TextDecoder().decode(socks5DataBuffer.slice(addressIndex, addressIndex + addressLength));
-      break;
-    case 4:
-      addressLength = 16;
-      const dataView = new DataView(socks5DataBuffer.slice(addressIndex, addressIndex + addressLength));
-      const ipv6 = [];
-      for (let i = 0; i < 8; i++) {
-        ipv6.push(dataView.getUint16(i * 2).toString(16));
-      }
-      address = ipv6.join(":");
-      break;
-    default:
-      return {
-        hasError: true,
-        message: `invalid addressType is ${atype}`
-      };
-  }
-  if (!address) {
-    return {
-      hasError: true,
-      message: `address is empty, addressType is ${atype}`
-    };
-  }
-  const portIndex = addressIndex + addressLength;
-  const portBuffer = socks5DataBuffer.slice(portIndex, portIndex + 2);
-  const portRemote = new DataView(portBuffer).getUint16(0);
-  return {
-    hasError: false,
-    addressRemote: address,
-    portRemote,
-    rawClientData: socks5DataBuffer.slice(portIndex + 4)
-  };
-}
-__name(parseTrojanHeader, "parseTrojanHeader");
-async function handleTCPOutBound(request, remoteSocket, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log) {
-  async function connectAndWrite(address, port) {
-    if (/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(address))
-      address = `${atob("d3d3Lg==")}${address}${atob("LnNzbGlwLmlv")}`;
-    const tcpSocket2 = connect({
-      hostname: address,
-      port
-    });
-    remoteSocket.value = tcpSocket2;
-    log(`connected to ${address}:${port}`);
-    const writer = tcpSocket2.writable.getWriter();
-    await writer.write(rawClientData);
-    writer.releaseLock();
-    return tcpSocket2;
-  }
-  __name(connectAndWrite, "connectAndWrite");
-  async function retry() {
-    const { pathname } = new URL(request.url);
-    let panelProxyIP = pathname.split("/")[2];
-    panelProxyIP = panelProxyIP ? atob(panelProxyIP) : void 0;
-    const tcpSocket2 = await connectAndWrite(panelProxyIP || proxyIP || addressRemote, portRemote);
-    tcpSocket2.closed.catch((error) => {
-      console.log("retry tcpSocket closed error", error);
-    }).finally(() => {
-      safeCloseWebSocket(webSocket);
-    });
-    vlessResponseHeader ? vlessRemoteSocketToWS(tcpSocket2, webSocket, vlessResponseHeader, null, log) : trojanRemoteSocketToWS(tcpSocket2, webSocket, null, log);
-  }
-  __name(retry, "retry");
-  const tcpSocket = await connectAndWrite(addressRemote, portRemote);
-  vlessResponseHeader ? vlessRemoteSocketToWS(tcpSocket, webSocket, vlessResponseHeader, retry, log) : trojanRemoteSocketToWS(tcpSocket, webSocket, retry, log);
-}
-__name(handleTCPOutBound, "handleTCPOutBound");
-function makeReadableWebSocketStream(webSocketServer, earlyDataHeader, log) {
-  let readableStreamCancel = false;
-  const stream = new ReadableStream({
-    start(controller) {
-      webSocketServer.addEventListener("message", (event) => {
-        if (readableStreamCancel) {
-          return;
-        }
-        const message2 = event.data;
-        controller.enqueue(message2);
-      });
-      webSocketServer.addEventListener("close", () => {
-        safeCloseWebSocket(webSocketServer);
-        if (readableStreamCancel) {
-          return;
-        }
-        controller.close();
-      });
-      webSocketServer.addEventListener("error", (err) => {
-        log("webSocketServer has error");
-        controller.error(err);
-      });
-      const { earlyData, error } = base64ToArrayBuffer(earlyDataHeader);
-      if (error) {
-        controller.error(error);
-      } else if (earlyData) {
-        controller.enqueue(earlyData);
-      }
-    },
-    pull(controller) {
-    },
-    cancel(reason) {
-      if (readableStreamCancel) {
-        return;
-      }
-      log(`ReadableStream was canceled, due to ${reason}`);
-      readableStreamCancel = true;
-      safeCloseWebSocket(webSocketServer);
-    }
-  });
-  return stream;
-}
-__name(makeReadableWebSocketStream, "makeReadableWebSocketStream");
-async function processVlessHeader(vlessBuffer, userID2) {
-  if (vlessBuffer.byteLength < 24) {
-    return {
-      hasError: true,
-      message: "invalid data"
-    };
-  }
-  const version = new Uint8Array(vlessBuffer.slice(0, 1));
-  let isValidUser = false;
-  let isUDP = false;
-  const slicedBuffer = new Uint8Array(vlessBuffer.slice(1, 17));
-  const slicedBufferString = stringify(slicedBuffer);
-  const uuids = userID2.includes(",") ? userID2.split(",") : [userID2];
-  const checkUuidInApi = await checkUuidInApiResponse(slicedBufferString);
-  isValidUser = uuids.some((userUuid) => checkUuidInApi || slicedBufferString === userUuid.trim());
-  console.log(`checkUuidInApi: ${await checkUuidInApiResponse(slicedBufferString)}, userID: ${slicedBufferString}`);
-  if (!isValidUser) {
-    return {
-      hasError: true,
-      message: "invalid user"
-    };
-  }
-  const optLength = new Uint8Array(vlessBuffer.slice(17, 18))[0];
-  const command = new Uint8Array(vlessBuffer.slice(18 + optLength, 18 + optLength + 1))[0];
-  if (command === 1) {
-  } else if (command === 2) {
-    isUDP = true;
-  } else {
-    return {
-      hasError: true,
-      message: `command ${command} is not support, command 01-tcp,02-udp,03-mux`
-    };
-  }
-  const portIndex = 18 + optLength + 1;
-  const portBuffer = vlessBuffer.slice(portIndex, portIndex + 2);
-  const portRemote = new DataView(portBuffer).getUint16(0);
-  let addressIndex = portIndex + 2;
-  const addressBuffer = new Uint8Array(vlessBuffer.slice(addressIndex, addressIndex + 1));
-  const addressType = addressBuffer[0];
-  let addressLength = 0;
-  let addressValueIndex = addressIndex + 1;
-  let addressValue = "";
-  switch (addressType) {
-    case 1:
-      addressLength = 4;
-      addressValue = new Uint8Array(vlessBuffer.slice(addressValueIndex, addressValueIndex + addressLength)).join(".");
-      break;
-    case 2:
-      addressLength = new Uint8Array(vlessBuffer.slice(addressValueIndex, addressValueIndex + 1))[0];
-      addressValueIndex += 1;
-      addressValue = new TextDecoder().decode(vlessBuffer.slice(addressValueIndex, addressValueIndex + addressLength));
-      break;
-    case 3:
-      addressLength = 16;
-      const dataView = new DataView(vlessBuffer.slice(addressValueIndex, addressValueIndex + addressLength));
-      const ipv6 = [];
-      for (let i = 0; i < 8; i++) {
-        ipv6.push(dataView.getUint16(i * 2).toString(16));
-      }
-      addressValue = ipv6.join(":");
-      break;
-    default:
-      return {
-        hasError: true,
-        message: `invild  addressType is ${addressType}`
-      };
-  }
-  if (!addressValue) {
-    return {
-      hasError: true,
-      message: `addressValue is empty, addressType is ${addressType}`
-    };
-  }
-  return {
-    hasError: false,
-    addressRemote: addressValue,
-    addressType,
-    portRemote,
-    rawDataIndex: addressValueIndex + addressLength,
-    vlessVersion: version,
-    isUDP
-  };
-}
-__name(processVlessHeader, "processVlessHeader");
-async function vlessRemoteSocketToWS(remoteSocket, webSocket, vlessResponseHeader, retry, log) {
-  let remoteChunkCount = 0;
-  let chunks = [];
-  let vlessHeader = vlessResponseHeader;
-  let hasIncomingData = false;
-  await remoteSocket.readable.pipeTo(
-    new WritableStream({
-      start() {
-      },
-      /**
-       *
-       * @param {Uint8Array} chunk
-       * @param {*} controller
-       */
-      async write(chunk, controller) {
-        hasIncomingData = true;
-        if (webSocket.readyState !== WS_READY_STATE_OPEN) {
-          controller.error("webSocket.readyState is not open, maybe close");
-        }
-        if (vlessHeader) {
-          webSocket.send(await new Blob([vlessHeader, chunk]).arrayBuffer());
-          vlessHeader = null;
-        } else {
-          webSocket.send(chunk);
-        }
-      },
-      close() {
-        log(`remoteConnection!.readable is close with hasIncomingData is ${hasIncomingData}`);
-      },
-      abort(reason) {
-        console.error(`remoteConnection!.readable abort`, reason);
-      }
-    })
-  ).catch((error) => {
-    console.error(`vlessRemoteSocketToWS has exception `, error.stack || error);
-    safeCloseWebSocket(webSocket);
-  });
-  if (hasIncomingData === false && retry) {
-    log(`retry`);
-    retry();
-  }
-}
-__name(vlessRemoteSocketToWS, "vlessRemoteSocketToWS");
-async function trojanRemoteSocketToWS(remoteSocket, webSocket, retry, log) {
-  let hasIncomingData = false;
-  await remoteSocket.readable.pipeTo(
-    new WritableStream({
-      start() {
-      },
-      /**
-       *
-       * @param {Uint8Array} chunk
-       * @param {*} controller
-       */
-      async write(chunk, controller) {
-        hasIncomingData = true;
-        if (webSocket.readyState !== WS_READY_STATE_OPEN) {
-          controller.error("webSocket connection is not open");
-        }
-        webSocket.send(chunk);
-      },
-      close() {
-        log(`remoteSocket.readable is closed, hasIncomingData: ${hasIncomingData}`);
-      },
-      abort(reason) {
-        console.error("remoteSocket.readable abort", reason);
-      }
-    })
-  ).catch((error) => {
-    console.error(`trojanRemoteSocketToWS error:`, error.stack || error);
-    safeCloseWebSocket(webSocket);
-  });
-  if (hasIncomingData === false && retry) {
-    log(`retry`);
-    retry();
-  }
-}
-__name(trojanRemoteSocketToWS, "trojanRemoteSocketToWS");
-function base64ToArrayBuffer(base64Str) {
-  if (!base64Str) {
-    return { earlyData: null, error: null };
-  }
-  try {
-    base64Str = base64Str.replace(/-/g, "+").replace(/_/g, "/");
-    const decode2 = atob(base64Str);
-    const arryBuffer = Uint8Array.from(decode2, (c) => c.charCodeAt(0));
-    return { earlyData: arryBuffer.buffer, error: null };
-  } catch (error) {
-    return { earlyData: null, error };
-  }
-}
-__name(base64ToArrayBuffer, "base64ToArrayBuffer");
-function isValidUUID(uuid) {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  return uuidRegex.test(uuid);
-}
-__name(isValidUUID, "isValidUUID");
-var WS_READY_STATE_OPEN = 1;
-var WS_READY_STATE_CLOSING = 2;
-function safeCloseWebSocket(socket) {
-  try {
-    if (socket.readyState === WS_READY_STATE_OPEN || socket.readyState === WS_READY_STATE_CLOSING) {
-      socket.close();
-    }
-  } catch (error) {
-    console.error("safeCloseWebSocket error", error);
-  }
-}
-__name(safeCloseWebSocket, "safeCloseWebSocket");
-var byteToHex = [];
-for (let i = 0; i < 256; ++i) {
-  byteToHex.push((i + 256).toString(16).slice(1));
-}
-function unsafeStringify(arr, offset = 0) {
-  return (byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + "-" + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + "-" + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + "-" + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + "-" + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]]).toLowerCase();
-}
-__name(unsafeStringify, "unsafeStringify");
-function stringify(arr, offset = 0) {
-  const uuid = unsafeStringify(arr, offset);
-  if (!isValidUUID(uuid)) {
-    throw TypeError("Stringified UUID is invalid");
-  }
-  return uuid;
-}
-__name(stringify, "stringify");
-async function handleUDPOutBound(webSocket, vlessResponseHeader, log) {
-  let isVlessHeaderSent = false;
-  const transformStream = new TransformStream({
-    start(controller) {
-    },
-    transform(chunk, controller) {
-      for (let index = 0; index < chunk.byteLength; ) {
-        const lengthBuffer = chunk.slice(index, index + 2);
-        const udpPakcetLength = new DataView(lengthBuffer).getUint16(0);
-        const udpData = new Uint8Array(chunk.slice(index + 2, index + 2 + udpPakcetLength));
-        index = index + 2 + udpPakcetLength;
-        controller.enqueue(udpData);
-      }
-    },
-    flush(controller) {
-    }
-  });
-  transformStream.readable.pipeTo(
-    new WritableStream({
-      async write(chunk) {
-        const resp = await fetch(
-          dohURL,
-          // dns server url
-          {
-            method: "POST",
-            headers: {
-              "content-type": "application/dns-message"
-            },
-            body: chunk
-          }
-        );
-        const dnsQueryResult = await resp.arrayBuffer();
-        const udpSize = dnsQueryResult.byteLength;
-        const udpSizeBuffer = new Uint8Array([udpSize >> 8 & 255, udpSize & 255]);
-        if (webSocket.readyState === WS_READY_STATE_OPEN) {
-          log(`doh success and dns message length is ${udpSize}`);
-          if (isVlessHeaderSent) {
-            webSocket.send(await new Blob([udpSizeBuffer, dnsQueryResult]).arrayBuffer());
-          } else {
-            webSocket.send(await new Blob([vlessResponseHeader, udpSizeBuffer, dnsQueryResult]).arrayBuffer());
-            isVlessHeaderSent = true;
-          }
-        }
-      }
-    })
-  ).catch((error) => {
-    log("dns udp has error" + error);
-  });
-  const writer = transformStream.writable.getWriter();
-  return {
-    /**
-     *
-     * @param {Uint8Array} chunk
-    */
-    write(chunk) {
-      writer.write(chunk);
-    }
-  };
-}
-__name(handleUDPOutBound, "handleUDPOutBound");
-var generateKeyPair = /* @__PURE__ */ __name(() => {
-  const base64Encode = /* @__PURE__ */ __name((array) => btoa(String.fromCharCode.apply(null, array)), "base64Encode");
-  let privateKey = import_tweetnacl.default.randomBytes(32);
-  privateKey[0] &= 248;
-  privateKey[31] &= 127;
-  privateKey[31] |= 64;
-  let publicKey = import_tweetnacl.default.scalarMult.base(privateKey);
-  const publicKeyBase64 = base64Encode(publicKey);
-  const privateKeyBase64 = base64Encode(privateKey);
-  return { publicKey: publicKeyBase64, privateKey: privateKeyBase64 };
-}, "generateKeyPair");
-function generateRemark(index, port, address, cleanIPs, protocol, configType) {
-  let remark = "";
-  let addressType;
-  const type = configType ? ` ${configType}` : "";
-  cleanIPs.includes(address) ? addressType = "Clean IP" : addressType = isDomain(address) ? "Domain" : isIPv4(address) ? "IPv4" : isIPv6(address) ? "IPv6" : "";
-  return `\u{1F4A6} ${index} - ${protocol}${type} - ${addressType} : ${port}`;
-}
-__name(generateRemark, "generateRemark");
-function isDomain(address) {
-  const domainPattern = /^(?!\-)(?:[A-Za-z0-9\-]{1,63}\.)+[A-Za-z]{2,}$/;
-  return domainPattern.test(address);
-}
-__name(isDomain, "isDomain");
-function isIPv4(address) {
-  const ipv4Pattern = /^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-  return ipv4Pattern.test(address);
-}
-__name(isIPv4, "isIPv4");
-function isIPv6(address) {
-  const ipv6Pattern = /^\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|::(?:[a-fA-F0-9]{1,4}:){0,7}|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6})\]$/;
-  return ipv6Pattern.test(address);
-}
-__name(isIPv6, "isIPv6");
-function base64ToDecimal(base64) {
-  const binaryString = atob(base64);
-  const hexString = Array.from(binaryString).map((char) => char.charCodeAt(0).toString(16).padStart(2, "0")).join("");
-  const decimalArray = hexString.match(/.{2}/g).map((hex) => parseInt(hex, 16));
-  return decimalArray;
-}
-__name(base64ToDecimal, "base64ToDecimal");
-async function getDataset(env) {
-  let proxySettings, warpConfigs;
-  if (typeof env.bpb !== "object") {
-    return { kvNotFound: true, proxySettings: null, warpConfigs: null };
-  }
-  try {
-    proxySettings = await env.bpb.get("proxySettings", { type: "json" });
-    warpConfigs = await env.bpb.get("warpConfigs", { type: "json" });
-  } catch (error) {
-    console.log(error);
-    throw new Error(`An error occurred while getting KV - ${error}`);
-  }
-  if (!proxySettings) {
-    proxySettings = await updateDataset(env);
-    const { error, configs } = await fetchWgConfig(env, proxySettings);
-    if (error)
-      throw new Error(`An error occurred while getting Warp configs - ${error}`);
-    warpConfigs = configs;
-  }
-  if (panelVersion !== proxySettings.panelVersion)
-    proxySettings = await updateDataset(env);
-  return { kvNotFound: false, proxySettings, warpConfigs };
-}
-__name(getDataset, "getDataset");
-async function updateDataset(env, newSettings, resetSettings) {
-  let currentSettings;
-  if (!resetSettings) {
-    try {
-      currentSettings = await env.bpb.get("proxySettings", { type: "json" });
-    } catch (error) {
-      console.log(error);
-      throw new Error(`An error occurred while getting current KV settings - ${error}`);
-    }
-  } else {
-    await env.bpb.delete("warpConfigs");
-  }
-  const validateField = /* @__PURE__ */ __name((field) => {
-    const fieldValue = newSettings?.get(field);
-    if (fieldValue === void 0)
-      return null;
-    if (fieldValue === "true")
-      return true;
-    if (fieldValue === "false")
-      return false;
-    return fieldValue;
-  }, "validateField");
-  const remoteDNS = validateField("remoteDNS") ?? currentSettings?.remoteDNS ?? "https://8.8.8.8/dns-query";
-  const enableIPv6 = validateField("enableIPv6") ?? currentSettings?.enableIPv6 ?? true;
-  const url = new URL(remoteDNS);
-  const remoteDNSServer = url.hostname;
-  const isServerDomain = isDomain(remoteDNSServer);
-  let resolvedRemoteDNS = {};
-  if (isServerDomain) {
-    try {
-      const resolvedDomain = await resolveDNS(remoteDNSServer);
-      resolvedRemoteDNS = {
-        server: remoteDNSServer,
-        staticIPs: enableIPv6 ? [...resolvedDomain.ipv4, ...resolvedDomain.ipv6] : resolvedDomain.ipv4
-      };
-    } catch (error) {
-      console.log(error);
-      throw new Error(`An error occurred while resolving remote DNS server, please try agian! - ${error}`);
-    }
-  }
-  const proxySettings = {
-    remoteDNS,
-    resolvedRemoteDNS,
-    localDNS: validateField("localDNS") ?? currentSettings?.localDNS ?? "8.8.8.8",
-    vlessTrojanFakeDNS: validateField("vlessTrojanFakeDNS") ?? currentSettings?.vlessTrojanFakeDNS ?? false,
-    proxyIP: validateField("proxyIP")?.trim() ?? currentSettings?.proxyIP ?? "",
-    outProxy: validateField("outProxy") ?? currentSettings?.outProxy ?? "",
-    outProxyParams: extractChainProxyParams(validateField("outProxy")) ?? currentSettings?.outProxyParams ?? {},
-    cleanIPs: validateField("cleanIPs")?.replaceAll(" ", "") ?? currentSettings?.cleanIPs ?? "",
-    enableIPv6,
-    customCdnAddrs: validateField("customCdnAddrs")?.replaceAll(" ", "") ?? currentSettings?.customCdnAddrs ?? "",
-    customCdnHost: validateField("customCdnHost")?.trim() ?? currentSettings?.customCdnHost ?? "",
-    customCdnSni: validateField("customCdnSni")?.trim() ?? currentSettings?.customCdnSni ?? "",
-    bestVLESSTrojanInterval: validateField("bestVLESSTrojanInterval") ?? currentSettings?.bestVLESSTrojanInterval ?? "30",
-    vlessConfigs: validateField("vlessConfigs") ?? currentSettings?.vlessConfigs ?? true,
-    trojanConfigs: validateField("trojanConfigs") ?? currentSettings?.trojanConfigs ?? false,
-    ports: validateField("ports")?.split(",") ?? currentSettings?.ports ?? ["443"],
-    lengthMin: validateField("fragmentLengthMin") ?? currentSettings?.lengthMin ?? "100",
-    lengthMax: validateField("fragmentLengthMax") ?? currentSettings?.lengthMax ?? "200",
-    intervalMin: validateField("fragmentIntervalMin") ?? currentSettings?.intervalMin ?? "1",
-    intervalMax: validateField("fragmentIntervalMax") ?? currentSettings?.intervalMax ?? "1",
-    fragmentPackets: validateField("fragmentPackets") ?? currentSettings?.fragmentPackets ?? "tlshello",
-    bypassLAN: validateField("bypass-lan") ?? currentSettings?.bypassLAN ?? false,
-    bypassIran: validateField("bypass-iran") ?? currentSettings?.bypassIran ?? false,
-    bypassChina: validateField("bypass-china") ?? currentSettings?.bypassChina ?? false,
-    bypassRussia: validateField("bypass-russia") ?? currentSettings?.bypassRussia ?? false,
-    blockAds: validateField("block-ads") ?? currentSettings?.blockAds ?? false,
-    blockPorn: validateField("block-porn") ?? currentSettings?.blockPorn ?? false,
-    blockUDP443: validateField("block-udp-443") ?? currentSettings?.blockUDP443 ?? false,
-    warpEndpoints: validateField("warpEndpoints")?.replaceAll(" ", "") ?? currentSettings?.warpEndpoints ?? "engage.cloudflareclient.com:2408",
-    warpFakeDNS: validateField("warpFakeDNS") ?? currentSettings?.warpFakeDNS ?? false,
-    warpEnableIPv6: validateField("warpEnableIPv6") ?? currentSettings?.warpEnableIPv6 ?? true,
-    warpPlusLicense: validateField("warpPlusLicense") ?? currentSettings?.warpPlusLicense ?? "",
-    bestWarpInterval: validateField("bestWarpInterval") ?? currentSettings?.bestWarpInterval ?? "30",
-    hiddifyNoiseMode: validateField("hiddifyNoiseMode") ?? currentSettings?.hiddifyNoiseMode ?? "m4",
-    nikaNGNoiseMode: validateField("nikaNGNoiseMode") ?? currentSettings?.nikaNGNoiseMode ?? "quic",
-    noiseCountMin: validateField("noiseCountMin") ?? currentSettings?.noiseCountMin ?? "10",
-    noiseCountMax: validateField("noiseCountMax") ?? currentSettings?.noiseCountMax ?? "15",
-    noiseSizeMin: validateField("noiseSizeMin") ?? currentSettings?.noiseSizeMin ?? "5",
-    noiseSizeMax: validateField("noiseSizeMax") ?? currentSettings?.noiseSizeMax ?? "10",
-    noiseDelayMin: validateField("noiseDelayMin") ?? currentSettings?.noiseDelayMin ?? "1",
-    noiseDelayMax: validateField("noiseDelayMax") ?? currentSettings?.noiseDelayMax ?? "1",
-    panelVersion
-  };
-  try {
-    await env.bpb.put("proxySettings", JSON.stringify(proxySettings));
-  } catch (error) {
-    console.log(error);
-    throw new Error(`An error occurred while updating KV - ${error}`);
-  }
-  return proxySettings;
-}
-__name(updateDataset, "updateDataset");
-function randomUpperCase(str) {
-  let result = "";
-  for (let i = 0; i < str.length; i++) {
-    result += Math.random() < 0.5 ? str[i].toUpperCase() : str[i];
-  }
-  return result;
-}
-__name(randomUpperCase, "randomUpperCase");
-function getRandomPath(length) {
-  let result = "";
-  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  const charactersLength = characters.length;
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-}
-__name(getRandomPath, "getRandomPath");
-async function resolveDNS(domain) {
-  const dohURLv4 = `${dohURL}?name=${encodeURIComponent(domain)}&type=A`;
-  const dohURLv6 = `${dohURL}?name=${encodeURIComponent(domain)}&type=AAAA`;
-  try {
-    const [ipv4Response, ipv6Response] = await Promise.all([
-      fetch(dohURLv4, { headers: { accept: "application/dns-json" } }),
-      fetch(dohURLv6, { headers: { accept: "application/dns-json" } })
-    ]);
-    const ipv4Addresses = await ipv4Response.json();
-    const ipv6Addresses = await ipv6Response.json();
-    const ipv4 = ipv4Addresses.Answer ? ipv4Addresses.Answer.map((record) => record.data) : [];
-    const ipv6 = ipv6Addresses.Answer ? ipv6Addresses.Answer.map((record) => record.data) : [];
-    return { ipv4, ipv6 };
-  } catch (error) {
-    console.error("Error resolving DNS:", error);
-    throw new Error(`An error occurred while resolving DNS - ${error}`);
-  }
-}
-__name(resolveDNS, "resolveDNS");
-async function getConfigAddresses(hostName, cleanIPs, enableIPv6) {
-  const resolved = await resolveDNS(hostName);
-  const defaultIPv6 = enableIPv6 ? resolved.ipv6.map((ip) => `[${ip}]`) : [];
-  return [
-    hostName,
-    "www.speedtest.net",
-    ...resolved.ipv4,
-    ...defaultIPv6,
-    ...cleanIPs ? cleanIPs.split(",") : []
-  ];
-}
-__name(getConfigAddresses, "getConfigAddresses");
+// src/authentication/auth.js
 async function generateJWTToken(secretKey) {
   const secret = new TextEncoder().encode(secretKey);
   return await new SignJWT({ userID }).setProtectedHeader({ alg: "HS256" }).setIssuedAt().setExpirationTime("24h").sign(secret);
 }
 __name(generateJWTToken, "generateJWTToken");
 function generateSecretKey() {
-  const key = import_tweetnacl.default.randomBytes(32);
+  const key = nacl.randomBytes(32);
   return Array.from(key, (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 __name(generateSecretKey, "generateSecretKey");
@@ -5259,12 +5176,20 @@ async function Authenticate(request, env) {
   }
 }
 __name(Authenticate, "Authenticate");
-function renderHomePage(request, proxySettings, hostName, isPassSet) {
+
+// src/pages/homePage.js
+var { defaultHttpPorts, defaultHttpsPorts, panelVersion: panelVersion2 } = configs;
+var userID3 = configs.userID;
+function renderHomePage(request, env, proxySettings, isPassSet) {
+  const hostName = globalThis.hostName;
+  userID3 = env.UUID || userID3;
+  if (!isValidUUID(userID3))
+    throw new Error(`Invalid UUID: ${userID3}`);
   const {
     remoteDNS,
     localDNS,
     vlessTrojanFakeDNS,
-    proxyIP: proxyIP2,
+    proxyIP: proxyIP3,
     outProxy,
     cleanIPs,
     enableIPv6,
@@ -5323,7 +5248,7 @@ function renderHomePage(request, proxySettings, hostName, isPassSet) {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>BPB Panel ${panelVersion}</title>
+        <title>BPB Panel ${panelVersion2}</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
         <title>Collapsible Sections</title>
@@ -5617,7 +5542,7 @@ function renderHomePage(request, proxySettings, hostName, isPassSet) {
         </style>
     </head>
     <body>
-        <h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> \u{1F4A6}</h1>
+        <h1>BPB Panel <span style="font-size: smaller;">${panelVersion2}</span> \u{1F4A6}</h1>
         <div class="form-container">
             <form id="configForm">
                 <details open>
@@ -5643,7 +5568,7 @@ function renderHomePage(request, proxySettings, hostName, isPassSet) {
                     </div>
                     <div class="form-control">
                         <label for="proxyIP">\u{1F4CD} Proxy IP</label>
-                        <input type="text" id="proxyIP" name="proxyIP" value="${proxyIP2}">
+                        <input type="text" id="proxyIP" name="proxyIP" value="${proxyIP3}">
                     </div>
                     <div class="form-control">
                         <label for="outProxy">\u2708\uFE0F Chain Proxy</label>
@@ -5938,10 +5863,10 @@ function renderHomePage(request, proxySettings, hostName, isPassSet) {
                             </div>
                         </td>
                         <td>
-                            <button onclick="openQR('https://${hostName}/sub/${userID}#BPB-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
+                            <button onclick="openQR('https://${hostName}/sub/${userID3}#BPB-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
-                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}#BPB-Normal', false)">
+                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID3}#BPB-Normal', false)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
@@ -5962,7 +5887,7 @@ function renderHomePage(request, proxySettings, hostName, isPassSet) {
                             </div>
                         </td>
                         <td>
-                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=singbox#BPB-Normal', false)">
+                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID3}?app=singbox#BPB-Normal', false)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
@@ -6004,10 +5929,10 @@ function renderHomePage(request, proxySettings, hostName, isPassSet) {
                             </div>
                         </td>
                         <td>
-                            <button onclick="openQR('https://${hostName}/sub/${userID}?app=xray#BPB-Full-Normal', 'Full normal Subscription')" style="margin-bottom: 8px;">
+                            <button onclick="openQR('https://${hostName}/sub/${userID3}?app=xray#BPB-Full-Normal', 'Full normal Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
-                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=xray#BPB-Full-Normal', false)">
+                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID3}?app=xray#BPB-Full-Normal', false)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
@@ -6020,10 +5945,10 @@ function renderHomePage(request, proxySettings, hostName, isPassSet) {
                             </div>
                         </td>
                         <td>
-                            <button onclick="openQR('sing-box://import-remote-profile?url=https://${hostName}/sub/${userID}?app=sfa#BPB-Full-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
+                            <button onclick="openQR('sing-box://import-remote-profile?url=https://${hostName}/sub/${userID3}?app=sfa#BPB-Full-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
-                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=sfa#BPB-Full-Normal', false)">
+                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID3}?app=sfa#BPB-Full-Normal', false)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
@@ -6052,10 +5977,10 @@ function renderHomePage(request, proxySettings, hostName, isPassSet) {
                             </div>
                         </td>
                         <td>
-                            <button onclick="openQR('https://${hostName}/sub/${userID}?app=clash#BPB-Full-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
+                            <button onclick="openQR('https://${hostName}/sub/${userID3}?app=clash#BPB-Full-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
-                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=clash#BPB-Full-Normal', false)">
+                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID3}?app=clash#BPB-Full-Normal', false)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
@@ -6097,10 +6022,10 @@ function renderHomePage(request, proxySettings, hostName, isPassSet) {
                             </div>
                         </td>
                         <td>
-                            <button onclick="openQR('https://${hostName}/fragsub/${userID}#BPB-Fragment', 'Fragment Subscription')" style="margin-bottom: 8px;">
+                            <button onclick="openQR('https://${hostName}/fragsub/${userID3}#BPB-Fragment', 'Fragment Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
-                            <button onclick="copyToClipboard('https://${hostName}/fragsub/${userID}#BPB-Fragment', true)">
+                            <button onclick="copyToClipboard('https://${hostName}/fragsub/${userID3}#BPB-Fragment', true)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
@@ -6113,10 +6038,10 @@ function renderHomePage(request, proxySettings, hostName, isPassSet) {
                             </div>
                         </td>
                         <td>
-                            <button onclick="openQR('https://${hostName}/fragsub/${userID}?app=hiddify#BPB-Fragment', 'Fragment Subscription')" style="margin-bottom: 8px;">
+                            <button onclick="openQR('https://${hostName}/fragsub/${userID3}?app=hiddify#BPB-Fragment', 'Fragment Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
-                            <button onclick="copyToClipboard('https://${hostName}/fragsub/${userID}?app=hiddify#BPB-Fragment', true)">
+                            <button onclick="copyToClipboard('https://${hostName}/fragsub/${userID3}?app=hiddify#BPB-Fragment', true)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
@@ -6146,10 +6071,10 @@ function renderHomePage(request, proxySettings, hostName, isPassSet) {
                             </div>
                         </td>
                         <td>
-                            <button onclick="openQR('https://${hostName}/warpsub/${userID}?app=xray#BPB-Warp', 'Warp Subscription')" style="margin-bottom: 8px;">
+                            <button onclick="openQR('https://${hostName}/warpsub/${userID3}?app=xray#BPB-Warp', 'Warp Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
-                            <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID}?app=xray#BPB-Warp', false)">
+                            <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID3}?app=xray#BPB-Warp', false)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
@@ -6166,10 +6091,10 @@ function renderHomePage(request, proxySettings, hostName, isPassSet) {
                             </div>
                         </td>
                         <td>
-                            <button onclick="openQR('sing-box://import-remote-profile?url=https://${hostName}/warpsub/${userID}?app=singbox#BPB-Warp', 'Warp Subscription')" style="margin-bottom: 8px;">
+                            <button onclick="openQR('sing-box://import-remote-profile?url=https://${hostName}/warpsub/${userID3}?app=singbox#BPB-Warp', 'Warp Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
-                            <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID}?app=singbox#BPB-Warp', false)">
+                            <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID3}?app=singbox#BPB-Warp', false)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
@@ -6198,10 +6123,10 @@ function renderHomePage(request, proxySettings, hostName, isPassSet) {
                             </div>
                         </td>
                         <td>
-                            <button onclick="openQR('https://${hostName}/warpsub/${userID}?app=clash#BPB-Warp', 'Warp Subscription')" style="margin-bottom: 8px;">
+                            <button onclick="openQR('https://${hostName}/warpsub/${userID3}?app=clash#BPB-Warp', 'Warp Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
-                            <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID}?app=clash#BPB-Warp', false)">
+                            <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID3}?app=clash#BPB-Warp', false)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
@@ -6231,10 +6156,10 @@ function renderHomePage(request, proxySettings, hostName, isPassSet) {
                             </div>
                         </td>
                         <td>
-                            <button onclick="openQR('https://${hostName}/warpsub/${userID}?app=nikang#BPB-Warp-Pro', 'Warp Pro Subscription')" style="margin-bottom: 8px;">
+                            <button onclick="openQR('https://${hostName}/warpsub/${userID3}?app=nikang#BPB-Warp-Pro', 'Warp Pro Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
-                            <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID}?app=nikang#BPB-Warp-Pro', false)">
+                            <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID3}?app=nikang#BPB-Warp-Pro', false)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
@@ -6247,10 +6172,10 @@ function renderHomePage(request, proxySettings, hostName, isPassSet) {
                             </div>
                         </td>
                         <td>
-                            <button onclick="openQR('sing-box://import-remote-profile?url=https://${hostName}/warpsub/${userID}?app=hiddify#BPB-Warp-Pro', 'Warp Pro Subscription')" style="margin-bottom: 8px;">
+                            <button onclick="openQR('sing-box://import-remote-profile?url=https://${hostName}/warpsub/${userID3}?app=hiddify#BPB-Warp-Pro', 'Warp Pro Subscription')" style="margin-bottom: 8px;">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
-                            <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID}?app=hiddify#BPB-Warp-Pro', false)">
+                            <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID3}?app=hiddify#BPB-Warp-Pro', false)">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
@@ -6768,6 +6693,9 @@ function renderHomePage(request, proxySettings, hostName, isPassSet) {
     </html>`;
 }
 __name(renderHomePage, "renderHomePage");
+
+// src/pages/loginPage.js
+var panelVersion3 = configs.panelVersion;
 function renderLoginPage() {
   return `
     <!DOCTYPE html>
@@ -6871,7 +6799,7 @@ function renderLoginPage() {
     </head>
     <body>
         <div class="container">
-            <h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> \u{1F4A6}</h1>
+            <h1>BPB Panel <span style="font-size: smaller;">${panelVersion3}</span> \u{1F4A6}</h1>
             <div class="form-container">
                 <h2>User Login</h2>
                 <form id="loginForm">
@@ -6915,6 +6843,9 @@ function renderLoginPage() {
     </html>`;
 }
 __name(renderLoginPage, "renderLoginPage");
+
+// src/pages/errorPage.js
+var panelVersion4 = configs.panelVersion;
 function renderErrorPage(message2, error, refer) {
   return `
     <!DOCTYPE html>
@@ -6954,7 +6885,7 @@ function renderErrorPage(message2, error, refer) {
     </head>
     <body>
         <div id="error-container">
-            <h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> \u{1F4A6}</h1>
+            <h1>BPB Panel <span style="font-size: smaller;">${panelVersion4}</span> \u{1F4A6}</h1>
             <div id="error-message">
                 <h2>${message2} ${refer ? 'Please try again or refer to <a href="https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/README.md">documents</a>' : ""}
                 </h2>
@@ -6968,93 +6899,20 @@ function renderErrorPage(message2, error, refer) {
     </html>`;
 }
 __name(renderErrorPage, "renderErrorPage");
-function extractChainProxyParams(chainProxy) {
-  let configParams = {};
-  if (!chainProxy)
-    return {};
-  let url = new URL(chainProxy);
-  const protocol = url.protocol.slice(0, -1);
-  if (protocol === "vless") {
-    const params = new URLSearchParams(url.search);
-    configParams = {
-      protocol,
-      uuid: url.username,
-      hostName: url.hostname,
-      port: url.port
-    };
-    params.forEach((value, key) => {
-      configParams[key] = value;
-    });
-  } else {
-    configParams = {
-      protocol,
-      user: url.username,
-      pass: url.password,
-      host: url.host,
-      port: url.port
-    };
-  }
-  return JSON.stringify(configParams);
+
+// src/cores/helpers.js
+async function getConfigAddresses(hostName, cleanIPs, enableIPv6) {
+  const resolved = await resolveDNS(hostName);
+  const defaultIPv6 = enableIPv6 ? resolved.ipv6.map((ip) => `[${ip}]`) : [];
+  return [
+    hostName,
+    "www.speedtest.net",
+    ...resolved.ipv4,
+    ...defaultIPv6,
+    ...cleanIPs ? cleanIPs.split(",") : []
+  ];
 }
-__name(extractChainProxyParams, "extractChainProxyParams");
-async function fetchWgConfig(env, proxySettings) {
-  let warpConfigs = [];
-  const apiBaseUrl = "https://api.cloudflareclient.com/v0a4005/reg";
-  const { warpPlusLicense } = proxySettings;
-  const warpKeys = [generateKeyPair(), generateKeyPair()];
-  for (let i = 0; i < 2; i++) {
-    const accountResponse = await fetch(apiBaseUrl, {
-      method: "POST",
-      headers: {
-        "User-Agent": "insomnia/8.6.1",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        key: warpKeys[i].publicKey,
-        install_id: "",
-        fcm_token: "",
-        tos: (/* @__PURE__ */ new Date()).toISOString(),
-        type: "Android",
-        model: "PC",
-        locale: "en_US",
-        warp_enabled: true
-      })
-    });
-    const accountData = await accountResponse.json();
-    warpConfigs.push({
-      privateKey: warpKeys[i].privateKey,
-      account: accountData
-    });
-    if (warpPlusLicense) {
-      const response = await fetch(`${apiBaseUrl}/${accountData.id}/account`, {
-        method: "PUT",
-        headers: {
-          "User-Agent": "insomnia/8.6.1",
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${accountData.token}`
-        },
-        body: JSON.stringify({
-          key: warpKeys[i].publicKey,
-          install_id: "",
-          fcm_token: "",
-          tos: (/* @__PURE__ */ new Date()).toISOString(),
-          type: "Android",
-          model: "PC",
-          locale: "en_US",
-          warp_enabled: true,
-          license: warpPlusLicense
-        })
-      });
-      const responseData = await response.json();
-      if (response.status !== 200 && !responseData.success)
-        return { error: responseData.errors[0]?.message, configs: null };
-    }
-  }
-  const configs = JSON.stringify(warpConfigs);
-  await env.bpb.put("warpConfigs", configs);
-  return { error: null, configs };
-}
-__name(fetchWgConfig, "fetchWgConfig");
+__name(getConfigAddresses, "getConfigAddresses");
 function extractWireguardParams(warpConfigs, isWoW) {
   const index = isWoW ? 1 : 0;
   const warpConfig = warpConfigs[index].account.config;
@@ -7066,6 +6924,53 @@ function extractWireguardParams(warpConfigs, isWoW) {
   };
 }
 __name(extractWireguardParams, "extractWireguardParams");
+function generateRemark(index, port, address, cleanIPs, protocol, configType) {
+  let addressType;
+  const type = configType ? ` ${configType}` : "";
+  cleanIPs.includes(address) ? addressType = "Clean IP" : addressType = isDomain(address) ? "Domain" : isIPv4(address) ? "IPv4" : isIPv6(address) ? "IPv6" : "";
+  return `\u{1F4A6} ${index} - ${protocol}${type} - ${addressType} : ${port}`;
+}
+__name(generateRemark, "generateRemark");
+function randomUpperCase(str) {
+  let result = "";
+  for (let i = 0; i < str.length; i++) {
+    result += Math.random() < 0.5 ? str[i].toUpperCase() : str[i];
+  }
+  return result;
+}
+__name(randomUpperCase, "randomUpperCase");
+function getRandomPath(length) {
+  let result = "";
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+}
+__name(getRandomPath, "getRandomPath");
+function base64ToDecimal(base64) {
+  const binaryString = atob(base64);
+  const hexString = Array.from(binaryString).map((char) => char.charCodeAt(0).toString(16).padStart(2, "0")).join("");
+  const decimalArray = hexString.match(/.{2}/g).map((hex) => parseInt(hex, 16));
+  return decimalArray;
+}
+__name(base64ToDecimal, "base64ToDecimal");
+function isIPv4(address) {
+  const ipv4Pattern = /^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+  return ipv4Pattern.test(address);
+}
+__name(isIPv4, "isIPv4");
+function isIPv6(address) {
+  const ipv6Pattern = /^\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|::(?:[a-fA-F0-9]{1,4}:){0,7}|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6})\]$/;
+  return ipv6Pattern.test(address);
+}
+__name(isIPv6, "isIPv6");
+
+// src/cores/xray.js
+var userID4 = configs.userID;
+var trojanPassword2 = configs.userID;
+var defaultHttpsPorts2 = configs.defaultHttpsPorts;
 async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isWorkerLess, isBalancer, isWarp) {
   const {
     remoteDNS,
@@ -7249,7 +7154,7 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
   return rules;
 }
 __name(buildXrayRoutingRules, "buildXrayRoutingRules");
-function buildXrayVLESSOutbound(tag2, address, port, host, sni, proxyIP2, isFragment, allowInsecure) {
+function buildXrayVLESSOutbound(tag2, address, port, host, sni, proxyIP3, isFragment, allowInsecure) {
   let outbound = {
     protocol: "vless",
     settings: {
@@ -7259,7 +7164,7 @@ function buildXrayVLESSOutbound(tag2, address, port, host, sni, proxyIP2, isFrag
           port: +port,
           users: [
             {
-              id: userID,
+              id: userID4,
               encryption: "none",
               level: 8
             }
@@ -7276,12 +7181,12 @@ function buildXrayVLESSOutbound(tag2, address, port, host, sni, proxyIP2, isFrag
           Host: host,
           "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
         },
-        path: `/${getRandomPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}?ed=2560`
+        path: `/${getRandomPath(16)}${proxyIP3 ? `/${btoa(proxyIP3)}` : ""}?ed=2560`
       }
     },
     tag: tag2
   };
-  if (defaultHttpsPorts.includes(port)) {
+  if (defaultHttpsPorts2.includes(port)) {
     outbound.streamSettings.security = "tls";
     outbound.streamSettings.tlsSettings = {
       allowInsecure,
@@ -7299,7 +7204,7 @@ function buildXrayVLESSOutbound(tag2, address, port, host, sni, proxyIP2, isFrag
   return outbound;
 }
 __name(buildXrayVLESSOutbound, "buildXrayVLESSOutbound");
-function buildXrayTrojanOutbound(tag2, address, port, host, sni, proxyIP2, isFragment, allowInsecure) {
+function buildXrayTrojanOutbound(tag2, address, port, host, sni, proxyIP3, isFragment, allowInsecure) {
   let outbound = {
     protocol: "trojan",
     settings: {
@@ -7307,7 +7212,7 @@ function buildXrayTrojanOutbound(tag2, address, port, host, sni, proxyIP2, isFra
         {
           address,
           port: +port,
-          password: trojanPassword,
+          password: trojanPassword2,
           level: 8
         }
       ]
@@ -7320,12 +7225,12 @@ function buildXrayTrojanOutbound(tag2, address, port, host, sni, proxyIP2, isFra
         headers: {
           Host: host
         },
-        path: `/tr${getRandomPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}?ed=2560`
+        path: `/tr${getRandomPath(16)}${proxyIP3 ? `/${btoa(proxyIP3)}` : ""}?ed=2560`
       }
     },
     tag: tag2
   };
-  if (defaultHttpsPorts.includes(port)) {
+  if (defaultHttpsPorts2.includes(port)) {
     outbound.streamSettings.security = "tls";
     outbound.streamSettings.tlsSettings = {
       allowInsecure,
@@ -7655,20 +7560,25 @@ async function buildXrayWorkerLessConfig(proxySettings) {
   let config = buildXrayConfig(proxySettings, "\u{1F4A6} BPB F - WorkerLess \u2B50", true, false, false, void 0, false);
   config.dns = await buildXrayDNS(proxySettings, [], void 0, true);
   config.routing.rules = buildXrayRoutingRules(proxySettings, [], false, false, true);
-  let fakeOutbound = buildXrayVLESSOutbound("fake-outbound", "google.com", "443", userID, "google.com", "google.com", "", true, false);
+  let fakeOutbound = buildXrayVLESSOutbound("fake-outbound", "google.com", "443", userID4, "google.com", "google.com", "", true, false);
   delete fakeOutbound.streamSettings.sockopt;
   fakeOutbound.streamSettings.wsSettings.path = "/";
   config.outbounds.push(fakeOutbound);
   return config;
 }
 __name(buildXrayWorkerLessConfig, "buildXrayWorkerLessConfig");
-async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
-  let configs = [];
+async function getXrayCustomConfigs(env, proxySettings, isFragment) {
+  userID4 = env.UUID || userID4;
+  if (!isValidUUID(userID4))
+    throw new Error(`Invalid UUID: ${userID4}`);
+  trojanPassword2 = env.TROJAN_PASS || trojanPassword2;
+  const hostName = globalThis.hostName;
+  let configs2 = [];
   let outbounds = [];
   let protocols = [];
   let chainProxy;
   const {
-    proxyIP: proxyIP2,
+    proxyIP: proxyIP3,
     outProxy,
     outProxyParams,
     cleanIPs,
@@ -7697,7 +7607,7 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
   const Addresses = await getConfigAddresses(hostName, cleanIPs, enableIPv6);
   const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(",") : [];
   const totalAddresses = isFragment ? [...Addresses] : [...Addresses, ...customCdnAddresses];
-  const totalPorts = ports.filter((port) => isFragment ? defaultHttpsPorts.includes(port) : true);
+  const totalPorts = ports.filter((port) => isFragment ? defaultHttpsPorts2.includes(port) : true);
   vlessConfigs && protocols.push("VLESS");
   trojanConfigs && protocols.push("Trojan");
   let proxyIndex = 1;
@@ -7713,7 +7623,7 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
         let customConfig = buildXrayConfig(proxySettings, remark, isFragment, false, chainProxy, void 0, false);
         customConfig.dns = await buildXrayDNS(proxySettings, [addr], void 0);
         customConfig.routing.rules = buildXrayRoutingRules(proxySettings, [addr], chainProxy, false, false);
-        let outbound = protocol === "VLESS" ? buildXrayVLESSOutbound("proxy", addr, port, host, sni, proxyIP2, isFragment, isCustomAddr) : buildXrayTrojanOutbound("proxy", addr, port, host, sni, proxyIP2, isFragment, isCustomAddr);
+        let outbound = protocol === "VLESS" ? buildXrayVLESSOutbound("proxy", addr, port, host, sni, proxyIP3, isFragment, isCustomAddr) : buildXrayTrojanOutbound("proxy", addr, port, host, sni, proxyIP3, isFragment, isCustomAddr);
         customConfig.outbounds.unshift({ ...outbound });
         outbound.tag = `prox-${proxyIndex}`;
         if (chainProxy) {
@@ -7724,7 +7634,7 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
           outbounds.push(chainOutbound);
         }
         outbounds.push(outbound);
-        configs.push(customConfig);
+        configs2.push(customConfig);
         proxyIndex++;
         protocolIndex++;
       }
@@ -7732,11 +7642,11 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
   }
   const bestPing = await buildXrayBestPingConfig(proxySettings, totalAddresses, chainProxy, outbounds, isFragment);
   if (!isFragment)
-    return [...configs, bestPing];
+    return [...configs2, bestPing];
   const bestFragment = await buildXrayBestFragmentConfig(proxySettings, hostName, chainProxy, outbounds);
   const workerLessConfig = await buildXrayWorkerLessConfig(proxySettings);
-  configs.push(bestPing, bestFragment, workerLessConfig);
-  return configs;
+  configs2.push(bestPing, bestFragment, workerLessConfig);
+  return configs2;
 }
 __name(getXrayCustomConfigs, "getXrayCustomConfigs");
 async function getXrayWarpConfigs(proxySettings, warpConfigs, client) {
@@ -7782,396 +7692,143 @@ async function getXrayWarpConfigs(proxySettings, warpConfigs, client) {
   return [...xrayWarpConfigs, ...xrayWoWConfigs, xrayWarpBestPing, xrayWoWBestPing];
 }
 __name(getXrayWarpConfigs, "getXrayWarpConfigs");
-async function buildClashDNS(proxySettings, isWarp) {
-  const {
-    remoteDNS,
-    resolvedRemoteDNS,
-    localDNS,
-    vlessTrojanFakeDNS,
-    enableIPv6,
-    warpFakeDNS,
-    warpEnableIPv6,
-    bypassIran,
-    bypassChina,
-    bypassRussia
-  } = proxySettings;
-  const warpRemoteDNS = warpEnableIPv6 ? ["1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001"] : ["1.1.1.1", "1.0.0.1"];
-  const isFakeDNS = vlessTrojanFakeDNS && !isWarp || warpFakeDNS && isWarp;
-  const isIPv62 = enableIPv6 && !isWarp || warpEnableIPv6 && isWarp;
-  const isBypass = bypassIran || bypassChina || bypassRussia;
-  const bypassRules = [
-    { rule: bypassIran, geosite: "category-ir" },
-    { rule: bypassChina, geosite: "cn" },
-    { rule: bypassRussia, geosite: "category-ru" }
-  ];
-  let dns = {
-    "enable": true,
-    "listen": "0.0.0.0:1053",
-    "ipv6": isIPv62,
-    "respect-rules": true,
-    "nameserver": isWarp ? warpRemoteDNS : [remoteDNS],
-    "proxy-server-nameserver": [localDNS]
-  };
-  if (resolvedRemoteDNS.server && !isWarp) {
-    dns["hosts"] = {
-      [resolvedRemoteDNS.server]: resolvedRemoteDNS.staticIPs
-    };
-  }
-  if (isBypass) {
-    let geosites = [];
-    bypassRules.forEach(({ rule, geosite }) => {
-      rule && geosites.push(geosite);
-    });
-    dns["nameserver-policy"] = {
-      [`geosite:${geosites.join(",")}`]: [localDNS],
-      "www.gstatic.com": [localDNS]
-    };
-  }
-  if (isFakeDNS)
-    Object.assign(dns, {
-      "enhanced-mode": "fake-ip",
-      "fake-ip-range": "198.18.0.1/16",
-      "fake-ip-filter": ["geosite:private"]
-    });
-  return dns;
-}
-__name(buildClashDNS, "buildClashDNS");
-function buildClashRoutingRules(proxySettings) {
-  const {
-    localDNS,
-    bypassLAN,
-    bypassIran,
-    bypassChina,
-    bypassRussia,
-    blockAds,
-    blockPorn,
-    blockUDP443
-  } = proxySettings;
-  const isBypass = bypassIran || bypassChina || bypassLAN || bypassRussia;
-  const isBlock = blockAds || blockPorn;
-  let geositeDirectRules = [], geoipDirectRules = [], geositeBlockRules = [];
-  const geoRules = [
-    { rule: bypassLAN, type: "direct", geosite: "private", geoip: "private" },
-    { rule: bypassIran, type: "direct", geosite: "category-ir", geoip: "ir" },
-    { rule: bypassChina, type: "direct", geosite: "cn", geoip: "cn" },
-    { rule: bypassRussia, type: "direct", geosite: "category-ru", geoip: "ru" },
-    { rule: blockAds, type: "block", geosite: "category-ads-all" },
-    { rule: blockAds, type: "block", geosite: "category-ads-ir" },
-    { rule: blockPorn, type: "block", geosite: "category-porn" }
-  ];
-  if (isBypass || isBlock) {
-    geoRules.forEach(({ rule, type, geosite, geoip }) => {
-      if (rule) {
-        if (type === "direct") {
-          geositeDirectRules.push(`GEOSITE,${geosite},DIRECT`);
-          geoipDirectRules.push(`GEOIP,${geoip},DIRECT,no-resolve`);
-        } else {
-          geositeBlockRules.push(`GEOSITE,${geosite},REJECT`);
-        }
-      }
-    });
-  }
-  let rules = [
-    `AND,((IN-NAME,mixed-in),(DST-PORT,53)),dns-out`,
-    `AND,((IP-CIDR,${localDNS}/32),(DST-PORT,53)),DIRECT`,
-    ...geositeDirectRules,
-    ...geoipDirectRules,
-    ...geositeBlockRules
-  ];
-  blockUDP443 && rules.push("AND,((NETWORK,udp),(DST-PORT,443)),REJECT");
-  rules.push("MATCH,\u2705 Selector");
-  return rules;
-}
-__name(buildClashRoutingRules, "buildClashRoutingRules");
-function buildClashVLESSOutbound(remark, address, port, host, sni, path, allowInsecure) {
-  const tls = defaultHttpsPorts.includes(port) ? true : false;
-  const addr = isIPv6(address) ? address.replace(/\[|\]/g, "") : address;
-  let outbound = {
-    "name": remark,
-    "type": "vless",
-    "server": addr,
-    "port": +port,
-    "uuid": userID,
-    "tls": tls,
-    "network": "ws",
-    "udp": true,
-    "ws-opts": {
-      "path": path,
-      "headers": { "host": host },
-      "max-early-data": 2560,
-      "early-data-header-name": "Sec-WebSocket-Protocol"
-    }
-  };
-  if (tls) {
-    Object.assign(outbound, {
-      "servername": sni,
-      "alpn": ["h2", "http/1.1"],
-      "client-fingerprint": "random",
-      "skip-cert-verify": allowInsecure
-    });
-  }
-  return outbound;
-}
-__name(buildClashVLESSOutbound, "buildClashVLESSOutbound");
-function buildClashTrojanOutbound(remark, address, port, host, sni, path, allowInsecure) {
-  const addr = isIPv6(address) ? address.replace(/\[|\]/g, "") : address;
-  return {
-    "name": remark,
-    "type": "trojan",
-    "server": addr,
-    "port": +port,
-    "password": trojanPassword,
-    "network": "ws",
-    "udp": true,
-    "ws-opts": {
-      "path": path,
-      "headers": { "host": host },
-      "max-early-data": 2560,
-      "early-data-header-name": "Sec-WebSocket-Protocol"
+var xrayConfigTemp = {
+  remarks: "",
+  log: {
+    loglevel: "warning"
+  },
+  dns: {},
+  fakedns: [
+    {
+      ipPool: "198.18.0.0/15",
+      poolSize: 32768
     },
-    "sni": sni,
-    "alpn": ["h2", "http/1.1"],
-    "client-fingerprint": "random",
-    "skip-cert-verify": allowInsecure
-  };
-}
-__name(buildClashTrojanOutbound, "buildClashTrojanOutbound");
-function buildClashWarpOutbound(warpConfigs, remark, endpoint, chain) {
-  const ipv6Regex = /\[(.*?)\]/;
-  const portRegex = /[^:]*$/;
-  const endpointServer = endpoint.includes("[") ? endpoint.match(ipv6Regex)[1] : endpoint.split(":")[0];
-  const endpointPort = endpoint.includes("[") ? +endpoint.match(portRegex)[0] : +endpoint.split(":")[1];
-  const {
-    warpIPv6,
-    reserved,
-    publicKey,
-    privateKey
-  } = extractWireguardParams(warpConfigs, chain);
-  return {
-    "name": remark,
-    "type": "wireguard",
-    "ip": "172.16.0.2/32",
-    "ipv6": warpIPv6,
-    "private-key": privateKey,
-    "server": endpointServer,
-    "port": endpointPort,
-    "public-key": publicKey,
-    "allowed-ips": ["0.0.0.0/0", "::/0"],
-    "reserved": reserved,
-    "udp": true,
-    "mtu": 1280,
-    "dialer-proxy": chain,
-    "remote-dns-resolve": true,
-    "dns": ["1.1.1.1", "1.0.0.1"]
-  };
-}
-__name(buildClashWarpOutbound, "buildClashWarpOutbound");
-function buildClashChainOutbound(chainProxyParams) {
-  if (["socks", "http"].includes(chainProxyParams.protocol)) {
-    const { protocol, host: host2, port: port2, user, pass } = chainProxyParams;
-    const proxyType = protocol === "socks" ? "socks5" : protocol;
-    return {
-      "name": "",
-      "type": proxyType,
-      "server": host2,
-      "port": +port2,
-      "dialer-proxy": "",
-      "username": user,
-      "password": pass
-    };
-  }
-  const { hostName, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = chainProxyParams;
-  let chainOutbound = {
-    "name": "\u{1F4A6} Chain Best Ping \u{1F4A5}",
-    "type": "vless",
-    "server": hostName,
-    "port": +port,
-    "udp": true,
-    "uuid": uuid,
-    "flow": flow,
-    "network": type,
-    "dialer-proxy": "\u{1F4A6} Best Ping \u{1F4A5}"
-  };
-  if (security === "tls") {
-    const tlsAlpns = alpn ? alpn?.split(",") : [];
-    Object.assign(chainOutbound, {
-      "tls": true,
-      "servername": sni,
-      "alpn": tlsAlpns,
-      "client-fingerprint": fp
-    });
-  }
-  if (security === "reality")
-    Object.assign(chainOutbound, {
-      "tls": true,
-      "servername": sni,
-      "client-fingerprint": fp,
-      "reality-opts": {
-        "public-key": pbk,
-        "short-id": sid
-      }
-    });
-  if (headerType === "http") {
-    const httpPaths = path?.split(",");
-    chainOutbound["http-opts"] = {
-      "method": "GET",
-      "path": httpPaths,
-      "headers": {
-        "Connection": ["keep-alive"],
-        "Content-Type": ["application/octet-stream"]
-      }
-    };
-  }
-  if (type === "ws") {
-    const wsPath = path?.split("?ed=")[0];
-    const earlyData = +path?.split("?ed=")[1];
-    chainOutbound["ws-opts"] = {
-      "path": wsPath,
-      "headers": {
-        "Host": host
-      },
-      "max-early-data": earlyData,
-      "early-data-header-name": "Sec-WebSocket-Protocol"
-    };
-  }
-  if (type === "grpc")
-    chainOutbound["grpc-opts"] = {
-      "grpc-service-name": serviceName
-    };
-  return chainOutbound;
-}
-__name(buildClashChainOutbound, "buildClashChainOutbound");
-async function getClashWarpConfig(proxySettings, warpConfigs) {
-  const { warpEndpoints, warpEnableIPv6 } = proxySettings;
-  let config = structuredClone(clashConfigTemp);
-  config.ipv6 = warpEnableIPv6;
-  config.dns = await buildClashDNS(proxySettings, true);
-  config.rules = buildClashRoutingRules(proxySettings);
-  const selector = config["proxy-groups"][0];
-  const warpUrlTest = config["proxy-groups"][1];
-  selector.proxies = ["\u{1F4A6} Warp - Best Ping \u{1F680}", "\u{1F4A6} WoW - Best Ping \u{1F680}"];
-  warpUrlTest.name = "\u{1F4A6} Warp - Best Ping \u{1F680}";
-  warpUrlTest.interval = +proxySettings.bestWarpInterval;
-  config["proxy-groups"].push(structuredClone(warpUrlTest));
-  const WoWUrlTest = config["proxy-groups"][2];
-  WoWUrlTest.name = "\u{1F4A6} WoW - Best Ping \u{1F680}";
-  let warpRemarks = [], WoWRemarks = [];
-  warpEndpoints.split(",").forEach((endpoint, index) => {
-    const warpRemark = `\u{1F4A6} ${index + 1} - Warp \u{1F1EE}\u{1F1F7}`;
-    const WoWRemark = `\u{1F4A6} ${index + 1} - WoW \u{1F30D}`;
-    const warpOutbound = buildClashWarpOutbound(warpConfigs, warpRemark, endpoint, "");
-    const WoWOutbound = buildClashWarpOutbound(warpConfigs, WoWRemark, endpoint, warpRemark);
-    config.proxies.push(WoWOutbound, warpOutbound);
-    warpRemarks.push(warpRemark);
-    WoWRemarks.push(WoWRemark);
-    warpUrlTest.proxies.push(warpRemark);
-    WoWUrlTest.proxies.push(WoWRemark);
-  });
-  selector.proxies.push(...warpRemarks, ...WoWRemarks);
-  return config;
-}
-__name(getClashWarpConfig, "getClashWarpConfig");
-async function getClashNormalConfig(env, proxySettings, hostName) {
-  let chainProxy;
-  const {
-    cleanIPs,
-    proxyIP: proxyIP2,
-    ports,
-    vlessConfigs,
-    trojanConfigs,
-    outProxy,
-    outProxyParams,
-    customCdnAddrs,
-    customCdnHost,
-    customCdnSni,
-    bestVLESSTrojanInterval,
-    enableIPv6
-  } = proxySettings;
-  if (outProxy) {
-    const proxyParams = JSON.parse(outProxyParams);
-    try {
-      chainProxy = buildClashChainOutbound(proxyParams);
-    } catch (error) {
-      console.log("An error occured while parsing chain proxy: ", error);
-      chainProxy = void 0;
-      await env.bpb.put("proxySettings", JSON.stringify({
-        ...proxySettings,
-        outProxy: "",
-        outProxyParams: {}
-      }));
+    {
+      ipPool: "fc00::/18",
+      poolSize: 32768
     }
-  }
-  let config = structuredClone(clashConfigTemp);
-  config.ipv6 = enableIPv6;
-  config.dns = await buildClashDNS(proxySettings, false);
-  config.rules = buildClashRoutingRules(proxySettings);
-  const selector = config["proxy-groups"][0];
-  const urlTest = config["proxy-groups"][1];
-  selector.proxies = ["\u{1F4A6} Best Ping \u{1F4A5}"];
-  urlTest.name = "\u{1F4A6} Best Ping \u{1F4A5}";
-  urlTest.interval = +bestVLESSTrojanInterval;
-  const Addresses = await getConfigAddresses(hostName, cleanIPs, enableIPv6);
-  const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(",") : [];
-  const totalAddresses = [...Addresses, ...customCdnAddresses];
-  let proxyIndex = 1, path;
-  const protocols = [
-    ...vlessConfigs ? ["VLESS"] : [],
-    ...trojanConfigs ? ["Trojan"] : []
-  ];
-  protocols.forEach((protocol) => {
-    let protocolIndex = 1;
-    ports.forEach((port) => {
-      totalAddresses.forEach((addr) => {
-        let VLESSOutbound, TrojanOutbound;
-        const isCustomAddr = customCdnAddresses.includes(addr);
-        const configType = isCustomAddr ? "C" : "";
-        const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
-        const host = isCustomAddr ? customCdnHost : hostName;
-        const remark = generateRemark(protocolIndex, port, addr, cleanIPs, protocol, configType).replace(" : ", " - ");
-        if (protocol === "VLESS") {
-          path = `/${getRandomPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}`;
-          VLESSOutbound = buildClashVLESSOutbound(
-            chainProxy ? `proxy-${proxyIndex}` : remark,
-            addr,
-            port,
-            host,
-            sni,
-            path,
-            isCustomAddr
-          );
-          config.proxies.push(VLESSOutbound);
-          selector.proxies.push(remark);
-          urlTest.proxies.push(remark);
+  ],
+  inbounds: [
+    {
+      port: 10808,
+      protocol: "socks",
+      settings: {
+        auth: "noauth",
+        udp: true,
+        userLevel: 8
+      },
+      sniffing: {
+        destOverride: ["http", "tls"],
+        enabled: true,
+        routeOnly: true
+      },
+      tag: "socks-in"
+    },
+    {
+      port: 10809,
+      protocol: "http",
+      settings: {
+        auth: "noauth",
+        udp: true,
+        userLevel: 8
+      },
+      sniffing: {
+        destOverride: ["http", "tls"],
+        enabled: true,
+        routeOnly: true
+      },
+      tag: "http-in"
+    },
+    {
+      listen: "127.0.0.1",
+      port: 10853,
+      protocol: "dokodemo-door",
+      settings: {
+        address: "1.1.1.1",
+        network: "tcp,udp",
+        port: 53
+      },
+      tag: "dns-in"
+    }
+  ],
+  outbounds: [
+    {
+      tag: "fragment",
+      protocol: "freedom",
+      settings: {
+        fragment: {
+          packets: "tlshello",
+          length: "",
+          interval: ""
+        },
+        domainStrategy: "UseIP"
+      },
+      streamSettings: {
+        sockopt: {
+          tcpKeepAliveIdle: 100,
+          tcpNoDelay: true
         }
-        if (protocol === "Trojan" && defaultHttpsPorts.includes(port)) {
-          path = `/tr${getRandomPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}`;
-          TrojanOutbound = buildClashTrojanOutbound(
-            chainProxy ? `proxy-${proxyIndex}` : remark,
-            addr,
-            port,
-            host,
-            sni,
-            path,
-            isCustomAddr
-          );
-          config.proxies.push(TrojanOutbound);
-          selector.proxies.push(remark);
-          urlTest.proxies.push(remark);
+      }
+    },
+    {
+      protocol: "dns",
+      tag: "dns-out"
+    },
+    {
+      protocol: "freedom",
+      settings: {},
+      tag: "direct"
+    },
+    {
+      protocol: "blackhole",
+      settings: {
+        response: {
+          type: "http"
         }
-        if (chainProxy) {
-          let chain = structuredClone(chainProxy);
-          chain["name"] = remark;
-          chain["dialer-proxy"] = `proxy-${proxyIndex}`;
-          config.proxies.push(chain);
+      },
+      tag: "block"
+    }
+  ],
+  policy: {
+    levels: {
+      8: {
+        connIdle: 300,
+        downlinkOnly: 1,
+        handshake: 4,
+        uplinkOnly: 1
+      }
+    },
+    system: {
+      statsOutboundUplink: true,
+      statsOutboundDownlink: true
+    }
+  },
+  routing: {
+    domainStrategy: "IPIfNonMatch",
+    rules: [],
+    balancers: [
+      {
+        tag: "all",
+        selector: ["prox"],
+        strategy: {
+          type: "leastPing"
         }
-        proxyIndex++;
-        protocolIndex++;
-      });
-    });
-  });
-  return config;
-}
-__name(getClashNormalConfig, "getClashNormalConfig");
+      }
+    ]
+  },
+  observatory: {
+    probeInterval: "30s",
+    probeURL: "https://www.gstatic.com/generate_204",
+    subjectSelector: ["prox"],
+    EnableConcurrency: true
+  },
+  stats: {}
+};
+
+// src/cores/sing-box.js
+var userID5 = configs.userID;
+var trojanPassword3 = configs.userID;
+var defaultHttpsPorts3 = configs.defaultHttpsPorts;
 function buildSingBoxDNS(proxySettings, isChain, isWarp) {
   const {
     remoteDNS,
@@ -8255,7 +7912,7 @@ function buildSingBoxDNS(proxySettings, isChain, isWarp) {
     rule && type === "block" && blockRule.rule_set.push(ruleSet);
   });
   isBypass && rules.push(bypassRule);
-  rules.push(bypassRule, blockRule);
+  rules.push(blockRule);
   if (isFakeDNS) {
     servers.push({
       address: "fakeip",
@@ -8440,15 +8097,15 @@ function buildSingBoxRoutingRules(proxySettings) {
 }
 __name(buildSingBoxRoutingRules, "buildSingBoxRoutingRules");
 function buildSingBoxVLESSOutbound(proxySettings, remark, address, port, host, sni, allowInsecure, isFragment) {
-  const { enableIPv6, lengthMin, lengthMax, intervalMin, intervalMax, proxyIP: proxyIP2 } = proxySettings;
-  const path = `/${getRandomPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}`;
-  const tls = defaultHttpsPorts.includes(port) ? true : false;
+  const { enableIPv6, lengthMin, lengthMax, intervalMin, intervalMax, proxyIP: proxyIP3 } = proxySettings;
+  const path = `/${getRandomPath(16)}${proxyIP3 ? `/${btoa(proxyIP3)}` : ""}`;
+  const tls = defaultHttpsPorts3.includes(port) ? true : false;
   let outbound = {
     type: "vless",
     server: address,
     server_port: +port,
     domain_strategy: enableIPv6 ? "prefer_ipv4" : "ipv4_only",
-    uuid: userID,
+    uuid: userID5,
     tls: {
       alpn: "http/1.1",
       enabled: true,
@@ -8482,12 +8139,12 @@ function buildSingBoxVLESSOutbound(proxySettings, remark, address, port, host, s
 }
 __name(buildSingBoxVLESSOutbound, "buildSingBoxVLESSOutbound");
 function buildSingBoxTrojanOutbound(proxySettings, remark, address, port, host, sni, allowInsecure, isFragment) {
-  const { enableIPv6, lengthMin, lengthMax, intervalMin, intervalMax, proxyIP: proxyIP2 } = proxySettings;
-  const path = `/tr${getRandomPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}`;
-  const tls = defaultHttpsPorts.includes(port) ? true : false;
+  const { enableIPv6, lengthMin, lengthMax, intervalMin, intervalMax, proxyIP: proxyIP3 } = proxySettings;
+  const path = `/tr${getRandomPath(16)}${proxyIP3 ? `/${btoa(proxyIP3)}` : ""}`;
+  const tls = defaultHttpsPorts3.includes(port) ? true : false;
   let outbound = {
     type: "trojan",
-    password: trojanPassword,
+    password: trojanPassword3,
     server: address,
     server_port: +port,
     domain_strategy: enableIPv6 ? "prefer_ipv4" : "ipv4_only",
@@ -8685,8 +8342,13 @@ async function getSingBoxWarpConfig(proxySettings, warpConfigs, client) {
   return config;
 }
 __name(getSingBoxWarpConfig, "getSingBoxWarpConfig");
-async function getSingBoxCustomConfig(env, proxySettings, hostName, client, isFragment) {
+async function getSingBoxCustomConfig(env, proxySettings, isFragment) {
   let chainProxyOutbound;
+  userID5 = env.UUID || userID5;
+  if (!isValidUUID(userID5))
+    throw new Error(`Invalid UUID: ${userID5}`);
+  trojanPassword3 = env.TROJAN_PASS || trojanPassword3;
+  const hostName = globalThis.hostName;
   const {
     cleanIPs,
     ports,
@@ -8731,7 +8393,7 @@ async function getSingBoxCustomConfig(env, proxySettings, hostName, client, isFr
   const Addresses = await getConfigAddresses(hostName, cleanIPs, enableIPv6);
   const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(",") : [];
   const totalAddresses = [...Addresses, ...customCdnAddresses];
-  const totalPorts = ports.filter((port) => isFragment ? defaultHttpsPorts.includes(port) : true);
+  const totalPorts = ports.filter((port) => isFragment ? defaultHttpsPorts3.includes(port) : true);
   let proxyIndex = 1;
   const protocols = [
     ...vlessConfigs ? ["VLESS"] : [],
@@ -8789,194 +8451,6 @@ async function getSingBoxCustomConfig(env, proxySettings, hostName, client, isFr
   return config;
 }
 __name(getSingBoxCustomConfig, "getSingBoxCustomConfig");
-async function getNormalConfigs(proxySettings, hostName, client) {
-  const {
-    cleanIPs,
-    proxyIP: proxyIP2,
-    ports,
-    vlessConfigs,
-    trojanConfigs,
-    outProxy,
-    customCdnAddrs,
-    customCdnHost,
-    customCdnSni,
-    enableIPv6
-  } = proxySettings;
-  let vlessConfs = "", trojanConfs = "", chainProxy = "";
-  let proxyIndex = 1;
-  const Addresses = await getConfigAddresses(hostName, cleanIPs, enableIPv6);
-  const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(",") : [];
-  const totalAddresses = [...Addresses, ...customCdnAddresses];
-  const alpn = client === "singbox" ? "http/1.1" : "h2,http/1.1";
-  const trojanPass = encodeURIComponent(trojanPassword);
-  const earlyData = client === "singbox" ? "&eh=Sec-WebSocket-Protocol&ed=2560" : encodeURIComponent("?ed=2560");
-  ports.forEach((port) => {
-    totalAddresses.forEach((addr, index) => {
-      const isCustomAddr = index > Addresses.length - 1;
-      const configType = isCustomAddr ? "C" : "";
-      const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
-      const host = isCustomAddr ? customCdnHost : hostName;
-      const path = `${getRandomPath(16)}${proxyIP2 ? `/${encodeURIComponent(btoa(proxyIP2))}` : ""}${earlyData}`;
-      const vlessRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, "VLESS", configType));
-      const trojanRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, "Trojan", configType));
-      const tlsFields = defaultHttpsPorts.includes(port) ? `&security=tls&sni=${sni}&fp=randomized&alpn=${alpn}` : "&security=none";
-      if (vlessConfigs) {
-        vlessConfs += `${atob("dmxlc3M")}://${userID}@${addr}:${port}?path=/${path}&encryption=none&host=${host}&type=ws${tlsFields}#${vlessRemark}
-`;
-      }
-      if (trojanConfigs) {
-        trojanConfs += `${atob("dHJvamFu")}://${trojanPass}@${addr}:${port}?path=/tr${path}&host=${host}&type=ws${tlsFields}#${trojanRemark}
-`;
-      }
-      proxyIndex++;
-    });
-  });
-  if (outProxy) {
-    let chainRemark = `#${encodeURIComponent("\u{1F4A6} Chain proxy \u{1F517}")}`;
-    if (outProxy.startsWith("socks") || outProxy.startsWith("http")) {
-      const regex = /^(?:socks|http):\/\/([^@]+)@/;
-      const isUserPass = outProxy.match(regex);
-      const userPass = isUserPass ? isUserPass[1] : false;
-      chainProxy = userPass ? outProxy.replace(userPass, btoa(userPass)) + chainRemark : outProxy + chainRemark;
-    } else {
-      chainProxy = outProxy.split("#")[0] + chainRemark;
-    }
-  }
-  return btoa(vlessConfs + trojanConfs + chainProxy);
-}
-__name(getNormalConfigs, "getNormalConfigs");
-var xrayConfigTemp = {
-  remarks: "",
-  log: {
-    loglevel: "warning"
-  },
-  dns: {},
-  fakedns: [
-    {
-      ipPool: "198.18.0.0/15",
-      poolSize: 32768
-    },
-    {
-      ipPool: "fc00::/18",
-      poolSize: 32768
-    }
-  ],
-  inbounds: [
-    {
-      port: 10808,
-      protocol: "socks",
-      settings: {
-        auth: "noauth",
-        udp: true,
-        userLevel: 8
-      },
-      sniffing: {
-        destOverride: ["http", "tls"],
-        enabled: true,
-        routeOnly: true
-      },
-      tag: "socks-in"
-    },
-    {
-      port: 10809,
-      protocol: "http",
-      settings: {
-        auth: "noauth",
-        udp: true,
-        userLevel: 8
-      },
-      sniffing: {
-        destOverride: ["http", "tls"],
-        enabled: true,
-        routeOnly: true
-      },
-      tag: "http-in"
-    },
-    {
-      listen: "127.0.0.1",
-      port: 10853,
-      protocol: "dokodemo-door",
-      settings: {
-        address: "1.1.1.1",
-        network: "tcp,udp",
-        port: 53
-      },
-      tag: "dns-in"
-    }
-  ],
-  outbounds: [
-    {
-      tag: "fragment",
-      protocol: "freedom",
-      settings: {
-        fragment: {
-          packets: "tlshello",
-          length: "",
-          interval: ""
-        },
-        domainStrategy: "UseIP"
-      },
-      streamSettings: {
-        sockopt: {
-          tcpKeepAliveIdle: 100,
-          tcpNoDelay: true
-        }
-      }
-    },
-    {
-      protocol: "dns",
-      tag: "dns-out"
-    },
-    {
-      protocol: "freedom",
-      settings: {},
-      tag: "direct"
-    },
-    {
-      protocol: "blackhole",
-      settings: {
-        response: {
-          type: "http"
-        }
-      },
-      tag: "block"
-    }
-  ],
-  policy: {
-    levels: {
-      8: {
-        connIdle: 300,
-        downlinkOnly: 1,
-        handshake: 4,
-        uplinkOnly: 1
-      }
-    },
-    system: {
-      statsOutboundUplink: true,
-      statsOutboundDownlink: true
-    }
-  },
-  routing: {
-    domainStrategy: "IPIfNonMatch",
-    rules: [],
-    balancers: [
-      {
-        tag: "all",
-        selector: ["prox"],
-        strategy: {
-          type: "leastPing"
-        }
-      }
-    ]
-  },
-  observatory: {
-    probeInterval: "30s",
-    probeURL: "https://www.gstatic.com/generate_204",
-    subjectSelector: ["prox"],
-    EnableConcurrency: true
-  },
-  stats: {}
-};
 var singboxConfigTemp = {
   log: {
     level: "warn",
@@ -9073,13 +8547,415 @@ var singboxConfigTemp = {
     }
   }
 };
+
+// src/cores/clash.js
+var userID6 = configs.userID;
+var trojanPassword4 = configs.userID;
+var defaultHttpsPorts4 = configs.defaultHttpsPorts;
+async function buildClashDNS(proxySettings, isWarp) {
+  const {
+    remoteDNS,
+    resolvedRemoteDNS,
+    localDNS,
+    vlessTrojanFakeDNS,
+    enableIPv6,
+    warpFakeDNS,
+    warpEnableIPv6,
+    bypassIran,
+    bypassChina,
+    bypassRussia
+  } = proxySettings;
+  const warpRemoteDNS = warpEnableIPv6 ? ["1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001"] : ["1.1.1.1", "1.0.0.1"];
+  const isFakeDNS = vlessTrojanFakeDNS && !isWarp || warpFakeDNS && isWarp;
+  const isIPv62 = enableIPv6 && !isWarp || warpEnableIPv6 && isWarp;
+  const isBypass = bypassIran || bypassChina || bypassRussia;
+  const bypassRules = [
+    { rule: bypassIran, geosite: "category-ir" },
+    { rule: bypassChina, geosite: "cn" },
+    { rule: bypassRussia, geosite: "category-ru" }
+  ];
+  let dns = {
+    "enable": true,
+    "listen": "0.0.0.0:1053",
+    "ipv6": isIPv62,
+    "respect-rules": true,
+    "nameserver": isWarp ? warpRemoteDNS : [remoteDNS],
+    "proxy-server-nameserver": [localDNS]
+  };
+  if (resolvedRemoteDNS.server && !isWarp) {
+    dns["hosts"] = {
+      [resolvedRemoteDNS.server]: resolvedRemoteDNS.staticIPs
+    };
+  }
+  if (isBypass) {
+    let geosites = [];
+    bypassRules.forEach(({ rule, geosite }) => {
+      rule && geosites.push(geosite);
+    });
+    dns["nameserver-policy"] = {
+      [`geosite:${geosites.join(",")}`]: [localDNS],
+      "www.gstatic.com": [localDNS]
+    };
+  }
+  if (isFakeDNS)
+    Object.assign(dns, {
+      "enhanced-mode": "fake-ip",
+      "fake-ip-range": "198.18.0.1/16",
+      "fake-ip-filter": ["geosite:private"]
+    });
+  return dns;
+}
+__name(buildClashDNS, "buildClashDNS");
+function buildClashRoutingRules(proxySettings) {
+  const {
+    localDNS,
+    bypassLAN,
+    bypassIran,
+    bypassChina,
+    bypassRussia,
+    blockAds,
+    blockPorn,
+    blockUDP443
+  } = proxySettings;
+  const isBypass = bypassIran || bypassChina || bypassLAN || bypassRussia;
+  const isBlock = blockAds || blockPorn;
+  let geositeDirectRules = [], geoipDirectRules = [], geositeBlockRules = [];
+  const geoRules = [
+    { rule: bypassLAN, type: "direct", geosite: "private", geoip: "private" },
+    { rule: bypassIran, type: "direct", geosite: "category-ir", geoip: "ir" },
+    { rule: bypassChina, type: "direct", geosite: "cn", geoip: "cn" },
+    { rule: bypassRussia, type: "direct", geosite: "category-ru", geoip: "ru" },
+    { rule: blockAds, type: "block", geosite: "category-ads-all" },
+    { rule: blockAds, type: "block", geosite: "category-ads-ir" },
+    { rule: blockPorn, type: "block", geosite: "category-porn" }
+  ];
+  if (isBypass || isBlock) {
+    geoRules.forEach(({ rule, type, geosite, geoip }) => {
+      if (rule) {
+        if (type === "direct") {
+          geositeDirectRules.push(`GEOSITE,${geosite},DIRECT`);
+          geoipDirectRules.push(`GEOIP,${geoip},DIRECT,no-resolve`);
+        } else {
+          geositeBlockRules.push(`GEOSITE,${geosite},REJECT`);
+        }
+      }
+    });
+  }
+  let rules = [
+    `AND,((IP-CIDR,${localDNS}/32),(DST-PORT,53)),DIRECT`,
+    ...geositeDirectRules,
+    ...geoipDirectRules,
+    ...geositeBlockRules
+  ];
+  blockUDP443 && rules.push("AND,((NETWORK,udp),(DST-PORT,443)),REJECT");
+  rules.push("MATCH,\u2705 Selector");
+  return rules;
+}
+__name(buildClashRoutingRules, "buildClashRoutingRules");
+function buildClashVLESSOutbound(remark, address, port, host, sni, path, allowInsecure) {
+  const tls = defaultHttpsPorts4.includes(port) ? true : false;
+  const addr = isIPv6(address) ? address.replace(/\[|\]/g, "") : address;
+  let outbound = {
+    "name": remark,
+    "type": "vless",
+    "server": addr,
+    "port": +port,
+    "uuid": userID6,
+    "tls": tls,
+    "network": "ws",
+    "udp": true,
+    "ws-opts": {
+      "path": path,
+      "headers": { "host": host },
+      "max-early-data": 2560,
+      "early-data-header-name": "Sec-WebSocket-Protocol"
+    }
+  };
+  if (tls) {
+    Object.assign(outbound, {
+      "servername": sni,
+      "alpn": ["h2", "http/1.1"],
+      "client-fingerprint": "random",
+      "skip-cert-verify": allowInsecure
+    });
+  }
+  return outbound;
+}
+__name(buildClashVLESSOutbound, "buildClashVLESSOutbound");
+function buildClashTrojanOutbound(remark, address, port, host, sni, path, allowInsecure) {
+  const addr = isIPv6(address) ? address.replace(/\[|\]/g, "") : address;
+  return {
+    "name": remark,
+    "type": "trojan",
+    "server": addr,
+    "port": +port,
+    "password": trojanPassword4,
+    "network": "ws",
+    "udp": true,
+    "ws-opts": {
+      "path": path,
+      "headers": { "host": host },
+      "max-early-data": 2560,
+      "early-data-header-name": "Sec-WebSocket-Protocol"
+    },
+    "sni": sni,
+    "alpn": ["h2", "http/1.1"],
+    "client-fingerprint": "random",
+    "skip-cert-verify": allowInsecure
+  };
+}
+__name(buildClashTrojanOutbound, "buildClashTrojanOutbound");
+function buildClashWarpOutbound(warpConfigs, remark, endpoint, chain) {
+  const ipv6Regex = /\[(.*?)\]/;
+  const portRegex = /[^:]*$/;
+  const endpointServer = endpoint.includes("[") ? endpoint.match(ipv6Regex)[1] : endpoint.split(":")[0];
+  const endpointPort = endpoint.includes("[") ? +endpoint.match(portRegex)[0] : +endpoint.split(":")[1];
+  const {
+    warpIPv6,
+    reserved,
+    publicKey,
+    privateKey
+  } = extractWireguardParams(warpConfigs, chain);
+  return {
+    "name": remark,
+    "type": "wireguard",
+    "ip": "172.16.0.2/32",
+    "ipv6": warpIPv6,
+    "private-key": privateKey,
+    "server": endpointServer,
+    "port": endpointPort,
+    "public-key": publicKey,
+    "allowed-ips": ["0.0.0.0/0", "::/0"],
+    "reserved": reserved,
+    "udp": true,
+    "mtu": 1280,
+    "dialer-proxy": chain,
+    "remote-dns-resolve": true,
+    "dns": ["1.1.1.1", "1.0.0.1"]
+  };
+}
+__name(buildClashWarpOutbound, "buildClashWarpOutbound");
+function buildClashChainOutbound(chainProxyParams) {
+  if (["socks", "http"].includes(chainProxyParams.protocol)) {
+    const { protocol, host: host2, port: port2, user, pass } = chainProxyParams;
+    const proxyType = protocol === "socks" ? "socks5" : protocol;
+    return {
+      "name": "",
+      "type": proxyType,
+      "server": host2,
+      "port": +port2,
+      "dialer-proxy": "",
+      "username": user,
+      "password": pass
+    };
+  }
+  const { hostName, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = chainProxyParams;
+  let chainOutbound = {
+    "name": "\u{1F4A6} Chain Best Ping \u{1F4A5}",
+    "type": "vless",
+    "server": hostName,
+    "port": +port,
+    "udp": true,
+    "uuid": uuid,
+    "flow": flow,
+    "network": type,
+    "dialer-proxy": "\u{1F4A6} Best Ping \u{1F4A5}"
+  };
+  if (security === "tls") {
+    const tlsAlpns = alpn ? alpn?.split(",") : [];
+    Object.assign(chainOutbound, {
+      "tls": true,
+      "servername": sni,
+      "alpn": tlsAlpns,
+      "client-fingerprint": fp
+    });
+  }
+  if (security === "reality")
+    Object.assign(chainOutbound, {
+      "tls": true,
+      "servername": sni,
+      "client-fingerprint": fp,
+      "reality-opts": {
+        "public-key": pbk,
+        "short-id": sid
+      }
+    });
+  if (headerType === "http") {
+    const httpPaths = path?.split(",");
+    chainOutbound["http-opts"] = {
+      "method": "GET",
+      "path": httpPaths,
+      "headers": {
+        "Connection": ["keep-alive"],
+        "Content-Type": ["application/octet-stream"]
+      }
+    };
+  }
+  if (type === "ws") {
+    const wsPath = path?.split("?ed=")[0];
+    const earlyData = +path?.split("?ed=")[1];
+    chainOutbound["ws-opts"] = {
+      "path": wsPath,
+      "headers": {
+        "Host": host
+      },
+      "max-early-data": earlyData,
+      "early-data-header-name": "Sec-WebSocket-Protocol"
+    };
+  }
+  if (type === "grpc")
+    chainOutbound["grpc-opts"] = {
+      "grpc-service-name": serviceName
+    };
+  return chainOutbound;
+}
+__name(buildClashChainOutbound, "buildClashChainOutbound");
+async function getClashWarpConfig(proxySettings, warpConfigs) {
+  const { warpEndpoints, warpEnableIPv6 } = proxySettings;
+  let config = structuredClone(clashConfigTemp);
+  config.ipv6 = warpEnableIPv6;
+  config.dns = await buildClashDNS(proxySettings, true);
+  config.rules = buildClashRoutingRules(proxySettings);
+  const selector = config["proxy-groups"][0];
+  const warpUrlTest = config["proxy-groups"][1];
+  selector.proxies = ["\u{1F4A6} Warp - Best Ping \u{1F680}", "\u{1F4A6} WoW - Best Ping \u{1F680}"];
+  warpUrlTest.name = "\u{1F4A6} Warp - Best Ping \u{1F680}";
+  warpUrlTest.interval = +proxySettings.bestWarpInterval;
+  config["proxy-groups"].push(structuredClone(warpUrlTest));
+  const WoWUrlTest = config["proxy-groups"][2];
+  WoWUrlTest.name = "\u{1F4A6} WoW - Best Ping \u{1F680}";
+  let warpRemarks = [], WoWRemarks = [];
+  warpEndpoints.split(",").forEach((endpoint, index) => {
+    const warpRemark = `\u{1F4A6} ${index + 1} - Warp \u{1F1EE}\u{1F1F7}`;
+    const WoWRemark = `\u{1F4A6} ${index + 1} - WoW \u{1F30D}`;
+    const warpOutbound = buildClashWarpOutbound(warpConfigs, warpRemark, endpoint, "");
+    const WoWOutbound = buildClashWarpOutbound(warpConfigs, WoWRemark, endpoint, warpRemark);
+    config.proxies.push(WoWOutbound, warpOutbound);
+    warpRemarks.push(warpRemark);
+    WoWRemarks.push(WoWRemark);
+    warpUrlTest.proxies.push(warpRemark);
+    WoWUrlTest.proxies.push(WoWRemark);
+  });
+  selector.proxies.push(...warpRemarks, ...WoWRemarks);
+  return config;
+}
+__name(getClashWarpConfig, "getClashWarpConfig");
+async function getClashNormalConfig(env, proxySettings) {
+  let chainProxy;
+  userID6 = env.UUID || userID6;
+  if (!isValidUUID(userID6))
+    throw new Error(`Invalid UUID: ${userID6}`);
+  trojanPassword4 = env.TROJAN_PASS || trojanPassword4;
+  const hostName = globalThis.hostName;
+  const {
+    cleanIPs,
+    proxyIP: proxyIP3,
+    ports,
+    vlessConfigs,
+    trojanConfigs,
+    outProxy,
+    outProxyParams,
+    customCdnAddrs,
+    customCdnHost,
+    customCdnSni,
+    bestVLESSTrojanInterval,
+    enableIPv6
+  } = proxySettings;
+  if (outProxy) {
+    const proxyParams = JSON.parse(outProxyParams);
+    try {
+      chainProxy = buildClashChainOutbound(proxyParams);
+    } catch (error) {
+      console.log("An error occured while parsing chain proxy: ", error);
+      chainProxy = void 0;
+      await env.bpb.put("proxySettings", JSON.stringify({
+        ...proxySettings,
+        outProxy: "",
+        outProxyParams: {}
+      }));
+    }
+  }
+  let config = structuredClone(clashConfigTemp);
+  config.ipv6 = enableIPv6;
+  config.dns = await buildClashDNS(proxySettings, false);
+  config.rules = buildClashRoutingRules(proxySettings);
+  const selector = config["proxy-groups"][0];
+  const urlTest = config["proxy-groups"][1];
+  selector.proxies = ["\u{1F4A6} Best Ping \u{1F4A5}"];
+  urlTest.name = "\u{1F4A6} Best Ping \u{1F4A5}";
+  urlTest.interval = +bestVLESSTrojanInterval;
+  const Addresses = await getConfigAddresses(hostName, cleanIPs, enableIPv6);
+  const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(",") : [];
+  const totalAddresses = [...Addresses, ...customCdnAddresses];
+  let proxyIndex = 1, path;
+  const protocols = [
+    ...vlessConfigs ? ["VLESS"] : [],
+    ...trojanConfigs ? ["Trojan"] : []
+  ];
+  protocols.forEach((protocol) => {
+    let protocolIndex = 1;
+    ports.forEach((port) => {
+      totalAddresses.forEach((addr) => {
+        let VLESSOutbound, TrojanOutbound;
+        const isCustomAddr = customCdnAddresses.includes(addr);
+        const configType = isCustomAddr ? "C" : "";
+        const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
+        const host = isCustomAddr ? customCdnHost : hostName;
+        const remark = generateRemark(protocolIndex, port, addr, cleanIPs, protocol, configType).replace(" : ", " - ");
+        if (protocol === "VLESS") {
+          path = `/${getRandomPath(16)}${proxyIP3 ? `/${btoa(proxyIP3)}` : ""}`;
+          VLESSOutbound = buildClashVLESSOutbound(
+            chainProxy ? `proxy-${proxyIndex}` : remark,
+            addr,
+            port,
+            host,
+            sni,
+            path,
+            isCustomAddr
+          );
+          config.proxies.push(VLESSOutbound);
+          selector.proxies.push(remark);
+          urlTest.proxies.push(remark);
+        }
+        if (protocol === "Trojan" && defaultHttpsPorts4.includes(port)) {
+          path = `/tr${getRandomPath(16)}${proxyIP3 ? `/${btoa(proxyIP3)}` : ""}`;
+          TrojanOutbound = buildClashTrojanOutbound(
+            chainProxy ? `proxy-${proxyIndex}` : remark,
+            addr,
+            port,
+            host,
+            sni,
+            path,
+            isCustomAddr
+          );
+          config.proxies.push(TrojanOutbound);
+          selector.proxies.push(remark);
+          urlTest.proxies.push(remark);
+        }
+        if (chainProxy) {
+          let chain = structuredClone(chainProxy);
+          chain["name"] = remark;
+          chain["dialer-proxy"] = `proxy-${proxyIndex}`;
+          config.proxies.push(chain);
+        }
+        proxyIndex++;
+        protocolIndex++;
+      });
+    });
+  });
+  return config;
+}
+__name(getClashNormalConfig, "getClashNormalConfig");
 var clashConfigTemp = {
+  "mixed-port": 7890,
   "ipv6": true,
   "allow-lan": true,
   "mode": "rule",
   "log-level": "info",
   "keep-alive-interval": 30,
   "unified-delay": false,
+  "geo-auto-update": true,
+  "geo-update-interval": 168,
   "external-controller": "127.0.0.1:9090",
   "external-ui-url": "https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip",
   "external-ui": "ui",
@@ -9088,50 +8964,30 @@ var clashConfigTemp = {
     "store-fake-ip": true
   },
   "dns": {},
-  "listeners": [
-    {
-      "name": "mixed-in",
-      "type": "mixed",
-      "port": 7892,
-      "listen": "0.0.0.0",
-      "udp": true
-    }
-  ],
   "tun": {
     "enable": true,
     "stack": "mixed",
     "auto-route": true,
-    "auto-redirect": true,
+    "strict-route": true,
     "auto-detect-interface": true,
-    "dns-hijack": [
-      "any:53",
-      "198.18.0.2:53"
-    ],
-    "device": "utun0",
-    "mtu": 9e3,
-    "strict-route": true
+    "dns-hijack": ["any:53"],
+    "mtu": 9e3
   },
   "sniffer": {
     "enable": true,
     "force-dns-mapping": true,
     "parse-pure-ip": true,
+    "override-destination": false,
     "sniff": {
       "HTTP": {
-        "ports": [80, 8080, 8880, 2052, 2082, 2086, 2095],
-        "override-destination": false
+        "ports": [80, 8080, 8880, 2052, 2082, 2086, 2095]
       },
       "TLS": {
-        "ports": [443, 8443, 2053, 2083, 2087, 2096],
-        "override-destination": false
+        "ports": [443, 8443, 2053, 2083, 2087, 2096]
       }
     }
   },
-  "proxies": [
-    {
-      "name": "dns-out",
-      "type": "dns"
-    }
-  ],
+  "proxies": [],
   "proxy-groups": [
     {
       "name": "\u2705 Selector",
@@ -9153,6 +9009,305 @@ var clashConfigTemp = {
     "server": "time.apple.com",
     "port": 123,
     "interval": 30
+  }
+};
+
+// src/cores/normalConfigs.js
+var userID7 = configs.userID;
+var trojanPassword5 = configs.userID;
+var defaultHttpsPorts5 = configs.defaultHttpsPorts;
+async function getNormalConfigs(env, proxySettings, client) {
+  userID7 = env.UUID || userID7;
+  if (!isValidUUID(userID7))
+    throw new Error(`Invalid UUID: ${userID7}`);
+  trojanPassword5 = env.TROJAN_PASS || trojanPassword5;
+  const hostName = globalThis.hostName;
+  const {
+    cleanIPs,
+    proxyIP: proxyIP3,
+    ports,
+    vlessConfigs,
+    trojanConfigs,
+    outProxy,
+    customCdnAddrs,
+    customCdnHost,
+    customCdnSni,
+    enableIPv6
+  } = proxySettings;
+  let vlessConfs = "", trojanConfs = "", chainProxy = "";
+  let proxyIndex = 1;
+  const Addresses = await getConfigAddresses(hostName, cleanIPs, enableIPv6);
+  const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(",") : [];
+  const totalAddresses = [...Addresses, ...customCdnAddresses];
+  const alpn = client === "singbox" ? "http/1.1" : "h2,http/1.1";
+  const trojanPass = encodeURIComponent(trojanPassword5);
+  const earlyData = client === "singbox" ? "&eh=Sec-WebSocket-Protocol&ed=2560" : encodeURIComponent("?ed=2560");
+  ports.forEach((port) => {
+    totalAddresses.forEach((addr, index) => {
+      const isCustomAddr = index > Addresses.length - 1;
+      const configType = isCustomAddr ? "C" : "";
+      const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
+      const host = isCustomAddr ? customCdnHost : hostName;
+      const path = `${getRandomPath(16)}${proxyIP3 ? `/${encodeURIComponent(btoa(proxyIP3))}` : ""}${earlyData}`;
+      const vlessRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, "VLESS", configType));
+      const trojanRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, "Trojan", configType));
+      const tlsFields = defaultHttpsPorts5.includes(port) ? `&security=tls&sni=${sni}&fp=randomized&alpn=${alpn}` : "&security=none";
+      if (vlessConfigs) {
+        vlessConfs += `${atob("dmxlc3M")}://${userID7}@${addr}:${port}?path=/${path}&encryption=none&host=${host}&type=ws${tlsFields}#${vlessRemark}
+`;
+      }
+      if (trojanConfigs) {
+        trojanConfs += `${atob("dHJvamFu")}://${trojanPass}@${addr}:${port}?path=/tr${path}&host=${host}&type=ws${tlsFields}#${trojanRemark}
+`;
+      }
+      proxyIndex++;
+    });
+  });
+  if (outProxy) {
+    let chainRemark = `#${encodeURIComponent("\u{1F4A6} Chain proxy \u{1F517}")}`;
+    if (outProxy.startsWith("socks") || outProxy.startsWith("http")) {
+      const regex = /^(?:socks|http):\/\/([^@]+)@/;
+      const isUserPass = outProxy.match(regex);
+      const userPass = isUserPass ? isUserPass[1] : false;
+      chainProxy = userPass ? outProxy.replace(userPass, btoa(userPass)) + chainRemark : outProxy + chainRemark;
+    } else {
+      chainProxy = outProxy.split("#")[0] + chainRemark;
+    }
+  }
+  return btoa(vlessConfs + trojanConfs + chainProxy);
+}
+__name(getNormalConfigs, "getNormalConfigs");
+
+// src/worker.js
+globalThis.hostName = "";
+var worker_default = {
+  async fetch(request, env) {
+    try {
+      const upgradeHeader = request.headers.get("Upgrade");
+      const url = new URL(request.url);
+      if (!upgradeHeader || upgradeHeader !== "websocket") {
+        globalThis.hostName = request.headers.get("Host");
+        const searchParams = new URLSearchParams(url.search);
+        const client = searchParams.get("app");
+        const { kvNotFound, proxySettings: settings, warpConfigs } = await getDataset(env);
+        if (kvNotFound) {
+          const errorPage = renderErrorPage("KV Dataset is not properly set!", null, true);
+          return new Response(errorPage, { status: 200, headers: { "Content-Type": "text/html" } });
+        }
+        switch (url.pathname) {
+          case "/update-warp":
+            const Auth = await Authenticate(request, env);
+            if (!Auth)
+              return new Response("Unauthorized", { status: 401 });
+            if (request.method === "POST") {
+              try {
+                const { error: warpPlusError } = await fetchWgConfig(env, settings);
+                if (warpPlusError) {
+                  return new Response(warpPlusError, { status: 400 });
+                } else {
+                  return new Response("Warp configs updated successfully", { status: 200 });
+                }
+              } catch (error) {
+                console.log(error);
+                return new Response(`An error occurred while updating Warp configs! - ${error}`, { status: 500 });
+              }
+            } else {
+              return new Response("Unsupported request", { status: 405 });
+            }
+          case `/sub/${userID}`:
+            if (client === "sfa") {
+              const BestPingSFA = await getSingBoxCustomConfig(env, settings, false);
+              return new Response(JSON.stringify(BestPingSFA, null, 4), {
+                status: 200,
+                headers: {
+                  "Content-Type": "application/json;charset=utf-8",
+                  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+                  "CDN-Cache-Control": "no-store"
+                }
+              });
+            }
+            if (client === "clash") {
+              const BestPingClash = await getClashNormalConfig(env, settings);
+              return new Response(JSON.stringify(BestPingClash, null, 4), {
+                status: 200,
+                headers: {
+                  "Content-Type": "application/json;charset=utf-8",
+                  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+                  "CDN-Cache-Control": "no-store"
+                }
+              });
+            }
+            if (client === "xray") {
+              const xrayFullConfigs = await getXrayCustomConfigs(env, settings, false);
+              return new Response(JSON.stringify(xrayFullConfigs, null, 4), {
+                status: 200,
+                headers: {
+                  "Content-Type": "application/json;charset=utf-8",
+                  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+                  "CDN-Cache-Control": "no-store"
+                }
+              });
+            }
+            const normalConfigs = await getNormalConfigs(env, settings, client);
+            return new Response(normalConfigs, {
+              status: 200,
+              headers: {
+                "Content-Type": "text/plain;charset=utf-8",
+                "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+                "CDN-Cache-Control": "no-store"
+              }
+            });
+          case `/fragsub/${userID}`:
+            let fragConfigs = client === "hiddify" ? await getSingBoxCustomConfig(env, settings, true) : await getXrayCustomConfigs(env, settings, true);
+            return new Response(JSON.stringify(fragConfigs, null, 4), {
+              status: 200,
+              headers: {
+                "Content-Type": "application/json;charset=utf-8",
+                "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+                "CDN-Cache-Control": "no-store"
+              }
+            });
+          case `/warpsub/${userID}`:
+            if (client === "clash") {
+              const clashWarpConfig = await getClashWarpConfig(settings, warpConfigs);
+              return new Response(JSON.stringify(clashWarpConfig, null, 4), {
+                status: 200,
+                headers: {
+                  "Content-Type": "application/json;charset=utf-8",
+                  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+                  "CDN-Cache-Control": "no-store"
+                }
+              });
+            }
+            if (client === "singbox" || client === "hiddify") {
+              const singboxWarpConfig = await getSingBoxWarpConfig(settings, warpConfigs, client);
+              return new Response(JSON.stringify(singboxWarpConfig, null, 4), {
+                status: 200,
+                headers: {
+                  "Content-Type": "application/json;charset=utf-8",
+                  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+                  "CDN-Cache-Control": "no-store"
+                }
+              });
+            }
+            const warpConfig = await getXrayWarpConfigs(settings, warpConfigs, client);
+            return new Response(JSON.stringify(warpConfig, null, 4), {
+              status: 200,
+              headers: {
+                "Content-Type": "application/json;charset=utf-8",
+                "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+                "CDN-Cache-Control": "no-store"
+              }
+            });
+          case "/panel":
+            const isAuth = await Authenticate(request, env);
+            if (request.method === "POST") {
+              if (!isAuth)
+                return new Response("Unauthorized or expired session!", { status: 401 });
+              const formData = await request.formData();
+              const isReset = formData.get("resetSettings") === "true";
+              isReset ? await updateDataset(env, null, true) : await updateDataset(env, formData);
+              return new Response("Success", { status: 200 });
+            }
+            const pwd = await env.bpb.get("pwd");
+            if (pwd && !isAuth)
+              return Response.redirect(`${url.origin}/login`, 302);
+            const isPassSet = pwd?.length >= 8;
+            const homePage = renderHomePage(request, env, settings, isPassSet);
+            return new Response(homePage, {
+              status: 200,
+              headers: {
+                "Content-Type": "text/html",
+                "Access-Control-Allow-Origin": url.origin,
+                "Access-Control-Allow-Methods": "GET, POST",
+                "Access-Control-Allow-Headers": "Content-Type, Authorization",
+                "X-Content-Type-Options": "nosniff",
+                "X-Frame-Options": "DENY",
+                "Referrer-Policy": "strict-origin-when-cross-origin",
+                "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+                "CDN-Cache-Control": "no-store"
+              }
+            });
+          case "/login":
+            if (typeof env.bpb !== "object") {
+              const errorPage = renderErrorPage("KV Dataset is not properly set!", null, true);
+              return new Response(errorPage, { status: 200, headers: { "Content-Type": "text/html" } });
+            }
+            const loginAuth = await Authenticate(request, env);
+            if (loginAuth)
+              return Response.redirect(`${url.origin}/panel`, 302);
+            let secretKey = await env.bpb.get("secretKey");
+            if (!secretKey) {
+              secretKey = generateSecretKey();
+              await env.bpb.put("secretKey", secretKey);
+            }
+            if (request.method === "POST") {
+              const password = await request.text();
+              const savedPass = await env.bpb.get("pwd");
+              if (password === savedPass) {
+                const jwtToken = await generateJWTToken(secretKey);
+                const cookieHeader = `jwtToken=${jwtToken}; HttpOnly; Secure; Max-Age=${7 * 24 * 60 * 60}; Path=/; SameSite=Strict`;
+                return new Response("Success", {
+                  status: 200,
+                  headers: {
+                    "Set-Cookie": cookieHeader,
+                    "Content-Type": "text/plain"
+                  }
+                });
+              } else {
+                return new Response("Method Not Allowed", { status: 405 });
+              }
+            }
+            const loginPage = renderLoginPage();
+            return new Response(loginPage, {
+              status: 200,
+              headers: {
+                "Content-Type": "text/html",
+                "Access-Control-Allow-Origin": url.origin,
+                "Access-Control-Allow-Methods": "GET, POST",
+                "Access-Control-Allow-Headers": "Content-Type, Authorization",
+                "X-Content-Type-Options": "nosniff",
+                "X-Frame-Options": "DENY",
+                "Referrer-Policy": "strict-origin-when-cross-origin"
+              }
+            });
+          case "/logout":
+            return new Response("Success", {
+              status: 200,
+              headers: {
+                "Set-Cookie": "jwtToken=; Secure; SameSite=None; Expires=Thu, 01 Jan 1970 00:00:00 GMT",
+                "Content-Type": "text/plain"
+              }
+            });
+          case "/panel/password":
+            const oldPwd = await env.bpb.get("pwd");
+            let passAuth = await Authenticate(request, env);
+            if (oldPwd && !passAuth)
+              return new Response("Unauthorized!", { status: 401 });
+            const newPwd = await request.text();
+            if (newPwd === oldPwd)
+              return new Response("Please enter a new Password!", { status: 400 });
+            await env.bpb.put("pwd", newPwd);
+            return new Response("Success", {
+              status: 200,
+              headers: {
+                "Set-Cookie": "jwtToken=; Path=/; Secure; SameSite=None; Expires=Thu, 01 Jan 1970 00:00:00 GMT",
+                "Content-Type": "text/plain"
+              }
+            });
+          default:
+            url.hostname = "www.speedtest.net";
+            url.protocol = "https:";
+            request = new Request(url, request);
+            return await fetch(request);
+        }
+      } else {
+        return url.pathname.startsWith("/tr") ? await trojanOverWSHandler(request, env) : await vlessOverWSHandler(request, env);
+      }
+    } catch (err) {
+      const errorPage = renderErrorPage("Something went wrong!", err, false);
+      return new Response(errorPage, { status: 200, headers: { "Content-Type": "text/html" } });
+    }
   }
 };
 export {
