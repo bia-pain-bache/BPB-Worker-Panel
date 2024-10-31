@@ -1,12 +1,9 @@
 import { configs } from '../helpers/config.js';
-import { isValidUUID } from '../helpers/helpers.js';
 const { defaultHttpPorts, defaultHttpsPorts, panelVersion } = configs;
 let userID = configs.userID;
 
-export function renderHomePage (request, env, proxySettings, isPassSet) {
-    const hostName = globalThis.hostName;
+export function renderHomePage (request, env, hostName, proxySettings, isPassSet) {
     userID = env.UUID || userID;
-    if (!isValidUUID(userID)) throw new Error(`Invalid UUID: ${userID}`);
     const {
         remoteDNS, 
         localDNS,
@@ -54,7 +51,9 @@ export function renderHomePage (request, env, proxySettings, isPassSet) {
     let httpPortsBlock = '', httpsPortsBlock = '';
     const allPorts = [...(hostName.includes('workers.dev') ? defaultHttpPorts : []), ...defaultHttpsPorts];
     let regionNames = new Intl.DisplayNames(['en'], {type: 'region'});
-    const cfCountry = regionNames.of(request.cf.country);
+    const countryCode = request.cf.country;
+    const flag = String.fromCodePoint(...[...countryCode].map(c => 0x1F1E6 + c.charCodeAt(0) - 65));
+    const cfCountry = `${regionNames.of(countryCode)} ${flag}`;
 
     allPorts.forEach(port => {
         const id = `port-${port}`;
@@ -93,7 +92,7 @@ export function renderHomePage (request, env, proxySettings, isPassSet) {
                 --input-background-color: white;
                 --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
             }
-            body { font-family: system-ui; background-color: var(--background-color); color: var(--color) }
+            body { font-family: Twemoji Country Flags, system-ui; background-color: var(--background-color); color: var(--color) }
             body.dark-mode {
                 --color: white;
                 --primary-color: #09639F;
@@ -1073,7 +1072,11 @@ export function renderHomePage (request, env, proxySettings, isPassSet) {
         </div>
         <button id="darkModeToggle" class="floating-button">
             <i id="modeIcon" class="fa fa-2x fa-adjust" style="color: var(--background-color);" aria-hidden="true"></i>
-        </button>   
+        </button>
+    <script type="module" defer>
+        import { polyfillCountryFlagEmojis } from "https://cdn.skypack.dev/country-flag-emoji-polyfill";
+        polyfillCountryFlagEmojis();
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
         const defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
@@ -1197,17 +1200,18 @@ export function renderHomePage (request, env, proxySettings, isPassSet) {
         });
 
         const fetchIPInfo = async () => {
-            const updateUI = (ip = '-', country = '-', city = '-', isp = '-') => {
+            const updateUI = (ip = '-', country = '-', country_code = '-', city = '-', isp = '-') => {
+                const flag = String.fromCodePoint(...[...country_code].map(c => 0x1F1E6 + c.charCodeAt(0) - 65));
                 document.getElementById('ip').textContent = ip;
-                document.getElementById('country').textContent = country;
+                document.getElementById('country').textContent = country + ' ' + flag;
                 document.getElementById('city').textContent = city;
                 document.getElementById('isp').textContent = isp.toUpperCase();
             };
 
             try {
                 const response = await fetch('https://ipwho.is/');
-                const { ip, country, city, connection } = await response.json();
-                updateUI(ip, country, city, connection.isp);
+                const { ip, country, country_code, city, connection } = await response.json();
+                updateUI(ip, country, country_code, city, connection.isp);
             } catch (error) {
                 console.error('Error fetching IP address:', error);
                 updateUI();

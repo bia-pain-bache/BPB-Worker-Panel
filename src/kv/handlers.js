@@ -1,5 +1,7 @@
 import { fetchWgConfig } from '../protocols/warp.js';
 import { isDomain, resolveDNS } from '../helpers/helpers.js';
+import { configs } from '../helpers/config.js';
+const { panelVersion } = configs;
 
 export async function getDataset(env) {
     let proxySettings, warpConfigs;

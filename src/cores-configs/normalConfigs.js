@@ -1,15 +1,12 @@
 import { getConfigAddresses, generateRemark, randomUpperCase, getRandomPath } from './helpers.js';
 import { configs } from '../helpers/config.js';
-import { isValidUUID } from '../helpers/helpers.js';
 let userID = configs.userID;
 let trojanPassword = configs.userID;
 const defaultHttpsPorts = configs.defaultHttpsPorts;
 
-export async function getNormalConfigs(env, proxySettings, client) {
+export async function getNormalConfigs(env, hostName, proxySettings, client) {
     userID = env.UUID || userID;
-    if (!isValidUUID(userID)) throw new Error(`Invalid UUID: ${userID}`);
     trojanPassword = env.TROJAN_PASS || trojanPassword;
-    const hostName = globalThis.hostName;
     const { 
         cleanIPs, 
         proxyIP, 
