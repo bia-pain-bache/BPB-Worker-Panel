@@ -1,13 +1,9 @@
 import { connect } from 'cloudflare:sockets';
-import { configs } from '../helpers/config.js';
 import sha256 from 'js-sha256';
-// https://www.nslookup.io/domains/bpb.yousef.isegaro.com/dns-records/
-let proxyIP = configs.proxyIP
-let trojanPassword = configs.trojanPassword;
+import { initializeParams, trojanPassword, proxyIP } from "../helpers/init.js";
 
 export async function trojanOverWSHandler(request, env) {
-    proxyIP = env.PROXYIP || proxyIP;
-    trojanPassword = env.TROJAN_PASS || trojanPassword;
+    await initializeParams(env);
     const webSocketPair = new WebSocketPair();
     const [client, webSocket] = Object.values(webSocketPair);
     webSocket.accept();

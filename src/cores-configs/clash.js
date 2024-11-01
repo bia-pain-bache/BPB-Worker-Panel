@@ -1,8 +1,5 @@
 import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6 } from './helpers.js';
-import { configs } from '../helpers/config.js';
-let userID = configs.userID;
-let trojanPassword = configs.userID;
-const defaultHttpsPorts = configs.defaultHttpsPorts;
+import { initializeParams, userID, trojanPassword, defaultHttpsPorts } from "../helpers/init.js";
 
 async function buildClashDNS (proxySettings, isWarp) {
     const { 
@@ -315,9 +312,8 @@ export async function getClashWarpConfig(proxySettings, warpConfigs) {
 }
 
 export async function getClashNormalConfig (env, hostName, proxySettings) {
+    await initializeParams(env);
     let chainProxy;
-    userID = env.UUID || userID;
-    trojanPassword = env.TROJAN_PASS || trojanPassword;
     const { 
         cleanIPs, 
         proxyIP, 

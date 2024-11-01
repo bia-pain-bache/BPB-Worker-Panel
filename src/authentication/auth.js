@@ -1,10 +1,10 @@
 import { SignJWT, jwtVerify } from 'jose';
 import nacl from 'tweetnacl';
-import { configs } from '../helpers/config.js';
-let userID = configs.userID;
+import { initializeParams, userID } from "../helpers/init.js";
+
 
 export async function generateJWTToken (env, secretKey) {
-    userID = env.UUID || userID;
+    await initializeParams(env);
     const secret = new TextEncoder().encode(secretKey);
     return await new SignJWT({ userID })
         .setProtectedHeader({ alg: 'HS256' })

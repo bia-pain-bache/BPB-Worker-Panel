@@ -1,9 +1,7 @@
 import { resolveDNS, isDomain } from '../helpers/helpers.js';
 import { getConfigAddresses, extractWireguardParams, base64ToDecimal, generateRemark, randomUpperCase, getRandomPath } from './helpers.js';
-import { configs } from '../helpers/config.js';
-let userID = configs.userID;
-let trojanPassword = configs.userID;
-const defaultHttpsPorts = configs.defaultHttpsPorts;
+import { initializeParams, userID, trojanPassword, defaultHttpsPorts } from "../helpers/init.js";
+
 
 async function buildXrayDNS (proxySettings, outboundAddrs, domainToStaticIPs, isWorkerLess, isBalancer, isWarp) {
     const { 
@@ -635,8 +633,7 @@ async function buildXrayWorkerLessConfig(proxySettings) {
 }
 
 export async function getXrayCustomConfigs(env, hostName, proxySettings, isFragment) {
-    userID = env.UUID || userID;
-    trojanPassword = env.TROJAN_PASS || trojanPassword;
+    await initializeParams(env);
     let configs = [];
     let outbounds = [];
     let protocols = [];

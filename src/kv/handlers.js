@@ -1,9 +1,9 @@
 import { fetchWgConfig } from '../protocols/warp.js';
 import { isDomain, resolveDNS } from '../helpers/helpers.js';
-import { configs } from '../helpers/config.js';
-const { panelVersion } = configs;
+import { initializeParams, panelVersion } from '../helpers/init.js';
 
 export async function getDataset(env) {
+    await initializeParams(env);
     let proxySettings, warpConfigs;
     if (typeof env.bpb !== 'object') {
         return {kvNotFound: true, proxySettings: null, warpConfigs: null}
@@ -29,6 +29,7 @@ export async function getDataset(env) {
 }
 
 export async function updateDataset (env, newSettings, resetSettings) {
+    await initializeParams(env);
     let currentSettings;
     if (!resetSettings) {
         try {
