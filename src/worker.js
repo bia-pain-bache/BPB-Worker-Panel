@@ -11,8 +11,7 @@ import { getXrayCustomConfigs, getXrayWarpConfigs } from './cores-configs/xray.j
 import { getSingBoxCustomConfig, getSingBoxWarpConfig } from './cores-configs/sing-box.js';
 import { getClashNormalConfig, getClashWarpConfig } from './cores-configs/clash.js';
 import { getNormalConfigs } from './cores-configs/normalConfigs.js';
-import { configs } from './helpers/config.js';
-import { isValidUUID } from './helpers/helpers.js';
+import { initializeParams, userID } from './helpers/init.js';
 
 export default {
     async fetch(request, env) {
@@ -20,16 +19,32 @@ export default {
             const upgradeHeader = request.headers.get('Upgrade');
             const url = new URL(request.url);
             if (!upgradeHeader || upgradeHeader !== 'websocket') {
-                const userID = env.UUID || configs.userID;
-                if (!isValidUUID(userID)) throw new Error(`Invalid UUID: ${userID}`);
+                await initializeParams(env);
                 const hostName = request.headers.get('Host');
                 const searchParams = new URLSearchParams(url.search);
                 const client = searchParams.get('app');
+                const clientResponseHeader = {
+                    'Content-Type': 'text/plain;charset=utf-8',
+                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                    'CDN-Cache-Control': 'no-store'
+                };
+                const pageResponseHeader = {
+                    'Content-Type': 'text/html;charset=utf-8',
+                    'Access-Control-Allow-Origin': url.origin,
+                    'Access-Control-Allow-Methods': 'GET, POST',
+                    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                    'X-Content-Type-Options': 'nosniff',
+                    'X-Frame-Options': 'DENY',
+                    'Referrer-Policy': 'strict-origin-when-cross-origin',
+                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, no-transform',
+                    'CDN-Cache-Control': 'no-store'
+                };
                 const { kvNotFound, proxySettings, warpConfigs } = await getDataset(env);
                 if (kvNotFound) {
-                    const errorPage = renderErrorPage('KV Dataset is not properly set!', null, true);
+                    const errorPage = await renderErrorPage(env, 'KV Dataset is not properly set!', null, true);
                     return new Response(errorPage, { status: 200, headers: {'Content-Type': 'text/html'}});
-                } 
+                }
+                
 
                 switch (url.pathname) {                    
                     case '/update-warp':
@@ -57,11 +72,7 @@ export default {
                             const BestPingSFA = await getSingBoxCustomConfig(env, hostName, proxySettings, false);
                             return new Response(JSON.stringify(BestPingSFA, null, 4), { 
                                 status: 200,
-                                headers: {
-                                    'Content-Type': 'application/json;charset=utf-8',
-                                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-                                    'CDN-Cache-Control': 'no-store'
-                                }
+                                headers: clientResponseHeader
                             });                            
                         }
                         
@@ -69,11 +80,7 @@ export default {
                             const BestPingClash = await getClashNormalConfig(env, hostName, proxySettings);
                             return new Response(JSON.stringify(BestPingClash, null, 4), { 
                                 status: 200,
-                                headers: {
-                                    'Content-Type': 'application/json;charset=utf-8',
-                                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-                                    'CDN-Cache-Control': 'no-store'
-                                }
+                                headers: clientResponseHeader
                             });                            
                         }
 
@@ -81,22 +88,14 @@ export default {
                             const xrayFullConfigs = await getXrayCustomConfigs(env, hostName, proxySettings, false);
                             return new Response(JSON.stringify(xrayFullConfigs, null, 4), { 
                                 status: 200,
-                                headers: {
-                                    'Content-Type': 'application/json;charset=utf-8',
-                                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-                                    'CDN-Cache-Control': 'no-store'
-                                }
+                                headers: clientResponseHeader
                             });                            
                         }
 
                         const normalConfigs = await getNormalConfigs(env, hostName, proxySettings, client);
                         return new Response(normalConfigs, { 
                             status: 200,
-                            headers: {
-                                'Content-Type': 'text/plain;charset=utf-8',
-                                'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-                                'CDN-Cache-Control': 'no-store'
-                            }
+                            headers: clientResponseHeader
                         });                        
 
                     case `/fragsub/${userID}`:
@@ -106,11 +105,7 @@ export default {
 
                         return new Response(JSON.stringify(fragConfigs, null, 4), { 
                             status: 200,
-                            headers: {
-                                'Content-Type': 'application/json;charset=utf-8',
-                                'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-                                'CDN-Cache-Control': 'no-store'
-                            }
+                            headers: clientResponseHeader
                         });
 
                     case `/warpsub/${userID}`:
@@ -118,11 +113,7 @@ export default {
                             const clashWarpConfig = await getClashWarpConfig(proxySettings, warpConfigs);
                             return new Response(JSON.stringify(clashWarpConfig, null, 4), { 
                                 status: 200,
-                                headers: {
-                                    'Content-Type': 'application/json;charset=utf-8',
-                                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-                                    'CDN-Cache-Control': 'no-store'
-                                }
+                                headers: clientResponseHeader
                             });                            
                         }
                         
@@ -130,22 +121,14 @@ export default {
                             const singboxWarpConfig = await getSingBoxWarpConfig(proxySettings, warpConfigs, client);
                             return new Response(JSON.stringify(singboxWarpConfig, null, 4), { 
                                 status: 200,
-                                headers: {
-                                    'Content-Type': 'application/json;charset=utf-8',
-                                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-                                    'CDN-Cache-Control': 'no-store'
-                                }
+                                headers: clientResponseHeader
                             });                            
                         }
 
                         const warpConfig = await getXrayWarpConfigs(proxySettings, warpConfigs, client);
                         return new Response(JSON.stringify(warpConfig, null, 4), { 
                             status: 200,
-                            headers: {
-                                'Content-Type': 'application/json;charset=utf-8',
-                                'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-                                'CDN-Cache-Control': 'no-store'
-                            }
+                            headers: clientResponseHeader
                         });
 
                     case '/panel':
@@ -164,25 +147,15 @@ export default {
                         const pwd = await env.bpb.get('pwd');
                         if (pwd && !isAuth) return Response.redirect(`${url.origin}/login`, 302);
                         const isPassSet = pwd?.length >= 8;
-                        const homePage = renderHomePage(request, env, hostName, proxySettings, isPassSet);
+                        const homePage = await renderHomePage(request, env, hostName, proxySettings, isPassSet);
                         return new Response(homePage, {
                             status: 200,
-                            headers: {
-                                'Content-Type': 'text/html',
-                                'Access-Control-Allow-Origin': url.origin,
-                                'Access-Control-Allow-Methods': 'GET, POST',
-                                'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-                                'X-Content-Type-Options': 'nosniff',
-                                'X-Frame-Options': 'DENY',
-                                'Referrer-Policy': 'strict-origin-when-cross-origin',
-                                'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-                                'CDN-Cache-Control': 'no-store'
-                            }
+                            headers: pageResponseHeader
                         });
                                                       
                     case '/login':
                         if (typeof env.bpb !== 'object') {
-                            const errorPage = renderErrorPage('KV Dataset is not properly set!', null, true);
+                            const errorPage = await renderErrorPage(env, 'KV Dataset is not properly set!', null, true);
                             return new Response(errorPage, { status: 200, headers: {'Content-Type': 'text/html'}});
                         }
 
@@ -213,18 +186,10 @@ export default {
                             }
                         }
                         
-                        const loginPage = renderLoginPage();
+                        const loginPage = await renderLoginPage(env);
                         return new Response(loginPage, {
                             status: 200,
-                            headers: {
-                                'Content-Type': 'text/html',
-                                'Access-Control-Allow-Origin': url.origin,
-                                'Access-Control-Allow-Methods': 'GET, POST',
-                                'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-                                'X-Content-Type-Options': 'nosniff',
-                                'X-Frame-Options': 'DENY',
-                                'Referrer-Policy': 'strict-origin-when-cross-origin'
-                            }
+                            headers: pageResponseHeader
                         });
                     
                     case '/logout':                        
@@ -252,7 +217,6 @@ export default {
                         });
 
                     default:
-                        // return new Response('Not found', { status: 404 });
                         url.hostname = 'www.speedtest.net';
                         url.protocol = 'https:';
                         request = new Request(url, request);
@@ -264,7 +228,7 @@ export default {
                     : await vlessOverWSHandler(request, env);
             }
         } catch (err) {
-            const errorPage = renderErrorPage('Something went wrong!', err, false);
+            const errorPage = await renderErrorPage(env, 'Something went wrong!', err, false);
             return new Response(errorPage, { status: 200, headers: {'Content-Type': 'text/html'}});
         }
     }

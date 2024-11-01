@@ -1,12 +1,10 @@
-import { configs } from './config.js';
-const { dohURL } = configs;
-
 export function isValidUUID(uuid) {
 	const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 	return uuidRegex.test(uuid);
 }
 
 export async function resolveDNS (domain) {
+    const dohURL = 'https://cloudflare-dns.com/dns-query';
     const dohURLv4 = `${dohURL}?name=${encodeURIComponent(domain)}&type=A`;
     const dohURLv6 = `${dohURL}?name=${encodeURIComponent(domain)}&type=AAAA`;
 

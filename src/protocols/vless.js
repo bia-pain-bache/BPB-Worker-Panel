@@ -1,9 +1,7 @@
 import { connect } from 'cloudflare:sockets';
-import { configs } from '../helpers/config.js';
 import { isValidUUID } from '../helpers/helpers.js';
-let proxyIP = configs.proxyIP;
-let userID = configs.userID;
-const dohURL = configs.dohURL;
+import { initializeParams, userID, dohURL, proxyIP } from "../helpers/init.js";
+
 /**
  * Handles VLESS over WebSocket requests by creating a WebSocket pair, accepting the WebSocket connection, and processing the VLESS header.
  * @param {import("@cloudflare/workers-types").Request} request The incoming request object.
@@ -12,8 +10,7 @@ const dohURL = configs.dohURL;
 export async function vlessOverWSHandler(request, env) {
     /** @type {import("@cloudflare/workers-types").WebSocket[]} */
     // @ts-ignore
-	userID = env.UUID || userID;
-	proxyIP = env.PROXYIP || proxyIP;
+    await initializeParams(env);
     const webSocketPair = new WebSocketPair();
     const [client, webSocket] = Object.values(webSocketPair);
 

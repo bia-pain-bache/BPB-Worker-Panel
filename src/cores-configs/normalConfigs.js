@@ -1,12 +1,8 @@
 import { getConfigAddresses, generateRemark, randomUpperCase, getRandomPath } from './helpers.js';
-import { configs } from '../helpers/config.js';
-let userID = configs.userID;
-let trojanPassword = configs.userID;
-const defaultHttpsPorts = configs.defaultHttpsPorts;
+import { initializeParams, userID, trojanPassword, defaultHttpsPorts } from "../helpers/init.js";
 
 export async function getNormalConfigs(env, hostName, proxySettings, client) {
-    userID = env.UUID || userID;
-    trojanPassword = env.TROJAN_PASS || trojanPassword;
+    await initializeParams(env);
     const { 
         cleanIPs, 
         proxyIP, 

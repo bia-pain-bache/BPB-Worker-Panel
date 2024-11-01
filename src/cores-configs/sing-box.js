@@ -1,8 +1,5 @@
 import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath } from './helpers.js';
-import { configs } from '../helpers/config.js';
-let userID = configs.userID;
-let trojanPassword = configs.userID;
-const defaultHttpsPorts = configs.defaultHttpsPorts;
+import { initializeParams, userID, trojanPassword, defaultHttpsPorts } from "../helpers/init.js";
 
 function buildSingBoxDNS (proxySettings, isChain, isWarp) {
     const { 
@@ -550,9 +547,8 @@ export async function getSingBoxWarpConfig (proxySettings, warpConfigs, client) 
 }
 
 export async function getSingBoxCustomConfig(env, hostName, proxySettings, isFragment) {
+    await initializeParams(env);
     let chainProxyOutbound;
-    userID = env.UUID || userID;
-    trojanPassword = env.TROJAN_PASS || trojanPassword;
     const { 
         cleanIPs,  
         ports, 

@@ -1,7 +1,7 @@
-import { configs } from '../helpers/config.js';
-const panelVersion = configs.panelVersion;
+import { initializeParams, panelVersion } from "../helpers/init.js";
 
-export function renderErrorPage (message, error, refer) {
+export async function renderErrorPage (env, message, error, refer) {
+    await initializeParams(env);
     return `
     <!DOCTYPE html>
     <html lang="en">
