@@ -4354,13 +4354,12 @@ async function renderLoginPage(request, env) {
                     body: password
                 });
             
-                if (response.ok) {
-                    window.location.href = '/panel';
-                } else {
+                if (!response.ok) {
                     passwordError.textContent = '\u26A0\uFE0F Wrong Password!';
                     const errorMessage = await response.text();
                     console.error('Login failed:', errorMessage);
                 }
+                window.location.href = '/panel';
             } catch (error) {
                 console.error('Error during login:', error);
             }
@@ -4532,64 +4531,64 @@ __name(login, "login");
 
 // src/protocols/warp.js
 var import_tweetnacl2 = __toESM(require_nacl_fast());
-async function fetchWgConfig(env, proxySettings) {
+async function fetchWarpConfigs(env, proxySettings) {
   let warpConfigs = [];
   const apiBaseUrl = "https://api.cloudflareclient.com/v0a4005/reg";
   const { warpPlusLicense } = proxySettings;
   const warpKeys = [generateKeyPair(), generateKeyPair()];
-  for (let i = 0; i < 2; i++) {
-    const accountResponse = await fetch(apiBaseUrl, {
+  const commonPayload = {
+    install_id: "",
+    fcm_token: "",
+    tos: (/* @__PURE__ */ new Date()).toISOString(),
+    type: "Android",
+    model: "PC",
+    locale: "en_US",
+    warp_enabled: true
+  };
+  const fetchAccount = /* @__PURE__ */ __name(async (key) => {
+    const response = await fetch(apiBaseUrl, {
       method: "POST",
       headers: {
         "User-Agent": "insomnia/8.6.1",
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        key: warpKeys[i].publicKey,
-        install_id: "",
-        fcm_token: "",
-        tos: (/* @__PURE__ */ new Date()).toISOString(),
-        type: "Android",
-        model: "PC",
-        locale: "en_US",
-        warp_enabled: true
-      })
+      body: JSON.stringify({ ...commonPayload, key: key.publicKey })
     });
-    const accountData = await accountResponse.json();
+    return await response.json();
+  }, "fetchAccount");
+  const updateAccount = /* @__PURE__ */ __name(async (accountData, key) => {
+    const response = await fetch(`${apiBaseUrl}/${accountData.id}/account`, {
+      method: "PUT",
+      headers: {
+        "User-Agent": "insomnia/8.6.1",
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${accountData.token}`
+      },
+      body: JSON.stringify({ ...commonPayload, key: key.publicKey, license: warpPlusLicense })
+    });
+    return {
+      status: response.status,
+      data: await response.json()
+    };
+  }, "updateAccount");
+  for (const key of warpKeys) {
+    const accountData = await fetchAccount(key);
     warpConfigs.push({
-      privateKey: warpKeys[i].privateKey,
+      privateKey: key.privateKey,
       account: accountData
     });
     if (warpPlusLicense) {
-      const response = await fetch(`${apiBaseUrl}/${accountData.id}/account`, {
-        method: "PUT",
-        headers: {
-          "User-Agent": "insomnia/8.6.1",
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${accountData.token}`
-        },
-        body: JSON.stringify({
-          key: warpKeys[i].publicKey,
-          install_id: "",
-          fcm_token: "",
-          tos: (/* @__PURE__ */ new Date()).toISOString(),
-          type: "Android",
-          model: "PC",
-          locale: "en_US",
-          warp_enabled: true,
-          license: warpPlusLicense
-        })
-      });
-      const responseData = await response.json();
-      if (response.status !== 200 && !responseData.success)
+      const { status, data: responseData } = await updateAccount(accountData, key);
+      if (status !== 200 && !responseData.success) {
         return { error: responseData.errors[0]?.message, configs: null };
+      }
     }
   }
   const configs = JSON.stringify(warpConfigs);
   await env.bpb.put("warpConfigs", configs);
   return { error: null, configs };
 }
-__name(fetchWgConfig, "fetchWgConfig");
+__name(fetchWarpConfigs, "fetchWarpConfigs");
 var generateKeyPair = /* @__PURE__ */ __name(() => {
   const base64Encode = /* @__PURE__ */ __name((array) => btoa(String.fromCharCode.apply(null, array)), "base64Encode");
   let privateKey = import_tweetnacl2.default.randomBytes(32);
@@ -4618,7 +4617,7 @@ async function getDataset(request, env) {
   }
   if (!proxySettings) {
     proxySettings = await updateDataset(request, env);
-    const { error, configs } = await fetchWgConfig(env, proxySettings);
+    const { error, configs } = await fetchWarpConfigs(env, proxySettings);
     if (error)
       throw new Error(`An error occurred while getting Warp configs - ${error}`);
     warpConfigs = configs;
@@ -4763,7 +4762,7 @@ async function updateWarpConfigs(request, env) {
       const { kvNotFound, proxySettings } = await getDataset(request, env);
       if (kvNotFound)
         return await renderErrorPage(request, env, "KV Dataset is not properly set!", null, true);
-      const { error: warpPlusError } = await fetchWgConfig(env, proxySettings);
+      const { error: warpPlusError } = await fetchWarpConfigs(env, proxySettings);
       if (warpPlusError)
         return new Response(warpPlusError, { status: 400 });
       return new Response("Warp configs updated successfully", { status: 200 });
@@ -5938,14 +5937,13 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
 
                     document.body.style.cursor = 'default';
                     refreshBtn.innerHTML = refreshButtonVal;
-                    if (response.ok) {
-                        alert('\u2705 Panel settings reset to default successfully! \u{1F60E}');
-                        window.location.reload(true);
-                    } else {
+                    if (!response.ok) {
                         const errorMessage = await response.text();
                         console.error(errorMessage, response.status);
                         alert('\u26A0\uFE0F An error occured, Please try again!\\n\u26D4 ' + errorMessage);
-                    }         
+                    }       
+                    alert('\u2705 Panel settings reset to default successfully! \u{1F60E}');
+                    window.location.reload(true);
                 } catch (error) {
                     console.error('Error:', error);
                 }
@@ -5958,14 +5956,11 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
             }
             darkModeToggle.addEventListener('click', () => {
                 const isDarkMode = document.body.classList.toggle('dark-mode');
-                if (isDarkMode) {
-                    localStorage.setItem('darkMode', 'enabled');
-                } else {
-                    localStorage.setItem('darkMode', 'disabled');                
-                }
+                localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
             });
 
-            if (${!isPassSet}) {
+            const isPassSet = ${isPassSet};
+            if (!isPassSet) {
                 forcedPassChange = true;
                 changePass.click();
             }
@@ -6014,13 +6009,12 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
 
                 document.body.style.cursor = 'default';
                 refreshBtn.innerHTML = refreshButtonVal;
-                if (response.ok) {
-                    ${isWarpPlus} ? alert('\u2705 Warp configs upgraded to PLUS successfully! \u{1F60E}') : alert('\u2705 Warp configs updated successfully! \u{1F60E}');
-                } else {
+                if (!response.ok) {
                     const errorMessage = await response.text();
                     console.error(errorMessage, response.status);
                     alert('\u26A0\uFE0F An error occured, Please try again!\\n\u26D4 ' + errorMessage);
-                }         
+                }          
+                ${isWarpPlus ? `alert('\u2705 Warp configs upgraded to PLUS successfully! \u{1F60E}');` : `alert('\u2705 Warp configs updated successfully! \u{1F60E}');`}
             } catch (error) {
                 console.error('Error:', error);
             } 
@@ -6147,14 +6141,14 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
             });
 
             const invalidIPs = [...cleanIPs, proxyIP, ...customCdnAddrs, customCdnHost, customCdnSni]?.filter(value => {
-                if (value !== "") {
+                if (value) {
                     const trimmedValue = value.trim();
                     return !validIPDomain.test(trimmedValue);
                 }
             });
 
             const invalidEndpoints = warpEndpoints?.filter(value => {
-                if (value !== "") {
+                if (value) {
                     const trimmedValue = value.trim();
                     return !validEndpoint.test(trimmedValue);
                 }
@@ -6185,7 +6179,7 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                 return false;
             }
 
-            if (isCustomCdn && !(customCdnAddrs.length > 0 && customCdnHost && customCdnSni)) {
+            if (isCustomCdn && !(customCdnAddrs.length && customCdnHost && customCdnSni)) {
                 alert('\u26D4 All "Custom" fields should be filled or deleted together! \u{1FAE4}');               
                 return false;
             }
@@ -6204,15 +6198,14 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                 document.body.style.cursor = 'default';
                 applyButton.value = applyButtonVal;
 
-                if (response.ok) {
-                    alert('\u2705 Parameters applied successfully \u{1F60E}');
-                    window.location.reload();
-                } else {
+                if (!response.ok) {
                     const errorMessage = await response.text();
                     console.error(errorMessage, response.status);
                     alert('\u26A0\uFE0F Session expired! Please login again.');
                     window.location.href = '/login';
-                }           
+                }                
+                alert('\u2705 Parameters applied successfully \u{1F60E}');
+                window.location.reload();
             } catch (error) {
                 console.error('Error:', error);
             }
@@ -6227,11 +6220,8 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                     credentials: 'same-origin'
                 });
             
-                if (response.ok) {
-                    window.location.href = '/login';
-                } else {
-                    console.error('Failed to log out:', response.status);
-                }
+                if (!response.ok) console.error('Failed to log out:', response.status);
+                window.location.href = '/login';
             } catch (error) {
                 console.error('Error:', error);
             }
