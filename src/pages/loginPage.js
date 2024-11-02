@@ -1,8 +1,8 @@
-import { initializeParams, panelVersion } from "../helpers/init.js";
+import { initializeParams, origin, panelVersion } from "../helpers/init";
 
-export async function renderLoginPage (env) {
-    await initializeParams(env);
-    return `
+export async function renderLoginPage (request, env) {
+    await initializeParams(request, env);
+    const loginPage = `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -146,4 +146,19 @@ export async function renderLoginPage (env) {
     </script>
     </body>
     </html>`;
+
+    return new Response(loginPage, {
+        status: 200,
+        headers: {
+            'Content-Type': 'text/html;charset=utf-8',
+            'Access-Control-Allow-Origin': origin,
+            'Access-Control-Allow-Methods': 'GET, POST',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            'X-Content-Type-Options': 'nosniff',
+            'X-Frame-Options': 'DENY',
+            'Referrer-Policy': 'strict-origin-when-cross-origin',
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, no-transform',
+            'CDN-Cache-Control': 'no-store'
+        }
+    });
 }

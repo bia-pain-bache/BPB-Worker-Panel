@@ -1,9 +1,9 @@
 import { connect } from 'cloudflare:sockets';
 import sha256 from 'js-sha256';
-import { initializeParams, trojanPassword, proxyIP } from "../helpers/init.js";
+import { initializeParams, trojanPassword, proxyIP, pathName } from "../helpers/init";
 
 export async function trojanOverWSHandler(request, env) {
-    await initializeParams(env);
+    await initializeParams(request, env);
     const webSocketPair = new WebSocketPair();
     const [client, webSocket] = Object.values(webSocketPair);
     webSocket.accept();
@@ -200,8 +200,7 @@ async function handleTCPOutBound(
   
     // if the cf connect tcp socket have no incoming data, we retry to redirect ip
     async function retry() {
-        const { pathname } = new URL(request.url);
-        let panelProxyIP = pathname.split('/')[2];
+        let panelProxyIP = pathName.split('/')[2];
         panelProxyIP = panelProxyIP ? atob(panelProxyIP) : undefined;
 		const tcpSocket = await connectAndWrite(panelProxyIP || proxyIP || addressRemote, portRemote);
         // no matter retry success or not, close websocket

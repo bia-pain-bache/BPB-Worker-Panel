@@ -1,5 +1,7 @@
-import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6 } from './helpers.js';
-import { initializeParams, userID, trojanPassword, defaultHttpsPorts } from "../helpers/init.js";
+import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6 } from './helpers';
+import { initializeParams, userID, trojanPassword, hostName, defaultHttpsPorts } from "../helpers/init";
+import { getDataset } from '../kv/handlers';
+import { renderErrorPage } from '../pages/errorPage';
 
 async function buildClashDNS (proxySettings, isWarp) {
     const { 
@@ -279,7 +281,9 @@ function buildClashChainOutbound(chainProxyParams) {
     return chainOutbound;
 }
 
-export async function getClashWarpConfig(proxySettings, warpConfigs) {
+export async function getClashWarpConfig(request, env) {
+    const { kvNotFound, proxySettings, warpConfigs } = await getDataset(request, env);
+    if (kvNotFound) return await renderErrorPage(request, env, 'KV Dataset is not properly set!', null, true);
     const { warpEndpoints, warpEnableIPv6 } = proxySettings;
     let config = structuredClone(clashConfigTemp);
     config.ipv6 = warpEnableIPv6;
@@ -308,11 +312,20 @@ export async function getClashWarpConfig(proxySettings, warpConfigs) {
     });
     
     selector.proxies.push(...warpRemarks, ...WoWRemarks);
-    return config;
+    return new Response(JSON.stringify(config, null, 4), { 
+        status: 200,
+        headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'CDN-Cache-Control': 'no-store'
+        }
+    });
 }
 
-export async function getClashNormalConfig (env, hostName, proxySettings) {
-    await initializeParams(env);
+export async function getClashNormalConfig (request, env) {
+    await initializeParams(request, env);
+    const { kvNotFound, proxySettings } = await getDataset(request, env);
+    if (kvNotFound) return await renderErrorPage(request, env, 'KV Dataset is not properly set!', null, true);
     let chainProxy;
     const { 
         cleanIPs, 
@@ -418,7 +431,14 @@ export async function getClashNormalConfig (env, hostName, proxySettings) {
         });
     });
 
-    return config;
+    return new Response(JSON.stringify(config, null, 4), { 
+        status: 200,
+        headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'CDN-Cache-Control': 'no-store'
+        }
+    });
 }
 
 const clashConfigTemp = {

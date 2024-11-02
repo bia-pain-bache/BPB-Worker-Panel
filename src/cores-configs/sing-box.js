@@ -1,5 +1,7 @@
-import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath } from './helpers.js';
-import { initializeParams, userID, trojanPassword, defaultHttpsPorts } from "../helpers/init.js";
+import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath } from './helpers';
+import { initializeParams, userID, trojanPassword, hostName, defaultHttpsPorts } from "../helpers/init";
+import { renderErrorPage } from '../pages/errorPage';
+import { getDataset } from '../kv/handlers';
 
 function buildSingBoxDNS (proxySettings, isChain, isWarp) {
     const { 
@@ -508,7 +510,9 @@ function buildSingBoxChainOutbound (chainProxyParams) {
     return chainOutbound;
 }
 
-export async function getSingBoxWarpConfig (proxySettings, warpConfigs, client) {
+export async function getSingBoxWarpConfig (request, env, client) {
+    const { kvNotFound, proxySettings, warpConfigs } = await getDataset(request, env);
+    if (kvNotFound) return await renderErrorPage(request, env, 'KV Dataset is not properly set!', null, true);
     const { warpEndpoints } = proxySettings;
     let config = structuredClone(singboxConfigTemp);
     const dnsObject = buildSingBoxDNS(proxySettings, false, true);
@@ -543,11 +547,20 @@ export async function getSingBoxWarpConfig (proxySettings, warpConfigs, client) 
     });
     
     selector.outbounds.push(...warpRemarks, ...WoWRemarks);
-    return config;
+    return new Response(JSON.stringify(config, null, 4), { 
+        status: 200,
+        headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'CDN-Cache-Control': 'no-store'
+        }
+    });
 }
 
-export async function getSingBoxCustomConfig(env, hostName, proxySettings, isFragment) {
-    await initializeParams(env);
+export async function getSingBoxCustomConfig(request, env, isFragment) {
+    await initializeParams(request, env);
+    const { kvNotFound, proxySettings } = await getDataset(request, env);
+    if (kvNotFound) return await renderErrorPage(request, env, 'KV Dataset is not properly set!', null, true);
     let chainProxyOutbound;
     const { 
         cleanIPs,  
@@ -655,7 +668,14 @@ export async function getSingBoxCustomConfig(env, hostName, proxySettings, isFra
         });
     });
 
-    return config;
+    return new Response(JSON.stringify(config, null, 4), { 
+        status: 200,
+        headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'CDN-Cache-Control': 'no-store'
+        }
+    });
 }
 
 const singboxConfigTemp = {

@@ -1,6 +1,6 @@
 import { connect } from 'cloudflare:sockets';
-import { isValidUUID } from '../helpers/helpers.js';
-import { initializeParams, userID, dohURL, proxyIP } from "../helpers/init.js";
+import { isValidUUID } from '../helpers/helpers';
+import { initializeParams, userID, dohURL, proxyIP, pathName } from "../helpers/init";
 
 /**
  * Handles VLESS over WebSocket requests by creating a WebSocket pair, accepting the WebSocket connection, and processing the VLESS header.
@@ -10,7 +10,7 @@ import { initializeParams, userID, dohURL, proxyIP } from "../helpers/init.js";
 export async function vlessOverWSHandler(request, env) {
     /** @type {import("@cloudflare/workers-types").WebSocket[]} */
     // @ts-ignore
-    await initializeParams(env);
+    await initializeParams(request, env);
     const webSocketPair = new WebSocketPair();
     const [client, webSocket] = Object.values(webSocketPair);
 
@@ -176,8 +176,7 @@ async function handleTCPOutBound(
   
     // if the cf connect tcp socket have no incoming data, we retry to redirect ip
     async function retry() {
-        const { pathname } = new URL(request.url);
-        let panelProxyIP = pathname.split('/')[2];
+        let panelProxyIP = pathName.split('/')[2];
         panelProxyIP = panelProxyIP ? atob(panelProxyIP) : undefined;
 		const tcpSocket = await connectAndWrite(panelProxyIP || proxyIP || addressRemote, portRemote);
         // no matter retry success or not, close websocket

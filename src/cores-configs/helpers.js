@@ -1,4 +1,4 @@
-import { resolveDNS, isDomain } from '../helpers/helpers.js';
+import { resolveDNS, isDomain } from '../helpers/helpers';
 
 export async function getConfigAddresses(hostName, cleanIPs, enableIPv6) {
     const resolved = await resolveDNS(hostName);
