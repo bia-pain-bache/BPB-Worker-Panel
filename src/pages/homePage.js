@@ -1167,6 +1167,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                         const errorMessage = await response.text();
                         console.error(errorMessage, response.status);
                         alert('⚠️ An error occured, Please try again!\\n⛔ ' + errorMessage);
+                        return;
                     }       
                     alert('✅ Panel settings reset to default successfully! 😎');
                     window.location.reload(true);
@@ -1239,6 +1240,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                     const errorMessage = await response.text();
                     console.error(errorMessage, response.status);
                     alert('⚠️ An error occured, Please try again!\\n⛔ ' + errorMessage);
+                    return;
                 }          
                 ${isWarpPlus
                     ? `alert('✅ Warp configs upgraded to PLUS successfully! 😎');` 
@@ -1449,7 +1451,10 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                     credentials: 'same-origin'
                 });
             
-                if (!response.ok) console.error('Failed to log out:', response.status);
+                if (!response.ok) {
+                    console.error('Failed to log out:', response.status);
+                    return;
+                }
                 window.location.href = '/login';
             } catch (error) {
                 console.error('Error:', error);
