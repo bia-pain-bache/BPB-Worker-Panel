@@ -1,4 +1,4 @@
-import { fetchWgConfig } from '../protocols/warp';
+import { fetchWarpConfigs } from '../protocols/warp';
 import { isDomain, resolveDNS } from '../helpers/helpers';
 import { initializeParams, panelVersion } from '../helpers/init';
 import { Authenticate } from '../authentication/auth';
@@ -21,7 +21,7 @@ export async function getDataset(request, env) {
 
     if (!proxySettings) {
         proxySettings = await updateDataset(request, env);
-        const { error, configs } = await fetchWgConfig(env, proxySettings);
+        const { error, configs } = await fetchWarpConfigs(env, proxySettings);
         if (error) throw new Error(`An error occurred while getting Warp configs - ${error}`);
         warpConfigs = configs;
     }
@@ -166,7 +166,7 @@ export async function updateWarpConfigs(request, env) {
         try {
             const { kvNotFound, proxySettings } = await getDataset(request, env);
             if (kvNotFound) return await renderErrorPage(request, env, 'KV Dataset is not properly set!', null, true);
-            const { error: warpPlusError } = await fetchWgConfig(env, proxySettings);
+            const { error: warpPlusError } = await fetchWarpConfigs(env, proxySettings);
             if (warpPlusError) return new Response(warpPlusError, { status: 400 });
             return new Response('Warp configs updated successfully', { status: 200 });
         } catch (error) {

@@ -132,13 +132,12 @@ export async function renderLoginPage (request, env) {
                     body: password
                 });
             
-                if (response.ok) {
-                    window.location.href = '/panel';
-                } else {
+                if (!response.ok) {
                     passwordError.textContent = '⚠️ Wrong Password!';
                     const errorMessage = await response.text();
                     console.error('Login failed:', errorMessage);
                 }
+                window.location.href = '/panel';
             } catch (error) {
                 console.error('Error during login:', error);
             }
