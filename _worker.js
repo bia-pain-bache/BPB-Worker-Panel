@@ -4358,6 +4358,7 @@ async function renderLoginPage(request, env) {
                     passwordError.textContent = '\u26A0\uFE0F Wrong Password!';
                     const errorMessage = await response.text();
                     console.error('Login failed:', errorMessage);
+                    return;
                 }
                 window.location.href = '/panel';
             } catch (error) {
@@ -5941,6 +5942,7 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                         const errorMessage = await response.text();
                         console.error(errorMessage, response.status);
                         alert('\u26A0\uFE0F An error occured, Please try again!\\n\u26D4 ' + errorMessage);
+                        return;
                     }       
                     alert('\u2705 Panel settings reset to default successfully! \u{1F60E}');
                     window.location.reload(true);
@@ -6013,6 +6015,7 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                     const errorMessage = await response.text();
                     console.error(errorMessage, response.status);
                     alert('\u26A0\uFE0F An error occured, Please try again!\\n\u26D4 ' + errorMessage);
+                    return;
                 }          
                 ${isWarpPlus ? `alert('\u2705 Warp configs upgraded to PLUS successfully! \u{1F60E}');` : `alert('\u2705 Warp configs updated successfully! \u{1F60E}');`}
             } catch (error) {
@@ -6220,7 +6223,10 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                     credentials: 'same-origin'
                 });
             
-                if (!response.ok) console.error('Failed to log out:', response.status);
+                if (!response.ok) {
+                    console.error('Failed to log out:', response.status);
+                    return;
+                }
                 window.location.href = '/login';
             } catch (error) {
                 console.error('Error:', error);
