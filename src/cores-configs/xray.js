@@ -1,7 +1,8 @@
 import { resolveDNS, isDomain } from '../helpers/helpers.js';
-import { getConfigAddresses, extractWireguardParams, base64ToDecimal, generateRemark, randomUpperCase, getRandomPath } from './helpers.js';
-import { initializeParams, userID, trojanPassword, defaultHttpsPorts } from "../helpers/init.js";
-
+import { getConfigAddresses, extractWireguardParams, base64ToDecimal, generateRemark, randomUpperCase, getRandomPath } from './helpers';
+import { initializeParams, userID, trojanPassword, hostName, defaultHttpsPorts } from "../helpers/init";
+import { getDataset } from '../kv/handlers.js';
+import { renderErrorPage } from '../pages/errorPage.js';
 
 async function buildXrayDNS (proxySettings, outboundAddrs, domainToStaticIPs, isWorkerLess, isBalancer, isWarp) {
     const { 
@@ -632,8 +633,10 @@ async function buildXrayWorkerLessConfig(proxySettings) {
     return config;
 }
 
-export async function getXrayCustomConfigs(env, hostName, proxySettings, isFragment) {
-    await initializeParams(env);
+export async function getXrayCustomConfigs(request, env, isFragment) {
+    await initializeParams(request, env);
+    const { kvNotFound, proxySettings } = await getDataset(request, env);
+    if (kvNotFound) return await renderErrorPage(request, env, 'KV Dataset is not properly set!', null, true);
     let configs = [];
     let outbounds = [];
     let protocols = [];
@@ -711,15 +714,25 @@ export async function getXrayCustomConfigs(env, hostName, proxySettings, isFragm
     }
     
     const bestPing = await buildXrayBestPingConfig(proxySettings, totalAddresses, chainProxy, outbounds, isFragment);
-    if (!isFragment) return [...configs, bestPing];
-    const bestFragment = await buildXrayBestFragmentConfig(proxySettings, hostName, chainProxy, outbounds);
-    const workerLessConfig = await buildXrayWorkerLessConfig(proxySettings); 
-    configs.push(bestPing, bestFragment, workerLessConfig);
-
-    return configs;
+    let finalConfigs = [...configs, bestPing];
+    if (isFragment) {
+        const bestFragment = await buildXrayBestFragmentConfig(proxySettings, hostName, chainProxy, outbounds);
+        const workerLessConfig = await buildXrayWorkerLessConfig(proxySettings); 
+        finalConfigs.push(bestFragment, workerLessConfig);
+    }
+    return new Response(JSON.stringify(finalConfigs, null, 4), { 
+        status: 200,
+        headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'CDN-Cache-Control': 'no-store'
+        }
+    });
 }
 
-export async function getXrayWarpConfigs (proxySettings, warpConfigs, client) {
+export async function getXrayWarpConfigs (request, env, client) {
+    const { kvNotFound, proxySettings, warpConfigs } = await getDataset(request, env);
+    if (kvNotFound) return await renderErrorPage(request, env, 'KV Dataset is not properly set!', null, true);
     let xrayWarpConfigs = [];
     let xrayWoWConfigs = [];
     let xrayWarpOutbounds = [];
@@ -761,7 +774,15 @@ export async function getXrayWarpConfigs (proxySettings, warpConfigs, client) {
     xrayWoWBestPing.dns = dnsObject;
     xrayWoWBestPing.routing.rules = buildXrayRoutingRules(proxySettings, outboundDomains, true, true, false);
     xrayWoWBestPing.outbounds.unshift(...xrayWoWOutbounds, ...xrayWarpOutbounds);
-    return [...xrayWarpConfigs, ...xrayWoWConfigs, xrayWarpBestPing, xrayWoWBestPing];
+    const configs = [...xrayWarpConfigs, ...xrayWoWConfigs, xrayWarpBestPing, xrayWoWBestPing];
+    return new Response(JSON.stringify(configs, null, 4), { 
+        status: 200,
+        headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'CDN-Cache-Control': 'no-store'
+        }
+    });
 }
 
 const xrayConfigTemp = {

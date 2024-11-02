@@ -1,8 +1,8 @@
-import { initializeParams, panelVersion } from "../helpers/init.js";
+import { initializeParams, panelVersion } from "../helpers/init";
 
-export async function renderErrorPage (env, message, error, refer) {
-    await initializeParams(env);
-    return `
+export async function renderErrorPage (request, env, message, error, refer) {
+    await initializeParams(request, env);
+    const errorPage = `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -54,4 +54,6 @@ export async function renderErrorPage (env, message, error, refer) {
     </script>
     </body>
     </html>`;
+
+    return new Response(errorPage, { status: 200, headers: {'Content-Type': 'text/html'}});
 }

@@ -1,7 +1,7 @@
-import { initializeParams, userID, defaultHttpPorts, defaultHttpsPorts, panelVersion } from "../helpers/init.js";
+import { initializeParams, userID, hostName, origin, defaultHttpPorts, defaultHttpsPorts, panelVersion } from "../helpers/init";
 
-export async function renderHomePage (request, env, hostName, proxySettings, isPassSet) {
-    await initializeParams(env);
+export async function renderHomePage (request, env, proxySettings, isPassSet) {
+    await initializeParams(request, env);
     const {
         remoteDNS, 
         localDNS,
@@ -64,7 +64,7 @@ export async function renderHomePage (request, env, hostName, proxySettings, isP
         defaultHttpsPorts.includes(port) ? httpsPortsBlock += portBlock : httpPortsBlock += portBlock;
     });
 
-    return `
+    const homePage = `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -1519,4 +1519,19 @@ export async function renderHomePage (request, env, hostName, proxySettings, isP
     </script>
     </body>	
     </html>`;
+
+    return new Response(homePage, {
+        status: 200,
+        headers: {
+            'Content-Type': 'text/html;charset=utf-8',
+            'Access-Control-Allow-Origin': origin,
+            'Access-Control-Allow-Methods': 'GET, POST',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            'X-Content-Type-Options': 'nosniff',
+            'X-Frame-Options': 'DENY',
+            'Referrer-Policy': 'strict-origin-when-cross-origin',
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, no-transform',
+            'CDN-Cache-Control': 'no-store'
+        }
+    });
 }

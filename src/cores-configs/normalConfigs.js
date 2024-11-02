@@ -1,8 +1,12 @@
-import { getConfigAddresses, generateRemark, randomUpperCase, getRandomPath } from './helpers.js';
-import { initializeParams, userID, trojanPassword, defaultHttpsPorts } from "../helpers/init.js";
+import { getConfigAddresses, generateRemark, randomUpperCase, getRandomPath } from './helpers';
+import { initializeParams, userID, trojanPassword, hostName, client, defaultHttpsPorts } from "../helpers/init";
+import { getDataset } from '../kv/handlers';
+import { renderErrorPage } from '../pages/errorPage';
 
-export async function getNormalConfigs(env, hostName, proxySettings, client) {
-    await initializeParams(env);
+export async function getNormalConfigs(request, env) {
+    await initializeParams(request, env);
+    const { kvNotFound, proxySettings } = await getDataset(request, env);
+    if (kvNotFound) return await renderErrorPage(request, env, 'KV Dataset is not properly set!', null, true);
     const { 
         cleanIPs, 
         proxyIP, 
@@ -66,5 +70,13 @@ export async function getNormalConfigs(env, hostName, proxySettings, client) {
         }
     }
 
-    return btoa(vlessConfs + trojanConfs + chainProxy);
+    const configs = btoa(vlessConfs + trojanConfs + chainProxy);
+    return new Response(JSON.stringify(configs, null, 4), { 
+        status: 200,
+        headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'CDN-Cache-Control': 'no-store'
+        }
+    });
 }

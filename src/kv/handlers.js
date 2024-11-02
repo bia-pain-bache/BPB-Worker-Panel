@@ -1,9 +1,11 @@
-import { fetchWgConfig } from '../protocols/warp.js';
-import { isDomain, resolveDNS } from '../helpers/helpers.js';
-import { initializeParams, panelVersion } from '../helpers/init.js';
+import { fetchWgConfig } from '../protocols/warp';
+import { isDomain, resolveDNS } from '../helpers/helpers';
+import { initializeParams, panelVersion } from '../helpers/init';
+import { Authenticate } from '../authentication/auth';
+import { renderErrorPage } from '../pages/errorPage';
 
-export async function getDataset(env) {
-    await initializeParams(env);
+export async function getDataset(request, env) {
+    await initializeParams(request, env);
     let proxySettings, warpConfigs;
     if (typeof env.bpb !== 'object') {
         return {kvNotFound: true, proxySettings: null, warpConfigs: null}
@@ -18,20 +20,22 @@ export async function getDataset(env) {
     }
 
     if (!proxySettings) {
-        proxySettings = await updateDataset(env);
+        proxySettings = await updateDataset(request, env);
         const { error, configs } = await fetchWgConfig(env, proxySettings);
         if (error) throw new Error(`An error occurred while getting Warp configs - ${error}`);
         warpConfigs = configs;
     }
     
-    if (panelVersion !== proxySettings.panelVersion) proxySettings = await updateDataset(env);
+    if (panelVersion !== proxySettings.panelVersion) proxySettings = await updateDataset(request, env);
     return {kvNotFound: false, proxySettings, warpConfigs}
 }
 
-export async function updateDataset (env, newSettings, resetSettings) {
-    await initializeParams(env);
+export async function updateDataset (request, env) {
+    await initializeParams(request, env);
+    let newSettings = await request.formData();
+    const isReset = newSettings.get('resetSettings') === 'true';
     let currentSettings;
-    if (!resetSettings) {
+    if (!isReset) {
         try {
             currentSettings = await env.bpb.get("proxySettings", {type: 'json'});
         } catch (error) {
@@ -40,6 +44,7 @@ export async function updateDataset (env, newSettings, resetSettings) {
         }
     } else {
         await env.bpb.delete('warpConfigs');
+        newSettings = null;
     }
 
     const validateField = (field) => {
@@ -152,4 +157,23 @@ function extractChainProxyParams(chainProxy) {
     }
 
     return JSON.stringify(configParams);
+}
+
+export async function updateWarpConfigs(request, env) {
+    const auth = await Authenticate(request, env); 
+    if (!auth) return new Response('Unauthorized', { status: 401 });
+    if (request.method === 'POST') {
+        try {
+            const { kvNotFound, proxySettings } = await getDataset(request, env);
+            if (kvNotFound) return await renderErrorPage(request, env, 'KV Dataset is not properly set!', null, true);
+            const { error: warpPlusError } = await fetchWgConfig(env, proxySettings);
+            if (warpPlusError) return new Response(warpPlusError, { status: 400 });
+            return new Response('Warp configs updated successfully', { status: 200 });
+        } catch (error) {
+            console.log(error);
+            return new Response(`An error occurred while updating Warp configs! - ${error}`, { status: 500 });
+        }
+    } else {
+        return new Response('Unsupported request', { status: 405 });
+    }
 }
