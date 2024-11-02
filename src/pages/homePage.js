@@ -1163,14 +1163,13 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
 
                     document.body.style.cursor = 'default';
                     refreshBtn.innerHTML = refreshButtonVal;
-                    if (response.ok) {
-                        alert('✅ Panel settings reset to default successfully! 😎');
-                        window.location.reload(true);
-                    } else {
+                    if (!response.ok) {
                         const errorMessage = await response.text();
                         console.error(errorMessage, response.status);
                         alert('⚠️ An error occured, Please try again!\\n⛔ ' + errorMessage);
-                    }         
+                    }       
+                    alert('✅ Panel settings reset to default successfully! 😎');
+                    window.location.reload(true);
                 } catch (error) {
                     console.error('Error:', error);
                 }
@@ -1183,14 +1182,11 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
             }
             darkModeToggle.addEventListener('click', () => {
                 const isDarkMode = document.body.classList.toggle('dark-mode');
-                if (isDarkMode) {
-                    localStorage.setItem('darkMode', 'enabled');
-                } else {
-                    localStorage.setItem('darkMode', 'disabled');                
-                }
+                localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
             });
 
-            if (${!isPassSet}) {
+            const isPassSet = ${isPassSet};
+            if (!isPassSet) {
                 forcedPassChange = true;
                 changePass.click();
             }
@@ -1239,13 +1235,15 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
 
                 document.body.style.cursor = 'default';
                 refreshBtn.innerHTML = refreshButtonVal;
-                if (response.ok) {
-                    ${isWarpPlus} ? alert('✅ Warp configs upgraded to PLUS successfully! 😎') : alert('✅ Warp configs updated successfully! 😎');
-                } else {
+                if (!response.ok) {
                     const errorMessage = await response.text();
                     console.error(errorMessage, response.status);
                     alert('⚠️ An error occured, Please try again!\\n⛔ ' + errorMessage);
-                }         
+                }          
+                ${isWarpPlus
+                    ? `alert('✅ Warp configs upgraded to PLUS successfully! 😎');` 
+                    : `alert('✅ Warp configs updated successfully! 😎');`
+                }
             } catch (error) {
                 console.error('Error:', error);
             } 
@@ -1372,14 +1370,14 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
             });
 
             const invalidIPs = [...cleanIPs, proxyIP, ...customCdnAddrs, customCdnHost, customCdnSni]?.filter(value => {
-                if (value !== "") {
+                if (value) {
                     const trimmedValue = value.trim();
                     return !validIPDomain.test(trimmedValue);
                 }
             });
 
             const invalidEndpoints = warpEndpoints?.filter(value => {
-                if (value !== "") {
+                if (value) {
                     const trimmedValue = value.trim();
                     return !validEndpoint.test(trimmedValue);
                 }
@@ -1410,7 +1408,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                 return false;
             }
 
-            if (isCustomCdn && !(customCdnAddrs.length > 0 && customCdnHost && customCdnSni)) {
+            if (isCustomCdn && !(customCdnAddrs.length && customCdnHost && customCdnSni)) {
                 alert('⛔ All "Custom" fields should be filled or deleted together! 🫤');               
                 return false;
             }
@@ -1429,15 +1427,14 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                 document.body.style.cursor = 'default';
                 applyButton.value = applyButtonVal;
 
-                if (response.ok) {
-                    alert('✅ Parameters applied successfully 😎');
-                    window.location.reload();
-                } else {
+                if (!response.ok) {
                     const errorMessage = await response.text();
                     console.error(errorMessage, response.status);
                     alert('⚠️ Session expired! Please login again.');
                     window.location.href = '/login';
-                }           
+                }                
+                alert('✅ Parameters applied successfully 😎');
+                window.location.reload();
             } catch (error) {
                 console.error('Error:', error);
             }
@@ -1452,11 +1449,8 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                     credentials: 'same-origin'
                 });
             
-                if (response.ok) {
-                    window.location.href = '/login';
-                } else {
-                    console.error('Failed to log out:', response.status);
-                }
+                if (!response.ok) console.error('Failed to log out:', response.status);
+                window.location.href = '/login';
             } catch (error) {
                 console.error('Error:', error);
             }
