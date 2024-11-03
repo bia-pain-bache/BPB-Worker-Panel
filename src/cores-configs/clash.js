@@ -111,6 +111,9 @@ function buildClashRoutingRules (proxySettings) {
     ];
 
     blockUDP443 && rules.push("AND,((NETWORK,udp),(DST-PORT,443)),REJECT");
+    rules.push("IP-CIDR,10.10.34.34/32,REJECT,no-resolve");
+    rules.push("IP-CIDR,10.10.34.35/32,REJECT,no-resolve");
+    rules.push("IP-CIDR,10.10.34.36/32,REJECT,no-resolve");
     rules.push("MATCH,✅ Selector");
     return rules;
 }
@@ -454,6 +457,10 @@ const clashConfigTemp = {
     "external-controller": "127.0.0.1:9090",
     "external-ui-url": "https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip",
     "external-ui": "ui",
+    "external-controller-cors": {
+        "allow-origins": [ "*" ],
+        "allow-private-network": true
+    },
     "profile": {
         "store-selected": true,
         "store-fake-ip": true
@@ -466,6 +473,7 @@ const clashConfigTemp = {
         "strict-route": true,
         "auto-detect-interface": true,
         "dns-hijack": ["any:53"],
+        "include-android-user": [ 0, 10, 999 ],
         "mtu": 9000
     },
     "sniffer": {
