@@ -155,6 +155,7 @@ function buildXrayRoutingRules (proxySettings, outboundAddrs, isChain, isBalance
     if (!isWorkerLess && (isOutboundRule || isBypass)) rules.push({
         ip: [localDNS],
         port: "53",
+        network: "udp",
         outboundTag: "direct",
         type: "field"
     });
@@ -194,6 +195,16 @@ function buildXrayRoutingRules (proxySettings, outboundAddrs, isChain, isBalance
         outboundTag: "block",
         type: "field",
     });
+
+    rules.push({
+        ip: [
+            "10.10.34.34",
+            "10.10.34.35",
+            "10.10.34.36"
+        ],
+        outboundTag: "block",
+        type: "field"
+    })
 
     if (isBalancer) {
         rules.push({

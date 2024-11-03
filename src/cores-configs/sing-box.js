@@ -280,7 +280,12 @@ function buildSingBoxRoutingRules (proxySettings) {
         outbound: "block"
     });
     
-    rules.push({
+    rules.push(
+    {
+        ip_cidr: ["10.10.34.34", "10.10.34.35", "10.10.34.36"],
+        outbound: "block"
+    },
+    {
         ip_cidr: ["224.0.0.0/3", "ff00::/8"],
         source_ip_cidr: ["224.0.0.0/3", "ff00::/8"],
         outbound: "block"
@@ -694,7 +699,7 @@ const singboxConfigTemp = {
             tag: "dns-in",
             listen: "0.0.0.0",
             listen_port: 6450,
-            override_address: "8.8.8.8",
+            override_address: "1.1.1.1",
             override_port: 53
         },
         {
@@ -708,6 +713,7 @@ const singboxConfigTemp = {
             auto_route: true,
             strict_route: true,
             stack: "mixed",
+            endpoint_independent_nat: true,
             sniff: true,
             sniff_override_destination: true
         },
