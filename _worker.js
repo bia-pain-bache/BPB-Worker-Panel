@@ -4328,10 +4328,12 @@ var worker_default = {
               }
             });
           default:
-            url.hostname = "www.speedtest.net";
-            url.protocol = "https:";
-            request = new Request(url, request);
-            return await fetch(request);
+            // url.hostname = "www.speedtest.net";
+            // url.protocol = "https:";
+            // request = new Request(url, request);
+            // return await fetch(request);
+            const errorPage = renderErrorPage("success", err, false);
+            return new Response(errorPage, { status: 200, headers: { "Content-Type": "text/html" } });
         }
       } else {
         return url.pathname.startsWith("/tr") ? await trojanOverWSHandler(request) : await vlessOverWSHandler(request);
