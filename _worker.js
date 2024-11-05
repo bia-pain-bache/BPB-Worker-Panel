@@ -7121,7 +7121,7 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
   return rules;
 }
 __name(buildXrayRoutingRules, "buildXrayRoutingRules");
-function buildXrayVLESSOutbound(tag2, address, port, host, sni, proxyIP2, isFragment, allowInsecure) {
+function buildXrayVLESSOutbound(tag2, address, port, host, sni, proxyIP2, isFragment, allowInsecure, enableIPv6) {
   let outbound = {
     protocol: "vless",
     settings: {
@@ -7165,13 +7165,14 @@ function buildXrayVLESSOutbound(tag2, address, port, host, sni, proxyIP2, isFrag
   if (isFragment) {
     outbound.streamSettings.sockopt.dialerProxy = "fragment";
   } else {
-    outbound.streamSettings.sockopt.tcpKeepAliveIdle = 100;
+    outbound.streamSettings.sockopt.tcpKeepAliveIdle = 60;
     outbound.streamSettings.sockopt.tcpNoDelay = true;
+    outbound.streamSettings.sockopt.domainStrategy = enableIPv6 ? "UseIPv4v6" : "UseIPv4";
   }
   return outbound;
 }
 __name(buildXrayVLESSOutbound, "buildXrayVLESSOutbound");
-function buildXrayTrojanOutbound(tag2, address, port, host, sni, proxyIP2, isFragment, allowInsecure) {
+function buildXrayTrojanOutbound(tag2, address, port, host, sni, proxyIP2, isFragment, allowInsecure, enableIPv6) {
   let outbound = {
     protocol: "trojan",
     settings: {
@@ -7209,8 +7210,9 @@ function buildXrayTrojanOutbound(tag2, address, port, host, sni, proxyIP2, isFra
   if (isFragment) {
     outbound.streamSettings.sockopt.dialerProxy = "fragment";
   } else {
-    outbound.streamSettings.sockopt.tcpKeepAliveIdle = 100;
+    outbound.streamSettings.sockopt.tcpKeepAliveIdle = 60;
     outbound.streamSettings.sockopt.tcpNoDelay = true;
+    outbound.streamSettings.sockopt.domainStrategy = enableIPv6 ? "UseIPv4v6" : "UseIPv4";
   }
   return outbound;
 }
@@ -7451,6 +7453,7 @@ function buildXrayConfig(proxySettings, remark, isFragment, isBalancer, isChain,
     fragment.length = `${lengthMin}-${lengthMax}`;
     fragment.interval = `${intervalMin}-${intervalMax}`;
     fragment.packets = fragmentPackets;
+    config.outbounds[0].settings.domainStrategy = enableIPv6 ? "UseIPv4v6" : "UseIPv4";
   } else {
     config.outbounds.shift();
   }
@@ -7589,7 +7592,7 @@ async function getXrayCustomConfigs(request, env, isFragment) {
         let customConfig = buildXrayConfig(proxySettings, remark, isFragment, false, chainProxy, void 0, false);
         customConfig.dns = await buildXrayDNS(proxySettings, [addr], void 0);
         customConfig.routing.rules = buildXrayRoutingRules(proxySettings, [addr], chainProxy, false, false);
-        let outbound = protocol === "VLESS" ? buildXrayVLESSOutbound("proxy", addr, port, host, sni, proxyIP2, isFragment, isCustomAddr) : buildXrayTrojanOutbound("proxy", addr, port, host, sni, proxyIP2, isFragment, isCustomAddr);
+        let outbound = protocol === "VLESS" ? buildXrayVLESSOutbound("proxy", addr, port, host, sni, proxyIP2, isFragment, isCustomAddr, enableIPv6) : buildXrayTrojanOutbound("proxy", addr, port, host, sni, proxyIP2, isFragment, isCustomAddr, enableIPv6);
         customConfig.outbounds.unshift({ ...outbound });
         outbound.tag = `prox-${proxyIndex}`;
         if (chainProxy) {
@@ -8214,7 +8217,7 @@ function buildSingBoxWarpOutbound(proxySettings, warpConfigs, remark, endpoint, 
   return outbound;
 }
 __name(buildSingBoxWarpOutbound, "buildSingBoxWarpOutbound");
-function buildSingBoxChainOutbound(chainProxyParams) {
+function buildSingBoxChainOutbound(chainProxyParams, enableIPv6) {
   if (["socks", "http"].includes(chainProxyParams.protocol)) {
     const { protocol, host: host2, port: port2, user, pass } = chainProxyParams;
     let chainOutbound2 = {
@@ -8236,6 +8239,7 @@ function buildSingBoxChainOutbound(chainProxyParams) {
     tag: "",
     server: hostName2,
     server_port: +port,
+    domain_strategy: enableIPv6 ? "prefer_ipv4" : "ipv4_only",
     uuid,
     flow,
     detour: ""
@@ -8362,7 +8366,7 @@ async function getSingBoxCustomConfig(request, env, isFragment) {
   if (outProxy) {
     const proxyParams = JSON.parse(outProxyParams);
     try {
-      chainProxyOutbound = buildSingBoxChainOutbound(proxyParams);
+      chainProxyOutbound = buildSingBoxChainOutbound(proxyParams, enableIPv6);
     } catch (error) {
       console.log("An error occured while parsing chain proxy: ", error);
       chainProxyOutbound = void 0;
@@ -8996,7 +9000,6 @@ var clashConfigTemp = {
     "strict-route": true,
     "auto-detect-interface": true,
     "dns-hijack": ["any:53"],
-    "include-android-user": [0, 10, 999],
     "mtu": 9e3
   },
   "sniffer": {
