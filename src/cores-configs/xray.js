@@ -223,7 +223,7 @@ function buildXrayRoutingRules (proxySettings, outboundAddrs, isChain, isBalance
     return rules;
 }
 
-function buildXrayVLESSOutbound (tag, address, port, host, sni, proxyIP, isFragment, allowInsecure) {
+function buildXrayVLESSOutbound (tag, address, port, host, sni, proxyIP, isFragment, allowInsecure, enableIPv6) {
     let outbound = {
         protocol: "vless",
         settings: {
@@ -269,14 +269,15 @@ function buildXrayVLESSOutbound (tag, address, port, host, sni, proxyIP, isFragm
     if (isFragment) {
         outbound.streamSettings.sockopt.dialerProxy = "fragment";
     } else {
-        outbound.streamSettings.sockopt.tcpKeepAliveIdle = 100;
+        outbound.streamSettings.sockopt.tcpKeepAliveIdle = 60;
         outbound.streamSettings.sockopt.tcpNoDelay = true;
+        outbound.streamSettings.sockopt.domainStrategy = enableIPv6 ? "UseIPv4v6" : "UseIPv4";
     }
     
     return outbound;
 }
 
-function buildXrayTrojanOutbound (tag, address, port, host, sni, proxyIP, isFragment, allowInsecure) {
+function buildXrayTrojanOutbound (tag, address, port, host, sni, proxyIP, isFragment, allowInsecure, enableIPv6) {
     let outbound = {
         protocol: "trojan",
         settings: {
@@ -316,8 +317,9 @@ function buildXrayTrojanOutbound (tag, address, port, host, sni, proxyIP, isFrag
     if (isFragment) {
         outbound.streamSettings.sockopt.dialerProxy = "fragment";
     } else {
-        outbound.streamSettings.sockopt.tcpKeepAliveIdle = 100;
+        outbound.streamSettings.sockopt.tcpKeepAliveIdle = 60;
         outbound.streamSettings.sockopt.tcpNoDelay = true;
+        outbound.streamSettings.sockopt.domainStrategy = enableIPv6 ? "UseIPv4v6" : "UseIPv4";
     }
     
     return outbound;
@@ -572,6 +574,7 @@ function buildXrayConfig (proxySettings, remark, isFragment, isBalancer, isChain
         fragment.length = `${lengthMin}-${lengthMax}`;
         fragment.interval = `${intervalMin}-${intervalMax}`;
         fragment.packets = fragmentPackets;
+        config.outbounds[0].settings.domainStrategy = enableIPv6 ? "UseIPv4v6" : "UseIPv4";
     } else {
         config.outbounds.shift();
     }
@@ -702,8 +705,8 @@ export async function getXrayCustomConfigs(request, env, isFragment) {
                 customConfig.dns = await buildXrayDNS(proxySettings, [addr], undefined);
                 customConfig.routing.rules = buildXrayRoutingRules(proxySettings, [addr], chainProxy, false, false);
                 let outbound = protocol === 'VLESS'
-                    ? buildXrayVLESSOutbound('proxy', addr, port, host, sni, proxyIP, isFragment, isCustomAddr)
-                    : buildXrayTrojanOutbound('proxy', addr, port, host, sni, proxyIP, isFragment, isCustomAddr);
+                    ? buildXrayVLESSOutbound('proxy', addr, port, host, sni, proxyIP, isFragment, isCustomAddr, enableIPv6)
+                    : buildXrayTrojanOutbound('proxy', addr, port, host, sni, proxyIP, isFragment, isCustomAddr, enableIPv6);
 
                 customConfig.outbounds.unshift({...outbound});
                 outbound.tag = `prox-${proxyIndex}`;
