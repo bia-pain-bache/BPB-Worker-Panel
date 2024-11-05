@@ -9,3 +9,5 @@
 !docs/**
 !.github/
 !.github/**
+!src/
+!src/**

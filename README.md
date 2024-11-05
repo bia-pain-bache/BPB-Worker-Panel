@@ -23,12 +23,11 @@ This project is dedicated to developing a user panel for the [Cloudflare-workers
 3. **Protocols:** Provides VLESS, Trojan and Wireguard (Warp) protocols.
 4. **Warp Pro configs:** Optimized Warp for crucial circumstances.
 5. **Support Fragment:** Supports Fragment functionality for crucial network situations.
-6. **Full routing rules:** Bypassing Iran/China and LAN, Blocking QUIC, Porn, Ads, Malwares, Phishing...
+6. **Full routing rules:** Bypassing Iran/China/Russia and LAN, Blocking QUIC, Porn, Ads, Malwares, Phishing...
 7. **Chain Proxy:** Capable of adding a chain proxy to fix IP.
 8. **Supports Wide Range of Clients:** Offers subscription links for Xray, Sing-box and Clash core clients.
-10. **Subscription Link (JSON):** Provides subscription link for JSON configs.
-11. **Password-Protected Panel:** Secure your panel with password protection.
-12. **Fully customizable:** Ability to use online scanner and setting up clean IP-domains, Proxy IP, setting DNS servers, choosing ports and protocols, Warp endpoints...
+9. **Password-Protected Panel:** Secure your panel with password protection.
+10. **Fully customizable:** Ability to use online scanner and setting up clean IP-domains, Proxy IP, setting DNS servers, choosing ports and protocols, Warp endpoints...
 <br>
 
 ## How to use:
