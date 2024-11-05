@@ -473,7 +473,6 @@ const clashConfigTemp = {
         "strict-route": true,
         "auto-detect-interface": true,
         "dns-hijack": ["any:53"],
-        "include-android-user": [ 0, 10, 999 ],
         "mtu": 9000
     },
     "sniffer": {

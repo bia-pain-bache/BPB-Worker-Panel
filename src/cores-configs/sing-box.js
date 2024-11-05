@@ -428,7 +428,7 @@ function buildSingBoxWarpOutbound (proxySettings, warpConfigs, remark, endpoint,
     return outbound;
 }
 
-function buildSingBoxChainOutbound (chainProxyParams) {
+function buildSingBoxChainOutbound (chainProxyParams, enableIPv6) {
     if (["socks", "http"].includes(chainProxyParams.protocol)) {
         const { protocol, host, port, user, pass } = chainProxyParams;
     
@@ -452,6 +452,7 @@ function buildSingBoxChainOutbound (chainProxyParams) {
         tag: "",
         server: hostName,
         server_port: +port,
+        domain_strategy: enableIPv6 ? "prefer_ipv4" : "ipv4_only",
         uuid: uuid,
         flow: flow,
         detour: ""
@@ -584,7 +585,7 @@ export async function getSingBoxCustomConfig(request, env, isFragment) {
     if (outProxy) {
         const proxyParams = JSON.parse(outProxyParams);      
         try {
-            chainProxyOutbound = buildSingBoxChainOutbound(proxyParams);
+            chainProxyOutbound = buildSingBoxChainOutbound(proxyParams, enableIPv6);
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
             chainProxyOutbound = undefined;
