@@ -5094,7 +5094,7 @@ const xrayConfigTemp = {
     },
     observatory: {
         probeInterval: "30s",
-        probeURL: "https://www.gstatic.com/generate_204",
+        probeURL: "http://www.apple.com/library/test/success.html",
         subjectSelector: ["prox"],
         EnableConcurrency: true,
     },
@@ -5151,7 +5151,7 @@ const singboxConfigTemp = {
             type: "urltest",
             tag: "",
             outbounds: [],
-            url: "https://www.gstatic.com/generate_204",
+            url: "http://www.apple.com/library/test/success.html",
             interval: ""
         },
         {
@@ -5244,7 +5244,7 @@ const clashConfigTemp = {
         {
             "name": "",
             "type": "url-test",
-            "url": "https://www.gstatic.com/generate_204",
+            "url": "http://www.apple.com/library/test/success.html",
             "interval": 30,
             "tolerance": 50,
             "proxies": []
