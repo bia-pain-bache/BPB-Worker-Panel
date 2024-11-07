@@ -139,7 +139,7 @@ function extractChainProxyParams(chainProxy) {
         configParams = {
             protocol: protocol,
             uuid : url.username,
-            hostName : url.hostname,
+            server : url.hostname,
             port : url.port
         };
     
@@ -151,7 +151,7 @@ function extractChainProxyParams(chainProxy) {
             protocol: protocol, 
             user : url.username,
             pass : url.password,
-            host : url.host,
+            server : url.host,
             port : url.port
         };
     }
