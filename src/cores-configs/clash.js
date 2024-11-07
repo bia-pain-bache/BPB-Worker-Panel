@@ -2,13 +2,14 @@ import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpper
 import { initializeParams, userID, trojanPassword, hostName, defaultHttpsPorts } from "../helpers/init";
 import { getDataset } from '../kv/handlers';
 import { renderErrorPage } from '../pages/errorPage';
+import { isDomain } from '../helpers/helpers';
 
-async function buildClashDNS (proxySettings, isWarp) {
+async function buildClashDNS (proxySettings, isChain, isWarp) {
     const { 
         remoteDNS, 
-        resolvedRemoteDNS, 
         localDNS, 
-        vlessTrojanFakeDNS, 
+        vlessTrojanFakeDNS,
+        outProxyParams,
         enableIPv6, 
         warpFakeDNS,
         warpEnableIPv6,
@@ -34,16 +35,19 @@ async function buildClashDNS (proxySettings, isWarp) {
         "listen": "0.0.0.0:1053",
         "ipv6": isIPv6,
         "respect-rules": true,
+        "use-hosts": true,
+        "use-system-hosts": false,
         "nameserver": isWarp ? warpRemoteDNS : [remoteDNS],
         "proxy-server-nameserver": [localDNS]
     };
-    
-    if (resolvedRemoteDNS.server && !isWarp) {
-        dns["hosts"] = {
-            [resolvedRemoteDNS.server]: resolvedRemoteDNS.staticIPs
-        };
-    }
-    
+
+    if (isChain && !isWarp) {
+        const chainOutboundServer = JSON.parse(outProxyParams).server;
+        if (isDomain(chainOutboundServer)) dns["nameserver-policy"] = {
+            [chainOutboundServer]: remoteDNS
+        };    
+    } 
+
     if (isBypass) { 
         let geosites = [];
         bypassRules.forEach(({ rule, geosite }) => {
@@ -51,8 +55,8 @@ async function buildClashDNS (proxySettings, isWarp) {
         });
 
         dns["nameserver-policy"] = {
-            [`geosite:${geosites.join(',')}`]: [localDNS],
-            "www.gstatic.com": [localDNS]
+            ...dns["nameserver-policy"],
+            [`geosite:${geosites.join(',')}`]: [localDNS]
         };
     }
 
@@ -65,9 +69,11 @@ async function buildClashDNS (proxySettings, isWarp) {
     return dns;
 }
 
-function buildClashRoutingRules (proxySettings) {
-    const { 
-        localDNS, 
+function buildClashRoutingRules (proxySettings, isChain, isWarp) {
+    const {
+        remoteDNS,
+        localDNS,
+        warpEnableIPv6,
         bypassLAN, 
         bypassIran, 
         bypassChina, 
@@ -77,11 +83,13 @@ function buildClashRoutingRules (proxySettings) {
         blockUDP443 
     } = proxySettings;
 
+    const url = new URL(remoteDNS);
+    const remoteDNSServer = url.hostname;
     const isBypass = bypassIran || bypassChina || bypassLAN || bypassRussia;
     const isBlock = blockAds || blockPorn;
     let geositeDirectRules = [], geoipDirectRules = [], geositeBlockRules = [];
     const geoRules = [
-        { rule: bypassLAN, type: 'direct', geosite: "private", geoip: "private" },
+        { rule: bypassLAN, type: 'direct', geosite: "private", geoip: "LAN" },
         { rule: bypassIran, type: 'direct', geosite: "category-ir", geoip: "ir" },
         { rule: bypassChina, type: 'direct', geosite: "cn", geoip: "cn" },
         { rule: bypassRussia, type: 'direct', geosite: "category-ru", geoip: "ru" },
@@ -104,16 +112,18 @@ function buildClashRoutingRules (proxySettings) {
     }
     
     let rules = [
-        `AND,((IP-CIDR,${localDNS}/32),(DST-PORT,53)),DIRECT`,
+        `AND,((IP-CIDR,${localDNS}/32),(NETWORK,udp),(DST-PORT,53)),DIRECT`,
         ...geositeDirectRules, 
         ...geoipDirectRules, 
         ...geositeBlockRules
     ];
 
     blockUDP443 && rules.push("AND,((NETWORK,udp),(DST-PORT,443)),REJECT");
-    rules.push("IP-CIDR,10.10.34.34/32,REJECT,no-resolve");
-    rules.push("IP-CIDR,10.10.34.35/32,REJECT,no-resolve");
-    rules.push("IP-CIDR,10.10.34.36/32,REJECT,no-resolve");
+    if (isChain) {
+        isWarp && !warpEnableIPv6 && rules.push("OR,((IP-CIDR,1.1.1.1/32),(IP-CIDR,1.0.0.1/32)),💦 Warp - Best Ping 🚀");
+        isWarp && warpEnableIPv6 && rules.push("OR,((IP-CIDR,1.1.1.1/32),(IP-CIDR,1.0.0.1/32),(IP-CIDR6,2606:4700:4700::1111/128),(IP-CIDR6,2606:4700:4700::1001/128)),💦 Warp - Best Ping 🚀");
+        !isWarp && rules.push(`AND,((${isDomain(remoteDNSServer) ? 'DOMAIN' : 'IP-CIDR'},${isDomain(remoteDNSServer) ? remoteDNSServer : `${remoteDNSServer}/32`}),(NETWORK,tcp)),proxy-1`);
+    }
     rules.push("MATCH,✅ Selector");
     return rules;
 }
@@ -198,20 +208,18 @@ function buildClashWarpOutbound (warpConfigs, remark, endpoint, chain) {
         "reserved": reserved,
         "udp": true,
         "mtu": 1280,
-        "dialer-proxy": chain,
-        "remote-dns-resolve": true,
-        "dns": [ "1.1.1.1", "1.0.0.1" ]
+        "dialer-proxy": chain
     };
 }
 
 function buildClashChainOutbound(chainProxyParams) {
     if (["socks", "http"].includes(chainProxyParams.protocol)) {
-        const { protocol, host, port, user, pass } = chainProxyParams;
+        const { protocol, server, port, user, pass } = chainProxyParams;
         const proxyType = protocol === 'socks' ? 'socks5' : protocol; 
         return {
             "name": "",
             "type": proxyType,
-            "server": host,
+            "server": server,
             "port": +port,
             "dialer-proxy": "",
             "username": user,
@@ -219,11 +227,11 @@ function buildClashChainOutbound(chainProxyParams) {
         };
     }
 
-    const { hostName, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = chainProxyParams;
+    const { server, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = chainProxyParams;
     let chainOutbound = {
         "name": "💦 Chain Best Ping 💥",
         "type": "vless",
-        "server": hostName,
+        "server": server,
         "port": +port,
         "udp": true,
         "uuid": uuid,
@@ -287,11 +295,10 @@ function buildClashChainOutbound(chainProxyParams) {
 export async function getClashWarpConfig(request, env) {
     const { kvNotFound, proxySettings, warpConfigs } = await getDataset(request, env);
     if (kvNotFound) return await renderErrorPage(request, env, 'KV Dataset is not properly set!', null, true);
-    const { warpEndpoints, warpEnableIPv6 } = proxySettings;
+    const { warpEndpoints } = proxySettings;
     let config = structuredClone(clashConfigTemp);
-    config.ipv6 = warpEnableIPv6;
-    config.dns = await buildClashDNS(proxySettings, true);
-    config.rules = buildClashRoutingRules(proxySettings);
+    config.dns = await buildClashDNS(proxySettings, false, true);
+    config.rules = buildClashRoutingRules(proxySettings, true, true);
     const selector = config['proxy-groups'][0];
     const warpUrlTest = config['proxy-groups'][1];
     selector.proxies = ['💦 Warp - Best Ping 🚀', '💦 WoW - Best Ping 🚀'];
@@ -331,6 +338,7 @@ export async function getClashNormalConfig (request, env) {
     if (kvNotFound) return await renderErrorPage(request, env, 'KV Dataset is not properly set!', null, true);
     let chainProxy;
     const { 
+        resolvedRemoteDNS,
         cleanIPs, 
         proxyIP, 
         ports, 
@@ -361,17 +369,23 @@ export async function getClashNormalConfig (request, env) {
     }
 
     let config = structuredClone(clashConfigTemp);
-    config.ipv6 = enableIPv6;
-    config.dns = await buildClashDNS(proxySettings, false);
-    config.rules = buildClashRoutingRules(proxySettings);
+    if (resolvedRemoteDNS.server) {
+        config.hosts = {
+            [resolvedRemoteDNS.server]: resolvedRemoteDNS.staticIPs
+        }
+    } else {
+        delete config.hosts;
+    }
+    const Addresses = await getConfigAddresses(hostName, cleanIPs, enableIPv6);
+    const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
+    const totalAddresses = [...Addresses, ...customCdnAddresses];
+    config.dns = await buildClashDNS(proxySettings, chainProxy, false);
+    config.rules = buildClashRoutingRules(proxySettings, chainProxy, false);
     const selector = config['proxy-groups'][0];
     const urlTest = config['proxy-groups'][1];
     selector.proxies = ['💦 Best Ping 💥'];
     urlTest.name = '💦 Best Ping 💥';
     urlTest.interval = +bestVLESSTrojanInterval;
-    const Addresses = await getConfigAddresses(hostName, cleanIPs, enableIPv6);
-    const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
-    const totalAddresses = [...Addresses, ...customCdnAddresses];
     let proxyIndex = 1, path;
     const protocols = [
         ...(vlessConfigs ? ['VLESS'] : []),
@@ -465,6 +479,7 @@ const clashConfigTemp = {
         "store-selected": true,
         "store-fake-ip": true
     },
+    "hosts": {},
     "dns": {},
     "tun": {
         "enable": true,

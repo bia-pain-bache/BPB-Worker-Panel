@@ -2,8 +2,9 @@ import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpper
 import { initializeParams, userID, trojanPassword, hostName, defaultHttpsPorts } from "../helpers/init";
 import { renderErrorPage } from '../pages/errorPage';
 import { getDataset } from '../kv/handlers';
+import { isDomain } from '../helpers/helpers';
 
-function buildSingBoxDNS (proxySettings, isChain, isWarp) {
+function buildSingBoxDNS (proxySettings, outboundAddrs, isChain, isWarp) {
     const { 
         remoteDNS, 
         localDNS, 
@@ -37,7 +38,7 @@ function buildSingBoxDNS (proxySettings, isChain, isWarp) {
             address: isWarp ? "1.1.1.1" : remoteDNS,
             address_resolver: "dns-direct",
             strategy: isIPv6 ? "prefer_ipv4" : "ipv4_only",
-            detour: isChain ? 'proxy-1' : "proxy",
+            detour: isWarp ? "💦 Warp - Best Ping 🚀" : isChain ? 'proxy-1' : "proxy",
             tag: "dns-remote"
         },
         {
@@ -52,15 +53,22 @@ function buildSingBoxDNS (proxySettings, isChain, isWarp) {
         }
     ];
 
+    let outboundRule;
+    if (isWarp) {
+        outboundRule = { 
+            outbound: "any", 
+            server: "dns-direct" 
+        };
+    } else {
+        const outboundDomains = outboundAddrs.filter(address => isDomain(address));
+        outboundRule = { 
+            domain: outboundDomains, 
+            server: "dns-direct" 
+        };
+    }
+
     let rules = [
-        {
-            outbound: "any",
-            server: "dns-direct"
-        },
-        {
-            domain: "www.gstatic.com",
-            server: "dns-direct"
-        },
+        outboundRule,
         {
             clash_mode: "block",
             server: "dns-block"
@@ -279,17 +287,6 @@ function buildSingBoxRoutingRules (proxySettings) {
         protocol: "quic",
         outbound: "block"
     });
-    
-    rules.push(
-    {
-        ip_cidr: ["10.10.34.34", "10.10.34.35", "10.10.34.36"],
-        outbound: "block"
-    },
-    {
-        ip_cidr: ["224.0.0.0/3", "ff00::/8"],
-        source_ip_cidr: ["224.0.0.0/3", "ff00::/8"],
-        outbound: "block"
-    });
 
     return {rules: rules, rule_set: ruleSets};
 }
@@ -430,12 +427,12 @@ function buildSingBoxWarpOutbound (proxySettings, warpConfigs, remark, endpoint,
 
 function buildSingBoxChainOutbound (chainProxyParams, enableIPv6) {
     if (["socks", "http"].includes(chainProxyParams.protocol)) {
-        const { protocol, host, port, user, pass } = chainProxyParams;
+        const { protocol, server, port, user, pass } = chainProxyParams;
     
         let chainOutbound = {
             type: protocol,
             tag: "",
-            server: host,
+            server: server,
             server_port: +port,
             username: user,
             password: pass,
@@ -446,11 +443,11 @@ function buildSingBoxChainOutbound (chainProxyParams, enableIPv6) {
         return chainOutbound;
     }
 
-    const { hostName, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = chainProxyParams;
+    const { server, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = chainProxyParams;
     let chainOutbound = {
         type: "vless",
         tag: "",
-        server: hostName,
+        server: server,
         server_port: +port,
         domain_strategy: enableIPv6 ? "prefer_ipv4" : "ipv4_only",
         uuid: uuid,
@@ -521,7 +518,7 @@ export async function getSingBoxWarpConfig (request, env, client) {
     if (kvNotFound) return await renderErrorPage(request, env, 'KV Dataset is not properly set!', null, true);
     const { warpEndpoints } = proxySettings;
     let config = structuredClone(singboxConfigTemp);
-    const dnsObject = buildSingBoxDNS(proxySettings, false, true);
+    const dnsObject = buildSingBoxDNS(proxySettings, undefined, false, true);
     const {rules, rule_set} = buildSingBoxRoutingRules(proxySettings);
     config.dns.servers = dnsObject.servers;
     config.dns.rules = dnsObject.rules;
@@ -597,8 +594,11 @@ export async function getSingBoxCustomConfig(request, env, isFragment) {
         }
     }
     
+    const Addresses = await getConfigAddresses(hostName, cleanIPs, enableIPv6);
+    const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
+    const totalAddresses = [...Addresses, ...customCdnAddresses];
     let config = structuredClone(singboxConfigTemp);
-    const dnsObject = buildSingBoxDNS(proxySettings, chainProxyOutbound, false);
+    const dnsObject = buildSingBoxDNS(proxySettings, totalAddresses, chainProxyOutbound, false);
     const {rules, rule_set} = buildSingBoxRoutingRules(proxySettings);
     config.dns.servers = dnsObject.servers;
     config.dns.rules = dnsObject.rules;
@@ -610,9 +610,6 @@ export async function getSingBoxCustomConfig(request, env, isFragment) {
     selector.outbounds = ['💦 Best Ping 💥'];
     urlTest.interval = `${bestVLESSTrojanInterval}s`;
     urlTest.tag = '💦 Best Ping 💥';
-    const Addresses = await getConfigAddresses(hostName, cleanIPs, enableIPv6);
-    const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
-    const totalAddresses = [...Addresses, ...customCdnAddresses];
     const totalPorts = ports.filter(port => isFragment ? defaultHttpsPorts.includes(port) : true);
     let proxyIndex = 1;
     const protocols = [
