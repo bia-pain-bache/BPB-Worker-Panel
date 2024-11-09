@@ -1,8 +1,8 @@
 import { SignJWT, jwtVerify } from 'jose';
 import nacl from 'tweetnacl';
 import { initializeParams, userID, origin } from "../helpers/init";
-import { renderLoginPage } from '../pages/loginPage';
-import { renderErrorPage } from '../pages/errorPage';
+import { renderLoginPage } from '../pages/login';
+import { renderErrorPage } from '../pages/error';
 
 async function generateJWTToken (request, env) {
     await initializeParams(request, env);

@@ -1,7 +1,7 @@
 import { Authenticate } from "../authentication/auth";
 import { getDataset, updateDataset } from "../kv/handlers";
-import { renderErrorPage } from "../pages/errorPage";
-import { renderHomePage } from "../pages/homePage";
+import { renderErrorPage } from "../pages/error";
+import { renderHomePage } from "../pages/home";
 import { initializeParams, origin } from "./init";
 
 export function isValidUUID(uuid) {
