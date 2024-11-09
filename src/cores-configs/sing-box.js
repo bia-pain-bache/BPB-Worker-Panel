@@ -4,7 +4,7 @@ import { renderErrorPage } from '../pages/error';
 import { getDataset } from '../kv/handlers';
 import { isDomain } from '../helpers/helpers';
 
-function buildSingBoxDNS (proxySettings, outboundAddrs, isChain, isWarp) {
+function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp, remoteDNSDetour) {
     const { 
         remoteDNS, 
         localDNS, 
@@ -37,7 +37,7 @@ function buildSingBoxDNS (proxySettings, outboundAddrs, isChain, isWarp) {
             address: isWarp ? "1.1.1.1" : remoteDNS,
             address_resolver: "dns-direct",
             strategy: isIPv6 ? "prefer_ipv4" : "ipv4_only",
-            detour: isWarp ? "💦 Warp - Best Ping 🚀" : isChain ? 'proxy-1' : "proxy",
+            detour: remoteDNSDetour,
             tag: "dns-remote"
         },
         {
@@ -518,7 +518,8 @@ export async function getSingBoxWarpConfig (request, env, client) {
     if (kvNotFound) return await renderErrorPage(request, env, 'KV Dataset is not properly set!', null, true);
     const { warpEndpoints } = proxySettings;
     const config = structuredClone(singboxConfigTemp);
-    const dnsObject = buildSingBoxDNS(proxySettings, undefined, false, true);
+    const proIndicator = client === 'hiddify' ? ' Pro ' : ' ';
+    const dnsObject = buildSingBoxDNS(proxySettings, undefined, true, `💦 Warp${proIndicator}- Best Ping 🚀`);
     const {rules, rule_set} = buildSingBoxRoutingRules(proxySettings);
     config.dns.servers = dnsObject.servers;
     config.dns.rules = dnsObject.rules;
@@ -527,7 +528,6 @@ export async function getSingBoxWarpConfig (request, env, client) {
     config.route.rule_set = rule_set;
     const selector = config.outbounds[0];
     const warpUrlTest = config.outbounds[1];
-    const proIndicator = client === 'hiddify' ? ' Pro ' : ' ';
     selector.outbounds = [`💦 Warp${proIndicator}- Best Ping 🚀`, `💦 WoW${proIndicator}- Best Ping 🚀`];
     config.outbounds.splice(2, 0, structuredClone(warpUrlTest));
     const WoWUrlTest = config.outbounds[2];
@@ -564,7 +564,7 @@ export async function getSingBoxCustomConfig(request, env, isFragment) {
     await initializeParams(request, env);
     const { kvNotFound, proxySettings } = await getDataset(request, env);
     if (kvNotFound) return await renderErrorPage(request, env, 'KV Dataset is not properly set!', null, true);
-    let chainProxyOutbound;
+    let chainProxy;
     const { 
         cleanIPs,  
         ports, 
@@ -582,10 +582,10 @@ export async function getSingBoxCustomConfig(request, env, isFragment) {
     if (outProxy) {
         const proxyParams = JSON.parse(outProxyParams);      
         try {
-            chainProxyOutbound = buildSingBoxChainOutbound(proxyParams, enableIPv6);
+            chainProxy = buildSingBoxChainOutbound(proxyParams, enableIPv6);
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
-            chainProxyOutbound = undefined;
+            chainProxy = undefined;
             await env.bpb.put("proxySettings", JSON.stringify({
                 ...proxySettings, 
                 outProxy: '',
@@ -598,7 +598,7 @@ export async function getSingBoxCustomConfig(request, env, isFragment) {
     const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
     const totalAddresses = [...Addresses, ...customCdnAddresses];
     const config = structuredClone(singboxConfigTemp);
-    const dnsObject = buildSingBoxDNS(proxySettings, totalAddresses, chainProxyOutbound, false);
+    const dnsObject = buildSingBoxDNS(proxySettings, totalAddresses, false, chainProxy ? 'proxy-1' : 'proxy');
     const {rules, rule_set} = buildSingBoxRoutingRules(proxySettings);
     config.dns.servers = dnsObject.servers;
     config.dns.rules = dnsObject.rules;
@@ -631,7 +631,7 @@ export async function getSingBoxCustomConfig(request, env, isFragment) {
                 if (protocol === 'VLESS') {
                     VLESSOutbound = buildSingBoxVLESSOutbound (
                         proxySettings,
-                        chainProxyOutbound ? `proxy-${proxyIndex}` : remark, 
+                        chainProxy ? `proxy-${proxyIndex}` : remark, 
                         addr, 
                         port, 
                         host,
@@ -645,7 +645,7 @@ export async function getSingBoxCustomConfig(request, env, isFragment) {
                 if (protocol === 'Trojan') {
                     TrojanOutbound = buildSingBoxTrojanOutbound (
                         proxySettings,
-                        chainProxyOutbound ? `proxy-${proxyIndex}` : remark, 
+                        chainProxy ? `proxy-${proxyIndex}` : remark, 
                         addr, 
                         port, 
                         host,
@@ -656,8 +656,8 @@ export async function getSingBoxCustomConfig(request, env, isFragment) {
                     config.outbounds.push(TrojanOutbound);
                 }
                 
-                if (chainProxyOutbound) {
-                    const chain = structuredClone(chainProxyOutbound);
+                if (chainProxy) {
+                    const chain = structuredClone(chainProxy);
                     chain.tag = remark;
                     chain.detour = `proxy-${proxyIndex}`;
                     config.outbounds.push(chain);
@@ -771,7 +771,7 @@ const singboxConfigTemp = {
         },
         clash_api: {
             external_controller: "127.0.0.1:9090",
-            external_ui: "yacd",
+            external_ui: "ui",
             external_ui_download_url: "https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip",
             external_ui_download_detour: "direct",
             default_mode: "Rule"
