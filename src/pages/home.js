@@ -45,10 +45,10 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
     } = proxySettings;
 
     const isWarpPlus = warpPlusLicense ? true : false;
-    let activeProtocols = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
+    const activeProtocols = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
     let httpPortsBlock = '', httpsPortsBlock = '';
     const allPorts = [...(hostName.includes('workers.dev') ? defaultHttpPorts : []), ...defaultHttpsPorts];
-    let regionNames = new Intl.DisplayNames(['en'], {type: 'region'});
+    const regionNames = new Intl.DisplayNames(['en'], {type: 'region'});
     const countryCode = request.cf.country;
     const flag = String.fromCodePoint(...[...countryCode].map(c => 0x1F1E6 + c.charCodeAt(0) - 65));
     const cfCountry = `${regionNames.of(countryCode)} ${flag}`;

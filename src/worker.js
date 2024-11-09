@@ -3,7 +3,7 @@ import { vlessOverWSHandler } from './protocols/vless';
 import { trojanOverWSHandler } from './protocols/trojan';
 import { updateWarpConfigs } from './kv/handlers';
 import { logout, resetPassword, login } from './authentication/auth';
-import { renderErrorPage } from './pages/errorPage';
+import { renderErrorPage } from './pages/error';
 import { getXrayCustomConfigs, getXrayWarpConfigs } from './cores-configs/xray';
 import { getSingBoxCustomConfig, getSingBoxWarpConfig } from './cores-configs/sing-box';
 import { getClashNormalConfig, getClashWarpConfig } from './cores-configs/clash';

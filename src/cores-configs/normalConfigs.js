@@ -1,7 +1,7 @@
 import { getConfigAddresses, generateRemark, randomUpperCase, getRandomPath } from './helpers';
 import { initializeParams, userID, trojanPassword, hostName, client, defaultHttpsPorts } from "../helpers/init";
 import { getDataset } from '../kv/handlers';
-import { renderErrorPage } from '../pages/errorPage';
+import { renderErrorPage } from '../pages/error';
 
 export async function getNormalConfigs(request, env) {
     await initializeParams(request, env);

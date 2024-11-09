@@ -2,7 +2,7 @@ import { fetchWarpConfigs } from '../protocols/warp';
 import { isDomain, resolveDNS } from '../helpers/helpers';
 import { initializeParams, panelVersion } from '../helpers/init';
 import { Authenticate } from '../authentication/auth';
-import { renderErrorPage } from '../pages/errorPage';
+import { renderErrorPage } from '../pages/error';
 
 export async function getDataset(request, env) {
     await initializeParams(request, env);
@@ -132,7 +132,7 @@ export async function updateDataset (request, env) {
 function extractChainProxyParams(chainProxy) {
     let configParams = {};
     if (!chainProxy) return {};
-    let url = new URL(chainProxy);
+    const url = new URL(chainProxy);
     const protocol = url.protocol.slice(0, -1);
     if (protocol === 'vless') {
         const params = new URLSearchParams(url.search);
