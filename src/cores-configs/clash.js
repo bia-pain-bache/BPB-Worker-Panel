@@ -25,9 +25,9 @@ async function buildClashDNS (proxySettings, isChain, isWarp) {
     const isIPv6 = (enableIPv6 && !isWarp) || (warpEnableIPv6 && isWarp);
     const isBypass = bypassIran || bypassChina || bypassRussia;
     const bypassRules = [
-        { rule: bypassIran, geosite: "category-ir" },
+        { rule: bypassIran, geosite: "ir" },
         { rule: bypassChina, geosite: "cn" },
-        { rule: bypassRussia, geosite: "category-ru" }
+        { rule: bypassRussia, geosite: "ru" }
     ];
 
     const dns = {
@@ -58,7 +58,7 @@ async function buildClashDNS (proxySettings, isChain, isWarp) {
 
         dns["nameserver-policy"] = {
             ...dns["nameserver-policy"],
-            [`geosite:${geosites.join(',')}`]: [`${localDNS}#DIRECT`]
+            [`rule-set:${geosites.join(',')}`]: [`${localDNS}#DIRECT`]
         };
     }
 
