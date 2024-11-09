@@ -82,41 +82,133 @@ function buildClashRoutingRules (proxySettings) {
         blockUDP443 
     } = proxySettings;
 
-    const isBypass = bypassIran || bypassChina || bypassLAN || bypassRussia;
-    const isBlock = blockAds || blockPorn;
-    const geositeDirectRules = [], geoipDirectRules = [], geositeBlockRules = [];
     const geoRules = [
-        { rule: bypassLAN, type: 'direct', geosite: "private", geoip: "LAN" },
-        { rule: bypassIran, type: 'direct', geosite: "category-ir", geoip: "ir" },
-        { rule: bypassChina, type: 'direct', geosite: "cn", geoip: "cn" },
-        { rule: bypassRussia, type: 'direct', geosite: "category-ru", geoip: "ru" },
-        { rule: blockAds, type: 'block', geosite: "category-ads-all" },
-        { rule: blockAds, type: 'block', geosite: "category-ads-ir" },
-        { rule: blockPorn, type: 'block', geosite: "category-porn" }
+        { 
+            rule: bypassLAN,
+            type: 'direct',
+            ruleProvider: {
+                format: "yaml", 
+                geosite: "private", 
+                geoip: "private-cidr", 
+                geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/private.yaml", 
+                geoipURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/private.yaml"
+            }
+        },
+        { 
+            rule: bypassIran,
+            type: 'direct',
+            ruleProvider: {
+                format: "text", 
+                geosite: "ir", 
+                geoip: "ir-cidr", 
+                geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/ir.txt", 
+                geoipURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/ircidr.txt"
+            }
+        },
+        { 
+            rule: bypassChina,
+            type: 'direct',
+            ruleProvider: {
+                format: "yaml", 
+                geosite: "cn", 
+                geoip: "cn-cidr", 
+                geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/cn.yaml", 
+                geoipURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/cn.yaml"
+            }
+        },
+        { 
+            rule: bypassRussia,
+            type: 'direct', 
+            ruleProvider: {
+                format: "yaml", 
+                geosite: "ru",
+                geoip: "ru-cidr", 
+                geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ru.yaml", 
+                geoipURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/ru.yaml"
+            }
+        },
+        { 
+            rule: true,
+            type: 'block', 
+            ruleProvider: {
+                format: "text", 
+                geosite: "malware",
+                geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/malware.txt"
+            }
+        },
+        { 
+            rule: true,
+            type: 'block',
+            ruleProvider: {
+                format: "text", 
+                geosite: "phishing", 
+                geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/phishing.txt"
+            }
+        },
+        { 
+            rule: true,
+            type: 'block',
+            ruleProvider: {
+                format: "text", 
+                geosite: "cryptominers", 
+                geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/cryptominers.txt" 
+            }
+        },
+        { 
+            rule: blockAds,
+            type: 'block',
+            ruleProvider: {
+                format: "text", 
+                geosite: "ads", 
+                geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/ads.txt" 
+            }
+        },
+        { 
+            rule: blockPorn,
+            type: 'block', 
+            ruleProvider: {
+                format: "text", 
+                geosite: "nsfw", 
+                geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/nsfw.txt", 
+            }
+        },
     ];
 
-    if (isBypass || isBlock) {
-        geoRules.forEach(({ rule, type, geosite, geoip }) => {
-            if (rule) {
-                if (type === 'direct') {
-                    geositeDirectRules.push(`GEOSITE,${geosite},DIRECT`);
-                    geoipDirectRules.push(`GEOIP,${geoip},DIRECT,no-resolve`);
-                } else {
-                    geositeBlockRules.push(`GEOSITE,${geosite},REJECT`);
-                }
+    function buildRuleProvider (tag, format, behavior, url) {
+        const fileExtension = format === 'text' ? 'txt' : format;
+        return {
+            [tag]: {
+                type: "http",
+                format,
+                behavior,
+                url,
+                path: `./ruleset/${tag}.${fileExtension}`,
+                interval: 86400
             }
-        });
+        }
     }
     
-    const rules = [
-        ...geositeDirectRules, 
-        ...geoipDirectRules, 
-        ...geositeBlockRules
-    ];
+    const rules = [], ruleProviders = {};
+    geoRules.forEach( ({ rule, type, ruleProvider }) => {
+        const { geosite, geoip, geositeURL, geoipURL, format } = ruleProvider;
+        if (rule) {
+            if (geosite) {
+                rules.push(`RULE-SET,${geosite},${type === 'direct' ? 'DIRECT' : 'REJECT'}`);
+                const ruleProvider = buildRuleProvider(geosite, format, 'domain', geositeURL);
+                Object.assign(ruleProviders, ruleProvider);
+            } 
+
+            if (geoip) {
+                rules.push(`RULE-SET,${geoip},${type === 'direct' ? 'DIRECT' : 'REJECT'}`);
+                const ruleProvider = buildRuleProvider(geoip, format, 'ipcidr', geoipURL);
+                Object.assign(ruleProviders, ruleProvider);
+            }
+        }
+    });
 
     blockUDP443 && rules.push("AND,((NETWORK,udp),(DST-PORT,443)),REJECT");
     rules.push("MATCH,✅ Selector");
-    return rules;
+    return { rules, ruleProviders };
 }
 
 function buildClashVLESSOutbound (remark, address, port, host, sni, path, allowInsecure) {
@@ -289,7 +381,9 @@ export async function getClashWarpConfig(request, env) {
     const { warpEndpoints } = proxySettings;
     const config = structuredClone(clashConfigTemp);
     config.dns = await buildClashDNS(proxySettings, true, true);
-    config.rules = buildClashRoutingRules(proxySettings);
+    const { rules, ruleProviders } = buildClashRoutingRules(proxySettings);
+    config.rules = rules;
+    config['rule-providers'] = ruleProviders;
     const selector = config['proxy-groups'][0];
     const warpUrlTest = config['proxy-groups'][1];
     selector.proxies = ['💦 Warp - Best Ping 🚀', '💦 WoW - Best Ping 🚀'];
@@ -367,8 +461,10 @@ export async function getClashNormalConfig (request, env) {
     } else {
         delete config.hosts;
     }
+    const { rules, ruleProviders } = buildClashRoutingRules(proxySettings);
     config.dns = await buildClashDNS(proxySettings, chainProxy, false);
-    config.rules = buildClashRoutingRules(proxySettings);
+    config.rules = rules;
+    config['rule-providers'] = ruleProviders;
     const selector = config['proxy-groups'][0];
     const urlTest = config['proxy-groups'][1];
     selector.proxies = ['💦 Best Ping 💥'];
@@ -454,7 +550,7 @@ const clashConfigTemp = {
     "ipv6": true,
     "allow-lan": true,
     "mode": "rule",
-    "log-level": "debug",
+    "log-level": "warning",
     "disable-keep-alive": false,
     "keep-alive-idle": 30,
     "keep-alive-interval": 30,
@@ -513,6 +609,7 @@ const clashConfigTemp = {
             "proxies": []
         }
     ],
+    "rule-providers": {},
     "rules": [],
     "ntp": {
         "enable": true,
