@@ -4185,7 +4185,7 @@ __name(SignJWT, "SignJWT");
 var import_tweetnacl = __toESM(require_nacl_fast());
 
 // src/helpers/init.js
-var proxyIPs = ["bpb.yousef.isegaro.com"];
+var defaultProxyIP = "bpb.yousef.isegaro.com";
 var userID;
 var dohURL;
 var proxyIP;
@@ -4198,11 +4198,12 @@ var origin;
 var client;
 var pathName;
 function initParams(request, env) {
+  const proxyIPs = env.PROXYIP?.split(",").map((proxyIP2) => proxyIP2.trim());
   userID = env.UUID || "89b3cbba-e6ac-485a-9481-976a0415eab9";
   if (!isValidUUID(userID))
     throw new Error(`Invalid UUID: ${userID}`);
   dohURL = env.DOH_URL || "https://cloudflare-dns.com/dns-query";
-  proxyIP = env.PROXYIP || proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
+  proxyIP = proxyIPs ? proxyIPs[Math.floor(Math.random() * proxyIPs.length)] : defaultProxyIP;
   trojanPassword = env.TROJAN_PASS || "bpb-trojan";
   defaultHttpPorts = ["80", "8080", "2052", "2082", "2086", "2095", "8880"];
   defaultHttpsPorts = ["443", "8443", "2053", "2083", "2087", "2096"];
@@ -4677,7 +4678,7 @@ async function updateDataset(request, env) {
     resolvedRemoteDNS,
     localDNS: validateField("localDNS") ?? currentSettings?.localDNS ?? "8.8.8.8",
     vlessTrojanFakeDNS: validateField("vlessTrojanFakeDNS") ?? currentSettings?.vlessTrojanFakeDNS ?? false,
-    proxyIP: validateField("proxyIP")?.trim() ?? currentSettings?.proxyIP ?? "",
+    proxyIP: validateField("proxyIP")?.replaceAll(" ", "") ?? currentSettings?.proxyIP ?? "",
     outProxy: validateField("outProxy") ?? currentSettings?.outProxy ?? "",
     outProxyParams: extractChainProxyParams(validateField("outProxy")) ?? currentSettings?.outProxyParams ?? {},
     cleanIPs: validateField("cleanIPs")?.replaceAll(" ", "") ?? currentSettings?.cleanIPs ?? "",
@@ -5185,7 +5186,7 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                     </div>
                     <div class="form-control">
                         <label for="proxyIP">\u{1F4CD} Proxy IP</label>
-                        <input type="text" id="proxyIP" name="proxyIP" value="${proxyIP2}">
+                        <input type="text" id="proxyIP" name="proxyIP" value="${proxyIP2.replaceAll(",", " , ")}">
                     </div>
                     <div class="form-control">
                         <label for="outProxy">\u2708\uFE0F Chain Proxy</label>
@@ -5913,7 +5914,7 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
             const lengthMax = getValue('fragmentLengthMax');
             const intervalMin = getValue('fragmentIntervalMin');
             const intervalMax = getValue('fragmentIntervalMax');
-            const proxyIP = document.getElementById('proxyIP').value?.trim();
+            const proxyIP = document.getElementById('proxyIP');
             const cleanIP = document.getElementById('cleanIPs');
             const customCdnAddrs = document.getElementById('customCdnAddrs').value?.split(',').filter(addr => addr !== '');
             const customCdnHost = document.getElementById('customCdnHost').value;
@@ -5927,6 +5928,7 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
             const noiseDelayMin = getValue('noiseDelayMin');
             const noiseDelayMax = getValue('noiseDelayMax');
             const cleanIPs = cleanIP.value?.split(',');
+            const proxyIPs = proxyIP.value?.split(',');
             const chainProxy = document.getElementById('outProxy').value?.trim();                    
             const formData = new FormData(configForm);
             const isVless = /vless:\\/\\/[^s@]+@[^\\s:]+:[^\\s]+/.test(chainProxy);
@@ -5947,7 +5949,7 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                 !formData.has(checkbox.name) && formData.append(checkbox.name, 'false');    
             });
 
-            const invalidIPs = [...cleanIPs, proxyIP, ...customCdnAddrs, customCdnHost, customCdnSni]?.filter(value => {
+            const invalidIPs = [...cleanIPs, ...proxyIPs, ...customCdnAddrs, customCdnHost, customCdnSni]?.filter(value => {
                 if (value) {
                     const trimmedValue = value.trim();
                     return !validIPDomain.test(trimmedValue);
@@ -6010,6 +6012,7 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                     console.error(errorMessage, response.status);
                     alert('\u26A0\uFE0F Session expired! Please login again.');
                     window.location.href = '/login';
+                    return;
                 }                
                 alert('\u2705 Parameters applied successfully \u{1F60E}');
                 window.location.reload();
@@ -6290,9 +6293,10 @@ async function handleTCPOutBound(request, remoteSocket, addressRemote, portRemot
   }
   __name(connectAndWrite, "connectAndWrite");
   async function retry() {
-    let panelProxyIP = pathName.split("/")[2];
-    panelProxyIP = panelProxyIP ? atob(panelProxyIP) : void 0;
-    const tcpSocket2 = await connectAndWrite(panelProxyIP || proxyIP || addressRemote, portRemote);
+    const panelProxyIP = pathName.split("/")[2];
+    const panelProxyIPs = panelProxyIP ? atob(panelProxyIP).split(",") : void 0;
+    const finalProxyIP = panelProxyIPs ? panelProxyIPs[Math.floor(Math.random() * panelProxyIPs.length)] : proxyIP || addressRemote;
+    const tcpSocket2 = await connectAndWrite(finalProxyIP, portRemote);
     tcpSocket2.closed.catch((error) => {
       console.log("retry tcpSocket closed error", error);
     }).finally(() => {
@@ -6740,9 +6744,10 @@ async function handleTCPOutBound2(request, remoteSocket, addressRemote, portRemo
   }
   __name(connectAndWrite, "connectAndWrite");
   async function retry() {
-    let panelProxyIP = pathName.split("/")[2];
-    panelProxyIP = panelProxyIP ? atob(panelProxyIP) : void 0;
-    const tcpSocket2 = await connectAndWrite(panelProxyIP || proxyIP || addressRemote, portRemote);
+    const panelProxyIP = pathName.split("/")[2];
+    const panelProxyIPs = panelProxyIP ? atob(panelProxyIP).split(",") : void 0;
+    const finalProxyIP = panelProxyIPs ? panelProxyIPs[Math.floor(Math.random() * panelProxyIPs.length)] : proxyIP || addressRemote;
+    const tcpSocket2 = await connectAndWrite(finalProxyIP, portRemote);
     tcpSocket2.closed.catch((error) => {
       console.log("retry tcpSocket closed error", error);
     }).finally(() => {
