@@ -176,9 +176,10 @@ async function handleTCPOutBound(
   
     // if the cf connect tcp socket have no incoming data, we retry to redirect ip
     async function retry() {
-        let panelProxyIP = pathName.split('/')[2];
-        panelProxyIP = panelProxyIP ? atob(panelProxyIP) : undefined;
-		const tcpSocket = await connectAndWrite(panelProxyIP || proxyIP || addressRemote, portRemote);
+        const panelProxyIP = pathName.split('/')[2];
+        const panelProxyIPs = panelProxyIP ? atob(panelProxyIP).split(',') : undefined;
+        const finalProxyIP = panelProxyIPs ? panelProxyIPs[Math.floor(Math.random() * panelProxyIPs.length)] : proxyIP || addressRemote;
+		const tcpSocket = await connectAndWrite(finalProxyIP, portRemote);
         // no matter retry success or not, close websocket
         tcpSocket.closed
             .catch((error) => {

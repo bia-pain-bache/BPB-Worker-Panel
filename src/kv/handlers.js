@@ -79,7 +79,7 @@ export async function updateDataset (request, env) {
         resolvedRemoteDNS: resolvedRemoteDNS,
         localDNS: validateField('localDNS') ?? currentSettings?.localDNS ?? '8.8.8.8',
         vlessTrojanFakeDNS: validateField('vlessTrojanFakeDNS') ?? currentSettings?.vlessTrojanFakeDNS ?? false,
-        proxyIP: validateField('proxyIP')?.trim() ?? currentSettings?.proxyIP ?? '',
+        proxyIP: validateField('proxyIP')?.replaceAll(' ', '') ?? currentSettings?.proxyIP ?? '',
         outProxy: validateField('outProxy') ?? currentSettings?.outProxy ?? '',
         outProxyParams: extractChainProxyParams(validateField('outProxy')) ?? currentSettings?.outProxyParams ?? {},
         cleanIPs: validateField('cleanIPs')?.replaceAll(' ', '') ?? currentSettings?.cleanIPs ?? '',
