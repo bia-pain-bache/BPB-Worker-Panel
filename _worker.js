@@ -4328,7 +4328,7 @@ var worker_default = {
               }
             });
           default:
-            url.hostname = "www.speedtest.net";
+            url.hostname = "wp.hutao01.top";
             url.protocol = "https:";
             request = new Request(url, request);
             return await fetch(request);
@@ -5100,7 +5100,7 @@ async function getConfigAddresses(hostName, cleanIPs, enableIPv6) {
   const defaultIPv6 = enableIPv6 ? resolved.ipv6.map((ip) => `[${ip}]`) : [];
   return [
     hostName,
-    "www.speedtest.net",
+    "wp.hutao01.top",
     ...resolved.ipv4,
     ...defaultIPv6,
     ...cleanIPs ? cleanIPs.split(",") : []
