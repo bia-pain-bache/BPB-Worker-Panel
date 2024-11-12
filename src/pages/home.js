@@ -413,7 +413,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                     </div>
                     <div class="form-control">
                         <label for="proxyIP">📍 Proxy IP</label>
-                        <input type="text" id="proxyIP" name="proxyIP" value="${proxyIP}">
+                        <input type="text" id="proxyIP" name="proxyIP" value="${proxyIP.replaceAll(",", " , ")}">
                     </div>
                     <div class="form-control">
                         <label for="outProxy">✈️ Chain Proxy</label>
@@ -1144,7 +1144,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
             const lengthMax = getValue('fragmentLengthMax');
             const intervalMin = getValue('fragmentIntervalMin');
             const intervalMax = getValue('fragmentIntervalMax');
-            const proxyIP = document.getElementById('proxyIP').value?.trim();
+            const proxyIP = document.getElementById('proxyIP');
             const cleanIP = document.getElementById('cleanIPs');
             const customCdnAddrs = document.getElementById('customCdnAddrs').value?.split(',').filter(addr => addr !== '');
             const customCdnHost = document.getElementById('customCdnHost').value;
@@ -1158,6 +1158,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
             const noiseDelayMin = getValue('noiseDelayMin');
             const noiseDelayMax = getValue('noiseDelayMax');
             const cleanIPs = cleanIP.value?.split(',');
+            const proxyIPs = proxyIP.value?.split(',');
             const chainProxy = document.getElementById('outProxy').value?.trim();                    
             const formData = new FormData(configForm);
             const isVless = /vless:\\/\\/[^\s@]+@[^\\s:]+:[^\\s]+/.test(chainProxy);
@@ -1178,7 +1179,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                 !formData.has(checkbox.name) && formData.append(checkbox.name, 'false');    
             });
 
-            const invalidIPs = [...cleanIPs, proxyIP, ...customCdnAddrs, customCdnHost, customCdnSni]?.filter(value => {
+            const invalidIPs = [...cleanIPs, ...proxyIPs, ...customCdnAddrs, customCdnHost, customCdnSni]?.filter(value => {
                 if (value) {
                     const trimmedValue = value.trim();
                     return !validIPDomain.test(trimmedValue);
@@ -1241,6 +1242,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                     console.error(errorMessage, response.status);
                     alert('⚠️ Session expired! Please login again.');
                     window.location.href = '/login';
+                    return;
                 }                
                 alert('✅ Parameters applied successfully 😎');
                 window.location.reload();
