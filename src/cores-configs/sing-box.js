@@ -160,7 +160,7 @@ function buildSingBoxRoutingRules (proxySettings) {
         },
         {
             clash_mode: "Global",
-            outbound: "proxy"
+            outbound: "✅ Selector"
         }
     ];
 
@@ -598,7 +598,7 @@ export async function getSingBoxCustomConfig(request, env, isFragment) {
     const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
     const totalAddresses = [...Addresses, ...customCdnAddresses];
     const config = structuredClone(singboxConfigTemp);
-    const dnsObject = buildSingBoxDNS(proxySettings, totalAddresses, false, chainProxy ? 'proxy-1' : 'proxy');
+    const dnsObject = buildSingBoxDNS(proxySettings, totalAddresses, false, chainProxy ? 'proxy-1' : '✅ Selector');
     const {rules, rule_set} = buildSingBoxRoutingRules(proxySettings);
     config.dns.servers = dnsObject.servers;
     config.dns.rules = dnsObject.rules;
@@ -727,7 +727,7 @@ const singboxConfigTemp = {
     outbounds: [
         {
             type: "selector",
-            tag: "proxy",
+            tag: "✅ Selector",
             outbounds: []
         },
         {
@@ -755,7 +755,7 @@ const singboxConfigTemp = {
         rule_set: [],
         auto_detect_interface: true,
         override_android_vpn: true,
-        final: "proxy"
+        final: "✅ Selector"
     },
     ntp: {
         enabled: true,
