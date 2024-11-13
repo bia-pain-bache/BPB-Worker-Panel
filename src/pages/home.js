@@ -391,7 +391,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
         <div class="form-container">
             <form id="configForm">
                 <details open>
-                    <summary><h2>VLESS / TROJAN ⚙️</h2></summary>
+                    <summary><h2>VLESS - TROJAN ⚙️</h2></summary>
                     <div class="form-control">
                         <label for="remoteDNS">🌏 Remote DNS</label>
                         <input type="url" id="remoteDNS" name="remoteDNS" value="${remoteDNS}" required>
@@ -412,7 +412,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="proxyIP">📍 Proxy IP</label>
+                        <label for="proxyIP">📍 Proxy IPs - Domains</label>
                         <input type="text" id="proxyIP" name="proxyIP" value="${proxyIP.replaceAll(",", " , ")}">
                     </div>
                     <div class="form-control">
@@ -420,7 +420,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                         <input type="text" id="outProxy" name="outProxy" value="${outProxy}">
                     </div>
                     <div class="form-control">
-                        <label for="cleanIPs">✨ Clean IPs</label>
+                        <label for="cleanIPs">✨ Clean IPs - Domains</label>
                         <input type="text" id="cleanIPs" name="cleanIPs" value="${cleanIPs.replaceAll(",", " , ")}">
                     </div>
                     <div class="form-control">
@@ -679,7 +679,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                     </tr>
                     <tr>
                         <td>
-                            ${supportedApps(['Nekobox', 'Nekoray (Sing-Box)', 'Karing'])}
+                            ${supportedApps(['husi', 'Nekobox', 'Nekoray (sing-Box)', 'Karing'])}
                         </td>
                         <td>
                             ${subURL('sub', 'singbox', 'BPB-Normal')}
@@ -705,7 +705,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                     </tr>
                     <tr>
                         <td>
-                            ${supportedApps(['Sing-box'])}
+                            ${supportedApps(['sing-box', 'v2rayN (sing-box)'])}
                         </td>
                         <td>
                             ${subQR('sub', 'sfa', 'BPB-Full-Normal', 'Full normal Subscription', true)}
@@ -714,7 +714,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                     </tr>
                     <tr>
                         <td>
-                            ${supportedApps(['Clash Meta', 'Clash Verge', 'v2rayN', 'FlClash', 'Stash'])}
+                            ${supportedApps(['Clash Meta', 'Clash Verge', 'FlClash', 'Stash', 'v2rayN (mihomo)'])}
                         </td>
                         <td>
                             ${subQR('sub', 'clash', 'BPB-Full-Normal', 'Full normal Subscription')}
@@ -768,7 +768,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                     </tr>
                     <tr>
                         <td>
-                            ${supportedApps(['Hiddify', 'Sing-box'])}
+                            ${supportedApps(['Hiddify', 'sing-box', 'v2rayN (sing-box)'])}
                         </td>
                         <td>
                             ${subQR('sub', 'singbox', 'BPB-Warp', 'Warp Subscription', true)}
@@ -777,7 +777,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                     </tr>
                     <tr>
                         <td>
-                            ${supportedApps(['Clash Meta', 'Clash Verge', 'v2rayN', 'FlClash', 'Stash'])}
+                            ${supportedApps(['Clash Meta', 'Clash Verge', 'FlClash', 'Stash', 'v2rayN (mihomo)'])}
                         </td>
                         <td>
                             ${subQR('warpsub', 'clash', 'BPB-Warp', 'Warp Subscription')}
@@ -841,12 +841,12 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                 </div>
             </div>
             <hr>
-            <h2>YOUR IP 💡</h2>
+            <h2>MY IP 💡</h2>
             <div class="table-container">
                 <table id="ips" style="text-align: center; margin-bottom: 15px; text-wrap-mode: nowrap;">
                     <tr>
-                        <th>Target</th>
-                        <th>Your IP</th>
+                        <th>Target Address</th>
+                        <th>IP</th>
                         <th>Country</th>
                         <th>City</th>
                         <th>ISP</th>

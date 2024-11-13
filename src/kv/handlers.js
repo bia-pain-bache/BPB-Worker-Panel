@@ -32,8 +32,8 @@ export async function getDataset(request, env) {
 
 export async function updateDataset (request, env) {
     await initializeParams(request, env);
-    let newSettings = await request.formData();
-    const isReset = newSettings.get('resetSettings') === 'true';
+    let newSettings = request.method === 'POST' ? await request.formData() : null;
+    const isReset = newSettings?.get('resetSettings') === 'true';
     let currentSettings;
     if (!isReset) {
         try {

@@ -38,15 +38,15 @@ async function buildClashDNS (proxySettings, isChain, isWarp) {
         "use-hosts": true,
         "use-system-hosts": false,
         "nameserver": isWarp 
-            ? warpRemoteDNS.map(dns => isChain ? `${dns}#💦 Warp - Best Ping 🚀` : dns) 
-            : [isChain ? `${remoteDNS}#proxy-1` : remoteDNS],
+            ? warpRemoteDNS.map(dns => isChain ? `${dns}#💦 Warp - Best Ping 🚀` : `${dns}#✅ Selector`) 
+            : [isChain ? `${remoteDNS}#proxy-1` : `${remoteDNS}#✅ Selector`],
         "proxy-server-nameserver": [`${localDNS}#DIRECT`]
     };
 
     if (isChain && !isWarp) {
         const chainOutboundServer = JSON.parse(outProxyParams).server;
         if (isDomain(chainOutboundServer)) dns["nameserver-policy"] = {
-            [chainOutboundServer]: `${remoteDNS}#proxy-1`
+            [chainOutboundServer]: isChain ? `${remoteDNS}#proxy-1` : `${remoteDNS}#✅ Selector`
         };    
     } 
 
