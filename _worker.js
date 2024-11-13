@@ -4631,8 +4631,8 @@ async function getDataset(request, env) {
 __name(getDataset, "getDataset");
 async function updateDataset(request, env) {
   await initializeParams(request, env);
-  let newSettings = await request.formData();
-  const isReset = newSettings.get("resetSettings") === "true";
+  let newSettings = request.method === "POST" ? await request.formData() : null;
+  const isReset = newSettings?.get("resetSettings") === "true";
   let currentSettings;
   if (!isReset) {
     try {
@@ -5164,7 +5164,7 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
         <div class="form-container">
             <form id="configForm">
                 <details open>
-                    <summary><h2>VLESS / TROJAN \u2699\uFE0F</h2></summary>
+                    <summary><h2>VLESS - TROJAN \u2699\uFE0F</h2></summary>
                     <div class="form-control">
                         <label for="remoteDNS">\u{1F30F} Remote DNS</label>
                         <input type="url" id="remoteDNS" name="remoteDNS" value="${remoteDNS}" required>
@@ -5185,7 +5185,7 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="proxyIP">\u{1F4CD} Proxy IP</label>
+                        <label for="proxyIP">\u{1F4CD} Proxy IPs - Domains</label>
                         <input type="text" id="proxyIP" name="proxyIP" value="${proxyIP2.replaceAll(",", " , ")}">
                     </div>
                     <div class="form-control">
@@ -5193,7 +5193,7 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                         <input type="text" id="outProxy" name="outProxy" value="${outProxy}">
                     </div>
                     <div class="form-control">
-                        <label for="cleanIPs">\u2728 Clean IPs</label>
+                        <label for="cleanIPs">\u2728 Clean IPs - Domains</label>
                         <input type="text" id="cleanIPs" name="cleanIPs" value="${cleanIPs.replaceAll(",", " , ")}">
                     </div>
                     <div class="form-control">
@@ -5452,7 +5452,7 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                     </tr>
                     <tr>
                         <td>
-                            ${supportedApps(["Nekobox", "Nekoray (Sing-Box)", "Karing"])}
+                            ${supportedApps(["husi", "Nekobox", "Nekoray (sing-Box)", "Karing"])}
                         </td>
                         <td>
                             ${subURL("sub", "singbox", "BPB-Normal")}
@@ -5478,7 +5478,7 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                     </tr>
                     <tr>
                         <td>
-                            ${supportedApps(["Sing-box"])}
+                            ${supportedApps(["sing-box", "v2rayN (sing-box)"])}
                         </td>
                         <td>
                             ${subQR("sub", "sfa", "BPB-Full-Normal", "Full normal Subscription", true)}
@@ -5487,7 +5487,7 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                     </tr>
                     <tr>
                         <td>
-                            ${supportedApps(["Clash Meta", "Clash Verge", "v2rayN", "FlClash", "Stash"])}
+                            ${supportedApps(["Clash Meta", "Clash Verge", "FlClash", "Stash", "v2rayN (mihomo)"])}
                         </td>
                         <td>
                             ${subQR("sub", "clash", "BPB-Full-Normal", "Full normal Subscription")}
@@ -5541,7 +5541,7 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                     </tr>
                     <tr>
                         <td>
-                            ${supportedApps(["Hiddify", "Sing-box"])}
+                            ${supportedApps(["Hiddify", "sing-box", "v2rayN (sing-box)"])}
                         </td>
                         <td>
                             ${subQR("sub", "singbox", "BPB-Warp", "Warp Subscription", true)}
@@ -5550,7 +5550,7 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                     </tr>
                     <tr>
                         <td>
-                            ${supportedApps(["Clash Meta", "Clash Verge", "v2rayN", "FlClash", "Stash"])}
+                            ${supportedApps(["Clash Meta", "Clash Verge", "FlClash", "Stash", "v2rayN (mihomo)"])}
                         </td>
                         <td>
                             ${subQR("warpsub", "clash", "BPB-Warp", "Warp Subscription")}
@@ -5614,12 +5614,12 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                 </div>
             </div>
             <hr>
-            <h2>YOUR IP \u{1F4A1}</h2>
+            <h2>MY IP \u{1F4A1}</h2>
             <div class="table-container">
                 <table id="ips" style="text-align: center; margin-bottom: 15px; text-wrap-mode: nowrap;">
                     <tr>
-                        <th>Target</th>
-                        <th>Your IP</th>
+                        <th>Target Address</th>
+                        <th>IP</th>
                         <th>Country</th>
                         <th>City</th>
                         <th>ISP</th>
@@ -6154,13 +6154,13 @@ async function handlePanel(request, env) {
     await updateDataset(request, env);
     return new Response("Success", { status: 200 });
   }
+  const { kvNotFound, proxySettings } = await getDataset(request, env);
+  if (kvNotFound)
+    return await renderErrorPage(request, env, "KV Dataset is not properly set!", null, true);
   const pwd = await env.bpb.get("pwd");
   if (pwd && !auth)
     return Response.redirect(`${origin}/login`, 302);
   const isPassSet = pwd?.length >= 8;
-  const { kvNotFound, proxySettings } = await getDataset(request, env);
-  if (kvNotFound)
-    return await renderErrorPage(request, env, "KV Dataset is not properly set!", null, true);
   return await renderHomePage(request, env, proxySettings, isPassSet);
 }
 __name(handlePanel, "handlePanel");
@@ -7970,7 +7970,7 @@ function buildSingBoxRoutingRules(proxySettings) {
     },
     {
       clash_mode: "Global",
-      outbound: "proxy"
+      outbound: "\u2705 Selector"
     }
   ];
   const geoRules = [
@@ -8387,7 +8387,7 @@ async function getSingBoxCustomConfig(request, env, isFragment) {
   const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(",") : [];
   const totalAddresses = [...Addresses, ...customCdnAddresses];
   const config = structuredClone(singboxConfigTemp);
-  const dnsObject = buildSingBoxDNS(proxySettings, totalAddresses, false, chainProxy ? "proxy-1" : "proxy");
+  const dnsObject = buildSingBoxDNS(proxySettings, totalAddresses, false, chainProxy ? "proxy-1" : "\u2705 Selector");
   const { rules, rule_set } = buildSingBoxRoutingRules(proxySettings);
   config.dns.servers = dnsObject.servers;
   config.dns.rules = dnsObject.rules;
@@ -8511,7 +8511,7 @@ var singboxConfigTemp = {
   outbounds: [
     {
       type: "selector",
-      tag: "proxy",
+      tag: "\u2705 Selector",
       outbounds: []
     },
     {
@@ -8539,7 +8539,7 @@ var singboxConfigTemp = {
     rule_set: [],
     auto_detect_interface: true,
     override_android_vpn: true,
-    final: "proxy"
+    final: "\u2705 Selector"
   },
   ntp: {
     enabled: true,
@@ -8593,14 +8593,14 @@ async function buildClashDNS(proxySettings, isChain, isWarp) {
     "respect-rules": true,
     "use-hosts": true,
     "use-system-hosts": false,
-    "nameserver": isWarp ? warpRemoteDNS.map((dns2) => isChain ? `${dns2}#\u{1F4A6} Warp - Best Ping \u{1F680}` : dns2) : [isChain ? `${remoteDNS}#proxy-1` : remoteDNS],
+    "nameserver": isWarp ? warpRemoteDNS.map((dns2) => isChain ? `${dns2}#\u{1F4A6} Warp - Best Ping \u{1F680}` : `${dns2}#\u2705 Selector`) : [isChain ? `${remoteDNS}#proxy-1` : `${remoteDNS}#\u2705 Selector`],
     "proxy-server-nameserver": [`${localDNS}#DIRECT`]
   };
   if (isChain && !isWarp) {
     const chainOutboundServer = JSON.parse(outProxyParams).server;
     if (isDomain(chainOutboundServer))
       dns["nameserver-policy"] = {
-        [chainOutboundServer]: `${remoteDNS}#proxy-1`
+        [chainOutboundServer]: isChain ? `${remoteDNS}#proxy-1` : `${remoteDNS}#\u2705 Selector`
       };
   }
   if (isBypass) {
