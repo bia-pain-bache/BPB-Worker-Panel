@@ -1,4 +1,4 @@
-import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6 } from './helpers';
+import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6, isIPv4 } from './helpers';
 import { initializeParams, userID, trojanPassword, hostName, defaultHttpsPorts } from "../helpers/init";
 import { getDataset } from '../kv/handlers';
 import { renderErrorPage } from '../pages/error';
@@ -15,7 +15,9 @@ async function buildClashDNS (proxySettings, isChain, isWarp) {
         warpEnableIPv6,
         bypassIran, 
         bypassChina, 
-        bypassRussia 
+        bypassRussia,
+        customBypassRules,
+        customBlockRules
     } = proxySettings;
 
     const warpRemoteDNS = warpEnableIPv6 
@@ -23,6 +25,7 @@ async function buildClashDNS (proxySettings, isChain, isWarp) {
         : ["1.1.1.1", "1.0.0.1"];
     const isFakeDNS = (vlessTrojanFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
     const isIPv6 = (enableIPv6 && !isWarp) || (warpEnableIPv6 && isWarp);
+    const customBypassRulesDomains = customBypassRules.split(',').filter(address => isDomain(address));
     const isBypass = bypassIran || bypassChina || bypassRussia;
     const bypassRules = [
         { rule: bypassIran, geosite: "ir" },
@@ -62,6 +65,13 @@ async function buildClashDNS (proxySettings, isChain, isWarp) {
         };
     }
 
+    customBypassRulesDomains.forEach( domain => {
+        dns["nameserver-policy"] = {
+            ...dns["nameserver-policy"],
+            [`+.${domain}`]: [`${localDNS}#DIRECT`]
+        };
+    });
+
     if (isFakeDNS) Object.assign(dns, {
         "enhanced-mode": "fake-ip",
         "fake-ip-range": "198.18.0.1/16",
@@ -79,17 +89,22 @@ function buildClashRoutingRules (proxySettings) {
         bypassRussia, 
         blockAds, 
         blockPorn, 
-        blockUDP443 
+        blockUDP443,
+        customBypassRules,
+        customBlockRules
     } = proxySettings;
 
+    const customBypassRulesTotal = customBypassRules ? customBypassRules.split(',') : [];
+    const customBlockRulesTotal = customBlockRules ? customBlockRules.split(',') : [];
     const geoRules = [
         { 
             rule: bypassLAN,
             type: 'direct',
+            noResolve: true,
             ruleProvider: {
                 format: "yaml", 
                 geosite: "private", 
-                geoip: "private-cidr", 
+                geoip: "private-cidr",
                 geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/private.yaml", 
                 geoipURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/private.yaml"
             }
@@ -100,7 +115,7 @@ function buildClashRoutingRules (proxySettings) {
             ruleProvider: {
                 format: "text", 
                 geosite: "ir", 
-                geoip: "ir-cidr", 
+                geoip: "ir-cidr",
                 geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/ir.txt", 
                 geoipURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/ircidr.txt"
             }
@@ -188,24 +203,48 @@ function buildClashRoutingRules (proxySettings) {
         }
     }
     
-    const rules = [], ruleProviders = {};
-    geoRules.forEach( ({ rule, type, ruleProvider }) => {
+    const directDomainRules = [], directIPRules = [], blockDomainRules = [], blockIPRules = [], ruleProviders = {};
+    geoRules.forEach( ({ rule, type, ruleProvider, noResolve }) => {
         const { geosite, geoip, geositeURL, geoipURL, format } = ruleProvider;
         if (rule) {
             if (geosite) {
-                rules.push(`RULE-SET,${geosite},${type === 'direct' ? 'DIRECT' : 'REJECT'}`);
+                const targetRules = type === 'direct' ? directDomainRules : blockDomainRules;
+                targetRules.push(`RULE-SET,${geosite},${type === 'direct' ? 'DIRECT' : 'REJECT'}`);
                 const ruleProvider = buildRuleProvider(geosite, format, 'domain', geositeURL);
                 Object.assign(ruleProviders, ruleProvider);
             } 
 
             if (geoip) {
-                rules.push(`RULE-SET,${geoip},${type === 'direct' ? 'DIRECT' : 'REJECT'}`);
+                const targetRules = type === 'direct' ? directIPRules : blockIPRules;
+                targetRules.push(`RULE-SET,${geoip},${type === 'direct' ? 'DIRECT' : 'REJECT'}${noResolve ? ',no-resolve' : ''}`);
                 const ruleProvider = buildRuleProvider(geoip, format, 'ipcidr', geoipURL);
                 Object.assign(ruleProviders, ruleProvider);
             }
         }
     });
 
+    const generateRule = (address, action) => {
+        if (isDomain(address)) {
+            return `DOMAIN-SUFFIX,${address},${action}`;
+        } else {
+            const type = isIPv4(address) ? 'IP-CIDR' : 'IP-CIDR6';
+            const ip = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
+            const cidr = address.includes('/') ? '' : isIPv4(address) ? '/32' : '/128';
+            return `${type},${ip}${cidr},${action},no-resolve`;
+        }
+    };
+    
+    [...customBypassRulesTotal, ...customBlockRulesTotal].forEach((address, index) => {
+        const isDirectRule = index < customBypassRulesTotal.length;
+        const action = isDirectRule ? 'DIRECT' : 'REJECT';
+        const targetRules = isDirectRule 
+            ? isDomain(address) ? directDomainRules : directIPRules
+            : isDomain(address) ? blockDomainRules : blockIPRules;
+        
+        targetRules.push(generateRule(address, action));
+    });
+
+    const rules = [...directDomainRules, ...directIPRules, ...blockDomainRules, ...blockIPRules];
     blockUDP443 && rules.push("AND,((NETWORK,udp),(DST-PORT,443)),REJECT");
     rules.push("MATCH,✅ Selector");
     return { rules, ruleProviders };

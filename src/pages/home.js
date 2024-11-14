@@ -41,7 +41,9 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
         bypassRussia,
         blockAds, 
         blockPorn,
-        blockUDP443
+        blockUDP443,
+        customBypassRules,
+        customBlockRules
     } = proxySettings;
 
     const isWarpPlus = warpPlusLicense ? true : false;
@@ -147,7 +149,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
             summary::marker { font-size: 1.5rem; color: var(--secondary-color); }
             summary h2 { display: inline-flex; }
             h1 { font-size: 2.5em; text-align: center; color: var(--header-color); text-shadow: var(--header-shadow); }
-            h2 { margin: 30px 0; text-align: center; color: var(--hr-text-color); }
+            h2,h3 { margin: 30px 0; text-align: center; color: var(--hr-text-color); }
             hr { border: 1px solid var(--border-color); margin: 20px 0; }
             .footer {
                 display: flex;
@@ -412,7 +414,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="proxyIP">📍 Proxy IPs - Domains</label>
+                        <label for="proxyIP">📍 Proxy IPs / Domains</label>
                         <input type="text" id="proxyIP" name="proxyIP" value="${proxyIP.replaceAll(",", " , ")}">
                     </div>
                     <div class="form-control">
@@ -420,7 +422,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                         <input type="text" id="outProxy" name="outProxy" value="${outProxy}">
                     </div>
                     <div class="form-control">
-                        <label for="cleanIPs">✨ Clean IPs - Domains</label>
+                        <label for="cleanIPs">✨ Clean IPs / Domains</label>
                         <input type="text" id="cleanIPs" name="cleanIPs" value="${cleanIPs.replaceAll(",", " , ")}">
                     </div>
                     <div class="form-control">
@@ -649,6 +651,15 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                             <input type="checkbox" id="bypass-russia" name="bypass-russia" value="true" ${bypassRussia ? 'checked' : ''}>
                             <label for="bypass-russia">Bypass Russia</label>
                         </div>
+                    </div>
+                    <h3>CUSTOM RULES 🔧</h3>
+                    <div class="form-control">
+                        <label for="customBypassRules">🟩 Bypass IPs / Domains</label>
+                        <input type="text" id="customBypassRules" name="customBypassRules" value="${customBypassRules.replaceAll(",", " , ")}">
+                    </div>
+                    <div class="form-control">
+                        <label for="customBlockRules">🟥 Block IPs / Domains</label>
+                        <input type="text" id="customBlockRules" name="customBlockRules" value="${customBlockRules.replaceAll(",", " , ")}">
                     </div>
                 </details>
                 <div id="apply" class="form-control">
@@ -1144,12 +1155,10 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
             const lengthMax = getValue('fragmentLengthMax');
             const intervalMin = getValue('fragmentIntervalMin');
             const intervalMax = getValue('fragmentIntervalMax');
-            const proxyIP = document.getElementById('proxyIP');
-            const cleanIP = document.getElementById('cleanIPs');
             const customCdnAddrs = document.getElementById('customCdnAddrs').value?.split(',').filter(addr => addr !== '');
             const customCdnHost = document.getElementById('customCdnHost').value;
             const customCdnSni = document.getElementById('customCdnSni').value;
-            const isCustomCdn = customCdnAddrs.length > 0 || customCdnHost !== '' || customCdnSni !== '';
+            const isCustomCdn = customCdnAddrs.length || customCdnHost !== '' || customCdnSni !== '';
             const warpEndpoints = document.getElementById('warpEndpoints').value?.replaceAll(' ', '').split(',');
             const noiseCountMin = getValue('noiseCountMin');
             const noiseCountMax = getValue('noiseCountMax');
@@ -1157,9 +1166,11 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
             const noiseSizeMax = getValue('noiseSizeMax');
             const noiseDelayMin = getValue('noiseDelayMin');
             const noiseDelayMax = getValue('noiseDelayMax');
-            const cleanIPs = cleanIP.value?.split(',');
-            const proxyIPs = proxyIP.value?.split(',');
-            const chainProxy = document.getElementById('outProxy').value?.trim();                    
+            const cleanIPs = document.getElementById('cleanIPs').value?.split(',');
+            const proxyIPs = document.getElementById('proxyIP').value?.split(',');
+            const chainProxy = document.getElementById('outProxy').value?.trim();
+            const customBypassRules = document.getElementById('customBypassRules').value?.split(',');                    
+            const customBlockRules = document.getElementById('customBlockRules').value?.split(',');                    
             const formData = new FormData(configForm);
             const isVless = /vless:\\/\\/[^\s@]+@[^\\s:]+:[^\\s]+/.test(chainProxy);
             const isSocksHttp = /^(http|socks):\\/\\/(?:([^:@]+):([^:@]+)@)?([^:@]+):(\\d+)$/.test(chainProxy);
@@ -1171,15 +1182,15 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
             match = chainProxy.match(/:(\\d+)\\?/);
             const vlessPort = match ? match[1] : null;
             const validTransmission = /type=(tcp|grpc|ws)/.test(chainProxy);
-            const validIPDomain = /^((?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,})|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|\\[(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,7}:\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}\\]|\\[[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}\\]|\\[:(?::[a-fA-F0-9]{1,4}){1,7}\\]|\\[\\](?:::[a-fA-F0-9]{1,4}){1,7}\\])$/i;
-            const checkedPorts = Array.from(document.querySelectorAll('input[id^="port-"]:checked')).map(input => input.id.split('-')[1]);
+            const validIPDomain = /^((?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,})|(?:(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)(?:\\/(?:\\d|[12]\\d|3[0-2]))?|\\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}|:(?::[a-fA-F0-9]{1,4}){1,7})\\](?:\\/(?:12[0-8]|1[0-1]\\d|[0-9]?\\d))?)$/i;
             const validEndpoint = /^(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|\\[(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,7}:\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}\\]|\\[[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}\\]|\\[:(?::[a-fA-F0-9]{1,4}){1,7}\\]|\\[::(?::[a-fA-F0-9]{1,4}){0,7}\\]):(?:[0-9]{1,5})$/;
+            const checkedPorts = Array.from(document.querySelectorAll('input[id^="port-"]:checked')).map(input => input.id.split('-')[1]);
             formData.append('ports', checkedPorts);
             configForm.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
                 !formData.has(checkbox.name) && formData.append(checkbox.name, 'false');    
             });
 
-            const invalidIPs = [...cleanIPs, ...proxyIPs, ...customCdnAddrs, customCdnHost, customCdnSni]?.filter(value => {
+            const invalidIPs = [...cleanIPs, ...proxyIPs, ...customCdnAddrs, ...customBypassRules, ...customBlockRules, customCdnHost, customCdnSni]?.filter(value => {
                 if (value) {
                     const trimmedValue = value.trim();
                     return !validIPDomain.test(trimmedValue);
