@@ -103,6 +103,8 @@ export async function updateDataset (request, env) {
         blockAds: validateField('block-ads') ?? currentSettings?.blockAds ?? false,
         blockPorn: validateField('block-porn') ?? currentSettings?.blockPorn ?? false,
         blockUDP443: validateField('block-udp-443') ?? currentSettings?.blockUDP443 ?? false,
+        customBypassRules: validateField('customBypassRules')?.replaceAll(' ', '') ?? currentSettings?.customBypassRules ?? '',
+        customBlockRules: validateField('customBlockRules')?.replaceAll(' ', '') ?? currentSettings?.customBlockRules ?? '',
         warpEndpoints: validateField('warpEndpoints')?.replaceAll(' ', '') ?? currentSettings?.warpEndpoints ?? 'engage.cloudflareclient.com:2408',
         warpFakeDNS: validateField('warpFakeDNS') ?? currentSettings?.warpFakeDNS ?? false,
         warpEnableIPv6: validateField('warpEnableIPv6') ?? currentSettings?.warpEnableIPv6 ?? true,

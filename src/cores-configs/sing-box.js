@@ -1,4 +1,4 @@
-import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath } from './helpers';
+import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6 } from './helpers';
 import { initializeParams, userID, trojanPassword, hostName, defaultHttpsPorts } from "../helpers/init";
 import { renderErrorPage } from '../pages/error';
 import { getDataset } from '../kv/handlers';
@@ -16,12 +16,16 @@ function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp, remoteDNSDetour)
         bypassChina, 
         bypassRussia, 
         blockAds, 
-        blockPorn 
+        blockPorn,
+        customBypassRules,
+        customBlockRules
     } = proxySettings;
 
     let fakeip;
     const isFakeDNS = (vlessTrojanFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
     const isIPv6 = (enableIPv6 && !isWarp) || (warpEnableIPv6 && isWarp);
+    const customBypassRulesDomains = customBypassRules.split(',').filter(address => isDomain(address));
+    const customBlockRulesDomains = customBlockRules.split(',').filter(address => isDomain(address));
     const geoRules = [
         { rule: bypassIran, type: 'direct', geosite: "geosite-ir", geoip: "geoip-ir" },
         { rule: bypassChina, type: 'direct', geosite: "geosite-cn", geoip: "geoip-cn" },
@@ -100,6 +104,30 @@ function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp, remoteDNSDetour)
     });
 
     rules.push(blockRule);
+    const createRule = (server) => ({ 
+        domain_suffix: [], 
+        server 
+    });
+
+    let domainDirectRule, domainBlockRule;
+    if (customBypassRulesDomains.length) {
+        domainDirectRule = createRule("dns-direct");
+        customBypassRulesDomains.forEach( domain => {
+            domainDirectRule.domain_suffix.push(domain);
+        });
+        
+        rules.push(domainDirectRule);
+    }
+    
+    if (customBlockRulesDomains.length) {
+        domainBlockRule = createRule("dns-block");
+        customBlockRulesDomains.forEach( domain => {
+            domainBlockRule.domain_suffix.push(domain);
+        });
+
+        rules.push(domainBlockRule);
+    }
+
     if (isFakeDNS) {
         servers.push({
             address: "fakeip",
@@ -135,11 +163,14 @@ function buildSingBoxRoutingRules (proxySettings) {
         bypassRussia, 
         blockAds, 
         blockPorn, 
-        blockUDP443 
+        blockUDP443,
+        customBypassRules,
+        customBlockRules 
     } = proxySettings;
 
-    const isBypass = bypassIran || bypassChina || bypassRussia;
-    const rules = [
+    const customBypassRulesTotal = customBypassRules ? customBypassRules.split(',') : [];
+    const customBlockRulesTotal = customBlockRules ? customBlockRules.split(',') : [];
+    const defaultRules = [
         {
             type: "logical",
             mode: "or",
@@ -241,13 +272,14 @@ function buildSingBoxRoutingRules (proxySettings) {
         },
     ];
 
-    bypassLAN && rules.push({
+    const directDomainRules = [], directIPRules = [], blockDomainRules = [], blockIPRules = [], ruleSets = [];
+    bypassLAN && directIPRules.push({
         ip_is_private: true,
         outbound: "direct"
     });
 
-    const createRule = (outbound) => ({
-        rule_set: [],
+    const createRule = (rule, outbound) => ({
+        [rule]: [],
         outbound
     });
 
@@ -259,28 +291,56 @@ function buildSingBoxRoutingRules (proxySettings) {
         download_detour: "direct"
     };
 
-    const directRule = createRule('direct');;
-    const blockRule = createRule('block');
-    const ruleSets = [];
+    const directDomainRule = createRule('rule_set', 'direct');;
+    const directIPRule = createRule('rule_set', 'direct');;
+    const blockDomainRule = createRule('rule_set', 'block');
+    const blockIPRule = createRule('rule_set', 'block');
 
     geoRules.forEach(({ rule, type, ruleSet }) => {
+        if (!rule) return;
         const { geosite, geoip, geositeURL, geoipURL } = ruleSet;
-        if (rule) {
-            if (type === 'direct') {
-                directRule.rule_set.unshift(geosite);
-                directRule.rule_set.push(geoip);
-            } else {
-                blockRule.rule_set.unshift(geosite);  
-                geoip && blockRule.rule_set.push(geoip); 
-            }
-            ruleSets.push({...routingRuleSet, tag: geosite, url: geositeURL});
-            geoip && ruleSets.push({...routingRuleSet, tag: geoip, url: geoipURL});
-        }
+        const isDirect = type === 'direct';
+        const domainRule = isDirect ? directDomainRule : blockDomainRule;
+        const ipRule = isDirect ? directIPRule : blockIPRule;
+        
+        domainRule.rule_set.push(geosite);
+        ruleSets.push({ ...routingRuleSet, tag: geosite, url: geositeURL });
+        if (geoip) {
+            ipRule.rule_set.push(geoip);
+            ruleSets.push({ ...routingRuleSet, tag: geoip, url: geoipURL });
+        } 
     });
 
-    isBypass && rules.push(directRule);
-    rules.push(blockRule);
+    const pushRuleIfNotEmpty = (rule, targetArray) => {
+        if (rule.rule_set?.length || rule.domain_suffix?.length || rule.ip_cidr?.length) {
+            targetArray.push(rule);
+        }
+    };
+    
+    pushRuleIfNotEmpty(directDomainRule, directDomainRules);
+    pushRuleIfNotEmpty(directIPRule, directIPRules);
+    pushRuleIfNotEmpty(blockDomainRule, blockDomainRules);
+    pushRuleIfNotEmpty(blockIPRule, blockIPRules);
 
+    const processRules = (addresses, action) => {
+        const domainRule = createRule('domain_suffix', action);
+        const ipRule = createRule('ip_cidr', action); 
+        addresses.forEach(address => {
+            if (isDomain(address)) {
+                domainRule.domain_suffix.push(address);
+            } else {
+                const ip = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
+                ipRule.ip_cidr.push(ip);
+            }
+        });
+
+        pushRuleIfNotEmpty(domainRule, action === 'direct' ? directDomainRules : blockDomainRules);
+        pushRuleIfNotEmpty(ipRule, action === 'direct' ? directIPRules : blockIPRules);
+    };
+    
+    customBypassRulesTotal.length && processRules(customBypassRulesTotal, 'direct');    
+    customBlockRulesTotal.length && processRules(customBlockRulesTotal, 'block');
+    const rules = [...defaultRules, ...directDomainRules, ...directIPRules, ...blockDomainRules, ...blockIPRules];
     blockUDP443 && rules.push({
         network: "udp",
         port: 443,
@@ -288,7 +348,7 @@ function buildSingBoxRoutingRules (proxySettings) {
         outbound: "block"
     });
 
-    return {rules: rules, rule_set: ruleSets};
+    return {rules, rule_set: ruleSets};
 }
 
 function buildSingBoxVLESSOutbound (proxySettings, remark, address, port, host, sni, allowInsecure, isFragment) {
