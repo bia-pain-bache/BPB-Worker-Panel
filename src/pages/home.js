@@ -426,15 +426,6 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                         <input type="text" id="cleanIPs" name="cleanIPs" value="${cleanIPs.replaceAll(",", " , ")}">
                     </div>
                     <div class="form-control">
-                        <label for="scanner">🔎 IP Scanner</label>
-                        <a href="https://scanner.github1.cloud/" name="scanner" target="_blank" style="width: 100%;">
-                            <button type="button" id="scanner" class="button">
-                                Scan now
-                                <span class="material-symbols-outlined">open_in_new</span>
-                            </button>
-                        </a>
-                    </div>
-                    <div class="form-control">
                         <label for="enableIPv6">🔛 IPv6</label>
                         <div class="input-with-select">
                             <select id="enableIPv6" name="enableIPv6">
