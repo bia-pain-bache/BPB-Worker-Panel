@@ -860,21 +860,18 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                         <th>IP</th>
                         <th>Country</th>
                         <th>City</th>
-                        <th>ISP</th>
                     </tr>
                     <tr>
                         <td>Cloudflare CDN</td>
-                        <td>${request.headers.get('cf-connecting-ip') || '-'}</td>
-                        <td><b>${cfCountry || '-'}</b></td>
-                        <td><b>${request.cf.city || '-'}</b></td>
-                        <td><b>${request.cf.asOrganization.toUpperCase() || '-'}</b></td>
+                        <td id="cf-ip"></td>
+                        <td><b id="cf-country"></b></td>
+                        <td><b id="cf-city"></b></td>
                     </tr>
                     <tr>
                         <td>Others</td>
                         <td id="ip"></td>
                         <td><b id="country"></b></td>
                         <td><b id="city"></b></td>
-                        <td><b id="isp"></b></td>
                     </tr>
                 </table>
             </div>
@@ -1015,22 +1012,26 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
         });
 
         const fetchIPInfo = async () => {
-            const updateUI = (ip = '-', country = '-', country_code = '-', city = '-', isp = '-') => {
-                const flag = String.fromCodePoint(...[...country_code].map(c => 0x1F1E6 + c.charCodeAt(0) - 65));
-                document.getElementById('ip').textContent = ip;
-                document.getElementById('country').textContent = country + ' ' + flag;
-                document.getElementById('city').textContent = city;
-                document.getElementById('isp').textContent = isp.toUpperCase();
+            const updateUI = (ip = '-', country = '-', country_code = '-', city = '-', cfIP) => {
+                const flag = country_code !== '-' ? String.fromCodePoint(...[...country_code].map(c => 0x1F1E6 + c.charCodeAt(0) - 65)) : '';
+                document.getElementById(cfIP ? 'cf-ip' : 'ip').textContent = ip;
+                document.getElementById(cfIP ? 'cf-country' : 'country').textContent = country + ' ' + flag;
+                document.getElementById(cfIP ? 'cf-city' : 'city').textContent = city;
             };
 
-            try {
-                const response = await fetch('https://ipwho.is/');
-                const { ip, country, country_code, city, connection } = await response.json();
-                updateUI(ip, country, country_code, city, connection.isp);
-            } catch (error) {
-                console.error('Error fetching IP address:', error);
-                updateUI();
+            const fetchIPApi = async (cfIP) => {
+                try {
+                    const response = await fetch('https://ipwho.is/' + cfIP + '?nocache=' + Date.now(), { cache: "no-store" });
+                    const { ip, country, country_code, city } = await response.json();
+                    updateUI(ip, country, country_code, city, cfIP);
+                } catch (error) {
+                    console.error('Error fetching IP address:', error);
+                    updateUI();
+                }
             }
+
+            await fetchIPApi('');
+            await fetchIPApi('${request.headers.get('cf-connecting-ip') || '-'}');
         }
 
         const getWarpConfigs = async () => {
