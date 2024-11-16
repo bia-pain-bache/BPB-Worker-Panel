@@ -6683,7 +6683,7 @@ function renderLoginPage() {
     </head>
     <body>
         <div class="container">
-            <h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> </h1>
+            <h1> Panel <span style="font-size: smaller;">${panelVersion}</span> </h1>
             <div class="form-container">
                 <h2>User Login</h2>
                 <form id="loginForm">
@@ -6765,7 +6765,7 @@ function renderErrorPage(message2, error, refer) {
     </head>
     <body>
         <div id="error-container">
-            <h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> </h1>
+            <h1> Panel <span style="font-size: smaller;">${panelVersion}</span> </h1>
             <div id="error-message">
                 <h2>${message2} ${refer ? 'Please try again or refer to <a href="https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/README.md">documents</a>' : ""}
                 </h2>
@@ -7381,7 +7381,7 @@ function buildXrayConfig(proxySettings, remark, isFragment, isBalancer, isChain,
   return config;
 }
 async function buildXrayBestPingConfig(proxySettings, totalAddresses, chainProxy, outbounds, isFragment) {
-  const remark = isFragment ? " BPB F - Best Ping \u{1F4A5}" : " BPB - Best Ping \u{1F4A5}";
+  const remark = isFragment ? "  F - Best Ping \u{1F4A5}" : "  - Best Ping \u{1F4A5}";
   let config = buildXrayConfig(proxySettings, remark, isFragment, true, chainProxy, chainProxy ? "chain-2" : "prox-2");
   config.dns = await buildXrayDNS(proxySettings, totalAddresses, void 0);
   config.routing.rules = buildXrayRoutingRules(proxySettings, totalAddresses, chainProxy, true, false);
@@ -7409,7 +7409,7 @@ async function buildXrayBestFragmentConfig(proxySettings, hostName, chainProxy, 
     "80-100",
     "100-200"
   ];
-  let config = buildXrayConfig(proxySettings, " BPB F - Best Fragment \u{1F60E}", true, true, chainProxy, void 0, false);
+  let config = buildXrayConfig(proxySettings, "  F - Best Fragment \u{1F60E}", true, true, chainProxy, void 0, false);
   config.dns = await buildXrayDNS(proxySettings, [], hostName);
   config.routing.rules = buildXrayRoutingRules(proxySettings, [], chainProxy, true, false);
   const fragment = config.outbounds.shift();
@@ -7434,7 +7434,7 @@ async function buildXrayBestFragmentConfig(proxySettings, hostName, chainProxy, 
   return config;
 }
 async function buildXrayWorkerLessConfig(proxySettings) {
-  let config = buildXrayConfig(proxySettings, " BPB F - WorkerLess \u2B50", true, false, false, void 0, false);
+  let config = buildXrayConfig(proxySettings, "  F - WorkerLess \u2B50", true, false, false, void 0, false);
   config.dns = await buildXrayDNS(proxySettings, [], void 0, true);
   config.routing.rules = buildXrayRoutingRules(proxySettings, [], false, false, true);
   let fakeOutbound = buildXrayVLESSOutbound("fake-outbound", "google.com", "443", userID, "google.com", "google.com", "", true, false);
