@@ -5201,10 +5201,10 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                         <input type="text" id="cleanIPs" name="cleanIPs" value="${cleanIPs.replaceAll(",", " , ")}">
                     </div>
                     <div class="form-control">
-                        <label for="scanner">\u{1F50E} IP Scanner</label>
+                        <label for="scanner">\u{1F50E} Clean IP Scanner</label>
                         <a href="https://github.com/bia-pain-bache/Cloudflare-Clean-IP-Scanner/releases/tag/v2.2.5" name="scanner" target="_blank" style="width: 100%;">
                             <button type="button" id="scanner" class="button">
-                                Scan now
+                                Download Scanner
                                 <span class="material-symbols-outlined">open_in_new</span>
                             </button>
                         </a>
