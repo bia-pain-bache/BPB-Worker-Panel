@@ -4,6 +4,7 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
   get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
 }) : x)(function(x) {
@@ -40,18 +41,18 @@ var require_crypto = __commonJS({
 // node_modules/tweetnacl/nacl-fast.js
 var require_nacl_fast = __commonJS({
   "node_modules/tweetnacl/nacl-fast.js"(exports, module) {
-    (function(nacl2) {
+    (function(nacl3) {
       "use strict";
-      var gf = function(init) {
+      var gf = /* @__PURE__ */ __name(function(init) {
         var i, r = new Float64Array(16);
         if (init)
           for (i = 0; i < init.length; i++)
             r[i] = init[i];
         return r;
-      };
-      var randombytes = function() {
+      }, "gf");
+      var randombytes = /* @__PURE__ */ __name(function() {
         throw new Error("no PRNG");
-      };
+      }, "randombytes");
       var _0 = new Uint8Array(16);
       var _9 = new Uint8Array(32);
       _9[0] = 9;
@@ -66,18 +67,22 @@ var require_nacl_fast = __commonJS({
         x[i + 6] = l >> 8 & 255;
         x[i + 7] = l & 255;
       }
+      __name(ts64, "ts64");
       function vn(x, xi, y, yi, n) {
         var i, d = 0;
         for (i = 0; i < n; i++)
           d |= x[xi + i] ^ y[yi + i];
         return (1 & d - 1 >>> 8) - 1;
       }
+      __name(vn, "vn");
       function crypto_verify_16(x, xi, y, yi) {
         return vn(x, xi, y, yi, 16);
       }
+      __name(crypto_verify_16, "crypto_verify_16");
       function crypto_verify_32(x, xi, y, yi) {
         return vn(x, xi, y, yi, 32);
       }
+      __name(crypto_verify_32, "crypto_verify_32");
       function core_salsa20(o, p, k, c) {
         var j0 = c[0] & 255 | (c[1] & 255) << 8 | (c[2] & 255) << 16 | (c[3] & 255) << 24, j1 = k[0] & 255 | (k[1] & 255) << 8 | (k[2] & 255) << 16 | (k[3] & 255) << 24, j2 = k[4] & 255 | (k[5] & 255) << 8 | (k[6] & 255) << 16 | (k[7] & 255) << 24, j3 = k[8] & 255 | (k[9] & 255) << 8 | (k[10] & 255) << 16 | (k[11] & 255) << 24, j4 = k[12] & 255 | (k[13] & 255) << 8 | (k[14] & 255) << 16 | (k[15] & 255) << 24, j5 = c[4] & 255 | (c[5] & 255) << 8 | (c[6] & 255) << 16 | (c[7] & 255) << 24, j6 = p[0] & 255 | (p[1] & 255) << 8 | (p[2] & 255) << 16 | (p[3] & 255) << 24, j7 = p[4] & 255 | (p[5] & 255) << 8 | (p[6] & 255) << 16 | (p[7] & 255) << 24, j8 = p[8] & 255 | (p[9] & 255) << 8 | (p[10] & 255) << 16 | (p[11] & 255) << 24, j9 = p[12] & 255 | (p[13] & 255) << 8 | (p[14] & 255) << 16 | (p[15] & 255) << 24, j10 = c[8] & 255 | (c[9] & 255) << 8 | (c[10] & 255) << 16 | (c[11] & 255) << 24, j11 = k[16] & 255 | (k[17] & 255) << 8 | (k[18] & 255) << 16 | (k[19] & 255) << 24, j12 = k[20] & 255 | (k[21] & 255) << 8 | (k[22] & 255) << 16 | (k[23] & 255) << 24, j13 = k[24] & 255 | (k[25] & 255) << 8 | (k[26] & 255) << 16 | (k[27] & 255) << 24, j14 = k[28] & 255 | (k[29] & 255) << 8 | (k[30] & 255) << 16 | (k[31] & 255) << 24, j15 = c[12] & 255 | (c[13] & 255) << 8 | (c[14] & 255) << 16 | (c[15] & 255) << 24;
         var x0 = j0, x1 = j1, x2 = j2, x3 = j3, x4 = j4, x5 = j5, x6 = j6, x7 = j7, x8 = j8, x9 = j9, x10 = j10, x11 = j11, x12 = j12, x13 = j13, x14 = j14, x15 = j15, u;
@@ -228,6 +233,7 @@ var require_nacl_fast = __commonJS({
         o[62] = x15 >>> 16 & 255;
         o[63] = x15 >>> 24 & 255;
       }
+      __name(core_salsa20, "core_salsa20");
       function core_hsalsa20(o, p, k, c) {
         var j0 = c[0] & 255 | (c[1] & 255) << 8 | (c[2] & 255) << 16 | (c[3] & 255) << 24, j1 = k[0] & 255 | (k[1] & 255) << 8 | (k[2] & 255) << 16 | (k[3] & 255) << 24, j2 = k[4] & 255 | (k[5] & 255) << 8 | (k[6] & 255) << 16 | (k[7] & 255) << 24, j3 = k[8] & 255 | (k[9] & 255) << 8 | (k[10] & 255) << 16 | (k[11] & 255) << 24, j4 = k[12] & 255 | (k[13] & 255) << 8 | (k[14] & 255) << 16 | (k[15] & 255) << 24, j5 = c[4] & 255 | (c[5] & 255) << 8 | (c[6] & 255) << 16 | (c[7] & 255) << 24, j6 = p[0] & 255 | (p[1] & 255) << 8 | (p[2] & 255) << 16 | (p[3] & 255) << 24, j7 = p[4] & 255 | (p[5] & 255) << 8 | (p[6] & 255) << 16 | (p[7] & 255) << 24, j8 = p[8] & 255 | (p[9] & 255) << 8 | (p[10] & 255) << 16 | (p[11] & 255) << 24, j9 = p[12] & 255 | (p[13] & 255) << 8 | (p[14] & 255) << 16 | (p[15] & 255) << 24, j10 = c[8] & 255 | (c[9] & 255) << 8 | (c[10] & 255) << 16 | (c[11] & 255) << 24, j11 = k[16] & 255 | (k[17] & 255) << 8 | (k[18] & 255) << 16 | (k[19] & 255) << 24, j12 = k[20] & 255 | (k[21] & 255) << 8 | (k[22] & 255) << 16 | (k[23] & 255) << 24, j13 = k[24] & 255 | (k[25] & 255) << 8 | (k[26] & 255) << 16 | (k[27] & 255) << 24, j14 = k[28] & 255 | (k[29] & 255) << 8 | (k[30] & 255) << 16 | (k[31] & 255) << 24, j15 = c[12] & 255 | (c[13] & 255) << 8 | (c[14] & 255) << 16 | (c[15] & 255) << 24;
         var x0 = j0, x1 = j1, x2 = j2, x3 = j3, x4 = j4, x5 = j5, x6 = j6, x7 = j7, x8 = j8, x9 = j9, x10 = j10, x11 = j11, x12 = j12, x13 = j13, x14 = j14, x15 = j15, u;
@@ -330,12 +336,15 @@ var require_nacl_fast = __commonJS({
         o[30] = x9 >>> 16 & 255;
         o[31] = x9 >>> 24 & 255;
       }
+      __name(core_hsalsa20, "core_hsalsa20");
       function crypto_core_salsa20(out, inp, k, c) {
         core_salsa20(out, inp, k, c);
       }
+      __name(crypto_core_salsa20, "crypto_core_salsa20");
       function crypto_core_hsalsa20(out, inp, k, c) {
         core_hsalsa20(out, inp, k, c);
       }
+      __name(crypto_core_hsalsa20, "crypto_core_hsalsa20");
       var sigma = new Uint8Array([101, 120, 112, 97, 110, 100, 32, 51, 50, 45, 98, 121, 116, 101, 32, 107]);
       function crypto_stream_salsa20_xor(c, cpos, m, mpos, b, n, k) {
         var z = new Uint8Array(16), x = new Uint8Array(64);
@@ -365,6 +374,7 @@ var require_nacl_fast = __commonJS({
         }
         return 0;
       }
+      __name(crypto_stream_salsa20_xor, "crypto_stream_salsa20_xor");
       function crypto_stream_salsa20(c, cpos, b, n, k) {
         var z = new Uint8Array(16), x = new Uint8Array(64);
         var u, i;
@@ -392,6 +402,7 @@ var require_nacl_fast = __commonJS({
         }
         return 0;
       }
+      __name(crypto_stream_salsa20, "crypto_stream_salsa20");
       function crypto_stream(c, cpos, d, n, k) {
         var s = new Uint8Array(32);
         crypto_core_hsalsa20(s, n, k, sigma);
@@ -400,6 +411,7 @@ var require_nacl_fast = __commonJS({
           sn[i] = n[i + 16];
         return crypto_stream_salsa20(c, cpos, d, sn, s);
       }
+      __name(crypto_stream, "crypto_stream");
       function crypto_stream_xor(c, cpos, m, mpos, d, n, k) {
         var s = new Uint8Array(32);
         crypto_core_hsalsa20(s, n, k, sigma);
@@ -408,7 +420,8 @@ var require_nacl_fast = __commonJS({
           sn[i] = n[i + 16];
         return crypto_stream_salsa20_xor(c, cpos, m, mpos, d, sn, s);
       }
-      var poly1305 = function(key) {
+      __name(crypto_stream_xor, "crypto_stream_xor");
+      var poly1305 = /* @__PURE__ */ __name(function(key) {
         this.buffer = new Uint8Array(16);
         this.r = new Uint16Array(10);
         this.h = new Uint16Array(10);
@@ -442,7 +455,7 @@ var require_nacl_fast = __commonJS({
         this.pad[5] = key[26] & 255 | (key[27] & 255) << 8;
         this.pad[6] = key[28] & 255 | (key[29] & 255) << 8;
         this.pad[7] = key[30] & 255 | (key[31] & 255) << 8;
-      };
+      }, "poly1305");
       poly1305.prototype.blocks = function(m, mpos, bytes) {
         var hibit = this.fin ? 0 : 1 << 11;
         var t0, t1, t2, t3, t4, t5, t6, t7, c;
@@ -753,11 +766,13 @@ var require_nacl_fast = __commonJS({
         s.finish(out, outpos);
         return 0;
       }
+      __name(crypto_onetimeauth, "crypto_onetimeauth");
       function crypto_onetimeauth_verify(h, hpos, m, mpos, n, k) {
         var x = new Uint8Array(16);
         crypto_onetimeauth(x, 0, m, mpos, n, k);
         return crypto_verify_16(h, hpos, x, 0);
       }
+      __name(crypto_onetimeauth_verify, "crypto_onetimeauth_verify");
       function crypto_secretbox(c, m, d, n, k) {
         var i;
         if (d < 32)
@@ -768,6 +783,7 @@ var require_nacl_fast = __commonJS({
           c[i] = 0;
         return 0;
       }
+      __name(crypto_secretbox, "crypto_secretbox");
       function crypto_secretbox_open(m, c, d, n, k) {
         var i;
         var x = new Uint8Array(32);
@@ -781,11 +797,13 @@ var require_nacl_fast = __commonJS({
           m[i] = 0;
         return 0;
       }
+      __name(crypto_secretbox_open, "crypto_secretbox_open");
       function set25519(r, a) {
         var i;
         for (i = 0; i < 16; i++)
           r[i] = a[i] | 0;
       }
+      __name(set25519, "set25519");
       function car25519(o) {
         var i, v, c = 1;
         for (i = 0; i < 16; i++) {
@@ -795,6 +813,7 @@ var require_nacl_fast = __commonJS({
         }
         o[0] += c - 1 + 37 * (c - 1);
       }
+      __name(car25519, "car25519");
       function sel25519(p, q, b) {
         var t, c = ~(b - 1);
         for (var i = 0; i < 16; i++) {
@@ -803,6 +822,7 @@ var require_nacl_fast = __commonJS({
           q[i] ^= t;
         }
       }
+      __name(sel25519, "sel25519");
       function pack25519(o, n) {
         var i, j, b;
         var m = gf(), t = gf();
@@ -827,31 +847,37 @@ var require_nacl_fast = __commonJS({
           o[2 * i + 1] = t[i] >> 8;
         }
       }
+      __name(pack25519, "pack25519");
       function neq25519(a, b) {
         var c = new Uint8Array(32), d = new Uint8Array(32);
         pack25519(c, a);
         pack25519(d, b);
         return crypto_verify_32(c, 0, d, 0);
       }
+      __name(neq25519, "neq25519");
       function par25519(a) {
         var d = new Uint8Array(32);
         pack25519(d, a);
         return d[0] & 1;
       }
+      __name(par25519, "par25519");
       function unpack25519(o, n) {
         var i;
         for (i = 0; i < 16; i++)
           o[i] = n[2 * i] + (n[2 * i + 1] << 8);
         o[15] &= 32767;
       }
+      __name(unpack25519, "unpack25519");
       function A(o, a, b) {
         for (var i = 0; i < 16; i++)
           o[i] = a[i] + b[i];
       }
+      __name(A, "A");
       function Z(o, a, b) {
         for (var i = 0; i < 16; i++)
           o[i] = a[i] - b[i];
       }
+      __name(Z, "Z");
       function M(o, a, b) {
         var v, c, t0 = 0, t1 = 0, t2 = 0, t3 = 0, t4 = 0, t5 = 0, t6 = 0, t7 = 0, t8 = 0, t9 = 0, t10 = 0, t11 = 0, t12 = 0, t13 = 0, t14 = 0, t15 = 0, t16 = 0, t17 = 0, t18 = 0, t19 = 0, t20 = 0, t21 = 0, t22 = 0, t23 = 0, t24 = 0, t25 = 0, t26 = 0, t27 = 0, t28 = 0, t29 = 0, t30 = 0, b0 = b[0], b1 = b[1], b2 = b[2], b3 = b[3], b4 = b[4], b5 = b[5], b6 = b[6], b7 = b[7], b8 = b[8], b9 = b[9], b10 = b[10], b11 = b[11], b12 = b[12], b13 = b[13], b14 = b[14], b15 = b[15];
         v = a[0];
@@ -1258,9 +1284,11 @@ var require_nacl_fast = __commonJS({
         o[14] = t14;
         o[15] = t15;
       }
+      __name(M, "M");
       function S(o, a) {
         M(o, a, a);
       }
+      __name(S, "S");
       function inv25519(o, i) {
         var c = gf();
         var a;
@@ -1274,6 +1302,7 @@ var require_nacl_fast = __commonJS({
         for (a = 0; a < 16; a++)
           o[a] = c[a];
       }
+      __name(inv25519, "inv25519");
       function pow2523(o, i) {
         var c = gf();
         var a;
@@ -1287,6 +1316,7 @@ var require_nacl_fast = __commonJS({
         for (a = 0; a < 16; a++)
           o[a] = c[a];
       }
+      __name(pow2523, "pow2523");
       function crypto_scalarmult(q, n, p) {
         var z = new Uint8Array(32);
         var x = new Float64Array(80), r, i;
@@ -1339,18 +1369,22 @@ var require_nacl_fast = __commonJS({
         pack25519(q, x16);
         return 0;
       }
+      __name(crypto_scalarmult, "crypto_scalarmult");
       function crypto_scalarmult_base(q, n) {
         return crypto_scalarmult(q, n, _9);
       }
+      __name(crypto_scalarmult_base, "crypto_scalarmult_base");
       function crypto_box_keypair(y, x) {
         randombytes(x, 32);
         return crypto_scalarmult_base(y, x);
       }
+      __name(crypto_box_keypair, "crypto_box_keypair");
       function crypto_box_beforenm(k, y, x) {
         var s = new Uint8Array(32);
         crypto_scalarmult(s, x, y);
         return crypto_core_hsalsa20(k, _0, s, sigma);
       }
+      __name(crypto_box_beforenm, "crypto_box_beforenm");
       var crypto_box_afternm = crypto_secretbox;
       var crypto_box_open_afternm = crypto_secretbox_open;
       function crypto_box(c, m, d, n, y, x) {
@@ -1358,11 +1392,13 @@ var require_nacl_fast = __commonJS({
         crypto_box_beforenm(k, y, x);
         return crypto_box_afternm(c, m, d, n, k);
       }
+      __name(crypto_box, "crypto_box");
       function crypto_box_open(m, c, d, n, y, x) {
         var k = new Uint8Array(32);
         crypto_box_beforenm(k, y, x);
         return crypto_box_open_afternm(m, c, d, n, k);
       }
+      __name(crypto_box_open, "crypto_box_open");
       var K = [
         1116352408,
         3609767458,
@@ -1822,6 +1858,7 @@ var require_nacl_fast = __commonJS({
         }
         return n;
       }
+      __name(crypto_hashblocks_hl, "crypto_hashblocks_hl");
       function crypto_hash(out, m, n) {
         var hh = new Int32Array(8), hl = new Int32Array(8), x = new Uint8Array(256), i, b = n;
         hh[0] = 1779033703;
@@ -1853,6 +1890,7 @@ var require_nacl_fast = __commonJS({
           ts64(out, 8 * i, hh[i], hl[i]);
         return 0;
       }
+      __name(crypto_hash, "crypto_hash");
       function add(p, q) {
         var a = gf(), b = gf(), c = gf(), d = gf(), e = gf(), f = gf(), g = gf(), h = gf(), t = gf();
         Z(a, p[1], p[0]);
@@ -1874,12 +1912,14 @@ var require_nacl_fast = __commonJS({
         M(p[2], g, f);
         M(p[3], e, h);
       }
+      __name(add, "add");
       function cswap(p, q, b) {
         var i;
         for (i = 0; i < 4; i++) {
           sel25519(p[i], q[i], b);
         }
       }
+      __name(cswap, "cswap");
       function pack(r, p) {
         var tx = gf(), ty = gf(), zi = gf();
         inv25519(zi, p[2]);
@@ -1888,6 +1928,7 @@ var require_nacl_fast = __commonJS({
         pack25519(r, ty);
         r[31] ^= par25519(tx) << 7;
       }
+      __name(pack, "pack");
       function scalarmult(p, q, s) {
         var b, i;
         set25519(p[0], gf0);
@@ -1902,6 +1943,7 @@ var require_nacl_fast = __commonJS({
           cswap(p, q, b);
         }
       }
+      __name(scalarmult, "scalarmult");
       function scalarbase(p, s) {
         var q = [gf(), gf(), gf(), gf()];
         set25519(q[0], X);
@@ -1910,6 +1952,7 @@ var require_nacl_fast = __commonJS({
         M(q[3], X, Y);
         scalarmult(p, q, s);
       }
+      __name(scalarbase, "scalarbase");
       function crypto_sign_keypair(pk, sk, seeded) {
         var d = new Uint8Array(64);
         var p = [gf(), gf(), gf(), gf()];
@@ -1926,6 +1969,7 @@ var require_nacl_fast = __commonJS({
           sk[i + 32] = pk[i];
         return 0;
       }
+      __name(crypto_sign_keypair, "crypto_sign_keypair");
       var L = new Float64Array([237, 211, 245, 92, 26, 99, 18, 88, 214, 156, 247, 162, 222, 249, 222, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16]);
       function modL(r, x) {
         var carry, i, j, k;
@@ -1952,6 +1996,7 @@ var require_nacl_fast = __commonJS({
           r[i] = x[i] & 255;
         }
       }
+      __name(modL, "modL");
       function reduce(r) {
         var x = new Float64Array(64), i;
         for (i = 0; i < 64; i++)
@@ -1960,6 +2005,7 @@ var require_nacl_fast = __commonJS({
           r[i] = 0;
         modL(r, x);
       }
+      __name(reduce, "reduce");
       function crypto_sign(sm, m, n, sk) {
         var d = new Uint8Array(64), h = new Uint8Array(64), r = new Uint8Array(64);
         var i, j, x = new Float64Array(64);
@@ -1993,6 +2039,7 @@ var require_nacl_fast = __commonJS({
         modL(sm.subarray(32), x);
         return smlen;
       }
+      __name(crypto_sign, "crypto_sign");
       function unpackneg(r, p) {
         var t = gf(), chk = gf(), num = gf(), den = gf(), den2 = gf(), den4 = gf(), den6 = gf();
         set25519(r[2], gf1);
@@ -2024,6 +2071,7 @@ var require_nacl_fast = __commonJS({
         M(r[3], r[0], r[1]);
         return 0;
       }
+      __name(unpackneg, "unpackneg");
       function crypto_sign_open(m, sm, n, pk) {
         var i;
         var t = new Uint8Array(32), h = new Uint8Array(64);
@@ -2052,8 +2100,9 @@ var require_nacl_fast = __commonJS({
           m[i] = sm[i + 64];
         return n;
       }
+      __name(crypto_sign_open, "crypto_sign_open");
       var crypto_secretbox_KEYBYTES = 32, crypto_secretbox_NONCEBYTES = 24, crypto_secretbox_ZEROBYTES = 32, crypto_secretbox_BOXZEROBYTES = 16, crypto_scalarmult_BYTES = 32, crypto_scalarmult_SCALARBYTES = 32, crypto_box_PUBLICKEYBYTES = 32, crypto_box_SECRETKEYBYTES = 32, crypto_box_BEFORENMBYTES = 32, crypto_box_NONCEBYTES = crypto_secretbox_NONCEBYTES, crypto_box_ZEROBYTES = crypto_secretbox_ZEROBYTES, crypto_box_BOXZEROBYTES = crypto_secretbox_BOXZEROBYTES, crypto_sign_BYTES = 64, crypto_sign_PUBLICKEYBYTES = 32, crypto_sign_SECRETKEYBYTES = 64, crypto_sign_SEEDBYTES = 32, crypto_hash_BYTES = 64;
-      nacl2.lowlevel = {
+      nacl3.lowlevel = {
         crypto_core_hsalsa20,
         crypto_stream_xor,
         crypto_stream,
@@ -2115,28 +2164,32 @@ var require_nacl_fast = __commonJS({
         if (n.length !== crypto_secretbox_NONCEBYTES)
           throw new Error("bad nonce size");
       }
+      __name(checkLengths, "checkLengths");
       function checkBoxLengths(pk, sk) {
         if (pk.length !== crypto_box_PUBLICKEYBYTES)
           throw new Error("bad public key size");
         if (sk.length !== crypto_box_SECRETKEYBYTES)
           throw new Error("bad secret key size");
       }
+      __name(checkBoxLengths, "checkBoxLengths");
       function checkArrayTypes() {
         for (var i = 0; i < arguments.length; i++) {
           if (!(arguments[i] instanceof Uint8Array))
             throw new TypeError("unexpected type, use Uint8Array");
         }
       }
+      __name(checkArrayTypes, "checkArrayTypes");
       function cleanup(arr) {
         for (var i = 0; i < arr.length; i++)
           arr[i] = 0;
       }
-      nacl2.randomBytes = function(n) {
+      __name(cleanup, "cleanup");
+      nacl3.randomBytes = function(n) {
         var b = new Uint8Array(n);
         randombytes(b, n);
         return b;
       };
-      nacl2.secretbox = function(msg, nonce, key) {
+      nacl3.secretbox = function(msg, nonce, key) {
         checkArrayTypes(msg, nonce, key);
         checkLengths(key, nonce);
         var m = new Uint8Array(crypto_secretbox_ZEROBYTES + msg.length);
@@ -2146,7 +2199,7 @@ var require_nacl_fast = __commonJS({
         crypto_secretbox(c, m, m.length, nonce, key);
         return c.subarray(crypto_secretbox_BOXZEROBYTES);
       };
-      nacl2.secretbox.open = function(box, nonce, key) {
+      nacl3.secretbox.open = function(box, nonce, key) {
         checkArrayTypes(box, nonce, key);
         checkLengths(key, nonce);
         var c = new Uint8Array(crypto_secretbox_BOXZEROBYTES + box.length);
@@ -2159,10 +2212,10 @@ var require_nacl_fast = __commonJS({
           return null;
         return m.subarray(crypto_secretbox_ZEROBYTES);
       };
-      nacl2.secretbox.keyLength = crypto_secretbox_KEYBYTES;
-      nacl2.secretbox.nonceLength = crypto_secretbox_NONCEBYTES;
-      nacl2.secretbox.overheadLength = crypto_secretbox_BOXZEROBYTES;
-      nacl2.scalarMult = function(n, p) {
+      nacl3.secretbox.keyLength = crypto_secretbox_KEYBYTES;
+      nacl3.secretbox.nonceLength = crypto_secretbox_NONCEBYTES;
+      nacl3.secretbox.overheadLength = crypto_secretbox_BOXZEROBYTES;
+      nacl3.scalarMult = function(n, p) {
         checkArrayTypes(n, p);
         if (n.length !== crypto_scalarmult_SCALARBYTES)
           throw new Error("bad n size");
@@ -2172,7 +2225,7 @@ var require_nacl_fast = __commonJS({
         crypto_scalarmult(q, n, p);
         return q;
       };
-      nacl2.scalarMult.base = function(n) {
+      nacl3.scalarMult.base = function(n) {
         checkArrayTypes(n);
         if (n.length !== crypto_scalarmult_SCALARBYTES)
           throw new Error("bad n size");
@@ -2180,32 +2233,32 @@ var require_nacl_fast = __commonJS({
         crypto_scalarmult_base(q, n);
         return q;
       };
-      nacl2.scalarMult.scalarLength = crypto_scalarmult_SCALARBYTES;
-      nacl2.scalarMult.groupElementLength = crypto_scalarmult_BYTES;
-      nacl2.box = function(msg, nonce, publicKey, secretKey) {
-        var k = nacl2.box.before(publicKey, secretKey);
-        return nacl2.secretbox(msg, nonce, k);
+      nacl3.scalarMult.scalarLength = crypto_scalarmult_SCALARBYTES;
+      nacl3.scalarMult.groupElementLength = crypto_scalarmult_BYTES;
+      nacl3.box = function(msg, nonce, publicKey, secretKey) {
+        var k = nacl3.box.before(publicKey, secretKey);
+        return nacl3.secretbox(msg, nonce, k);
       };
-      nacl2.box.before = function(publicKey, secretKey) {
+      nacl3.box.before = function(publicKey, secretKey) {
         checkArrayTypes(publicKey, secretKey);
         checkBoxLengths(publicKey, secretKey);
         var k = new Uint8Array(crypto_box_BEFORENMBYTES);
         crypto_box_beforenm(k, publicKey, secretKey);
         return k;
       };
-      nacl2.box.after = nacl2.secretbox;
-      nacl2.box.open = function(msg, nonce, publicKey, secretKey) {
-        var k = nacl2.box.before(publicKey, secretKey);
-        return nacl2.secretbox.open(msg, nonce, k);
+      nacl3.box.after = nacl3.secretbox;
+      nacl3.box.open = function(msg, nonce, publicKey, secretKey) {
+        var k = nacl3.box.before(publicKey, secretKey);
+        return nacl3.secretbox.open(msg, nonce, k);
       };
-      nacl2.box.open.after = nacl2.secretbox.open;
-      nacl2.box.keyPair = function() {
+      nacl3.box.open.after = nacl3.secretbox.open;
+      nacl3.box.keyPair = function() {
         var pk = new Uint8Array(crypto_box_PUBLICKEYBYTES);
         var sk = new Uint8Array(crypto_box_SECRETKEYBYTES);
         crypto_box_keypair(pk, sk);
         return { publicKey: pk, secretKey: sk };
       };
-      nacl2.box.keyPair.fromSecretKey = function(secretKey) {
+      nacl3.box.keyPair.fromSecretKey = function(secretKey) {
         checkArrayTypes(secretKey);
         if (secretKey.length !== crypto_box_SECRETKEYBYTES)
           throw new Error("bad secret key size");
@@ -2213,12 +2266,12 @@ var require_nacl_fast = __commonJS({
         crypto_scalarmult_base(pk, secretKey);
         return { publicKey: pk, secretKey: new Uint8Array(secretKey) };
       };
-      nacl2.box.publicKeyLength = crypto_box_PUBLICKEYBYTES;
-      nacl2.box.secretKeyLength = crypto_box_SECRETKEYBYTES;
-      nacl2.box.sharedKeyLength = crypto_box_BEFORENMBYTES;
-      nacl2.box.nonceLength = crypto_box_NONCEBYTES;
-      nacl2.box.overheadLength = nacl2.secretbox.overheadLength;
-      nacl2.sign = function(msg, secretKey) {
+      nacl3.box.publicKeyLength = crypto_box_PUBLICKEYBYTES;
+      nacl3.box.secretKeyLength = crypto_box_SECRETKEYBYTES;
+      nacl3.box.sharedKeyLength = crypto_box_BEFORENMBYTES;
+      nacl3.box.nonceLength = crypto_box_NONCEBYTES;
+      nacl3.box.overheadLength = nacl3.secretbox.overheadLength;
+      nacl3.sign = function(msg, secretKey) {
         checkArrayTypes(msg, secretKey);
         if (secretKey.length !== crypto_sign_SECRETKEYBYTES)
           throw new Error("bad secret key size");
@@ -2226,7 +2279,7 @@ var require_nacl_fast = __commonJS({
         crypto_sign(signedMsg, msg, msg.length, secretKey);
         return signedMsg;
       };
-      nacl2.sign.open = function(signedMsg, publicKey) {
+      nacl3.sign.open = function(signedMsg, publicKey) {
         checkArrayTypes(signedMsg, publicKey);
         if (publicKey.length !== crypto_sign_PUBLICKEYBYTES)
           throw new Error("bad public key size");
@@ -2239,14 +2292,14 @@ var require_nacl_fast = __commonJS({
           m[i] = tmp[i];
         return m;
       };
-      nacl2.sign.detached = function(msg, secretKey) {
-        var signedMsg = nacl2.sign(msg, secretKey);
+      nacl3.sign.detached = function(msg, secretKey) {
+        var signedMsg = nacl3.sign(msg, secretKey);
         var sig = new Uint8Array(crypto_sign_BYTES);
         for (var i = 0; i < sig.length; i++)
           sig[i] = signedMsg[i];
         return sig;
       };
-      nacl2.sign.detached.verify = function(msg, sig, publicKey) {
+      nacl3.sign.detached.verify = function(msg, sig, publicKey) {
         checkArrayTypes(msg, sig, publicKey);
         if (sig.length !== crypto_sign_BYTES)
           throw new Error("bad signature size");
@@ -2261,13 +2314,13 @@ var require_nacl_fast = __commonJS({
           sm[i + crypto_sign_BYTES] = msg[i];
         return crypto_sign_open(m, sm, sm.length, publicKey) >= 0;
       };
-      nacl2.sign.keyPair = function() {
+      nacl3.sign.keyPair = function() {
         var pk = new Uint8Array(crypto_sign_PUBLICKEYBYTES);
         var sk = new Uint8Array(crypto_sign_SECRETKEYBYTES);
         crypto_sign_keypair(pk, sk);
         return { publicKey: pk, secretKey: sk };
       };
-      nacl2.sign.keyPair.fromSecretKey = function(secretKey) {
+      nacl3.sign.keyPair.fromSecretKey = function(secretKey) {
         checkArrayTypes(secretKey);
         if (secretKey.length !== crypto_sign_SECRETKEYBYTES)
           throw new Error("bad secret key size");
@@ -2276,7 +2329,7 @@ var require_nacl_fast = __commonJS({
           pk[i] = secretKey[32 + i];
         return { publicKey: pk, secretKey: new Uint8Array(secretKey) };
       };
-      nacl2.sign.keyPair.fromSeed = function(seed) {
+      nacl3.sign.keyPair.fromSeed = function(seed) {
         checkArrayTypes(seed);
         if (seed.length !== crypto_sign_SEEDBYTES)
           throw new Error("bad seed size");
@@ -2287,18 +2340,18 @@ var require_nacl_fast = __commonJS({
         crypto_sign_keypair(pk, sk, true);
         return { publicKey: pk, secretKey: sk };
       };
-      nacl2.sign.publicKeyLength = crypto_sign_PUBLICKEYBYTES;
-      nacl2.sign.secretKeyLength = crypto_sign_SECRETKEYBYTES;
-      nacl2.sign.seedLength = crypto_sign_SEEDBYTES;
-      nacl2.sign.signatureLength = crypto_sign_BYTES;
-      nacl2.hash = function(msg) {
+      nacl3.sign.publicKeyLength = crypto_sign_PUBLICKEYBYTES;
+      nacl3.sign.secretKeyLength = crypto_sign_SECRETKEYBYTES;
+      nacl3.sign.seedLength = crypto_sign_SEEDBYTES;
+      nacl3.sign.signatureLength = crypto_sign_BYTES;
+      nacl3.hash = function(msg) {
         checkArrayTypes(msg);
         var h = new Uint8Array(crypto_hash_BYTES);
         crypto_hash(h, msg, msg.length);
         return h;
       };
-      nacl2.hash.hashLength = crypto_hash_BYTES;
-      nacl2.verify = function(x, y) {
+      nacl3.hash.hashLength = crypto_hash_BYTES;
+      nacl3.verify = function(x, y) {
         checkArrayTypes(x, y);
         if (x.length === 0 || y.length === 0)
           return false;
@@ -2306,14 +2359,14 @@ var require_nacl_fast = __commonJS({
           return false;
         return vn(x, 0, y, 0, x.length) === 0 ? true : false;
       };
-      nacl2.setPRNG = function(fn) {
+      nacl3.setPRNG = function(fn) {
         randombytes = fn;
       };
       (function() {
         var crypto2 = typeof self !== "undefined" ? self.crypto || self.msCrypto : null;
         if (crypto2 && crypto2.getRandomValues) {
           var QUOTA = 65536;
-          nacl2.setPRNG(function(x, n) {
+          nacl3.setPRNG(function(x, n) {
             var i, v = new Uint8Array(n);
             for (i = 0; i < n; i += QUOTA) {
               crypto2.getRandomValues(v.subarray(i, i + Math.min(n - i, QUOTA)));
@@ -2325,7 +2378,7 @@ var require_nacl_fast = __commonJS({
         } else if (typeof __require !== "undefined") {
           crypto2 = require_crypto();
           if (crypto2 && crypto2.randomBytes) {
-            nacl2.setPRNG(function(x, n) {
+            nacl3.setPRNG(function(x, n) {
               var i, v = crypto2.randomBytes(n);
               for (i = 0; i < n; i++)
                 x[i] = v[i];
@@ -2446,12 +2499,12 @@ var require_sha256 = __commonJS({
           return typeof obj === "object" && obj.buffer && obj.buffer.constructor === ArrayBuffer;
         };
       }
-      var createOutputMethod = function(outputType, is224) {
+      var createOutputMethod = /* @__PURE__ */ __name(function(outputType, is224) {
         return function(message2) {
           return new Sha256(is224, true).update(message2)[outputType]();
         };
-      };
-      var createMethod = function(is224) {
+      }, "createOutputMethod");
+      var createMethod = /* @__PURE__ */ __name(function(is224) {
         var method = createOutputMethod("hex", is224);
         if (NODE_JS) {
           method = nodeWrap(method, is224);
@@ -2467,8 +2520,8 @@ var require_sha256 = __commonJS({
           method[type] = createOutputMethod(type, is224);
         }
         return method;
-      };
-      var nodeWrap = function(method, is224) {
+      }, "createMethod");
+      var nodeWrap = /* @__PURE__ */ __name(function(method, is224) {
         var crypto2 = require_crypto();
         var Buffer2 = require_buffer().Buffer;
         var algorithm = is224 ? "sha224" : "sha256";
@@ -2476,11 +2529,11 @@ var require_sha256 = __commonJS({
         if (Buffer2.from && !root.JS_SHA256_NO_BUFFER_FROM) {
           bufferFrom = Buffer2.from;
         } else {
-          bufferFrom = function(message2) {
+          bufferFrom = /* @__PURE__ */ __name(function(message2) {
             return new Buffer2(message2);
-          };
+          }, "bufferFrom");
         }
-        var nodeMethod = function(message2) {
+        var nodeMethod = /* @__PURE__ */ __name(function(message2) {
           if (typeof message2 === "string") {
             return crypto2.createHash(algorithm).update(message2, "utf8").digest("hex");
           } else {
@@ -2495,15 +2548,15 @@ var require_sha256 = __commonJS({
           } else {
             return method(message2);
           }
-        };
+        }, "nodeMethod");
         return nodeMethod;
-      };
-      var createHmacOutputMethod = function(outputType, is224) {
+      }, "nodeWrap");
+      var createHmacOutputMethod = /* @__PURE__ */ __name(function(outputType, is224) {
         return function(key, message2) {
           return new HmacSha256(key, is224, true).update(message2)[outputType]();
         };
-      };
-      var createHmacMethod = function(is224) {
+      }, "createHmacOutputMethod");
+      var createHmacMethod = /* @__PURE__ */ __name(function(is224) {
         var method = createHmacOutputMethod("hex", is224);
         method.create = function(key) {
           return new HmacSha256(key, is224);
@@ -2516,7 +2569,7 @@ var require_sha256 = __commonJS({
           method[type] = createHmacOutputMethod(type, is224);
         }
         return method;
-      };
+      }, "createHmacMethod");
       function Sha256(is224, sharedMemory) {
         if (sharedMemory) {
           blocks[0] = blocks[16] = blocks[1] = blocks[2] = blocks[3] = blocks[4] = blocks[5] = blocks[6] = blocks[7] = blocks[8] = blocks[9] = blocks[10] = blocks[11] = blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
@@ -2548,6 +2601,7 @@ var require_sha256 = __commonJS({
         this.first = true;
         this.is224 = is224;
       }
+      __name(Sha256, "Sha256");
       Sha256.prototype.update = function(message2) {
         if (this.finalized) {
           return;
@@ -2830,6 +2884,7 @@ var require_sha256 = __commonJS({
         this.inner = true;
         this.sharedMemory = sharedMemory;
       }
+      __name(HmacSha256, "HmacSha256");
       HmacSha256.prototype = new Sha256();
       HmacSha256.prototype.finalize = function() {
         Sha256.prototype.finalize.call(this);
@@ -2862,14 +2917,12 @@ var require_sha256 = __commonJS({
   }
 });
 
-// src/worker.js
-var import_tweetnacl = __toESM(require_nacl_fast());
-var import_js_sha256 = __toESM(require_sha256());
+// src/protocols/vless.js
 import { connect } from "cloudflare:sockets";
 
 // node_modules/jose/dist/browser/runtime/webcrypto.js
 var webcrypto_default = crypto;
-var isCryptoKey = (key) => key instanceof CryptoKey;
+var isCryptoKey = /* @__PURE__ */ __name((key) => key instanceof CryptoKey, "isCryptoKey");
 
 // node_modules/jose/dist/browser/lib/buffer_utils.js
 var encoder = new TextEncoder();
@@ -2885,9 +2938,10 @@ function concat(...buffers) {
   }
   return buf;
 }
+__name(concat, "concat");
 
 // node_modules/jose/dist/browser/runtime/base64url.js
-var encodeBase64 = (input) => {
+var encodeBase64 = /* @__PURE__ */ __name((input) => {
   let unencoded = input;
   if (typeof unencoded === "string") {
     unencoded = encoder.encode(unencoded);
@@ -2898,19 +2952,19 @@ var encodeBase64 = (input) => {
     arr.push(String.fromCharCode.apply(null, unencoded.subarray(i, i + CHUNK_SIZE)));
   }
   return btoa(arr.join(""));
-};
-var encode = (input) => {
+}, "encodeBase64");
+var encode = /* @__PURE__ */ __name((input) => {
   return encodeBase64(input).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-};
-var decodeBase64 = (encoded) => {
+}, "encode");
+var decodeBase64 = /* @__PURE__ */ __name((encoded) => {
   const binary = atob(encoded);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) {
     bytes[i] = binary.charCodeAt(i);
   }
   return bytes;
-};
-var decode = (input) => {
+}, "decodeBase64");
+var decode = /* @__PURE__ */ __name((input) => {
   let encoded = input;
   if (encoded instanceof Uint8Array) {
     encoded = decoder.decode(encoded);
@@ -2921,7 +2975,7 @@ var decode = (input) => {
   } catch {
     throw new TypeError("The input to be decoded is not correctly encoded.");
   }
-};
+}, "decode");
 
 // node_modules/jose/dist/browser/util/errors.js
 var JOSEError = class extends Error {
@@ -2932,6 +2986,7 @@ var JOSEError = class extends Error {
     Error.captureStackTrace?.(this, this.constructor);
   }
 };
+__name(JOSEError, "JOSEError");
 JOSEError.code = "ERR_JOSE_GENERIC";
 var JWTClaimValidationFailed = class extends JOSEError {
   constructor(message2, payload, claim = "unspecified", reason = "unspecified") {
@@ -2942,6 +2997,7 @@ var JWTClaimValidationFailed = class extends JOSEError {
     this.payload = payload;
   }
 };
+__name(JWTClaimValidationFailed, "JWTClaimValidationFailed");
 JWTClaimValidationFailed.code = "ERR_JWT_CLAIM_VALIDATION_FAILED";
 var JWTExpired = class extends JOSEError {
   constructor(message2, payload, claim = "unspecified", reason = "unspecified") {
@@ -2952,6 +3008,7 @@ var JWTExpired = class extends JOSEError {
     this.payload = payload;
   }
 };
+__name(JWTExpired, "JWTExpired");
 JWTExpired.code = "ERR_JWT_EXPIRED";
 var JOSEAlgNotAllowed = class extends JOSEError {
   constructor() {
@@ -2959,6 +3016,7 @@ var JOSEAlgNotAllowed = class extends JOSEError {
     this.code = "ERR_JOSE_ALG_NOT_ALLOWED";
   }
 };
+__name(JOSEAlgNotAllowed, "JOSEAlgNotAllowed");
 JOSEAlgNotAllowed.code = "ERR_JOSE_ALG_NOT_ALLOWED";
 var JOSENotSupported = class extends JOSEError {
   constructor() {
@@ -2966,6 +3024,7 @@ var JOSENotSupported = class extends JOSEError {
     this.code = "ERR_JOSE_NOT_SUPPORTED";
   }
 };
+__name(JOSENotSupported, "JOSENotSupported");
 JOSENotSupported.code = "ERR_JOSE_NOT_SUPPORTED";
 var JWEDecryptionFailed = class extends JOSEError {
   constructor(message2 = "decryption operation failed", options) {
@@ -2973,6 +3032,7 @@ var JWEDecryptionFailed = class extends JOSEError {
     this.code = "ERR_JWE_DECRYPTION_FAILED";
   }
 };
+__name(JWEDecryptionFailed, "JWEDecryptionFailed");
 JWEDecryptionFailed.code = "ERR_JWE_DECRYPTION_FAILED";
 var JWEInvalid = class extends JOSEError {
   constructor() {
@@ -2980,6 +3040,7 @@ var JWEInvalid = class extends JOSEError {
     this.code = "ERR_JWE_INVALID";
   }
 };
+__name(JWEInvalid, "JWEInvalid");
 JWEInvalid.code = "ERR_JWE_INVALID";
 var JWSInvalid = class extends JOSEError {
   constructor() {
@@ -2987,6 +3048,7 @@ var JWSInvalid = class extends JOSEError {
     this.code = "ERR_JWS_INVALID";
   }
 };
+__name(JWSInvalid, "JWSInvalid");
 JWSInvalid.code = "ERR_JWS_INVALID";
 var JWTInvalid = class extends JOSEError {
   constructor() {
@@ -2994,6 +3056,7 @@ var JWTInvalid = class extends JOSEError {
     this.code = "ERR_JWT_INVALID";
   }
 };
+__name(JWTInvalid, "JWTInvalid");
 JWTInvalid.code = "ERR_JWT_INVALID";
 var JWKInvalid = class extends JOSEError {
   constructor() {
@@ -3001,6 +3064,7 @@ var JWKInvalid = class extends JOSEError {
     this.code = "ERR_JWK_INVALID";
   }
 };
+__name(JWKInvalid, "JWKInvalid");
 JWKInvalid.code = "ERR_JWK_INVALID";
 var JWKSInvalid = class extends JOSEError {
   constructor() {
@@ -3008,6 +3072,7 @@ var JWKSInvalid = class extends JOSEError {
     this.code = "ERR_JWKS_INVALID";
   }
 };
+__name(JWKSInvalid, "JWKSInvalid");
 JWKSInvalid.code = "ERR_JWKS_INVALID";
 var JWKSNoMatchingKey = class extends JOSEError {
   constructor(message2 = "no applicable key found in the JSON Web Key Set", options) {
@@ -3015,6 +3080,7 @@ var JWKSNoMatchingKey = class extends JOSEError {
     this.code = "ERR_JWKS_NO_MATCHING_KEY";
   }
 };
+__name(JWKSNoMatchingKey, "JWKSNoMatchingKey");
 JWKSNoMatchingKey.code = "ERR_JWKS_NO_MATCHING_KEY";
 var JWKSMultipleMatchingKeys = class extends JOSEError {
   constructor(message2 = "multiple matching keys found in the JSON Web Key Set", options) {
@@ -3022,6 +3088,7 @@ var JWKSMultipleMatchingKeys = class extends JOSEError {
     this.code = "ERR_JWKS_MULTIPLE_MATCHING_KEYS";
   }
 };
+__name(JWKSMultipleMatchingKeys, "JWKSMultipleMatchingKeys");
 JWKSMultipleMatchingKeys.code = "ERR_JWKS_MULTIPLE_MATCHING_KEYS";
 var JWKSTimeout = class extends JOSEError {
   constructor(message2 = "request timed out", options) {
@@ -3029,6 +3096,7 @@ var JWKSTimeout = class extends JOSEError {
     this.code = "ERR_JWKS_TIMEOUT";
   }
 };
+__name(JWKSTimeout, "JWKSTimeout");
 JWKSTimeout.code = "ERR_JWKS_TIMEOUT";
 var JWSSignatureVerificationFailed = class extends JOSEError {
   constructor(message2 = "signature verification failed", options) {
@@ -3036,18 +3104,22 @@ var JWSSignatureVerificationFailed = class extends JOSEError {
     this.code = "ERR_JWS_SIGNATURE_VERIFICATION_FAILED";
   }
 };
+__name(JWSSignatureVerificationFailed, "JWSSignatureVerificationFailed");
 JWSSignatureVerificationFailed.code = "ERR_JWS_SIGNATURE_VERIFICATION_FAILED";
 
 // node_modules/jose/dist/browser/lib/crypto_key.js
 function unusable(name, prop = "algorithm.name") {
   return new TypeError(`CryptoKey does not support this operation, its ${prop} must be ${name}`);
 }
+__name(unusable, "unusable");
 function isAlgorithm(algorithm, name) {
   return algorithm.name === name;
 }
+__name(isAlgorithm, "isAlgorithm");
 function getHashLength(hash) {
   return parseInt(hash.name.slice(4), 10);
 }
+__name(getHashLength, "getHashLength");
 function getNamedCurve(alg) {
   switch (alg) {
     case "ES256":
@@ -3060,6 +3132,7 @@ function getNamedCurve(alg) {
       throw new Error("unreachable");
   }
 }
+__name(getNamedCurve, "getNamedCurve");
 function checkUsage(key, usages) {
   if (usages.length && !usages.some((expected) => key.usages.includes(expected))) {
     let msg = "CryptoKey does not support this operation, its usages must include ";
@@ -3074,6 +3147,7 @@ function checkUsage(key, usages) {
     throw new TypeError(msg);
   }
 }
+__name(checkUsage, "checkUsage");
 function checkSigCryptoKey(key, alg, ...usages) {
   switch (alg) {
     case "HS256":
@@ -3131,6 +3205,7 @@ function checkSigCryptoKey(key, alg, ...usages) {
   }
   checkUsage(key, usages);
 }
+__name(checkSigCryptoKey, "checkSigCryptoKey");
 
 // node_modules/jose/dist/browser/lib/invalid_key_input.js
 function message(msg, actual, ...types2) {
@@ -3154,24 +3229,26 @@ function message(msg, actual, ...types2) {
   }
   return msg;
 }
-var invalid_key_input_default = (actual, ...types2) => {
+__name(message, "message");
+var invalid_key_input_default = /* @__PURE__ */ __name((actual, ...types2) => {
   return message("Key must be ", actual, ...types2);
-};
+}, "default");
 function withAlg(alg, actual, ...types2) {
   return message(`Key for the ${alg} algorithm must be `, actual, ...types2);
 }
+__name(withAlg, "withAlg");
 
 // node_modules/jose/dist/browser/runtime/is_key_like.js
-var is_key_like_default = (key) => {
+var is_key_like_default = /* @__PURE__ */ __name((key) => {
   if (isCryptoKey(key)) {
     return true;
   }
   return key?.[Symbol.toStringTag] === "KeyObject";
-};
+}, "default");
 var types = ["CryptoKey"];
 
 // node_modules/jose/dist/browser/lib/is_disjoint.js
-var isDisjoint = (...headers) => {
+var isDisjoint = /* @__PURE__ */ __name((...headers) => {
   const sources = headers.filter(Boolean);
   if (sources.length === 0 || sources.length === 1) {
     return true;
@@ -3191,13 +3268,14 @@ var isDisjoint = (...headers) => {
     }
   }
   return true;
-};
+}, "isDisjoint");
 var is_disjoint_default = isDisjoint;
 
 // node_modules/jose/dist/browser/lib/is_object.js
 function isObjectLike(value) {
   return typeof value === "object" && value !== null;
 }
+__name(isObjectLike, "isObjectLike");
 function isObject(input) {
   if (!isObjectLike(input) || Object.prototype.toString.call(input) !== "[object Object]") {
     return false;
@@ -3211,30 +3289,35 @@ function isObject(input) {
   }
   return Object.getPrototypeOf(input) === proto;
 }
+__name(isObject, "isObject");
 
 // node_modules/jose/dist/browser/runtime/check_key_length.js
-var check_key_length_default = (alg, key) => {
+var check_key_length_default = /* @__PURE__ */ __name((alg, key) => {
   if (alg.startsWith("RS") || alg.startsWith("PS")) {
     const { modulusLength } = key.algorithm;
     if (typeof modulusLength !== "number" || modulusLength < 2048) {
       throw new TypeError(`${alg} requires key modulusLength to be 2048 bits or larger`);
     }
   }
-};
+}, "default");
 
 // node_modules/jose/dist/browser/lib/is_jwk.js
 function isJWK(key) {
   return isObject(key) && typeof key.kty === "string";
 }
+__name(isJWK, "isJWK");
 function isPrivateJWK(key) {
   return key.kty !== "oct" && typeof key.d === "string";
 }
+__name(isPrivateJWK, "isPrivateJWK");
 function isPublicJWK(key) {
   return key.kty !== "oct" && typeof key.d === "undefined";
 }
+__name(isPublicJWK, "isPublicJWK");
 function isSecretJWK(key) {
   return isJWK(key) && key.kty === "oct" && typeof key.k === "string";
 }
+__name(isSecretJWK, "isSecretJWK");
 
 // node_modules/jose/dist/browser/runtime/jwk_to_key.js
 function subtleMapping(jwk) {
@@ -3319,7 +3402,8 @@ function subtleMapping(jwk) {
   }
   return { algorithm, keyUsages };
 }
-var parse = async (jwk) => {
+__name(subtleMapping, "subtleMapping");
+var parse = /* @__PURE__ */ __name(async (jwk) => {
   if (!jwk.alg) {
     throw new TypeError('"alg" argument is required when "jwk.alg" is not present');
   }
@@ -3333,17 +3417,17 @@ var parse = async (jwk) => {
   delete keyData.alg;
   delete keyData.use;
   return webcrypto_default.subtle.importKey("jwk", keyData, ...rest);
-};
+}, "parse");
 var jwk_to_key_default = parse;
 
 // node_modules/jose/dist/browser/runtime/normalize_key.js
-var exportKeyValue = (k) => decode(k);
+var exportKeyValue = /* @__PURE__ */ __name((k) => decode(k), "exportKeyValue");
 var privCache;
 var pubCache;
-var isKeyObject = (key) => {
+var isKeyObject = /* @__PURE__ */ __name((key) => {
   return key?.[Symbol.toStringTag] === "KeyObject";
-};
-var importAndCache = async (cache, key, jwk, alg, freeze = false) => {
+}, "isKeyObject");
+var importAndCache = /* @__PURE__ */ __name(async (cache, key, jwk, alg, freeze = false) => {
   let cached = cache.get(key);
   if (cached?.[alg]) {
     return cached[alg];
@@ -3357,8 +3441,8 @@ var importAndCache = async (cache, key, jwk, alg, freeze = false) => {
     cached[alg] = cryptoKey;
   }
   return cryptoKey;
-};
-var normalizePublicKey = (key, alg) => {
+}, "importAndCache");
+var normalizePublicKey = /* @__PURE__ */ __name((key, alg) => {
   if (isKeyObject(key)) {
     let jwk = key.export({ format: "jwk" });
     delete jwk.d;
@@ -3381,8 +3465,8 @@ var normalizePublicKey = (key, alg) => {
     return cryptoKey;
   }
   return key;
-};
-var normalizePrivateKey = (key, alg) => {
+}, "normalizePublicKey");
+var normalizePrivateKey = /* @__PURE__ */ __name((key, alg) => {
   if (isKeyObject(key)) {
     let jwk = key.export({ format: "jwk" });
     if (jwk.k) {
@@ -3399,7 +3483,7 @@ var normalizePrivateKey = (key, alg) => {
     return cryptoKey;
   }
   return key;
-};
+}, "normalizePrivateKey");
 var normalize_key_default = { normalizePublicKey, normalizePrivateKey };
 
 // node_modules/jose/dist/browser/key/import.js
@@ -3425,10 +3509,11 @@ async function importJWK(jwk, alg) {
       throw new JOSENotSupported('Unsupported "kty" (Key Type) Parameter value');
   }
 }
+__name(importJWK, "importJWK");
 
 // node_modules/jose/dist/browser/lib/check_key_type.js
-var tag = (key) => key?.[Symbol.toStringTag];
-var jwkMatchesOp = (alg, key, usage) => {
+var tag = /* @__PURE__ */ __name((key) => key?.[Symbol.toStringTag], "tag");
+var jwkMatchesOp = /* @__PURE__ */ __name((alg, key, usage) => {
   if (key.use !== void 0 && key.use !== "sig") {
     throw new TypeError("Invalid key for this operation, when present its use must be sig");
   }
@@ -3439,8 +3524,8 @@ var jwkMatchesOp = (alg, key, usage) => {
     throw new TypeError(`Invalid key for this operation, when present its alg must be ${alg}`);
   }
   return true;
-};
-var symmetricTypeCheck = (alg, key, usage, allowJwk) => {
+}, "jwkMatchesOp");
+var symmetricTypeCheck = /* @__PURE__ */ __name((alg, key, usage, allowJwk) => {
   if (key instanceof Uint8Array)
     return;
   if (allowJwk && isJWK(key)) {
@@ -3454,8 +3539,8 @@ var symmetricTypeCheck = (alg, key, usage, allowJwk) => {
   if (key.type !== "secret") {
     throw new TypeError(`${tag(key)} instances for symmetric algorithms must be of type "secret"`);
   }
-};
-var asymmetricTypeCheck = (alg, key, usage, allowJwk) => {
+}, "symmetricTypeCheck");
+var asymmetricTypeCheck = /* @__PURE__ */ __name((alg, key, usage, allowJwk) => {
   if (allowJwk && isJWK(key)) {
     switch (usage) {
       case "sign":
@@ -3486,7 +3571,7 @@ var asymmetricTypeCheck = (alg, key, usage, allowJwk) => {
   if (key.algorithm && usage === "encrypt" && key.type === "private") {
     throw new TypeError(`${tag(key)} instances for asymmetric algorithm encryption must be of type "public"`);
   }
-};
+}, "asymmetricTypeCheck");
 function checkKeyType(allowJwk, alg, key, usage) {
   const symmetric = alg.startsWith("HS") || alg === "dir" || alg.startsWith("PBES2") || /^A\d{3}(?:GCM)?KW$/.test(alg);
   if (symmetric) {
@@ -3495,6 +3580,7 @@ function checkKeyType(allowJwk, alg, key, usage) {
     asymmetricTypeCheck(alg, key, usage, allowJwk);
   }
 }
+__name(checkKeyType, "checkKeyType");
 var check_key_type_default = checkKeyType.bind(void 0, false);
 var checkKeyTypeWithJwk = checkKeyType.bind(void 0, true);
 
@@ -3528,10 +3614,11 @@ function validateCrit(Err, recognizedDefault, recognizedOption, protectedHeader,
   }
   return new Set(protectedHeader.crit);
 }
+__name(validateCrit, "validateCrit");
 var validate_crit_default = validateCrit;
 
 // node_modules/jose/dist/browser/lib/validate_algorithms.js
-var validateAlgorithms = (option, algorithms) => {
+var validateAlgorithms = /* @__PURE__ */ __name((option, algorithms) => {
   if (algorithms !== void 0 && (!Array.isArray(algorithms) || algorithms.some((s) => typeof s !== "string"))) {
     throw new TypeError(`"${option}" option must be an array of strings`);
   }
@@ -3539,7 +3626,7 @@ var validateAlgorithms = (option, algorithms) => {
     return void 0;
   }
   return new Set(algorithms);
-};
+}, "validateAlgorithms");
 var validate_algorithms_default = validateAlgorithms;
 
 // node_modules/jose/dist/browser/runtime/subtle_dsa.js
@@ -3568,6 +3655,7 @@ function subtleDsa(alg, algorithm) {
       throw new JOSENotSupported(`alg ${alg} is not supported either by JOSE or your javascript runtime`);
   }
 }
+__name(subtleDsa, "subtleDsa");
 
 // node_modules/jose/dist/browser/runtime/get_sign_verify_key.js
 async function getCryptoKey(alg, key, usage) {
@@ -3589,9 +3677,10 @@ async function getCryptoKey(alg, key, usage) {
   }
   throw new TypeError(invalid_key_input_default(key, ...types, "Uint8Array", "JSON Web Key"));
 }
+__name(getCryptoKey, "getCryptoKey");
 
 // node_modules/jose/dist/browser/runtime/verify.js
-var verify = async (alg, key, signature, data) => {
+var verify = /* @__PURE__ */ __name(async (alg, key, signature, data) => {
   const cryptoKey = await getCryptoKey(alg, key, "verify");
   check_key_length_default(alg, cryptoKey);
   const algorithm = subtleDsa(alg, cryptoKey.algorithm);
@@ -3600,7 +3689,7 @@ var verify = async (alg, key, signature, data) => {
   } catch {
     return false;
   }
-};
+}, "verify");
 var verify_default = verify;
 
 // node_modules/jose/dist/browser/jws/flattened/verify.js
@@ -3708,6 +3797,7 @@ async function flattenedVerify(jws, key, options) {
   }
   return result;
 }
+__name(flattenedVerify, "flattenedVerify");
 
 // node_modules/jose/dist/browser/jws/compact/verify.js
 async function compactVerify(jws, key, options) {
@@ -3728,9 +3818,10 @@ async function compactVerify(jws, key, options) {
   }
   return result;
 }
+__name(compactVerify, "compactVerify");
 
 // node_modules/jose/dist/browser/lib/epoch.js
-var epoch_default = (date) => Math.floor(date.getTime() / 1e3);
+var epoch_default = /* @__PURE__ */ __name((date) => Math.floor(date.getTime() / 1e3), "default");
 
 // node_modules/jose/dist/browser/lib/secs.js
 var minute = 60;
@@ -3739,7 +3830,7 @@ var day = hour * 24;
 var week = day * 7;
 var year = day * 365.25;
 var REGEX = /^(\+|\-)? ?(\d+|\d+\.\d+) ?(seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|weeks?|w|years?|yrs?|y)(?: (ago|from now))?$/i;
-var secs_default = (str) => {
+var secs_default = /* @__PURE__ */ __name((str) => {
   const matched = REGEX.exec(str);
   if (!matched || matched[4] && matched[1]) {
     throw new TypeError("Invalid time period format");
@@ -3787,11 +3878,11 @@ var secs_default = (str) => {
     return -numericDate;
   }
   return numericDate;
-};
+}, "default");
 
 // node_modules/jose/dist/browser/lib/jwt_claims_set.js
-var normalizeTyp = (value) => value.toLowerCase().replace(/^application\//, "");
-var checkAudiencePresence = (audPayload, audOption) => {
+var normalizeTyp = /* @__PURE__ */ __name((value) => value.toLowerCase().replace(/^application\//, ""), "normalizeTyp");
+var checkAudiencePresence = /* @__PURE__ */ __name((audPayload, audOption) => {
   if (typeof audPayload === "string") {
     return audOption.includes(audPayload);
   }
@@ -3799,8 +3890,8 @@ var checkAudiencePresence = (audPayload, audOption) => {
     return audOption.some(Set.prototype.has.bind(new Set(audPayload)));
   }
   return false;
-};
-var jwt_claims_set_default = (protectedHeader, encodedPayload, options = {}) => {
+}, "checkAudiencePresence");
+var jwt_claims_set_default = /* @__PURE__ */ __name((protectedHeader, encodedPayload, options = {}) => {
   let payload;
   try {
     payload = JSON.parse(decoder.decode(encodedPayload));
@@ -3883,7 +3974,7 @@ var jwt_claims_set_default = (protectedHeader, encodedPayload, options = {}) => 
     }
   }
   return payload;
-};
+}, "default");
 
 // node_modules/jose/dist/browser/jwt/verify.js
 async function jwtVerify(jwt, key, options) {
@@ -3898,14 +3989,15 @@ async function jwtVerify(jwt, key, options) {
   }
   return result;
 }
+__name(jwtVerify, "jwtVerify");
 
 // node_modules/jose/dist/browser/runtime/sign.js
-var sign = async (alg, key, data) => {
+var sign = /* @__PURE__ */ __name(async (alg, key, data) => {
   const cryptoKey = await getCryptoKey(alg, key, "sign");
   check_key_length_default(alg, cryptoKey);
   const signature = await webcrypto_default.subtle.sign(subtleDsa(alg, cryptoKey.algorithm), cryptoKey, data);
   return new Uint8Array(signature);
-};
+}, "sign");
 var sign_default = sign;
 
 // node_modules/jose/dist/browser/jws/flattened/sign.js
@@ -3982,6 +4074,7 @@ var FlattenedSign = class {
     return jws;
   }
 };
+__name(FlattenedSign, "FlattenedSign");
 
 // node_modules/jose/dist/browser/jws/compact/sign.js
 var CompactSign = class {
@@ -4000,6 +4093,7 @@ var CompactSign = class {
     return `${jws.protected}.${jws.payload}.${jws.signature}`;
   }
 };
+__name(CompactSign, "CompactSign");
 
 // node_modules/jose/dist/browser/jwt/produce.js
 function validateInput(label, input) {
@@ -4008,6 +4102,7 @@ function validateInput(label, input) {
   }
   return input;
 }
+__name(validateInput, "validateInput");
 var ProduceJWT = class {
   constructor(payload = {}) {
     if (!isObject(payload)) {
@@ -4067,6 +4162,7 @@ var ProduceJWT = class {
     return this;
   }
 };
+__name(ProduceJWT, "ProduceJWT");
 
 // node_modules/jose/dist/browser/jwt/sign.js
 var SignJWT = class extends ProduceJWT {
@@ -4083,872 +4179,433 @@ var SignJWT = class extends ProduceJWT {
     return sig.sign(key, options);
   }
 };
+__name(SignJWT, "SignJWT");
 
-// src/worker.js
-var userID = "89b3cbba-e6ac-485a-9481-976a0415eab9";
-var trojanPassword = `bpb-trojan`;
-var proxyIPs = ["bpb.yousef.isegaro.com"];
-var defaultHttpPorts = ["80", "8080", "2052", "2082", "2086", "2095", "8880"];
-var defaultHttpsPorts = ["443", "8443", "2053", "2083", "2087", "2096"];
-var proxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
-var dohURL = "https://cloudflare-dns.com/dns-query";
-var hashPassword;
-var panelVersion = "2.7";
-var worker_default = {
-  /**
-   * @param {import("@cloudflare/workers-types").Request} request
-   * @param {{UUID: string, PROXYIP: string, DNS_RESOLVER_URL: string}} env
-   * @param {import("@cloudflare/workers-types").ExecutionContext} ctx
-   * @returns {Promise<Response>}
-   */
-  async fetch(request, env) {
-    try {
-      userID = env.UUID || userID;
-      proxyIP = env.PROXYIP || proxyIP;
-      dohURL = env.DNS_RESOLVER_URL || dohURL;
-      trojanPassword = env.TROJAN_PASS || trojanPassword;
-      hashPassword = import_js_sha256.default.sha224(trojanPassword);
-      if (!isValidUUID(userID))
-        throw new Error(`Invalid UUID: ${userID}`);
-      const upgradeHeader = request.headers.get("Upgrade");
-      const url = new URL(request.url);
-      if (!upgradeHeader || upgradeHeader !== "websocket") {
-        const searchParams = new URLSearchParams(url.search);
-        const host = request.headers.get("Host");
-        const client = searchParams.get("app");
-        const { kvNotFound, proxySettings: settings, warpConfigs } = await getDataset(env);
-        if (kvNotFound) {
-          const errorPage = renderErrorPage("KV Dataset is not properly set!", null, true);
-          return new Response(errorPage, { status: 200, headers: { "Content-Type": "text/html" } });
+// src/authentication/auth.js
+var import_tweetnacl = __toESM(require_nacl_fast());
+
+// src/helpers/init.js
+var defaultProxyIP = "bpb.yousef.isegaro.com";
+var userID;
+var dohURL;
+var proxyIP;
+var trojanPassword;
+var defaultHttpPorts;
+var defaultHttpsPorts;
+var panelVersion;
+var hostName;
+var origin;
+var client;
+var pathName;
+function initParams(request, env) {
+  const proxyIPs = env.PROXYIP?.split(",").map((proxyIP2) => proxyIP2.trim());
+  userID = env.UUID || "89b3cbba-e6ac-485a-9481-976a0415eab9";
+  if (!isValidUUID(userID))
+    throw new Error(`Invalid UUID: ${userID}`);
+  dohURL = env.DOH_URL || "https://cloudflare-dns.com/dns-query";
+  proxyIP = proxyIPs ? proxyIPs[Math.floor(Math.random() * proxyIPs.length)] : defaultProxyIP;
+  trojanPassword = env.TROJAN_PASS || "bpb-trojan";
+  defaultHttpPorts = ["80", "8080", "2052", "2082", "2086", "2095", "8880"];
+  defaultHttpsPorts = ["443", "8443", "2053", "2083", "2087", "2096"];
+  panelVersion = "2.7.3";
+  hostName = request.headers.get("Host");
+  const url = new URL(request.url);
+  const searchParams = new URLSearchParams(url.search);
+  client = searchParams.get("app");
+  origin = url.origin;
+  pathName = url.pathname;
+}
+__name(initParams, "initParams");
+function initializeParams(request, env) {
+  initParams(request, env);
+  return Promise.resolve();
+}
+__name(initializeParams, "initializeParams");
+
+// src/pages/login.js
+async function renderLoginPage(request, env) {
+  await initializeParams(request, env);
+  const loginPage = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Login</title>
+    <style>
+        :root {
+            --color: black;
+            --primary-color: #09639f;
+            --header-color: #09639f; 
+            --background-color: #fff;
+            --form-background-color: #f9f9f9;
+            --lable-text-color: #333;
+            --h2-color: #3b3b3b;
+            --border-color: #ddd;
+            --input-background-color: white;
+            --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
         }
-        switch (url.pathname) {
-          case "/cf":
-            return new Response(JSON.stringify(request.cf, null, 4), {
-              status: 200,
-              headers: {
-                "Content-Type": "application/json;charset=utf-8"
-              }
-            });
-          case "/update-warp":
-            const Auth = await Authenticate(request, env);
-            if (!Auth)
-              return new Response("Unauthorized", { status: 401 });
-            if (request.method === "POST") {
-              try {
-                const { error: warpPlusError } = await fetchWgConfig(env, settings);
-                if (warpPlusError) {
-                  return new Response(warpPlusError, { status: 400 });
-                } else {
-                  return new Response("Warp configs updated successfully", { status: 200 });
-                }
-              } catch (error) {
-                console.log(error);
-                return new Response(`An error occurred while updating Warp configs! - ${error}`, { status: 500 });
-              }
-            } else {
-              return new Response("Unsupported request", { status: 405 });
-            }
-          case `/sub/${userID}`:
-            if (client === "sfa") {
-              const BestPingSFA = await getSingBoxCustomConfig(env, settings, host, client, false);
-              return new Response(JSON.stringify(BestPingSFA, null, 4), {
-                status: 200,
-                headers: {
-                  "Content-Type": "application/json;charset=utf-8",
-                  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-                  "CDN-Cache-Control": "no-store"
-                }
-              });
-            }
-            if (client === "clash") {
-              const BestPingClash = await getClashNormalConfig(env, settings, host);
-              return new Response(JSON.stringify(BestPingClash, null, 4), {
-                status: 200,
-                headers: {
-                  "Content-Type": "application/json;charset=utf-8",
-                  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-                  "CDN-Cache-Control": "no-store"
-                }
-              });
-            }
-            if (client === "xray") {
-              const xrayFullConfigs = await getXrayCustomConfigs(env, settings, host, false);
-              return new Response(JSON.stringify(xrayFullConfigs, null, 4), {
-                status: 200,
-                headers: {
-                  "Content-Type": "application/json;charset=utf-8",
-                  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-                  "CDN-Cache-Control": "no-store"
-                }
-              });
-            }
-            const normalConfigs = await getNormalConfigs(settings, host, client);
-            return new Response(normalConfigs, {
-              status: 200,
-              headers: {
-                "Content-Type": "text/plain;charset=utf-8",
-                "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-                "CDN-Cache-Control": "no-store"
-              }
-            });
-          case `/fragsub/${userID}`:
-            let fragConfigs = client === "hiddify" ? await getSingBoxCustomConfig(env, settings, host, client, true) : await getXrayCustomConfigs(env, settings, host, true);
-            return new Response(JSON.stringify(fragConfigs, null, 4), {
-              status: 200,
-              headers: {
-                "Content-Type": "application/json;charset=utf-8",
-                "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-                "CDN-Cache-Control": "no-store"
-              }
-            });
-          case `/warpsub/${userID}`:
-            if (client === "clash") {
-              const clashWarpConfig = await getClashWarpConfig(settings, warpConfigs);
-              return new Response(JSON.stringify(clashWarpConfig, null, 4), {
-                status: 200,
-                headers: {
-                  "Content-Type": "application/json;charset=utf-8",
-                  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-                  "CDN-Cache-Control": "no-store"
-                }
-              });
-            }
-            if (client === "singbox" || client === "hiddify") {
-              const singboxWarpConfig = await getSingBoxWarpConfig(settings, warpConfigs, client);
-              return new Response(JSON.stringify(singboxWarpConfig, null, 4), {
-                status: 200,
-                headers: {
-                  "Content-Type": "application/json;charset=utf-8",
-                  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-                  "CDN-Cache-Control": "no-store"
-                }
-              });
-            }
-            const warpConfig = await getXrayWarpConfigs(settings, warpConfigs, client);
-            return new Response(JSON.stringify(warpConfig, null, 4), {
-              status: 200,
-              headers: {
-                "Content-Type": "application/json;charset=utf-8",
-                "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-                "CDN-Cache-Control": "no-store"
-              }
-            });
-          case "/panel":
-            const pwd = await env.bpb.get("pwd");
-            const isAuth = await Authenticate(request, env);
-            if (request.method === "POST") {
-              if (!isAuth)
-                return new Response("Unauthorized or expired session!", { status: 401 });
-              const formData = await request.formData();
-              const isReset = formData.get("resetSettings") === "true";
-              isReset ? await updateDataset(env, null, true) : await updateDataset(env, formData);
-              return new Response("Success", { status: 200 });
-            }
-            if (pwd && !isAuth)
-              return Response.redirect(`${url.origin}/login`, 302);
-            const isPassSet = pwd?.length >= 8;
-            const homePage = renderHomePage(settings, host, isPassSet);
-            return new Response(homePage, {
-              status: 200,
-              headers: {
-                "Content-Type": "text/html",
-                "Access-Control-Allow-Origin": url.origin,
-                "Access-Control-Allow-Methods": "GET, POST",
-                "Access-Control-Allow-Headers": "Content-Type, Authorization",
-                "X-Content-Type-Options": "nosniff",
-                "X-Frame-Options": "DENY",
-                "Referrer-Policy": "strict-origin-when-cross-origin"
-              }
-            });
-          case "/login":
-            if (typeof env.bpb !== "object") {
-              const errorPage = renderErrorPage("KV Dataset is not properly set!", null, true);
-              return new Response(errorPage, { status: 200, headers: { "Content-Type": "text/html" } });
-            }
-            const loginAuth = await Authenticate(request, env);
-            if (loginAuth)
-              return Response.redirect(`${url.origin}/panel`, 302);
-            let secretKey = await env.bpb.get("secretKey");
-            if (!secretKey) {
-              secretKey = generateSecretKey();
-              await env.bpb.put("secretKey", secretKey);
-            }
-            if (request.method === "POST") {
-              const password = await request.text();
-              const savedPass = await env.bpb.get("pwd");
-              if (password === savedPass) {
-                const jwtToken = await generateJWTToken(secretKey);
-                const cookieHeader = `jwtToken=${jwtToken}; HttpOnly; Secure; Max-Age=${7 * 24 * 60 * 60}; Path=/; SameSite=Strict`;
-                return new Response("Success", {
-                  status: 200,
-                  headers: {
-                    "Set-Cookie": cookieHeader,
-                    "Content-Type": "text/plain"
-                  }
+        html, body { height: 100%; margin: 0; }
+        body {
+            font-family: system-ui;
+            background-color: var(--background-color);
+            position: relative;
+            overflow: hidden;
+        }
+        body.dark-mode {
+            --color: white;
+            --primary-color: #09639F;
+            --header-color: #3498DB; 
+            --background-color: #121212;
+            --form-background-color: #121212;
+            --lable-text-color: #DFDFDF;
+            --h2-color: #D5D5D5;
+            --border-color: #353535;
+            --input-background-color: #252525;
+            --header-shadow: 2px 2px 4px rgba(255, 255, 255, 0.25);
+        }
+        html, body { height: 100%; margin: 0; }
+        .container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+        }
+        h1 { font-size: 2.5rem; text-align: center; color: var(--header-color); margin: 0 auto 30px; text-shadow: var(--header-shadow); }        
+        h2 { text-align: center; color: var(--h2-color) }
+        .form-container {
+            background: var(--form-background-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .form-control { margin-bottom: 15px; display: flex; align-items: center; }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            padding-right: 20px;
+            font-size: 110%;
+            font-weight: 600;
+            color: var(--lable-text-color);
+        }
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            color: var(--lable-text-color);
+            background-color: var(--input-background-color);
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            background-color: var(--primary-color);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .button:hover,
+        button:focus {
+            background-color: #2980b9;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
+        }
+        button.button:hover { color: white; }
+        .button:active { transform: translateY(1px); box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); }
+        @media only screen and (min-width: 768px) {
+            .container { width: 30%; }
+        }
+    </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> \u{1F4A6}</h1>
+            <div class="form-container">
+                <h2>User Login</h2>
+                <form id="loginForm">
+                    <div class="form-control">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <div id="passwordError" style="color: red; margin-bottom: 10px;"></div>
+                    <button type="submit" class="button">Login</button>
+                </form>
+            </div>
+        </div>
+    <script>
+        localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
+        document.getElementById('loginForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
+                    body: password
                 });
-              } else {
-                return new Response("Method Not Allowed", { status: 405 });
-              }
+            
+                if (!response.ok) {
+                    passwordError.textContent = '\u26A0\uFE0F Wrong Password!';
+                    const errorMessage = await response.text();
+                    console.error('Login failed:', errorMessage);
+                    return;
+                }
+                window.location.href = '/panel';
+            } catch (error) {
+                console.error('Error during login:', error);
             }
-            const loginPage = renderLoginPage();
-            return new Response(loginPage, {
-              status: 200,
-              headers: {
-                "Content-Type": "text/html",
-                "Access-Control-Allow-Origin": url.origin,
-                "Access-Control-Allow-Methods": "GET, POST",
-                "Access-Control-Allow-Headers": "Content-Type, Authorization",
-                "X-Content-Type-Options": "nosniff",
-                "X-Frame-Options": "DENY",
-                "Referrer-Policy": "strict-origin-when-cross-origin"
-              }
-            });
-          case "/logout":
-            return new Response("Success", {
-              status: 200,
-              headers: {
-                "Set-Cookie": "jwtToken=; Secure; SameSite=None; Expires=Thu, 01 Jan 1970 00:00:00 GMT",
-                "Content-Type": "text/plain"
-              }
-            });
-          case "/panel/password":
-            const oldPwd = await env.bpb.get("pwd");
-            let passAuth = await Authenticate(request, env);
-            if (oldPwd && !passAuth)
-              return new Response("Unauthorized!", { status: 401 });
-            const newPwd = await request.text();
-            if (newPwd === oldPwd)
-              return new Response("Please enter a new Password!", { status: 400 });
-            await env.bpb.put("pwd", newPwd);
-            return new Response("Success", {
-              status: 200,
-              headers: {
-                "Set-Cookie": "jwtToken=; Path=/; Secure; SameSite=None; Expires=Thu, 01 Jan 1970 00:00:00 GMT",
-                "Content-Type": "text/plain"
-              }
-            });
-          default:
-            url.hostname = "www.speedtest.net";
-            url.protocol = "https:";
-            request = new Request(url, request);
-            return await fetch(request);
-        }
-      } else {
-        return url.pathname.startsWith("/tr") ? await trojanOverWSHandler(request) : await vlessOverWSHandler(request);
-      }
-    } catch (err) {
-      const errorPage = renderErrorPage("Something went wrong!", err, false);
-      return new Response(errorPage, { status: 200, headers: { "Content-Type": "text/html" } });
+        });
+    <\/script>
+    </body>
+    </html>`;
+  return new Response(loginPage, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/html;charset=utf-8",
+      "Access-Control-Allow-Origin": origin,
+      "Access-Control-Allow-Methods": "GET, POST",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY",
+      "Referrer-Policy": "strict-origin-when-cross-origin",
+      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, no-transform",
+      "CDN-Cache-Control": "no-store"
     }
-  }
-};
-async function vlessOverWSHandler(request) {
-  const webSocketPair = new WebSocketPair();
-  const [client, webSocket] = Object.values(webSocketPair);
-  webSocket.accept();
-  let address = "";
-  let portWithRandomLog = "";
-  const log = (info, event) => {
-    console.log(`[${address}:${portWithRandomLog}] ${info}`, event || "");
-  };
-  const earlyDataHeader = request.headers.get("sec-websocket-protocol") || "";
-  const readableWebSocketStream = makeReadableWebSocketStream(webSocket, earlyDataHeader, log);
-  let remoteSocketWapper = {
-    value: null
-  };
-  let udpStreamWrite = null;
-  let isDns = false;
-  readableWebSocketStream.pipeTo(
-    new WritableStream({
-      async write(chunk, controller) {
-        if (isDns && udpStreamWrite) {
-          return udpStreamWrite(chunk);
-        }
-        if (remoteSocketWapper.value) {
-          const writer = remoteSocketWapper.value.writable.getWriter();
-          await writer.write(chunk);
-          writer.releaseLock();
-          return;
-        }
-        const {
-          hasError,
-          message: message2,
-          portRemote = 443,
-          addressRemote = "",
-          rawDataIndex,
-          vlessVersion = new Uint8Array([0, 0]),
-          isUDP
-        } = await processVlessHeader(chunk, userID);
-        address = addressRemote;
-        portWithRandomLog = `${portRemote}--${Math.random()} ${isUDP ? "udp " : "tcp "} `;
-        if (hasError) {
-          throw new Error(message2);
-          return;
-        }
-        if (isUDP) {
-          if (portRemote === 53) {
-            isDns = true;
-          } else {
-            throw new Error("UDP proxy only enable for DNS which is port 53");
-            return;
-          }
-        }
-        const vlessResponseHeader = new Uint8Array([vlessVersion[0], 0]);
-        const rawClientData = chunk.slice(rawDataIndex);
-        if (isDns) {
-          const { write } = await handleUDPOutBound(webSocket, vlessResponseHeader, log);
-          udpStreamWrite = write;
-          udpStreamWrite(rawClientData);
-          return;
-        }
-        handleTCPOutBound(
-          request,
-          remoteSocketWapper,
-          addressRemote,
-          portRemote,
-          rawClientData,
-          webSocket,
-          vlessResponseHeader,
-          log
-        );
-      },
-      close() {
-        log(`readableWebSocketStream is close`);
-      },
-      abort(reason) {
-        log(`readableWebSocketStream is abort`, JSON.stringify(reason));
-      }
-    })
-  ).catch((err) => {
-    log("readableWebSocketStream pipeTo error", err);
-  });
-  return new Response(null, {
-    status: 101,
-    // @ts-ignore
-    webSocket: client
   });
 }
-async function checkUuidInApiResponse(targetUuid) {
+__name(renderLoginPage, "renderLoginPage");
+
+// src/pages/error.js
+async function renderErrorPage(request, env, message2, error, refer) {
+  await initializeParams(request, env);
+  const errorPage = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Error Page</title>
+        <style>
+            :root {
+                --color: black;
+                --header-color: #09639f; 
+                --background-color: #fff;
+                --border-color: #ddd;
+                --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+            }
+            body, html {
+                height: 100%;
+                width: 100%;
+                margin: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-family: system-ui;
+                color: var(--color);
+                background-color: var(--background-color);
+            }
+            body.dark-mode {
+                --color: white;
+                --header-color: #3498DB; 
+                --background-color: #121212;
+                --header-shadow: 2px 2px 4px rgba(255, 255, 255, 0.25);          
+            }
+            h1 { font-size: 2.5rem; text-align: center; color: var(--header-color); text-shadow: var(--header-shadow); }
+            #error-container { text-align: center; }
+        </style>
+    </head>
+    <body>
+        <div id="error-container">
+            <h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> \u{1F4A6}</h1>
+            <div id="error-message">
+                <h2>${message2} ${refer ? 'Please try again or refer to <a href="https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/README.md">documents</a>' : ""}
+                </h2>
+                <p><b>${error ? `\u26A0\uFE0F ${error.stack.toString()}` : ""}</b></p>
+            </div>
+        </div>
+    <script>
+        localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
+    <\/script>
+    </body>
+    </html>`;
+  return new Response(errorPage, { status: 200, headers: { "Content-Type": "text/html" } });
+}
+__name(renderErrorPage, "renderErrorPage");
+
+// src/authentication/auth.js
+async function generateJWTToken(request, env) {
+  await initializeParams(request, env);
+  const password = await request.text();
+  const savedPass = await env.bpb.get("pwd");
+  if (password !== savedPass)
+    return new Response("Method Not Allowed", { status: 405 });
+  let secretKey = await env.bpb.get("secretKey");
+  if (!secretKey) {
+    secretKey = generateSecretKey();
+    await env.bpb.put("secretKey", secretKey);
+  }
+  const secret = new TextEncoder().encode(secretKey);
+  const jwtToken = await new SignJWT({ userID }).setProtectedHeader({ alg: "HS256" }).setIssuedAt().setExpirationTime("24h").sign(secret);
+  return new Response("Success", {
+    status: 200,
+    headers: {
+      "Set-Cookie": `jwtToken=${jwtToken}; HttpOnly; Secure; Max-Age=${7 * 24 * 60 * 60}; Path=/; SameSite=Strict`,
+      "Content-Type": "text/plain"
+    }
+  });
+}
+__name(generateJWTToken, "generateJWTToken");
+function generateSecretKey() {
+  const key = import_tweetnacl.default.randomBytes(32);
+  return Array.from(key, (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+__name(generateSecretKey, "generateSecretKey");
+async function Authenticate(request, env) {
   try {
-    const apiResponse = await getApiResponse();
-    if (!apiResponse) {
+    const secretKey = await env.bpb.get("secretKey");
+    const secret = new TextEncoder().encode(secretKey);
+    const cookie = request.headers.get("Cookie")?.match(/(^|;\s*)jwtToken=([^;]*)/);
+    const token = cookie ? cookie[2] : null;
+    if (!token) {
+      console.log("Unauthorized: Token not available!");
       return false;
     }
-    const isUuidInResponse = apiResponse.users.some((user) => user.uuid === targetUuid);
-    return isUuidInResponse;
+    const { payload } = await jwtVerify(token, secret);
+    console.log(`Successfully authenticated, User ID: ${payload.userID}`);
+    return true;
   } catch (error) {
-    console.error("Error:", error);
+    console.log(error);
     return false;
   }
 }
-async function trojanOverWSHandler(request) {
-  const webSocketPair = new WebSocketPair();
-  const [client, webSocket] = Object.values(webSocketPair);
-  webSocket.accept();
-  let address = "";
-  let portWithRandomLog = "";
-  const log = (info, event) => {
-    console.log(`[${address}:${portWithRandomLog}] ${info}`, event || "");
-  };
-  const earlyDataHeader = request.headers.get("sec-websocket-protocol") || "";
-  const readableWebSocketStream = makeReadableWebSocketStream(webSocket, earlyDataHeader, log);
-  let remoteSocketWapper = {
-    value: null
-  };
-  let udpStreamWrite = null;
-  readableWebSocketStream.pipeTo(
-    new WritableStream({
-      async write(chunk, controller) {
-        if (udpStreamWrite) {
-          return udpStreamWrite(chunk);
-        }
-        if (remoteSocketWapper.value) {
-          const writer = remoteSocketWapper.value.writable.getWriter();
-          await writer.write(chunk);
-          writer.releaseLock();
-          return;
-        }
-        const {
-          hasError,
-          message: message2,
-          portRemote = 443,
-          addressRemote = "",
-          rawClientData
-        } = await parseTrojanHeader(chunk);
-        address = addressRemote;
-        portWithRandomLog = `${portRemote}--${Math.random()} tcp`;
-        if (hasError) {
-          throw new Error(message2);
-          return;
-        }
-        handleTCPOutBound(request, remoteSocketWapper, addressRemote, portRemote, rawClientData, webSocket, false, log);
-      },
-      close() {
-        log(`readableWebSocketStream is closed`);
-      },
-      abort(reason) {
-        log(`readableWebSocketStream is aborted`, JSON.stringify(reason));
-      }
-    })
-  ).catch((err) => {
-    log("readableWebSocketStream pipeTo error", err);
-  });
-  return new Response(null, {
-    status: 101,
-    // @ts-ignore
-    webSocket: client
+__name(Authenticate, "Authenticate");
+function logout() {
+  return new Response("Success", {
+    status: 200,
+    headers: {
+      "Set-Cookie": "jwtToken=; Secure; SameSite=None; Expires=Thu, 01 Jan 1970 00:00:00 GMT",
+      "Content-Type": "text/plain"
+    }
   });
 }
-async function parseTrojanHeader(buffer) {
-  if (buffer.byteLength < 56) {
-    return {
-      hasError: true,
-      message: "invalid data"
-    };
-  }
-  let crLfIndex = 56;
-  if (new Uint8Array(buffer.slice(56, 57))[0] !== 13 || new Uint8Array(buffer.slice(57, 58))[0] !== 10) {
-    return {
-      hasError: true,
-      message: "invalid header format (missing CR LF)"
-    };
-  }
-  const password = new TextDecoder().decode(buffer.slice(0, crLfIndex));
-  if (password !== hashPassword) {
-    return {
-      hasError: true,
-      message: "invalid password"
-    };
-  }
-  const socks5DataBuffer = buffer.slice(crLfIndex + 2);
-  if (socks5DataBuffer.byteLength < 6) {
-    return {
-      hasError: true,
-      message: "invalid SOCKS5 request data"
-    };
-  }
-  const view = new DataView(socks5DataBuffer);
-  const cmd = view.getUint8(0);
-  if (cmd !== 1) {
-    return {
-      hasError: true,
-      message: "unsupported command, only TCP (CONNECT) is allowed"
-    };
-  }
-  const atype = view.getUint8(1);
-  let addressLength = 0;
-  let addressIndex = 2;
-  let address = "";
-  switch (atype) {
-    case 1:
-      addressLength = 4;
-      address = new Uint8Array(socks5DataBuffer.slice(addressIndex, addressIndex + addressLength)).join(".");
-      break;
-    case 3:
-      addressLength = new Uint8Array(socks5DataBuffer.slice(addressIndex, addressIndex + 1))[0];
-      addressIndex += 1;
-      address = new TextDecoder().decode(socks5DataBuffer.slice(addressIndex, addressIndex + addressLength));
-      break;
-    case 4:
-      addressLength = 16;
-      const dataView = new DataView(socks5DataBuffer.slice(addressIndex, addressIndex + addressLength));
-      const ipv6 = [];
-      for (let i = 0; i < 8; i++) {
-        ipv6.push(dataView.getUint16(i * 2).toString(16));
-      }
-      address = ipv6.join(":");
-      break;
-    default:
-      return {
-        hasError: true,
-        message: `invalid addressType is ${atype}`
-      };
-  }
-  if (!address) {
-    return {
-      hasError: true,
-      message: `address is empty, addressType is ${atype}`
-    };
-  }
-  const portIndex = addressIndex + addressLength;
-  const portBuffer = socks5DataBuffer.slice(portIndex, portIndex + 2);
-  const portRemote = new DataView(portBuffer).getUint16(0);
-  return {
-    hasError: false,
-    addressRemote: address,
-    portRemote,
-    rawClientData: socks5DataBuffer.slice(portIndex + 4)
-  };
+__name(logout, "logout");
+async function resetPassword(request, env) {
+  let auth = await Authenticate(request, env);
+  const oldPwd = await env.bpb.get("pwd");
+  if (oldPwd && !auth)
+    return new Response("Unauthorized!", { status: 401 });
+  const newPwd = await request.text();
+  if (newPwd === oldPwd)
+    return new Response("Please enter a new Password!", { status: 400 });
+  await env.bpb.put("pwd", newPwd);
+  return new Response("Success", {
+    status: 200,
+    headers: {
+      "Set-Cookie": "jwtToken=; Path=/; Secure; SameSite=None; Expires=Thu, 01 Jan 1970 00:00:00 GMT",
+      "Content-Type": "text/plain"
+    }
+  });
 }
-async function handleTCPOutBound(request, remoteSocket, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log) {
-  async function connectAndWrite(address, port) {
-    if (/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(address))
-      address = `${atob("d3d3Lg==")}${address}${atob("LnNzbGlwLmlv")}`;
-    const tcpSocket2 = connect({
-      hostname: address,
-      port
+__name(resetPassword, "resetPassword");
+async function login(request, env) {
+  await initializeParams(request, env);
+  if (typeof env.bpb !== "object")
+    return await renderErrorPage(request, env, "KV Dataset is not properly set!", null, true);
+  const auth = await Authenticate(request, env);
+  if (auth)
+    return Response.redirect(`${origin}/panel`, 302);
+  if (request.method === "POST")
+    return await generateJWTToken(request, env);
+  return await renderLoginPage(request, env);
+}
+__name(login, "login");
+
+// src/protocols/warp.js
+var import_tweetnacl2 = __toESM(require_nacl_fast());
+async function fetchWarpConfigs(env, proxySettings) {
+  let warpConfigs = [];
+  const apiBaseUrl = "https://api.cloudflareclient.com/v0a4005/reg";
+  const { warpPlusLicense } = proxySettings;
+  const warpKeys = [generateKeyPair(), generateKeyPair()];
+  const commonPayload = {
+    install_id: "",
+    fcm_token: "",
+    tos: (/* @__PURE__ */ new Date()).toISOString(),
+    type: "Android",
+    model: "PC",
+    locale: "en_US",
+    warp_enabled: true
+  };
+  const fetchAccount = /* @__PURE__ */ __name(async (key) => {
+    const response = await fetch(apiBaseUrl, {
+      method: "POST",
+      headers: {
+        "User-Agent": "insomnia/8.6.1",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ ...commonPayload, key: key.publicKey })
     });
-    remoteSocket.value = tcpSocket2;
-    log(`connected to ${address}:${port}`);
-    const writer = tcpSocket2.writable.getWriter();
-    await writer.write(rawClientData);
-    writer.releaseLock();
-    return tcpSocket2;
-  }
-  async function retry() {
-    const { pathname } = new URL(request.url);
-    let panelProxyIP = pathname.split("/")[2];
-    panelProxyIP = panelProxyIP ? atob(panelProxyIP) : void 0;
-    const tcpSocket2 = await connectAndWrite(panelProxyIP || proxyIP || addressRemote, portRemote);
-    tcpSocket2.closed.catch((error) => {
-      console.log("retry tcpSocket closed error", error);
-    }).finally(() => {
-      safeCloseWebSocket(webSocket);
+    return await response.json();
+  }, "fetchAccount");
+  const updateAccount = /* @__PURE__ */ __name(async (accountData, key) => {
+    const response = await fetch(`${apiBaseUrl}/${accountData.id}/account`, {
+      method: "PUT",
+      headers: {
+        "User-Agent": "insomnia/8.6.1",
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${accountData.token}`
+      },
+      body: JSON.stringify({ ...commonPayload, key: key.publicKey, license: warpPlusLicense })
     });
-    vlessResponseHeader ? vlessRemoteSocketToWS(tcpSocket2, webSocket, vlessResponseHeader, null, log) : trojanRemoteSocketToWS(tcpSocket2, webSocket, null, log);
-  }
-  const tcpSocket = await connectAndWrite(addressRemote, portRemote);
-  vlessResponseHeader ? vlessRemoteSocketToWS(tcpSocket, webSocket, vlessResponseHeader, retry, log) : trojanRemoteSocketToWS(tcpSocket, webSocket, retry, log);
-}
-function makeReadableWebSocketStream(webSocketServer, earlyDataHeader, log) {
-  let readableStreamCancel = false;
-  const stream = new ReadableStream({
-    start(controller) {
-      webSocketServer.addEventListener("message", (event) => {
-        if (readableStreamCancel) {
-          return;
-        }
-        const message2 = event.data;
-        controller.enqueue(message2);
-      });
-      webSocketServer.addEventListener("close", () => {
-        safeCloseWebSocket(webSocketServer);
-        if (readableStreamCancel) {
-          return;
-        }
-        controller.close();
-      });
-      webSocketServer.addEventListener("error", (err) => {
-        log("webSocketServer has error");
-        controller.error(err);
-      });
-      const { earlyData, error } = base64ToArrayBuffer(earlyDataHeader);
-      if (error) {
-        controller.error(error);
-      } else if (earlyData) {
-        controller.enqueue(earlyData);
-      }
-    },
-    pull(controller) {
-    },
-    cancel(reason) {
-      if (readableStreamCancel) {
-        return;
-      }
-      log(`ReadableStream was canceled, due to ${reason}`);
-      readableStreamCancel = true;
-      safeCloseWebSocket(webSocketServer);
-    }
-  });
-  return stream;
-}
-async function processVlessHeader(vlessBuffer, userID2) {
-  if (vlessBuffer.byteLength < 24) {
     return {
-      hasError: true,
-      message: "invalid data"
+      status: response.status,
+      data: await response.json()
     };
-  }
-  const version = new Uint8Array(vlessBuffer.slice(0, 1));
-  let isValidUser = false;
-  let isUDP = false;
-  const slicedBuffer = new Uint8Array(vlessBuffer.slice(1, 17));
-  const slicedBufferString = stringify(slicedBuffer);
-  const uuids = userID2.includes(",") ? userID2.split(",") : [userID2];
-  const checkUuidInApi = await checkUuidInApiResponse(slicedBufferString);
-  isValidUser = uuids.some((userUuid) => checkUuidInApi || slicedBufferString === userUuid.trim());
-  console.log(`checkUuidInApi: ${await checkUuidInApiResponse(slicedBufferString)}, userID: ${slicedBufferString}`);
-  if (!isValidUser) {
-    return {
-      hasError: true,
-      message: "invalid user"
-    };
-  }
-  const optLength = new Uint8Array(vlessBuffer.slice(17, 18))[0];
-  const command = new Uint8Array(vlessBuffer.slice(18 + optLength, 18 + optLength + 1))[0];
-  if (command === 1) {
-  } else if (command === 2) {
-    isUDP = true;
-  } else {
-    return {
-      hasError: true,
-      message: `command ${command} is not support, command 01-tcp,02-udp,03-mux`
-    };
-  }
-  const portIndex = 18 + optLength + 1;
-  const portBuffer = vlessBuffer.slice(portIndex, portIndex + 2);
-  const portRemote = new DataView(portBuffer).getUint16(0);
-  let addressIndex = portIndex + 2;
-  const addressBuffer = new Uint8Array(vlessBuffer.slice(addressIndex, addressIndex + 1));
-  const addressType = addressBuffer[0];
-  let addressLength = 0;
-  let addressValueIndex = addressIndex + 1;
-  let addressValue = "";
-  switch (addressType) {
-    case 1:
-      addressLength = 4;
-      addressValue = new Uint8Array(vlessBuffer.slice(addressValueIndex, addressValueIndex + addressLength)).join(".");
-      break;
-    case 2:
-      addressLength = new Uint8Array(vlessBuffer.slice(addressValueIndex, addressValueIndex + 1))[0];
-      addressValueIndex += 1;
-      addressValue = new TextDecoder().decode(vlessBuffer.slice(addressValueIndex, addressValueIndex + addressLength));
-      break;
-    case 3:
-      addressLength = 16;
-      const dataView = new DataView(vlessBuffer.slice(addressValueIndex, addressValueIndex + addressLength));
-      const ipv6 = [];
-      for (let i = 0; i < 8; i++) {
-        ipv6.push(dataView.getUint16(i * 2).toString(16));
+  }, "updateAccount");
+  for (const key of warpKeys) {
+    const accountData = await fetchAccount(key);
+    warpConfigs.push({
+      privateKey: key.privateKey,
+      account: accountData
+    });
+    if (warpPlusLicense) {
+      const { status, data: responseData } = await updateAccount(accountData, key);
+      if (status !== 200 && !responseData.success) {
+        return { error: responseData.errors[0]?.message, configs: null };
       }
-      addressValue = ipv6.join(":");
-      break;
-    default:
-      return {
-        hasError: true,
-        message: `invild  addressType is ${addressType}`
-      };
-  }
-  if (!addressValue) {
-    return {
-      hasError: true,
-      message: `addressValue is empty, addressType is ${addressType}`
-    };
-  }
-  return {
-    hasError: false,
-    addressRemote: addressValue,
-    addressType,
-    portRemote,
-    rawDataIndex: addressValueIndex + addressLength,
-    vlessVersion: version,
-    isUDP
-  };
-}
-async function vlessRemoteSocketToWS(remoteSocket, webSocket, vlessResponseHeader, retry, log) {
-  let remoteChunkCount = 0;
-  let chunks = [];
-  let vlessHeader = vlessResponseHeader;
-  let hasIncomingData = false;
-  await remoteSocket.readable.pipeTo(
-    new WritableStream({
-      start() {
-      },
-      /**
-       *
-       * @param {Uint8Array} chunk
-       * @param {*} controller
-       */
-      async write(chunk, controller) {
-        hasIncomingData = true;
-        if (webSocket.readyState !== WS_READY_STATE_OPEN) {
-          controller.error("webSocket.readyState is not open, maybe close");
-        }
-        if (vlessHeader) {
-          webSocket.send(await new Blob([vlessHeader, chunk]).arrayBuffer());
-          vlessHeader = null;
-        } else {
-          webSocket.send(chunk);
-        }
-      },
-      close() {
-        log(`remoteConnection!.readable is close with hasIncomingData is ${hasIncomingData}`);
-      },
-      abort(reason) {
-        console.error(`remoteConnection!.readable abort`, reason);
-      }
-    })
-  ).catch((error) => {
-    console.error(`vlessRemoteSocketToWS has exception `, error.stack || error);
-    safeCloseWebSocket(webSocket);
-  });
-  if (hasIncomingData === false && retry) {
-    log(`retry`);
-    retry();
-  }
-}
-async function trojanRemoteSocketToWS(remoteSocket, webSocket, retry, log) {
-  let hasIncomingData = false;
-  await remoteSocket.readable.pipeTo(
-    new WritableStream({
-      start() {
-      },
-      /**
-       *
-       * @param {Uint8Array} chunk
-       * @param {*} controller
-       */
-      async write(chunk, controller) {
-        hasIncomingData = true;
-        if (webSocket.readyState !== WS_READY_STATE_OPEN) {
-          controller.error("webSocket connection is not open");
-        }
-        webSocket.send(chunk);
-      },
-      close() {
-        log(`remoteSocket.readable is closed, hasIncomingData: ${hasIncomingData}`);
-      },
-      abort(reason) {
-        console.error("remoteSocket.readable abort", reason);
-      }
-    })
-  ).catch((error) => {
-    console.error(`trojanRemoteSocketToWS error:`, error.stack || error);
-    safeCloseWebSocket(webSocket);
-  });
-  if (hasIncomingData === false && retry) {
-    log(`retry`);
-    retry();
-  }
-}
-function base64ToArrayBuffer(base64Str) {
-  if (!base64Str) {
-    return { earlyData: null, error: null };
-  }
-  try {
-    base64Str = base64Str.replace(/-/g, "+").replace(/_/g, "/");
-    const decode2 = atob(base64Str);
-    const arryBuffer = Uint8Array.from(decode2, (c) => c.charCodeAt(0));
-    return { earlyData: arryBuffer.buffer, error: null };
-  } catch (error) {
-    return { earlyData: null, error };
-  }
-}
-function isValidUUID(uuid) {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  return uuidRegex.test(uuid);
-}
-var WS_READY_STATE_OPEN = 1;
-var WS_READY_STATE_CLOSING = 2;
-function safeCloseWebSocket(socket) {
-  try {
-    if (socket.readyState === WS_READY_STATE_OPEN || socket.readyState === WS_READY_STATE_CLOSING) {
-      socket.close();
     }
-  } catch (error) {
-    console.error("safeCloseWebSocket error", error);
   }
+  const configs = JSON.stringify(warpConfigs);
+  await env.bpb.put("warpConfigs", configs);
+  return { error: null, configs };
 }
-var byteToHex = [];
-for (let i = 0; i < 256; ++i) {
-  byteToHex.push((i + 256).toString(16).slice(1));
-}
-function unsafeStringify(arr, offset = 0) {
-  return (byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + "-" + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + "-" + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + "-" + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + "-" + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]]).toLowerCase();
-}
-function stringify(arr, offset = 0) {
-  const uuid = unsafeStringify(arr, offset);
-  if (!isValidUUID(uuid)) {
-    throw TypeError("Stringified UUID is invalid");
-  }
-  return uuid;
-}
-async function handleUDPOutBound(webSocket, vlessResponseHeader, log) {
-  let isVlessHeaderSent = false;
-  const transformStream = new TransformStream({
-    start(controller) {
-    },
-    transform(chunk, controller) {
-      for (let index = 0; index < chunk.byteLength; ) {
-        const lengthBuffer = chunk.slice(index, index + 2);
-        const udpPakcetLength = new DataView(lengthBuffer).getUint16(0);
-        const udpData = new Uint8Array(chunk.slice(index + 2, index + 2 + udpPakcetLength));
-        index = index + 2 + udpPakcetLength;
-        controller.enqueue(udpData);
-      }
-    },
-    flush(controller) {
-    }
-  });
-  transformStream.readable.pipeTo(
-    new WritableStream({
-      async write(chunk) {
-        const resp = await fetch(
-          dohURL,
-          // dns server url
-          {
-            method: "POST",
-            headers: {
-              "content-type": "application/dns-message"
-            },
-            body: chunk
-          }
-        );
-        const dnsQueryResult = await resp.arrayBuffer();
-        const udpSize = dnsQueryResult.byteLength;
-        const udpSizeBuffer = new Uint8Array([udpSize >> 8 & 255, udpSize & 255]);
-        if (webSocket.readyState === WS_READY_STATE_OPEN) {
-          log(`doh success and dns message length is ${udpSize}`);
-          if (isVlessHeaderSent) {
-            webSocket.send(await new Blob([udpSizeBuffer, dnsQueryResult]).arrayBuffer());
-          } else {
-            webSocket.send(await new Blob([vlessResponseHeader, udpSizeBuffer, dnsQueryResult]).arrayBuffer());
-            isVlessHeaderSent = true;
-          }
-        }
-      }
-    })
-  ).catch((error) => {
-    log("dns udp has error" + error);
-  });
-  const writer = transformStream.writable.getWriter();
-  return {
-    /**
-     *
-     * @param {Uint8Array} chunk
-    */
-    write(chunk) {
-      writer.write(chunk);
-    }
-  };
-}
-var generateKeyPair = () => {
-  const base64Encode = (array) => btoa(String.fromCharCode.apply(null, array));
-  let privateKey = import_tweetnacl.default.randomBytes(32);
+__name(fetchWarpConfigs, "fetchWarpConfigs");
+var generateKeyPair = /* @__PURE__ */ __name(() => {
+  const base64Encode = /* @__PURE__ */ __name((array) => btoa(String.fromCharCode.apply(null, array)), "base64Encode");
+  let privateKey = import_tweetnacl2.default.randomBytes(32);
   privateKey[0] &= 248;
   privateKey[31] &= 127;
   privateKey[31] |= 64;
-  let publicKey = import_tweetnacl.default.scalarMult.base(privateKey);
+  let publicKey = import_tweetnacl2.default.scalarMult.base(privateKey);
   const publicKeyBase64 = base64Encode(publicKey);
   const privateKeyBase64 = base64Encode(privateKey);
   return { publicKey: publicKeyBase64, privateKey: privateKeyBase64 };
-};
-function generateRemark(index, port, address, cleanIPs, protocol, configType) {
-  let remark = "";
-  let addressType;
-  const type = configType ? ` ${configType}` : "";
-  cleanIPs.includes(address) ? addressType = "Clean IP" : addressType = isDomain(address) ? "Domain" : isIPv4(address) ? "IPv4" : isIPv6(address) ? "IPv6" : "";
-  return `\u{1F4A6} ${index} - ${protocol}${type} - ${addressType} : ${port}`;
-}
-function isDomain(address) {
-  const domainPattern = /^(?!\-)(?:[A-Za-z0-9\-]{1,63}\.?)+[A-Za-z]{2,}$/;
-  return domainPattern.test(address);
-}
-function isIPv4(address) {
-  const ipv4Pattern = /^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-  return ipv4Pattern.test(address);
-}
-function isIPv6(address) {
-  const ipv6Pattern = /^\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|::(?:[a-fA-F0-9]{1,4}:){0,7}|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6})\]$/;
-  return ipv6Pattern.test(address);
-}
-function base64ToDecimal(base64) {
-  const binaryString = atob(base64);
-  const hexString = Array.from(binaryString).map((char) => char.charCodeAt(0).toString(16).padStart(2, "0")).join("");
-  const decimalArray = hexString.match(/.{2}/g).map((hex) => parseInt(hex, 16));
-  return decimalArray;
-}
-async function getDataset(env) {
+}, "generateKeyPair");
+
+// src/kv/handlers.js
+async function getDataset(request, env) {
+  await initializeParams(request, env);
   let proxySettings, warpConfigs;
   if (typeof env.bpb !== "object") {
     return { kvNotFound: true, proxySettings: null, warpConfigs: null };
@@ -4961,19 +4618,23 @@ async function getDataset(env) {
     throw new Error(`An error occurred while getting KV - ${error}`);
   }
   if (!proxySettings) {
-    proxySettings = await updateDataset(env);
-    const { error, configs } = await fetchWgConfig(env, proxySettings);
+    proxySettings = await updateDataset(request, env);
+    const { error, configs } = await fetchWarpConfigs(env, proxySettings);
     if (error)
       throw new Error(`An error occurred while getting Warp configs - ${error}`);
     warpConfigs = configs;
   }
   if (panelVersion !== proxySettings.panelVersion)
-    proxySettings = await updateDataset(env);
+    proxySettings = await updateDataset(request, env);
   return { kvNotFound: false, proxySettings, warpConfigs };
 }
-async function updateDataset(env, newSettings, resetSettings) {
+__name(getDataset, "getDataset");
+async function updateDataset(request, env) {
+  await initializeParams(request, env);
+  let newSettings = request.method === "POST" ? await request.formData() : null;
+  const isReset = newSettings?.get("resetSettings") === "true";
   let currentSettings;
-  if (!resetSettings) {
+  if (!isReset) {
     try {
       currentSettings = await env.bpb.get("proxySettings", { type: "json" });
     } catch (error) {
@@ -4982,8 +4643,9 @@ async function updateDataset(env, newSettings, resetSettings) {
     }
   } else {
     await env.bpb.delete("warpConfigs");
+    newSettings = null;
   }
-  const validateField = (field) => {
+  const validateField = /* @__PURE__ */ __name((field) => {
     const fieldValue = newSettings?.get(field);
     if (fieldValue === void 0)
       return null;
@@ -4992,18 +4654,19 @@ async function updateDataset(env, newSettings, resetSettings) {
     if (fieldValue === "false")
       return false;
     return fieldValue;
-  };
+  }, "validateField");
   const remoteDNS = validateField("remoteDNS") ?? currentSettings?.remoteDNS ?? "https://8.8.8.8/dns-query";
+  const enableIPv6 = validateField("enableIPv6") ?? currentSettings?.enableIPv6 ?? true;
   const url = new URL(remoteDNS);
   const remoteDNSServer = url.hostname;
   const isServerDomain = isDomain(remoteDNSServer);
-  let resolvedRemoteDNS;
+  let resolvedRemoteDNS = {};
   if (isServerDomain) {
     try {
       const resolvedDomain = await resolveDNS(remoteDNSServer);
       resolvedRemoteDNS = {
         server: remoteDNSServer,
-        staticIPs: [...resolvedDomain.ipv4, ...resolvedDomain.ipv6]
+        staticIPs: enableIPv6 ? [...resolvedDomain.ipv4, ...resolvedDomain.ipv6] : resolvedDomain.ipv4
       };
     } catch (error) {
       console.log(error);
@@ -5012,14 +4675,14 @@ async function updateDataset(env, newSettings, resetSettings) {
   }
   const proxySettings = {
     remoteDNS,
-    resolvedRemoteDNS: resolvedRemoteDNS ?? {},
+    resolvedRemoteDNS,
     localDNS: validateField("localDNS") ?? currentSettings?.localDNS ?? "8.8.8.8",
     vlessTrojanFakeDNS: validateField("vlessTrojanFakeDNS") ?? currentSettings?.vlessTrojanFakeDNS ?? false,
-    proxyIP: validateField("proxyIP")?.trim() ?? currentSettings?.proxyIP ?? "",
+    proxyIP: validateField("proxyIP")?.replaceAll(" ", "") ?? currentSettings?.proxyIP ?? "",
     outProxy: validateField("outProxy") ?? currentSettings?.outProxy ?? "",
-    outProxyParams: extractChainProxyParams(validateField("outProxy")) ?? currentSettings?.outProxyParams ?? "",
+    outProxyParams: extractChainProxyParams(validateField("outProxy")) ?? currentSettings?.outProxyParams ?? {},
     cleanIPs: validateField("cleanIPs")?.replaceAll(" ", "") ?? currentSettings?.cleanIPs ?? "",
-    enableIPv6: validateField("enableIPv6") ?? currentSettings?.enableIPv6 ?? true,
+    enableIPv6,
     customCdnAddrs: validateField("customCdnAddrs")?.replaceAll(" ", "") ?? currentSettings?.customCdnAddrs ?? "",
     customCdnHost: validateField("customCdnHost")?.trim() ?? currentSettings?.customCdnHost ?? "",
     customCdnSni: validateField("customCdnSni")?.trim() ?? currentSettings?.customCdnSni ?? "",
@@ -5039,8 +4702,11 @@ async function updateDataset(env, newSettings, resetSettings) {
     blockAds: validateField("block-ads") ?? currentSettings?.blockAds ?? false,
     blockPorn: validateField("block-porn") ?? currentSettings?.blockPorn ?? false,
     blockUDP443: validateField("block-udp-443") ?? currentSettings?.blockUDP443 ?? false,
+    customBypassRules: validateField("customBypassRules")?.replaceAll(" ", "") ?? currentSettings?.customBypassRules ?? "",
+    customBlockRules: validateField("customBlockRules")?.replaceAll(" ", "") ?? currentSettings?.customBlockRules ?? "",
     warpEndpoints: validateField("warpEndpoints")?.replaceAll(" ", "") ?? currentSettings?.warpEndpoints ?? "engage.cloudflareclient.com:2408",
     warpFakeDNS: validateField("warpFakeDNS") ?? currentSettings?.warpFakeDNS ?? false,
+    warpEnableIPv6: validateField("warpEnableIPv6") ?? currentSettings?.warpEnableIPv6 ?? true,
     warpPlusLicense: validateField("warpPlusLicense") ?? currentSettings?.warpPlusLicense ?? "",
     bestWarpInterval: validateField("bestWarpInterval") ?? currentSettings?.bestWarpInterval ?? "30",
     hiddifyNoiseMode: validateField("hiddifyNoiseMode") ?? currentSettings?.hiddifyNoiseMode ?? "m4",
@@ -5061,78 +4727,62 @@ async function updateDataset(env, newSettings, resetSettings) {
   }
   return proxySettings;
 }
-function randomUpperCase(str) {
-  let result = "";
-  for (let i = 0; i < str.length; i++) {
-    result += Math.random() < 0.5 ? str[i].toUpperCase() : str[i];
+__name(updateDataset, "updateDataset");
+function extractChainProxyParams(chainProxy) {
+  let configParams = {};
+  if (!chainProxy)
+    return {};
+  const url = new URL(chainProxy);
+  const protocol = url.protocol.slice(0, -1);
+  if (protocol === "vless") {
+    const params = new URLSearchParams(url.search);
+    configParams = {
+      protocol,
+      uuid: url.username,
+      server: url.hostname,
+      port: url.port
+    };
+    params.forEach((value, key) => {
+      configParams[key] = value;
+    });
+  } else {
+    configParams = {
+      protocol,
+      user: url.username,
+      pass: url.password,
+      server: url.host,
+      port: url.port
+    };
   }
-  return result;
+  return JSON.stringify(configParams);
 }
-function getRandomPath(length) {
-  let result = "";
-  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  const charactersLength = characters.length;
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-}
-async function resolveDNS(domain) {
-  const dohURLv4 = `${dohURL}?name=${encodeURIComponent(domain)}&type=A`;
-  const dohURLv6 = `${dohURL}?name=${encodeURIComponent(domain)}&type=AAAA`;
-  try {
-    const [ipv4Response, ipv6Response] = await Promise.all([
-      fetch(dohURLv4, { headers: { accept: "application/dns-json" } }),
-      fetch(dohURLv6, { headers: { accept: "application/dns-json" } })
-    ]);
-    const ipv4Addresses = await ipv4Response.json();
-    const ipv6Addresses = await ipv6Response.json();
-    const ipv4 = ipv4Addresses.Answer ? ipv4Addresses.Answer.map((record) => record.data) : [];
-    const ipv6 = ipv6Addresses.Answer ? ipv6Addresses.Answer.map((record) => record.data) : [];
-    return { ipv4, ipv6 };
-  } catch (error) {
-    console.error("Error resolving DNS:", error);
-    throw new Error(`An error occurred while resolving DNS - ${error}`);
-  }
-}
-async function getConfigAddresses(hostName, cleanIPs, enableIPv6) {
-  const resolved = await resolveDNS(hostName);
-  const defaultIPv6 = enableIPv6 ? resolved.ipv6.map((ip) => `[${ip}]`) : [];
-  return [
-    hostName,
-    "www.speedtest.net",
-    ...resolved.ipv4,
-    ...defaultIPv6,
-    ...cleanIPs ? cleanIPs.split(",") : []
-  ];
-}
-async function generateJWTToken(secretKey) {
-  const secret = new TextEncoder().encode(secretKey);
-  return await new SignJWT({ userID }).setProtectedHeader({ alg: "HS256" }).setIssuedAt().setExpirationTime("24h").sign(secret);
-}
-function generateSecretKey() {
-  const key = import_tweetnacl.default.randomBytes(32);
-  return Array.from(key, (byte) => byte.toString(16).padStart(2, "0")).join("");
-}
-async function Authenticate(request, env) {
-  try {
-    const secretKey = await env.bpb.get("secretKey");
-    const secret = new TextEncoder().encode(secretKey);
-    const cookie = request.headers.get("Cookie")?.match(/(^|;\s*)jwtToken=([^;]*)/);
-    const token = cookie ? cookie[2] : null;
-    if (!token) {
-      console.log("Unauthorized: Token not available!");
-      return false;
+__name(extractChainProxyParams, "extractChainProxyParams");
+async function updateWarpConfigs(request, env) {
+  const auth = await Authenticate(request, env);
+  if (!auth)
+    return new Response("Unauthorized", { status: 401 });
+  if (request.method === "POST") {
+    try {
+      const { kvNotFound, proxySettings } = await getDataset(request, env);
+      if (kvNotFound)
+        return await renderErrorPage(request, env, "KV Dataset is not properly set!", null, true);
+      const { error: warpPlusError } = await fetchWarpConfigs(env, proxySettings);
+      if (warpPlusError)
+        return new Response(warpPlusError, { status: 400 });
+      return new Response("Warp configs updated successfully", { status: 200 });
+    } catch (error) {
+      console.log(error);
+      return new Response(`An error occurred while updating Warp configs! - ${error}`, { status: 500 });
     }
-    const { payload } = await jwtVerify(token, secret);
-    console.log(`Successfully logined, User ID: ${payload.userID}`);
-    return true;
-  } catch (error) {
-    console.log(error);
-    return false;
+  } else {
+    return new Response("Unsupported request", { status: 405 });
   }
 }
-function renderHomePage(proxySettings, hostName, isPassSet) {
+__name(updateWarpConfigs, "updateWarpConfigs");
+
+// src/pages/home.js
+async function renderHomePage(request, env, proxySettings, isPassSet) {
+  await initializeParams(request, env);
   const {
     remoteDNS,
     localDNS,
@@ -5155,6 +4805,7 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
     fragmentPackets,
     warpEndpoints,
     warpFakeDNS,
+    warpEnableIPv6,
     warpPlusLicense,
     bestWarpInterval,
     hiddifyNoiseMode,
@@ -5171,28 +4822,54 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
     bypassRussia,
     blockAds,
     blockPorn,
-    blockUDP443
+    blockUDP443,
+    customBypassRules,
+    customBlockRules
   } = proxySettings;
   const isWarpPlus = warpPlusLicense ? true : false;
-  let activeProtocols = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
+  const activeProtocols = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
   let httpPortsBlock = "", httpsPortsBlock = "";
   const allPorts = [...hostName.includes("workers.dev") ? defaultHttpPorts : [], ...defaultHttpsPorts];
+  const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
+  const countryCode = request.cf.country;
+  const flag = String.fromCodePoint(...[...countryCode].map((c) => 127462 + c.charCodeAt(0) - 65));
+  const cfCountry = `${regionNames.of(countryCode)} ${flag}`;
   allPorts.forEach((port) => {
-    let id = `port-${port}`;
+    const id = `port-${port}`;
     const isChecked = ports.includes(port) ? "checked" : "";
-    let portBlock = `
+    const portBlock = `
             <div class="routing" style="grid-template-columns: 1fr 2fr; margin-right: 10px;">
                 <input type="checkbox" id=${id} name=${port} onchange="handlePortChange(event)" value="true" ${isChecked}>
                 <label style="margin-bottom: 3px;" for=${id}>${port}</label>
             </div>`;
     defaultHttpsPorts.includes(port) ? httpsPortsBlock += portBlock : httpPortsBlock += portBlock;
   });
-  const html = `
+  const supportedApps = /* @__PURE__ */ __name((apps) => apps.map((app) => `
+        <div>
+            <span class="material-symbols-outlined symbol">verified</span>
+            <span>${app}</span>
+        </div>`).join(""), "supportedApps");
+  const subQR = /* @__PURE__ */ __name((path, app, tag2, title, sbType) => {
+    const url = `${sbType ? "sing-box://import-remote-profile?url=" : ""}https://${hostName}/${path}/${userID}${app ? `?app=${app}` : ""}#${tag2}`;
+    return `
+            <button onclick="openQR('${url}', '${title}')" style="margin-bottom: 8px;">
+                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
+            </button>`;
+  }, "subQR");
+  const subURL = /* @__PURE__ */ __name((path, app, tag2) => {
+    const url = `https://${hostName}/${path}/${userID}${app ? `?app=${app}` : ""}#${tag2}`;
+    return `
+            <button onclick="copyToClipboard('${url}')">
+                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
+            </button>`;
+  }, "subURL");
+  const homePage = `
     <!DOCTYPE html>
     <html lang="en">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="timestamp" content=${Date.now()}>
         <title>BPB Panel ${panelVersion}</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
@@ -5213,7 +4890,7 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
                 --input-background-color: white;
                 --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
             }
-            body { font-family: system-ui; background-color: var(--background-color); color: var(--color) }
+            body { font-family: Twemoji Country Flags, system-ui; background-color: var(--background-color); color: var(--color) }
             body.dark-mode {
                 --color: white;
                 --primary-color: #09639F;
@@ -5247,7 +4924,7 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
             summary::marker { font-size: 1.5rem; color: var(--secondary-color); }
             summary h2 { display: inline-flex; }
             h1 { font-size: 2.5em; text-align: center; color: var(--header-color); text-shadow: var(--header-shadow); }
-            h2 { margin: 30px 0; text-align: center; color: var(--hr-text-color); }
+            h2,h3 { margin: 30px 0; text-align: center; color: var(--hr-text-color); }
             hr { border: 1px solid var(--border-color); margin: 20px 0; }
             .footer {
                 display: flex;
@@ -5467,6 +5144,9 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
             .input-with-select { width: 100%; }
             body.dark-mode .floating-button { background-color: var(--color); }
             body.dark-mode .floating-button:hover { transform: scale(1.1); }
+            #ips th { background-color: var(--hr-text-color); color: var(--background-color); width: unset; }
+            #ips td { background-color: unset; }
+            #ips td:first-child { background-color: var(--table-active-color); }
             @media only screen and (min-width: 768px) {
                 .form-container { max-width: 70%; }
                 .form-control { 
@@ -5488,7 +5168,7 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
         <div class="form-container">
             <form id="configForm">
                 <details open>
-                    <summary><h2>VLESS / TROJAN \u2699\uFE0F</h2></summary>
+                    <summary><h2>VLESS - TROJAN \u2699\uFE0F</h2></summary>
                     <div class="form-control">
                         <label for="remoteDNS">\u{1F30F} Remote DNS</label>
                         <input type="url" id="remoteDNS" name="remoteDNS" value="${remoteDNS}" required>
@@ -5496,8 +5176,8 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
                     <div class="form-control">
                         <label for="localDNS">\u{1F3DA}\uFE0F Local DNS</label>
                         <input type="text" id="localDNS" name="localDNS" value="${localDNS}"
-                            pattern="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|localhost$"
-                            title="Please enter a valid DNS IP Address or localhost!"  required>
+                            pattern="^(?:\\d{1,3}\\.){3}\\d{1,3}$"
+                            title="Please enter a valid DNS IP Address!"  required>
                     </div>
                     <div class="form-control">
                         <label for="vlessTrojanFakeDNS">\u{1F9E2} Fake DNS</label>
@@ -5509,28 +5189,19 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="proxyIP">\u{1F4CD} Proxy IP</label>
-                        <input type="text" id="proxyIP" name="proxyIP" value="${proxyIP2}">
+                        <label for="proxyIP">\u{1F4CD} Proxy IPs / Domains</label>
+                        <input type="text" id="proxyIP" name="proxyIP" value="${proxyIP2.replaceAll(",", " , ")}">
                     </div>
                     <div class="form-control">
                         <label for="outProxy">\u2708\uFE0F Chain Proxy</label>
                         <input type="text" id="outProxy" name="outProxy" value="${outProxy}">
                     </div>
                     <div class="form-control">
-                        <label for="cleanIPs">\u2728 Clean IPs</label>
+                        <label for="cleanIPs">\u2728 Clean IPs / Domains</label>
                         <input type="text" id="cleanIPs" name="cleanIPs" value="${cleanIPs.replaceAll(",", " , ")}">
                     </div>
                     <div class="form-control">
-                        <label>\u{1F50E} IP Scanner</label>
-                        <a href="https://scanner.github1.cloud/" id="scanner" name="scanner" target="_blank" style="width: 100%;">
-                            <button type="button" class="button">
-                                Scan now
-                                <span class="material-symbols-outlined">open_in_new</span>
-                            </button>
-                        </a>
-                    </div>
-                    <div class="form-control">
-                        <label for="enableIPv6">\u{1F51B} IPv6 Configs</label>
+                        <label for="enableIPv6">\u{1F51B} IPv6</label>
                         <div class="input-with-select">
                             <select id="enableIPv6" name="enableIPv6">
                                 <option value="true" ${enableIPv6 ? "selected" : ""}>Enabled</option>
@@ -5555,7 +5226,7 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
                         <input type="number" id="bestVLESSTrojanInterval" name="bestVLESSTrojanInterval" min="10" max="90" value="${bestVLESSTrojanInterval}">
                     </div>
                     <div class="form-control" style="padding-top: 10px;">
-                        <label>\u2699\uFE0F Protocols</label>
+                        <label for="vlessConfigs">\u2699\uFE0F Protocols</label>
                         <div style="width: 100%; display: grid; grid-template-columns: 1fr 1fr; align-items: baseline; margin-top: 10px;">
                             <div style = "display: flex; justify-content: center; align-items: center;">
                                 <input type="checkbox" id="vlessConfigs" name="vlessConfigs" onchange="handleProtocolChange(event)" value="true" ${vlessConfigs ? "checked" : ""}>
@@ -5628,8 +5299,8 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
                         <input type="text" id="warpEndpoints" name="warpEndpoints" value="${warpEndpoints.replaceAll(",", " , ")}" required>
                     </div>
                     <div class="form-control">
-                        <label style="line-height: 1.5;">\u{1F50E} Scan Endpoint</label>
-                        <button type="button" class="button" style="padding: 10px 0;" onclick="copyToClipboard('bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/warp/main/endip/install.sh)', false)">
+                        <label for="endpointScanner" style="line-height: 1.5;">\u{1F50E} Scan Endpoint</label>
+                        <button type="button" id="endpointScanner" class="button" style="padding: 10px 0;" onclick="copyToClipboard('bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/warp/main/endip/install.sh)', false)">
                             Copy Script<span class="material-symbols-outlined">terminal</span>
                         </button>
                     </div>
@@ -5643,13 +5314,22 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
                         </div>
                     </div>
                     <div class="form-control">
+                        <label for="warpEnableIPv6">\u{1F51B} IPv6</label>
+                        <div class="input-with-select">
+                            <select id="warpEnableIPv6" name="warpEnableIPv6">
+                                <option value="true" ${warpEnableIPv6 ? "selected" : ""}>Enabled</option>
+                                <option value="false" ${!warpEnableIPv6 ? "selected" : ""}>Disabled</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-control">
                         <label for="warpPlusLicense">\u2795 Warp+ License</label>
                         <input type="text" id="warpPlusLicense" name="warpPlusLicense" value="${warpPlusLicense}" 
                             pattern="^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{8}-[a-zA-Z0-9]{8}$" 
                             title="Please enter a valid Warp Plus license in xxxxxxxx-xxxxxxxx-xxxxxxxx format">
                     </div>
                     <div class="form-control">
-                        <label>\u267B\uFE0F Warp Configs</label>
+                        <label for="refreshBtn">\u267B\uFE0F Warp Configs</label>
                         <button id="refreshBtn" type="button" class="button" style="padding: 10px 0;" onclick="getWarpConfigs()">
                             Update<span class="material-symbols-outlined">autorenew</span>
                         </button>
@@ -5738,6 +5418,15 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
                             <label for="bypass-russia">Bypass Russia</label>
                         </div>
                     </div>
+                    <h3>CUSTOM RULES \u{1F527}</h3>
+                    <div class="form-control">
+                        <label for="customBypassRules">\u{1F7E9} Bypass IPs / Domains</label>
+                        <input type="text" id="customBypassRules" name="customBypassRules" value="${customBypassRules.replaceAll(",", " , ")}">
+                    </div>
+                    <div class="form-control">
+                        <label for="customBlockRules">\u{1F7E5} Block IPs / Domains</label>
+                        <input type="text" id="customBlockRules" name="customBlockRules" value="${customBlockRules.replaceAll(",", " , ")}">
+                    </div>
                 </details>
                 <div id="apply" class="form-control">
                     <div style="grid-column: 2; width: 100%; display: inline-flex;">
@@ -5758,71 +5447,19 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
                     </tr>
                     <tr>
                         <td>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>v2rayNG</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>NikaNG</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>MahsaNG</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>v2rayN</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>v2rayN-PRO</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>Shadowrocket</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>Streisand</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>Hiddify</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>Nekoray (Xray)</span>
-                            </div>
+                            ${supportedApps(["v2rayNG", "NikaNG", "MahsaNG", "v2rayN", "v2rayN-PRO", "Shadowrocket", "Streisand", "Hiddify", "Nekoray (Xray)"])}
                         </td>
                         <td>
-                            <button onclick="openQR('https://${hostName}/sub/${userID}#BPB-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
-                                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
-                            </button>
-                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}#BPB-Normal', false)">
-                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
-                            </button>
+                            ${subQR("sub", "", "BPB-Normal", "Normal Subscription")}
+                            ${subURL("sub", "", "BPB-Normal")}
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>Nekobox</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>Nekoray (Sing-Box)</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>Karing</span>
-                            </div>
+                            ${supportedApps(["husi", "Nekobox", "Nekoray (sing-Box)", "Karing"])}
                         </td>
                         <td>
-                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=singbox#BPB-Normal', false)">
-                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
-                            </button>
+                            ${subURL("sub", "singbox", "BPB-Normal")}
                         </td>
                     </tr>
                 </table>
@@ -5836,86 +5473,29 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
                     </tr>
                     <tr>
                         <td>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>v2rayNG</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>NikaNG</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>MahsaNG</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>v2rayN</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>v2rayN-PRO</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>Streisand</span>
-                            </div>
+                            ${supportedApps(["v2rayNG", "NikaNG", "MahsaNG", "v2rayN", "v2rayN-PRO", "Streisand"])}
                         </td>
                         <td>
-                            <button onclick="openQR('https://${hostName}/sub/${userID}?app=xray#BPB-Full-Normal', 'Full normal Subscription')" style="margin-bottom: 8px;">
-                                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
-                            </button>
-                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=xray#BPB-Full-Normal', false)">
-                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
-                            </button>
+                            ${subQR("sub", "xray", "BPB-Full-Normal", "Full normal Subscription")}
+                            ${subURL("sub", "xray", "BPB-Full-Normal")}
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>Sing-box</b></span>
-                            </div>
+                            ${supportedApps(["sing-box", "v2rayN (sing-box)"])}
                         </td>
                         <td>
-                            <button onclick="openQR('sing-box://import-remote-profile?url=https://${hostName}/sub/${userID}?app=sfa#BPB-Full-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
-                                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
-                            </button>
-                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=sfa#BPB-Full-Normal', false)">
-                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
-                            </button>
+                            ${subQR("sub", "sfa", "BPB-Full-Normal", "Full normal Subscription", true)}
+                            ${subURL("sub", "sfa", "BPB-Full-Normal")}
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>Clash Meta</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>Clash Verge</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>v2rayN</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>FlClash</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>Stash</span>
-                            </div>
+                            ${supportedApps(["Clash Meta", "Clash Verge", "FlClash", "Stash", "v2rayN (mihomo)"])}
                         </td>
                         <td>
-                            <button onclick="openQR('https://${hostName}/sub/${userID}?app=clash#BPB-Full-Normal', 'Normal Subscription')" style="margin-bottom: 8px;">
-                                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
-                            </button>
-                            <button onclick="copyToClipboard('https://${hostName}/sub/${userID}?app=clash#BPB-Full-Normal', false)">
-                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
-                            </button>
+                            ${subQR("sub", "clash", "BPB-Full-Normal", "Full normal Subscription")}
+                            ${subURL("sub", "clash", "BPB-Full-Normal")}
                         </td>
                     </tr>
                 </table>
@@ -5929,54 +5509,20 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
                     </tr>
                     <tr>
                         <td style="text-wrap: nowrap;">
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>v2rayNG</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>NikaNG</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>MahsaNG</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>v2rayN</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>v2rayN-PRO</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>Streisand</span>
-                            </div>
+                            ${supportedApps(["v2rayNG", "NikaNG", "MahsaNG", "v2rayN", "v2rayN-PRO", "Streisand"])}
                         </td>
                         <td>
-                            <button onclick="openQR('https://${hostName}/fragsub/${userID}#BPB-Fragment', 'Fragment Subscription')" style="margin-bottom: 8px;">
-                                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
-                            </button>
-                            <button onclick="copyToClipboard('https://${hostName}/fragsub/${userID}#BPB-Fragment', true)">
-                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
-                            </button>
+                            ${subQR("fragsub", "", "BPB-Fragment", "Fragment Subscription")}
+                            ${subURL("fragsub", "", "BPB-Fragment")}
                         </td>
                     </tr>
                     <tr>
                         <td style="text-wrap: nowrap;">
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>Hiddify</span>
-                            </div>
+                            ${supportedApps(["Hiddify"])}
                         </td>
                         <td>
-                            <button onclick="openQR('https://${hostName}/fragsub/${userID}?app=hiddify#BPB-Fragment', 'Fragment Subscription')" style="margin-bottom: 8px;">
-                                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
-                            </button>
-                            <button onclick="copyToClipboard('https://${hostName}/fragsub/${userID}?app=hiddify#BPB-Fragment', true)">
-                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
-                            </button>
+                            ${subQR("fragsub", "hiddify", "BPB-Fragment", "Fragment Subscription")}
+                            ${subURL("fragsub", "hiddify", "BPB-Fragment")}
                         </td>
                     </tr>
                 </table>
@@ -5990,78 +5536,29 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
                     </tr>
                     <tr>
                         <td>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>v2rayNG</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>v2rayN</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>Streisand</span>
-                            </div>
+                            ${supportedApps(["v2rayNG", "v2rayN", "Streisand"])}
                         </td>
                         <td>
-                            <button onclick="openQR('https://${hostName}/warpsub/${userID}?app=xray#BPB-Warp', 'Warp Subscription')" style="margin-bottom: 8px;">
-                                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
-                            </button>
-                            <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID}?app=xray#BPB-Warp', false)">
-                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
-                            </button>
+                            ${subQR("warpsub", "xray", "BPB-Warp", "Warp Subscription")}
+                            ${subURL("warpsub", "xray", "BPB-Warp")}
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>Hiddify</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>Singbox</span>
-                            </div>
+                            ${supportedApps(["Hiddify", "sing-box", "v2rayN (sing-box)"])}
                         </td>
                         <td>
-                            <button onclick="openQR('sing-box://import-remote-profile?url=https://${hostName}/warpsub/${userID}?app=singbox#BPB-Warp', 'Warp Subscription')" style="margin-bottom: 8px;">
-                                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
-                            </button>
-                            <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID}?app=singbox#BPB-Warp', false)">
-                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
-                            </button>
+                            ${subQR("sub", "singbox", "BPB-Warp", "Warp Subscription", true)}
+                            ${subURL("warpsub", "singbox", "BPB-Warp")}
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>Clash Meta</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>Clash Verge</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>v2rayN</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>FlClash</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>Stash</span>
-                            </div>
+                            ${supportedApps(["Clash Meta", "Clash Verge", "FlClash", "Stash", "v2rayN (mihomo)"])}
                         </td>
                         <td>
-                            <button onclick="openQR('https://${hostName}/warpsub/${userID}?app=clash#BPB-Warp', 'Warp Subscription')" style="margin-bottom: 8px;">
-                                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
-                            </button>
-                            <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID}?app=clash#BPB-Warp', false)">
-                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
-                            </button>
+                            ${subQR("warpsub", "clash", "BPB-Warp", "Warp Subscription")}
+                            ${subURL("warpsub", "clash", "BPB-Warp")}
                         </td>
                     </tr>
                 </table>
@@ -6075,42 +5572,20 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
                     </tr>
                     <tr>
                         <td>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>NikaNG</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>MahsaNG</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>v2rayN-PRO</span>
-                            </div>
+                            ${supportedApps(["NikaNG", "MahsaNG", "v2rayN-PRO"])}
                         </td>
                         <td>
-                            <button onclick="openQR('https://${hostName}/warpsub/${userID}?app=nikang#BPB-Warp-Pro', 'Warp Pro Subscription')" style="margin-bottom: 8px;">
-                                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
-                            </button>
-                            <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID}?app=nikang#BPB-Warp-Pro', false)">
-                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
-                            </button>
+                            ${subQR("warpsub", "nikang", "BPB-Warp-Pro", "Warp Pro Subscription")}
+                            ${subURL("warpsub", "nikang", "BPB-Warp-Pro")}
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <div>
-                                <span class="material-symbols-outlined symbol">verified</span>
-                                <span>Hiddify</span>
-                            </div>
+                            ${supportedApps(["Hiddify"])}
                         </td>
                         <td>
-                            <button onclick="openQR('sing-box://import-remote-profile?url=https://${hostName}/warpsub/${userID}?app=hiddify#BPB-Warp-Pro', 'Warp Pro Subscription')" style="margin-bottom: 8px;">
-                                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
-                            </button>
-                            <button onclick="copyToClipboard('https://${hostName}/warpsub/${userID}?app=hiddify#BPB-Warp-Pro', false)">
-                                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
-                            </button>
+                            ${subQR("warpsub", "hiddify", "BPB-Warp-Pro", "Warp Pro Subscription", true)}
+                            ${subURL("warpsub", "hiddify", "BPB-Warp-Pro")}
                         </td>
                     </tr>
                 </table>
@@ -6143,6 +5618,30 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
                 </div>
             </div>
             <hr>
+            <h2>MY IP \u{1F4A1}</h2>
+            <div class="table-container">
+                <table id="ips" style="text-align: center; margin-bottom: 15px; text-wrap-mode: nowrap;">
+                    <tr>
+                        <th>Target Address</th>
+                        <th>IP</th>
+                        <th>Country</th>
+                        <th>City</th>
+                    </tr>
+                    <tr>
+                        <td>Cloudflare CDN</td>
+                        <td id="cf-ip"></td>
+                        <td><b id="cf-country"></b></td>
+                        <td><b id="cf-city"></b></td>
+                    </tr>
+                    <tr>
+                        <td>Others</td>
+                        <td id="ip"></td>
+                        <td><b id="country"></b></td>
+                        <td><b id="city"></b></td>
+                    </tr>
+                </table>
+            </div>
+            <hr>
             <div class="footer">
                 <i class="fa fa-github" style="font-size:36px; margin-right: 10px;"></i>
                 <a class="link" href="https://github.com/bia-pain-bache/BPB-Worker-Panel" style="color: var(--color); text-decoration: underline;" target="_blank">Github</a>
@@ -6154,7 +5653,11 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
         </div>
         <button id="darkModeToggle" class="floating-button">
             <i id="modeIcon" class="fa fa-2x fa-adjust" style="color: var(--background-color);" aria-hidden="true"></i>
-        </button>   
+        </button>
+    <script type="module" defer>
+        import { polyfillCountryFlagEmojis } from "https://cdn.skypack.dev/country-flag-emoji-polyfill";
+        polyfillCountryFlagEmojis();
+    <\/script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
     <script>
         const defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
@@ -6166,12 +5669,11 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
 
         document.addEventListener('DOMContentLoaded', async () => {
             const configForm = document.getElementById('configForm');            
-            const modal = document.getElementById('myModal');
             const changePass = document.getElementById('openModalBtn');
             const closeBtn = document.querySelector(".close");
-            const passwordChangeForm = document.getElementById('passwordChangeForm');            
-            const applyBtn = document.getElementById('applyButton');         
+            const passwordChangeForm = document.getElementById('passwordChangeForm');                    
             const initialFormData = new FormData(configForm);
+            const modal = document.getElementById('myModal');
             const closeQR = document.getElementById('closeQRModal');
             const resetSettings = document.getElementById('resetSettings');
             let modalQR = document.getElementById('myQRModal');
@@ -6243,14 +5745,14 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
 
                     document.body.style.cursor = 'default';
                     refreshBtn.innerHTML = refreshButtonVal;
-                    if (response.ok) {
-                        alert('\u2705 Panel settings reset to default successfully! \u{1F60E}');
-                        window.location.reload(true);
-                    } else {
+                    if (!response.ok) {
                         const errorMessage = await response.text();
                         console.error(errorMessage, response.status);
                         alert('\u26A0\uFE0F An error occured, Please try again!\\n\u26D4 ' + errorMessage);
-                    }         
+                        return;
+                    }       
+                    alert('\u2705 Panel settings reset to default successfully! \u{1F60E}');
+                    window.location.reload(true);
                 } catch (error) {
                     console.error('Error:', error);
                 }
@@ -6263,18 +5765,40 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
             }
             darkModeToggle.addEventListener('click', () => {
                 const isDarkMode = document.body.classList.toggle('dark-mode');
-                if (isDarkMode) {
-                    localStorage.setItem('darkMode', 'enabled');
-                } else {
-                    localStorage.setItem('darkMode', 'disabled');                
-                }
+                localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
             });
 
-            if (${!isPassSet}) {
+            const isPassSet = ${isPassSet};
+            if (!isPassSet) {
                 forcedPassChange = true;
                 changePass.click();
             }
+
+            await fetchIPInfo();
         });
+
+        const fetchIPInfo = async () => {
+            const updateUI = (ip = '-', country = '-', country_code = '-', city = '-', cfIP) => {
+                const flag = country_code !== '-' ? String.fromCodePoint(...[...country_code].map(c => 0x1F1E6 + c.charCodeAt(0) - 65)) : '';
+                document.getElementById(cfIP ? 'cf-ip' : 'ip').textContent = ip;
+                document.getElementById(cfIP ? 'cf-country' : 'country').textContent = country + ' ' + flag;
+                document.getElementById(cfIP ? 'cf-city' : 'city').textContent = city;
+            };
+
+            const fetchIPApi = async (cfIP) => {
+                try {
+                    const response = await fetch('https://ipwho.is/' + cfIP + '?nocache=' + Date.now(), { cache: "no-store" });
+                    const { ip, country, country_code, city } = await response.json();
+                    updateUI(ip, country, country_code, city, cfIP);
+                } catch (error) {
+                    console.error('Error fetching IP address:', error);
+                    updateUI();
+                }
+            }
+
+            await fetchIPApi('');
+            await fetchIPApi('${request.headers.get("cf-connecting-ip") || "-"}');
+        }
 
         const getWarpConfigs = async () => {
             const license = document.getElementById('warpPlusLicense').value;
@@ -6298,13 +5822,13 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
 
                 document.body.style.cursor = 'default';
                 refreshBtn.innerHTML = refreshButtonVal;
-                if (response.ok) {
-                    ${isWarpPlus} ? alert('\u2705 Warp configs upgraded to PLUS successfully! \u{1F60E}') : alert('\u2705 Warp configs updated successfully! \u{1F60E}');
-                } else {
+                if (!response.ok) {
                     const errorMessage = await response.text();
                     console.error(errorMessage, response.status);
                     alert('\u26A0\uFE0F An error occured, Please try again!\\n\u26D4 ' + errorMessage);
-                }         
+                    return;
+                }          
+                ${isWarpPlus ? `alert('\u2705 Warp configs upgraded to PLUS successfully! \u{1F60E}');` : `alert('\u2705 Warp configs updated successfully! \u{1F60E}');`}
             } catch (error) {
                 console.error('Error:', error);
             } 
@@ -6376,15 +5900,14 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
             qrcodeContainer.appendChild(qrcodeDiv);
         }
 
-        const copyToClipboard = (text, decode) => {
+        const copyToClipboard = (text) => {
             const textarea = document.createElement('textarea');
-            const value = decode ? decodeURIComponent(text) : text;
-            textarea.value = value;
+            textarea.value = text;
             document.body.appendChild(textarea);
             textarea.select();
             document.execCommand('copy');
             document.body.removeChild(textarea);
-            alert('\u{1F4CB} Copied to clipboard:\\n\\n' +  value);
+            alert('\u{1F4CB} Copied to clipboard:\\n\\n' +  text);
         }
 
         const applySettings = async (event, configForm) => {
@@ -6396,12 +5919,10 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
             const lengthMax = getValue('fragmentLengthMax');
             const intervalMin = getValue('fragmentIntervalMin');
             const intervalMax = getValue('fragmentIntervalMax');
-            const proxyIP = document.getElementById('proxyIP').value?.trim();
-            const cleanIP = document.getElementById('cleanIPs');
             const customCdnAddrs = document.getElementById('customCdnAddrs').value?.split(',').filter(addr => addr !== '');
             const customCdnHost = document.getElementById('customCdnHost').value;
             const customCdnSni = document.getElementById('customCdnSni').value;
-            const isCustomCdn = customCdnAddrs.length > 0 || customCdnHost !== '' || customCdnSni !== '';
+            const isCustomCdn = customCdnAddrs.length || customCdnHost !== '' || customCdnSni !== '';
             const warpEndpoints = document.getElementById('warpEndpoints').value?.replaceAll(' ', '').split(',');
             const noiseCountMin = getValue('noiseCountMin');
             const noiseCountMax = getValue('noiseCountMax');
@@ -6409,8 +5930,11 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
             const noiseSizeMax = getValue('noiseSizeMax');
             const noiseDelayMin = getValue('noiseDelayMin');
             const noiseDelayMax = getValue('noiseDelayMax');
-            const cleanIPs = cleanIP.value?.split(',');
-            const chainProxy = document.getElementById('outProxy').value?.trim();                    
+            const cleanIPs = document.getElementById('cleanIPs').value?.split(',');
+            const proxyIPs = document.getElementById('proxyIP').value?.split(',');
+            const chainProxy = document.getElementById('outProxy').value?.trim();
+            const customBypassRules = document.getElementById('customBypassRules').value?.split(',');                    
+            const customBlockRules = document.getElementById('customBlockRules').value?.split(',');                    
             const formData = new FormData(configForm);
             const isVless = /vless:\\/\\/[^s@]+@[^\\s:]+:[^\\s]+/.test(chainProxy);
             const isSocksHttp = /^(http|socks):\\/\\/(?:([^:@]+):([^:@]+)@)?([^:@]+):(\\d+)$/.test(chainProxy);
@@ -6422,23 +5946,23 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
             match = chainProxy.match(/:(\\d+)\\?/);
             const vlessPort = match ? match[1] : null;
             const validTransmission = /type=(tcp|grpc|ws)/.test(chainProxy);
-            const validIPDomain = /^((?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,})|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|\\[(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,7}:\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}\\]|\\[[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}\\]|\\[:(?::[a-fA-F0-9]{1,4}){1,7}\\]|\\[\\](?:::[a-fA-F0-9]{1,4}){1,7}\\])$/i;
-            const checkedPorts = Array.from(document.querySelectorAll('input[id^="port-"]:checked')).map(input => input.id.split('-')[1]);
+            const validIPDomain = /^((?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,})|(?:(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)(?:\\/(?:\\d|[12]\\d|3[0-2]))?|\\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}|:(?::[a-fA-F0-9]{1,4}){1,7})\\](?:\\/(?:12[0-8]|1[0-1]\\d|[0-9]?\\d))?)$/i;
             const validEndpoint = /^(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|\\[(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,7}:\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}\\]|\\[[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}\\]|\\[:(?::[a-fA-F0-9]{1,4}){1,7}\\]|\\[::(?::[a-fA-F0-9]{1,4}){0,7}\\]):(?:[0-9]{1,5})$/;
+            const checkedPorts = Array.from(document.querySelectorAll('input[id^="port-"]:checked')).map(input => input.id.split('-')[1]);
             formData.append('ports', checkedPorts);
             configForm.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
                 !formData.has(checkbox.name) && formData.append(checkbox.name, 'false');    
             });
 
-            const invalidIPs = [...cleanIPs, proxyIP, ...customCdnAddrs, customCdnHost, customCdnSni]?.filter(value => {
-                if (value !== "") {
+            const invalidIPs = [...cleanIPs, ...proxyIPs, ...customCdnAddrs, ...customBypassRules, ...customBlockRules, customCdnHost, customCdnSni]?.filter(value => {
+                if (value) {
                     const trimmedValue = value.trim();
                     return !validIPDomain.test(trimmedValue);
                 }
             });
 
             const invalidEndpoints = warpEndpoints?.filter(value => {
-                if (value !== "") {
+                if (value) {
                     const trimmedValue = value.trim();
                     return !validEndpoint.test(trimmedValue);
                 }
@@ -6469,7 +5993,7 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
                 return false;
             }
 
-            if (isCustomCdn && !(customCdnAddrs.length > 0 && customCdnHost && customCdnSni)) {
+            if (isCustomCdn && !(customCdnAddrs.length && customCdnHost && customCdnSni)) {
                 alert('\u26D4 All "Custom" fields should be filled or deleted together! \u{1FAE4}');               
                 return false;
             }
@@ -6488,15 +6012,15 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
                 document.body.style.cursor = 'default';
                 applyButton.value = applyButtonVal;
 
-                if (response.ok) {
-                    alert('\u2705 Parameters applied successfully \u{1F60E}');
-                    window.location.reload(true);
-                } else {
+                if (!response.ok) {
                     const errorMessage = await response.text();
                     console.error(errorMessage, response.status);
                     alert('\u26A0\uFE0F Session expired! Please login again.');
                     window.location.href = '/login';
-                }           
+                    return;
+                }                
+                alert('\u2705 Parameters applied successfully \u{1F60E}');
+                window.location.reload();
             } catch (error) {
                 console.error('Error:', error);
             }
@@ -6511,11 +6035,11 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
                     credentials: 'same-origin'
                 });
             
-                if (response.ok) {
-                    window.location.href = '/login';
-                } else {
+                if (!response.ok) {
                     console.error('Failed to log out:', response.status);
+                    return;
                 }
+                window.location.href = '/login';
             } catch (error) {
                 console.error('Error:', error);
             }
@@ -6578,291 +6102,787 @@ function renderHomePage(proxySettings, hostName, isPassSet) {
     <\/script>
     </body>	
     </html>`;
-  return html;
-}
-function renderLoginPage() {
-  return `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Login</title>
-    <style>
-        :root {
-            --color: black;
-            --primary-color: #09639f;
-            --header-color: #09639f; 
-            --background-color: #fff;
-            --form-background-color: #f9f9f9;
-            --lable-text-color: #333;
-            --h2-color: #3b3b3b;
-            --border-color: #ddd;
-            --input-background-color: white;
-            --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
-        }
-        html, body { height: 100%; margin: 0; }
-        body {
-            font-family: system-ui;
-            background-color: var(--background-color);
-            position: relative;
-            overflow: hidden;
-        }
-        body.dark-mode {
-            --color: white;
-            --primary-color: #09639F;
-            --header-color: #3498DB; 
-            --background-color: #121212;
-            --form-background-color: #121212;
-            --lable-text-color: #DFDFDF;
-            --h2-color: #D5D5D5;
-            --border-color: #353535;
-            --input-background-color: #252525;
-            --header-shadow: 2px 2px 4px rgba(255, 255, 255, 0.25);
-        }
-        html, body { height: 100%; margin: 0; }
-        .container {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90%;
-        }
-        h1 { font-size: 2.5rem; text-align: center; color: var(--header-color); margin: 0 auto 30px; text-shadow: var(--header-shadow); }        
-        h2 { text-align: center; color: var(--h2-color) }
-        .form-container {
-            background: var(--form-background-color);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-        }
-        .form-control { margin-bottom: 15px; display: flex; align-items: center; }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            padding-right: 20px;
-            font-size: 110%;
-            font-weight: 600;
-            color: var(--lable-text-color);
-        }
-        input[type="text"],
-        input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            color: var(--lable-text-color);
-            background-color: var(--input-background-color);
-        }
-        button {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            border: none;
-            border-radius: 5px;
-            color: white;
-            background-color: var(--primary-color);
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        .button:hover,
-        button:focus {
-            background-color: #2980b9;
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
-            transform: translateY(-2px);
-        }
-        button.button:hover { color: white; }
-        .button:active { transform: translateY(1px); box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); }
-        @media only screen and (min-width: 768px) {
-            .container { width: 30%; }
-        }
-    </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> \u{1F4A6}</h1>
-            <div class="form-container">
-                <h2>User Login</h2>
-                <form id="loginForm">
-                    <div class="form-control">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" name="password" required>
-                    </div>
-                    <div id="passwordError" style="color: red; margin-bottom: 10px;"></div>
-                    <button type="submit" class="button">Login</button>
-                </form>
-            </div>
-        </div>
-    <script>
-        localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
-        document.getElementById('loginForm').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const password = document.getElementById('password').value;
-
-            try {
-                const response = await fetch('/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain'
-                    },
-                    body: password
-                });
-            
-                if (response.ok) {
-                    window.location.href = '/panel';
-                } else {
-                    passwordError.textContent = '\u26A0\uFE0F Wrong Password!';
-                    const errorMessage = await response.text();
-                    console.error('Login failed:', errorMessage);
-                }
-            } catch (error) {
-                console.error('Error during login:', error);
-            }
-        });
-    <\/script>
-    </body>
-    </html>`;
-}
-function renderErrorPage(message2, error, refer) {
-  return `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Error Page</title>
-        <style>
-            :root {
-                --color: black;
-                --header-color: #09639f; 
-                --background-color: #fff;
-                --border-color: #ddd;
-                --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
-            }
-            body, html {
-                height: 100%;
-                width: 100%;
-                margin: 0;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                font-family: system-ui;
-                color: var(--color);
-                background-color: var(--background-color);
-            }
-            body.dark-mode {
-                --color: white;
-                --header-color: #3498DB; 
-                --background-color: #121212;
-                --header-shadow: 2px 2px 4px rgba(255, 255, 255, 0.25);          
-            }
-            h1 { font-size: 2.5rem; text-align: center; color: var(--header-color); text-shadow: var(--header-shadow); }
-            #error-container { text-align: center; }
-        </style>
-    </head>
-    <body>
-        <div id="error-container">
-            <h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> \u{1F4A6}</h1>
-            <div id="error-message">
-                <h2>${message2} ${refer ? 'Please try again or refer to <a href="https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/README.md">documents</a>' : ""}
-                </h2>
-                <p><b>${error ? `\u26A0\uFE0F ${error.stack.toString()}` : ""}</b></p>
-            </div>
-        </div>
-    <script>
-        localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
-    <\/script>
-    </body>
-    </html>`;
-}
-function extractChainProxyParams(chainProxy) {
-  let configParams = {};
-  if (!chainProxy)
-    return null;
-  let url = new URL(chainProxy);
-  const protocol = url.protocol.slice(0, -1);
-  if (protocol === "vless") {
-    const params = new URLSearchParams(url.search);
-    configParams = {
-      protocol,
-      uuid: url.username,
-      hostName: url.hostname,
-      port: url.port
-    };
-    params.forEach((value, key) => {
-      configParams[key] = value;
-    });
-  } else {
-    configParams = {
-      protocol,
-      user: url.username,
-      pass: url.password,
-      host: url.host,
-      port: url.port
-    };
-  }
-  return JSON.stringify(configParams);
-}
-async function fetchWgConfig(env, proxySettings) {
-  let warpConfigs = [];
-  const apiBaseUrl = "https://api.cloudflareclient.com/v0a4005/reg";
-  const { warpPlusLicense } = proxySettings;
-  const warpKeys = [generateKeyPair(), generateKeyPair()];
-  for (let i = 0; i < 2; i++) {
-    const accountResponse = await fetch(apiBaseUrl, {
-      method: "POST",
-      headers: {
-        "User-Agent": "insomnia/8.6.1",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        key: warpKeys[i].publicKey,
-        install_id: "",
-        fcm_token: "",
-        tos: (/* @__PURE__ */ new Date()).toISOString(),
-        type: "Android",
-        model: "PC",
-        locale: "en_US",
-        warp_enabled: true
-      })
-    });
-    const accountData = await accountResponse.json();
-    warpConfigs.push({
-      privateKey: warpKeys[i].privateKey,
-      account: accountData
-    });
-    if (warpPlusLicense) {
-      const response = await fetch(`${apiBaseUrl}/${accountData.id}/account`, {
-        method: "PUT",
-        headers: {
-          "User-Agent": "insomnia/8.6.1",
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${accountData.token}`
-        },
-        body: JSON.stringify({
-          key: warpKeys[i].publicKey,
-          install_id: "",
-          fcm_token: "",
-          tos: (/* @__PURE__ */ new Date()).toISOString(),
-          type: "Android",
-          model: "PC",
-          locale: "en_US",
-          warp_enabled: true,
-          license: warpPlusLicense
-        })
-      });
-      const responseData = await response.json();
-      if (response.status !== 200 && !responseData.success)
-        return { error: responseData.errors[0]?.message, configs: null };
+  return new Response(homePage, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/html;charset=utf-8",
+      "Access-Control-Allow-Origin": origin,
+      "Access-Control-Allow-Methods": "GET, POST",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY",
+      "Referrer-Policy": "strict-origin-when-cross-origin",
+      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, no-transform",
+      "CDN-Cache-Control": "no-store"
     }
-  }
-  const configs = JSON.stringify(warpConfigs);
-  await env.bpb.put("warpConfigs", configs);
-  return { error: null, configs };
+  });
 }
+__name(renderHomePage, "renderHomePage");
+
+// src/helpers/helpers.js
+function isValidUUID(uuid) {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+}
+__name(isValidUUID, "isValidUUID");
+async function resolveDNS(domain) {
+  const dohURL2 = "https://cloudflare-dns.com/dns-query";
+  const dohURLv4 = `${dohURL2}?name=${encodeURIComponent(domain)}&type=A`;
+  const dohURLv6 = `${dohURL2}?name=${encodeURIComponent(domain)}&type=AAAA`;
+  try {
+    const [ipv4Response, ipv6Response] = await Promise.all([
+      fetch(dohURLv4, { headers: { accept: "application/dns-json" } }),
+      fetch(dohURLv6, { headers: { accept: "application/dns-json" } })
+    ]);
+    const ipv4Addresses = await ipv4Response.json();
+    const ipv6Addresses = await ipv6Response.json();
+    const ipv4 = ipv4Addresses.Answer ? ipv4Addresses.Answer.map((record) => record.data) : [];
+    const ipv6 = ipv6Addresses.Answer ? ipv6Addresses.Answer.map((record) => record.data) : [];
+    return { ipv4, ipv6 };
+  } catch (error) {
+    console.error("Error resolving DNS:", error);
+    throw new Error(`An error occurred while resolving DNS - ${error}`);
+  }
+}
+__name(resolveDNS, "resolveDNS");
+function isDomain(address) {
+  const domainPattern = /^(?!\-)(?:[A-Za-z0-9\-]{1,63}\.)+[A-Za-z]{2,}$/;
+  return domainPattern.test(address);
+}
+__name(isDomain, "isDomain");
+async function handlePanel(request, env) {
+  await initializeParams(request, env);
+  const auth = await Authenticate(request, env);
+  if (request.method === "POST") {
+    if (!auth)
+      return new Response("Unauthorized or expired session!", { status: 401 });
+    await updateDataset(request, env);
+    return new Response("Success", { status: 200 });
+  }
+  const { kvNotFound, proxySettings } = await getDataset(request, env);
+  if (kvNotFound)
+    return await renderErrorPage(request, env, "KV Dataset is not properly set!", null, true);
+  const pwd = await env.bpb.get("pwd");
+  if (pwd && !auth)
+    return Response.redirect(`${origin}/login`, 302);
+  const isPassSet = pwd?.length >= 8;
+  return await renderHomePage(request, env, proxySettings, isPassSet);
+}
+__name(handlePanel, "handlePanel");
+async function fallback(request) {
+  const url = new URL(request.url);
+  url.hostname = "www.speedtest.net";
+  url.protocol = "https:";
+  request = new Request(url, request);
+  return await fetch(request);
+}
+__name(fallback, "fallback");
+
+// src/protocols/vless.js
+async function vlessOverWSHandler(request, env) {
+  await initializeParams(request, env);
+  const webSocketPair = new WebSocketPair();
+  const [client2, webSocket] = Object.values(webSocketPair);
+  webSocket.accept();
+  let address = "";
+  let portWithRandomLog = "";
+  const log = /* @__PURE__ */ __name((info, event) => {
+    console.log(`[${address}:${portWithRandomLog}] ${info}`, event || "");
+  }, "log");
+  const earlyDataHeader = request.headers.get("sec-websocket-protocol") || "";
+  const readableWebSocketStream = makeReadableWebSocketStream(webSocket, earlyDataHeader, log);
+  let remoteSocketWapper = {
+    value: null
+  };
+  let udpStreamWrite = null;
+  let isDns = false;
+  readableWebSocketStream.pipeTo(
+    new WritableStream({
+      async write(chunk, controller) {
+        if (isDns && udpStreamWrite) {
+          return udpStreamWrite(chunk);
+        }
+        if (remoteSocketWapper.value) {
+          const writer = remoteSocketWapper.value.writable.getWriter();
+          await writer.write(chunk);
+          writer.releaseLock();
+          return;
+        }
+        const {
+          hasError,
+          message: message2,
+          portRemote = 443,
+          addressRemote = "",
+          rawDataIndex,
+          vlessVersion = new Uint8Array([0, 0]),
+          isUDP
+        } = await processVlessHeader(chunk, userID);
+        address = addressRemote;
+        portWithRandomLog = `${portRemote}--${Math.random()} ${isUDP ? "udp " : "tcp "} `;
+        if (hasError) {
+          throw new Error(message2);
+          return;
+        }
+        if (isUDP) {
+          if (portRemote === 53) {
+            isDns = true;
+          } else {
+            throw new Error("UDP proxy only enable for DNS which is port 53");
+            return;
+          }
+        }
+        const vlessResponseHeader = new Uint8Array([vlessVersion[0], 0]);
+        const rawClientData = chunk.slice(rawDataIndex);
+        if (isDns) {
+          const { write } = await handleUDPOutBound(webSocket, vlessResponseHeader, log);
+          udpStreamWrite = write;
+          udpStreamWrite(rawClientData);
+          return;
+        }
+        handleTCPOutBound(
+          request,
+          remoteSocketWapper,
+          addressRemote,
+          portRemote,
+          rawClientData,
+          webSocket,
+          vlessResponseHeader,
+          log
+        );
+      },
+      close() {
+        log(`readableWebSocketStream is close`);
+      },
+      abort(reason) {
+        log(`readableWebSocketStream is abort`, JSON.stringify(reason));
+      }
+    })
+  ).catch((err) => {
+    log("readableWebSocketStream pipeTo error", err);
+  });
+  return new Response(null, {
+    status: 101,
+    // @ts-ignore
+    webSocket: client2
+  });
+}
+__name(vlessOverWSHandler, "vlessOverWSHandler");
+async function checkUuidInApiResponse(targetUuid) {
+  try {
+    const apiResponse = await getApiResponse();
+    if (!apiResponse) {
+      return false;
+    }
+    const isUuidInResponse = apiResponse.users.some((user) => user.uuid === targetUuid);
+    return isUuidInResponse;
+  } catch (error) {
+    console.error("Error:", error);
+    return false;
+  }
+}
+__name(checkUuidInApiResponse, "checkUuidInApiResponse");
+async function handleTCPOutBound(request, remoteSocket, addressRemote, portRemote, rawClientData, webSocket, vlessResponseHeader, log) {
+  async function connectAndWrite(address, port) {
+    if (/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(address))
+      address = `${atob("d3d3Lg==")}${address}${atob("LnNzbGlwLmlv")}`;
+    const tcpSocket2 = connect({
+      hostname: address,
+      port
+    });
+    remoteSocket.value = tcpSocket2;
+    log(`connected to ${address}:${port}`);
+    const writer = tcpSocket2.writable.getWriter();
+    await writer.write(rawClientData);
+    writer.releaseLock();
+    return tcpSocket2;
+  }
+  __name(connectAndWrite, "connectAndWrite");
+  async function retry() {
+    const panelProxyIP = pathName.split("/")[2];
+    const panelProxyIPs = panelProxyIP ? atob(panelProxyIP).split(",") : void 0;
+    const finalProxyIP = panelProxyIPs ? panelProxyIPs[Math.floor(Math.random() * panelProxyIPs.length)] : proxyIP || addressRemote;
+    const tcpSocket2 = await connectAndWrite(finalProxyIP, portRemote);
+    tcpSocket2.closed.catch((error) => {
+      console.log("retry tcpSocket closed error", error);
+    }).finally(() => {
+      safeCloseWebSocket(webSocket);
+    });
+    vlessRemoteSocketToWS(tcpSocket2, webSocket, vlessResponseHeader, null, log);
+  }
+  __name(retry, "retry");
+  const tcpSocket = await connectAndWrite(addressRemote, portRemote);
+  vlessRemoteSocketToWS(tcpSocket, webSocket, vlessResponseHeader, retry, log);
+}
+__name(handleTCPOutBound, "handleTCPOutBound");
+function makeReadableWebSocketStream(webSocketServer, earlyDataHeader, log) {
+  let readableStreamCancel = false;
+  const stream = new ReadableStream({
+    start(controller) {
+      webSocketServer.addEventListener("message", (event) => {
+        if (readableStreamCancel) {
+          return;
+        }
+        const message2 = event.data;
+        controller.enqueue(message2);
+      });
+      webSocketServer.addEventListener("close", () => {
+        safeCloseWebSocket(webSocketServer);
+        if (readableStreamCancel) {
+          return;
+        }
+        controller.close();
+      });
+      webSocketServer.addEventListener("error", (err) => {
+        log("webSocketServer has error");
+        controller.error(err);
+      });
+      const { earlyData, error } = base64ToArrayBuffer(earlyDataHeader);
+      if (error) {
+        controller.error(error);
+      } else if (earlyData) {
+        controller.enqueue(earlyData);
+      }
+    },
+    pull(controller) {
+    },
+    cancel(reason) {
+      if (readableStreamCancel) {
+        return;
+      }
+      log(`ReadableStream was canceled, due to ${reason}`);
+      readableStreamCancel = true;
+      safeCloseWebSocket(webSocketServer);
+    }
+  });
+  return stream;
+}
+__name(makeReadableWebSocketStream, "makeReadableWebSocketStream");
+async function processVlessHeader(vlessBuffer, userID2) {
+  if (vlessBuffer.byteLength < 24) {
+    return {
+      hasError: true,
+      message: "invalid data"
+    };
+  }
+  const version = new Uint8Array(vlessBuffer.slice(0, 1));
+  let isValidUser = false;
+  let isUDP = false;
+  const slicedBuffer = new Uint8Array(vlessBuffer.slice(1, 17));
+  const slicedBufferString = stringify(slicedBuffer);
+  const uuids = userID2.includes(",") ? userID2.split(",") : [userID2];
+  const checkUuidInApi = await checkUuidInApiResponse(slicedBufferString);
+  isValidUser = uuids.some((userUuid) => checkUuidInApi || slicedBufferString === userUuid.trim());
+  console.log(`checkUuidInApi: ${await checkUuidInApiResponse(slicedBufferString)}, userID: ${slicedBufferString}`);
+  if (!isValidUser) {
+    return {
+      hasError: true,
+      message: "invalid user"
+    };
+  }
+  const optLength = new Uint8Array(vlessBuffer.slice(17, 18))[0];
+  const command = new Uint8Array(vlessBuffer.slice(18 + optLength, 18 + optLength + 1))[0];
+  if (command === 1) {
+  } else if (command === 2) {
+    isUDP = true;
+  } else {
+    return {
+      hasError: true,
+      message: `command ${command} is not support, command 01-tcp,02-udp,03-mux`
+    };
+  }
+  const portIndex = 18 + optLength + 1;
+  const portBuffer = vlessBuffer.slice(portIndex, portIndex + 2);
+  const portRemote = new DataView(portBuffer).getUint16(0);
+  let addressIndex = portIndex + 2;
+  const addressBuffer = new Uint8Array(vlessBuffer.slice(addressIndex, addressIndex + 1));
+  const addressType = addressBuffer[0];
+  let addressLength = 0;
+  let addressValueIndex = addressIndex + 1;
+  let addressValue = "";
+  switch (addressType) {
+    case 1:
+      addressLength = 4;
+      addressValue = new Uint8Array(vlessBuffer.slice(addressValueIndex, addressValueIndex + addressLength)).join(".");
+      break;
+    case 2:
+      addressLength = new Uint8Array(vlessBuffer.slice(addressValueIndex, addressValueIndex + 1))[0];
+      addressValueIndex += 1;
+      addressValue = new TextDecoder().decode(vlessBuffer.slice(addressValueIndex, addressValueIndex + addressLength));
+      break;
+    case 3:
+      addressLength = 16;
+      const dataView = new DataView(vlessBuffer.slice(addressValueIndex, addressValueIndex + addressLength));
+      const ipv6 = [];
+      for (let i = 0; i < 8; i++) {
+        ipv6.push(dataView.getUint16(i * 2).toString(16));
+      }
+      addressValue = ipv6.join(":");
+      break;
+    default:
+      return {
+        hasError: true,
+        message: `invild  addressType is ${addressType}`
+      };
+  }
+  if (!addressValue) {
+    return {
+      hasError: true,
+      message: `addressValue is empty, addressType is ${addressType}`
+    };
+  }
+  return {
+    hasError: false,
+    addressRemote: addressValue,
+    addressType,
+    portRemote,
+    rawDataIndex: addressValueIndex + addressLength,
+    vlessVersion: version,
+    isUDP
+  };
+}
+__name(processVlessHeader, "processVlessHeader");
+async function vlessRemoteSocketToWS(remoteSocket, webSocket, vlessResponseHeader, retry, log) {
+  let remoteChunkCount = 0;
+  let chunks = [];
+  let vlessHeader = vlessResponseHeader;
+  let hasIncomingData = false;
+  await remoteSocket.readable.pipeTo(
+    new WritableStream({
+      start() {
+      },
+      /**
+       *
+       * @param {Uint8Array} chunk
+       * @param {*} controller
+       */
+      async write(chunk, controller) {
+        hasIncomingData = true;
+        if (webSocket.readyState !== WS_READY_STATE_OPEN) {
+          controller.error("webSocket.readyState is not open, maybe close");
+        }
+        if (vlessHeader) {
+          webSocket.send(await new Blob([vlessHeader, chunk]).arrayBuffer());
+          vlessHeader = null;
+        } else {
+          webSocket.send(chunk);
+        }
+      },
+      close() {
+        log(`remoteConnection!.readable is close with hasIncomingData is ${hasIncomingData}`);
+      },
+      abort(reason) {
+        console.error(`remoteConnection!.readable abort`, reason);
+      }
+    })
+  ).catch((error) => {
+    console.error(`vlessRemoteSocketToWS has exception `, error.stack || error);
+    safeCloseWebSocket(webSocket);
+  });
+  if (hasIncomingData === false && retry) {
+    log(`retry`);
+    retry();
+  }
+}
+__name(vlessRemoteSocketToWS, "vlessRemoteSocketToWS");
+function base64ToArrayBuffer(base64Str) {
+  if (!base64Str) {
+    return { earlyData: null, error: null };
+  }
+  try {
+    base64Str = base64Str.replace(/-/g, "+").replace(/_/g, "/");
+    const decode2 = atob(base64Str);
+    const arryBuffer = Uint8Array.from(decode2, (c) => c.charCodeAt(0));
+    return { earlyData: arryBuffer.buffer, error: null };
+  } catch (error) {
+    return { earlyData: null, error };
+  }
+}
+__name(base64ToArrayBuffer, "base64ToArrayBuffer");
+var WS_READY_STATE_OPEN = 1;
+var WS_READY_STATE_CLOSING = 2;
+function safeCloseWebSocket(socket) {
+  try {
+    if (socket.readyState === WS_READY_STATE_OPEN || socket.readyState === WS_READY_STATE_CLOSING) {
+      socket.close();
+    }
+  } catch (error) {
+    console.error("safeCloseWebSocket error", error);
+  }
+}
+__name(safeCloseWebSocket, "safeCloseWebSocket");
+var byteToHex = [];
+for (let i = 0; i < 256; ++i) {
+  byteToHex.push((i + 256).toString(16).slice(1));
+}
+function unsafeStringify(arr, offset = 0) {
+  return (byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + "-" + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + "-" + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + "-" + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + "-" + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]]).toLowerCase();
+}
+__name(unsafeStringify, "unsafeStringify");
+function stringify(arr, offset = 0) {
+  const uuid = unsafeStringify(arr, offset);
+  if (!isValidUUID(uuid)) {
+    throw TypeError("Stringified UUID is invalid");
+  }
+  return uuid;
+}
+__name(stringify, "stringify");
+async function handleUDPOutBound(webSocket, vlessResponseHeader, log) {
+  let isVlessHeaderSent = false;
+  const transformStream = new TransformStream({
+    start(controller) {
+    },
+    transform(chunk, controller) {
+      for (let index = 0; index < chunk.byteLength; ) {
+        const lengthBuffer = chunk.slice(index, index + 2);
+        const udpPakcetLength = new DataView(lengthBuffer).getUint16(0);
+        const udpData = new Uint8Array(chunk.slice(index + 2, index + 2 + udpPakcetLength));
+        index = index + 2 + udpPakcetLength;
+        controller.enqueue(udpData);
+      }
+    },
+    flush(controller) {
+    }
+  });
+  transformStream.readable.pipeTo(
+    new WritableStream({
+      async write(chunk) {
+        const resp = await fetch(
+          dohURL,
+          // dns server url
+          {
+            method: "POST",
+            headers: {
+              "content-type": "application/dns-message"
+            },
+            body: chunk
+          }
+        );
+        const dnsQueryResult = await resp.arrayBuffer();
+        const udpSize = dnsQueryResult.byteLength;
+        const udpSizeBuffer = new Uint8Array([udpSize >> 8 & 255, udpSize & 255]);
+        if (webSocket.readyState === WS_READY_STATE_OPEN) {
+          log(`doh success and dns message length is ${udpSize}`);
+          if (isVlessHeaderSent) {
+            webSocket.send(await new Blob([udpSizeBuffer, dnsQueryResult]).arrayBuffer());
+          } else {
+            webSocket.send(await new Blob([vlessResponseHeader, udpSizeBuffer, dnsQueryResult]).arrayBuffer());
+            isVlessHeaderSent = true;
+          }
+        }
+      }
+    })
+  ).catch((error) => {
+    log("dns udp has error" + error);
+  });
+  const writer = transformStream.writable.getWriter();
+  return {
+    /**
+     *
+     * @param {Uint8Array} chunk
+    */
+    write(chunk) {
+      writer.write(chunk);
+    }
+  };
+}
+__name(handleUDPOutBound, "handleUDPOutBound");
+
+// src/protocols/trojan.js
+var import_js_sha256 = __toESM(require_sha256());
+import { connect as connect2 } from "cloudflare:sockets";
+async function trojanOverWSHandler(request, env) {
+  await initializeParams(request, env);
+  const webSocketPair = new WebSocketPair();
+  const [client2, webSocket] = Object.values(webSocketPair);
+  webSocket.accept();
+  let address = "";
+  let portWithRandomLog = "";
+  const log = /* @__PURE__ */ __name((info, event) => {
+    console.log(`[${address}:${portWithRandomLog}] ${info}`, event || "");
+  }, "log");
+  const earlyDataHeader = request.headers.get("sec-websocket-protocol") || "";
+  const readableWebSocketStream = makeReadableWebSocketStream2(webSocket, earlyDataHeader, log);
+  let remoteSocketWapper = {
+    value: null
+  };
+  let udpStreamWrite = null;
+  readableWebSocketStream.pipeTo(
+    new WritableStream({
+      async write(chunk, controller) {
+        if (udpStreamWrite) {
+          return udpStreamWrite(chunk);
+        }
+        if (remoteSocketWapper.value) {
+          const writer = remoteSocketWapper.value.writable.getWriter();
+          await writer.write(chunk);
+          writer.releaseLock();
+          return;
+        }
+        const {
+          hasError,
+          message: message2,
+          portRemote = 443,
+          addressRemote = "",
+          rawClientData
+        } = await parseTrojanHeader(chunk);
+        address = addressRemote;
+        portWithRandomLog = `${portRemote}--${Math.random()} tcp`;
+        if (hasError) {
+          throw new Error(message2);
+          return;
+        }
+        handleTCPOutBound2(request, remoteSocketWapper, addressRemote, portRemote, rawClientData, webSocket, log);
+      },
+      close() {
+        log(`readableWebSocketStream is closed`);
+      },
+      abort(reason) {
+        log(`readableWebSocketStream is aborted`, JSON.stringify(reason));
+      }
+    })
+  ).catch((err) => {
+    log("readableWebSocketStream pipeTo error", err);
+  });
+  return new Response(null, {
+    status: 101,
+    // @ts-ignore
+    webSocket: client2
+  });
+}
+__name(trojanOverWSHandler, "trojanOverWSHandler");
+async function parseTrojanHeader(buffer) {
+  if (buffer.byteLength < 56) {
+    return {
+      hasError: true,
+      message: "invalid data"
+    };
+  }
+  let crLfIndex = 56;
+  if (new Uint8Array(buffer.slice(56, 57))[0] !== 13 || new Uint8Array(buffer.slice(57, 58))[0] !== 10) {
+    return {
+      hasError: true,
+      message: "invalid header format (missing CR LF)"
+    };
+  }
+  const password = new TextDecoder().decode(buffer.slice(0, crLfIndex));
+  if (password !== import_js_sha256.default.sha224(trojanPassword)) {
+    return {
+      hasError: true,
+      message: "invalid password"
+    };
+  }
+  const socks5DataBuffer = buffer.slice(crLfIndex + 2);
+  if (socks5DataBuffer.byteLength < 6) {
+    return {
+      hasError: true,
+      message: "invalid SOCKS5 request data"
+    };
+  }
+  const view = new DataView(socks5DataBuffer);
+  const cmd = view.getUint8(0);
+  if (cmd !== 1) {
+    return {
+      hasError: true,
+      message: "unsupported command, only TCP (CONNECT) is allowed"
+    };
+  }
+  const atype = view.getUint8(1);
+  let addressLength = 0;
+  let addressIndex = 2;
+  let address = "";
+  switch (atype) {
+    case 1:
+      addressLength = 4;
+      address = new Uint8Array(socks5DataBuffer.slice(addressIndex, addressIndex + addressLength)).join(".");
+      break;
+    case 3:
+      addressLength = new Uint8Array(socks5DataBuffer.slice(addressIndex, addressIndex + 1))[0];
+      addressIndex += 1;
+      address = new TextDecoder().decode(socks5DataBuffer.slice(addressIndex, addressIndex + addressLength));
+      break;
+    case 4:
+      addressLength = 16;
+      const dataView = new DataView(socks5DataBuffer.slice(addressIndex, addressIndex + addressLength));
+      const ipv6 = [];
+      for (let i = 0; i < 8; i++) {
+        ipv6.push(dataView.getUint16(i * 2).toString(16));
+      }
+      address = ipv6.join(":");
+      break;
+    default:
+      return {
+        hasError: true,
+        message: `invalid addressType is ${atype}`
+      };
+  }
+  if (!address) {
+    return {
+      hasError: true,
+      message: `address is empty, addressType is ${atype}`
+    };
+  }
+  const portIndex = addressIndex + addressLength;
+  const portBuffer = socks5DataBuffer.slice(portIndex, portIndex + 2);
+  const portRemote = new DataView(portBuffer).getUint16(0);
+  return {
+    hasError: false,
+    addressRemote: address,
+    portRemote,
+    rawClientData: socks5DataBuffer.slice(portIndex + 4)
+  };
+}
+__name(parseTrojanHeader, "parseTrojanHeader");
+async function handleTCPOutBound2(request, remoteSocket, addressRemote, portRemote, rawClientData, webSocket, log) {
+  async function connectAndWrite(address, port) {
+    if (/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(address))
+      address = `${atob("d3d3Lg==")}${address}${atob("LnNzbGlwLmlv")}`;
+    const tcpSocket2 = connect2({
+      hostname: address,
+      port
+    });
+    remoteSocket.value = tcpSocket2;
+    log(`connected to ${address}:${port}`);
+    const writer = tcpSocket2.writable.getWriter();
+    await writer.write(rawClientData);
+    writer.releaseLock();
+    return tcpSocket2;
+  }
+  __name(connectAndWrite, "connectAndWrite");
+  async function retry() {
+    const panelProxyIP = pathName.split("/")[2];
+    const panelProxyIPs = panelProxyIP ? atob(panelProxyIP).split(",") : void 0;
+    const finalProxyIP = panelProxyIPs ? panelProxyIPs[Math.floor(Math.random() * panelProxyIPs.length)] : proxyIP || addressRemote;
+    const tcpSocket2 = await connectAndWrite(finalProxyIP, portRemote);
+    tcpSocket2.closed.catch((error) => {
+      console.log("retry tcpSocket closed error", error);
+    }).finally(() => {
+      safeCloseWebSocket2(webSocket);
+    });
+    trojanRemoteSocketToWS(tcpSocket2, webSocket, null, log);
+  }
+  __name(retry, "retry");
+  const tcpSocket = await connectAndWrite(addressRemote, portRemote);
+  trojanRemoteSocketToWS(tcpSocket, webSocket, retry, log);
+}
+__name(handleTCPOutBound2, "handleTCPOutBound");
+function makeReadableWebSocketStream2(webSocketServer, earlyDataHeader, log) {
+  let readableStreamCancel = false;
+  const stream = new ReadableStream({
+    start(controller) {
+      webSocketServer.addEventListener("message", (event) => {
+        if (readableStreamCancel) {
+          return;
+        }
+        const message2 = event.data;
+        controller.enqueue(message2);
+      });
+      webSocketServer.addEventListener("close", () => {
+        safeCloseWebSocket2(webSocketServer);
+        if (readableStreamCancel) {
+          return;
+        }
+        controller.close();
+      });
+      webSocketServer.addEventListener("error", (err) => {
+        log("webSocketServer has error");
+        controller.error(err);
+      });
+      const { earlyData, error } = base64ToArrayBuffer2(earlyDataHeader);
+      if (error) {
+        controller.error(error);
+      } else if (earlyData) {
+        controller.enqueue(earlyData);
+      }
+    },
+    pull(controller) {
+    },
+    cancel(reason) {
+      if (readableStreamCancel) {
+        return;
+      }
+      log(`ReadableStream was canceled, due to ${reason}`);
+      readableStreamCancel = true;
+      safeCloseWebSocket2(webSocketServer);
+    }
+  });
+  return stream;
+}
+__name(makeReadableWebSocketStream2, "makeReadableWebSocketStream");
+async function trojanRemoteSocketToWS(remoteSocket, webSocket, retry, log) {
+  let hasIncomingData = false;
+  await remoteSocket.readable.pipeTo(
+    new WritableStream({
+      start() {
+      },
+      /**
+       *
+       * @param {Uint8Array} chunk
+       * @param {*} controller
+       */
+      async write(chunk, controller) {
+        hasIncomingData = true;
+        if (webSocket.readyState !== WS_READY_STATE_OPEN2) {
+          controller.error("webSocket connection is not open");
+        }
+        webSocket.send(chunk);
+      },
+      close() {
+        log(`remoteSocket.readable is closed, hasIncomingData: ${hasIncomingData}`);
+      },
+      abort(reason) {
+        console.error("remoteSocket.readable abort", reason);
+      }
+    })
+  ).catch((error) => {
+    console.error(`trojanRemoteSocketToWS error:`, error.stack || error);
+    safeCloseWebSocket2(webSocket);
+  });
+  if (hasIncomingData === false && retry) {
+    log(`retry`);
+    retry();
+  }
+}
+__name(trojanRemoteSocketToWS, "trojanRemoteSocketToWS");
+function base64ToArrayBuffer2(base64Str) {
+  if (!base64Str) {
+    return { earlyData: null, error: null };
+  }
+  try {
+    base64Str = base64Str.replace(/-/g, "+").replace(/_/g, "/");
+    const decode2 = atob(base64Str);
+    const arryBuffer = Uint8Array.from(decode2, (c) => c.charCodeAt(0));
+    return { earlyData: arryBuffer.buffer, error: null };
+  } catch (error) {
+    return { earlyData: null, error };
+  }
+}
+__name(base64ToArrayBuffer2, "base64ToArrayBuffer");
+var WS_READY_STATE_OPEN2 = 1;
+var WS_READY_STATE_CLOSING2 = 2;
+function safeCloseWebSocket2(socket) {
+  try {
+    if (socket.readyState === WS_READY_STATE_OPEN2 || socket.readyState === WS_READY_STATE_CLOSING2) {
+      socket.close();
+    }
+  } catch (error) {
+    console.error("safeCloseWebSocket error", error);
+  }
+}
+__name(safeCloseWebSocket2, "safeCloseWebSocket");
+
+// src/cores-configs/helpers.js
+async function getConfigAddresses(hostName2, cleanIPs, enableIPv6) {
+  const resolved = await resolveDNS(hostName2);
+  const defaultIPv6 = enableIPv6 ? resolved.ipv6.map((ip) => `[${ip}]`) : [];
+  return [
+    hostName2,
+    "www.speedtest.net",
+    ...resolved.ipv4,
+    ...defaultIPv6,
+    ...cleanIPs ? cleanIPs.split(",") : []
+  ];
+}
+__name(getConfigAddresses, "getConfigAddresses");
 function extractWireguardParams(warpConfigs, isWoW) {
   const index = isWoW ? 1 : 0;
   const warpConfig = warpConfigs[index].account.config;
@@ -6873,90 +6893,154 @@ function extractWireguardParams(warpConfigs, isWoW) {
     privateKey: warpConfigs[index].privateKey
   };
 }
+__name(extractWireguardParams, "extractWireguardParams");
+function generateRemark(index, port, address, cleanIPs, protocol, configType) {
+  let addressType;
+  const type = configType ? ` ${configType}` : "";
+  cleanIPs.includes(address) ? addressType = "Clean IP" : addressType = isDomain(address) ? "Domain" : isIPv4(address) ? "IPv4" : isIPv6(address) ? "IPv6" : "";
+  return `\u{1F4A6} ${index} - ${protocol}${type} - ${addressType} : ${port}`;
+}
+__name(generateRemark, "generateRemark");
+function randomUpperCase(str) {
+  let result = "";
+  for (let i = 0; i < str.length; i++) {
+    result += Math.random() < 0.5 ? str[i].toUpperCase() : str[i];
+  }
+  return result;
+}
+__name(randomUpperCase, "randomUpperCase");
+function getRandomPath(length) {
+  let result = "";
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+}
+__name(getRandomPath, "getRandomPath");
+function base64ToDecimal(base64) {
+  const binaryString = atob(base64);
+  const hexString = Array.from(binaryString).map((char) => char.charCodeAt(0).toString(16).padStart(2, "0")).join("");
+  const decimalArray = hexString.match(/.{2}/g).map((hex) => parseInt(hex, 16));
+  return decimalArray;
+}
+__name(base64ToDecimal, "base64ToDecimal");
+function isIPv4(address) {
+  const ipv4Pattern = /^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?:\/([0-9]|[1-2][0-9]|3[0-2]))?$/;
+  return ipv4Pattern.test(address);
+}
+__name(isIPv4, "isIPv4");
+function isIPv6(address) {
+  const ipv6Pattern = /^\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|::(?:[a-fA-F0-9]{1,4}:){0,7}|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6})\](?:\/(1[0-1][0-9]|12[0-8]|[0-9]?[0-9]))?$/;
+  return ipv6Pattern.test(address);
+}
+__name(isIPv6, "isIPv6");
+
+// src/cores-configs/xray.js
 async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isWorkerLess, isWarp) {
   const {
     remoteDNS,
     resolvedRemoteDNS,
     localDNS,
     vlessTrojanFakeDNS,
+    enableIPv6,
     warpFakeDNS,
+    warpEnableIPv6,
     blockAds,
     bypassIran,
     bypassChina,
     blockPorn,
-    bypassRussia
+    bypassRussia,
+    customBypassRules,
+    customBlockRules
   } = proxySettings;
-  const isBypass = bypassIran || bypassChina || bypassRussia;
+  const bypassRules = [
+    { rule: bypassIran, domain: "geosite:category-ir", ip: "geoip:ir" },
+    { rule: bypassChina, domain: "geosite:cn", ip: "geoip:cn" },
+    { rule: bypassRussia, domain: "geosite:category-ru", ip: "geoip:ru" }
+  ];
+  const blockRules = [
+    { rule: blockAds, host: "geosite:category-ads-all" },
+    { rule: blockAds, host: "geosite:category-ads-ir" },
+    { rule: blockPorn, host: "geosite:category-porn" }
+  ];
   const isFakeDNS = vlessTrojanFakeDNS && !isWarp || warpFakeDNS && isWarp;
+  const isIPv62 = enableIPv6 && !isWarp || warpEnableIPv6 && isWarp;
   const outboundDomains = outboundAddrs.filter((address) => isDomain(address));
-  const isOutboundRule = outboundDomains.length > 0;
-  const outboundRules = outboundDomains.map((domain) => `full:${domain}`);
-  const finalRemoteDNS = isWarp ? ["1.1.1.1", "1.0.0.1"] : isWorkerLess ? ["https://cloudflare-dns.com/dns-query"] : [remoteDNS];
-  let dnsObject = {
-    hosts: {
-      "domain:googleapis.cn": ["googleapis.com"]
-    },
-    servers: finalRemoteDNS,
-    tag: "dns"
-  };
+  const customBypassRulesDomains = customBypassRules.split(",").filter((address) => isDomain(address));
+  const customBlockRulesDomains = customBlockRules.split(",").filter((address) => isDomain(address));
+  const uniqueOutboundDomains = [...new Set(outboundDomains)];
+  const isDomainRule = [...uniqueOutboundDomains, ...customBypassRulesDomains].length > 0;
+  const isBypass = bypassIran || bypassChina || bypassRussia;
+  const isBlock = blockAds || blockPorn || customBlockRulesDomains.length > 0;
+  const finalRemoteDNS = isWorkerLess ? ["https://cloudflare-dns.com/dns-query"] : isWarp ? warpEnableIPv6 ? ["1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001"] : ["1.1.1.1", "1.0.0.1"] : [remoteDNS];
+  const dnsHost = {};
+  if (isBlock) {
+    blockRules.forEach(({ rule, host }) => {
+      if (rule)
+        dnsHost[host] = ["127.0.0.1"];
+    });
+    customBlockRulesDomains.forEach((domain) => {
+      dnsHost[`domain:${domain}`] = ["127.0.0.1"];
+    });
+  }
   const staticIPs = domainToStaticIPs ? await resolveDNS(domainToStaticIPs) : void 0;
   if (staticIPs)
-    dnsObject.hosts[domainToStaticIPs] = [...staticIPs.ipv4, ...staticIPs.ipv6];
+    dnsHost[domainToStaticIPs] = enableIPv6 ? [...staticIPs.ipv4, ...staticIPs.ipv6] : staticIPs.ipv4;
   if (resolvedRemoteDNS.server && !isWorkerLess && !isWarp)
-    dnsObject.hosts[resolvedRemoteDNS.server] = resolvedRemoteDNS.staticIPs;
+    dnsHost[resolvedRemoteDNS.server] = resolvedRemoteDNS.staticIPs;
   if (isWorkerLess) {
-    const resolvedDOH = await resolveDNS("cloudflare-dns.com");
-    const resolvedCloudflare = await resolveDNS("cloudflare.com");
-    const resolvedCLDomain = await resolveDNS("www.speedtest.net.cdn.cloudflare.net");
-    const resolvedCFNS_1 = await resolveDNS("ben.ns.cloudflare.com");
-    const resolvedCFNS_2 = await resolveDNS("lara.ns.cloudflare.com");
-    dnsObject.hosts["cloudflare-dns.com"] = [
-      ...resolvedDOH.ipv4,
-      ...resolvedCloudflare.ipv4,
-      ...resolvedCLDomain.ipv4,
-      ...resolvedCFNS_1.ipv4,
-      ...resolvedCFNS_2.ipv4
+    const domains = ["cloudflare-dns.com", "cloudflare.com", "dash.cloudflare.com"];
+    const resolved = await Promise.all(domains.map(resolveDNS));
+    const hostIPv4 = resolved.flatMap((r) => r.ipv4);
+    const hostIPv6 = enableIPv6 ? resolved.flatMap((r) => r.ipv6) : [];
+    dnsHost["cloudflare-dns.com"] = [
+      ...hostIPv4,
+      ...hostIPv6
     ];
   }
-  if (blockAds) {
-    dnsObject.hosts["geosite:category-ads-all"] = ["127.0.0.1"];
-    dnsObject.hosts["geosite:category-ads-ir"] = ["127.0.0.1"];
+  const hosts = Object.keys(dnsHost).length ? { hosts: dnsHost } : {};
+  const dnsObject = {
+    ...hosts,
+    servers: finalRemoteDNS,
+    queryStrategy: isIPv62 ? "UseIP" : "UseIPv4",
+    tag: "dns"
+  };
+  if (isDomainRule) {
+    const outboundDomainRules = uniqueOutboundDomains.map((domain) => `full:${domain}`);
+    const bypassDomainRules = customBypassRulesDomains.map((domain) => `domain:${domain}`);
+    dnsObject.servers.push({
+      address: localDNS,
+      domains: [...outboundDomainRules, ...bypassDomainRules],
+      skipFallback: true
+    });
   }
-  if (blockPorn) {
-    dnsObject.hosts["geosite:category-porn"] = ["127.0.0.1"];
-  }
-  isOutboundRule && dnsObject.servers.push({
-    address: localDNS === "localhost" ? "8.8.8.8" : localDNS,
-    domains: outboundRules
-  });
-  let localDNSServer = {
+  const localDNSServer = {
     address: localDNS,
     domains: [],
-    expectIPs: []
+    expectIPs: [],
+    skipFallback: true
   };
   if (!isWorkerLess && isBypass) {
-    bypassIran && localDNSServer.domains.push("geosite:category-ir") && localDNSServer.expectIPs.push("geoip:ir");
-    bypassChina && localDNSServer.domains.push("geosite:cn") && localDNSServer.expectIPs.push("geoip:cn");
-    bypassRussia && localDNSServer.domains.push("geosite:category-ru") && localDNSServer.expectIPs.push("geoip:ru");
+    bypassRules.forEach(({ rule, domain, ip }) => {
+      if (rule) {
+        localDNSServer.domains.push(domain);
+        localDNSServer.expectIPs.push(ip);
+      }
+    });
     dnsObject.servers.push(localDNSServer);
   }
   if (isFakeDNS) {
-    if ((isBypass || isOutboundRule) && !isWorkerLess) {
-      dnsObject.servers.unshift({
-        address: "fakedns",
-        domains: [
-          ...localDNSServer.domains,
-          ...outboundRules
-        ]
-      });
-    } else {
-      dnsObject.servers.unshift("fakedns");
-    }
+    const fakeDNSServer = isBypass && !isWorkerLess ? { address: "fakedns", domains: localDNSServer.domains } : "fakedns";
+    dnsObject.servers.unshift(fakeDNSServer);
   }
   return dnsObject;
 }
-function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer, isWorkerLess) {
+__name(buildXrayDNS, "buildXrayDNS");
+function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer, isWorkerLess, isWarp) {
   const {
+    remoteDNS,
     localDNS,
     bypassLAN,
     bypassIran,
@@ -6964,12 +7048,26 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
     bypassRussia,
     blockAds,
     blockPorn,
-    blockUDP443
+    blockUDP443,
+    customBypassRules,
+    customBlockRules
   } = proxySettings;
-  const isBypass = bypassIran || bypassChina || bypassRussia || bypassLAN;
+  const geoRules = [
+    { rule: bypassLAN, type: "direct", domain: "geosite:private", ip: "geoip:private" },
+    { rule: bypassIran, type: "direct", domain: "geosite:category-ir", ip: "geoip:ir" },
+    { rule: bypassChina, type: "direct", domain: "geosite:cn", ip: "geoip:cn" },
+    { rule: blockAds, type: "block", domain: "geosite:category-ads-all" },
+    { rule: blockAds, type: "block", domain: "geosite:category-ads-ir" },
+    { rule: blockPorn, type: "block", domain: "geosite:category-porn" }
+  ];
   const outboundDomains = outboundAddrs.filter((address) => isDomain(address));
-  const isOutboundRule = outboundDomains.length > 0;
-  let rules = [
+  const customBypassRulesTotal = customBypassRules ? customBypassRules.split(",") : [];
+  const customBlockRulesTotal = customBlockRules ? customBlockRules.split(",") : [];
+  const customBypassRulesDomains = customBypassRulesTotal.filter((address) => isDomain(address));
+  const isDomainRule = [...outboundDomains, ...customBypassRulesDomains].length > 0;
+  const isBlock = blockAds || blockPorn || customBlockRulesTotal.length > 0;
+  const isBypass = bypassIran || bypassChina || bypassRussia || customBypassRulesTotal.length > 0;
+  const rules = [
     {
       inboundTag: [
         "dns-in"
@@ -6987,29 +7085,57 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
       type: "field"
     }
   ];
-  if (!isWorkerLess && (isOutboundRule || localDNS !== "localhost" && isBypass))
+  if (!isWorkerLess && (isDomainRule || isBypass))
     rules.push({
-      ip: [localDNS === "localhost" ? "8.8.8.8" : localDNS],
+      ip: [localDNS],
       port: "53",
+      network: "udp",
       outboundTag: "direct",
       type: "field"
     });
-  if (isBypass && !isWorkerLess) {
-    let ipRule = {
-      ip: [],
-      outboundTag: "direct",
+  if (isBypass || isBlock) {
+    const createRule = /* @__PURE__ */ __name((type, outbound) => ({
+      [type]: [],
+      outboundTag: outbound,
       type: "field"
-    };
-    let domainRule = {
-      domain: [],
-      outboundTag: "direct",
-      type: "field"
-    };
-    bypassLAN && domainRule.domain.push("geosite:private") && ipRule.ip.push("geoip:private");
-    bypassIran && domainRule.domain.push("geosite:category-ir") && ipRule.ip.push("geoip:ir");
-    bypassChina && domainRule.domain.push("geosite:cn") && ipRule.ip.push("geoip:cn");
-    bypassRussia && domainRule.domain.push("geosite:category-ru") && ipRule.ip.push("geoip:ru");
-    rules.push(domainRule, ipRule);
+    }), "createRule");
+    let domainDirectRule, ipDirectRule;
+    if (!isWorkerLess) {
+      domainDirectRule = createRule("domain", "direct");
+      ipDirectRule = createRule("ip", "direct");
+    }
+    let domainBlockRule = createRule("domain", "block");
+    let ipBlockRule = createRule("ip", "block");
+    geoRules.forEach(({ rule, type, domain, ip }) => {
+      if (rule) {
+        if (type === "direct") {
+          domainDirectRule?.domain.push(domain);
+          ipDirectRule?.ip?.push(ip);
+        } else {
+          domainBlockRule.domain.push(domain);
+        }
+      }
+    });
+    customBypassRulesTotal.forEach((address) => {
+      if (isDomain(address)) {
+        domainDirectRule?.domain.push(`domain:${address}`);
+      } else {
+        ipDirectRule?.ip.push(address);
+      }
+    });
+    customBlockRulesTotal.forEach((address) => {
+      if (isDomain(address)) {
+        domainBlockRule.domain.push(`domain:${address}`);
+      } else {
+        ipBlockRule.ip.push(address);
+      }
+    });
+    if (!isWorkerLess) {
+      domainDirectRule.domain.length && rules.push(domainDirectRule);
+      ipDirectRule.ip.length && rules.push(ipDirectRule);
+    }
+    domainBlockRule.domain.length && rules.push(domainBlockRule);
+    ipBlockRule.ip.length && rules.push(ipBlockRule);
   }
   blockUDP443 && rules.push({
     network: "udp",
@@ -7017,15 +7143,26 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
     outboundTag: "block",
     type: "field"
   });
-  if (blockAds || blockPorn) {
-    let rule = {
-      domain: [],
-      outboundTag: "block",
+  if (isChain) {
+    const rule = {
+      [isBalancer ? "balancerTag" : "outboundTag"]: isBalancer ? "all-proxy" : "proxy",
       type: "field"
     };
-    blockAds && rule.domain.push("geosite:category-ads-all", "geosite:category-ads-ir");
-    blockPorn && rule.domain.push("geosite:category-porn");
-    rules.push(rule);
+    if (!isWarp) {
+      const url = new URL(remoteDNS);
+      const remoteDNSServer = url.hostname;
+      rules.push({
+        [isDomain(remoteDNSServer) ? "domain" : "ip"]: [remoteDNSServer],
+        network: "tcp",
+        ...rule
+      });
+    } else {
+      rules.push({
+        network: "udp",
+        port: "53",
+        ...rule
+      });
+    }
   }
   if (isBalancer) {
     rules.push({
@@ -7042,8 +7179,9 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
   }
   return rules;
 }
-function buildXrayVLESSOutbound(tag2, address, port, host, sni, proxyIP2, isFragment, allowInsecure) {
-  let outbound = {
+__name(buildXrayRoutingRules, "buildXrayRoutingRules");
+function buildXrayVLESSOutbound(tag2, address, port, host, sni, proxyIP2, isFragment, allowInsecure, enableIPv6) {
+  const outbound = {
     protocol: "vless",
     settings: {
       vnext: [
@@ -7083,16 +7221,19 @@ function buildXrayVLESSOutbound(tag2, address, port, host, sni, proxyIP2, isFrag
       serverName: sni
     };
   }
+  const sockopt = outbound.streamSettings.sockopt;
   if (isFragment) {
-    outbound.streamSettings.sockopt.dialerProxy = "fragment";
+    sockopt.dialerProxy = "fragment";
   } else {
-    outbound.streamSettings.sockopt.tcpKeepAliveIdle = 100;
-    outbound.streamSettings.sockopt.tcpNoDelay = true;
+    sockopt.tcpKeepAliveIdle = 30;
+    sockopt.tcpNoDelay = true;
+    sockopt.domainStrategy = enableIPv6 ? "UseIPv4v6" : "UseIPv4";
   }
   return outbound;
 }
-function buildXrayTrojanOutbound(tag2, address, port, host, sni, proxyIP2, isFragment, allowInsecure) {
-  let outbound = {
+__name(buildXrayVLESSOutbound, "buildXrayVLESSOutbound");
+function buildXrayTrojanOutbound(tag2, address, port, host, sni, proxyIP2, isFragment, allowInsecure, enableIPv6) {
+  const outbound = {
     protocol: "trojan",
     settings: {
       servers: [
@@ -7126,16 +7267,20 @@ function buildXrayTrojanOutbound(tag2, address, port, host, sni, proxyIP2, isFra
       serverName: sni
     };
   }
+  const sockopt = outbound.streamSettings.sockopt;
   if (isFragment) {
-    outbound.streamSettings.sockopt.dialerProxy = "fragment";
+    sockopt.dialerProxy = "fragment";
   } else {
-    outbound.streamSettings.sockopt.tcpKeepAliveIdle = 100;
-    outbound.streamSettings.sockopt.tcpNoDelay = true;
+    sockopt.tcpKeepAliveIdle = 30;
+    sockopt.tcpNoDelay = true;
+    sockopt.domainStrategy = enableIPv6 ? "UseIPv4v6" : "UseIPv4";
   }
   return outbound;
 }
-function buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, isChain, client) {
+__name(buildXrayTrojanOutbound, "buildXrayTrojanOutbound");
+function buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, isChain, client2) {
   const {
+    warpEnableIPv6,
     nikaNGNoiseMode,
     noiseCountMin,
     noiseCountMax,
@@ -7150,7 +7295,7 @@ function buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, isChain, cl
     publicKey,
     privateKey
   } = extractWireguardParams(warpConfigs, isChain);
-  let outbound = {
+  const outbound = {
     protocol: "wireguard",
     settings: {
       address: [
@@ -7171,14 +7316,13 @@ function buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, isChain, cl
     streamSettings: {
       sockopt: {
         dialerProxy: "proxy",
-        tcpKeepAliveIdle: 100,
-        tcpNoDelay: true
+        domainStrategy: warpEnableIPv6 ? "UseIPv4v6" : "UseIPv4"
       }
     },
     tag: isChain ? "chain" : "proxy"
   };
   !isChain && delete outbound.streamSettings;
-  client === "nikang" && !isChain && Object.assign(outbound.settings, {
+  client2 === "nikang" && !isChain && Object.assign(outbound.settings, {
     wnoise: nikaNGNoiseMode,
     wnoisecount: noiseCountMin === noiseCountMax ? noiseCountMin : `${noiseCountMin}-${noiseCountMax}`,
     wpayloadsize: noiseSizeMin === noiseSizeMax ? noiseSizeMin : `${noiseSizeMin}-${noiseSizeMax}`,
@@ -7186,15 +7330,16 @@ function buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, isChain, cl
   });
   return outbound;
 }
-function buildXrayChainOutbound(chainProxyParams) {
+__name(buildXrayWarpOutbound, "buildXrayWarpOutbound");
+function buildXrayChainOutbound(chainProxyParams, enableIPv6) {
   if (["socks", "http"].includes(chainProxyParams.protocol)) {
-    const { protocol, host: host2, port: port2, user, pass } = chainProxyParams;
+    const { protocol, server: server2, port: port2, user, pass } = chainProxyParams;
     return {
       protocol,
       settings: {
         servers: [
           {
-            address: host2,
+            address: server2,
             port: +port2,
             users: [
               {
@@ -7210,6 +7355,7 @@ function buildXrayChainOutbound(chainProxyParams) {
         network: "tcp",
         sockopt: {
           dialerProxy: "proxy",
+          domainStrategy: enableIPv6 ? "UseIPv4v6" : "UseIPv4",
           tcpNoDelay: true
         }
       },
@@ -7223,7 +7369,7 @@ function buildXrayChainOutbound(chainProxyParams) {
     };
   }
   const {
-    hostName,
+    server,
     port,
     uuid,
     flow,
@@ -7242,7 +7388,7 @@ function buildXrayChainOutbound(chainProxyParams) {
     serviceName,
     mode
   } = chainProxyParams;
-  let proxyOutbound = {
+  const proxyOutbound = {
     mux: {
       concurrency: 8,
       enabled: true,
@@ -7253,7 +7399,7 @@ function buildXrayChainOutbound(chainProxyParams) {
     settings: {
       vnext: [
         {
-          address: hostName,
+          address: server,
           port: +port,
           users: [
             {
@@ -7272,6 +7418,7 @@ function buildXrayChainOutbound(chainProxyParams) {
       security,
       sockopt: {
         dialerProxy: "proxy",
+        domainStrategy: enableIPv6 ? "UseIPv4v6" : "UseIPv4",
         tcpNoDelay: true
       }
     },
@@ -7338,9 +7485,11 @@ function buildXrayChainOutbound(chainProxyParams) {
   }
   return proxyOutbound;
 }
+__name(buildXrayChainOutbound, "buildXrayChainOutbound");
 function buildXrayConfig(proxySettings, remark, isFragment, isBalancer, isChain, balancerFallback, isWarp) {
   const {
     vlessTrojanFakeDNS,
+    enableIPv6,
     warpFakeDNS,
     bestVLESSTrojanInterval,
     bestWarpInterval,
@@ -7351,44 +7500,51 @@ function buildXrayConfig(proxySettings, remark, isFragment, isBalancer, isChain,
     fragmentPackets
   } = proxySettings;
   const isFakeDNS = vlessTrojanFakeDNS && !isWarp || warpFakeDNS && isWarp;
-  let config = structuredClone(xrayConfigTemp);
+  const config = structuredClone(xrayConfigTemp);
   config.remarks = remark;
   if (isFakeDNS) {
     config.inbounds[0].sniffing.destOverride.push("fakedns");
     config.inbounds[1].sniffing.destOverride.push("fakedns");
-  } else {
-    delete config.fakedns;
   }
   if (isFragment) {
     const fragment = config.outbounds[0].settings.fragment;
     fragment.length = `${lengthMin}-${lengthMax}`;
     fragment.interval = `${intervalMin}-${intervalMax}`;
     fragment.packets = fragmentPackets;
+    config.outbounds[0].settings.domainStrategy = enableIPv6 ? "UseIPv4v6" : "UseIPv4";
   } else {
     config.outbounds.shift();
   }
   if (isBalancer) {
     const interval = isWarp ? bestWarpInterval : bestVLESSTrojanInterval;
     config.observatory.probeInterval = `${interval}s`;
-    config.observatory.subjectSelector = [isChain ? "chain" : "prox"];
-    config.routing.balancers[0].selector = [isChain ? "chain" : "prox"];
     if (balancerFallback)
-      config.routing.balancers[0].fallbackTag = balancerFallback;
+      config.routing.balancers[0].fallbackTag = "prox-2";
+    if (isChain) {
+      config.observatory.subjectSelector.push("chain");
+      const chainBalancer = structuredClone(config.routing.balancers[0]);
+      if (balancerFallback)
+        chainBalancer.fallbackTag = "chain-2";
+      config.routing.balancers.push({ ...chainBalancer, selector: ["chain"] });
+      config.routing.balancers[0].tag = "all-proxy";
+    }
   } else {
     delete config.observatory;
     delete config.routing.balancers;
   }
   return config;
 }
+__name(buildXrayConfig, "buildXrayConfig");
 async function buildXrayBestPingConfig(proxySettings, totalAddresses, chainProxy, outbounds, isFragment) {
   const remark = isFragment ? "\u{1F4A6} BPB F - Best Ping \u{1F4A5}" : "\u{1F4A6} BPB - Best Ping \u{1F4A5}";
-  let config = buildXrayConfig(proxySettings, remark, isFragment, true, chainProxy, chainProxy ? "chain-2" : "prox-2");
-  config.dns = await buildXrayDNS(proxySettings, totalAddresses, void 0);
-  config.routing.rules = buildXrayRoutingRules(proxySettings, totalAddresses, chainProxy, true, false);
+  const config = buildXrayConfig(proxySettings, remark, isFragment, true, chainProxy, true);
+  config.dns = await buildXrayDNS(proxySettings, totalAddresses, void 0, false, false);
+  config.routing.rules = buildXrayRoutingRules(proxySettings, totalAddresses, chainProxy, true, false, false);
   config.outbounds.unshift(...outbounds);
   return config;
 }
-async function buildXrayBestFragmentConfig(proxySettings, hostName, chainProxy, outbounds) {
+__name(buildXrayBestPingConfig, "buildXrayBestPingConfig");
+async function buildXrayBestFragmentConfig(proxySettings, hostName2, chainProxy, outbounds) {
   const bestFragValues = [
     "10-20",
     "20-30",
@@ -7409,22 +7565,22 @@ async function buildXrayBestFragmentConfig(proxySettings, hostName, chainProxy, 
     "80-100",
     "100-200"
   ];
-  let config = buildXrayConfig(proxySettings, "\u{1F4A6} BPB F - Best Fragment \u{1F60E}", true, true, chainProxy, void 0, false);
-  config.dns = await buildXrayDNS(proxySettings, [], hostName);
-  config.routing.rules = buildXrayRoutingRules(proxySettings, [], chainProxy, true, false);
+  const config = buildXrayConfig(proxySettings, "\u{1F4A6} BPB F - Best Fragment \u{1F60E}", true, true, chainProxy, false, false);
+  config.dns = await buildXrayDNS(proxySettings, [], hostName2, false, false);
+  config.routing.rules = buildXrayRoutingRules(proxySettings, [], chainProxy, true, false, false);
   const fragment = config.outbounds.shift();
-  let bestFragOutbounds = [];
+  const bestFragOutbounds = [];
   bestFragValues.forEach((fragLength, index) => {
     if (chainProxy) {
-      let chainOutbound = structuredClone(chainProxy);
+      const chainOutbound = structuredClone(chainProxy);
       chainOutbound.tag = `chain-${index + 1}`;
       chainOutbound.streamSettings.sockopt.dialerProxy = `prox-${index + 1}`;
       bestFragOutbounds.push(chainOutbound);
     }
-    let proxyOutbound = structuredClone(outbounds[chainProxy ? 1 : 0]);
+    const proxyOutbound = structuredClone(outbounds[chainProxy ? 1 : 0]);
     proxyOutbound.tag = `prox-${index + 1}`;
     proxyOutbound.streamSettings.sockopt.dialerProxy = `frag-${index + 1}`;
-    let fragmentOutbound = structuredClone(fragment);
+    const fragmentOutbound = structuredClone(fragment);
     fragmentOutbound.tag = `frag-${index + 1}`;
     fragmentOutbound.settings.fragment.length = fragLength;
     fragmentOutbound.settings.fragment.interval = "1-1";
@@ -7433,17 +7589,23 @@ async function buildXrayBestFragmentConfig(proxySettings, hostName, chainProxy, 
   config.outbounds.unshift(...bestFragOutbounds);
   return config;
 }
+__name(buildXrayBestFragmentConfig, "buildXrayBestFragmentConfig");
 async function buildXrayWorkerLessConfig(proxySettings) {
-  let config = buildXrayConfig(proxySettings, "\u{1F4A6} BPB F - WorkerLess \u2B50", true, false, false, void 0, false);
+  const config = buildXrayConfig(proxySettings, "\u{1F4A6} BPB F - WorkerLess \u2B50", true, false, false, false, false);
   config.dns = await buildXrayDNS(proxySettings, [], void 0, true);
-  config.routing.rules = buildXrayRoutingRules(proxySettings, [], false, false, true);
-  let fakeOutbound = buildXrayVLESSOutbound("fake-outbound", "google.com", "443", userID, "google.com", "google.com", "", true, false);
+  config.routing.rules = buildXrayRoutingRules(proxySettings, [], false, false, true, false);
+  const fakeOutbound = buildXrayVLESSOutbound("fake-outbound", "google.com", "443", userID, "google.com", "google.com", "", true, false);
   delete fakeOutbound.streamSettings.sockopt;
   fakeOutbound.streamSettings.wsSettings.path = "/";
   config.outbounds.push(fakeOutbound);
   return config;
 }
-async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
+__name(buildXrayWorkerLessConfig, "buildXrayWorkerLessConfig");
+async function getXrayCustomConfigs(request, env, isFragment) {
+  await initializeParams(request, env);
+  const { kvNotFound, proxySettings } = await getDataset(request, env);
+  if (kvNotFound)
+    return await renderErrorPage(request, env, "KV Dataset is not properly set!", null, true);
   let configs = [];
   let outbounds = [];
   let protocols = [];
@@ -7464,14 +7626,14 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
   if (outProxy) {
     const proxyParams = JSON.parse(outProxyParams);
     try {
-      chainProxy = buildXrayChainOutbound(proxyParams);
+      chainProxy = buildXrayChainOutbound(proxyParams, enableIPv6);
     } catch (error) {
       console.log("An error occured while parsing chain proxy: ", error);
       chainProxy = void 0;
       await env.bpb.put("proxySettings", JSON.stringify({
         ...proxySettings,
         outProxy: "",
-        outProxyParams: ""
+        outProxyParams: {}
       }));
     }
   }
@@ -7491,15 +7653,15 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
         const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
         const host = isCustomAddr ? customCdnHost : hostName;
         const remark = generateRemark(protocolIndex, port, addr, cleanIPs, protocol, configType);
-        let customConfig = buildXrayConfig(proxySettings, remark, isFragment, false, chainProxy, void 0, false);
+        const customConfig = buildXrayConfig(proxySettings, remark, isFragment, false, chainProxy, false, false);
         customConfig.dns = await buildXrayDNS(proxySettings, [addr], void 0);
-        customConfig.routing.rules = buildXrayRoutingRules(proxySettings, [addr], chainProxy, false, false);
-        let outbound = protocol === "VLESS" ? buildXrayVLESSOutbound("proxy", addr, port, host, sni, proxyIP2, isFragment, isCustomAddr) : buildXrayTrojanOutbound("proxy", addr, port, host, sni, proxyIP2, isFragment, isCustomAddr);
+        customConfig.routing.rules = buildXrayRoutingRules(proxySettings, [addr], chainProxy, false, false, false);
+        const outbound = protocol === "VLESS" ? buildXrayVLESSOutbound("proxy", addr, port, host, sni, proxyIP2, isFragment, isCustomAddr, enableIPv6) : buildXrayTrojanOutbound("proxy", addr, port, host, sni, proxyIP2, isFragment, isCustomAddr, enableIPv6);
         customConfig.outbounds.unshift({ ...outbound });
         outbound.tag = `prox-${proxyIndex}`;
         if (chainProxy) {
           customConfig.outbounds.unshift(chainProxy);
-          let chainOutbound = structuredClone(chainProxy);
+          const chainOutbound = structuredClone(chainProxy);
           chainOutbound.tag = `chain-${proxyIndex}`;
           chainOutbound.streamSettings.sockopt.dialerProxy = `prox-${proxyIndex}`;
           outbounds.push(chainOutbound);
@@ -7512,32 +7674,42 @@ async function getXrayCustomConfigs(env, proxySettings, hostName, isFragment) {
     }
   }
   const bestPing = await buildXrayBestPingConfig(proxySettings, totalAddresses, chainProxy, outbounds, isFragment);
-  if (!isFragment)
-    return [...configs, bestPing];
-  const bestFragment = await buildXrayBestFragmentConfig(proxySettings, hostName, chainProxy, outbounds);
-  const workerLessConfig = await buildXrayWorkerLessConfig(proxySettings);
-  configs.push(bestPing, bestFragment, workerLessConfig);
-  return configs;
+  const finalConfigs = [...configs, bestPing];
+  if (isFragment) {
+    const bestFragment = await buildXrayBestFragmentConfig(proxySettings, hostName, chainProxy, outbounds);
+    const workerLessConfig = await buildXrayWorkerLessConfig(proxySettings);
+    finalConfigs.push(bestFragment, workerLessConfig);
+  }
+  return new Response(JSON.stringify(finalConfigs, null, 4), {
+    status: 200,
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8",
+      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+      "CDN-Cache-Control": "no-store"
+    }
+  });
 }
-async function getXrayWarpConfigs(proxySettings, warpConfigs, client) {
-  let xrayWarpConfigs = [];
-  let xrayWoWConfigs = [];
-  let xrayWarpOutbounds = [];
-  let xrayWoWOutbounds = [];
+__name(getXrayCustomConfigs, "getXrayCustomConfigs");
+async function getXrayWarpConfigs(request, env, client2) {
+  const { kvNotFound, proxySettings, warpConfigs } = await getDataset(request, env);
+  if (kvNotFound)
+    return await renderErrorPage(request, env, "KV Dataset is not properly set!", null, true);
+  const xrayWarpConfigs = [];
+  const xrayWoWConfigs = [];
+  const xrayWarpOutbounds = [];
+  const xrayWoWOutbounds = [];
   const { warpEndpoints } = proxySettings;
   const outboundDomains = warpEndpoints.split(",").map((endpoint) => endpoint.split(":")[0]).filter((address) => isDomain(address));
-  const proIndicator = client === "nikang" ? " Pro " : " ";
+  const proIndicator = client2 === "nikang" ? " Pro " : " ";
   for (const [index, endpoint] of warpEndpoints.split(",").entries()) {
     const endpointHost = endpoint.split(":")[0];
-    let warpConfig = buildXrayConfig(proxySettings, `\u{1F4A6} ${index + 1} - Warp${proIndicator}\u{1F1EE}\u{1F1F7}`, false, false, false, void 0, true);
-    let WoWConfig = buildXrayConfig(proxySettings, `\u{1F4A6} ${index + 1} - WoW${proIndicator}\u{1F30D}`, false, false, true, void 0, true);
+    const warpConfig = buildXrayConfig(proxySettings, `\u{1F4A6} ${index + 1} - Warp${proIndicator}\u{1F1EE}\u{1F1F7}`, false, false, false, false, true);
+    const WoWConfig = buildXrayConfig(proxySettings, `\u{1F4A6} ${index + 1} - WoW${proIndicator}\u{1F30D}`, false, false, true, false, true);
     warpConfig.dns = WoWConfig.dns = await buildXrayDNS(proxySettings, [endpointHost], void 0, false, true);
-    warpConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpointHost], false, false, false);
-    WoWConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpointHost], true, false, false);
-    const warpOutbound = buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, false, client);
-    const WoWOutbound = buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, true, client);
-    warpOutbound.settings.peers[0].endpoint = endpoint;
-    WoWOutbound.settings.peers[0].endpoint = endpoint;
+    warpConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpointHost], false, false, false, true);
+    WoWConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpointHost], true, false, false, true);
+    const warpOutbound = buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, false, client2);
+    const WoWOutbound = buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, true, client2);
     warpConfig.outbounds.unshift(warpOutbound);
     WoWConfig.outbounds.unshift(WoWOutbound, warpOutbound);
     xrayWarpConfigs.push(warpConfig);
@@ -7551,92 +7723,1172 @@ async function getXrayWarpConfigs(proxySettings, warpConfigs, client) {
     xrayWoWOutbounds.push(chainOutbound);
   }
   const dnsObject = await buildXrayDNS(proxySettings, outboundDomains, void 0, false, true);
-  let xrayWarpBestPing = buildXrayConfig(proxySettings, `\u{1F4A6} Warp${proIndicator}- Best Ping \u{1F680}`, false, true, false, void 0, true);
+  const xrayWarpBestPing = buildXrayConfig(proxySettings, `\u{1F4A6} Warp${proIndicator}- Best Ping \u{1F680}`, false, true, false, false, true);
   xrayWarpBestPing.dns = dnsObject;
-  xrayWarpBestPing.routing.rules = buildXrayRoutingRules(proxySettings, outboundDomains, false, true, false);
+  xrayWarpBestPing.routing.rules = buildXrayRoutingRules(proxySettings, outboundDomains, false, true, false, true);
   xrayWarpBestPing.outbounds.unshift(...xrayWarpOutbounds);
-  let xrayWoWBestPing = buildXrayConfig(proxySettings, `\u{1F4A6} WoW${proIndicator}- Best Ping \u{1F680}`, false, true, true, void 0, true);
+  const xrayWoWBestPing = buildXrayConfig(proxySettings, `\u{1F4A6} WoW${proIndicator}- Best Ping \u{1F680}`, false, true, true, false, true);
   xrayWoWBestPing.dns = dnsObject;
-  xrayWoWBestPing.routing.rules = buildXrayRoutingRules(proxySettings, outboundDomains, true, true, false);
+  xrayWoWBestPing.routing.rules = buildXrayRoutingRules(proxySettings, outboundDomains, true, true, false, true);
   xrayWoWBestPing.outbounds.unshift(...xrayWoWOutbounds, ...xrayWarpOutbounds);
-  return [...xrayWarpConfigs, ...xrayWoWConfigs, xrayWarpBestPing, xrayWoWBestPing];
+  const configs = [...xrayWarpConfigs, ...xrayWoWConfigs, xrayWarpBestPing, xrayWoWBestPing];
+  return new Response(JSON.stringify(configs, null, 4), {
+    status: 200,
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8",
+      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+      "CDN-Cache-Control": "no-store"
+    }
+  });
 }
-async function buildClashDNS(proxySettings, isWarp) {
+__name(getXrayWarpConfigs, "getXrayWarpConfigs");
+var xrayConfigTemp = {
+  remarks: "",
+  log: {
+    loglevel: "warning"
+  },
+  dns: {},
+  inbounds: [
+    {
+      port: 10808,
+      protocol: "socks",
+      settings: {
+        auth: "noauth",
+        udp: true,
+        userLevel: 8
+      },
+      sniffing: {
+        destOverride: ["http", "tls"],
+        enabled: true,
+        routeOnly: true
+      },
+      tag: "socks-in"
+    },
+    {
+      port: 10809,
+      protocol: "http",
+      settings: {
+        auth: "noauth",
+        udp: true,
+        userLevel: 8
+      },
+      sniffing: {
+        destOverride: ["http", "tls"],
+        enabled: true,
+        routeOnly: true
+      },
+      tag: "http-in"
+    },
+    {
+      listen: "127.0.0.1",
+      port: 10853,
+      protocol: "dokodemo-door",
+      settings: {
+        address: "1.1.1.1",
+        network: "tcp,udp",
+        port: 53
+      },
+      tag: "dns-in"
+    }
+  ],
+  outbounds: [
+    {
+      tag: "fragment",
+      protocol: "freedom",
+      settings: {
+        fragment: {
+          packets: "tlshello",
+          length: "",
+          interval: ""
+        },
+        domainStrategy: "UseIP"
+      },
+      streamSettings: {
+        sockopt: {
+          tcpKeepAliveIdle: 30,
+          tcpNoDelay: true
+        }
+      }
+    },
+    {
+      protocol: "dns",
+      tag: "dns-out"
+    },
+    {
+      protocol: "freedom",
+      settings: {},
+      tag: "direct"
+    },
+    {
+      protocol: "blackhole",
+      settings: {
+        response: {
+          type: "http"
+        }
+      },
+      tag: "block"
+    }
+  ],
+  policy: {
+    levels: {
+      8: {
+        connIdle: 300,
+        downlinkOnly: 1,
+        handshake: 4,
+        uplinkOnly: 1
+      }
+    },
+    system: {
+      statsOutboundUplink: true,
+      statsOutboundDownlink: true
+    }
+  },
+  routing: {
+    domainStrategy: "IPIfNonMatch",
+    rules: [],
+    balancers: [
+      {
+        tag: "all",
+        selector: ["prox"],
+        strategy: {
+          type: "leastPing"
+        }
+      }
+    ]
+  },
+  observatory: {
+    probeInterval: "30s",
+    probeURL: "https://www.gstatic.com/generate_204",
+    subjectSelector: ["prox"],
+    EnableConcurrency: true
+  },
+  stats: {}
+};
+
+// src/cores-configs/sing-box.js
+function buildSingBoxDNS(proxySettings, outboundAddrs, isWarp, remoteDNSDetour) {
   const {
     remoteDNS,
-    resolvedRemoteDNS,
     localDNS,
     vlessTrojanFakeDNS,
+    enableIPv6,
     warpFakeDNS,
-    bypassLAN,
+    warpEnableIPv6,
     bypassIran,
     bypassChina,
-    bypassRussia
+    bypassRussia,
+    blockAds,
+    blockPorn,
+    customBypassRules,
+    customBlockRules
   } = proxySettings;
-  const finalRemoteDNS = isWarp ? ["1.1.1.1", "1.0.0.1"] : [remoteDNS];
-  let clashLocalDNS = localDNS === "localhost" ? "system" : localDNS;
+  let fakeip;
   const isFakeDNS = vlessTrojanFakeDNS && !isWarp || warpFakeDNS && isWarp;
-  let dns = {
-    "enable": true,
-    "listen": "0.0.0.0:1053",
-    "ipv6": true,
-    "respect-rules": true,
-    "nameserver": finalRemoteDNS,
-    "proxy-server-nameserver": [clashLocalDNS]
-  };
-  if (resolvedRemoteDNS.server && !isWarp) {
-    dns["hosts"] = {
-      [resolvedRemoteDNS.server]: resolvedRemoteDNS.staticIPs
+  const isIPv62 = enableIPv6 && !isWarp || warpEnableIPv6 && isWarp;
+  const customBypassRulesDomains = customBypassRules.split(",").filter((address) => isDomain(address));
+  const customBlockRulesDomains = customBlockRules.split(",").filter((address) => isDomain(address));
+  const geoRules = [
+    { rule: bypassIran, type: "direct", geosite: "geosite-ir", geoip: "geoip-ir" },
+    { rule: bypassChina, type: "direct", geosite: "geosite-cn", geoip: "geoip-cn" },
+    { rule: bypassRussia, type: "direct", geosite: "geosite-category-ru", geoip: "geoip-ru" },
+    { rule: true, type: "block", geosite: "geosite-malware" },
+    { rule: true, type: "block", geosite: "geosite-phishing" },
+    { rule: true, type: "block", geosite: "geosite-cryptominers" },
+    { rule: blockAds, type: "block", geosite: "geosite-category-ads-all" },
+    { rule: blockPorn, type: "block", geosite: "geosite-nsfw" }
+  ];
+  const servers = [
+    {
+      address: isWarp ? "1.1.1.1" : remoteDNS,
+      address_resolver: "dns-direct",
+      strategy: isIPv62 ? "prefer_ipv4" : "ipv4_only",
+      detour: remoteDNSDetour,
+      tag: "dns-remote"
+    },
+    {
+      address: localDNS,
+      strategy: isIPv62 ? "prefer_ipv4" : "ipv4_only",
+      detour: "direct",
+      tag: "dns-direct"
+    },
+    {
+      address: "rcode://success",
+      tag: "dns-block"
+    }
+  ];
+  let outboundRule;
+  if (isWarp) {
+    outboundRule = {
+      outbound: "any",
+      server: "dns-direct"
+    };
+  } else {
+    const outboundDomains = outboundAddrs.filter((address) => isDomain(address));
+    const uniqueDomains = [...new Set(outboundDomains)];
+    outboundRule = {
+      domain: uniqueDomains,
+      server: "dns-direct"
     };
   }
-  let geosites = [];
-  bypassLAN && geosites.push("private");
-  bypassIran && geosites.push("category-ir");
-  bypassChina && geosites.push("cn");
-  bypassRussia && geosites.push("category-ru");
-  if (bypassIran || bypassChina || bypassLAN || bypassRussia) {
-    dns["nameserver-policy"] = {
-      [`geosite:${geosites.join(",")}`]: [clashLocalDNS],
-      "www.gstatic.com": [clashLocalDNS]
-    };
+  const rules = [
+    outboundRule,
+    {
+      clash_mode: "Direct",
+      server: "dns-direct"
+    },
+    {
+      clash_mode: "Global",
+      server: "dns-remote"
+    }
+  ];
+  let blockRule = {
+    disable_cache: true,
+    rule_set: [],
+    server: "dns-block"
+  };
+  geoRules.forEach(({ rule, type, geosite, geoip }) => {
+    rule && type === "direct" && rules.push({
+      type: "logical",
+      mode: "and",
+      rules: [
+        { rule_set: geosite },
+        { rule_set: geoip }
+      ],
+      "server": "dns-direct"
+    });
+    rule && type === "block" && blockRule.rule_set.push(geosite);
+  });
+  rules.push(blockRule);
+  const createRule = /* @__PURE__ */ __name((server) => ({
+    domain_suffix: [],
+    server
+  }), "createRule");
+  let domainDirectRule, domainBlockRule;
+  if (customBypassRulesDomains.length) {
+    domainDirectRule = createRule("dns-direct");
+    customBypassRulesDomains.forEach((domain) => {
+      domainDirectRule.domain_suffix.push(domain);
+    });
+    rules.push(domainDirectRule);
+  }
+  if (customBlockRulesDomains.length) {
+    domainBlockRule = createRule("dns-block");
+    customBlockRulesDomains.forEach((domain) => {
+      domainBlockRule.domain_suffix.push(domain);
+    });
+    rules.push(domainBlockRule);
   }
   if (isFakeDNS) {
-    dns["enhanced-mode"] = "fake-ip";
-    dns["fake-ip-range"] = "198.18.0.1/16";
+    servers.push({
+      address: "fakeip",
+      tag: "dns-fake"
+    });
+    rules.push({
+      disable_cache: true,
+      inbound: "tun-in",
+      query_type: [
+        "A",
+        "AAAA"
+      ],
+      server: "dns-fake"
+    });
+    fakeip = {
+      enabled: true,
+      inet4_range: "198.18.0.0/15"
+    };
+    if (isIPv62)
+      fakeip.inet6_range = "fc00::/18";
   }
-  return dns;
+  return { servers, rules, fakeip };
 }
-function buildClashRoutingRules(proxySettings) {
-  let rules = [];
+__name(buildSingBoxDNS, "buildSingBoxDNS");
+function buildSingBoxRoutingRules(proxySettings) {
   const {
-    localDNS,
     bypassLAN,
     bypassIran,
     bypassChina,
     bypassRussia,
     blockAds,
     blockPorn,
-    blockUDP443
+    blockUDP443,
+    customBypassRules,
+    customBlockRules
   } = proxySettings;
-  localDNS !== "localhost" && rules.push(`AND,((IP-CIDR,${localDNS}/32),(DST-PORT,53)),DIRECT`);
-  bypassLAN && rules.push("GEOSITE,private,DIRECT");
-  bypassIran && rules.push("GEOSITE,category-ir,DIRECT");
-  bypassChina && rules.push("GEOSITE,cn,DIRECT");
-  bypassRussia && rules.push("GEOSITE,category-ru,DIRECT");
-  bypassLAN && rules.push("GEOIP,private,DIRECT,no-resolve");
-  bypassIran && rules.push("GEOIP,ir,DIRECT,no-resolve");
-  bypassChina && rules.push("GEOIP,cn,DIRECT,no-resolve");
-  bypassRussia && rules.push("GEOIP,ru,DIRECT,no-resolve");
-  blockUDP443 && rules.push("AND,((NETWORK,udp),(DST-PORT,443)),REJECT");
-  blockAds && rules.push("GEOSITE,category-ads-all,REJECT", "GEOSITE,category-ads-ir,REJECT");
-  blockPorn && rules.push("GEOSITE,category-porn,REJECT");
-  rules.push("MATCH,\u2705 Selector");
-  return rules;
+  const customBypassRulesTotal = customBypassRules ? customBypassRules.split(",") : [];
+  const customBlockRulesTotal = customBlockRules ? customBlockRules.split(",") : [];
+  const defaultRules = [
+    {
+      type: "logical",
+      mode: "or",
+      rules: [
+        {
+          inbound: "dns-in"
+        },
+        {
+          network: "udp",
+          port: 53
+        }
+      ],
+      outbound: "dns-out"
+    },
+    {
+      clash_mode: "Direct",
+      outbound: "direct"
+    },
+    {
+      clash_mode: "Global",
+      outbound: "\u2705 Selector"
+    }
+  ];
+  const geoRules = [
+    {
+      rule: bypassIran,
+      type: "direct",
+      ruleSet: {
+        geosite: "geosite-ir",
+        geoip: "geoip-ir",
+        geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-ir.srs",
+        geoipURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-ir.srs"
+      }
+    },
+    {
+      rule: bypassChina,
+      type: "direct",
+      ruleSet: {
+        geosite: "geosite-cn",
+        geoip: "geoip-cn",
+        geositeURL: "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-cn.srs",
+        geoipURL: "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-cn.srs"
+      }
+    },
+    {
+      rule: bypassRussia,
+      type: "direct",
+      ruleSet: {
+        geosite: "geosite-category-ru",
+        geoip: "geoip-ru",
+        geositeURL: "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-category-ru.srs",
+        geoipURL: "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-ru.srs"
+      }
+    },
+    {
+      rule: true,
+      type: "block",
+      ruleSet: {
+        geosite: "geosite-malware",
+        geoip: "geoip-malware",
+        geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-malware.srs",
+        geoipURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-malware.srs"
+      }
+    },
+    {
+      rule: true,
+      type: "block",
+      ruleSet: {
+        geosite: "geosite-phishing",
+        geoip: "geoip-phishing",
+        geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-phishing.srs",
+        geoipURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-phishing.srs"
+      }
+    },
+    {
+      rule: true,
+      type: "block",
+      ruleSet: {
+        geosite: "geosite-cryptominers",
+        geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-cryptominers.srs"
+      }
+    },
+    {
+      rule: blockAds,
+      type: "block",
+      ruleSet: {
+        geosite: "geosite-category-ads-all",
+        geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-category-ads-all.srs"
+      }
+    },
+    {
+      rule: blockPorn,
+      type: "block",
+      ruleSet: {
+        geosite: "geosite-nsfw",
+        geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-nsfw.srs"
+      }
+    }
+  ];
+  const directDomainRules = [], directIPRules = [], blockDomainRules = [], blockIPRules = [], ruleSets = [];
+  bypassLAN && directIPRules.push({
+    ip_is_private: true,
+    outbound: "direct"
+  });
+  const createRule = /* @__PURE__ */ __name((rule, outbound) => ({
+    [rule]: [],
+    outbound
+  }), "createRule");
+  const routingRuleSet = {
+    type: "remote",
+    tag: "",
+    format: "binary",
+    url: "",
+    download_detour: "direct"
+  };
+  const directDomainRule = createRule("rule_set", "direct");
+  ;
+  const directIPRule = createRule("rule_set", "direct");
+  ;
+  const blockDomainRule = createRule("rule_set", "block");
+  const blockIPRule = createRule("rule_set", "block");
+  geoRules.forEach(({ rule, type, ruleSet }) => {
+    if (!rule)
+      return;
+    const { geosite, geoip, geositeURL, geoipURL } = ruleSet;
+    const isDirect = type === "direct";
+    const domainRule = isDirect ? directDomainRule : blockDomainRule;
+    const ipRule = isDirect ? directIPRule : blockIPRule;
+    domainRule.rule_set.push(geosite);
+    ruleSets.push({ ...routingRuleSet, tag: geosite, url: geositeURL });
+    if (geoip) {
+      ipRule.rule_set.push(geoip);
+      ruleSets.push({ ...routingRuleSet, tag: geoip, url: geoipURL });
+    }
+  });
+  const pushRuleIfNotEmpty = /* @__PURE__ */ __name((rule, targetArray) => {
+    if (rule.rule_set?.length || rule.domain_suffix?.length || rule.ip_cidr?.length) {
+      targetArray.push(rule);
+    }
+  }, "pushRuleIfNotEmpty");
+  pushRuleIfNotEmpty(directDomainRule, directDomainRules);
+  pushRuleIfNotEmpty(directIPRule, directIPRules);
+  pushRuleIfNotEmpty(blockDomainRule, blockDomainRules);
+  pushRuleIfNotEmpty(blockIPRule, blockIPRules);
+  const processRules = /* @__PURE__ */ __name((addresses, action) => {
+    const domainRule = createRule("domain_suffix", action);
+    const ipRule = createRule("ip_cidr", action);
+    addresses.forEach((address) => {
+      if (isDomain(address)) {
+        domainRule.domain_suffix.push(address);
+      } else {
+        const ip = isIPv6(address) ? address.replace(/\[|\]/g, "") : address;
+        ipRule.ip_cidr.push(ip);
+      }
+    });
+    pushRuleIfNotEmpty(domainRule, action === "direct" ? directDomainRules : blockDomainRules);
+    pushRuleIfNotEmpty(ipRule, action === "direct" ? directIPRules : blockIPRules);
+  }, "processRules");
+  customBypassRulesTotal.length && processRules(customBypassRulesTotal, "direct");
+  customBlockRulesTotal.length && processRules(customBlockRulesTotal, "block");
+  const rules = [...defaultRules, ...directDomainRules, ...directIPRules, ...blockDomainRules, ...blockIPRules];
+  blockUDP443 && rules.push({
+    network: "udp",
+    port: 443,
+    protocol: "quic",
+    outbound: "block"
+  });
+  return { rules, rule_set: ruleSets };
 }
+__name(buildSingBoxRoutingRules, "buildSingBoxRoutingRules");
+function buildSingBoxVLESSOutbound(proxySettings, remark, address, port, host, sni, allowInsecure, isFragment) {
+  const { enableIPv6, lengthMin, lengthMax, intervalMin, intervalMax, proxyIP: proxyIP2 } = proxySettings;
+  const path = `/${getRandomPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}`;
+  const tls = defaultHttpsPorts.includes(port) ? true : false;
+  const outbound = {
+    type: "vless",
+    server: address,
+    server_port: +port,
+    domain_strategy: enableIPv6 ? "prefer_ipv4" : "ipv4_only",
+    uuid: userID,
+    tls: {
+      alpn: "http/1.1",
+      enabled: true,
+      insecure: allowInsecure,
+      server_name: sni,
+      utls: {
+        enabled: true,
+        fingerprint: "randomized"
+      }
+    },
+    transport: {
+      early_data_header_name: "Sec-WebSocket-Protocol",
+      max_early_data: 2560,
+      headers: {
+        Host: host
+      },
+      path,
+      type: "ws"
+    },
+    tag: remark
+  };
+  if (!tls)
+    delete outbound.tls;
+  if (isFragment)
+    outbound.tls_fragment = {
+      enabled: true,
+      size: `${lengthMin}-${lengthMax}`,
+      sleep: `${intervalMin}-${intervalMax}`
+    };
+  return outbound;
+}
+__name(buildSingBoxVLESSOutbound, "buildSingBoxVLESSOutbound");
+function buildSingBoxTrojanOutbound(proxySettings, remark, address, port, host, sni, allowInsecure, isFragment) {
+  const { enableIPv6, lengthMin, lengthMax, intervalMin, intervalMax, proxyIP: proxyIP2 } = proxySettings;
+  const path = `/tr${getRandomPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}`;
+  const tls = defaultHttpsPorts.includes(port) ? true : false;
+  const outbound = {
+    type: "trojan",
+    password: trojanPassword,
+    server: address,
+    server_port: +port,
+    domain_strategy: enableIPv6 ? "prefer_ipv4" : "ipv4_only",
+    tls: {
+      alpn: "http/1.1",
+      enabled: true,
+      insecure: allowInsecure,
+      server_name: sni,
+      utls: {
+        enabled: true,
+        fingerprint: "randomized"
+      }
+    },
+    transport: {
+      early_data_header_name: "Sec-WebSocket-Protocol",
+      max_early_data: 2560,
+      headers: {
+        Host: host
+      },
+      path,
+      type: "ws"
+    },
+    tag: remark
+  };
+  if (!tls)
+    delete outbound.tls;
+  if (isFragment)
+    outbound.tls_fragment = {
+      enabled: true,
+      size: `${lengthMin}-${lengthMax}`,
+      sleep: `${intervalMin}-${intervalMax}`
+    };
+  return outbound;
+}
+__name(buildSingBoxTrojanOutbound, "buildSingBoxTrojanOutbound");
+function buildSingBoxWarpOutbound(proxySettings, warpConfigs, remark, endpoint, chain, client2) {
+  const ipv6Regex = /\[(.*?)\]/;
+  const portRegex = /[^:]*$/;
+  const endpointServer = endpoint.includes("[") ? endpoint.match(ipv6Regex)[1] : endpoint.split(":")[0];
+  const endpointPort = endpoint.includes("[") ? +endpoint.match(portRegex)[0] : +endpoint.split(":")[1];
+  const {
+    warpEnableIPv6,
+    hiddifyNoiseMode,
+    noiseCountMin,
+    noiseCountMax,
+    noiseSizeMin,
+    noiseSizeMax,
+    noiseDelayMin,
+    noiseDelayMax
+  } = proxySettings;
+  const {
+    warpIPv6,
+    reserved,
+    publicKey,
+    privateKey
+  } = extractWireguardParams(warpConfigs, chain);
+  const outbound = {
+    local_address: [
+      "172.16.0.2/32",
+      warpIPv6
+    ],
+    mtu: 1280,
+    peer_public_key: publicKey,
+    private_key: privateKey,
+    reserved,
+    server: endpointServer,
+    server_port: endpointPort,
+    domain_strategy: warpEnableIPv6 ? "prefer_ipv4" : "ipv4_only",
+    type: "wireguard",
+    detour: chain,
+    tag: remark
+  };
+  client2 === "hiddify" && Object.assign(outbound, {
+    fake_packets_mode: hiddifyNoiseMode,
+    fake_packets: noiseCountMin === noiseCountMax ? noiseCountMin : `${noiseCountMin}-${noiseCountMax}`,
+    fake_packets_size: noiseSizeMin === noiseSizeMax ? noiseSizeMin : `${noiseSizeMin}-${noiseSizeMax}`,
+    fake_packets_delay: noiseDelayMin === noiseDelayMax ? noiseDelayMin : `${noiseDelayMin}-${noiseDelayMax}`
+  });
+  return outbound;
+}
+__name(buildSingBoxWarpOutbound, "buildSingBoxWarpOutbound");
+function buildSingBoxChainOutbound(chainProxyParams, enableIPv6) {
+  if (["socks", "http"].includes(chainProxyParams.protocol)) {
+    const { protocol, server: server2, port: port2, user, pass } = chainProxyParams;
+    const chainOutbound2 = {
+      type: protocol,
+      tag: "",
+      server: server2,
+      server_port: +port2,
+      username: user,
+      password: pass,
+      detour: ""
+    };
+    if (protocol === "socks")
+      chainOutbound2.version = "5";
+    return chainOutbound2;
+  }
+  const { server, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = chainProxyParams;
+  const chainOutbound = {
+    type: "vless",
+    tag: "",
+    server,
+    server_port: +port,
+    domain_strategy: enableIPv6 ? "prefer_ipv4" : "ipv4_only",
+    uuid,
+    flow,
+    detour: ""
+  };
+  if (security === "tls" || security === "reality") {
+    const tlsAlpns = alpn ? alpn?.split(",").filter((value) => value !== "h2") : [];
+    chainOutbound.tls = {
+      enabled: true,
+      server_name: sni,
+      insecure: false,
+      alpn: tlsAlpns,
+      utls: {
+        enabled: true,
+        fingerprint: fp
+      }
+    };
+    if (security === "reality") {
+      chainOutbound.tls.reality = {
+        enabled: true,
+        public_key: pbk,
+        short_id: sid
+      };
+      delete chainOutbound.tls.alpn;
+    }
+  }
+  if (headerType === "http") {
+    const httpHosts = host?.split(",");
+    chainOutbound.transport = {
+      type: "http",
+      host: httpHosts,
+      path,
+      method: "GET",
+      headers: {
+        "Connection": ["keep-alive"],
+        "Content-Type": ["application/octet-stream"]
+      }
+    };
+  }
+  if (type === "ws") {
+    const wsPath = path?.split("?ed=")[0];
+    const earlyData = +path?.split("?ed=")[1] || 0;
+    chainOutbound.transport = {
+      type: "ws",
+      path: wsPath,
+      headers: { Host: host },
+      max_early_data: earlyData,
+      early_data_header_name: "Sec-WebSocket-Protocol"
+    };
+  }
+  if (type === "grpc")
+    chainOutbound.transport = {
+      type: "grpc",
+      service_name: serviceName
+    };
+  return chainOutbound;
+}
+__name(buildSingBoxChainOutbound, "buildSingBoxChainOutbound");
+async function getSingBoxWarpConfig(request, env, client2) {
+  const { kvNotFound, proxySettings, warpConfigs } = await getDataset(request, env);
+  if (kvNotFound)
+    return await renderErrorPage(request, env, "KV Dataset is not properly set!", null, true);
+  const { warpEndpoints } = proxySettings;
+  const config = structuredClone(singboxConfigTemp);
+  const proIndicator = client2 === "hiddify" ? " Pro " : " ";
+  const dnsObject = buildSingBoxDNS(proxySettings, void 0, true, `\u{1F4A6} Warp${proIndicator}- Best Ping \u{1F680}`);
+  const { rules, rule_set } = buildSingBoxRoutingRules(proxySettings);
+  config.dns.servers = dnsObject.servers;
+  config.dns.rules = dnsObject.rules;
+  if (dnsObject.fakeip)
+    config.dns.fakeip = dnsObject.fakeip;
+  config.route.rules = rules;
+  config.route.rule_set = rule_set;
+  const selector = config.outbounds[0];
+  const warpUrlTest = config.outbounds[1];
+  selector.outbounds = [`\u{1F4A6} Warp${proIndicator}- Best Ping \u{1F680}`, `\u{1F4A6} WoW${proIndicator}- Best Ping \u{1F680}`];
+  config.outbounds.splice(2, 0, structuredClone(warpUrlTest));
+  const WoWUrlTest = config.outbounds[2];
+  warpUrlTest.tag = `\u{1F4A6} Warp${proIndicator}- Best Ping \u{1F680}`;
+  warpUrlTest.interval = `${proxySettings.bestWarpInterval}s`;
+  WoWUrlTest.tag = `\u{1F4A6} WoW${proIndicator}- Best Ping \u{1F680}`;
+  WoWUrlTest.interval = `${proxySettings.bestWarpInterval}s`;
+  const warpRemarks = [], WoWRemarks = [];
+  warpEndpoints.split(",").forEach((endpoint, index) => {
+    const warpRemark = `\u{1F4A6} ${index + 1} - Warp \u{1F1EE}\u{1F1F7}`;
+    const WoWRemark = `\u{1F4A6} ${index + 1} - WoW \u{1F30D}`;
+    const warpOutbound = buildSingBoxWarpOutbound(proxySettings, warpConfigs, warpRemark, endpoint, "", client2);
+    const WoWOutbound = buildSingBoxWarpOutbound(proxySettings, warpConfigs, WoWRemark, endpoint, warpRemark, client2);
+    config.outbounds.push(WoWOutbound, warpOutbound);
+    warpRemarks.push(warpRemark);
+    WoWRemarks.push(WoWRemark);
+    warpUrlTest.outbounds.push(warpRemark);
+    WoWUrlTest.outbounds.push(WoWRemark);
+  });
+  selector.outbounds.push(...warpRemarks, ...WoWRemarks);
+  return new Response(JSON.stringify(config, null, 4), {
+    status: 200,
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8",
+      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+      "CDN-Cache-Control": "no-store"
+    }
+  });
+}
+__name(getSingBoxWarpConfig, "getSingBoxWarpConfig");
+async function getSingBoxCustomConfig(request, env, isFragment) {
+  await initializeParams(request, env);
+  const { kvNotFound, proxySettings } = await getDataset(request, env);
+  if (kvNotFound)
+    return await renderErrorPage(request, env, "KV Dataset is not properly set!", null, true);
+  let chainProxy;
+  const {
+    cleanIPs,
+    ports,
+    vlessConfigs,
+    trojanConfigs,
+    outProxy,
+    outProxyParams,
+    customCdnAddrs,
+    customCdnHost,
+    customCdnSni,
+    bestVLESSTrojanInterval,
+    enableIPv6
+  } = proxySettings;
+  if (outProxy) {
+    const proxyParams = JSON.parse(outProxyParams);
+    try {
+      chainProxy = buildSingBoxChainOutbound(proxyParams, enableIPv6);
+    } catch (error) {
+      console.log("An error occured while parsing chain proxy: ", error);
+      chainProxy = void 0;
+      await env.bpb.put("proxySettings", JSON.stringify({
+        ...proxySettings,
+        outProxy: "",
+        outProxyParams: {}
+      }));
+    }
+  }
+  const Addresses = await getConfigAddresses(hostName, cleanIPs, enableIPv6);
+  const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(",") : [];
+  const totalAddresses = [...Addresses, ...customCdnAddresses];
+  const config = structuredClone(singboxConfigTemp);
+  const dnsObject = buildSingBoxDNS(proxySettings, totalAddresses, false, chainProxy ? "proxy-1" : "\u2705 Selector");
+  const { rules, rule_set } = buildSingBoxRoutingRules(proxySettings);
+  config.dns.servers = dnsObject.servers;
+  config.dns.rules = dnsObject.rules;
+  if (dnsObject.fakeip)
+    config.dns.fakeip = dnsObject.fakeip;
+  config.route.rules = rules;
+  config.route.rule_set = rule_set;
+  const selector = config.outbounds[0];
+  const urlTest = config.outbounds[1];
+  selector.outbounds = ["\u{1F4A6} Best Ping \u{1F4A5}"];
+  urlTest.interval = `${bestVLESSTrojanInterval}s`;
+  urlTest.tag = "\u{1F4A6} Best Ping \u{1F4A5}";
+  const totalPorts = ports.filter((port) => isFragment ? defaultHttpsPorts.includes(port) : true);
+  let proxyIndex = 1;
+  const protocols = [
+    ...vlessConfigs ? ["VLESS"] : [],
+    ...trojanConfigs ? ["Trojan"] : []
+  ];
+  protocols.forEach((protocol) => {
+    let protocolIndex = 1;
+    totalPorts.forEach((port) => {
+      totalAddresses.forEach((addr) => {
+        let VLESSOutbound, TrojanOutbound;
+        const isCustomAddr = customCdnAddresses.includes(addr);
+        const configType = isCustomAddr ? "C" : isFragment ? "F" : "";
+        const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
+        const host = isCustomAddr ? customCdnHost : hostName;
+        const remark = generateRemark(protocolIndex, port, addr, cleanIPs, protocol, configType);
+        if (protocol === "VLESS") {
+          VLESSOutbound = buildSingBoxVLESSOutbound(
+            proxySettings,
+            chainProxy ? `proxy-${proxyIndex}` : remark,
+            addr,
+            port,
+            host,
+            sni,
+            isCustomAddr,
+            isFragment
+          );
+          config.outbounds.push(VLESSOutbound);
+        }
+        if (protocol === "Trojan") {
+          TrojanOutbound = buildSingBoxTrojanOutbound(
+            proxySettings,
+            chainProxy ? `proxy-${proxyIndex}` : remark,
+            addr,
+            port,
+            host,
+            sni,
+            isCustomAddr,
+            isFragment
+          );
+          config.outbounds.push(TrojanOutbound);
+        }
+        if (chainProxy) {
+          const chain = structuredClone(chainProxy);
+          chain.tag = remark;
+          chain.detour = `proxy-${proxyIndex}`;
+          config.outbounds.push(chain);
+        }
+        selector.outbounds.push(remark);
+        urlTest.outbounds.push(remark);
+        proxyIndex++;
+        protocolIndex++;
+      });
+    });
+  });
+  return new Response(JSON.stringify(config, null, 4), {
+    status: 200,
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8",
+      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+      "CDN-Cache-Control": "no-store"
+    }
+  });
+}
+__name(getSingBoxCustomConfig, "getSingBoxCustomConfig");
+var singboxConfigTemp = {
+  log: {
+    level: "warn",
+    timestamp: true
+  },
+  dns: {
+    servers: [],
+    rules: [],
+    independent_cache: true
+  },
+  inbounds: [
+    {
+      type: "direct",
+      tag: "dns-in",
+      listen: "0.0.0.0",
+      listen_port: 6450,
+      override_address: "1.1.1.1",
+      override_port: 53
+    },
+    {
+      type: "tun",
+      tag: "tun-in",
+      address: [
+        "172.18.0.1/28",
+        "fdfe:dcba:9876::1/126"
+      ],
+      mtu: 9e3,
+      auto_route: true,
+      strict_route: true,
+      stack: "mixed",
+      endpoint_independent_nat: true,
+      sniff: true,
+      sniff_override_destination: true
+    },
+    {
+      type: "mixed",
+      tag: "mixed-in",
+      listen: "0.0.0.0",
+      listen_port: 2080,
+      sniff: true,
+      sniff_override_destination: false
+    }
+  ],
+  outbounds: [
+    {
+      type: "selector",
+      tag: "\u2705 Selector",
+      outbounds: []
+    },
+    {
+      type: "urltest",
+      tag: "",
+      outbounds: [],
+      url: "https://www.gstatic.com/generate_204",
+      interval: ""
+    },
+    {
+      type: "direct",
+      tag: "direct"
+    },
+    {
+      type: "block",
+      tag: "block"
+    },
+    {
+      type: "dns",
+      tag: "dns-out"
+    }
+  ],
+  route: {
+    rules: [],
+    rule_set: [],
+    auto_detect_interface: true,
+    override_android_vpn: true,
+    final: "\u2705 Selector"
+  },
+  ntp: {
+    enabled: true,
+    server: "time.apple.com",
+    server_port: 123,
+    detour: "direct",
+    interval: "30m"
+  },
+  experimental: {
+    cache_file: {
+      enabled: true,
+      store_fakeip: true
+    },
+    clash_api: {
+      external_controller: "127.0.0.1:9090",
+      external_ui: "ui",
+      external_ui_download_url: "https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip",
+      external_ui_download_detour: "direct",
+      default_mode: "Rule"
+    }
+  }
+};
+
+// src/cores-configs/clash.js
+async function buildClashDNS(proxySettings, isChain, isWarp) {
+  const {
+    remoteDNS,
+    localDNS,
+    vlessTrojanFakeDNS,
+    outProxyParams,
+    enableIPv6,
+    warpFakeDNS,
+    warpEnableIPv6,
+    bypassIran,
+    bypassChina,
+    bypassRussia,
+    customBypassRules,
+    customBlockRules
+  } = proxySettings;
+  const warpRemoteDNS = warpEnableIPv6 ? ["1.1.1.1", "1.0.0.1", "[2606:4700:4700::1111]", "[2606:4700:4700::1001]"] : ["1.1.1.1", "1.0.0.1"];
+  const isFakeDNS = vlessTrojanFakeDNS && !isWarp || warpFakeDNS && isWarp;
+  const isIPv62 = enableIPv6 && !isWarp || warpEnableIPv6 && isWarp;
+  const customBypassRulesDomains = customBypassRules.split(",").filter((address) => isDomain(address));
+  const isBypass = bypassIran || bypassChina || bypassRussia;
+  const bypassRules = [
+    { rule: bypassIran, geosite: "ir" },
+    { rule: bypassChina, geosite: "cn" },
+    { rule: bypassRussia, geosite: "ru" }
+  ];
+  const dns = {
+    "enable": true,
+    "listen": "0.0.0.0:1053",
+    "ipv6": isIPv62,
+    "respect-rules": true,
+    "use-hosts": true,
+    "use-system-hosts": false,
+    "nameserver": isWarp ? warpRemoteDNS.map((dns2) => isChain ? `${dns2}#\u{1F4A6} Warp - Best Ping \u{1F680}` : `${dns2}#\u2705 Selector`) : [isChain ? `${remoteDNS}#proxy-1` : `${remoteDNS}#\u2705 Selector`],
+    "proxy-server-nameserver": [`${localDNS}#DIRECT`]
+  };
+  if (isChain && !isWarp) {
+    const chainOutboundServer = JSON.parse(outProxyParams).server;
+    if (isDomain(chainOutboundServer))
+      dns["nameserver-policy"] = {
+        [chainOutboundServer]: isChain ? `${remoteDNS}#proxy-1` : `${remoteDNS}#\u2705 Selector`
+      };
+  }
+  if (isBypass) {
+    const geosites = [];
+    bypassRules.forEach(({ rule, geosite }) => {
+      rule && geosites.push(geosite);
+    });
+    dns["nameserver-policy"] = {
+      ...dns["nameserver-policy"],
+      [`rule-set:${geosites.join(",")}`]: [`${localDNS}#DIRECT`]
+    };
+  }
+  customBypassRulesDomains.forEach((domain) => {
+    dns["nameserver-policy"] = {
+      ...dns["nameserver-policy"],
+      [`+.${domain}`]: [`${localDNS}#DIRECT`]
+    };
+  });
+  if (isFakeDNS)
+    Object.assign(dns, {
+      "enhanced-mode": "fake-ip",
+      "fake-ip-range": "198.18.0.1/16",
+      "fake-ip-filter": ["geosite:private"]
+    });
+  return dns;
+}
+__name(buildClashDNS, "buildClashDNS");
+function buildClashRoutingRules(proxySettings) {
+  const {
+    bypassLAN,
+    bypassIran,
+    bypassChina,
+    bypassRussia,
+    blockAds,
+    blockPorn,
+    blockUDP443,
+    customBypassRules,
+    customBlockRules
+  } = proxySettings;
+  const customBypassRulesTotal = customBypassRules ? customBypassRules.split(",") : [];
+  const customBlockRulesTotal = customBlockRules ? customBlockRules.split(",") : [];
+  const geoRules = [
+    {
+      rule: bypassLAN,
+      type: "direct",
+      noResolve: true,
+      ruleProvider: {
+        format: "yaml",
+        geosite: "private",
+        geoip: "private-cidr",
+        geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/private.yaml",
+        geoipURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/private.yaml"
+      }
+    },
+    {
+      rule: bypassIran,
+      type: "direct",
+      ruleProvider: {
+        format: "text",
+        geosite: "ir",
+        geoip: "ir-cidr",
+        geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/ir.txt",
+        geoipURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/ircidr.txt"
+      }
+    },
+    {
+      rule: bypassChina,
+      type: "direct",
+      ruleProvider: {
+        format: "yaml",
+        geosite: "cn",
+        geoip: "cn-cidr",
+        geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/cn.yaml",
+        geoipURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/cn.yaml"
+      }
+    },
+    {
+      rule: bypassRussia,
+      type: "direct",
+      ruleProvider: {
+        format: "yaml",
+        geosite: "ru",
+        geoip: "ru-cidr",
+        geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ru.yaml",
+        geoipURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/ru.yaml"
+      }
+    },
+    {
+      rule: true,
+      type: "block",
+      ruleProvider: {
+        format: "text",
+        geosite: "malware",
+        geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/malware.txt"
+      }
+    },
+    {
+      rule: true,
+      type: "block",
+      ruleProvider: {
+        format: "text",
+        geosite: "phishing",
+        geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/phishing.txt"
+      }
+    },
+    {
+      rule: true,
+      type: "block",
+      ruleProvider: {
+        format: "text",
+        geosite: "cryptominers",
+        geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/cryptominers.txt"
+      }
+    },
+    {
+      rule: blockAds,
+      type: "block",
+      ruleProvider: {
+        format: "text",
+        geosite: "ads",
+        geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/ads.txt"
+      }
+    },
+    {
+      rule: blockPorn,
+      type: "block",
+      ruleProvider: {
+        format: "text",
+        geosite: "nsfw",
+        geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/nsfw.txt"
+      }
+    }
+  ];
+  function buildRuleProvider(tag2, format, behavior, url) {
+    const fileExtension = format === "text" ? "txt" : format;
+    return {
+      [tag2]: {
+        type: "http",
+        format,
+        behavior,
+        url,
+        path: `./ruleset/${tag2}.${fileExtension}`,
+        interval: 86400
+      }
+    };
+  }
+  __name(buildRuleProvider, "buildRuleProvider");
+  const directDomainRules = [], directIPRules = [], blockDomainRules = [], blockIPRules = [], ruleProviders = {};
+  geoRules.forEach(({ rule, type, ruleProvider, noResolve }) => {
+    const { geosite, geoip, geositeURL, geoipURL, format } = ruleProvider;
+    if (rule) {
+      if (geosite) {
+        const targetRules = type === "direct" ? directDomainRules : blockDomainRules;
+        targetRules.push(`RULE-SET,${geosite},${type === "direct" ? "DIRECT" : "REJECT"}`);
+        const ruleProvider2 = buildRuleProvider(geosite, format, "domain", geositeURL);
+        Object.assign(ruleProviders, ruleProvider2);
+      }
+      if (geoip) {
+        const targetRules = type === "direct" ? directIPRules : blockIPRules;
+        targetRules.push(`RULE-SET,${geoip},${type === "direct" ? "DIRECT" : "REJECT"}${noResolve ? ",no-resolve" : ""}`);
+        const ruleProvider2 = buildRuleProvider(geoip, format, "ipcidr", geoipURL);
+        Object.assign(ruleProviders, ruleProvider2);
+      }
+    }
+  });
+  const generateRule = /* @__PURE__ */ __name((address, action) => {
+    if (isDomain(address)) {
+      return `DOMAIN-SUFFIX,${address},${action}`;
+    } else {
+      const type = isIPv4(address) ? "IP-CIDR" : "IP-CIDR6";
+      const ip = isIPv6(address) ? address.replace(/\[|\]/g, "") : address;
+      const cidr = address.includes("/") ? "" : isIPv4(address) ? "/32" : "/128";
+      return `${type},${ip}${cidr},${action},no-resolve`;
+    }
+  }, "generateRule");
+  [...customBypassRulesTotal, ...customBlockRulesTotal].forEach((address, index) => {
+    const isDirectRule = index < customBypassRulesTotal.length;
+    const action = isDirectRule ? "DIRECT" : "REJECT";
+    const targetRules = isDirectRule ? isDomain(address) ? directDomainRules : directIPRules : isDomain(address) ? blockDomainRules : blockIPRules;
+    targetRules.push(generateRule(address, action));
+  });
+  const rules = [...directDomainRules, ...directIPRules, ...blockDomainRules, ...blockIPRules];
+  blockUDP443 && rules.push("AND,((NETWORK,udp),(DST-PORT,443)),REJECT");
+  rules.push("MATCH,\u2705 Selector");
+  return { rules, ruleProviders };
+}
+__name(buildClashRoutingRules, "buildClashRoutingRules");
 function buildClashVLESSOutbound(remark, address, port, host, sni, path, allowInsecure) {
   const tls = defaultHttpsPorts.includes(port) ? true : false;
   const addr = isIPv6(address) ? address.replace(/\[|\]/g, "") : address;
-  let outbound = {
+  const outbound = {
     "name": remark,
     "type": "vless",
     "server": addr,
@@ -7644,7 +8896,7 @@ function buildClashVLESSOutbound(remark, address, port, host, sni, path, allowIn
     "uuid": userID,
     "tls": tls,
     "network": "ws",
-    "udp": false,
+    "udp": true,
     "ws-opts": {
       "path": path,
       "headers": { "host": host },
@@ -7662,6 +8914,7 @@ function buildClashVLESSOutbound(remark, address, port, host, sni, path, allowIn
   }
   return outbound;
 }
+__name(buildClashVLESSOutbound, "buildClashVLESSOutbound");
 function buildClashTrojanOutbound(remark, address, port, host, sni, path, allowInsecure) {
   const addr = isIPv6(address) ? address.replace(/\[|\]/g, "") : address;
   return {
@@ -7671,7 +8924,7 @@ function buildClashTrojanOutbound(remark, address, port, host, sni, path, allowI
     "port": +port,
     "password": trojanPassword,
     "network": "ws",
-    "udp": false,
+    "udp": true,
     "ws-opts": {
       "path": path,
       "headers": { "host": host },
@@ -7684,6 +8937,7 @@ function buildClashTrojanOutbound(remark, address, port, host, sni, path, allowI
     "skip-cert-verify": allowInsecure
   };
 }
+__name(buildClashTrojanOutbound, "buildClashTrojanOutbound");
 function buildClashWarpOutbound(warpConfigs, remark, endpoint, chain) {
   const ipv6Regex = /\[(.*?)\]/;
   const portRegex = /[^:]*$/;
@@ -7708,30 +8962,29 @@ function buildClashWarpOutbound(warpConfigs, remark, endpoint, chain) {
     "reserved": reserved,
     "udp": true,
     "mtu": 1280,
-    "dialer-proxy": chain,
-    "remote-dns-resolve": true,
-    "dns": ["1.1.1.1", "1.0.0.1"]
+    "dialer-proxy": chain
   };
 }
+__name(buildClashWarpOutbound, "buildClashWarpOutbound");
 function buildClashChainOutbound(chainProxyParams) {
   if (["socks", "http"].includes(chainProxyParams.protocol)) {
-    const { protocol, host: host2, port: port2, user, pass } = chainProxyParams;
+    const { protocol, server: server2, port: port2, user, pass } = chainProxyParams;
     const proxyType = protocol === "socks" ? "socks5" : protocol;
     return {
       "name": "",
       "type": proxyType,
-      "server": host2,
+      "server": server2,
       "port": +port2,
       "dialer-proxy": "",
       "username": user,
       "password": pass
     };
   }
-  const { hostName, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = chainProxyParams;
-  let chainOutbound = {
+  const { server, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = chainProxyParams;
+  const chainOutbound = {
     "name": "\u{1F4A6} Chain Best Ping \u{1F4A5}",
     "type": "vless",
-    "server": hostName,
+    "server": server,
     "port": +port,
     "udp": true,
     "uuid": uuid,
@@ -7787,11 +9040,17 @@ function buildClashChainOutbound(chainProxyParams) {
     };
   return chainOutbound;
 }
-async function getClashWarpConfig(proxySettings, warpConfigs) {
+__name(buildClashChainOutbound, "buildClashChainOutbound");
+async function getClashWarpConfig(request, env) {
+  const { kvNotFound, proxySettings, warpConfigs } = await getDataset(request, env);
+  if (kvNotFound)
+    return await renderErrorPage(request, env, "KV Dataset is not properly set!", null, true);
   const { warpEndpoints } = proxySettings;
-  let config = structuredClone(clashConfigTemp);
-  config.dns = await buildClashDNS(proxySettings, true);
-  config.rules = buildClashRoutingRules(proxySettings);
+  const config = structuredClone(clashConfigTemp);
+  config.dns = await buildClashDNS(proxySettings, true, true);
+  const { rules, ruleProviders } = buildClashRoutingRules(proxySettings);
+  config.rules = rules;
+  config["rule-providers"] = ruleProviders;
   const selector = config["proxy-groups"][0];
   const warpUrlTest = config["proxy-groups"][1];
   selector.proxies = ["\u{1F4A6} Warp - Best Ping \u{1F680}", "\u{1F4A6} WoW - Best Ping \u{1F680}"];
@@ -7813,11 +9072,24 @@ async function getClashWarpConfig(proxySettings, warpConfigs) {
     WoWUrlTest.proxies.push(WoWRemark);
   });
   selector.proxies.push(...warpRemarks, ...WoWRemarks);
-  return config;
+  return new Response(JSON.stringify(config, null, 4), {
+    status: 200,
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8",
+      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+      "CDN-Cache-Control": "no-store"
+    }
+  });
 }
-async function getClashNormalConfig(env, proxySettings, hostName) {
+__name(getClashWarpConfig, "getClashWarpConfig");
+async function getClashNormalConfig(request, env) {
+  await initializeParams(request, env);
+  const { kvNotFound, proxySettings } = await getDataset(request, env);
+  if (kvNotFound)
+    return await renderErrorPage(request, env, "KV Dataset is not properly set!", null, true);
   let chainProxy;
   const {
+    resolvedRemoteDNS,
     cleanIPs,
     proxyIP: proxyIP2,
     ports,
@@ -7841,13 +9113,22 @@ async function getClashNormalConfig(env, proxySettings, hostName) {
       await env.bpb.put("proxySettings", JSON.stringify({
         ...proxySettings,
         outProxy: "",
-        outProxyParams: ""
+        outProxyParams: {}
       }));
     }
   }
-  let config = structuredClone(clashConfigTemp);
-  config.dns = await buildClashDNS(proxySettings, false);
-  config.rules = buildClashRoutingRules(proxySettings);
+  const config = structuredClone(clashConfigTemp);
+  if (resolvedRemoteDNS.server) {
+    config.hosts = {
+      [resolvedRemoteDNS.server]: resolvedRemoteDNS.staticIPs
+    };
+  } else {
+    delete config.hosts;
+  }
+  const { rules, ruleProviders } = buildClashRoutingRules(proxySettings);
+  config.dns = await buildClashDNS(proxySettings, chainProxy, false);
+  config.rules = rules;
+  config["rule-providers"] = ruleProviders;
   const selector = config["proxy-groups"][0];
   const urlTest = config["proxy-groups"][1];
   selector.proxies = ["\u{1F4A6} Best Ping \u{1F4A5}"];
@@ -7912,608 +9193,96 @@ async function getClashNormalConfig(env, proxySettings, hostName) {
       });
     });
   });
-  return config;
+  return new Response(JSON.stringify(config, null, 4), {
+    status: 200,
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8",
+      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+      "CDN-Cache-Control": "no-store"
+    }
+  });
 }
-function buildSingBoxDNS(proxySettings, isChain, isWarp) {
-  const {
-    remoteDNS,
-    localDNS,
-    vlessTrojanFakeDNS,
-    warpFakeDNS,
-    bypassIran,
-    bypassChina,
-    bypassRussia,
-    blockAds,
-    blockPorn
-  } = proxySettings;
-  let fakeip;
-  const isFakeDNS = vlessTrojanFakeDNS && !isWarp || warpFakeDNS && isWarp;
-  const servers = [
-    {
-      address: isWarp ? "1.1.1.1" : remoteDNS,
-      address_resolver: "dns-direct",
-      strategy: "prefer_ipv4",
-      detour: isChain ? "proxy-1" : "proxy",
-      tag: "dns-remote"
-    },
-    {
-      address: localDNS === "localhost" ? "local" : localDNS,
-      strategy: "prefer_ipv4",
-      detour: "direct",
-      tag: "dns-direct"
-    },
-    {
-      address: "rcode://success",
-      tag: "dns-block"
-    }
-  ];
-  let rules = [
-    {
-      outbound: "any",
-      server: "dns-direct"
-    }
-  ];
-  if (bypassIran || bypassChina || bypassRussia) {
-    let bypassRules = {
-      rule_set: [],
-      server: "dns-direct"
-    };
-    bypassIran && bypassRules.rule_set.push("geosite-ir");
-    bypassChina && bypassRules.rule_set.push("geosite-cn");
-    bypassRussia && bypassRules.rule_set.push("geosite-category-ru");
-    rules.push(bypassRules);
-  }
-  let blockRules = {
-    disable_cache: true,
-    rule_set: [
-      "geosite-malware",
-      "geosite-phishing",
-      "geosite-cryptominers"
-    ],
-    server: "dns-block"
-  };
-  blockAds && blockRules.rule_set.push("geosite-category-ads-all");
-  blockPorn && blockRules.rule_set.push("geosite-nsfw");
-  rules.push(blockRules);
-  if (isFakeDNS) {
-    servers.push({
-      address: "fakeip",
-      tag: "dns-fake"
-    });
-    rules.push({
-      disable_cache: true,
-      inbound: "tun-in",
-      query_type: [
-        "A",
-        "AAAA"
-      ],
-      server: "dns-fake"
-    });
-    fakeip = {
-      enabled: true,
-      inet4_range: "198.18.0.0/15",
-      inet6_range: "fc00::/18"
-    };
-  }
-  return { servers, rules, fakeip };
-}
-function buildSingBoxRoutingRules(proxySettings) {
-  const {
-    bypassLAN,
-    bypassIran,
-    bypassChina,
-    bypassRussia,
-    blockAds,
-    blockPorn,
-    blockUDP443
-  } = proxySettings;
-  let rules = [
-    {
-      inbound: "dns-in",
-      outbound: "dns-out"
-    },
-    {
-      network: "udp",
-      port: 53,
-      outbound: "dns-out"
-    }
-  ];
-  let ruleSet = [
-    {
-      type: "remote",
-      tag: "geosite-malware",
-      format: "binary",
-      url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-malware.srs",
-      download_detour: "direct"
-    },
-    {
-      type: "remote",
-      tag: "geosite-phishing",
-      format: "binary",
-      url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-phishing.srs",
-      download_detour: "direct"
-    },
-    {
-      type: "remote",
-      tag: "geosite-cryptominers",
-      format: "binary",
-      url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-cryptominers.srs",
-      download_detour: "direct"
-    },
-    {
-      type: "remote",
-      tag: "geoip-malware",
-      format: "binary",
-      url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-malware.srs",
-      download_detour: "direct"
-    },
-    {
-      type: "remote",
-      tag: "geoip-phishing",
-      format: "binary",
-      url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-phishing.srs",
-      download_detour: "direct"
-    }
-  ];
-  if (bypassIran) {
-    rules.push({
-      rule_set: ["geosite-ir", "geoip-ir"],
-      outbound: "direct"
-    });
-    ruleSet.push(
-      {
-        type: "remote",
-        tag: "geosite-ir",
-        format: "binary",
-        url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-ir.srs",
-        download_detour: "direct"
+__name(getClashNormalConfig, "getClashNormalConfig");
+var clashConfigTemp = {
+  "mixed-port": 7890,
+  "ipv6": true,
+  "allow-lan": true,
+  "mode": "rule",
+  "log-level": "warning",
+  "disable-keep-alive": false,
+  "keep-alive-idle": 30,
+  "keep-alive-interval": 30,
+  "unified-delay": false,
+  "geo-auto-update": true,
+  "geo-update-interval": 168,
+  "external-controller": "127.0.0.1:9090",
+  "external-ui-url": "https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip",
+  "external-ui": "ui",
+  "external-controller-cors": {
+    "allow-origins": ["*"],
+    "allow-private-network": true
+  },
+  "profile": {
+    "store-selected": true,
+    "store-fake-ip": true
+  },
+  "hosts": {},
+  "dns": {},
+  "tun": {
+    "enable": true,
+    "stack": "mixed",
+    "auto-route": true,
+    "strict-route": true,
+    "auto-detect-interface": true,
+    "dns-hijack": ["any:53"],
+    "mtu": 9e3
+  },
+  "sniffer": {
+    "enable": true,
+    "force-dns-mapping": true,
+    "parse-pure-ip": true,
+    "override-destination": false,
+    "sniff": {
+      "HTTP": {
+        "ports": [80, 8080, 8880, 2052, 2082, 2086, 2095]
       },
-      {
-        type: "remote",
-        tag: "geoip-ir",
-        format: "binary",
-        url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-ir.srs",
-        download_detour: "direct"
+      "TLS": {
+        "ports": [443, 8443, 2053, 2083, 2087, 2096]
       }
-    );
-  }
-  if (bypassChina) {
-    rules.push({
-      rule_set: ["geosite-cn", "geoip-cn"],
-      outbound: "direct"
-    });
-    ruleSet.push(
-      {
-        type: "remote",
-        tag: "geosite-cn",
-        format: "binary",
-        url: "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-cn.srs",
-        download_detour: "direct"
-      },
-      {
-        type: "remote",
-        tag: "geoip-cn",
-        format: "binary",
-        url: "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-cn.srs",
-        download_detour: "direct"
-      }
-    );
-  }
-  if (bypassRussia) {
-    rules.push({
-      rule_set: ["geosite-category-ru", "geoip-ru"],
-      outbound: "direct"
-    });
-    ruleSet.push(
-      {
-        type: "remote",
-        tag: "geosite-category-ru",
-        format: "binary",
-        url: "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-category-ru.srs",
-        download_detour: "direct"
-      },
-      {
-        type: "remote",
-        tag: "geoip-ru",
-        format: "binary",
-        url: "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-ru.srs",
-        download_detour: "direct"
-      }
-    );
-  }
-  bypassLAN && rules.push({
-    ip_is_private: true,
-    outbound: "direct"
-  });
-  blockUDP443 && rules.push({
-    network: "udp",
-    port: 443,
-    protocol: "quic",
-    outbound: "block"
-  });
-  let blockRuleSet = {
-    rule_set: [
-      "geosite-malware",
-      "geosite-phishing",
-      "geosite-cryptominers",
-      "geoip-malware",
-      "geoip-phishing"
-    ],
-    outbound: "block"
-  };
-  if (blockAds) {
-    blockRuleSet.rule_set.push("geosite-category-ads-all");
-    ruleSet.push({
-      type: "remote",
-      tag: "geosite-category-ads-all",
-      format: "binary",
-      url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-category-ads-all.srs",
-      download_detour: "direct"
-    });
-  }
-  if (blockPorn) {
-    blockRuleSet.rule_set.push("geosite-nsfw");
-    ruleSet.push({
-      type: "remote",
-      tag: "geosite-nsfw",
-      format: "binary",
-      url: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-nsfw.srs",
-      download_detour: "direct"
-    });
-  }
-  rules.push(blockRuleSet);
-  rules.push({
-    ip_cidr: ["224.0.0.0/3", "ff00::/8"],
-    source_ip_cidr: ["224.0.0.0/3", "ff00::/8"],
-    outbound: "block"
-  });
-  return { rules, rule_set: ruleSet };
-}
-function buildSingBoxVLESSOutbound(proxySettings, remark, address, port, host, sni, allowInsecure, isFragment) {
-  const { lengthMin, lengthMax, intervalMin, intervalMax, proxyIP: proxyIP2 } = proxySettings;
-  const path = `/${getRandomPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}`;
-  const tls = defaultHttpsPorts.includes(port) ? true : false;
-  let outbound = {
-    type: "vless",
-    server: address,
-    server_port: +port,
-    uuid: userID,
-    tls: {
-      alpn: "http/1.1",
-      enabled: true,
-      insecure: allowInsecure,
-      server_name: sni,
-      utls: {
-        enabled: true,
-        fingerprint: "randomized"
-      }
-    },
-    transport: {
-      early_data_header_name: "Sec-WebSocket-Protocol",
-      max_early_data: 2560,
-      headers: {
-        Host: host
-      },
-      path,
-      type: "ws"
-    },
-    tag: remark
-  };
-  if (!tls)
-    delete outbound.tls;
-  if (isFragment)
-    outbound.tls_fragment = {
-      enabled: true,
-      size: `${lengthMin}-${lengthMax}`,
-      sleep: `${intervalMin}-${intervalMax}`
-    };
-  return outbound;
-}
-function buildSingBoxTrojanOutbound(proxySettings, remark, address, port, host, sni, allowInsecure, isFragment) {
-  const { lengthMin, lengthMax, intervalMin, intervalMax, proxyIP: proxyIP2 } = proxySettings;
-  const path = `/tr${getRandomPath(16)}${proxyIP2 ? `/${btoa(proxyIP2)}` : ""}`;
-  const tls = defaultHttpsPorts.includes(port) ? true : false;
-  let outbound = {
-    type: "trojan",
-    password: trojanPassword,
-    server: address,
-    server_port: +port,
-    tls: {
-      alpn: "http/1.1",
-      enabled: true,
-      insecure: allowInsecure,
-      server_name: sni,
-      utls: {
-        enabled: true,
-        fingerprint: "randomized"
-      }
-    },
-    transport: {
-      early_data_header_name: "Sec-WebSocket-Protocol",
-      max_early_data: 2560,
-      headers: {
-        Host: host
-      },
-      path,
-      type: "ws"
-    },
-    tag: remark
-  };
-  if (!tls)
-    delete outbound.tls;
-  if (isFragment)
-    outbound.tls_fragment = {
-      enabled: true,
-      size: `${lengthMin}-${lengthMax}`,
-      sleep: `${intervalMin}-${intervalMax}`
-    };
-  return outbound;
-}
-function buildSingBoxWarpOutbound(proxySettings, warpConfigs, remark, endpoint, chain, client) {
-  const ipv6Regex = /\[(.*?)\]/;
-  const portRegex = /[^:]*$/;
-  const endpointServer = endpoint.includes("[") ? endpoint.match(ipv6Regex)[1] : endpoint.split(":")[0];
-  const endpointPort = endpoint.includes("[") ? +endpoint.match(portRegex)[0] : +endpoint.split(":")[1];
-  const {
-    hiddifyNoiseMode,
-    noiseCountMin,
-    noiseCountMax,
-    noiseSizeMin,
-    noiseSizeMax,
-    noiseDelayMin,
-    noiseDelayMax
-  } = proxySettings;
-  const {
-    warpIPv6,
-    reserved,
-    publicKey,
-    privateKey
-  } = extractWireguardParams(warpConfigs, chain);
-  let outbound = {
-    local_address: [
-      "172.16.0.2/32",
-      warpIPv6
-    ],
-    mtu: 1280,
-    peer_public_key: publicKey,
-    private_key: privateKey,
-    reserved,
-    server: endpointServer,
-    server_port: endpointPort,
-    type: "wireguard",
-    detour: chain,
-    tag: remark
-  };
-  client === "hiddify" && Object.assign(outbound, {
-    fake_packets_mode: hiddifyNoiseMode,
-    fake_packets: noiseCountMin === noiseCountMax ? noiseCountMin : `${noiseCountMin}-${noiseCountMax}`,
-    fake_packets_size: noiseSizeMin === noiseSizeMax ? noiseSizeMin : `${noiseSizeMin}-${noiseSizeMax}`,
-    fake_packets_delay: noiseDelayMin === noiseDelayMax ? noiseDelayMin : `${noiseDelayMin}-${noiseDelayMax}`
-  });
-  return outbound;
-}
-function buildSingBoxChainOutbound(chainProxyParams) {
-  if (["socks", "http"].includes(chainProxyParams.protocol)) {
-    const { protocol, host: host2, port: port2, user, pass } = chainProxyParams;
-    let chainOutbound2 = {
-      type: protocol,
-      tag: "",
-      server: host2,
-      server_port: +port2,
-      username: user,
-      password: pass,
-      detour: ""
-    };
-    protocol === "socks" && Object.assign(chainOutbound2, {
-      version: "5",
-      network: "tcp"
-    });
-    return chainOutbound2;
-  }
-  const { hostName, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = chainProxyParams;
-  let chainOutbound = {
-    type: "vless",
-    tag: "",
-    server: hostName,
-    server_port: +port,
-    uuid,
-    flow,
-    network: "tcp",
-    detour: ""
-  };
-  if (security === "tls" || security === "reality") {
-    const tlsAlpns = alpn ? alpn?.split(",").filter((value) => value !== "h2") : [];
-    chainOutbound.tls = {
-      enabled: true,
-      server_name: sni,
-      insecure: false,
-      alpn: tlsAlpns,
-      utls: {
-        enabled: true,
-        fingerprint: fp
-      }
-    };
-    if (security === "reality") {
-      chainOutbound.tls.reality = {
-        enabled: true,
-        public_key: pbk,
-        short_id: sid
-      };
-      delete chainOutbound.tls.alpn;
     }
-  }
-  if (headerType === "http") {
-    const httpHosts = host?.split(",");
-    chainOutbound.transport = {
-      type: "http",
-      host: httpHosts,
-      path,
-      method: "GET",
-      headers: {
-        "Connection": ["keep-alive"],
-        "Content-Type": ["application/octet-stream"]
-      }
-    };
-  }
-  if (type === "ws") {
-    const wsPath = path?.split("?ed=")[0];
-    const earlyData = +path?.split("?ed=")[1] || 0;
-    chainOutbound.transport = {
-      type: "ws",
-      path: wsPath,
-      headers: { Host: host },
-      max_early_data: earlyData,
-      early_data_header_name: "Sec-WebSocket-Protocol"
-    };
-  }
-  if (type === "grpc")
-    chainOutbound.transport = {
-      type: "grpc",
-      service_name: serviceName
-    };
-  return chainOutbound;
-}
-async function getSingBoxWarpConfig(proxySettings, warpConfigs, client) {
-  const { warpEndpoints } = proxySettings;
-  let config = structuredClone(singboxConfigTemp);
-  const dnsObject = buildSingBoxDNS(proxySettings, false, true);
-  const { rules, rule_set } = buildSingBoxRoutingRules(proxySettings);
-  config.dns.servers = dnsObject.servers;
-  config.dns.rules = dnsObject.rules;
-  if (dnsObject.fakeip)
-    config.dns.fakeip = dnsObject.fakeip;
-  config.route.rules = rules;
-  config.route.rule_set = rule_set;
-  const selector = config.outbounds[0];
-  const warpUrlTest = config.outbounds[1];
-  const proIndicator = client === "hiddify" ? " Pro " : " ";
-  selector.outbounds = [`\u{1F4A6} Warp${proIndicator}- Best Ping \u{1F680}`, `\u{1F4A6} WoW${proIndicator}- Best Ping \u{1F680}`];
-  config.outbounds.splice(2, 0, structuredClone(warpUrlTest));
-  const WoWUrlTest = config.outbounds[2];
-  warpUrlTest.tag = `\u{1F4A6} Warp${proIndicator}- Best Ping \u{1F680}`;
-  warpUrlTest.interval = `${proxySettings.bestWarpInterval}s`;
-  WoWUrlTest.tag = `\u{1F4A6} WoW${proIndicator}- Best Ping \u{1F680}`;
-  WoWUrlTest.interval = `${proxySettings.bestWarpInterval}s`;
-  let warpRemarks = [], WoWRemarks = [];
-  warpEndpoints.split(",").forEach((endpoint, index) => {
-    const warpRemark = `\u{1F4A6} ${index + 1} - Warp \u{1F1EE}\u{1F1F7}`;
-    const WoWRemark = `\u{1F4A6} ${index + 1} - WoW \u{1F30D}`;
-    const warpOutbound = buildSingBoxWarpOutbound(proxySettings, warpConfigs, warpRemark, endpoint, "", client);
-    const WoWOutbound = buildSingBoxWarpOutbound(proxySettings, warpConfigs, WoWRemark, endpoint, warpRemark, client);
-    config.outbounds.push(WoWOutbound, warpOutbound);
-    warpRemarks.push(warpRemark);
-    WoWRemarks.push(WoWRemark);
-    warpUrlTest.outbounds.push(warpRemark);
-    WoWUrlTest.outbounds.push(WoWRemark);
-  });
-  selector.outbounds.push(...warpRemarks, ...WoWRemarks);
-  return config;
-}
-async function getSingBoxCustomConfig(env, proxySettings, hostName, client, isFragment) {
-  let chainProxyOutbound;
-  const {
-    cleanIPs,
-    ports,
-    vlessConfigs,
-    trojanConfigs,
-    outProxy,
-    outProxyParams,
-    customCdnAddrs,
-    customCdnHost,
-    customCdnSni,
-    bestVLESSTrojanInterval,
-    enableIPv6
-  } = proxySettings;
-  if (outProxy) {
-    const proxyParams = JSON.parse(outProxyParams);
-    try {
-      chainProxyOutbound = buildSingBoxChainOutbound(proxyParams);
-    } catch (error) {
-      console.log("An error occured while parsing chain proxy: ", error);
-      chainProxyOutbound = void 0;
-      await env.bpb.put("proxySettings", JSON.stringify({
-        ...proxySettings,
-        outProxy: "",
-        outProxyParams: ""
-      }));
-      throw new Error(error);
+  },
+  "proxies": [],
+  "proxy-groups": [
+    {
+      "name": "\u2705 Selector",
+      "type": "select",
+      "proxies": []
+    },
+    {
+      "name": "",
+      "type": "url-test",
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": 30,
+      "tolerance": 50,
+      "proxies": []
     }
+  ],
+  "rule-providers": {},
+  "rules": [],
+  "ntp": {
+    "enable": true,
+    "server": "time.apple.com",
+    "port": 123,
+    "interval": 30
   }
-  let config = structuredClone(singboxConfigTemp);
-  const dnsObject = buildSingBoxDNS(proxySettings, chainProxyOutbound, false);
-  const { rules, rule_set } = buildSingBoxRoutingRules(proxySettings);
-  config.dns.servers = dnsObject.servers;
-  config.dns.rules = dnsObject.rules;
-  if (dnsObject.fakeip)
-    config.dns.fakeip = dnsObject.fakeip;
-  config.route.rules = rules;
-  config.route.rule_set = rule_set;
-  const selector = config.outbounds[0];
-  const urlTest = config.outbounds[1];
-  selector.outbounds = ["\u{1F4A6} Best Ping \u{1F4A5}"];
-  urlTest.interval = `${bestVLESSTrojanInterval}s`;
-  urlTest.tag = "\u{1F4A6} Best Ping \u{1F4A5}";
-  const Addresses = await getConfigAddresses(hostName, cleanIPs, enableIPv6);
-  const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(",") : [];
-  const totalAddresses = [...Addresses, ...customCdnAddresses];
-  const totalPorts = ports.filter((port) => isFragment ? defaultHttpsPorts.includes(port) : true);
-  let proxyIndex = 1;
-  const protocols = [
-    ...vlessConfigs ? ["VLESS"] : [],
-    ...trojanConfigs ? ["Trojan"] : []
-  ];
-  protocols.forEach((protocol) => {
-    let protocolIndex = 1;
-    totalPorts.forEach((port) => {
-      totalAddresses.forEach((addr) => {
-        let VLESSOutbound, TrojanOutbound;
-        const isCustomAddr = customCdnAddresses.includes(addr);
-        const configType = isCustomAddr ? "C" : isFragment ? "F" : "";
-        const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
-        const host = isCustomAddr ? customCdnHost : hostName;
-        const remark = generateRemark(protocolIndex, port, addr, cleanIPs, protocol, configType);
-        if (protocol === "VLESS") {
-          VLESSOutbound = buildSingBoxVLESSOutbound(
-            proxySettings,
-            chainProxyOutbound ? `proxy-${proxyIndex}` : remark,
-            addr,
-            port,
-            host,
-            sni,
-            isCustomAddr,
-            isFragment
-          );
-          config.outbounds.push(VLESSOutbound);
-        }
-        if (protocol === "Trojan") {
-          TrojanOutbound = buildSingBoxTrojanOutbound(
-            proxySettings,
-            chainProxyOutbound ? `proxy-${proxyIndex}` : remark,
-            addr,
-            port,
-            host,
-            sni,
-            isCustomAddr,
-            isFragment
-          );
-          config.outbounds.push(TrojanOutbound);
-        }
-        if (chainProxyOutbound) {
-          let chain = structuredClone(chainProxyOutbound);
-          chain.tag = remark;
-          chain.detour = `proxy-${proxyIndex}`;
-          config.outbounds.push(chain);
-        }
-        selector.outbounds.push(remark);
-        urlTest.outbounds.push(remark);
-        proxyIndex++;
-        protocolIndex++;
-      });
-    });
-  });
-  return config;
-}
-async function getNormalConfigs(proxySettings, hostName, client) {
+};
+
+// src/cores-configs/normalConfigs.js
+async function getNormalConfigs(request, env) {
+  await initializeParams(request, env);
+  const { kvNotFound, proxySettings } = await getDataset(request, env);
+  if (kvNotFound)
+    return await renderErrorPage(request, env, "KV Dataset is not properly set!", null, true);
   const {
     cleanIPs,
     proxyIP: proxyIP2,
@@ -8566,294 +9335,61 @@ async function getNormalConfigs(proxySettings, hostName, client) {
       chainProxy = outProxy.split("#")[0] + chainRemark;
     }
   }
-  return btoa(vlessConfs + trojanConfs + chainProxy);
+  const configs = btoa(vlessConfs + trojanConfs + chainProxy);
+  return new Response(JSON.stringify(configs, null, 4), {
+    status: 200,
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8",
+      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+      "CDN-Cache-Control": "no-store"
+    }
+  });
 }
-var xrayConfigTemp = {
-  remarks: "",
-  log: {
-    loglevel: "warning"
-  },
-  dns: {},
-  fakedns: [
-    {
-      ipPool: "198.18.0.0/15",
-      poolSize: 32768
-    },
-    {
-      ipPool: "fc00::/18",
-      poolSize: 32768
-    }
-  ],
-  inbounds: [
-    {
-      port: 10808,
-      protocol: "socks",
-      settings: {
-        auth: "noauth",
-        udp: true,
-        userLevel: 8
-      },
-      sniffing: {
-        destOverride: ["http", "tls"],
-        enabled: true,
-        routeOnly: true
-      },
-      tag: "socks-in"
-    },
-    {
-      port: 10809,
-      protocol: "http",
-      settings: {
-        auth: "noauth",
-        udp: true,
-        userLevel: 8
-      },
-      sniffing: {
-        destOverride: ["http", "tls"],
-        enabled: true,
-        routeOnly: true
-      },
-      tag: "http-in"
-    },
-    {
-      listen: "127.0.0.1",
-      port: 10853,
-      protocol: "dokodemo-door",
-      settings: {
-        address: "1.1.1.1",
-        network: "tcp,udp",
-        port: 53
-      },
-      tag: "dns-in"
-    }
-  ],
-  outbounds: [
-    {
-      tag: "fragment",
-      protocol: "freedom",
-      settings: {
-        fragment: {
-          packets: "tlshello",
-          length: "",
-          interval: ""
-        },
-        domainStrategy: "UseIP"
-      },
-      streamSettings: {
-        sockopt: {
-          tcpKeepAliveIdle: 100,
-          tcpNoDelay: true
+__name(getNormalConfigs, "getNormalConfigs");
+
+// src/worker.js
+var worker_default = {
+  async fetch(request, env) {
+    try {
+      const upgradeHeader = request.headers.get("Upgrade");
+      await initializeParams(request, env);
+      if (!upgradeHeader || upgradeHeader !== "websocket") {
+        switch (pathName) {
+          case "/update-warp":
+            return await updateWarpConfigs(request, env);
+          case `/sub/${userID}`:
+            if (client === "sfa")
+              return await getSingBoxCustomConfig(request, env, false);
+            if (client === "clash")
+              return await getClashNormalConfig(request, env);
+            if (client === "xray")
+              return await getXrayCustomConfigs(request, env, false);
+            return await getNormalConfigs(request, env);
+          case `/fragsub/${userID}`:
+            return client === "hiddify" ? await getSingBoxCustomConfig(request, env, true) : await getXrayCustomConfigs(request, env, true);
+          case `/warpsub/${userID}`:
+            if (client === "clash")
+              return await getClashWarpConfig(request, env);
+            if (client === "singbox" || client === "hiddify")
+              return await getSingBoxWarpConfig(request, env, client);
+            return await getXrayWarpConfigs(request, env, client);
+          case "/panel":
+            return await handlePanel(request, env);
+          case "/login":
+            return await login(request, env);
+          case "/logout":
+            return logout();
+          case "/panel/password":
+            return await resetPassword(request, env);
+          default:
+            return await fallback(request);
         }
+      } else {
+        return pathName.startsWith("/tr") ? await trojanOverWSHandler(request, env) : await vlessOverWSHandler(request, env);
       }
-    },
-    {
-      protocol: "dns",
-      tag: "dns-out"
-    },
-    {
-      protocol: "freedom",
-      settings: {},
-      tag: "direct"
-    },
-    {
-      protocol: "blackhole",
-      settings: {
-        response: {
-          type: "http"
-        }
-      },
-      tag: "block"
+    } catch (err) {
+      return await renderErrorPage(request, env, "Something went wrong!", err, false);
     }
-  ],
-  policy: {
-    levels: {
-      8: {
-        connIdle: 300,
-        downlinkOnly: 1,
-        handshake: 4,
-        uplinkOnly: 1
-      }
-    },
-    system: {
-      statsOutboundUplink: true,
-      statsOutboundDownlink: true
-    }
-  },
-  routing: {
-    domainStrategy: "IPIfNonMatch",
-    rules: [],
-    balancers: [
-      {
-        tag: "all",
-        selector: ["prox"],
-        strategy: {
-          type: "leastPing"
-        }
-      }
-    ]
-  },
-  observatory: {
-    probeInterval: "30s",
-    probeURL: "https://www.gstatic.com/generate_204",
-    subjectSelector: ["prox"],
-    EnableConcurrency: true
-  },
-  stats: {}
-};
-var singboxConfigTemp = {
-  log: {
-    level: "warn",
-    timestamp: true
-  },
-  dns: {
-    servers: [],
-    rules: [],
-    independent_cache: true
-  },
-  inbounds: [
-    {
-      type: "direct",
-      tag: "dns-in",
-      listen: "0.0.0.0",
-      listen_port: 6450,
-      override_address: "8.8.8.8",
-      override_port: 53
-    },
-    {
-      type: "tun",
-      tag: "tun-in",
-      inet4_address: "172.19.0.1/28",
-      inet6_address: "fdfe:dcba:9876::1/126",
-      mtu: 9e3,
-      auto_route: true,
-      strict_route: true,
-      stack: "mixed",
-      sniff: true,
-      sniff_override_destination: true
-    },
-    {
-      type: "mixed",
-      tag: "mixed-in",
-      listen: "0.0.0.0",
-      listen_port: 2080,
-      sniff: true,
-      sniff_override_destination: false
-    }
-  ],
-  outbounds: [
-    {
-      type: "selector",
-      tag: "proxy",
-      outbounds: []
-    },
-    {
-      type: "urltest",
-      tag: "",
-      outbounds: [],
-      url: "https://www.gstatic.com/generate_204",
-      interval: ""
-    },
-    {
-      type: "direct",
-      tag: "direct"
-    },
-    {
-      type: "block",
-      tag: "block"
-    },
-    {
-      type: "dns",
-      tag: "dns-out"
-    }
-  ],
-  route: {
-    rules: [],
-    rule_set: [],
-    auto_detect_interface: true,
-    override_android_vpn: true,
-    final: "proxy"
-  },
-  ntp: {
-    enabled: true,
-    server: "time.apple.com",
-    server_port: 123,
-    detour: "direct",
-    interval: "30m"
-  },
-  experimental: {
-    cache_file: {
-      enabled: true,
-      store_fakeip: true
-    },
-    clash_api: {
-      external_controller: "0.0.0.0:9090",
-      external_ui: "yacd",
-      external_ui_download_url: "https://github.com/MetaCubeX/Yacd-meta/archive/gh-pages.zip",
-      external_ui_download_detour: "direct",
-      default_mode: "rule"
-    }
-  }
-};
-var clashConfigTemp = {
-  "mixed-port": 7890,
-  "ipv6": true,
-  "allow-lan": true,
-  "mode": "rule",
-  "log-level": "info",
-  "keep-alive-interval": 30,
-  "unified-delay": false,
-  "dns": {},
-  "tun": {
-    "enable": true,
-    "stack": "system",
-    "auto-route": true,
-    "auto-redirect": true,
-    "auto-detect-interface": true,
-    "dns-hijack": [
-      "any:53",
-      "198.18.0.2:53"
-    ],
-    "device": "utun0",
-    "mtu": 9e3,
-    "strict-route": true
-  },
-  "sniffer": {
-    "enable": true,
-    "force-dns-mapping": true,
-    "parse-pure-ip": true,
-    "sniff": {
-      "HTTP": {
-        "ports": [80, 8080, 8880, 2052, 2082, 2086, 2095],
-        "override-destination": false
-      },
-      "TLS": {
-        "ports": [443, 8443, 2053, 2083, 2087, 2096],
-        "override-destination": false
-      }
-    }
-  },
-  "proxies": [],
-  "proxy-groups": [
-    {
-      "name": "\u2705 Selector",
-      "type": "select",
-      "proxies": []
-    },
-    {
-      "name": "",
-      "type": "url-test",
-      "url": "https://www.gstatic.com/generate_204",
-      "interval": 30,
-      "tolerance": 50,
-      "proxies": []
-    }
-  ],
-  "rules": [],
-  "ntp": {
-    "enable": true,
-    "server": "time.apple.com",
-    "port": 123,
-    "interval": 30
   }
 };
 export {
