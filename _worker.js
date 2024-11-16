@@ -8541,8 +8541,8 @@ async function getNormalConfigs(proxySettings, hostName, client) {
       const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
       const host = isCustomAddr ? customCdnHost : hostName;
       const path = `${getRandomPath(16)}${proxyIP2 ? `/${encodeURIComponent(btoa(proxyIP2))}` : ""}${earlyData}`;
-      const vlessRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, "VLESS", configType));
-      const trojanRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, "Trojan", configType));
+      const vlessRemark = encodeURIComponent(generateRemark("VLESS", configType));
+      const trojanRemark = encodeURIComponent(generateRemark("Trojan", configType));
       const tlsFields = defaultHttpsPorts.includes(port) ? `&security=tls&sni=${sni}&fp=randomized&alpn=${alpn}` : "&security=none";
       if (vlessConfigs) {
         vlessConfs += `${atob("dmxlc3M")}://${userID}@${addr}:${port}?path=/${path}&encryption=none&host=${host}&type=ws${tlsFields}#${vlessRemark}
