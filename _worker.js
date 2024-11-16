@@ -5201,6 +5201,15 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                         <input type="text" id="cleanIPs" name="cleanIPs" value="${cleanIPs.replaceAll(",", " , ")}">
                     </div>
                     <div class="form-control">
+                        <label for="scanner">\u{1F50E} IP Scanner</label>
+                        <a href="https://github.com/bia-pain-bache/Cloudflare-Clean-IP-Scanner/releases/tag/v2.2.5" name="scanner" target="_blank" style="width: 100%;">
+                            <button type="button" id="scanner" class="button">
+                                Scan now
+                                <span class="material-symbols-outlined">open_in_new</span>
+                            </button>
+                        </a>
+                    </div>
+                    <div class="form-control">
                         <label for="enableIPv6">\u{1F51B} IPv6</label>
                         <div class="input-with-select">
                             <select id="enableIPv6" name="enableIPv6">
@@ -5300,7 +5309,7 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                     </div>
                     <div class="form-control">
                         <label for="endpointScanner" style="line-height: 1.5;">\u{1F50E} Scan Endpoint</label>
-                        <button type="button" id="endpointScanner" class="button" style="padding: 10px 0;" onclick="copyToClipboard('bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/warp/main/endip/install.sh)', false)">
+                        <button type="button" id="endpointScanner" class="button" style="padding: 10px 0;" onclick="copyToClipboard('bash <(curl -fsSL https://raw.githubusercontent.com/bia-pain-bache/warp-script/refs/heads/main/endip/install.sh)', false)">
                             Copy Script<span class="material-symbols-outlined">terminal</span>
                         </button>
                     </div>
@@ -9336,7 +9345,7 @@ async function getNormalConfigs(request, env) {
     }
   }
   const configs = btoa(vlessConfs + trojanConfs + chainProxy);
-  return new Response(JSON.stringify(configs, null, 4), {
+  return new Response(configs, {
     status: 200,
     headers: {
       "Content-Type": "text/plain;charset=utf-8",
