@@ -71,7 +71,7 @@ export async function getNormalConfigs(request, env) {
     }
 
     const configs = btoa(vlessConfs + trojanConfs + chainProxy);
-    return new Response(JSON.stringify(configs, null, 4), { 
+    return new Response(configs, { 
         status: 200,
         headers: {
             'Content-Type': 'text/plain;charset=utf-8',
