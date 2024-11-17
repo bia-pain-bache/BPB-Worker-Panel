@@ -7381,7 +7381,7 @@ function buildXrayConfig(proxySettings, remark, isFragment, isBalancer, isChain,
   return config;
 }
 async function buildXrayBestPingConfig(proxySettings, totalAddresses, chainProxy, outbounds, isFragment) {
-  const remark = isFragment ? "Best Ping \u{1F4A5}" : "  - Best Ping \u{1F4A5}";
+  const remark = isFragment ? "Best Ping \u{1F4A5}" : "Best Ping \u{1F4A5}";
   let config = buildXrayConfig(proxySettings, remark, isFragment, true, chainProxy, chainProxy ? "chain-2" : "prox-2");
   config.dns = await buildXrayDNS(proxySettings, totalAddresses, void 0);
   config.routing.rules = buildXrayRoutingRules(proxySettings, totalAddresses, chainProxy, true, false);
