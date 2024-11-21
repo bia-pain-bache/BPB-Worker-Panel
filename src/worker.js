@@ -9,7 +9,7 @@ import { getSingBoxCustomConfig, getSingBoxWarpConfig } from './cores-configs/si
 import { getClashNormalConfig, getClashWarpConfig } from './cores-configs/clash';
 import { getNormalConfigs } from './cores-configs/normalConfigs';
 import { initializeParams, userID, client, pathName } from './helpers/init';
-import { fallback, handlePanel } from './helpers/helpers';
+import { fallback, getMyIP, handlePanel } from './helpers/helpers';
 
 export default {
     async fetch(request, env) {
@@ -48,6 +48,9 @@ export default {
 
                     case '/panel/password':
                         return await resetPassword(request, env);
+                    
+                    case '/my-ip':
+                        return await getMyIP(request);
 
                     default:
                         return await fallback(request);
