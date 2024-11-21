@@ -4207,7 +4207,7 @@ function initParams(request, env) {
   trojanPassword = env.TROJAN_PASS || "bpb-trojan";
   defaultHttpPorts = ["80", "8080", "2052", "2082", "2086", "2095", "8880"];
   defaultHttpsPorts = ["443", "8443", "2053", "2083", "2087", "2096"];
-  panelVersion = "2.7.3";
+  panelVersion = "2.7.4";
   hostName = request.headers.get("Host");
   const url = new URL(request.url);
   const searchParams = new URLSearchParams(url.search);
@@ -5019,6 +5019,9 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                 box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
                 transform: translateY(-2px);
             }
+            .header-container button:hover {
+                transform: scale(1.1);
+            }
             button.button:hover { color: white; }
             .button:active,
             table button:active { transform: translateY(1px); box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); }
@@ -5147,6 +5150,7 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
             #ips th { background-color: var(--hr-text-color); color: var(--background-color); width: unset; }
             #ips td { background-color: unset; }
             #ips td:first-child { background-color: var(--table-active-color); }
+            .header-container { display: flex; align-items: center; justify-content: center; }
             @media only screen and (min-width: 768px) {
                 .form-container { max-width: 70%; }
                 .form-control { 
@@ -5447,7 +5451,7 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                 </div>
             </form>
             <hr>            
-            <h2>NORMAL SUB \u{1F517}</h2>
+            <h2>\u{1F517} NORMAL SUB</h2>
             <div class="table-container">
                 <table id="normal-configs-table">
                     <tr>
@@ -5473,7 +5477,7 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                     </tr>
                 </table>
             </div>
-            <h2>FULL NORMAL SUB \u{1F517}</h2>
+            <h2>\u{1F517} FULL NORMAL SUB</h2>
             <div class="table-container">
                 <table id="full-normal-configs-table">
                     <tr>
@@ -5509,7 +5513,7 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                     </tr>
                 </table>
             </div>
-            <h2>FRAGMENT SUB \u26D3\uFE0F</h2>
+            <h2>\u{1F517} FRAGMENT SUB</h2>
             <div class="table-container">
                 <table id="frag-sub-table">
                     <tr>
@@ -5536,7 +5540,7 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                     </tr>
                 </table>
             </div>
-            <h2>WARP SUB \u{1F517}</h2>
+            <h2>\u{1F517} WARP SUB</h2>
             <div class="table-container">
                 <table id="normal-configs-table">
                     <tr>
@@ -5572,7 +5576,7 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                     </tr>
                 </table>
             </div>
-            <h2>WARP PRO SUB \u{1F517}</h2>
+            <h2>\u{1F517} WARP PRO SUB</h2>
             <div class="table-container">
                 <table id="warp-pro-configs-table">
                     <tr>
@@ -5627,7 +5631,12 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                 </div>
             </div>
             <hr>
-            <h2>MY IP \u{1F4A1}</h2>
+            <div class="header-container">
+                <h2 style="margin: 0 5px;">\u{1F4A1} MY IP</h2>
+                <button type="button" id="resetSettings" onclick="fetchIPInfo()" style="background: none; margin: 0; border: none; cursor: pointer;">
+                    <i class="fa fa-refresh fa-2x" style="color: var(--button-color);" aria-hidden="true"></i>
+                </button>       
+            </div>
             <div class="table-container">
                 <table id="ips" style="text-align: center; margin-bottom: 15px; text-wrap-mode: nowrap;">
                     <tr>
@@ -5635,18 +5644,21 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
                         <th>IP</th>
                         <th>Country</th>
                         <th>City</th>
+                        <th>ISP</th>
                     </tr>
                     <tr>
                         <td>Cloudflare CDN</td>
                         <td id="cf-ip"></td>
                         <td><b id="cf-country"></b></td>
                         <td><b id="cf-city"></b></td>
+                        <td><b id="cf-isp"></b></td>
                     </tr>
                     <tr>
                         <td>Others</td>
                         <td id="ip"></td>
                         <td><b id="country"></b></td>
                         <td><b id="city"></b></td>
+                        <td><b id="isp"></b></td>
                     </tr>
                 </table>
             </div>
@@ -5787,26 +5799,34 @@ async function renderHomePage(request, env, proxySettings, isPassSet) {
         });
 
         const fetchIPInfo = async () => {
-            const updateUI = (ip = '-', country = '-', country_code = '-', city = '-', cfIP) => {
-                const flag = country_code !== '-' ? String.fromCodePoint(...[...country_code].map(c => 0x1F1E6 + c.charCodeAt(0) - 65)) : '';
+            const updateUI = (ip = '-', country = '-', countryCode = '-', city = '-', isp = '-', cfIP) => {
+                const flag = countryCode !== '-' ? String.fromCodePoint(...[...countryCode].map(c => 0x1F1E6 + c.charCodeAt(0) - 65)) : '';
                 document.getElementById(cfIP ? 'cf-ip' : 'ip').textContent = ip;
                 document.getElementById(cfIP ? 'cf-country' : 'country').textContent = country + ' ' + flag;
                 document.getElementById(cfIP ? 'cf-city' : 'city').textContent = city;
+                document.getElementById(cfIP ? 'cf-isp' : 'isp').textContent = isp;
             };
 
-            const fetchIPApi = async (cfIP) => {
-                try {
-                    const response = await fetch('https://ipwho.is/' + cfIP + '?nocache=' + Date.now(), { cache: "no-store" });
-                    const { ip, country, country_code, city } = await response.json();
-                    updateUI(ip, country, country_code, city, cfIP);
-                } catch (error) {
-                    console.error('Error fetching IP address:', error);
-                    updateUI();
-                }
+            try {
+                const ipResponse = await fetch('https://ipwho.is/' + '?nocache=' + Date.now(), { cache: "no-store" });
+                const ipResponseObj = await ipResponse.json();
+                const geoResponse = await fetch('/my-ip', { 
+                    method: 'POST',
+                    body: ipResponseObj.ip
+                });
+                const ipGeoLocation = await geoResponse.json();
+                updateUI(ipResponseObj.ip, ipGeoLocation.country, ipGeoLocation.countryCode, ipGeoLocation.city, ipGeoLocation.isp);
+                const cfIPresponse = await fetch('https://ipv4.icanhazip.com/?nocache=' + Date.now(), { cache: "no-store" });
+                const cfIP = await cfIPresponse.text();
+                const cfGeoResponse = await fetch('/my-ip', { 
+                    method: 'POST',
+                    body: cfIP.trim()
+                });
+                const cfIPGeoLocation = await cfGeoResponse.json();
+                updateUI(cfIP, cfIPGeoLocation.country, cfIPGeoLocation.countryCode, cfIPGeoLocation.city, cfIPGeoLocation.isp, true);
+            } catch (error) {
+                console.error('Error fetching IP address:', error);
             }
-
-            await fetchIPApi('');
-            await fetchIPApi('${request.headers.get("cf-connecting-ip") || "-"}');
         }
 
         const getWarpConfigs = async () => {
@@ -6186,6 +6206,22 @@ async function fallback(request) {
   return await fetch(request);
 }
 __name(fallback, "fallback");
+async function getMyIP(request) {
+  const ip = await request.text();
+  try {
+    const response = await fetch(`http://ip-api.com/json/${ip}?nocache=${Date.now()}`);
+    const geoLocation = await response.json();
+    return new Response(JSON.stringify(geoLocation), {
+      status: 200,
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching IP address:", error);
+  }
+}
+__name(getMyIP, "getMyIP");
 
 // src/protocols/vless.js
 async function vlessOverWSHandler(request, env) {
@@ -9390,6 +9426,8 @@ var worker_default = {
             return logout();
           case "/panel/password":
             return await resetPassword(request, env);
+          case "/my-ip":
+            return await getMyIP(request);
           default:
             return await fallback(request);
         }
