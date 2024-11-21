@@ -244,6 +244,9 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                 box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
                 transform: translateY(-2px);
             }
+            .header-container button:hover {
+                transform: scale(1.1);
+            }
             button.button:hover { color: white; }
             .button:active,
             table button:active { transform: translateY(1px); box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); }
@@ -372,6 +375,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
             #ips th { background-color: var(--hr-text-color); color: var(--background-color); width: unset; }
             #ips td { background-color: unset; }
             #ips td:first-child { background-color: var(--table-active-color); }
+            .header-container { display: flex; align-items: center; justify-content: center; }
             @media only screen and (min-width: 768px) {
                 .form-container { max-width: 70%; }
                 .form-control { 
@@ -672,7 +676,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                 </div>
             </form>
             <hr>            
-            <h2>NORMAL SUB 🔗</h2>
+            <h2>🔗 NORMAL SUB</h2>
             <div class="table-container">
                 <table id="normal-configs-table">
                     <tr>
@@ -698,7 +702,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                     </tr>
                 </table>
             </div>
-            <h2>FULL NORMAL SUB 🔗</h2>
+            <h2>🔗 FULL NORMAL SUB</h2>
             <div class="table-container">
                 <table id="full-normal-configs-table">
                     <tr>
@@ -734,7 +738,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                     </tr>
                 </table>
             </div>
-            <h2>FRAGMENT SUB ⛓️</h2>
+            <h2>🔗 FRAGMENT SUB</h2>
             <div class="table-container">
                 <table id="frag-sub-table">
                     <tr>
@@ -761,7 +765,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                     </tr>
                 </table>
             </div>
-            <h2>WARP SUB 🔗</h2>
+            <h2>🔗 WARP SUB</h2>
             <div class="table-container">
                 <table id="normal-configs-table">
                     <tr>
@@ -797,7 +801,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                     </tr>
                 </table>
             </div>
-            <h2>WARP PRO SUB 🔗</h2>
+            <h2>🔗 WARP PRO SUB</h2>
             <div class="table-container">
                 <table id="warp-pro-configs-table">
                     <tr>
@@ -852,7 +856,12 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                 </div>
             </div>
             <hr>
-            <h2>MY IP 💡</h2>
+            <div class="header-container">
+                <h2 style="margin: 0 5px;">💡 MY IP</h2>
+                <button type="button" id="resetSettings" onclick="fetchIPInfo()" style="background: none; margin: 0; border: none; cursor: pointer;">
+                    <i class="fa fa-refresh fa-2x" style="color: var(--button-color);" aria-hidden="true"></i>
+                </button>       
+            </div>
             <div class="table-container">
                 <table id="ips" style="text-align: center; margin-bottom: 15px; text-wrap-mode: nowrap;">
                     <tr>
@@ -860,18 +869,21 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                         <th>IP</th>
                         <th>Country</th>
                         <th>City</th>
+                        <th>ISP</th>
                     </tr>
                     <tr>
                         <td>Cloudflare CDN</td>
                         <td id="cf-ip"></td>
                         <td><b id="cf-country"></b></td>
                         <td><b id="cf-city"></b></td>
+                        <td><b id="cf-isp"></b></td>
                     </tr>
                     <tr>
                         <td>Others</td>
                         <td id="ip"></td>
                         <td><b id="country"></b></td>
                         <td><b id="city"></b></td>
+                        <td><b id="isp"></b></td>
                     </tr>
                 </table>
             </div>
@@ -1012,26 +1024,34 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
         });
 
         const fetchIPInfo = async () => {
-            const updateUI = (ip = '-', country = '-', country_code = '-', city = '-', cfIP) => {
-                const flag = country_code !== '-' ? String.fromCodePoint(...[...country_code].map(c => 0x1F1E6 + c.charCodeAt(0) - 65)) : '';
+            const updateUI = (ip = '-', country = '-', countryCode = '-', city = '-', isp = '-', cfIP) => {
+                const flag = countryCode !== '-' ? String.fromCodePoint(...[...countryCode].map(c => 0x1F1E6 + c.charCodeAt(0) - 65)) : '';
                 document.getElementById(cfIP ? 'cf-ip' : 'ip').textContent = ip;
                 document.getElementById(cfIP ? 'cf-country' : 'country').textContent = country + ' ' + flag;
                 document.getElementById(cfIP ? 'cf-city' : 'city').textContent = city;
+                document.getElementById(cfIP ? 'cf-isp' : 'isp').textContent = isp;
             };
 
-            const fetchIPApi = async (cfIP) => {
-                try {
-                    const response = await fetch('https://ipwho.is/' + cfIP + '?nocache=' + Date.now(), { cache: "no-store" });
-                    const { ip, country, country_code, city } = await response.json();
-                    updateUI(ip, country, country_code, city, cfIP);
-                } catch (error) {
-                    console.error('Error fetching IP address:', error);
-                    updateUI();
-                }
+            try {
+                const ipResponse = await fetch('https://ipwho.is/' + '?nocache=' + Date.now(), { cache: "no-store" });
+                const ipResponseObj = await ipResponse.json();
+                const geoResponse = await fetch('/my-ip', { 
+                    method: 'POST',
+                    body: ipResponseObj.ip
+                });
+                const ipGeoLocation = await geoResponse.json();
+                updateUI(ipResponseObj.ip, ipGeoLocation.country, ipGeoLocation.countryCode, ipGeoLocation.city, ipGeoLocation.isp);
+                const cfIPresponse = await fetch('https://ipv4.icanhazip.com/?nocache=' + Date.now(), { cache: "no-store" });
+                const cfIP = await cfIPresponse.text();
+                const cfGeoResponse = await fetch('/my-ip', { 
+                    method: 'POST',
+                    body: cfIP.trim()
+                });
+                const cfIPGeoLocation = await cfGeoResponse.json();
+                updateUI(cfIP, cfIPGeoLocation.country, cfIPGeoLocation.countryCode, cfIPGeoLocation.city, cfIPGeoLocation.isp, true);
+            } catch (error) {
+                console.error('Error fetching IP address:', error);
             }
-
-            await fetchIPApi('');
-            await fetchIPApi('${request.headers.get('cf-connecting-ip') || '-'}');
         }
 
         const getWarpConfigs = async () => {

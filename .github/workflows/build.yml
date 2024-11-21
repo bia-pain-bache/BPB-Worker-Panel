@@ -1,9 +1,8 @@
-name: Build and Deploy Worker
+name: Build and Deploy Worker on Release
 
-on:
-  push:
-    branches:
-      - dev
+on: 
+  release: 
+    types: [published]
 
 jobs:
   build:
@@ -12,6 +11,8 @@ jobs:
     steps:
       - name: Check out the code
         uses: actions/checkout@v4
+        with: 
+          ref: dev
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -33,5 +34,15 @@ jobs:
           git add _worker.js
           git commit -m "Automated build: update _worker.js"
           git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload built worker to release assets 
+        uses: actions/upload-release-asset@v1
+        with: 
+          upload_url: ${{ github.event.release.upload_url }} 
+          asset_path: ./_worker.js 
+          asset_name: worker.js 
+          asset_content_type: application/javascript
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

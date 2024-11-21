@@ -66,3 +66,19 @@ export async function fallback(request) {
     request = new Request(url, request);
     return await fetch(request);
 }
+
+export async function getMyIP(request) {
+    const ip = await request.text();
+    try {
+        const response = await fetch(`http://ip-api.com/json/${ip}?nocache=${Date.now()}`);
+        const geoLocation = await response.json();
+        return new Response(JSON.stringify(geoLocation), {
+            status: 200,
+            headers: {
+                'Content-Type': 'text/plain;charset=utf-8'
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching IP address:', error);
+    }
+}
