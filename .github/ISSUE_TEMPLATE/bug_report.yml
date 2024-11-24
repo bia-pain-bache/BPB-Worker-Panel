@@ -40,3 +40,9 @@ body:
           render: shell
       validations:
           required: true
+    - type: textarea
+      id: panel-version
+      attributes:
+          label: Panel version | نسخه‌ی پنل
+      validations:
+          required: true
