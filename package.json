@@ -1,0 +1,16 @@
+{
+  "name": "bpb-worker-panel",
+  "version": "2.7.2",
+  "author": {
+    "name": "Bia Pain Bache"
+  },
+  "devDependencies": {
+    "wrangler": "latest",
+    "javascript-obfuscator": "latest"
+  },
+  "dependencies": {
+    "jose": "^5.9.4",
+    "js-sha256": "^0.11.0",
+    "tweetnacl": "^1.0.3"
+  }
+}
