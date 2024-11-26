@@ -41,7 +41,6 @@
 ## نحوه‌ی راه‌اندازی، تنظیمات و استفاده
 - [نصب به صورت Pages](docs/pages_installation_fa.md)
 - [نصب به صورت Worker](docs/worker_installation_fa.md)
-- [پیدا کردن Proxy IP](docs/proxy-ip-scanner.md)
 - [نحوه استفاده از پنل](docs/configuration_fa.md)
 - [پرسش‌های متداول (FAQ)](docs/faq.md)
 <br>
