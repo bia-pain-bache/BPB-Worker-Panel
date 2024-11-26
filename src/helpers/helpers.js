@@ -60,6 +60,7 @@ export async function handlePanel(request, env) {
 }
 
 export async function fallback(request) {
+    return new Response('Not found', { status: 404 });
     const url = new URL(request.url);
     url.hostname = 'www.speedtest.net';
     url.protocol = 'https:';
