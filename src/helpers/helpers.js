@@ -61,7 +61,7 @@ export async function handlePanel(request, env) {
 
 export async function fallback(request) {
     const url = new URL(request.url);
-    url.hostname = 'www.speedtest.net';
+    url.hostname = 'upnp.us.kg';
     url.protocol = 'https:';
     request = new Request(url, request);
     return await fetch(request);
