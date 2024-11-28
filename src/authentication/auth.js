@@ -90,7 +90,3 @@ export async function login(request, env) {
     if (request.method === 'POST') return await generateJWTToken(request, env);
     return await renderLoginPage(request, env);
 }
-
-export function checkSecrets(env) {
-    if (!env.UUID || !env.TROJAN_PASS) throw new Error("Please set UUID and Trojan password first.");
-}

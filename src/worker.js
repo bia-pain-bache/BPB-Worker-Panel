@@ -2,7 +2,7 @@
 import { vlessOverWSHandler } from './protocols/vless';
 import { trojanOverWSHandler } from './protocols/trojan';
 import { updateWarpConfigs } from './kv/handlers';
-import { logout, resetPassword, login, checkSecrets } from './authentication/auth';
+import { logout, resetPassword, login } from './authentication/auth';
 import { renderErrorPage } from './pages/error';
 import { getXrayCustomConfigs, getXrayWarpConfigs } from './cores-configs/xray';
 import { getSingBoxCustomConfig, getSingBoxWarpConfig } from './cores-configs/sing-box';
@@ -20,46 +20,37 @@ export default {
             if (!upgradeHeader || upgradeHeader !== 'websocket') {            
                 switch (pathName) {                    
                     case '/update-warp':
-                        checkSecrets(env);
                         return await updateWarpConfigs(request, env);
 
                     case `/sub/${userID}`:
-                        checkSecrets(env);
                         if (client === 'sfa') return await getSingBoxCustomConfig(request, env, false);
                         if (client === 'clash') return await getClashNormalConfig(request, env);
                         if (client === 'xray') return await getXrayCustomConfigs(request, env, false);
                         return await getNormalConfigs(request, env);                        
 
                     case `/fragsub/${userID}`:
-                        checkSecrets(env);
                         return client === 'hiddify'
                             ? await getSingBoxCustomConfig(request, env, true)
                             : await getXrayCustomConfigs(request, env, true);
 
                     case `/warpsub/${userID}`:
-                        checkSecrets(env);
                         if (client === 'clash') return await getClashWarpConfig(request, env);   
                         if (client === 'singbox' || client === 'hiddify') return await getSingBoxWarpConfig(request, env, client);
                         return await getXrayWarpConfigs(request, env, client);
 
                     case '/panel':
-                        checkSecrets(env);
                         return await handlePanel(request, env);
                                                       
                     case '/login':
-                        checkSecrets(env);
                         return await login(request, env);
                     
-                    case '/logout':
-                        checkSecrets(env);                        
+                    case '/logout':                        
                         return logout();        
 
                     case '/panel/password':
-                        checkSecrets(env);
                         return await resetPassword(request, env);
                     
                     case '/my-ip':
-                        checkSecrets(env);
                         return await getMyIP(request);
 
                     case '/secrets':
@@ -69,7 +60,6 @@ export default {
                         return await fallback(request);
                 }
             } else {
-                checkSecrets(env);
                 return pathName.startsWith('/tr') 
                     ? await trojanOverWSHandler(request, env) 
                     : await vlessOverWSHandler(request, env);
