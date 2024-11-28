@@ -21,7 +21,6 @@ function initParams(request, env) {
 }
 
 export function initializeParams(request, env) {
-    if (!env.UUID || !env.TROJAN_PASS) throw new Error("Please set UUID and Trojan password first.");
     initParams(request, env);
     return Promise.resolve();
 }
