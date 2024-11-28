@@ -1,7 +1,6 @@
 import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6, isIPv4 } from './helpers';
 import { initializeParams, userID, trojanPassword, hostName, defaultHttpsPorts } from "../helpers/init";
 import { getDataset } from '../kv/handlers';
-import { renderErrorPage } from '../pages/error';
 import { isDomain } from '../helpers/helpers';
 
 async function buildClashDNS (proxySettings, isChain, isWarp) {
@@ -415,8 +414,7 @@ function buildClashChainOutbound(chainProxyParams) {
 }
 
 export async function getClashWarpConfig(request, env) {
-    const { kvNotFound, proxySettings, warpConfigs } = await getDataset(request, env);
-    if (kvNotFound) return await renderErrorPage(request, env, 'KV Dataset is not properly set!', null, true);
+    const { proxySettings, warpConfigs } = await getDataset(request, env);
     const { warpEndpoints } = proxySettings;
     const config = structuredClone(clashConfigTemp);
     config.dns = await buildClashDNS(proxySettings, true, true);
@@ -458,8 +456,7 @@ export async function getClashWarpConfig(request, env) {
 
 export async function getClashNormalConfig (request, env) {
     await initializeParams(request, env);
-    const { kvNotFound, proxySettings } = await getDataset(request, env);
-    if (kvNotFound) return await renderErrorPage(request, env, 'KV Dataset is not properly set!', null, true);
+    const { proxySettings } = await getDataset(request, env);
     let chainProxy;
     const { 
         resolvedRemoteDNS,

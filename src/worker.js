@@ -14,7 +14,7 @@ import { renderSecretsPage } from './pages/secrets';
 
 export default {
     async fetch(request, env) {
-        try {          
+        try {    
             const upgradeHeader = request.headers.get('Upgrade');
             await initializeParams(request, env);
             if (!upgradeHeader || upgradeHeader !== 'websocket') {            
@@ -65,7 +65,7 @@ export default {
                     : await vlessOverWSHandler(request, env);
             }
         } catch (err) {
-            return await renderErrorPage(request, env, 'Something went wrong!', err, false);
+            return await renderErrorPage(err);
         }
     }
 };

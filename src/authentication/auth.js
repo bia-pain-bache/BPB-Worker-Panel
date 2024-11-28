@@ -2,7 +2,6 @@ import { SignJWT, jwtVerify } from 'jose';
 import nacl from 'tweetnacl';
 import { initializeParams, userID, origin } from "../helpers/init";
 import { renderLoginPage } from '../pages/login';
-import { renderErrorPage } from '../pages/error';
 
 async function generateJWTToken (request, env) {
     await initializeParams(request, env);
@@ -84,7 +83,7 @@ export async function resetPassword(request, env) {
 
 export async function login(request, env) {
     await initializeParams(request, env);
-    if (typeof env.bpb !== 'object') return await renderErrorPage(request, env, 'KV Dataset is not properly set!', null, true);
+    if (typeof env.bpb !== 'object') throw new Error('KV Dataset is not properly set!', { cause: "init"});
     const auth = await Authenticate(request, env);
     if (auth) return Response.redirect(`${origin}/panel`, 302);
     if (request.method === 'POST') return await generateJWTToken(request, env);

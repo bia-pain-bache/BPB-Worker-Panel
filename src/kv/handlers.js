@@ -2,13 +2,12 @@ import { fetchWarpConfigs } from '../protocols/warp';
 import { isDomain, resolveDNS } from '../helpers/helpers';
 import { initializeParams, panelVersion } from '../helpers/init';
 import { Authenticate } from '../authentication/auth';
-import { renderErrorPage } from '../pages/error';
 
 export async function getDataset(request, env) {
     await initializeParams(request, env);
     let proxySettings, warpConfigs;
     if (typeof env.bpb !== 'object') {
-        return {kvNotFound: true, proxySettings: null, warpConfigs: null}
+        throw new Error('KV Dataset is not properly set!', { cause: "init"});
     }
 
     try {
@@ -27,7 +26,7 @@ export async function getDataset(request, env) {
     }
     
     if (panelVersion !== proxySettings.panelVersion) proxySettings = await updateDataset(request, env);
-    return {kvNotFound: false, proxySettings, warpConfigs}
+    return { proxySettings, warpConfigs }
 }
 
 export async function updateDataset (request, env) {
@@ -166,8 +165,7 @@ export async function updateWarpConfigs(request, env) {
     if (!auth) return new Response('Unauthorized', { status: 401 });
     if (request.method === 'POST') {
         try {
-            const { kvNotFound, proxySettings } = await getDataset(request, env);
-            if (kvNotFound) return await renderErrorPage(request, env, 'KV Dataset is not properly set!', null, true);
+            const { proxySettings } = await getDataset(request, env);
             const { error: warpPlusError } = await fetchWarpConfigs(env, proxySettings);
             if (warpPlusError) return new Response(warpPlusError, { status: 400 });
             return new Response('Warp configs updated successfully', { status: 200 });
