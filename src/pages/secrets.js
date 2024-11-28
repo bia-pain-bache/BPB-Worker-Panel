@@ -1,4 +1,4 @@
-import { panelVersion } from "../helpers/init";
+import { panelVersion, initializeParams } from "../helpers/init";
 
 export async function renderSecretsPage (request, env) {
     await initializeParams(request, env);
