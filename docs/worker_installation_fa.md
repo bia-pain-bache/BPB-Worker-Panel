@@ -1,6 +1,6 @@
 <h1 align="center">نصب از طریق Cloudflare Workers</h1>
 
-خب اول کد Worker رو از [اینجا](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/worker.js) دانلود کنید و ببرید توی داشبورد ورکر کلادفلرو فایل رو آپلود کنید (چون کد خیلی زیاد شده Copy Paste کردن با گوشی خیلی سخت شده، با توجه به عکس زیر آپلود کنید). توی مویایل منوی کناری رو باز کنید و تاح کنید روش نگه دارید و آپلود کنید.
+خب اول کد Worker رو از [اینجا](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/worker.js) دانلود کنید، بعد ورکری که ساختید رو Edit code بزنید و از سایدبار سمت چپ فایل‌ worker.js رو delete کنید و فایل جدید رو آپلود کنید، اگر ارور داد فایل package-lock.json رو هم پاک کنید. چون کد خیلی زیاد شده Copy Paste کردن با گوشی خیلی سخت شده، با توجه به عکس زیر آپلود کنید. توی مویایل منوی کناری رو باز کنید و تاح کنید روش نگه دارید و آپلود کنید.
 
 <p align="center">
   <img src="assets/images/Worker_mobile_upload.jpg">
@@ -75,13 +75,17 @@
 
 یه بار `Add variable` بزنید و خونه اول رو بنویسید `UUID` با حروف بزرگ، بعد از [اینجا](https://www.uuidgenerator.net/) یه UUID بگیرید و بذارید خونه دوم.
 
-حالا یه بار دیگه `Add variable` بزنید خونه اول `PROXYIP` با حروف بزرگ، IP رو هم میتونید از لینک‌ زیر بگیرید، اینا رو باز کنید یه تعدادی IP نشون میده که میتونید کشورشون رو هم چک کنید و یه دونه انتخاب کنید:
+حالا یه بار دیگه `Add variable` بزنید خونه اول `PROXYIP` با حروف بزرگ، IP رو هم میتونید از لینک‌ زیر بگیرید، اینا رو باز کنید یه تعدادی IP نشون میده که میتونید کشورشون رو هم چک کنید و یک یا چندتا انتخاب کنید:
 
 >[Proxy IP](https://www.nslookup.io/domains/bpb.yousef.isegaro.com/dns-records/)
 
 <p align="center">
   <img src="assets/images/Proxy_ips.jpg">
 </p>
+
+> [!TIP]
+> اگر خواستید چند Proxy IP داشته باشید میتونید با ویرگول وارد کنید، مثل `151.213.181.145`,`5.163.51.41`,`bpb.yousef.isegaro.com`
+
 
 یه بار دیگه `Add variable` بزنید خونه اول `TROJAN_PASS` با حروف بزرگ، یه پسورد دلخواه بذارید.
 <br><br>
