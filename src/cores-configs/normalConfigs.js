@@ -1,12 +1,10 @@
 import { getConfigAddresses, generateRemark, randomUpperCase, getRandomPath } from './helpers';
 import { initializeParams, userID, trojanPassword, hostName, client, defaultHttpsPorts } from "../helpers/init";
 import { getDataset } from '../kv/handlers';
-import { renderErrorPage } from '../pages/error';
 
 export async function getNormalConfigs(request, env) {
     await initializeParams(request, env);
-    const { kvNotFound, proxySettings } = await getDataset(request, env);
-    if (kvNotFound) return await renderErrorPage(request, env, 'KV Dataset is not properly set!', null, true);
+    const { proxySettings } = await getDataset(request, env);
     const { 
         cleanIPs, 
         proxyIP, 

@@ -1,6 +1,5 @@
 import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6 } from './helpers';
 import { initializeParams, userID, trojanPassword, hostName, defaultHttpsPorts } from "../helpers/init";
-import { renderErrorPage } from '../pages/error';
 import { getDataset } from '../kv/handlers';
 import { isDomain } from '../helpers/helpers';
 
@@ -574,8 +573,7 @@ function buildSingBoxChainOutbound (chainProxyParams, enableIPv6) {
 }
 
 export async function getSingBoxWarpConfig (request, env, client) {
-    const { kvNotFound, proxySettings, warpConfigs } = await getDataset(request, env);
-    if (kvNotFound) return await renderErrorPage(request, env, 'KV Dataset is not properly set!', null, true);
+    const { proxySettings, warpConfigs } = await getDataset(request, env);
     const { warpEndpoints } = proxySettings;
     const config = structuredClone(singboxConfigTemp);
     const proIndicator = client === 'hiddify' ? ' Pro ' : ' ';
@@ -622,8 +620,7 @@ export async function getSingBoxWarpConfig (request, env, client) {
 
 export async function getSingBoxCustomConfig(request, env, isFragment) {
     await initializeParams(request, env);
-    const { kvNotFound, proxySettings } = await getDataset(request, env);
-    if (kvNotFound) return await renderErrorPage(request, env, 'KV Dataset is not properly set!', null, true);
+    const { proxySettings } = await getDataset(request, env);
     let chainProxy;
     const { 
         cleanIPs,  
