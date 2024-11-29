@@ -504,7 +504,7 @@ export async function getClashNormalConfig (request, env) {
     selector.proxies = ['💦 Best Ping 💥'];
     urlTest.name = '💦 Best Ping 💥';
     urlTest.interval = +bestVLESSTrojanInterval;
-    const Addresses = await getConfigAddresses(globalThis.hostName, cleanIPs, enableIPv6);
+    const Addresses = await getConfigAddresses(cleanIPs, enableIPv6);
     const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
     const totalAddresses = [...Addresses, ...customCdnAddresses];
     let proxyIndex = 1, path;

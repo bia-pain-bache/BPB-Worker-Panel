@@ -1,7 +1,7 @@
 import { connect } from 'cloudflare:sockets';
 import sha256 from 'js-sha256';
 
-export async function trojanOverWSHandler(request, env) {
+export async function trojanOverWSHandler(request) {
     const webSocketPair = new WebSocketPair();
     const [client, webSocket] = Object.values(webSocketPair);
     webSocket.accept();
@@ -48,7 +48,7 @@ export async function trojanOverWSHandler(request, env) {
                         return;
                     }
 
-                    handleTCPOutBound(request, remoteSocketWapper, addressRemote, portRemote, rawClientData, webSocket, log);
+                    handleTCPOutBound(remoteSocketWapper, addressRemote, portRemote, rawClientData, webSocket, log);
                 },
                 close() {
                     log(`readableWebSocketStream is closed`);
@@ -173,7 +173,6 @@ async function parseTrojanHeader(buffer) {
  * @returns {Promise<void>} The remote socket.
  */
 async function handleTCPOutBound(
-    request,
     remoteSocket,
     addressRemote,
     portRemote,

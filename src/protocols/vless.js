@@ -6,7 +6,7 @@ import { isValidUUID } from '../helpers/helpers';
  * @param {import("@cloudflare/workers-types").Request} request The incoming request object.
  * @returns {Promise<Response>} A Promise that resolves to a WebSocket response object.
  */
-export async function vlessOverWSHandler(request, env) {
+export async function vlessOverWSHandler(request) {
     /** @type {import("@cloudflare/workers-types").WebSocket[]} */
     // @ts-ignore
     const webSocketPair = new WebSocketPair();
@@ -85,7 +85,6 @@ export async function vlessOverWSHandler(request, env) {
                 }
 
                 handleTCPOutBound(
-                    request,
                     remoteSocketWapper,
                     addressRemote,
                     portRemote,
@@ -148,7 +147,6 @@ async function checkUuidInApiResponse(targetUuid) {
  * @returns {Promise<void>} The remote socket.
  */
 async function handleTCPOutBound(
-    request,
     remoteSocket,
     addressRemote,
     portRemote,

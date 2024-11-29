@@ -62,8 +62,8 @@ export default {
                 }
             } else {
                 return globalThis.pathName.startsWith('/tr') 
-                    ? await trojanOverWSHandler(request, env) 
-                    : await vlessOverWSHandler(request, env);
+                    ? await trojanOverWSHandler(request) 
+                    : await vlessOverWSHandler(request);
             }
         } catch (err) {
             return await renderErrorPage(err);
