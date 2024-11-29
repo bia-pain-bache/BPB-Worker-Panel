@@ -738,7 +738,7 @@ export async function getXrayCustomConfigs(request, env, isFragment) {
         }
     }
     
-    const Addresses = await getConfigAddresses(globalThis.hostName, cleanIPs, enableIPv6);
+    const Addresses = await getConfigAddresses(cleanIPs, enableIPv6);
     const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
     const totalAddresses = isFragment ? [...Addresses] : [...Addresses, ...customCdnAddresses];
     const totalPorts = ports.filter(port => isFragment ? globalThis.defaultHttpsPorts.includes(port): true);

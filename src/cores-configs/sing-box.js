@@ -649,7 +649,7 @@ export async function getSingBoxCustomConfig(request, env, isFragment) {
         }
     }
     
-    const Addresses = await getConfigAddresses(globalThis.hostName, cleanIPs, enableIPv6);
+    const Addresses = await getConfigAddresses(cleanIPs, enableIPv6);
     const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
     const totalAddresses = [...Addresses, ...customCdnAddresses];
     const config = structuredClone(singboxConfigTemp);

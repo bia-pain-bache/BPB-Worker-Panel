@@ -18,7 +18,7 @@ export async function getNormalConfigs(request, env) {
     
     let vlessConfs = '', trojanConfs = '', chainProxy = '';
     let proxyIndex = 1;
-    const Addresses = await getConfigAddresses(globalThis.hostName, cleanIPs, enableIPv6);
+    const Addresses = await getConfigAddresses(cleanIPs, enableIPv6);
     const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
     const totalAddresses = [...Addresses, ...customCdnAddresses];
     const alpn = globalThis.client === 'singbox' ? 'http/1.1' : 'h2,http/1.1';
