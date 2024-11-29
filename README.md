@@ -31,6 +31,8 @@ This project is dedicated to developing a user panel for the [Cloudflare-workers
 <br>
 
 ## How to use:
+- [Installation (Pages - New recommended method)](docs/pages_upload_installation_fa.md)
+
 - [Installation (Pages)](docs/pages_installation_fa.md)
 
 - [Installation (Worker)](docs/worker_installation_fa.md)
