@@ -37,7 +37,7 @@ export async function renderErrorPage (error) {
     </head>
     <body>
         <div id="error-container">
-            <h1>BPB Panel 💦</h1>
+            <h1>BPB Panel <span style="font-size: smaller;">${globalThis.panelVersion}</span> 💦</h1>
             <div id="error-message">
                 <h2>❌ Something went wrong!</h2>
                 <p><b>${error ? `⚠️ ${error.cause ? error.message.toString() : error.stack.toString()}` : ''}</b></p>

@@ -1,5 +1,4 @@
 import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6, isIPv4 } from './helpers';
-import { initializeParams, userID, trojanPassword, hostName, defaultHttpsPorts } from "../helpers/init";
 import { getDataset } from '../kv/handlers';
 import { isDomain } from '../helpers/helpers';
 
@@ -250,14 +249,14 @@ function buildClashRoutingRules (proxySettings) {
 }
 
 function buildClashVLESSOutbound (remark, address, port, host, sni, path, allowInsecure) {
-    const tls = defaultHttpsPorts.includes(port) ? true : false;
+    const tls = globalThis.defaultHttpsPorts.includes(port) ? true : false;
     const addr = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
     const outbound = {
         "name": remark,
         "type": "vless",
         "server": addr,
         "port": +port,
-        "uuid": userID,
+        "uuid": globalThis.userID,
         "tls": tls,
         "network": "ws",
         "udp": true,
@@ -288,7 +287,7 @@ function buildClashTrojanOutbound (remark, address, port, host, sni, path, allow
         "type": "trojan",
         "server": addr,
         "port": +port,
-        "password": trojanPassword,
+        "password": globalThis.trojanPassword,
         "network": "ws",
         "udp": true,
         "ws-opts": {
@@ -455,7 +454,6 @@ export async function getClashWarpConfig(request, env) {
 }
 
 export async function getClashNormalConfig (request, env) {
-    await initializeParams(request, env);
     const { proxySettings } = await getDataset(request, env);
     let chainProxy;
     const { 
@@ -506,7 +504,7 @@ export async function getClashNormalConfig (request, env) {
     selector.proxies = ['💦 Best Ping 💥'];
     urlTest.name = '💦 Best Ping 💥';
     urlTest.interval = +bestVLESSTrojanInterval;
-    const Addresses = await getConfigAddresses(hostName, cleanIPs, enableIPv6);
+    const Addresses = await getConfigAddresses(globalThis.hostName, cleanIPs, enableIPv6);
     const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
     const totalAddresses = [...Addresses, ...customCdnAddresses];
     let proxyIndex = 1, path;
@@ -522,8 +520,8 @@ export async function getClashNormalConfig (request, env) {
                 let VLESSOutbound, TrojanOutbound;
                 const isCustomAddr = customCdnAddresses.includes(addr);
                 const configType = isCustomAddr ? 'C' : '';
-                const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
-                const host = isCustomAddr ? customCdnHost : hostName;
+                const sni = isCustomAddr ? customCdnSni : randomUpperCase(globalThis.hostName);
+                const host = isCustomAddr ? customCdnHost : globalThis.hostName;
                 const remark = generateRemark(protocolIndex, port, addr, cleanIPs, protocol, configType).replace(' : ', ' - ');
 
                 if (protocol === 'VLESS') {
@@ -542,7 +540,7 @@ export async function getClashNormalConfig (request, env) {
                     urlTest.proxies.push(remark);
                 }
                 
-                if (protocol === 'Trojan' && defaultHttpsPorts.includes(port)) {
+                if (protocol === 'Trojan' && globalThis.defaultHttpsPorts.includes(port)) {
                     path = `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
                     TrojanOutbound = buildClashTrojanOutbound(
                         chainProxy ? `proxy-${proxyIndex}` : remark, 

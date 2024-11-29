@@ -1,7 +1,4 @@
-import { panelVersion, initializeParams } from "../helpers/init";
-
-export async function renderSecretsPage (request, env) {
-    await initializeParams(request, env);
+export async function renderSecretsPage () {
     const secretsPage = `
     <!DOCTYPE html>
     <html lang="en">
@@ -111,7 +108,7 @@ export async function renderSecretsPage (request, env) {
     </head>
     <body>
         <div class="container">
-            <h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
+            <h1>BPB Panel <span style="font-size: smaller;">${globalThis.panelVersion}</span> 💦</h1>
             <div class="form-container">
                 <h2>Secrets generator</h2>
                 <div>

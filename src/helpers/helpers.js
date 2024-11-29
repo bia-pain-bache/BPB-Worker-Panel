@@ -1,7 +1,6 @@
 import { Authenticate } from "../authentication/auth";
 import { getDataset, updateDataset } from "../kv/handlers";
 import { renderHomePage } from "../pages/home";
-import { initializeParams, origin } from "./init";
 
 export function isValidUUID(uuid) {
 	const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -42,7 +41,6 @@ export function isDomain(address) {
 }
 
 export async function handlePanel(request, env) {
-    await initializeParams(request, env);
     const auth = await Authenticate(request, env); 
     if (request.method === 'POST') {     
         if (!auth) return new Response('Unauthorized or expired session!', { status: 401 });             
@@ -52,9 +50,9 @@ export async function handlePanel(request, env) {
         
     const { proxySettings } = await getDataset(request, env);
     const pwd = await env.bpb.get('pwd');
-    if (pwd && !auth) return Response.redirect(`${origin}/login`, 302);
+    if (pwd && !auth) return Response.redirect(`${globalThis.urlOrigin}/login`, 302);
     const isPassSet = pwd?.length >= 8;
-    return await renderHomePage(request, env, proxySettings, isPassSet);
+    return await renderHomePage(proxySettings, isPassSet);
 }
 
 export async function fallback(request) {

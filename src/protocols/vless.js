@@ -1,6 +1,5 @@
 import { connect } from 'cloudflare:sockets';
 import { isValidUUID } from '../helpers/helpers';
-import { initializeParams, userID, dohURL, proxyIP, pathName } from "../helpers/init";
 
 /**
  * Handles VLESS over WebSocket requests by creating a WebSocket pair, accepting the WebSocket connection, and processing the VLESS header.
@@ -10,7 +9,6 @@ import { initializeParams, userID, dohURL, proxyIP, pathName } from "../helpers/
 export async function vlessOverWSHandler(request, env) {
     /** @type {import("@cloudflare/workers-types").WebSocket[]} */
     // @ts-ignore
-    await initializeParams(request, env);
     const webSocketPair = new WebSocketPair();
     const [client, webSocket] = Object.values(webSocketPair);
 
@@ -55,7 +53,7 @@ export async function vlessOverWSHandler(request, env) {
                     rawDataIndex,
                     vlessVersion = new Uint8Array([0, 0]),
                     isUDP,
-                } = await processVlessHeader(chunk, userID);
+                } = await processVlessHeader(chunk, globalThis.userID);
                 address = addressRemote;
                 portWithRandomLog = `${portRemote}--${Math.random()} ${isUDP ? "udp " : "tcp "} `;
                 if (hasError) {
@@ -176,9 +174,9 @@ async function handleTCPOutBound(
   
     // if the cf connect tcp socket have no incoming data, we retry to redirect ip
     async function retry() {
-        const panelProxyIP = pathName.split('/')[2];
+        const panelProxyIP = globalThis.pathName.split('/')[2];
         const panelProxyIPs = panelProxyIP ? atob(panelProxyIP).split(',') : undefined;
-        const finalProxyIP = panelProxyIPs ? panelProxyIPs[Math.floor(Math.random() * panelProxyIPs.length)] : proxyIP || addressRemote;
+        const finalProxyIP = panelProxyIPs ? panelProxyIPs[Math.floor(Math.random() * panelProxyIPs.length)] : globalThis.proxyIP || addressRemote;
 		const tcpSocket = await connectAndWrite(finalProxyIP, portRemote);
         // no matter retry success or not, close websocket
         tcpSocket.closed
@@ -556,7 +554,7 @@ async function handleUDPOutBound(webSocket, vlessResponseHeader, log) {
         new WritableStream({
             async write(chunk) {
                 const resp = await fetch(
-                    dohURL, // dns server url
+                    globalThis.dohURL, // dns server url
                     {
                         method: "POST",
                         headers: {

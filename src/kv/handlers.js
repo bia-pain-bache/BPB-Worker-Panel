@@ -1,10 +1,8 @@
 import { fetchWarpConfigs } from '../protocols/warp';
 import { isDomain, resolveDNS } from '../helpers/helpers';
-import { initializeParams, panelVersion } from '../helpers/init';
 import { Authenticate } from '../authentication/auth';
 
 export async function getDataset(request, env) {
-    await initializeParams(request, env);
     let proxySettings, warpConfigs;
     if (typeof env.bpb !== 'object') {
         throw new Error('KV Dataset is not properly set!', { cause: "init"});
@@ -25,12 +23,11 @@ export async function getDataset(request, env) {
         warpConfigs = configs;
     }
     
-    if (panelVersion !== proxySettings.panelVersion) proxySettings = await updateDataset(request, env);
+    if (globalThis.panelVersion !== proxySettings.panelVersion) proxySettings = await updateDataset(request, env);
     return { proxySettings, warpConfigs }
 }
 
 export async function updateDataset (request, env) {
-    await initializeParams(request, env);
     let newSettings = request.method === 'POST' ? await request.formData() : null;
     const isReset = newSettings?.get('resetSettings') === 'true';
     let currentSettings;
@@ -117,7 +114,7 @@ export async function updateDataset (request, env) {
         noiseSizeMax: validateField('noiseSizeMax') ?? currentSettings?.noiseSizeMax ?? '10',
         noiseDelayMin: validateField('noiseDelayMin') ?? currentSettings?.noiseDelayMin ?? '1',
         noiseDelayMax: validateField('noiseDelayMax') ?? currentSettings?.noiseDelayMax ?? '1',
-        panelVersion: panelVersion
+        panelVersion: globalThis.panelVersion
     };
 
     try {    
