@@ -1,5 +1,3 @@
-// https://github.com/bia-pain-bache/BPB-Worker-Panel
-
 import { initializeParams } from './helpers/init';
 import { vlessOverWSHandler } from './protocols/vless';
 import { trojanOverWSHandler } from './protocols/trojan';

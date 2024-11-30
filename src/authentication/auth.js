@@ -80,8 +80,6 @@ export async function resetPassword(request, env) {
 }
 
 export async function login(request, env) {
-    // await initializeParams(request, env);
-    if (typeof env.bpb !== 'object') throw new Error('KV Dataset is not properly set!', { cause: "init"});
     const auth = await Authenticate(request, env);
     if (auth) return Response.redirect(`${globalThis.urlOrigin}/panel`, 302);
     if (request.method === 'POST') return await generateJWTToken(request, env);
