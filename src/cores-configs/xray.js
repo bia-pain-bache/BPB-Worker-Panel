@@ -1,6 +1,5 @@
 import { resolveDNS, isDomain } from '../helpers/helpers';
 import { getConfigAddresses, extractWireguardParams, base64ToDecimal, generateRemark, randomUpperCase, getRandomPath } from './helpers';
-// import { initializeParams, globalThis.userID, globalThis.trojanPassword, globalThis.hostName, globalThis.defaultHttpsPorts } from "../helpers/init";
 import { getDataset } from '../kv/handlers';
 
 async function buildXrayDNS (proxySettings, outboundAddrs, domainToStaticIPs, isWorkerLess, isWarp) { 

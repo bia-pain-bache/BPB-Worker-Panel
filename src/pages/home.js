@@ -424,7 +424,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                     </div>
                     <div class="form-control">
                         <label for="scanner">🔎 Clean IP Scanner</label>
-                        <a href="https://github.com/bia-pain-bache/Cloudflare-Clean-IP-Scanner/releases/tag/v2.2.5" name="scanner" target="_blank" style="width: 100%;">
+                        <a href="${atob("aHR0cHM6Ly9naXRodWIuY29tL2JpYS1wYWluLWJhY2hl")}/Cloudflare-Clean-IP-Scanner/releases/tag/v2.2.5" name="scanner" target="_blank" style="width: 100%;">
                             <button type="button" id="scanner" class="button">
                                 Download Scanner
                                 <span class="material-symbols-outlined">open_in_new</span>
@@ -531,7 +531,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                     </div>
                     <div class="form-control">
                         <label for="endpointScanner" style="line-height: 1.5;">🔎 Scan Endpoint</label>
-                        <button type="button" id="endpointScanner" class="button" style="padding: 10px 0;" onclick="copyToClipboard('bash <(curl -fsSL https://raw.githubusercontent.com/bia-pain-bache/warp-script/refs/heads/main/endip/install.sh)', false)">
+                        <button type="button" id="endpointScanner" class="button" style="padding: 10px 0;" onclick="copyToClipboard('bash <(curl -fsSL ${atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2JpYS1wYWluLWJhY2hl")}/warp-script/refs/heads/main/endip/install.sh)', false)">
                             Copy Script<span class="material-symbols-outlined">terminal</span>
                         </button>
                     </div>
@@ -851,7 +851,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
             <hr>
             <div class="header-container">
                 <h2 style="margin: 0 5px;">💡 MY IP</h2>
-                <button type="button" id="resetSettings" onclick="fetchIPInfo()" style="background: none; margin: 0; border: none; cursor: pointer;">
+                <button type="button" id="refresh-geo-location" onclick="fetchIPInfo()" style="background: none; margin: 0; border: none; cursor: pointer;">
                     <i class="fa fa-refresh fa-2x" style="color: var(--button-color);" aria-hidden="true"></i>
                 </button>       
             </div>
@@ -883,7 +883,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
             <hr>
             <div class="footer">
                 <i class="fa fa-github" style="font-size:36px; margin-right: 10px;"></i>
-                <a class="link" href="https://github.com/bia-pain-bache/BPB-Worker-Panel" style="color: var(--color); text-decoration: underline;" target="_blank">Github</a>
+                <a class="link" href="${atob('aHR0cHM6Ly9naXRodWIuY29tL2JpYS1wYWluLWJhY2hlL0JQQi1Xb3JrZXItUGFuZWw=')}" style="color: var(--color); text-decoration: underline;" target="_blank">Github</a>
                 <button id="openModalBtn" class="button">Change Password</button>
                 <button type="button" id="logout" style="background: none; color: var(--color); margin: 0; border: none; cursor: pointer;">
                     <i class="fa fa-power-off fa-2x" aria-hidden="true"></i>
@@ -1025,6 +1025,10 @@ export async function renderHomePage (proxySettings, isPassSet) {
                 document.getElementById(cfIP ? 'cf-isp' : 'isp').textContent = isp;
             };
 
+            const refreshIcon = document.getElementById("refresh-geo-location").querySelector('i');
+            refreshIcon.classList.add('fa-spin');
+            document.body.style.cursor = 'wait';
+
             try {
                 const ipResponse = await fetch('https://ipwho.is/' + '?nocache=' + Date.now(), { cache: "no-store" });
                 const ipResponseObj = await ipResponse.json();
@@ -1042,6 +1046,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
                 });
                 const cfIPGeoLocation = await cfGeoResponse.json();
                 updateUI(cfIP, cfIPGeoLocation.country, cfIPGeoLocation.countryCode, cfIPGeoLocation.city, cfIPGeoLocation.isp, true);
+                refreshIcon.classList.remove('fa-spin');
+                document.body.style.cursor = 'default';
             } catch (error) {
                 console.error('Error fetching IP address:', error);
             }

@@ -4,9 +4,6 @@ import { Authenticate } from '../authentication/auth';
 
 export async function getDataset(request, env) {
     let proxySettings, warpConfigs;
-    if (typeof env.bpb !== 'object') {
-        throw new Error('KV Dataset is not properly set!', { cause: "init"});
-    }
 
     try {
         proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
