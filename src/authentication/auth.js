@@ -1,11 +1,8 @@
 import { SignJWT, jwtVerify } from 'jose';
 import nacl from 'tweetnacl';
-import { initializeParams, userID, origin } from "../helpers/init";
 import { renderLoginPage } from '../pages/login';
-import { renderErrorPage } from '../pages/error';
 
 async function generateJWTToken (request, env) {
-    await initializeParams(request, env);
     const password = await request.text();
     const savedPass = await env.bpb.get('pwd');
     if (password !== savedPass) return new Response('Method Not Allowed', { status: 405 });
@@ -15,7 +12,7 @@ async function generateJWTToken (request, env) {
         await env.bpb.put('secretKey', secretKey);
     }
     const secret = new TextEncoder().encode(secretKey);
-    const jwtToken = await new SignJWT({ userID })
+    const jwtToken = await new SignJWT({ userID: globalThis.userID })
         .setProtectedHeader({ alg: 'HS256' })
         .setIssuedAt()
         .setExpirationTime('24h')
@@ -83,10 +80,8 @@ export async function resetPassword(request, env) {
 }
 
 export async function login(request, env) {
-    await initializeParams(request, env);
-    if (typeof env.bpb !== 'object') return await renderErrorPage(request, env, 'KV Dataset is not properly set!', null, true);
     const auth = await Authenticate(request, env);
-    if (auth) return Response.redirect(`${origin}/panel`, 302);
+    if (auth) return Response.redirect(`${globalThis.urlOrigin}/panel`, 302);
     if (request.method === 'POST') return await generateJWTToken(request, env);
-    return await renderLoginPage(request, env);
+    return await renderLoginPage();
 }
