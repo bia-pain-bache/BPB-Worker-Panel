@@ -31,6 +31,8 @@ This project is dedicated to developing a user panel for the [Cloudflare-workers
 <br>
 
 ## How to use:
+- [Installation (Pages - New recommended method)](docs/pages_upload_installation_fa.md)
+
 - [Installation (Pages)](docs/pages_installation_fa.md)
 
 - [Installation (Worker)](docs/worker_installation_fa.md)
@@ -47,7 +49,7 @@ This project is dedicated to developing a user panel for the [Cloudflare-workers
 | **v2rayN**  | 6.42 or higher  | :heavy_check_mark: | :x: |
 | **v2rayN-PRO**  | 1.4 or higher  | :heavy_check_mark: | :heavy_check_mark: |
 | **Nekobox**  |   | :x: | :x: |
-| **Sing-box**  | 1.8.10 or higher  | :x: | :x: |
+| **Sing-box**  | 1.10.1 or higher  | :x: | :x: |
 | **Streisand**  |   | :heavy_check_mark: | :x: |
 | **V2Box**  |   | :x: | :x: |
 | **Shadowrocket**  |   | :x: | :x: |
