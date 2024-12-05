@@ -1,8 +1,6 @@
 import { Authenticate } from "../authentication/auth";
 import { getDataset, updateDataset } from "../kv/handlers";
-import { renderErrorPage } from "../pages/error";
 import { renderHomePage } from "../pages/home";
-import { initializeParams, origin } from "./init";
 
 export function isValidUUID(uuid) {
 	const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -43,7 +41,6 @@ export function isDomain(address) {
 }
 
 export async function handlePanel(request, env) {
-    await initializeParams(request, env);
     const auth = await Authenticate(request, env); 
     if (request.method === 'POST') {     
         if (!auth) return new Response('Unauthorized or expired session!', { status: 401 });             
@@ -51,12 +48,11 @@ export async function handlePanel(request, env) {
         return new Response('Success', { status: 200 });
     }
         
-    const { kvNotFound, proxySettings } = await getDataset(request, env);
-    if (kvNotFound) return await renderErrorPage(request, env, 'KV Dataset is not properly set!', null, true);
+    const { proxySettings } = await getDataset(request, env);
     const pwd = await env.bpb.get('pwd');
-    if (pwd && !auth) return Response.redirect(`${origin}/login`, 302);
+    if (pwd && !auth) return Response.redirect(`${globalThis.urlOrigin}/login`, 302);
     const isPassSet = pwd?.length >= 8;
-    return await renderHomePage(request, env, proxySettings, isPassSet);
+    return await renderHomePage(proxySettings, isPassSet);
 }
 
 export async function fallback(request) {
@@ -65,4 +61,20 @@ export async function fallback(request) {
     url.protocol = 'https:';
     request = new Request(url, request);
     return await fetch(request);
+}
+
+export async function getMyIP(request) {
+    const ip = await request.text();
+    try {
+        const response = await fetch(`http://ip-api.com/json/${ip}?nocache=${Date.now()}`);
+        const geoLocation = await response.json();
+        return new Response(JSON.stringify(geoLocation), {
+            status: 200,
+            headers: {
+                'Content-Type': 'text/plain;charset=utf-8'
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching IP address:', error);
+    }
 }

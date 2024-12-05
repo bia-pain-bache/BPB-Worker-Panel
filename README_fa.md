@@ -39,8 +39,9 @@
 <br><br>
 
 ## نحوه‌ی راه‌اندازی، تنظیمات و استفاده
+- [روش جدید پیشنهادی نصب به صورت Pages](docs/pages_upload_installation_fa.md)
 - [نصب به صورت Pages](docs/pages_installation_fa.md)
-- [نصب به صورت Worker](docs/worker_installation_fa.md)
+- [نصب به صورت Workers](docs/worker_installation_fa.md)
 - [نحوه استفاده از پنل](docs/configuration_fa.md)
 - [پرسش‌های متداول (FAQ)](docs/faq.md)
 <br>
@@ -81,7 +82,7 @@
     </tr>
     <tr>
       <td><b>Sing-box</b></td>
-      <td>1.8.10 و بالاتر</td>
+      <td>1.10.1 و بالاتر</td>
       <td>❌</td>
       <td>❌</td>
     </tr>

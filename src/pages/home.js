@@ -1,7 +1,4 @@
-import { initializeParams, userID, hostName, origin, defaultHttpPorts, defaultHttpsPorts, panelVersion } from "../helpers/init";
-
-export async function renderHomePage (request, env, proxySettings, isPassSet) {
-    await initializeParams(request, env);
+export async function renderHomePage (proxySettings, isPassSet) {
     const {
         remoteDNS, 
         localDNS,
@@ -49,11 +46,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
     const isWarpPlus = warpPlusLicense ? true : false;
     const activeProtocols = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
     let httpPortsBlock = '', httpsPortsBlock = '';
-    const allPorts = [...(hostName.includes('workers.dev') ? defaultHttpPorts : []), ...defaultHttpsPorts];
-    const regionNames = new Intl.DisplayNames(['en'], {type: 'region'});
-    const countryCode = request.cf.country;
-    const flag = String.fromCodePoint(...[...countryCode].map(c => 0x1F1E6 + c.charCodeAt(0) - 65));
-    const cfCountry = `${regionNames.of(countryCode)} ${flag}`;
+    const allPorts = [...(globalThis.hostName.includes('workers.dev') ? globalThis.defaultHttpPorts : []), ...globalThis.defaultHttpsPorts];
 
     allPorts.forEach(port => {
         const id = `port-${port}`;
@@ -63,7 +56,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                 <input type="checkbox" id=${id} name=${port} onchange="handlePortChange(event)" value="true" ${isChecked}>
                 <label style="margin-bottom: 3px;" for=${id}>${port}</label>
             </div>`;
-        defaultHttpsPorts.includes(port) ? httpsPortsBlock += portBlock : httpPortsBlock += portBlock;
+        globalThis.defaultHttpsPorts.includes(port) ? httpsPortsBlock += portBlock : httpPortsBlock += portBlock;
     });
 
     const supportedApps = apps => apps.map(app => `
@@ -73,7 +66,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
         </div>`).join('');
         
     const subQR = (path, app, tag, title, sbType) => {
-        const url = `${sbType ? 'sing-box://import-remote-profile?url=' : ''}https://${hostName}/${path}/${userID}${app ? `?app=${app}` : ''}#${tag}`;
+        const url = `${sbType ? 'sing-box://import-remote-profile?url=' : ''}https://${globalThis.hostName}/${path}/${globalThis.userID}${app ? `?app=${app}` : ''}#${tag}`;
         return `
             <button onclick="openQR('${url}', '${title}')" style="margin-bottom: 8px;">
                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
@@ -81,7 +74,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
     };
     
     const subURL = (path, app, tag) => {
-        const url = `https://${hostName}/${path}/${userID}${app ? `?app=${app}` : ''}#${tag}`;
+        const url = `https://${globalThis.hostName}/${path}/${globalThis.userID}${app ? `?app=${app}` : ''}#${tag}`;
         return `
             <button onclick="copyToClipboard('${url}')">
                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
@@ -95,7 +88,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="timestamp" content=${Date.now()}>
-        <title>BPB Panel ${panelVersion}</title>
+        <title>BPB Panel ${globalThis.panelVersion}</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
         <title>Collapsible Sections</title>
@@ -244,6 +237,9 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                 box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
                 transform: translateY(-2px);
             }
+            .header-container button:hover {
+                transform: scale(1.1);
+            }
             button.button:hover { color: white; }
             .button:active,
             table button:active { transform: translateY(1px); box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); }
@@ -372,6 +368,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
             #ips th { background-color: var(--hr-text-color); color: var(--background-color); width: unset; }
             #ips td { background-color: unset; }
             #ips td:first-child { background-color: var(--table-active-color); }
+            .header-container { display: flex; align-items: center; justify-content: center; }
             @media only screen and (min-width: 768px) {
                 .form-container { max-width: 70%; }
                 .form-control { 
@@ -389,7 +386,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
         </style>
     </head>
     <body>
-        <h1>BPB Panel <span style="font-size: smaller;">${panelVersion}</span> 💦</h1>
+        <h1>BPB Panel <span style="font-size: smaller;">${globalThis.panelVersion}</span> 💦</h1>
         <div class="form-container">
             <form id="configForm">
                 <details open>
@@ -427,7 +424,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                     </div>
                     <div class="form-control">
                         <label for="scanner">🔎 Clean IP Scanner</label>
-                        <a href="https://github.com/bia-pain-bache/Cloudflare-Clean-IP-Scanner/releases/tag/v2.2.5" name="scanner" target="_blank" style="width: 100%;">
+                        <a href="${atob("aHR0cHM6Ly9naXRodWIuY29tL2JpYS1wYWluLWJhY2hl")}/Cloudflare-Clean-IP-Scanner/releases/tag/v2.2.5" name="scanner" target="_blank" style="width: 100%;">
                             <button type="button" id="scanner" class="button">
                                 Download Scanner
                                 <span class="material-symbols-outlined">open_in_new</span>
@@ -534,7 +531,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                     </div>
                     <div class="form-control">
                         <label for="endpointScanner" style="line-height: 1.5;">🔎 Scan Endpoint</label>
-                        <button type="button" id="endpointScanner" class="button" style="padding: 10px 0;" onclick="copyToClipboard('bash <(curl -fsSL https://raw.githubusercontent.com/bia-pain-bache/warp-script/refs/heads/main/endip/install.sh)', false)">
+                        <button type="button" id="endpointScanner" class="button" style="padding: 10px 0;" onclick="copyToClipboard('bash <(curl -fsSL ${atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2JpYS1wYWluLWJhY2hl")}/warp-script/refs/heads/main/endip/install.sh)', false)">
                             Copy Script<span class="material-symbols-outlined">terminal</span>
                         </button>
                     </div>
@@ -672,7 +669,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                 </div>
             </form>
             <hr>            
-            <h2>NORMAL SUB 🔗</h2>
+            <h2>🔗 NORMAL SUB</h2>
             <div class="table-container">
                 <table id="normal-configs-table">
                     <tr>
@@ -698,7 +695,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                     </tr>
                 </table>
             </div>
-            <h2>FULL NORMAL SUB 🔗</h2>
+            <h2>🔗 FULL NORMAL SUB</h2>
             <div class="table-container">
                 <table id="full-normal-configs-table">
                     <tr>
@@ -734,7 +731,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                     </tr>
                 </table>
             </div>
-            <h2>FRAGMENT SUB ⛓️</h2>
+            <h2>🔗 FRAGMENT SUB</h2>
             <div class="table-container">
                 <table id="frag-sub-table">
                     <tr>
@@ -761,7 +758,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                     </tr>
                 </table>
             </div>
-            <h2>WARP SUB 🔗</h2>
+            <h2>🔗 WARP SUB</h2>
             <div class="table-container">
                 <table id="normal-configs-table">
                     <tr>
@@ -797,7 +794,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                     </tr>
                 </table>
             </div>
-            <h2>WARP PRO SUB 🔗</h2>
+            <h2>🔗 WARP PRO SUB</h2>
             <div class="table-container">
                 <table id="warp-pro-configs-table">
                     <tr>
@@ -852,7 +849,12 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                 </div>
             </div>
             <hr>
-            <h2>MY IP 💡</h2>
+            <div class="header-container">
+                <h2 style="margin: 0 5px;">💡 MY IP</h2>
+                <button type="button" id="refresh-geo-location" onclick="fetchIPInfo()" style="background: none; margin: 0; border: none; cursor: pointer;">
+                    <i class="fa fa-refresh fa-2x" style="color: var(--button-color);" aria-hidden="true"></i>
+                </button>       
+            </div>
             <div class="table-container">
                 <table id="ips" style="text-align: center; margin-bottom: 15px; text-wrap-mode: nowrap;">
                     <tr>
@@ -860,25 +862,28 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
                         <th>IP</th>
                         <th>Country</th>
                         <th>City</th>
+                        <th>ISP</th>
                     </tr>
                     <tr>
                         <td>Cloudflare CDN</td>
                         <td id="cf-ip"></td>
                         <td><b id="cf-country"></b></td>
                         <td><b id="cf-city"></b></td>
+                        <td><b id="cf-isp"></b></td>
                     </tr>
                     <tr>
                         <td>Others</td>
                         <td id="ip"></td>
                         <td><b id="country"></b></td>
                         <td><b id="city"></b></td>
+                        <td><b id="isp"></b></td>
                     </tr>
                 </table>
             </div>
             <hr>
             <div class="footer">
                 <i class="fa fa-github" style="font-size:36px; margin-right: 10px;"></i>
-                <a class="link" href="https://github.com/bia-pain-bache/BPB-Worker-Panel" style="color: var(--color); text-decoration: underline;" target="_blank">Github</a>
+                <a class="link" href="${atob('aHR0cHM6Ly9naXRodWIuY29tL2JpYS1wYWluLWJhY2hlL0JQQi1Xb3JrZXItUGFuZWw=')}" style="color: var(--color); text-decoration: underline;" target="_blank">Github</a>
                 <button id="openModalBtn" class="button">Change Password</button>
                 <button type="button" id="logout" style="background: none; color: var(--color); margin: 0; border: none; cursor: pointer;">
                     <i class="fa fa-power-off fa-2x" aria-hidden="true"></i>
@@ -896,7 +901,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
     <script>
         const defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
         let activePortsNo = ${ports.length};
-        let activeHttpsPortsNo = ${ports.filter(port => defaultHttpsPorts.includes(port)).length};
+        let activeHttpsPortsNo = ${ports.filter(port => globalThis.defaultHttpsPorts.includes(port)).length};
         let activeProtocols = ${activeProtocols};
         const warpPlusLicense = '${warpPlusLicense}';
         localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
@@ -1012,26 +1017,40 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
         });
 
         const fetchIPInfo = async () => {
-            const updateUI = (ip = '-', country = '-', country_code = '-', city = '-', cfIP) => {
-                const flag = country_code !== '-' ? String.fromCodePoint(...[...country_code].map(c => 0x1F1E6 + c.charCodeAt(0) - 65)) : '';
+            const updateUI = (ip = '-', country = '-', countryCode = '-', city = '-', isp = '-', cfIP) => {
+                const flag = countryCode !== '-' ? String.fromCodePoint(...[...countryCode].map(c => 0x1F1E6 + c.charCodeAt(0) - 65)) : '';
                 document.getElementById(cfIP ? 'cf-ip' : 'ip').textContent = ip;
                 document.getElementById(cfIP ? 'cf-country' : 'country').textContent = country + ' ' + flag;
                 document.getElementById(cfIP ? 'cf-city' : 'city').textContent = city;
+                document.getElementById(cfIP ? 'cf-isp' : 'isp').textContent = isp;
             };
 
-            const fetchIPApi = async (cfIP) => {
-                try {
-                    const response = await fetch('https://ipwho.is/' + cfIP + '?nocache=' + Date.now(), { cache: "no-store" });
-                    const { ip, country, country_code, city } = await response.json();
-                    updateUI(ip, country, country_code, city, cfIP);
-                } catch (error) {
-                    console.error('Error fetching IP address:', error);
-                    updateUI();
-                }
-            }
+            const refreshIcon = document.getElementById("refresh-geo-location").querySelector('i');
+            refreshIcon.classList.add('fa-spin');
+            document.body.style.cursor = 'wait';
 
-            await fetchIPApi('');
-            await fetchIPApi('${request.headers.get('cf-connecting-ip') || '-'}');
+            try {
+                const ipResponse = await fetch('https://ipwho.is/' + '?nocache=' + Date.now(), { cache: "no-store" });
+                const ipResponseObj = await ipResponse.json();
+                const geoResponse = await fetch('/my-ip', { 
+                    method: 'POST',
+                    body: ipResponseObj.ip
+                });
+                const ipGeoLocation = await geoResponse.json();
+                updateUI(ipResponseObj.ip, ipGeoLocation.country, ipGeoLocation.countryCode, ipGeoLocation.city, ipGeoLocation.isp);
+                const cfIPresponse = await fetch('https://ipv4.icanhazip.com/?nocache=' + Date.now(), { cache: "no-store" });
+                const cfIP = await cfIPresponse.text();
+                const cfGeoResponse = await fetch('/my-ip', { 
+                    method: 'POST',
+                    body: cfIP.trim()
+                });
+                const cfIPGeoLocation = await cfGeoResponse.json();
+                updateUI(cfIP, cfIPGeoLocation.country, cfIPGeoLocation.countryCode, cfIPGeoLocation.city, cfIPGeoLocation.isp, true);
+                refreshIcon.classList.remove('fa-spin');
+                document.body.style.cursor = 'default';
+            } catch (error) {
+                console.error('Error fetching IP address:', error);
+            }
         }
 
         const getWarpConfigs = async () => {
@@ -1344,7 +1363,7 @@ export async function renderHomePage (request, env, proxySettings, isPassSet) {
         status: 200,
         headers: {
             'Content-Type': 'text/html;charset=utf-8',
-            'Access-Control-Allow-Origin': origin,
+            'Access-Control-Allow-Origin': globalThis.urlOrigin,
             'Access-Control-Allow-Methods': 'GET, POST',
             'Access-Control-Allow-Headers': 'Content-Type, Authorization',
             'X-Content-Type-Options': 'nosniff',
