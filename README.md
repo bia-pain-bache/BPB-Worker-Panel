@@ -23,20 +23,19 @@ This project is dedicated to developing a user panel for the [Cloudflare-workers
 3. **Protocols:** Provides VLESS, Trojan and Wireguard (Warp) protocols.
 4. **Warp Pro configs:** Optimized Warp for crucial circumstances.
 5. **Support Fragment:** Supports Fragment functionality for crucial network situations.
-6. **Full routing rules:** Bypassing Iran/China and LAN, Blocking QUIC, Porn, Ads, Malwares, Phishing...
+6. **Full routing rules:** Bypassing Iran/China/Russia and LAN, Blocking QUIC, Porn, Ads, Malwares, Phishing...
 7. **Chain Proxy:** Capable of adding a chain proxy to fix IP.
 8. **Supports Wide Range of Clients:** Offers subscription links for Xray, Sing-box and Clash core clients.
-10. **Subscription Link (JSON):** Provides subscription link for JSON configs.
-11. **Password-Protected Panel:** Secure your panel with password protection.
-12. **Fully customizable:** Ability to use online scanner and setting up clean IP-domains, Proxy IP, setting DNS servers, choosing ports and protocols, Warp endpoints...
+9. **Password-Protected Panel:** Secure your panel with password protection.
+10. **Fully customizable:** Ability to use online scanner and setting up clean IP-domains, Proxy IP, setting DNS servers, choosing ports and protocols, Warp endpoints...
 <br>
 
 ## How to use:
+- [Installation (Pages - New recommended method)](docs/pages_upload_installation_fa.md)
+
 - [Installation (Pages)](docs/pages_installation_fa.md)
 
 - [Installation (Worker)](docs/worker_installation_fa.md)
-
-- [Scanning Proxy IP](docs/proxy-ip-scanner.md)
 
 - [How to use](docs/configuration_fa.md)
 
@@ -50,7 +49,7 @@ This project is dedicated to developing a user panel for the [Cloudflare-workers
 | **v2rayN**  | 6.42 or higher  | :heavy_check_mark: | :x: |
 | **v2rayN-PRO**  | 1.4 or higher  | :heavy_check_mark: | :heavy_check_mark: |
 | **Nekobox**  |   | :x: | :x: |
-| **Sing-box**  | 1.8.10 or higher  | :x: | :x: |
+| **Sing-box**  | 1.10.1 or higher  | :x: | :x: |
 | **Streisand**  |   | :heavy_check_mark: | :x: |
 | **V2Box**  |   | :x: | :x: |
 | **Shadowrocket**  |   | :x: | :x: |
