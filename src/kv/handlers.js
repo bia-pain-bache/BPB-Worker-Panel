@@ -115,7 +115,7 @@ export async function updateDataset (request, env) {
 
     try {    
         await env.bpb.put("proxySettings", JSON.stringify(proxySettings));
-        await updateWarpConfigs(request, env);          
+        if (isReset) await updateWarpConfigs(request, env);          
     } catch (error) {
         console.log(error);
         throw new Error(`An error occurred while updating KV - ${error}`);
