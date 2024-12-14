@@ -27,7 +27,7 @@ jobs:
       - name: Build project
         run: |
           npx wrangler deploy src/worker.js --name bpb-worker-panel --compatibility-flag [nodejs_compat] --compatibility-date 2024-10-26 --dry-run --outdir=dist
-          npx javascript-obfuscator --split-strings true --split-strings-chunk-length 2 dist/worker.js --output _worker.js
+          npx javascript-obfuscator dist/worker.js --output _worker.js --compact true --control-flow-flattening true --control-flow-flattening-threshold 1 --dead-code-injection true --dead-code-injection-threshold 1 --identifier-names-generator hexadecimal --rename-globals true --string-array true --string-array-encoding 'rc4' --string-array-threshold 1 --transform-object-keys true --unicode-escape-sequence true --numbers-to-expressions true --split-strings true
 
       - name: Commit and push built worker
         run: |
