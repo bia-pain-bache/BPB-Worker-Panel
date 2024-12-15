@@ -36,7 +36,6 @@ export async function updateDataset (request, env) {
             throw new Error(`An error occurred while getting current KV settings - ${error}`);
         }
     } else {
-        await env.bpb.delete('warpConfigs');
         newSettings = null;
     }
 
@@ -115,7 +114,8 @@ export async function updateDataset (request, env) {
     };
 
     try {    
-        await env.bpb.put("proxySettings", JSON.stringify(proxySettings));          
+        await env.bpb.put("proxySettings", JSON.stringify(proxySettings));
+        if (isReset) await updateWarpConfigs(request, env);          
     } catch (error) {
         console.log(error);
         throw new Error(`An error occurred while updating KV - ${error}`);
