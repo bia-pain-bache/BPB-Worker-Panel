@@ -69,7 +69,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
         const url = `${sbType ? 'sing-box://import-remote-profile?url=' : ''}https://${globalThis.hostName}/${path}/${globalThis.userID}${app ? `?app=${app}` : ''}#${tag}`;
         return `
             <button onclick="openQR('${url}', '${title}')" style="margin-bottom: 8px;">
-                QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
+                [二维码]QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
             </button>`;
     };
     
@@ -77,7 +77,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
         const url = `https://${globalThis.hostName}/${path}/${globalThis.userID}${app ? `?app=${app}` : ''}#${tag}`;
         return `
             <button onclick="copyToClipboard('${url}')">
-                Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
+                [复制链接]Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
             </button>`;
     }
 
@@ -386,44 +386,44 @@ export async function renderHomePage (proxySettings, isPassSet) {
         </style>
     </head>
     <body>
-        <h1>BPB Panel <span style="font-size: smaller;">${globalThis.panelVersion}</span> 💦</h1>
+        <h1>[BPB面板]BPB Panel <span style="font-size: smaller;">${globalThis.panelVersion}</span> 💦</h1>
         <div class="form-container">
             <form id="configForm">
                 <details open>
-                    <summary><h2>VLESS - TROJAN ⚙️</h2></summary>
+                    <summary><h2>[协议配置]VLESS - TROJAN ⚙️</h2></summary>
                     <div class="form-control">
-                        <label for="remoteDNS">🌏 Remote DNS</label>
+                        <label for="remoteDNS">🌏 [远程DNS]Remote DNS</label>
                         <input type="url" id="remoteDNS" name="remoteDNS" value="${remoteDNS}" required>
                     </div>
                     <div class="form-control">
-                        <label for="localDNS">🏚️ Local DNS</label>
+                        <label for="localDNS">🏚️ [本地DNS]Local DNS</label>
                         <input type="text" id="localDNS" name="localDNS" value="${localDNS}"
                             pattern="^(?:\\d{1,3}\\.){3}\\d{1,3}$"
-                            title="Please enter a valid DNS IP Address!"  required>
+                            title="[请输入合法的DNSIP地址] Please enter a valid DNS IP Address!"  required>
                     </div>
                     <div class="form-control">
-                        <label for="vlessTrojanFakeDNS">🧢 Fake DNS</label>
+                        <label for="vlessTrojanFakeDNS">🧢 [虚拟DNS]Fake DNS</label>
                         <div class="input-with-select">
                             <select id="vlessTrojanFakeDNS" name="vlessTrojanFakeDNS">
-                                <option value="true" ${vlessTrojanFakeDNS ? 'selected' : ''}>Enabled</option>
-                                <option value="false" ${!vlessTrojanFakeDNS ? 'selected' : ''}>Disabled</option>
+                                <option value="true" ${vlessTrojanFakeDNS ? 'selected' : ''}>[开]Enabled</option>
+                                <option value="false" ${!vlessTrojanFakeDNS ? 'selected' : ''}>[关]Disabled</option>
                             </select>
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="proxyIP">📍 Proxy IPs / Domains</label>
+                        <label for="proxyIP">📍 [代理IP]Proxy IPs / Domains</label>
                         <input type="text" id="proxyIP" name="proxyIP" value="${proxyIP.replaceAll(",", " , ")}">
                     </div>
                     <div class="form-control">
-                        <label for="outProxy">✈️ Chain Proxy</label>
+                        <label for="outProxy">✈️ [中国代理]Chain Proxy</label>
                         <input type="text" id="outProxy" name="outProxy" value="${outProxy}">
                     </div>
                     <div class="form-control">
-                        <label for="cleanIPs">✨ Clean IPs / Domains</label>
+                        <label for="cleanIPs">✨ [干净IP]Clean IPs / Domains</label>
                         <input type="text" id="cleanIPs" name="cleanIPs" value="${cleanIPs.replaceAll(",", " , ")}">
                     </div>
                     <div class="form-control">
-                        <label for="scanner">🔎 Clean IP Scanner</label>
+                        <label for="scanner">🔎 [干净IP扫描]Clean IP Scanner</label>
                         <a href="${atob("aHR0cHM6Ly9naXRodWIuY29tL2JpYS1wYWluLWJhY2hl")}/Cloudflare-Clean-IP-Scanner/releases/tag/v2.2.5" name="scanner" target="_blank" style="width: 100%;">
                             <button type="button" id="scanner" class="button">
                                 Download Scanner
@@ -432,32 +432,32 @@ export async function renderHomePage (proxySettings, isPassSet) {
                         </a>
                     </div>
                     <div class="form-control">
-                        <label for="enableIPv6">🔛 IPv6</label>
+                        <label for="enableIPv6">🔛 [6代IP]IPv6</label>
                         <div class="input-with-select">
                             <select id="enableIPv6" name="enableIPv6">
-                                <option value="true" ${enableIPv6 ? 'selected' : ''}>Enabled</option>
-                                <option value="false" ${!enableIPv6 ? 'selected' : ''}>Disabled</option>
+                                <option value="true" ${enableIPv6 ? 'selected' : ''}>[开]Enabled</option>
+                                <option value="false" ${!enableIPv6 ? 'selected' : ''}>[关]Disabled</option>
                             </select>
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="customCdnAddrs">💀 Custom CDN Addrs</label>
+                        <label for="customCdnAddrs">💀 [自定义CDN地址]Custom CDN Addrs</label>
                         <input type="text" id="customCdnAddrs" name="customCdnAddrs" value="${customCdnAddrs.replaceAll(",", " , ")}">
                     </div>
                     <div class="form-control">
-                        <label for="customCdnHost">💀 Custom CDN Host</label> 
+                        <label for="customCdnHost">💀 [自定义CDN主机]Custom CDN Host</label> 
                         <input type="text" id="customCdnHost" name="customCdnHost" value="${customCdnHost}">
                     </div>
                     <div class="form-control">
-                        <label for="customCdnSni">💀 Custom CDN SNI</label>
+                        <label for="customCdnSni">💀 [自定义]Custom CDN SNI</label>
                         <input type="text" id="customCdnSni" name="customCdnSni" value="${customCdnSni}">
                     </div>
                     <div class="form-control">
-                        <label for="bestVLESSTrojanInterval">🔄 Best Interval</label>
+                        <label for="bestVLESSTrojanInterval">🔄 [最佳间隔]Best Interval</label>
                         <input type="number" id="bestVLESSTrojanInterval" name="bestVLESSTrojanInterval" min="10" max="90" value="${bestVLESSTrojanInterval}">
                     </div>
                     <div class="form-control" style="padding-top: 10px;">
-                        <label for="vlessConfigs">⚙️ Protocols</label>
+                        <label for="vlessConfigs">⚙️ [协议]Protocols</label>
                         <div style="width: 100%; display: grid; grid-template-columns: 1fr 1fr; align-items: baseline; margin-top: 10px;">
                             <div style = "display: flex; justify-content: center; align-items: center;">
                                 <input type="checkbox" id="vlessConfigs" name="vlessConfigs" onchange="handleProtocolChange(event)" value="true" ${vlessConfigs ? 'checked' : ''}>
@@ -472,8 +472,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
                     <div class="table-container">
                         <table id="ports-block">
                             <tr>
-                                <th style="text-wrap: nowrap; background-color: gray;">Config type</th>
-                                <th style="text-wrap: nowrap; background-color: gray;">Ports</th>
+                                <th style="text-wrap: nowrap; background-color: gray;">[类别]Config type</th>
+                                <th style="text-wrap: nowrap; background-color: gray;">[端口]Ports</th>
                             </tr>
                             <tr>
                                 <td style="text-align: center; font-size: larger;"><b>TLS</b></td>
@@ -491,9 +491,9 @@ export async function renderHomePage (proxySettings, isPassSet) {
                     </div>
                 </details>
                 <details>
-                    <summary><h2>FRAGMENT ⚙️</h2></summary>	
+                    <summary><h2>[分片]FRAGMENT ⚙️</h2></summary>	
                     <div class="form-control">
-                        <label for="fragmentLengthMin">📐 Length</label>
+                        <label for="fragmentLengthMin">📐 [长度]Length</label>
                         <div class="min-max">
                             <input type="number" id="fragmentLengthMin" name="fragmentLengthMin" value="${lengthMin}" min="10" required>
                             <span> - </span>
@@ -501,7 +501,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="fragmentIntervalMin">🕞 Interval</label>
+                        <label for="fragmentIntervalMin">🕞 [有效期]Interval</label>
                         <div class="min-max">
                             <input type="number" id="fragmentIntervalMin" name="fragmentIntervalMin"
                                 value="${intervalMin}" min="1" max="30" required>
@@ -511,7 +511,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="fragmentPackets">📦 Packets</label>
+                        <label for="fragmentPackets">📦 [包]Packets</label>
                         <div class="input-with-select">
                             <select id="fragmentPackets" name="fragmentPackets">
                                 <option value="tlshello" ${fragmentPackets === 'tlshello' ? 'selected' : ''}>tlshello</option>
@@ -526,47 +526,47 @@ export async function renderHomePage (proxySettings, isPassSet) {
                 <details>
                     <summary><h2>WARP GENERAL ⚙️</h2></summary>
                     <div class="form-control">
-                        <label for="warpEndpoints">✨ Endpoints</label>
+                        <label for="warpEndpoints">✨ [端点]Endpoints</label>
                         <input type="text" id="warpEndpoints" name="warpEndpoints" value="${warpEndpoints.replaceAll(",", " , ")}" required>
                     </div>
                     <div class="form-control">
-                        <label for="endpointScanner" style="line-height: 1.5;">🔎 Scan Endpoint</label>
+                        <label for="endpointScanner" style="line-height: 1.5;">🔎 [扫描端点]Scan Endpoint</label>
                         <button type="button" id="endpointScanner" class="button" style="padding: 10px 0;" onclick="copyToClipboard('bash <(curl -fsSL ${atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2JpYS1wYWluLWJhY2hl")}/warp-script/refs/heads/main/endip/install.sh)', false)">
                             Copy Script<span class="material-symbols-outlined">terminal</span>
                         </button>
                     </div>
                     <div class="form-control">
-                        <label for="warpFakeDNS">🧢 Fake DNS</label>
+                        <label for="warpFakeDNS">🧢 [虚拟DNS]Fake DNS</label>
                         <div class="input-with-select">
                             <select id="warpFakeDNS" name="warpFakeDNS">
-                                <option value="true" ${warpFakeDNS ? 'selected' : ''}>Enabled</option>
-                                <option value="false" ${!warpFakeDNS ? 'selected' : ''}>Disabled</option>
+                                <option value="true" ${warpFakeDNS ? 'selected' : ''}>[开]Enabled</option>
+                                <option value="false" ${!warpFakeDNS ? 'selected' : ''}>[关]Disabled</option>
                             </select>
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="warpEnableIPv6">🔛 IPv6</label>
+                        <label for="warpEnableIPv6">🔛 [六代IP]IPv6</label>
                         <div class="input-with-select">
                             <select id="warpEnableIPv6" name="warpEnableIPv6">
-                                <option value="true" ${warpEnableIPv6 ? 'selected' : ''}>Enabled</option>
-                                <option value="false" ${!warpEnableIPv6 ? 'selected' : ''}>Disabled</option>
+                                <option value="true" ${warpEnableIPv6 ? 'selected' : ''}>[开]Enabled</option>
+                                <option value="false" ${!warpEnableIPv6 ? 'selected' : ''}>[关]Disabled</option>
                             </select>
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="warpPlusLicense">➕ Warp+ License</label>
+                        <label for="warpPlusLicense">➕ [秘钥]Warp+ License</label>
                         <input type="text" id="warpPlusLicense" name="warpPlusLicense" value="${warpPlusLicense}" 
                             pattern="^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{8}-[a-zA-Z0-9]{8}$" 
                             title="Please enter a valid Warp Plus license in xxxxxxxx-xxxxxxxx-xxxxxxxx format">
                     </div>
                     <div class="form-control">
-                        <label for="refreshBtn">♻️ Warp Configs</label>
+                        <label for="refreshBtn">♻️ [配置]Warp Configs</label>
                         <button id="refreshBtn" type="button" class="button" style="padding: 10px 0;" onclick="getWarpConfigs()">
                             Update<span class="material-symbols-outlined">autorenew</span>
                         </button>
                     </div>
                     <div class="form-control">
-                        <label for="bestWarpInterval">🔄 Best Interval</label>
+                        <label for="bestWarpInterval">🔄 Best [最佳间隔]Interval</label>
                         <input type="number" id="bestWarpInterval" name="bestWarpInterval" min="10" max="90" value="${bestWarpInterval}">
                     </div>
                 </details>
@@ -587,7 +587,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                             value="${nikaNGNoiseMode}" required>
                     </div>
                     <div class="form-control">
-                        <label for="noiseCountMin">🎚️ Noise Count</label>
+                        <label for="noiseCountMin">🎚️ [Noise总数]Noise Count</label>
                         <div class="min-max">
                             <input type="number" id="noiseCountMin" name="noiseCountMin"
                                 value="${noiseCountMin}" min="1" required>
@@ -597,7 +597,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="noiseSizeMin">📏 Noise Size</label>
+                        <label for="noiseSizeMin">📏 [Noise大小]Noise Size</label>
                         <div class="min-max">
                             <input type="number" id="noiseSizeMin" name="noiseSizeMin"
                                 value="${noiseSizeMin}" min="1" required>
@@ -607,7 +607,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="noiseDelayMin">🕞 Noise Delay</label>
+                        <label for="noiseDelayMin">🕞 [Noise延迟]Noise Delay</label>
                         <div class="min-max">
                             <input type="number" id="noiseDelayMin" name="noiseDelayMin"
                                 value="${noiseDelayMin}" min="1" required>
@@ -622,40 +622,40 @@ export async function renderHomePage (proxySettings, isPassSet) {
                     <div id="routing-rules" class="form-control" style="margin-bottom: 20px;">			
                         <div class="routing">
                             <input type="checkbox" id="bypass-lan" name="bypass-lan" value="true" ${bypassLAN ? 'checked' : ''}>
-                            <label for="bypass-lan">Bypass LAN</label>
+                            <label for="bypass-lan">[局域网直连]ypass LAN</label>
                         </div>
                         <div class="routing">
                             <input type="checkbox" id="block-ads" name="block-ads" value="true" ${blockAds ? 'checked' : ''}>
-                            <label for="block-ads">Block Ads.</label>
+                            <label for="block-ads">[屏蔽广告]Block Ads.</label>
                         </div>
                         <div class="routing">
                             <input type="checkbox" id="bypass-iran" name="bypass-iran" value="true" ${bypassIran ? 'checked' : ''}>
-                            <label for="bypass-iran">Bypass Iran</label>
+                            <label for="bypass-iran">[伊朗直连]Bypass Iran</label>
                         </div>
                         <div class="routing">
                             <input type="checkbox" id="block-porn" name="block-porn" value="true" ${blockPorn ? 'checked' : ''}>
-                            <label for="block-porn">Block Porn</label>
+                            <label for="block-porn">[屏蔽色情]Block Porn</label>
                         </div>
                         <div class="routing">
                             <input type="checkbox" id="bypass-china" name="bypass-china" value="true" ${bypassChina ? 'checked' : ''}>
-                            <label for="bypass-china">Bypass China</label>
+                            <label for="bypass-china">[中国直连]Bypass China</label>
                         </div>
                         <div class="routing">
                             <input type="checkbox" id="block-udp-443" name="block-udp-443" value="true" ${blockUDP443 ? 'checked' : ''}>
-                            <label for="block-udp-443">Block QUIC</label>
+                            <label for="block-udp-443">[屏蔽QUIC]Block QUIC</label>
                         </div>
                         <div class="routing">
                             <input type="checkbox" id="bypass-russia" name="bypass-russia" value="true" ${bypassRussia ? 'checked' : ''}>
-                            <label for="bypass-russia">Bypass Russia</label>
+                            <label for="bypass-russia">[俄罗斯直连]Bypass Russia</label>
                         </div>
                     </div>
                     <h3>CUSTOM RULES 🔧</h3>
                     <div class="form-control">
-                        <label for="customBypassRules">🟩 Bypass IPs / Domains</label>
+                        <label for="customBypassRules">🟩 [直连IP]Bypass IPs / Domains</label>
                         <input type="text" id="customBypassRules" name="customBypassRules" value="${customBypassRules.replaceAll(",", " , ")}">
                     </div>
                     <div class="form-control">
-                        <label for="customBlockRules">🟥 Block IPs / Domains</label>
+                        <label for="customBlockRules">🟥 [屏蔽IP]Block IPs / Domains</label>
                         <input type="text" id="customBlockRules" name="customBlockRules" value="${customBlockRules.replaceAll(",", " , ")}">
                     </div>
                 </details>
@@ -673,8 +673,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
             <div class="table-container">
                 <table id="normal-configs-table">
                     <tr>
-                        <th>Application</th>
-                        <th>Subscription</th>
+                        <th>[应用名称]Application</th>
+                        <th>[订阅链接]Subscription</th>
                     </tr>
                     <tr>
                         <td>
@@ -699,8 +699,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
             <div class="table-container">
                 <table id="full-normal-configs-table">
                     <tr>
-                        <th>Application</th>
-                        <th>Subscription</th>
+                        <th>[应用名称]Application</th>
+                        <th>[订阅链接]Subscription</th>
                     </tr>
                     <tr>
                         <td>
@@ -735,8 +735,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
             <div class="table-container">
                 <table id="frag-sub-table">
                     <tr>
-                        <th style="text-wrap: nowrap;">Application</th>
-                        <th style="text-wrap: nowrap;">Subscription</th>
+                        <th style="text-wrap: nowrap;">[应用名称]Application</th>
+                        <th style="text-wrap: nowrap;">[订阅链接]Subscription</th>
                     </tr>
                     <tr>
                         <td style="text-wrap: nowrap;">
@@ -762,8 +762,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
             <div class="table-container">
                 <table id="normal-configs-table">
                     <tr>
-                        <th>Application</th>
-                        <th>Subscription</th>
+                        <th>[应用名称]Application</th>
+                        <th>[订阅链接]Subscription</th>
                     </tr>
                     <tr>
                         <td>
@@ -798,8 +798,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
             <div class="table-container">
                 <table id="warp-pro-configs-table">
                     <tr>
-                        <th>Application</th>
-                        <th>Subscription</th>
+                        <th>[应用名称]Application</th>
+                        <th>[订阅链接]Subscription</th>
                     </tr>
                     <tr>
                         <td>
@@ -827,15 +827,15 @@ export async function renderHomePage (proxySettings, isPassSet) {
                     <form id="passwordChangeForm">
                         <h2>Change Password</h2>
                         <div class="form-control">
-                            <label for="newPassword">New Password</label>
+                            <label for="newPassword">[新密码]New Password</label>
                             <input type="password" id="newPassword" name="newPassword" required>
                             </div>
                         <div class="form-control">
-                            <label for="confirmPassword">Confirm Password</label>
+                            <label for="confirmPassword">[确认密码]Confirm Password</label>
                             <input type="password" id="confirmPassword" name="confirmPassword" required>
                         </div>
                         <div id="passwordError" style="color: red; margin-bottom: 10px;"></div>
-                        <button id="changePasswordBtn" type="submit" class="button">Change Password</button>
+                        <button id="changePasswordBtn" type="submit" class="button">[更改密码]Change Password</button>
                     </form>
                 </div>
             </div>
@@ -850,7 +850,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
             </div>
             <hr>
             <div class="header-container">
-                <h2 style="margin: 0 5px;">💡 MY IP</h2>
+                <h2 style="margin: 0 5px;">💡 [我的IP]MY IP</h2>
                 <button type="button" id="refresh-geo-location" onclick="fetchIPInfo()" style="background: none; margin: 0; border: none; cursor: pointer;">
                     <i class="fa fa-refresh fa-2x" style="color: var(--button-color);" aria-hidden="true"></i>
                 </button>       
@@ -858,11 +858,11 @@ export async function renderHomePage (proxySettings, isPassSet) {
             <div class="table-container">
                 <table id="ips" style="text-align: center; margin-bottom: 15px; text-wrap-mode: nowrap;">
                     <tr>
-                        <th>Target Address</th>
-                        <th>IP</th>
-                        <th>Country</th>
-                        <th>City</th>
-                        <th>ISP</th>
+                        <th>[远程地址]Target Address</th>
+                        <th>[地址]IP</th>
+                        <th>[国家]Country</th>
+                        <th>[城市]City</th>
+                        <th>[服务商]ISP</th>
                     </tr>
                     <tr>
                         <td>Cloudflare CDN</td>
@@ -872,7 +872,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                         <td><b id="cf-isp"></b></td>
                     </tr>
                     <tr>
-                        <td>Others</td>
+                        <td>[其他]Others</td>
                         <td id="ip"></td>
                         <td><b id="country"></b></td>
                         <td><b id="city"></b></td>
