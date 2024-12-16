@@ -1320,7 +1320,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
             const isLongEnough = newPassword.length >= 8;
 
             if (!(hasCapitalLetter && hasNumber && isLongEnough)) {
-                passwordError.textContent = '⚠️ [密码必须包含至少一个大写字母、一个数字,大于8位。]Password must contain at least one capital letter, one number, and be at least 8 characters long.';
+                passwordError.textContent = '⚠️ [密码必须包含至少一个大写字母、一个数字,大于8位!]Password must contain at least one capital letter, one number, and be at least 8 characters long.';
                 return false;
             }
                     
