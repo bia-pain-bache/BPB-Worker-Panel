@@ -967,14 +967,14 @@ export async function renderHomePage (proxySettings, isPassSet) {
                 qrcodeContainer.lastElementChild.remove();
             });
             resetSettings.addEventListener('click', async () => {
-                const confirmReset = confirm('⚠️ This will reset all panel settings.\\nAre you sure?');
+                const confirmReset = confirm('⚠️ [这个操作会重置所有面板设置]This will reset all panel settings.\\nAre you sure?');
                 if(!confirmReset) return;
                 const formData = new FormData();
                 formData.append('resetSettings', 'true');
                 try {
                     document.body.style.cursor = 'wait';
                     const refreshButtonVal = refreshBtn.innerHTML;
-                    refreshBtn.innerHTML = '⌛ Loading...';
+                    refreshBtn.innerHTML = '⌛ [加载中……]Loading...';
 
                     const response = await fetch('/panel', {
                         method: 'POST',
@@ -987,10 +987,10 @@ export async function renderHomePage (proxySettings, isPassSet) {
                     if (!response.ok) {
                         const errorMessage = await response.text();
                         console.error(errorMessage, response.status);
-                        alert('⚠️ An error occured, Please try again!\\n⛔ ' + errorMessage);
+                        alert('⚠️ [错误，请重试。]An error occured, Please try again!\\n⛔ ' + errorMessage);
                         return;
                     }       
-                    alert('✅ Panel settings reset to default successfully! 😎');
+                    alert('✅ [面板初始化完成]Panel settings reset to default successfully! 😎');
                     window.location.reload(true);
                 } catch (error) {
                     console.error('Error:', error);
@@ -1056,17 +1056,17 @@ export async function renderHomePage (proxySettings, isPassSet) {
         const getWarpConfigs = async () => {
             const license = document.getElementById('warpPlusLicense').value;
             if (license !== warpPlusLicense) {
-                alert('⚠️ First APPLY SETTINGS and then update Warp configs!');
+                alert('⚠️ [先应用设置,再更新Warp配置文件!]First APPLY SETTINGS and then update Warp configs!');
                 return false;
             }
-            const confirmReset = confirm('⚠️ Are you sure?');
+            const confirmReset = confirm('⚠️ [确定吗?]Are you sure?');
             if(!confirmReset) return;
             const refreshBtn = document.getElementById('refreshBtn');
 
             try {
                 document.body.style.cursor = 'wait';
                 const refreshButtonVal = refreshBtn.innerHTML;
-                refreshBtn.innerHTML = '⌛ Loading...';
+                refreshBtn.innerHTML = '⌛ [加载中...]Loading...';
 
                 const response = await fetch('/update-warp', {
                     method: 'POST',
@@ -1078,12 +1078,12 @@ export async function renderHomePage (proxySettings, isPassSet) {
                 if (!response.ok) {
                     const errorMessage = await response.text();
                     console.error(errorMessage, response.status);
-                    alert('⚠️ An error occured, Please try again!\\n⛔ ' + errorMessage);
+                    alert('⚠️ [异常,请重试！]An error occured, Please try again!\\n⛔ ' + errorMessage);
                     return;
                 }          
                 ${isWarpPlus
-                    ? `alert('✅ Warp configs upgraded to PLUS successfully! 😎');` 
-                    : `alert('✅ Warp configs updated successfully! 😎');`
+                    ? `alert('✅ [Warp配置升级专业版成功]Warp configs upgraded to PLUS successfully! 😎');` 
+                    : `alert('✅ [Warp配置更新成功]Warp configs updated successfully! 😎');`
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -1103,7 +1103,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
             if (activePortsNo === 0) {
                 event.preventDefault();
                 event.target.checked = !event.target.checked;
-                alert("⛔ At least one port should be selected! 🫤");
+                alert("⛔ [最少要选中一个端口]At least one port should be selected! 🫤");
                 activePortsNo = 1;
                 defaultHttpsPorts.includes(event.target.name) && activeHttpsPortsNo++;
                 return false;
@@ -1112,7 +1112,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
             if (activeHttpsPortsNo === 0) {
                 event.preventDefault();
                 event.target.checked = !event.target.checked;
-                alert("⛔ At least one TLS(https) port should be selected! 🫤");
+                alert("⛔ [最少要选中一个加密端口]At least one TLS(https) port should be selected! 🫤");
                 activeHttpsPortsNo = 1;
                 return false;
             }
@@ -1129,7 +1129,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
             if (activeProtocols === 0) {
                 event.preventDefault();
                 event.target.checked = !event.target.checked;
-                alert("⛔ At least one Protocol should be selected! 🫤");
+                alert("⛔ [最少要选中一个端口]At least one Protocol should be selected! 🫤");
                 activeProtocols = 1;
                 return false;
             }
@@ -1163,7 +1163,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
             textarea.select();
             document.execCommand('copy');
             document.body.removeChild(textarea);
-            alert('📋 Copied to clipboard:\\n\\n' +  text);
+            alert('📋 [已复制]Copied to clipboard:\\n\\n' +  text);
         }
 
         const applySettings = async (event, configForm) => {
@@ -1225,39 +1225,39 @@ export async function renderHomePage (proxySettings, isPassSet) {
             });
 
             if (invalidIPs.length) {
-                alert('⛔ Invalid IPs or Domains 🫤\\n\\n' + invalidIPs.map(ip => '⚠️ ' + ip).join('\\n'));
+                alert('⛔ [IP或域名有误]Invalid IPs or Domains 🫤\\n\\n' + invalidIPs.map(ip => '⚠️ ' + ip).join('\\n'));
                 return false;
             }
             
             if (invalidEndpoints.length) {
-                alert('⛔ Invalid endpoint 🫤\\n\\n' + invalidEndpoints.map(endpoint => '⚠️ ' + endpoint).join('\\n'));
+                alert('⛔ [错误的终端]Invalid endpoint 🫤\\n\\n' + invalidEndpoints.map(endpoint => '⚠️ ' + endpoint).join('\\n'));
                 return false;
             }
 
             if (lengthMin >= lengthMax || intervalMin > intervalMax || noiseCountMin > noiseCountMax || noiseSizeMin > noiseSizeMax || noiseDelayMin > noiseDelayMax) {
-                alert('⛔ Minimum should be smaller or equal to Maximum! 🫤');               
+                alert('⛔ [最小必须在范围内]Minimum should be smaller or equal to Maximum! 🫤');               
                 return false;
             }
 
             if (!(isVless && (hasSecurity && validSecurityType || !hasSecurity) && validTransmission) && !isSocksHttp && chainProxy) {
-                alert('⛔ Invalid Config! 🫤 \\n - The chain proxy should be VLESS, Socks or Http!\\n - VLESS transmission should be GRPC,WS or TCP\\n - VLESS security should be TLS,Reality or None\\n - socks or http should be like:\\n + (socks or http)://user:pass@host:port\\n + (socks or http)://host:port');               
+                alert('⛔ [配置有误]Invalid Config! 🫤 \\n - The chain proxy should be VLESS, Socks or Http!\\n - VLESS transmission should be GRPC,WS or TCP\\n - VLESS security should be TLS,Reality or None\\n - socks or http should be like:\\n + (socks or http)://user:pass@host:port\\n + (socks or http)://host:port');               
                 return false;
             }
 
             if (isVless && securityType === 'tls' && vlessPort !== '443') {
-                alert('⛔ VLESS TLS port can be only 443 to be used as a proxy chain! 🫤');               
+                alert('⛔ [VLESS的TLS端口443才能用作代理链]VLESS TLS port can be only 443 to be used as a proxy chain! 🫤');               
                 return false;
             }
 
             if (isCustomCdn && !(customCdnAddrs.length && customCdnHost && customCdnSni)) {
-                alert('⛔ All "Custom" fields should be filled or deleted together! 🫤');               
+                alert('⛔ [所有‘自定义’字段应同时填写或删除]All "Custom" fields should be filled or deleted together! 🫤');               
                 return false;
             }
 
             try {
                 document.body.style.cursor = 'wait';
                 const applyButtonVal = applyButton.value;
-                applyButton.value = '⌛ Loading...';
+                applyButton.value = '⌛ [加载中...]Loading...';
 
                 const response = await fetch('/panel', {
                     method: 'POST',
@@ -1271,11 +1271,11 @@ export async function renderHomePage (proxySettings, isPassSet) {
                 if (!response.ok) {
                     const errorMessage = await response.text();
                     console.error(errorMessage, response.status);
-                    alert('⚠️ Session expired! Please login again.');
+                    alert('⚠️ [会话超时，请重新登录]Session expired! Please login again.');
                     window.location.href = '/login';
                     return;
                 }                
-                alert('✅ Parameters applied successfully 😎');
+                alert('✅ [配置应用成功]Parameters applied successfully 😎');
                 window.location.reload();
             } catch (error) {
                 console.error('Error:', error);
@@ -1320,7 +1320,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
             const isLongEnough = newPassword.length >= 8;
 
             if (!(hasCapitalLetter && hasNumber && isLongEnough)) {
-                passwordError.textContent = '⚠️ Password must contain at least one capital letter, one number, and be at least 8 characters long.';
+                passwordError.textContent = '⚠️ [密码必须包含至少一个大写字母、一个数字,大于8位。]Password must contain at least one capital letter, one number, and be at least 8 characters long.';
                 return false;
             }
                     
@@ -1337,13 +1337,13 @@ export async function renderHomePage (proxySettings, isPassSet) {
                 if (response.ok) {
                     modal.style.display = "none";
                     document.body.style.overflow = "";
-                    alert("✅ Password changed successfully! 👍");
+                    alert("✅ [密码修改成功!]Password changed successfully! 👍");
                     window.location.href = '/login';
                 } else if (response.status === 401) {
                     const errorMessage = await response.text();
                     passwordError.textContent = '⚠️ ' + errorMessage;
                     console.error(errorMessage, response.status);
-                    alert('⚠️ Session expired! Please login again.');
+                    alert('⚠️ [会话过期,请重新登录]Session expired! Please login again.');
                     window.location.href = '/login';
                 } else {
                     const errorMessage = await response.text();
