@@ -297,8 +297,8 @@ function buildXrayVLESSOutbound (tag, address, port, host, sni, proxyIP, isFragm
             security: "none",
             sockopt: {},
             wsSettings: {
+                host: host,
                 headers: {
-                    Host: host,
                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
                 },
                 path: `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}?ed=2560`
