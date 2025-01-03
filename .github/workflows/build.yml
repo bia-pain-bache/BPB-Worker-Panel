@@ -27,7 +27,7 @@ jobs:
       - name: Build project
         run: |
           npx wrangler deploy src/worker.js --name bpb-worker-panel --compatibility-flag [nodejs_compat] --compatibility-date 2024-10-26 --dry-run --outdir=dist
-          cp dist/worker.js unobfuscated/worker.js
+          cp -f dist/worker.js unobfuscated/worker.js
           npx javascript-obfuscator --split-strings true --split-strings-chunk-length 2 --transform-object-keys true --rename-globals true --rename-properties true --rename-properties-mode unsafe dist/worker.js --output _worker.js
 
       - name: Commit and push built worker
@@ -35,6 +35,7 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add _worker.js
+          git add unobfuscated/worker.js
           git commit -m "Automated build: update _worker.js"
           git push
         env:
