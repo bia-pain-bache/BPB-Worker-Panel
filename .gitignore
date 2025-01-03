@@ -9,3 +9,5 @@
 !src/
 !src/**
 !package.json
+!unobfuscated/
+!unobfuscated/**
