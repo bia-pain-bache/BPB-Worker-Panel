@@ -59,7 +59,7 @@ export async function fetchWarpConfigs (env, proxySettings) {
     }
     
     const configs = JSON.stringify(warpConfigs)
-    await env.bpb.put('warpConfigs', configs);
+    await env.kv.put('warpConfigs', configs);
     return { error: null, configs };
 }
 
