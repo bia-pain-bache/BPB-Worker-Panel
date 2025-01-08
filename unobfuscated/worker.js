@@ -5070,9 +5070,9 @@ async function renderHomePage(proxySettings, isPassSet) {
                             title="Please enter a valid DNS IP Address!"  required>
                     </div>
                     <div class="form-control">
-                        <label for="vlessTrojanFakeDNS">\u{1F9E2} Fake DNS</label>
+                        <label for="VLTRFakeDNS">\u{1F9E2} Fake DNS</label>
                         <div class="input-with-select">
-                            <select id="vlessTrojanFakeDNS" name="vlessTrojanFakeDNS">
+                            <select id="VLTRFakeDNS" name="VLTRFakeDNS">
                                 <option value="true" ${VLTRFakeDNS ? "selected" : ""}>Enabled</option>
                                 <option value="false" ${!VLTRFakeDNS ? "selected" : ""}>Disabled</option>
                             </select>
@@ -5121,19 +5121,19 @@ async function renderHomePage(proxySettings, isPassSet) {
                         <input type="text" id="customCdnSni" name="customCdnSni" value="${customCdnSni}">
                     </div>
                     <div class="form-control">
-                        <label for="bestVLESSTrojanInterval">\u{1F504} Best Interval</label>
-                        <input type="number" id="bestVLESSTrojanInterval" name="bestVLESSTrojanInterval" min="10" max="90" value="${bestVLTRInterval}">
+                        <label for="bestVLTRInterval">\u{1F504} Best Interval</label>
+                        <input type="number" id="bestVLTRInterval" name="bestVLTRInterval" min="10" max="90" value="${bestVLTRInterval}">
                     </div>
                     <div class="form-control" style="padding-top: 10px;">
-                        <label for="vlessConfigs">\u2699\uFE0F Protocols</label>
+                        <label for="VLConfigs">\u2699\uFE0F Protocols</label>
                         <div style="width: 100%; display: grid; grid-template-columns: 1fr 1fr; align-items: baseline; margin-top: 10px;">
                             <div style = "display: flex; justify-content: center; align-items: center;">
-                                <input type="checkbox" id="vlessConfigs" name="vlessConfigs" onchange="handleProtocolChange(event)" value="true" ${VLConfigs ? "checked" : ""}>
-                                <label for="vlessConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">VLESS</label>
+                                <input type="checkbox" id="VLConfigs" name="VLConfigs" onchange="handleProtocolChange(event)" value="true" ${VLConfigs ? "checked" : ""}>
+                                <label for="VLConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">VLESS</label>
                             </div>
                             <div style = "display: flex; justify-content: center; align-items: center;">
-                                <input type="checkbox" id="trojanConfigs" name="trojanConfigs" onchange="handleProtocolChange(event)" value="true" ${TRConfigs ? "checked" : ""}>
-                                <label for="trojanConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">Trojan</label>
+                                <input type="checkbox" id="TRConfigs" name="TRConfigs" onchange="handleProtocolChange(event)" value="true" ${TRConfigs ? "checked" : ""}>
+                                <label for="TRConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">Trojan</label>
                             </div>
                         </div>
                     </div>
@@ -8925,7 +8925,7 @@ function buildClashTROutbound(remark, address, port, host, sni, path, allowInsec
     "type": "trojan",
     "server": addr,
     "port": +port,
-    "password": globalThis.trojanPassword,
+    "password": globalThis.TRPassword,
     "network": "ws",
     "udp": true,
     "ws-opts": {
