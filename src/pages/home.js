@@ -2,7 +2,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
     const {
         remoteDNS, 
         localDNS,
-        vlessTrojanFakeDNS, 
+        VLTRFakeDNS, 
         proxyIP, 
         outProxy,
         cleanIPs, 
@@ -10,9 +10,9 @@ export async function renderHomePage (proxySettings, isPassSet) {
         customCdnAddrs,
         customCdnHost,
         customCdnSni,
-        bestVLESSTrojanInterval,
-        vlessConfigs,
-        trojanConfigs,
+        bestVLTRInterval,
+        VLConfigs,
+        TRConfigs,
         ports,
         lengthMin, 
         lengthMax, 
@@ -44,7 +44,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
     } = proxySettings;
 
     const isWarpPlus = warpPlusLicense ? true : false;
-    const activeProtocols = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
+    const activeProtocols = (VLConfigs ? 1 : 0) + (TRConfigs ? 1 : 0);
     let httpPortsBlock = '', httpsPortsBlock = '';
     const allPorts = [...(globalThis.hostName.includes('workers.dev') ? globalThis.defaultHttpPorts : []), ...globalThis.defaultHttpsPorts];
 
@@ -405,8 +405,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
                         <label for="vlessTrojanFakeDNS">🧢 Fake DNS</label>
                         <div class="input-with-select">
                             <select id="vlessTrojanFakeDNS" name="vlessTrojanFakeDNS">
-                                <option value="true" ${vlessTrojanFakeDNS ? 'selected' : ''}>Enabled</option>
-                                <option value="false" ${!vlessTrojanFakeDNS ? 'selected' : ''}>Disabled</option>
+                                <option value="true" ${VLTRFakeDNS ? 'selected' : ''}>Enabled</option>
+                                <option value="false" ${!VLTRFakeDNS ? 'selected' : ''}>Disabled</option>
                             </select>
                         </div>
                     </div>
@@ -454,17 +454,17 @@ export async function renderHomePage (proxySettings, isPassSet) {
                     </div>
                     <div class="form-control">
                         <label for="bestVLESSTrojanInterval">🔄 Best Interval</label>
-                        <input type="number" id="bestVLESSTrojanInterval" name="bestVLESSTrojanInterval" min="10" max="90" value="${bestVLESSTrojanInterval}">
+                        <input type="number" id="bestVLESSTrojanInterval" name="bestVLESSTrojanInterval" min="10" max="90" value="${bestVLTRInterval}">
                     </div>
                     <div class="form-control" style="padding-top: 10px;">
                         <label for="vlessConfigs">⚙️ Protocols</label>
                         <div style="width: 100%; display: grid; grid-template-columns: 1fr 1fr; align-items: baseline; margin-top: 10px;">
                             <div style = "display: flex; justify-content: center; align-items: center;">
-                                <input type="checkbox" id="vlessConfigs" name="vlessConfigs" onchange="handleProtocolChange(event)" value="true" ${vlessConfigs ? 'checked' : ''}>
+                                <input type="checkbox" id="vlessConfigs" name="vlessConfigs" onchange="handleProtocolChange(event)" value="true" ${VLConfigs ? 'checked' : ''}>
                                 <label for="vlessConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">VLESS</label>
                             </div>
                             <div style = "display: flex; justify-content: center; align-items: center;">
-                                <input type="checkbox" id="trojanConfigs" name="trojanConfigs" onchange="handleProtocolChange(event)" value="true" ${trojanConfigs ? 'checked' : ''}>
+                                <input type="checkbox" id="trojanConfigs" name="trojanConfigs" onchange="handleProtocolChange(event)" value="true" ${TRConfigs ? 'checked' : ''}>
                                 <label for="trojanConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">Trojan</label>
                             </div>
                         </div>
