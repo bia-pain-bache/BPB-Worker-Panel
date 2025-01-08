@@ -49,7 +49,7 @@ export async function handlePanel(request, env) {
     }
         
     const { proxySettings } = await getDataset(request, env);
-    const pwd = await env.bpb.get('pwd');
+    const pwd = await env.kv.get('pwd');
     if (pwd && !auth) return Response.redirect(`${globalThis.urlOrigin}/login`, 302);
     const isPassSet = pwd?.length >= 8;
     return await renderHomePage(proxySettings, isPassSet);

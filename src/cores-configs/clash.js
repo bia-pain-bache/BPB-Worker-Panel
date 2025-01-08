@@ -478,7 +478,7 @@ export async function getClashNormalConfig (request, env) {
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
             chainProxy = undefined;
-            await env.bpb.put("proxySettings", JSON.stringify({
+            await env.kv.put("proxySettings", JSON.stringify({
                 ...proxySettings, 
                 outProxy: '',
                 outProxyParams: {}

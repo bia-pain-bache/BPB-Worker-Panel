@@ -4347,13 +4347,13 @@ __name(renderLoginPage, "renderLoginPage");
 // src/authentication/auth.js
 async function generateJWTToken(request, env) {
   const password = await request.text();
-  const savedPass = await env.bpb.get("pwd");
+  const savedPass = await env.kv.get("pwd");
   if (password !== savedPass)
     return new Response("Method Not Allowed", { status: 405 });
-  let secretKey = await env.bpb.get("secretKey");
+  let secretKey = await env.kv.get("secretKey");
   if (!secretKey) {
     secretKey = generateSecretKey();
-    await env.bpb.put("secretKey", secretKey);
+    await env.kv.put("secretKey", secretKey);
   }
   const secret = new TextEncoder().encode(secretKey);
   const jwtToken = await new SignJWT({ userID: globalThis.userID }).setProtectedHeader({ alg: "HS256" }).setIssuedAt().setExpirationTime("24h").sign(secret);
@@ -4373,7 +4373,7 @@ function generateSecretKey() {
 __name(generateSecretKey, "generateSecretKey");
 async function Authenticate(request, env) {
   try {
-    const secretKey = await env.bpb.get("secretKey");
+    const secretKey = await env.kv.get("secretKey");
     const secret = new TextEncoder().encode(secretKey);
     const cookie = request.headers.get("Cookie")?.match(/(^|;\s*)jwtToken=([^;]*)/);
     const token = cookie ? cookie[2] : null;
@@ -4402,13 +4402,13 @@ function logout() {
 __name(logout, "logout");
 async function resetPassword(request, env) {
   let auth = await Authenticate(request, env);
-  const oldPwd = await env.bpb.get("pwd");
+  const oldPwd = await env.kv.get("pwd");
   if (oldPwd && !auth)
     return new Response("Unauthorized!", { status: 401 });
   const newPwd = await request.text();
   if (newPwd === oldPwd)
     return new Response("Please enter a new Password!", { status: 400 });
-  await env.bpb.put("pwd", newPwd);
+  await env.kv.put("pwd", newPwd);
   return new Response("Success", {
     status: 200,
     headers: {
@@ -4484,7 +4484,7 @@ async function fetchWarpConfigs(env, proxySettings) {
     }
   }
   const configs = JSON.stringify(warpConfigs);
-  await env.bpb.put("warpConfigs", configs);
+  await env.kv.put("warpConfigs", configs);
   return { error: null, configs };
 }
 __name(fetchWarpConfigs, "fetchWarpConfigs");
@@ -4504,8 +4504,8 @@ var generateKeyPair = /* @__PURE__ */ __name(() => {
 async function getDataset(request, env) {
   let proxySettings, warpConfigs;
   try {
-    proxySettings = await env.bpb.get("proxySettings", { type: "json" });
-    warpConfigs = await env.bpb.get("warpConfigs", { type: "json" });
+    proxySettings = await env.kv.get("proxySettings", { type: "json" });
+    warpConfigs = await env.kv.get("warpConfigs", { type: "json" });
   } catch (error) {
     console.log(error);
     throw new Error(`An error occurred while getting KV - ${error}`);
@@ -4528,7 +4528,7 @@ async function updateDataset(request, env) {
   let currentSettings;
   if (!isReset) {
     try {
-      currentSettings = await env.bpb.get("proxySettings", { type: "json" });
+      currentSettings = await env.kv.get("proxySettings", { type: "json" });
     } catch (error) {
       console.log(error);
       throw new Error(`An error occurred while getting current KV settings - ${error}`);
@@ -4611,7 +4611,7 @@ async function updateDataset(request, env) {
     panelVersion: globalThis.panelVersion
   };
   try {
-    await env.bpb.put("proxySettings", JSON.stringify(proxySettings));
+    await env.kv.put("proxySettings", JSON.stringify(proxySettings));
     if (isReset)
       await updateWarpConfigs(request, env);
   } catch (error) {
@@ -6080,7 +6080,7 @@ async function handlePanel(request, env) {
     return new Response("Success", { status: 200 });
   }
   const { proxySettings } = await getDataset(request, env);
-  const pwd = await env.bpb.get("pwd");
+  const pwd = await env.kv.get("pwd");
   if (pwd && !auth)
     return Response.redirect(`${globalThis.urlOrigin}/login`, 302);
   const isPassSet = pwd?.length >= 8;
@@ -6133,7 +6133,7 @@ function initializeParams(request, env) {
       throw new Error(`Please set UUID and Trojan password first. Please visit <a href="https://${hostName}/secrets" target="_blank">here</a> to generate them.`, { cause: "init" });
     if (userID && !isValidUUID(userID))
       throw new Error(`Invalid UUID: ${userID}`, { cause: "init" });
-    if (typeof env.bpb !== "object")
+    if (typeof env.kv !== "object")
       throw new Error("KV Dataset is not properly set! Please refer to tutorials.", { cause: "init" });
   }
 }
@@ -7641,7 +7641,7 @@ async function getXrayCustomConfigs(request, env, isFragment) {
     } catch (error) {
       console.log("An error occured while parsing chain proxy: ", error);
       chainProxy = void 0;
-      await env.bpb.put("proxySettings", JSON.stringify({
+      await env.kv.put("proxySettings", JSON.stringify({
         ...proxySettings,
         outProxy: "",
         outProxyParams: {}
@@ -8474,7 +8474,7 @@ async function getSingBoxCustomConfig(request, env, isFragment) {
     } catch (error) {
       console.log("An error occured while parsing chain proxy: ", error);
       chainProxy = void 0;
-      await env.bpb.put("proxySettings", JSON.stringify({
+      await env.kv.put("proxySettings", JSON.stringify({
         ...proxySettings,
         outProxy: "",
         outProxyParams: {}
@@ -9108,7 +9108,7 @@ async function getClashNormalConfig(request, env) {
     } catch (error) {
       console.log("An error occured while parsing chain proxy: ", error);
       chainProxy = void 0;
-      await env.bpb.put("proxySettings", JSON.stringify({
+      await env.kv.put("proxySettings", JSON.stringify({
         ...proxySettings,
         outProxy: "",
         outProxyParams: {}
