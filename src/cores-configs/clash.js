@@ -286,7 +286,7 @@ function buildClashTROutbound (remark, address, port, host, sni, path, allowInse
         "type": "trojan",
         "server": addr,
         "port": +port,
-        "password": globalThis.trojanPassword,
+        "password": globalThis.TRPassword,
         "network": "ws",
         "udp": true,
         "ws-opts": {
