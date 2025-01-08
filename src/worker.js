@@ -1,6 +1,6 @@
 import { initializeParams } from './helpers/init';
-import { vlessOverWSHandler } from './protocols/vless';
-import { trojanOverWSHandler } from './protocols/trojan';
+import { VLOverWSHandler } from './protocols/vless';
+import { TROverWSHandler } from './protocols/trojan';
 import { updateWarpConfigs } from './kv/handlers';
 import { logout, resetPassword, login } from './authentication/auth';
 import { renderErrorPage } from './pages/error';
@@ -60,8 +60,8 @@ export default {
                 }
             } else {
                 return globalThis.pathName.startsWith('/tr') 
-                    ? await trojanOverWSHandler(request) 
-                    : await vlessOverWSHandler(request);
+                    ? await TROverWSHandler(request) 
+                    : await VLOverWSHandler(request);
             }
         } catch (err) {
             return await renderErrorPage(err);
