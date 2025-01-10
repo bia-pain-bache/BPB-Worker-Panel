@@ -4189,7 +4189,7 @@ async function renderLoginPage() {
     <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Login</title>
+    <title>BPB Login</title>
     <style>
         :root {
             --color: black;
@@ -6837,7 +6837,7 @@ async function renderErrorPage(error) {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Error Page</title>
+        <title>BPB Error</title>
         <style>
             :root {
                 --color: black;
@@ -9350,7 +9350,7 @@ async function renderSecretsPage() {
     <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Login</title>
+    <title>BPB Generator</title>
     <style>
         :root {
             --color: black;
