@@ -5,7 +5,7 @@ export async function renderErrorPage (error) {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Error Page</title>
+        <title>BPB Error</title>
         <style>
             :root {
                 --color: black;
