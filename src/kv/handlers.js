@@ -6,8 +6,8 @@ export async function getDataset(request, env) {
     let proxySettings, warpConfigs;
 
     try {
-        proxySettings = await env.bpb.get("proxySettings", {type: 'json'});
-        warpConfigs = await env.bpb.get('warpConfigs', {type: 'json'});
+        proxySettings = await env.kv.get("proxySettings", {type: 'json'});
+        warpConfigs = await env.kv.get('warpConfigs', {type: 'json'});
     } catch (error) {
         console.log(error);
         throw new Error(`An error occurred while getting KV - ${error}`);
@@ -30,7 +30,7 @@ export async function updateDataset (request, env) {
     let currentSettings;
     if (!isReset) {
         try {
-            currentSettings = await env.bpb.get("proxySettings", {type: 'json'});
+            currentSettings = await env.kv.get("proxySettings", {type: 'json'});
         } catch (error) {
             console.log(error);
             throw new Error(`An error occurred while getting current KV settings - ${error}`);
@@ -70,7 +70,7 @@ export async function updateDataset (request, env) {
         remoteDNS: remoteDNS,
         resolvedRemoteDNS: resolvedRemoteDNS,
         localDNS: validateField('localDNS') ?? currentSettings?.localDNS ?? '8.8.8.8',
-        vlessTrojanFakeDNS: validateField('vlessTrojanFakeDNS') ?? currentSettings?.vlessTrojanFakeDNS ?? false,
+        VLTRFakeDNS: validateField('VLTRFakeDNS') ?? currentSettings?.VLTRFakeDNS ?? false,
         proxyIP: validateField('proxyIP')?.replaceAll(' ', '') ?? currentSettings?.proxyIP ?? '',
         outProxy: validateField('outProxy') ?? currentSettings?.outProxy ?? '',
         outProxyParams: extractChainProxyParams(validateField('outProxy')) ?? currentSettings?.outProxyParams ?? {},
@@ -79,9 +79,9 @@ export async function updateDataset (request, env) {
         customCdnAddrs: validateField('customCdnAddrs')?.replaceAll(' ', '') ?? currentSettings?.customCdnAddrs ?? '',
         customCdnHost: validateField('customCdnHost')?.trim() ?? currentSettings?.customCdnHost ?? '',
         customCdnSni: validateField('customCdnSni')?.trim() ?? currentSettings?.customCdnSni ?? '',
-        bestVLESSTrojanInterval: validateField('bestVLESSTrojanInterval') ?? currentSettings?.bestVLESSTrojanInterval ?? '30',
-        vlessConfigs: validateField('vlessConfigs') ?? currentSettings?.vlessConfigs ?? true,
-        trojanConfigs: validateField('trojanConfigs') ?? currentSettings?.trojanConfigs ?? false,
+        bestVLTRInterval: validateField('bestVLTRInterval') ?? currentSettings?.bestVLTRInterval ?? '30',
+        VLConfigs: validateField('VLConfigs') ?? currentSettings?.VLConfigs ?? true,
+        TRConfigs: validateField('TRConfigs') ?? currentSettings?.TRConfigs ?? false,
         ports: validateField('ports')?.split(',') ?? currentSettings?.ports ?? ['443'],
         lengthMin: validateField('fragmentLengthMin') ?? currentSettings?.lengthMin ?? '100',
         lengthMax: validateField('fragmentLengthMax') ?? currentSettings?.lengthMax ?? '200',
@@ -114,7 +114,7 @@ export async function updateDataset (request, env) {
     };
 
     try {    
-        await env.bpb.put("proxySettings", JSON.stringify(proxySettings));
+        await env.kv.put("proxySettings", JSON.stringify(proxySettings));
         if (isReset) await updateWarpConfigs(request, env);          
     } catch (error) {
         console.log(error);

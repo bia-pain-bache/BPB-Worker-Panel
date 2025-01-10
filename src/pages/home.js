@@ -2,7 +2,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
     const {
         remoteDNS, 
         localDNS,
-        vlessTrojanFakeDNS, 
+        VLTRFakeDNS, 
         proxyIP, 
         outProxy,
         cleanIPs, 
@@ -10,9 +10,9 @@ export async function renderHomePage (proxySettings, isPassSet) {
         customCdnAddrs,
         customCdnHost,
         customCdnSni,
-        bestVLESSTrojanInterval,
-        vlessConfigs,
-        trojanConfigs,
+        bestVLTRInterval,
+        VLConfigs,
+        TRConfigs,
         ports,
         lengthMin, 
         lengthMax, 
@@ -44,7 +44,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
     } = proxySettings;
 
     const isWarpPlus = warpPlusLicense ? true : false;
-    const activeProtocols = (vlessConfigs ? 1 : 0) + (trojanConfigs ? 1 : 0);
+    const activeProtocols = (VLConfigs ? 1 : 0) + (TRConfigs ? 1 : 0);
     let httpPortsBlock = '', httpsPortsBlock = '';
     const allPorts = [...(globalThis.hostName.includes('workers.dev') ? globalThis.defaultHttpPorts : []), ...globalThis.defaultHttpsPorts];
 
@@ -402,11 +402,11 @@ export async function renderHomePage (proxySettings, isPassSet) {
                             title="Please enter a valid DNS IP Address!"  required>
                     </div>
                     <div class="form-control">
-                        <label for="vlessTrojanFakeDNS">🧢 Fake DNS</label>
+                        <label for="VLTRFakeDNS">🧢 Fake DNS</label>
                         <div class="input-with-select">
-                            <select id="vlessTrojanFakeDNS" name="vlessTrojanFakeDNS">
-                                <option value="true" ${vlessTrojanFakeDNS ? 'selected' : ''}>Enabled</option>
-                                <option value="false" ${!vlessTrojanFakeDNS ? 'selected' : ''}>Disabled</option>
+                            <select id="VLTRFakeDNS" name="VLTRFakeDNS">
+                                <option value="true" ${VLTRFakeDNS ? 'selected' : ''}>Enabled</option>
+                                <option value="false" ${!VLTRFakeDNS ? 'selected' : ''}>Disabled</option>
                             </select>
                         </div>
                     </div>
@@ -424,7 +424,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                     </div>
                     <div class="form-control">
                         <label for="scanner">🔎 Clean IP Scanner</label>
-                        <a href="${atob("aHR0cHM6Ly9naXRodWIuY29tL2JpYS1wYWluLWJhY2hl")}/Cloudflare-Clean-IP-Scanner/releases/tag/v2.2.5" name="scanner" target="_blank" style="width: 100%;">
+                        <a href="https://github.com/bia-pain-bache/Cloudflare-Clean-IP-Scanner/releases/tag/v2.2.5" name="scanner" target="_blank" style="width: 100%;">
                             <button type="button" id="scanner" class="button">
                                 Download Scanner
                                 <span class="material-symbols-outlined">open_in_new</span>
@@ -453,19 +453,19 @@ export async function renderHomePage (proxySettings, isPassSet) {
                         <input type="text" id="customCdnSni" name="customCdnSni" value="${customCdnSni}">
                     </div>
                     <div class="form-control">
-                        <label for="bestVLESSTrojanInterval">🔄 Best Interval</label>
-                        <input type="number" id="bestVLESSTrojanInterval" name="bestVLESSTrojanInterval" min="10" max="90" value="${bestVLESSTrojanInterval}">
+                        <label for="bestVLTRInterval">🔄 Best Interval</label>
+                        <input type="number" id="bestVLTRInterval" name="bestVLTRInterval" min="10" max="90" value="${bestVLTRInterval}">
                     </div>
                     <div class="form-control" style="padding-top: 10px;">
-                        <label for="vlessConfigs">⚙️ Protocols</label>
+                        <label for="VLConfigs">⚙️ Protocols</label>
                         <div style="width: 100%; display: grid; grid-template-columns: 1fr 1fr; align-items: baseline; margin-top: 10px;">
                             <div style = "display: flex; justify-content: center; align-items: center;">
-                                <input type="checkbox" id="vlessConfigs" name="vlessConfigs" onchange="handleProtocolChange(event)" value="true" ${vlessConfigs ? 'checked' : ''}>
-                                <label for="vlessConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">VLESS</label>
+                                <input type="checkbox" id="VLConfigs" name="VLConfigs" onchange="handleProtocolChange(event)" value="true" ${VLConfigs ? 'checked' : ''}>
+                                <label for="VLConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">VLESS</label>
                             </div>
                             <div style = "display: flex; justify-content: center; align-items: center;">
-                                <input type="checkbox" id="trojanConfigs" name="trojanConfigs" onchange="handleProtocolChange(event)" value="true" ${trojanConfigs ? 'checked' : ''}>
-                                <label for="trojanConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">Trojan</label>
+                                <input type="checkbox" id="TRConfigs" name="TRConfigs" onchange="handleProtocolChange(event)" value="true" ${TRConfigs ? 'checked' : ''}>
+                                <label for="TRConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">Trojan</label>
                             </div>
                         </div>
                     </div>
@@ -531,7 +531,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                     </div>
                     <div class="form-control">
                         <label for="endpointScanner" style="line-height: 1.5;">🔎 Scan Endpoint</label>
-                        <button type="button" id="endpointScanner" class="button" style="padding: 10px 0;" onclick="copyToClipboard('bash <(curl -fsSL ${atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2JpYS1wYWluLWJhY2hl")}/warp-script/refs/heads/main/endip/install.sh)', false)">
+                        <button type="button" id="endpointScanner" class="button" style="padding: 10px 0;" onclick="copyToClipboard('bash <(curl -fsSL https://raw.githubusercontent.com/bia-pain-bache/warp-script/refs/heads/main/endip/install.sh)', false)">
                             Copy Script<span class="material-symbols-outlined">terminal</span>
                         </button>
                     </div>
@@ -883,7 +883,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
             <hr>
             <div class="footer">
                 <i class="fa fa-github" style="font-size:36px; margin-right: 10px;"></i>
-                <a class="link" href="${atob('aHR0cHM6Ly9naXRodWIuY29tL2JpYS1wYWluLWJhY2hlL0JQQi1Xb3JrZXItUGFuZWw=')}" style="color: var(--color); text-decoration: underline;" target="_blank">Github</a>
+                <a class="link" href="https://github.com/bia-pain-bache/BPB-Worker-Panel" style="color: var(--color); text-decoration: underline;" target="_blank">Github</a>
                 <button id="openModalBtn" class="button">Change Password</button>
                 <button type="button" id="logout" style="background: none; color: var(--color); margin: 0; border: none; cursor: pointer;">
                     <i class="fa fa-power-off fa-2x" aria-hidden="true"></i>

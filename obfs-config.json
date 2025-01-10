@@ -1,0 +1,9 @@
+{
+  "deadCodeInjection": true,
+  "deadCodeInjectionThreshold": 0.4,
+  "renameGlobals": true,
+  "splitStrings": true,
+  "splitStringsChunkLength": 2,
+  "transformObjectKeys": true,
+  "target": "node"
+}

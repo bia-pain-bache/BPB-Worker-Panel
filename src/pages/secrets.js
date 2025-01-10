@@ -5,7 +5,7 @@ export async function renderSecretsPage () {
     <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Login</title>
+    <title>BPB Generator</title>
     <style>
         :root {
             --color: black;

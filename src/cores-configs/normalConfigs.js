@@ -7,8 +7,8 @@ export async function getNormalConfigs(request, env) {
         cleanIPs, 
         proxyIP, 
         ports, 
-        vlessConfigs, 
-        trojanConfigs , 
+        VLConfigs, 
+        TRConfigs , 
         outProxy, 
         customCdnAddrs, 
         customCdnHost, 
@@ -16,13 +16,13 @@ export async function getNormalConfigs(request, env) {
         enableIPv6
     } = proxySettings;
     
-    let vlessConfs = '', trojanConfs = '', chainProxy = '';
+    let VLConfs = '', TRConfs = '', chainProxy = '';
     let proxyIndex = 1;
     const Addresses = await getConfigAddresses(cleanIPs, enableIPv6);
     const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
     const totalAddresses = [...Addresses, ...customCdnAddresses];
     const alpn = globalThis.client === 'singbox' ? 'http/1.1' : 'h2,http/1.1';
-    const trojanPass = encodeURIComponent(globalThis.trojanPassword);
+    const TRPass = encodeURIComponent(globalThis.TRPassword);
     const earlyData = globalThis.client === 'singbox' 
         ? '&eh=Sec-WebSocket-Protocol&ed=2560' 
         : encodeURIComponent('?ed=2560');
@@ -34,18 +34,18 @@ export async function getNormalConfigs(request, env) {
             const sni = isCustomAddr ? customCdnSni : randomUpperCase(globalThis.hostName);
             const host = isCustomAddr ? customCdnHost : globalThis.hostName;
             const path = `${getRandomPath(16)}${proxyIP ? `/${encodeURIComponent(btoa(proxyIP))}` : ''}${earlyData}`;
-            const vlessRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, 'VLESS', configType));
-            const trojanRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, 'Trojan', configType));
+            const VLRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, 'VLESS', configType));
+            const TRRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, 'Trojan', configType));
             const tlsFields = globalThis.defaultHttpsPorts.includes(port) 
                 ? `&security=tls&sni=${sni}&fp=randomized&alpn=${alpn}`
                 : '&security=none';
 
-            if (vlessConfigs) {
-                vlessConfs += `${atob('dmxlc3M6Ly8=')}${globalThis.userID}@${addr}:${port}?path=/${path}&encryption=none&host=${host}&type=ws${tlsFields}#${vlessRemark}\n`; 
+            if (VLConfigs) {
+                VLConfs += `${atob('dmxlc3M6Ly8=')}${globalThis.userID}@${addr}:${port}?path=/${path}&encryption=none&host=${host}&type=ws${tlsFields}#${VLRemark}\n`; 
             }
 
-            if (trojanConfigs) {
-                trojanConfs += `${atob('dHJvamFuOi8v')}${trojanPass}@${addr}:${port}?path=/tr${path}&host=${host}&type=ws${tlsFields}#${trojanRemark}\n`;
+            if (TRConfigs) {
+                TRConfs += `${atob('dHJvamFuOi8v')}${TRPass}@${addr}:${port}?path=/tr${path}&host=${host}&type=ws${tlsFields}#${TRRemark}\n`;
             }
             
             proxyIndex++;
@@ -66,7 +66,7 @@ export async function getNormalConfigs(request, env) {
         }
     }
 
-    const configs = btoa(vlessConfs + trojanConfs + chainProxy);
+    const configs = btoa(VLConfs + TRConfs + chainProxy);
     return new Response(configs, { 
         status: 200,
         headers: {
