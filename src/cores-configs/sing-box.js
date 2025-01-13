@@ -6,7 +6,7 @@ function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp, remoteDNSDetour)
     const { 
         remoteDNS, 
         localDNS, 
-        vlessTrojanFakeDNS, 
+        VLTRFakeDNS, 
         enableIPv6,
         warpFakeDNS,
         warpEnableIPv6,
@@ -20,7 +20,7 @@ function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp, remoteDNSDetour)
     } = proxySettings;
 
     let fakeip;
-    const isFakeDNS = (vlessTrojanFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
+    const isFakeDNS = (VLTRFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
     const isIPv6 = (enableIPv6 && !isWarp) || (warpEnableIPv6 && isWarp);
     const customBypassRulesDomains = customBypassRules.split(',').filter(address => isDomain(address));
     const customBlockRulesDomains = customBlockRules.split(',').filter(address => isDomain(address));
@@ -349,7 +349,7 @@ function buildSingBoxRoutingRules (proxySettings) {
     return {rules, rule_set: ruleSets};
 }
 
-function buildSingBoxVLESSOutbound (proxySettings, remark, address, port, host, sni, allowInsecure, isFragment) {
+function buildSingBoxVLOutbound (proxySettings, remark, address, port, host, sni, allowInsecure, isFragment) {
     const { enableIPv6, lengthMin, lengthMax, intervalMin, intervalMax, proxyIP } = proxySettings;
     const path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
     const tls = globalThis.defaultHttpsPorts.includes(port) ? true : false;
@@ -391,13 +391,13 @@ function buildSingBoxVLESSOutbound (proxySettings, remark, address, port, host, 
     return outbound;
 }
 
-function buildSingBoxTrojanOutbound (proxySettings, remark, address, port, host, sni, allowInsecure, isFragment) {
+function buildSingBoxTROutbound (proxySettings, remark, address, port, host, sni, allowInsecure, isFragment) {
     const { enableIPv6, lengthMin, lengthMax, intervalMin, intervalMax, proxyIP } = proxySettings;
     const path = `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
     const tls = globalThis.defaultHttpsPorts.includes(port) ? true : false;
     const outbound = {
         type: "trojan",
-        password: globalThis.trojanPassword,
+        password: globalThis.TRPassword,
         server: address,
         server_port: +port,
         domain_strategy: enableIPv6 ? "prefer_ipv4" : "ipv4_only",
@@ -623,14 +623,14 @@ export async function getSingBoxCustomConfig(request, env, isFragment) {
     const { 
         cleanIPs,  
         ports, 
-        vlessConfigs, 
-        trojanConfigs, 
+        VLConfigs, 
+        TRConfigs, 
         outProxy, 
         outProxyParams,
         customCdnAddrs,
         customCdnHost,
         customCdnSni,
-        bestVLESSTrojanInterval,
+        bestVLTRInterval,
         enableIPv6
     } = proxySettings;
  
@@ -641,7 +641,7 @@ export async function getSingBoxCustomConfig(request, env, isFragment) {
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
             chainProxy = undefined;
-            await env.bpb.put("proxySettings", JSON.stringify({
+            await env.kv.put("proxySettings", JSON.stringify({
                 ...proxySettings, 
                 outProxy: '',
                 outProxyParams: {}
@@ -663,20 +663,20 @@ export async function getSingBoxCustomConfig(request, env, isFragment) {
     const selector = config.outbounds[0];
     const urlTest = config.outbounds[1];
     selector.outbounds = ['💦 Best Ping 💥'];
-    urlTest.interval = `${bestVLESSTrojanInterval}s`;
+    urlTest.interval = `${bestVLTRInterval}s`;
     urlTest.tag = '💦 Best Ping 💥';
     const totalPorts = ports.filter(port => isFragment ? globalThis.defaultHttpsPorts.includes(port) : true);
     let proxyIndex = 1;
     const protocols = [
-        ...(vlessConfigs ? ['VLESS'] : []),
-        ...(trojanConfigs ? ['Trojan'] : [])
+        ...(VLConfigs ? ['VLESS'] : []),
+        ...(TRConfigs ? ['Trojan'] : [])
     ];
 
     protocols.forEach ( protocol => {
         let protocolIndex = 1;
         totalPorts.forEach ( port => {
             totalAddresses.forEach ( addr => {
-                let VLESSOutbound, TrojanOutbound;
+                let VLOutbound, TROutbound;
                 const isCustomAddr = customCdnAddresses.includes(addr);
                 const configType = isCustomAddr ? 'C' : isFragment ? 'F' : '';
                 const sni = isCustomAddr ? customCdnSni : randomUpperCase(globalThis.hostName);
@@ -684,7 +684,7 @@ export async function getSingBoxCustomConfig(request, env, isFragment) {
                 const remark = generateRemark(protocolIndex, port, addr, cleanIPs, protocol, configType);
          
                 if (protocol === 'VLESS') {
-                    VLESSOutbound = buildSingBoxVLESSOutbound (
+                    VLOutbound = buildSingBoxVLOutbound (
                         proxySettings,
                         chainProxy ? `proxy-${proxyIndex}` : remark, 
                         addr, 
@@ -694,11 +694,11 @@ export async function getSingBoxCustomConfig(request, env, isFragment) {
                         isCustomAddr, 
                         isFragment
                     );
-                    config.outbounds.push(VLESSOutbound);
+                    config.outbounds.push(VLOutbound);
                 }
                 
                 if (protocol === 'Trojan') {
-                    TrojanOutbound = buildSingBoxTrojanOutbound (
+                    TROutbound = buildSingBoxTROutbound (
                         proxySettings,
                         chainProxy ? `proxy-${proxyIndex}` : remark, 
                         addr, 
@@ -708,7 +708,7 @@ export async function getSingBoxCustomConfig(request, env, isFragment) {
                         isCustomAddr,
                         isFragment
                     );
-                    config.outbounds.push(TrojanOutbound);
+                    config.outbounds.push(TROutbound);
                 }
                 
                 if (chainProxy) {
