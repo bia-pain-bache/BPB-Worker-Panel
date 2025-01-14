@@ -21,18 +21,18 @@ export default {
                     case '/update-warp':
                         return await updateWarpConfigs(request, env);
 
-                    case `/sub/${globalThis.userID}`:
+                    case `/sub/${globalThis.subPath}`:
                         if (globalThis.client === 'sfa') return await getSingBoxCustomConfig(request, env, false);
                         if (globalThis.client === 'clash') return await getClashNormalConfig(request, env);
                         if (globalThis.client === 'xray') return await getXrayCustomConfigs(request, env, false);
                         return await getNormalConfigs(request, env);                        
 
-                    case `/fragsub/${globalThis.userID}`:
+                    case `/fragsub/${globalThis.subPath}`:
                         return globalThis.client === 'hiddify'
                             ? await getSingBoxCustomConfig(request, env, true)
                             : await getXrayCustomConfigs(request, env, true);
 
-                    case `/warpsub/${globalThis.userID}`:
+                    case `/warpsub/${globalThis.subPath}`:
                         if (globalThis.client === 'clash') return await getClashWarpConfig(request, env);   
                         if (globalThis.client === 'singbox' || globalThis.client === 'hiddify') return await getSingBoxWarpConfig(request, env, globalThis.client);
                         return await getXrayWarpConfigs(request, env, globalThis.client);
