@@ -9472,6 +9472,13 @@ async function renderSecretsPage() {
                         <span class="copy-icon" onclick="copyToClipboard('trojan-password')">\u{1F4CB}</span>
                     </div>
                 </div>
+                <div>
+                    <strong>Random Subscription URI path</strong>
+                    <div class="output-container">
+                        <span id="sub-path" class="output"></span>
+                        <span class="copy-icon" onclick="copyToClipboard('sub-path')">\u{1F4CB}</span>
+                    </div>
+                </div>
                 <button class="button" onclick="generateCredentials()">Generate Again \u267B\uFE0F</button>
             </div>
         </div>
@@ -9493,13 +9500,28 @@ async function renderSecretsPage() {
                 }
                 return password;
             }
+            
+            function generateSubURIPath() {
+                const charset =
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@$&*_-+;:',.";
+                let uriPath = '';
+                const randomValues = new Uint8Array(16);
+                crypto.getRandomValues(randomValues);
+    
+                for (let i = 0; i < 16; i++) {
+                    uriPath += charset[randomValues[i] % charset.length];
+                }
+                return uriPath;
+            }
     
             function generateCredentials() {
                 const uuid = generateUUID();
                 const password = generateStrongPassword();
+                const uriPath = generateSubURIPath();
     
                 document.getElementById('uuid').textContent = uuid;
                 document.getElementById('trojan-password').textContent = password;
+                document.getElementById('sub-path').textContent = uriPath;
             }
     
             function copyToClipboard(elementId) {
