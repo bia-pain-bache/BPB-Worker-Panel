@@ -44,14 +44,14 @@
   <img src="assets/images/Generate_secrets.jpg">
 </p>
 
-## قدم سوم - ساخت Cloudflare KV و تنظیم UUID و Trojan Password
+## قدم سوم - ساخت Cloudflare KV و تنظیم UUID و پسورد Trojan
 از منوی سمت چپ میریم به قسمت KV:
 
 <p align="center">
   <img src="assets/images/Nav_dash_kv.jpg">
 </p>
 
-روی `Create a namespace` کلیک میکنیم و یه اسم دلخواه بهش میدیم و Add میکنیم.
+روی `Create` کلیک میکنیم و یه اسم دلخواه بهش میدیم و Add میکنیم.
 
 
 برگردید به قسمت `Workers and Pages` و وارد اون پروژه‌ی Pages بشید که ساختید، با توجه به عکس زیر برید قسمت `Settings`:
@@ -61,7 +61,7 @@
 </p>
 
 
-اینجا مثل ورکر تو صفحه قسمت `Bindings` رو پیدا کنید، `Add` بزنید و `KV Namespace` رو انتخاب کنید، `Variable name` باید حتما `bpb` باشه (همینجوری که نوشتم) و `KV namespace` اون KV رو انتخاب میکنید که مرحله دو ساختید و `save` میکنید.
+اینجا مثل ورکر تو صفحه قسمت `Bindings` رو پیدا کنید، `Add` بزنید و `KV Namespace` رو انتخاب کنید، `Variable name` باید حتما `kv` باشه (همینجوری که نوشتم) و `KV namespace` اون KV رو انتخاب میکنید که مرحله دو ساختید و `save` میکنید.
 
 <p align="center">
   <img src="assets/images/Pages_bind_kv.jpg">
@@ -69,7 +69,7 @@
 
 خب کارمون با KV تموم شد.
 
-تو همین قسمت `Settings` بخش `Variables and Secrets` رو میبینید، `Add variable` بزنید خونه اول `UUID` با حروف بزرگ، UUID رو هم میتونید از همون لینک مرحله قبل بگیرید و کپی کنید قسمت Value و `Save` کنید. یک بار دیگه `Add variable` بزنید خونه اول `TROJAN_PASS` با حروف بزرگ، پسورد Trojan رو هم میتونید از همون لینک مرحله قبل بگیرید و کپی کنید قسمت Value و `Save` کنید.
+تو همین قسمت `Settings` بخش `Variables and Secrets` رو میبینید، `Add variable` بزنید خونه اول `UUID` با حروف بزرگ، UUID رو هم میتونید از همون لینک مرحله قبل بگیرید و کپی کنید قسمت Value و `Save` کنید. یک بار دیگه `Add variable` بزنید خونه اول `TR_PASS` با حروف بزرگ، پسورد Trojan رو هم میتونید از همون لینک مرحله قبل بگیرید و کپی کنید قسمت Value و `Save` کنید.
 
 از نوار بالا به قسمت `Deployment` برگردید و از بخش `Production` برید به `view details`:
 
