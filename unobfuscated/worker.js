@@ -4736,14 +4736,14 @@ async function renderHomePage(proxySettings, isPassSet) {
             <span>${app}</span>
         </div>`).join(""), "supportedApps");
   const subQR = /* @__PURE__ */ __name((path, app, tag2, title, sbType) => {
-    const url = `${sbType ? "sing-box://import-remote-profile?url=" : ""}https://${globalThis.hostName}/${path}/${globalThis.userID}${app ? `?app=${app}` : ""}#${tag2}`;
+    const url = `${sbType ? "sing-box://import-remote-profile?url=" : ""}https://${globalThis.hostName}/${path}/${globalThis.subPath}${app ? `?app=${app}` : ""}#${tag2}`;
     return `
             <button onclick="openQR('${url}', '${title}')" style="margin-bottom: 8px;">
                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
             </button>`;
   }, "subQR");
   const subURL = /* @__PURE__ */ __name((path, app, tag2) => {
-    const url = `https://${globalThis.hostName}/${path}/${globalThis.userID}${app ? `?app=${app}` : ""}#${tag2}`;
+    const url = `https://${globalThis.hostName}/${path}/${globalThis.subPath}${app ? `?app=${app}` : ""}#${tag2}`;
     return `
             <button onclick="copyToClipboard('${url}')">
                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
@@ -6089,7 +6089,7 @@ async function handlePanel(request, env) {
 __name(handlePanel, "handlePanel");
 async function fallback(request) {
   const url = new URL(request.url);
-  url.hostname = "speed.cloudflare.com";
+  url.hostname = globalThis.fallbackDomain;
   url.protocol = "https:";
   request = new Request(url, request);
   return await fetch(request);
@@ -6117,7 +6117,7 @@ function initializeParams(request, env) {
   const proxyIPs = env.PROXYIP?.split(",").map((proxyIP) => proxyIP.trim());
   const url = new URL(request.url);
   const searchParams = new URLSearchParams(url.search);
-  globalThis.panelVersion = "3";
+  globalThis.panelVersion = "3.0.1";
   globalThis.defaultHttpPorts = ["80", "8080", "2052", "2082", "2086", "2095", "8880"];
   globalThis.defaultHttpsPorts = ["443", "8443", "2053", "2083", "2087", "2096"];
   globalThis.userID = env.UUID;
@@ -6128,6 +6128,8 @@ function initializeParams(request, env) {
   globalThis.client = searchParams.get("app");
   globalThis.urlOrigin = url.origin;
   globalThis.dohURL = env.DOH_URL || "https://cloudflare-dns.com/dns-query";
+  globalThis.fallbackDomain = env.FALLBACK || "speed.cloudflare.com";
+  globalThis.subPath = env.SUB_PATH || userID;
   if (pathName !== "/secrets") {
     if (!userID || !globalThis.TRPassword)
       throw new Error(`Please set UUID and Trojan password first. Please visit <a href="https://${hostName}/secrets" target="_blank">here</a> to generate them.`, { cause: "init" });
@@ -9525,7 +9527,7 @@ var worker_default = {
         switch (globalThis.pathName) {
           case "/update-warp":
             return await updateWarpConfigs(request, env);
-          case `/sub/${globalThis.userID}`:
+          case `/sub/${globalThis.subPath}`:
             if (globalThis.client === "sfa")
               return await getSingBoxCustomConfig(request, env, false);
             if (globalThis.client === "clash")
@@ -9533,9 +9535,9 @@ var worker_default = {
             if (globalThis.client === "xray")
               return await getXrayCustomConfigs(request, env, false);
             return await getNormalConfigs(request, env);
-          case `/fragsub/${globalThis.userID}`:
+          case `/fragsub/${globalThis.subPath}`:
             return globalThis.client === "hiddify" ? await getSingBoxCustomConfig(request, env, true) : await getXrayCustomConfigs(request, env, true);
-          case `/warpsub/${globalThis.userID}`:
+          case `/warpsub/${globalThis.subPath}`:
             if (globalThis.client === "clash")
               return await getClashWarpConfig(request, env);
             if (globalThis.client === "singbox" || globalThis.client === "hiddify")
