@@ -6117,7 +6117,7 @@ function initializeParams(request, env) {
   const proxyIPs = env.PROXYIP?.split(",").map((proxyIP) => proxyIP.trim());
   const url = new URL(request.url);
   const searchParams = new URLSearchParams(url.search);
-  globalThis.panelVersion = "3.0.1";
+  globalThis.panelVersion = "3.0.2";
   globalThis.defaultHttpPorts = ["80", "8080", "2052", "2082", "2086", "2095", "8880"];
   globalThis.defaultHttpsPorts = ["443", "8443", "2053", "2083", "2087", "2096"];
   globalThis.userID = env.UUID;
@@ -7880,6 +7880,7 @@ var xrayConfigTemp = {
 function buildSingBoxDNS(proxySettings, outboundAddrs, isWarp, remoteDNSDetour) {
   const {
     remoteDNS,
+    resolvedRemoteDNS,
     localDNS,
     VLTRFakeDNS,
     enableIPv6,
@@ -7911,7 +7912,7 @@ function buildSingBoxDNS(proxySettings, outboundAddrs, isWarp, remoteDNSDetour) 
   const servers = [
     {
       address: isWarp ? "1.1.1.1" : remoteDNS,
-      address_resolver: "dns-direct",
+      address_resolver: resolvedRemoteDNS.server ? "doh-resolver" : "dns-direct",
       strategy: isIPv62 ? "prefer_ipv4" : "ipv4_only",
       detour: remoteDNSDetour,
       tag: "dns-remote"
@@ -7927,6 +7928,12 @@ function buildSingBoxDNS(proxySettings, outboundAddrs, isWarp, remoteDNSDetour) 
       tag: "dns-block"
     }
   ];
+  resolvedRemoteDNS.server && servers.push({
+    address: localDNS,
+    strategy: isIPv62 ? "prefer_ipv4" : "ipv4_only",
+    detour: remoteDNSDetour,
+    tag: "doh-resolver"
+  });
   let outboundRule;
   if (isWarp) {
     outboundRule = {
@@ -8667,6 +8674,7 @@ var singboxConfigTemp = {
 async function buildClashDNS(proxySettings, isChain, isWarp) {
   const {
     remoteDNS,
+    resolvedRemoteDNS,
     localDNS,
     VLTRFakeDNS,
     outProxyParams,
@@ -8693,7 +8701,6 @@ async function buildClashDNS(proxySettings, isChain, isWarp) {
     "listen": "0.0.0.0:1053",
     "ipv6": isIPv62,
     "respect-rules": true,
-    "use-hosts": true,
     "use-system-hosts": false,
     "nameserver": isWarp ? warpRemoteDNS.map((dns2) => isChain ? `${dns2}#\u{1F4A6} Warp - Best Ping \u{1F680}` : `${dns2}#\u2705 Selector`) : [isChain ? `${remoteDNS}#proxy-1` : `${remoteDNS}#\u2705 Selector`],
     "proxy-server-nameserver": [`${localDNS}#DIRECT`]
@@ -8702,7 +8709,7 @@ async function buildClashDNS(proxySettings, isChain, isWarp) {
     const chainOutboundServer = JSON.parse(outProxyParams).server;
     if (isDomain(chainOutboundServer))
       dns["nameserver-policy"] = {
-        [chainOutboundServer]: isChain ? `${remoteDNS}#proxy-1` : `${remoteDNS}#\u2705 Selector`
+        [chainOutboundServer]: `${remoteDNS}#proxy-1`
       };
   }
   if (isBypass) {
@@ -8721,6 +8728,9 @@ async function buildClashDNS(proxySettings, isChain, isWarp) {
       [`+.${domain}`]: [`${localDNS}#DIRECT`]
     };
   });
+  if (resolvedRemoteDNS.server) {
+    dns["default-nameserver"] = [`${localDNS}#${isChain ? "proxy-1" : "\u2705 Selector"}`];
+  }
   if (isFakeDNS)
     Object.assign(dns, {
       "enhanced-mode": "fake-ip",
@@ -9089,7 +9099,6 @@ async function getClashNormalConfig(request, env) {
   const { proxySettings } = await getDataset(request, env);
   let chainProxy;
   const {
-    resolvedRemoteDNS,
     cleanIPs,
     proxyIP,
     ports,
@@ -9118,13 +9127,6 @@ async function getClashNormalConfig(request, env) {
     }
   }
   const config = structuredClone(clashConfigTemp);
-  if (resolvedRemoteDNS.server) {
-    config.hosts = {
-      [resolvedRemoteDNS.server]: resolvedRemoteDNS.staticIPs
-    };
-  } else {
-    delete config.hosts;
-  }
   const { rules, ruleProviders } = buildClashRoutingRules(proxySettings);
   config.dns = await buildClashDNS(proxySettings, chainProxy, false);
   config.rules = rules;
@@ -9226,7 +9228,6 @@ var clashConfigTemp = {
     "store-selected": true,
     "store-fake-ip": true
   },
-  "hosts": {},
   "dns": {},
   "tun": {
     "enable": true,
@@ -9502,8 +9503,7 @@ async function renderSecretsPage() {
             }
             
             function generateSubURIPath() {
-                const charset =
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@$&*_-+;:',.";
+                const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@$&*_-+;:,.";
                 let uriPath = '';
                 const randomValues = new Uint8Array(16);
                 crypto.getRandomValues(randomValues);
