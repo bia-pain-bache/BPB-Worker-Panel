@@ -143,7 +143,7 @@ export async function renderSecretsPage () {
     
             function generateStrongPassword() {
                 const charset =
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@$%^*()_+[]{}|;:,.<>?";
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+[]{}|;:',.<>?";
                 let password = '';
                 const randomValues = new Uint8Array(16);
                 crypto.getRandomValues(randomValues);
@@ -155,8 +155,7 @@ export async function renderSecretsPage () {
             }
             
             function generateSubURIPath() {
-                const charset =
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@$&*_-+;:',.";
+                const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@$&*_-+;:,.";
                 let uriPath = '';
                 const randomValues = new Uint8Array(16);
                 crypto.getRandomValues(randomValues);
