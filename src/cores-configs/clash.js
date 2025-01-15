@@ -3,8 +3,9 @@ import { getDataset } from '../kv/handlers';
 import { isDomain } from '../helpers/helpers';
 
 async function buildClashDNS (proxySettings, isChain, isWarp) {
-    const { 
-        remoteDNS, 
+    const {
+        remoteDNS,
+        resolvedRemoteDNS, 
         localDNS, 
         VLTRFakeDNS,
         outProxyParams,
@@ -35,7 +36,6 @@ async function buildClashDNS (proxySettings, isChain, isWarp) {
         "listen": "0.0.0.0:1053",
         "ipv6": isIPv6,
         "respect-rules": true,
-        "use-hosts": true,
         "use-system-hosts": false,
         "nameserver": isWarp 
             ? warpRemoteDNS.map(dns => isChain ? `${dns}#💦 Warp - Best Ping 🚀` : `${dns}#✅ Selector`) 
@@ -46,7 +46,7 @@ async function buildClashDNS (proxySettings, isChain, isWarp) {
     if (isChain && !isWarp) {
         const chainOutboundServer = JSON.parse(outProxyParams).server;
         if (isDomain(chainOutboundServer)) dns["nameserver-policy"] = {
-            [chainOutboundServer]: isChain ? `${remoteDNS}#proxy-1` : `${remoteDNS}#✅ Selector`
+            [chainOutboundServer]: `${remoteDNS}#proxy-1`
         };    
     } 
 
@@ -68,6 +68,10 @@ async function buildClashDNS (proxySettings, isChain, isWarp) {
             [`+.${domain}`]: [`${localDNS}#DIRECT`]
         };
     });
+
+    if (resolvedRemoteDNS.server) {
+        dns["default-nameserver"] = [`${localDNS}#${isChain ? 'proxy-1' : '✅ Selector'}`];
+    }
 
     if (isFakeDNS) Object.assign(dns, {
         "enhanced-mode": "fake-ip",
@@ -456,7 +460,6 @@ export async function getClashNormalConfig (request, env) {
     const { proxySettings } = await getDataset(request, env);
     let chainProxy;
     const { 
-        resolvedRemoteDNS,
         cleanIPs, 
         proxyIP, 
         ports, 
@@ -487,13 +490,6 @@ export async function getClashNormalConfig (request, env) {
     }
 
     const config = structuredClone(clashConfigTemp);
-    if (resolvedRemoteDNS.server) {
-        config.hosts = {
-            [resolvedRemoteDNS.server]: resolvedRemoteDNS.staticIPs
-        }
-    } else {
-        delete config.hosts;
-    }
     const { rules, ruleProviders } = buildClashRoutingRules(proxySettings);
     config.dns = await buildClashDNS(proxySettings, chainProxy, false);
     config.rules = rules;
@@ -601,7 +597,6 @@ const clashConfigTemp = {
         "store-selected": true,
         "store-fake-ip": true
     },
-    "hosts": {},
     "dns": {},
     "tun": {
         "enable": true,
