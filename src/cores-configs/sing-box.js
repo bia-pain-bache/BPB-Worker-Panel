@@ -4,7 +4,8 @@ import { isDomain } from '../helpers/helpers';
 
 function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp, remoteDNSDetour) {
     const { 
-        remoteDNS, 
+        remoteDNS,
+        resolvedRemoteDNS, 
         localDNS, 
         VLTRFakeDNS, 
         enableIPv6,
@@ -34,10 +35,11 @@ function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp, remoteDNSDetour)
         { rule: blockAds, type: 'block', geosite: "geosite-category-ads-all" },
         { rule: blockPorn, type: 'block', geosite: "geosite-nsfw" }
     ];
+
     const servers = [
         {
             address: isWarp ? "1.1.1.1" : remoteDNS,
-            address_resolver: "dns-direct",
+            address_resolver: resolvedRemoteDNS.server ? "doh-resolver" : "dns-direct",
             strategy: isIPv6 ? "prefer_ipv4" : "ipv4_only",
             detour: remoteDNSDetour,
             tag: "dns-remote"
@@ -53,6 +55,13 @@ function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp, remoteDNSDetour)
             tag: "dns-block"
         }
     ];
+
+    resolvedRemoteDNS.server && servers.push({
+        address: localDNS,
+        strategy: isIPv6 ? "prefer_ipv4" : "ipv4_only",
+        detour: remoteDNSDetour,
+        tag: "doh-resolver"
+    });
 
     let outboundRule;
     if (isWarp) {
