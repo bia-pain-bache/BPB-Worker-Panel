@@ -1,11 +1,10 @@
 import { resolveDNS, isDomain } from '../helpers/helpers';
-import { getConfigAddresses, extractWireguardParams, base64ToDecimal, generateRemark, randomUpperCase, getRandomPath } from './helpers';
+import { getConfigAddresses, extractWireguardParams, base64ToDecimal, generateRemark, randomUpperCase, getRandomPath, getDomain } from './helpers';
 import { getDataset } from '../kv/handlers';
 
 async function buildXrayDNS (proxySettings, outboundAddrs, domainToStaticIPs, isWorkerLess, isWarp) { 
     const { 
-        remoteDNS, 
-        resolvedRemoteDNS, 
+        remoteDNS,  
         localDNS, 
         VLTRFakeDNS, 
         enableIPv6, 
@@ -80,9 +79,10 @@ async function buildXrayDNS (proxySettings, outboundAddrs, domainToStaticIPs, is
         tag: "dns",
     };
 
-    if (resolvedRemoteDNS.server && !isWorkerLess && !isWarp) dnsObject.servers.push({
+    const dohHost = getDomain(remoteDNS);
+    if (dohHost.isHostDomain && !isWorkerLess && !isWarp) dnsObject.servers.push({
         address: 'https://8.8.8.8/dns-query',
-        domains: [`full:${resolvedRemoteDNS.server}`],
+        domains: [`full:${dohHost.host}`],
         skipFallback: true
     });
       

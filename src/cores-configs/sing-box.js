@@ -1,11 +1,10 @@
-import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6 } from './helpers';
+import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6, getDomain } from './helpers';
 import { getDataset } from '../kv/handlers';
 import { isDomain } from '../helpers/helpers';
 
 function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp, remoteDNSDetour) {
     const { 
         remoteDNS,
-        resolvedRemoteDNS, 
         localDNS, 
         VLTRFakeDNS, 
         enableIPv6,
@@ -21,6 +20,7 @@ function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp, remoteDNSDetour)
     } = proxySettings;
 
     let fakeip;
+    const dohHost = getDomain(remoteDNS);
     const isFakeDNS = (VLTRFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
     const isIPv6 = (enableIPv6 && !isWarp) || (warpEnableIPv6 && isWarp);
     const customBypassRulesDomains = customBypassRules.split(',').filter(address => isDomain(address));
@@ -39,7 +39,7 @@ function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp, remoteDNSDetour)
     const servers = [
         {
             address: isWarp ? "1.1.1.1" : remoteDNS,
-            address_resolver: resolvedRemoteDNS.server ? "doh-resolver" : "dns-direct",
+            address_resolver: dohHost.isHostDomain ? "doh-resolver" : "dns-direct",
             strategy: isIPv6 ? "prefer_ipv4" : "ipv4_only",
             detour: remoteDNSDetour,
             tag: "dns-remote"
@@ -56,7 +56,7 @@ function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp, remoteDNSDetour)
         }
     ];
 
-    resolvedRemoteDNS.server && !isWarp && servers.push({
+    dohHost.isHostDomain && !isWarp && servers.push({
         address: 'https://8.8.8.8/dns-query',
         strategy: isIPv6 ? "prefer_ipv4" : "ipv4_only",
         detour: remoteDNSDetour,

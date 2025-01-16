@@ -1,11 +1,10 @@
-import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6, isIPv4 } from './helpers';
+import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6, isIPv4, getDomain } from './helpers';
 import { getDataset } from '../kv/handlers';
 import { isDomain } from '../helpers/helpers';
 
 async function buildClashDNS (proxySettings, isChain, isWarp) {
     const {
         remoteDNS,
-        resolvedRemoteDNS, 
         localDNS, 
         VLTRFakeDNS,
         outProxyParams,
@@ -69,7 +68,8 @@ async function buildClashDNS (proxySettings, isChain, isWarp) {
         };
     });
 
-    if (resolvedRemoteDNS.server && !isWarp) {
+    const dohHost = getDomain(remoteDNS);
+    if (dohHost.isHostDomain && !isWarp) {
         dns["default-nameserver"] = [`https://8.8.8.8/dns-query#${isChain ? 'proxy-1' : '✅ Selector'}`];
     }
 
