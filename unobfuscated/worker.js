@@ -7004,8 +7004,6 @@ async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isW
   const staticIPs = domainToStaticIPs ? await resolveDNS(domainToStaticIPs) : void 0;
   if (staticIPs)
     dnsHost[domainToStaticIPs] = enableIPv6 ? [...staticIPs.ipv4, ...staticIPs.ipv6] : staticIPs.ipv4;
-  if (resolvedRemoteDNS.server && !isWorkerLess && !isWarp)
-    dnsHost[resolvedRemoteDNS.server] = resolvedRemoteDNS.staticIPs;
   if (isWorkerLess) {
     const domains = ["cloudflare-dns.com", "cloudflare.com", "dash.cloudflare.com"];
     const resolved = await Promise.all(domains.map(resolveDNS));
@@ -7023,6 +7021,12 @@ async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isW
     queryStrategy: isIPv62 ? "UseIP" : "UseIPv4",
     tag: "dns"
   };
+  if (resolvedRemoteDNS.server && !isWorkerLess && !isWarp)
+    dnsObject.servers.push({
+      address: "https://8.8.8.8/dns-query",
+      domains: [`full:${resolvedRemoteDNS.server}`],
+      skipFallback: true
+    });
   if (isDomainRule) {
     const outboundDomainRules = uniqueOutboundDomains.map((domain) => `full:${domain}`);
     const bypassDomainRules = customBypassRulesDomains.map((domain) => `domain:${domain}`);
@@ -7928,8 +7932,8 @@ function buildSingBoxDNS(proxySettings, outboundAddrs, isWarp, remoteDNSDetour) 
       tag: "dns-block"
     }
   ];
-  resolvedRemoteDNS.server && servers.push({
-    address: localDNS,
+  resolvedRemoteDNS.server && !isWarp && servers.push({
+    address: "https://8.8.8.8/dns-query",
     strategy: isIPv62 ? "prefer_ipv4" : "ipv4_only",
     detour: remoteDNSDetour,
     tag: "doh-resolver"
@@ -8728,8 +8732,8 @@ async function buildClashDNS(proxySettings, isChain, isWarp) {
       [`+.${domain}`]: [`${localDNS}#DIRECT`]
     };
   });
-  if (resolvedRemoteDNS.server) {
-    dns["default-nameserver"] = [`${localDNS}#${isChain ? "proxy-1" : "\u2705 Selector"}`];
+  if (resolvedRemoteDNS.server && !isWarp) {
+    dns["default-nameserver"] = [`https://8.8.8.8/dns-query#${isChain ? "proxy-1" : "\u2705 Selector"}`];
   }
   if (isFakeDNS)
     Object.assign(dns, {
