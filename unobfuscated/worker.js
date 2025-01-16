@@ -4546,34 +4546,15 @@ async function updateDataset(request, env) {
       return false;
     return fieldValue;
   }, "validateField");
-  const remoteDNS = validateField("remoteDNS") ?? currentSettings?.remoteDNS ?? "https://8.8.8.8/dns-query";
-  const enableIPv6 = validateField("enableIPv6") ?? currentSettings?.enableIPv6 ?? true;
-  const url = new URL(remoteDNS);
-  const remoteDNSServer = url.hostname;
-  const isServerDomain = isDomain(remoteDNSServer);
-  let resolvedRemoteDNS = {};
-  if (isServerDomain) {
-    try {
-      const resolvedDomain = await resolveDNS(remoteDNSServer);
-      resolvedRemoteDNS = {
-        server: remoteDNSServer,
-        staticIPs: enableIPv6 ? [...resolvedDomain.ipv4, ...resolvedDomain.ipv6] : resolvedDomain.ipv4
-      };
-    } catch (error) {
-      console.log(error);
-      throw new Error(`An error occurred while resolving remote DNS server, please try agian! - ${error}`);
-    }
-  }
   const proxySettings = {
-    remoteDNS,
-    resolvedRemoteDNS,
+    remoteDNS: validateField("remoteDNS") ?? currentSettings?.remoteDNS ?? "https://8.8.8.8/dns-query",
     localDNS: validateField("localDNS") ?? currentSettings?.localDNS ?? "8.8.8.8",
     VLTRFakeDNS: validateField("VLTRFakeDNS") ?? currentSettings?.VLTRFakeDNS ?? false,
     proxyIP: validateField("proxyIP")?.replaceAll(" ", "") ?? currentSettings?.proxyIP ?? "",
     outProxy: validateField("outProxy") ?? currentSettings?.outProxy ?? "",
     outProxyParams: extractChainProxyParams(validateField("outProxy")) ?? currentSettings?.outProxyParams ?? {},
     cleanIPs: validateField("cleanIPs")?.replaceAll(" ", "") ?? currentSettings?.cleanIPs ?? "",
-    enableIPv6,
+    enableIPv6: validateField("enableIPv6") ?? currentSettings?.enableIPv6 ?? true,
     customCdnAddrs: validateField("customCdnAddrs")?.replaceAll(" ", "") ?? currentSettings?.customCdnAddrs ?? "",
     customCdnHost: validateField("customCdnHost")?.trim() ?? currentSettings?.customCdnHost ?? "",
     customCdnSni: validateField("customCdnSni")?.trim() ?? currentSettings?.customCdnSni ?? "",
@@ -6117,7 +6098,7 @@ function initializeParams(request, env) {
   const proxyIPs = env.PROXYIP?.split(",").map((proxyIP) => proxyIP.trim());
   const url = new URL(request.url);
   const searchParams = new URLSearchParams(url.search);
-  globalThis.panelVersion = "3.0.2";
+  globalThis.panelVersion = "3.0.3";
   globalThis.defaultHttpPorts = ["80", "8080", "2052", "2082", "2086", "2095", "8880"];
   globalThis.defaultHttpsPorts = ["443", "8443", "2053", "2083", "2087", "2096"];
   globalThis.userID = env.UUID;
@@ -6952,12 +6933,18 @@ function isIPv6(address) {
   return ipv6Pattern.test(address);
 }
 __name(isIPv6, "isIPv6");
+function getDomain(url) {
+  const newUrl = new URL(url);
+  const host = newUrl.hostname;
+  const isHostDomain = isDomain(host);
+  return { host, isHostDomain };
+}
+__name(getDomain, "getDomain");
 
 // src/cores-configs/xray.js
 async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isWorkerLess, isWarp) {
   const {
     remoteDNS,
-    resolvedRemoteDNS,
     localDNS,
     VLTRFakeDNS,
     enableIPv6,
@@ -7021,10 +7008,11 @@ async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isW
     queryStrategy: isIPv62 ? "UseIP" : "UseIPv4",
     tag: "dns"
   };
-  if (resolvedRemoteDNS.server && !isWorkerLess && !isWarp)
+  const dohHost = getDomain(remoteDNS);
+  if (dohHost.isHostDomain && !isWorkerLess && !isWarp)
     dnsObject.servers.push({
       address: "https://8.8.8.8/dns-query",
-      domains: [`full:${resolvedRemoteDNS.server}`],
+      domains: [`full:${dohHost.host}`],
       skipFallback: true
     });
   if (isDomainRule) {
@@ -7884,7 +7872,6 @@ var xrayConfigTemp = {
 function buildSingBoxDNS(proxySettings, outboundAddrs, isWarp, remoteDNSDetour) {
   const {
     remoteDNS,
-    resolvedRemoteDNS,
     localDNS,
     VLTRFakeDNS,
     enableIPv6,
@@ -7899,6 +7886,7 @@ function buildSingBoxDNS(proxySettings, outboundAddrs, isWarp, remoteDNSDetour) 
     customBlockRules
   } = proxySettings;
   let fakeip;
+  const dohHost = getDomain(remoteDNS);
   const isFakeDNS = VLTRFakeDNS && !isWarp || warpFakeDNS && isWarp;
   const isIPv62 = enableIPv6 && !isWarp || warpEnableIPv6 && isWarp;
   const customBypassRulesDomains = customBypassRules.split(",").filter((address) => isDomain(address));
@@ -7916,7 +7904,7 @@ function buildSingBoxDNS(proxySettings, outboundAddrs, isWarp, remoteDNSDetour) 
   const servers = [
     {
       address: isWarp ? "1.1.1.1" : remoteDNS,
-      address_resolver: resolvedRemoteDNS.server ? "doh-resolver" : "dns-direct",
+      address_resolver: dohHost.isHostDomain ? "doh-resolver" : "dns-direct",
       strategy: isIPv62 ? "prefer_ipv4" : "ipv4_only",
       detour: remoteDNSDetour,
       tag: "dns-remote"
@@ -7932,7 +7920,7 @@ function buildSingBoxDNS(proxySettings, outboundAddrs, isWarp, remoteDNSDetour) 
       tag: "dns-block"
     }
   ];
-  resolvedRemoteDNS.server && !isWarp && servers.push({
+  dohHost.isHostDomain && !isWarp && servers.push({
     address: "https://8.8.8.8/dns-query",
     strategy: isIPv62 ? "prefer_ipv4" : "ipv4_only",
     detour: remoteDNSDetour,
@@ -8678,7 +8666,6 @@ var singboxConfigTemp = {
 async function buildClashDNS(proxySettings, isChain, isWarp) {
   const {
     remoteDNS,
-    resolvedRemoteDNS,
     localDNS,
     VLTRFakeDNS,
     outProxyParams,
@@ -8732,7 +8719,8 @@ async function buildClashDNS(proxySettings, isChain, isWarp) {
       [`+.${domain}`]: [`${localDNS}#DIRECT`]
     };
   });
-  if (resolvedRemoteDNS.server && !isWarp) {
+  const dohHost = getDomain(remoteDNS);
+  if (dohHost.isHostDomain && !isWarp) {
     dns["default-nameserver"] = [`https://8.8.8.8/dns-query#${isChain ? "proxy-1" : "\u2705 Selector"}`];
   }
   if (isFakeDNS)
