@@ -69,8 +69,8 @@ async function buildClashDNS (proxySettings, isChain, isWarp) {
         };
     });
 
-    if (resolvedRemoteDNS.server) {
-        dns["default-nameserver"] = [`${localDNS}#${isChain ? 'proxy-1' : '✅ Selector'}`];
+    if (resolvedRemoteDNS.server && !isWarp) {
+        dns["default-nameserver"] = [`https://8.8.8.8/dns-query#${isChain ? 'proxy-1' : '✅ Selector'}`];
     }
 
     if (isFakeDNS) Object.assign(dns, {

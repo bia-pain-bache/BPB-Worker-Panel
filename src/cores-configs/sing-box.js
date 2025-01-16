@@ -56,8 +56,8 @@ function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp, remoteDNSDetour)
         }
     ];
 
-    resolvedRemoteDNS.server && servers.push({
-        address: localDNS,
+    resolvedRemoteDNS.server && !isWarp && servers.push({
+        address: 'https://8.8.8.8/dns-query',
         strategy: isIPv6 ? "prefer_ipv4" : "ipv4_only",
         detour: remoteDNSDetour,
         tag: "doh-resolver"

@@ -61,7 +61,6 @@ async function buildXrayDNS (proxySettings, outboundAddrs, domainToStaticIPs, is
     
     const staticIPs = domainToStaticIPs ? await resolveDNS(domainToStaticIPs) : undefined;
     if (staticIPs) dnsHost[domainToStaticIPs] = enableIPv6 ? [...staticIPs.ipv4, ...staticIPs.ipv6] : staticIPs.ipv4;
-    if (resolvedRemoteDNS.server && !isWorkerLess && !isWarp) dnsHost[resolvedRemoteDNS.server] = resolvedRemoteDNS.staticIPs;
     if (isWorkerLess) {
         const domains = ["cloudflare-dns.com", "cloudflare.com", "dash.cloudflare.com"];
         const resolved = await Promise.all(domains.map(resolveDNS));
@@ -80,6 +79,12 @@ async function buildXrayDNS (proxySettings, outboundAddrs, domainToStaticIPs, is
         queryStrategy: isIPv6 ? "UseIP" : "UseIPv4",
         tag: "dns",
     };
+
+    if (resolvedRemoteDNS.server && !isWorkerLess && !isWarp) dnsObject.servers.push({
+        address: 'https://8.8.8.8/dns-query',
+        domains: [`full:${resolvedRemoteDNS.server}`],
+        skipFallback: true
+    });
       
     if (isDomainRule) {  
         const outboundDomainRules = uniqueOutboundDomains.map(domain => `full:${domain}`);
