@@ -40,13 +40,11 @@ function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp, remoteDNSDetour)
         {
             address: isWarp ? "1.1.1.1" : remoteDNS,
             address_resolver: dohHost.isHostDomain ? "doh-resolver" : "dns-direct",
-            strategy: isIPv6 ? "prefer_ipv4" : "ipv4_only",
             detour: remoteDNSDetour,
             tag: "dns-remote"
         },
         {
             address: localDNS,
-            strategy: isIPv6 ? "prefer_ipv4" : "ipv4_only",
             detour: "direct",
             tag: "dns-direct"
         },
@@ -58,8 +56,7 @@ function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp, remoteDNSDetour)
 
     dohHost.isHostDomain && !isWarp && servers.push({
         address: 'https://8.8.8.8/dns-query',
-        strategy: isIPv6 ? "prefer_ipv4" : "ipv4_only",
-        detour: remoteDNSDetour,
+        detour: "direct",
         tag: "doh-resolver"
     });
 
@@ -80,6 +77,13 @@ function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp, remoteDNSDetour)
 
     const rules = [
         outboundRule,
+        { 
+            domain: [
+                "raw.githubusercontent.com", 
+                "time.apple.com"
+            ], 
+            server: "dns-direct" 
+        },
         {
             clash_mode: "Direct",
             server: "dns-direct"
@@ -589,6 +593,7 @@ export async function getSingBoxWarpConfig (request, env, client) {
     const {rules, rule_set} = buildSingBoxRoutingRules(proxySettings);
     config.dns.servers = dnsObject.servers;
     config.dns.rules = dnsObject.rules;
+    config.dns.strategy = proxySettings.warpEnableIPv6 ? "prefer_ipv4" : "ipv4_only";
     if (dnsObject.fakeip) config.dns.fakeip = dnsObject.fakeip;
     config.route.rules = rules;
     config.route.rule_set = rule_set;
@@ -667,6 +672,7 @@ export async function getSingBoxCustomConfig(request, env, isFragment) {
     config.dns.servers = dnsObject.servers;
     config.dns.rules = dnsObject.rules;
     if (dnsObject.fakeip) config.dns.fakeip = dnsObject.fakeip;
+    config.dns.strategy = enableIPv6 ? "prefer_ipv4" : "ipv4_only";
     config.route.rules = rules;
     config.route.rule_set = rule_set;
     const selector = config.outbounds[0];
@@ -803,6 +809,7 @@ const singboxConfigTemp = {
         },
         {
             type: "direct",
+            domain_strategy: "ipv4_only",
             tag: "direct"
         },
         {
