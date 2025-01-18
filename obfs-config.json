@@ -4,7 +4,6 @@
   "numbersToExpressions": true,
   "stringArrayEncoding": ["base64"],
   "stringArrayWrappersCount": 2,
-  "stringArrayWrappersParametersMaxCount": 4,
   "splitStrings": true,
   "splitStringsChunkLength": 2,
   "transformObjectKeys": true,
