@@ -3,7 +3,6 @@
   "deadCodeInjectionThreshold": 0.4,
   "numbersToExpressions": true,
   "stringArrayEncoding": ["base64"],
-  "stringArrayWrappersCount": 2,
   "splitStrings": true,
   "splitStringsChunkLength": 2,
   "transformObjectKeys": true,
