@@ -252,7 +252,7 @@ function buildClashVLOutbound (remark, address, port, host, sni, path, allowInse
     const addr = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
     const outbound = {
         "name": remark,
-        "type": "vless",
+        "type": atob('dmxlc3M='),
         "server": addr,
         "port": +port,
         "uuid": globalThis.userID,
@@ -283,7 +283,7 @@ function buildClashTROutbound (remark, address, port, host, sni, path, allowInse
     const addr = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
     return {
         "name": remark,
-        "type": "trojan",
+        "type": atob('dHJvamFu'),
         "server": addr,
         "port": +port,
         "password": globalThis.TRPassword,
@@ -349,7 +349,7 @@ function buildClashChainOutbound(chainProxyParams) {
     const { server, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = chainProxyParams;
     const chainOutbound = {
         "name": "💦 Chain Best Ping 💥",
-        "type": "vless",
+        "type": atob('dmxlc3M='),
         "server": server,
         "port": +port,
         "udp": true,
@@ -500,8 +500,8 @@ export async function getClashNormalConfig (request, env) {
     const totalAddresses = [...Addresses, ...customCdnAddresses];
     let proxyIndex = 1, path;
     const protocols = [
-        ...(VLConfigs ? ['VLESS'] : []),
-        ...(TRConfigs ? ['Trojan'] : [])
+        ...(VLConfigs ? [atob('VkxFU1M=')] : []),
+        ...(TRConfigs ? [atob('VHJvamFu')] : [])
     ];
 
     protocols.forEach ( protocol => {
@@ -515,7 +515,7 @@ export async function getClashNormalConfig (request, env) {
                 const host = isCustomAddr ? customCdnHost : globalThis.hostName;
                 const remark = generateRemark(protocolIndex, port, addr, cleanIPs, protocol, configType).replace(' : ', ' - ');
 
-                if (protocol === 'VLESS') {
+                if (protocol === atob('VkxFU1M=')) {
                     path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
                     VLOutbound = buildClashVLOutbound(
                         chainProxy ? `proxy-${proxyIndex}` : remark, 
@@ -531,7 +531,7 @@ export async function getClashNormalConfig (request, env) {
                     urlTest.proxies.push(remark);
                 }
                 
-                if (protocol === 'Trojan' && globalThis.defaultHttpsPorts.includes(port)) {
+                if (protocol === atob('VHJvamFu') && globalThis.defaultHttpsPorts.includes(port)) {
                     path = `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
                     TROutbound = buildClashTROutbound(
                         chainProxy ? `proxy-${proxyIndex}` : remark, 
