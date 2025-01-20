@@ -4189,7 +4189,7 @@ async function renderLoginPage() {
     <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BPB Login</title>
+    <title>${atob("QlBC")} Login</title>
     <style>
         :root {
             --color: black;
@@ -4285,7 +4285,7 @@ async function renderLoginPage() {
     </head>
     <body>
         <div class="container">
-            <h1>BPB Panel <span style="font-size: smaller;">${globalThis.panelVersion}</span> \u{1F4A6}</h1>
+            <h1>${atob("QlBC")} Panel <span style="font-size: smaller;">${globalThis.panelVersion}</span> \u{1F4A6}</h1>
             <div class="form-container">
                 <h2>User Login</h2>
                 <form id="loginForm">
@@ -4608,7 +4608,7 @@ function extractChainProxyParams(chainProxy) {
     return {};
   const url = new URL(chainProxy);
   const protocol = url.protocol.slice(0, -1);
-  if (protocol === "vless") {
+  if (protocol === atob("dmxlc3M=")) {
     const params = new URLSearchParams(url.search);
     configParams = {
       protocol,
@@ -4737,7 +4737,7 @@ async function renderHomePage(proxySettings, isPassSet) {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="timestamp" content=${Date.now()}>
-        <title>BPB Panel ${globalThis.panelVersion}</title>
+        <title>${atob("QlBC")} Panel ${globalThis.panelVersion}</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
         <title>Collapsible Sections</title>
@@ -5035,11 +5035,11 @@ async function renderHomePage(proxySettings, isPassSet) {
         </style>
     </head>
     <body>
-        <h1>BPB Panel <span style="font-size: smaller;">${globalThis.panelVersion}</span> \u{1F4A6}</h1>
+        <h1>${atob("QlBC")} Panel <span style="font-size: smaller;">${globalThis.panelVersion}</span> \u{1F4A6}</h1>
         <div class="form-container">
             <form id="configForm">
                 <details open>
-                    <summary><h2>VLESS - TROJAN \u2699\uFE0F</h2></summary>
+                    <summary><h2>${atob("VkxFU1M=")} - ${atob("VFJPSkFO")} \u2699\uFE0F</h2></summary>
                     <div class="form-control">
                         <label for="remoteDNS">\u{1F30F} Remote DNS</label>
                         <input type="url" id="remoteDNS" name="remoteDNS" value="${remoteDNS}" required>
@@ -5110,11 +5110,11 @@ async function renderHomePage(proxySettings, isPassSet) {
                         <div style="width: 100%; display: grid; grid-template-columns: 1fr 1fr; align-items: baseline; margin-top: 10px;">
                             <div style = "display: flex; justify-content: center; align-items: center;">
                                 <input type="checkbox" id="VLConfigs" name="VLConfigs" onchange="handleProtocolChange(event)" value="true" ${VLConfigs ? "checked" : ""}>
-                                <label for="VLConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">VLESS</label>
+                                <label for="VLConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">${atob("VkxFU1M=")}</label>
                             </div>
                             <div style = "display: flex; justify-content: center; align-items: center;">
                                 <input type="checkbox" id="TRConfigs" name="TRConfigs" onchange="handleProtocolChange(event)" value="true" ${TRConfigs ? "checked" : ""}>
-                                <label for="TRConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">Trojan</label>
+                                <label for="TRConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">${atob("VHJvamFu")}</label>
                             </div>
                         </div>
                     </div>
@@ -5330,8 +5330,8 @@ async function renderHomePage(proxySettings, isPassSet) {
                             ${supportedApps(["v2rayNG", "NikaNG", "MahsaNG", "v2rayN", "v2rayN-PRO", "Shadowrocket", "Streisand", "Hiddify", "Nekoray (Xray)"])}
                         </td>
                         <td>
-                            ${subQR("sub", "", "BPB-Normal", "Normal Subscription")}
-                            ${subURL("sub", "", "BPB-Normal")}
+                            ${subQR("sub", "", `${atob("QlBC")}-Normal`, "Normal Subscription")}
+                            ${subURL("sub", "", `${atob("QlBC")}-Normal`)}
                         </td>
                     </tr>
                     <tr>
@@ -5339,7 +5339,7 @@ async function renderHomePage(proxySettings, isPassSet) {
                             ${supportedApps(["husi", "Nekobox", "Nekoray (sing-Box)", "Karing"])}
                         </td>
                         <td>
-                            ${subURL("sub", "singbox", "BPB-Normal")}
+                            ${subURL("sub", "singbox", `${atob("QlBC")}-Normal`)}
                         </td>
                     </tr>
                 </table>
@@ -5356,8 +5356,8 @@ async function renderHomePage(proxySettings, isPassSet) {
                             ${supportedApps(["v2rayNG", "NikaNG", "MahsaNG", "v2rayN", "v2rayN-PRO", "Streisand"])}
                         </td>
                         <td>
-                            ${subQR("sub", "xray", "BPB-Full-Normal", "Full normal Subscription")}
-                            ${subURL("sub", "xray", "BPB-Full-Normal")}
+                            ${subQR("sub", "xray", `${atob("QlBC")}-Full-Normal`, "Full normal Subscription")}
+                            ${subURL("sub", "xray", `${atob("QlBC")}-Full-Normal`)}
                         </td>
                     </tr>
                     <tr>
@@ -5365,8 +5365,8 @@ async function renderHomePage(proxySettings, isPassSet) {
                             ${supportedApps(["sing-box", "v2rayN (sing-box)"])}
                         </td>
                         <td>
-                            ${subQR("sub", "sfa", "BPB-Full-Normal", "Full normal Subscription", true)}
-                            ${subURL("sub", "sfa", "BPB-Full-Normal")}
+                            ${subQR("sub", "sfa", `${atob("QlBC")}-Full-Normal`, "Full normal Subscription", true)}
+                            ${subURL("sub", "sfa", `${atob("QlBC")}-Full-Normal`)}
                         </td>
                     </tr>
                     <tr>
@@ -5374,8 +5374,8 @@ async function renderHomePage(proxySettings, isPassSet) {
                             ${supportedApps(["Clash Meta", "Clash Verge", "FlClash", "Stash", "v2rayN (mihomo)"])}
                         </td>
                         <td>
-                            ${subQR("sub", "clash", "BPB-Full-Normal", "Full normal Subscription")}
-                            ${subURL("sub", "clash", "BPB-Full-Normal")}
+                            ${subQR("sub", "clash", `${atob("QlBC")}-Full-Normal`, "Full normal Subscription")}
+                            ${subURL("sub", "clash", `${atob("QlBC")}-Full-Normal`)}
                         </td>
                     </tr>
                 </table>
@@ -5392,8 +5392,8 @@ async function renderHomePage(proxySettings, isPassSet) {
                             ${supportedApps(["v2rayNG", "NikaNG", "MahsaNG", "v2rayN", "v2rayN-PRO", "Streisand"])}
                         </td>
                         <td>
-                            ${subQR("fragsub", "", "BPB-Fragment", "Fragment Subscription")}
-                            ${subURL("fragsub", "", "BPB-Fragment")}
+                            ${subQR("fragsub", "", `${atob("QlBC")}-Fragment`, "Fragment Subscription")}
+                            ${subURL("fragsub", "", `${atob("QlBC")}-Fragment`)}
                         </td>
                     </tr>
                     <tr>
@@ -5401,8 +5401,8 @@ async function renderHomePage(proxySettings, isPassSet) {
                             ${supportedApps(["Hiddify"])}
                         </td>
                         <td>
-                            ${subQR("fragsub", "hiddify", "BPB-Fragment", "Fragment Subscription")}
-                            ${subURL("fragsub", "hiddify", "BPB-Fragment")}
+                            ${subQR("fragsub", "hiddify", `${atob("QlBC")}-Fragment`, "Fragment Subscription")}
+                            ${subURL("fragsub", "hiddify", `${atob("QlBC")}-Fragment`)}
                         </td>
                     </tr>
                 </table>
@@ -5419,8 +5419,8 @@ async function renderHomePage(proxySettings, isPassSet) {
                             ${supportedApps(["v2rayNG", "v2rayN", "Streisand"])}
                         </td>
                         <td>
-                            ${subQR("warpsub", "xray", "BPB-Warp", "Warp Subscription")}
-                            ${subURL("warpsub", "xray", "BPB-Warp")}
+                            ${subQR("warpsub", "xray", `${atob("QlBC")}-Warp`, "Warp Subscription")}
+                            ${subURL("warpsub", "xray", `${atob("QlBC")}-Warp`)}
                         </td>
                     </tr>
                     <tr>
@@ -5428,8 +5428,8 @@ async function renderHomePage(proxySettings, isPassSet) {
                             ${supportedApps(["Hiddify", "sing-box", "v2rayN (sing-box)"])}
                         </td>
                         <td>
-                            ${subQR("sub", "singbox", "BPB-Warp", "Warp Subscription", true)}
-                            ${subURL("warpsub", "singbox", "BPB-Warp")}
+                            ${subQR("sub", "singbox", `${atob("QlBC")}-Warp`, "Warp Subscription", true)}
+                            ${subURL("warpsub", "singbox", `${atob("QlBC")}-Warp`)}
                         </td>
                     </tr>
                     <tr>
@@ -5437,8 +5437,8 @@ async function renderHomePage(proxySettings, isPassSet) {
                             ${supportedApps(["Clash Meta", "Clash Verge", "FlClash", "Stash", "v2rayN (mihomo)"])}
                         </td>
                         <td>
-                            ${subQR("warpsub", "clash", "BPB-Warp", "Warp Subscription")}
-                            ${subURL("warpsub", "clash", "BPB-Warp")}
+                            ${subQR("warpsub", "clash", `${atob("QlBC")}-Warp`, "Warp Subscription")}
+                            ${subURL("warpsub", "clash", `${atob("QlBC")}-Warp`)}
                         </td>
                     </tr>
                 </table>
@@ -5455,8 +5455,8 @@ async function renderHomePage(proxySettings, isPassSet) {
                             ${supportedApps(["NikaNG", "MahsaNG", "v2rayN-PRO"])}
                         </td>
                         <td>
-                            ${subQR("warpsub", "nikang", "BPB-Warp-Pro", "Warp Pro Subscription")}
-                            ${subURL("warpsub", "nikang", "BPB-Warp-Pro")}
+                            ${subQR("warpsub", "nikang", `${atob("QlBC")}-Warp-Pro`, "Warp Pro Subscription")}
+                            ${subURL("warpsub", "nikang", `${atob("QlBC")}-Warp-Pro`)}
                         </td>
                     </tr>
                     <tr>
@@ -5464,8 +5464,8 @@ async function renderHomePage(proxySettings, isPassSet) {
                             ${supportedApps(["Hiddify"])}
                         </td>
                         <td>
-                            ${subQR("warpsub", "hiddify", "BPB-Warp-Pro", "Warp Pro Subscription", true)}
-                            ${subURL("warpsub", "hiddify", "BPB-Warp-Pro")}
+                            ${subQR("warpsub", "hiddify", `${atob("QlBC")}-Warp-Pro`, "Warp Pro Subscription", true)}
+                            ${subURL("warpsub", "hiddify", `${atob("QlBC")}-Warp-Pro`)}
                         </td>
                     </tr>
                 </table>
@@ -5532,7 +5532,7 @@ async function renderHomePage(proxySettings, isPassSet) {
             <hr>
             <div class="footer">
                 <i class="fa fa-github" style="font-size:36px; margin-right: 10px;"></i>
-                <a class="link" href="https://github.com/bia-pain-bache/BPB-Worker-Panel" style="color: var(--color); text-decoration: underline;" target="_blank">Github</a>
+                <a class="link" href="https://github.com/bia-pain-bache/${atob("QlBC")}-Worker-Panel" style="color: var(--color); text-decoration: underline;" target="_blank">Github</a>
                 <button id="openModalBtn" class="button">Change Password</button>
                 <button type="button" id="logout" style="background: none; color: var(--color); margin: 0; border: none; cursor: pointer;">
                     <i class="fa fa-power-off fa-2x" aria-hidden="true"></i>
@@ -5838,7 +5838,7 @@ async function renderHomePage(proxySettings, isPassSet) {
             const customBypassRules = document.getElementById('customBypassRules').value?.split(',');                    
             const customBlockRules = document.getElementById('customBlockRules').value?.split(',');                    
             const formData = new FormData(configForm);
-            const isVless = /vless:\\/\\/[^s@]+@[^\\s:]+:[^\\s]+/.test(chainProxy);
+            const is${atob("Vmxlc3M=")} = /${atob("dmxlc3M=")}:\\/\\/[^s@]+@[^\\s:]+:[^\\s]+/.test(chainProxy);
             const isSocksHttp = /^(http|socks):\\/\\/(?:([^:@]+):([^:@]+)@)?([^:@]+):(\\d+)$/.test(chainProxy);
             const hasSecurity = /security=/.test(chainProxy);
             const securityRegex = /security=(tls|none|reality)/;
@@ -5846,7 +5846,7 @@ async function renderHomePage(proxySettings, isPassSet) {
             let match = chainProxy.match(securityRegex);
             const securityType = match ? match[1] : null;
             match = chainProxy.match(/:(\\d+)\\?/);
-            const vlessPort = match ? match[1] : null;
+            const ${atob("dmxlc3M=")}Port = match ? match[1] : null;
             const validTransmission = /type=(tcp|grpc|ws)/.test(chainProxy);
             const validIPDomain = /^((?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,})|(?:(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)(?:\\/(?:\\d|[12]\\d|3[0-2]))?|\\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}|:(?::[a-fA-F0-9]{1,4}){1,7})\\](?:\\/(?:12[0-8]|1[0-1]\\d|[0-9]?\\d))?)$/i;
             const validEndpoint = /^(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|\\[(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,7}:\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}\\]|\\[[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}\\]|\\[:(?::[a-fA-F0-9]{1,4}){1,7}\\]|\\[::(?::[a-fA-F0-9]{1,4}){0,7}\\]):(?:[0-9]{1,5})$/;
@@ -5885,13 +5885,13 @@ async function renderHomePage(proxySettings, isPassSet) {
                 return false;
             }
 
-            if (!(isVless && (hasSecurity && validSecurityType || !hasSecurity) && validTransmission) && !isSocksHttp && chainProxy) {
-                alert('\u26D4 Invalid Config! \u{1FAE4} \\n - The chain proxy should be VLESS, Socks or Http!\\n - VLESS transmission should be GRPC,WS or TCP\\n - VLESS security should be TLS,Reality or None\\n - socks or http should be like:\\n + (socks or http)://user:pass@host:port\\n + (socks or http)://host:port');               
+            if (!(is${atob("Vmxlc3M=")} && (hasSecurity && validSecurityType || !hasSecurity) && validTransmission) && !isSocksHttp && chainProxy) {
+                alert('\u26D4 Invalid Config! \u{1FAE4} \\n - The chain proxy should be ${atob("VkxFU1M=")}, Socks or Http!\\n - ${atob("VkxFU1M=")} transmission should be GRPC,WS or TCP\\n - ${atob("VkxFU1M=")} security should be TLS,Reality or None\\n - socks or http should be like:\\n + (socks or http)://user:pass@host:port\\n + (socks or http)://host:port');               
                 return false;
             }
 
-            if (isVless && securityType === 'tls' && vlessPort !== '443') {
-                alert('\u26D4 VLESS TLS port can be only 443 to be used as a proxy chain! \u{1FAE4}');               
+            if (is${atob("Vmxlc3M=")} && securityType === 'tls' && ${atob("dmxlc3M=")}Port !== '443') {
+                alert('\u26D4 ${atob("VkxFU1M=")} TLS port can be only 443 to be used as a proxy chain! \u{1FAE4}');               
                 return false;
             }
 
@@ -6103,7 +6103,7 @@ function initializeParams(request, env) {
   globalThis.defaultHttpsPorts = ["443", "8443", "2053", "2083", "2087", "2096"];
   globalThis.userID = env.UUID;
   globalThis.TRPassword = env.TR_PASS;
-  globalThis.proxyIP = proxyIPs ? proxyIPs[Math.floor(Math.random() * proxyIPs.length)] : "bpb.yousef.isegaro.com";
+  globalThis.proxyIP = proxyIPs ? proxyIPs[Math.floor(Math.random() * proxyIPs.length)] : atob("YnBiLnlvdXNlZi5pc2VnYXJvLmNvbQ==");
   globalThis.hostName = request.headers.get("Host");
   globalThis.pathName = url.pathname;
   globalThis.client = searchParams.get("app");
@@ -6113,7 +6113,7 @@ function initializeParams(request, env) {
   globalThis.subPath = env.SUB_PATH || userID;
   if (pathName !== "/secrets") {
     if (!userID || !globalThis.TRPassword)
-      throw new Error(`Please set UUID and Trojan password first. Please visit <a href="https://${hostName}/secrets" target="_blank">here</a> to generate them.`, { cause: "init" });
+      throw new Error(`Please set UUID and ${atob("VHJvamFu")} password first. Please visit <a href="https://${hostName}/secrets" target="_blank">here</a> to generate them.`, { cause: "init" });
     if (userID && !isValidUUID(userID))
       throw new Error(`Invalid UUID: ${userID}`, { cause: "init" });
     if (typeof env.kv !== "object")
@@ -6418,7 +6418,7 @@ async function VLRemoteSocketToWS(remoteSocket, webSocket, VLResponseHeader, ret
       }
     })
   ).catch((error) => {
-    console.error(`vlessRemoteSocketToWS has exception `, error.stack || error);
+    console.error(`${atob("dmxlc3M=")}RemoteSocketToWS has exception `, error.stack || error);
     safeCloseWebSocket(webSocket);
   });
   if (hasIncomingData === false && retry) {
@@ -6776,7 +6776,7 @@ async function TRRemoteSocketToWS(remoteSocket, webSocket, retry, log) {
       }
     })
   ).catch((error) => {
-    console.error(`trojanRemoteSocketToWS error:`, error.stack || error);
+    console.error(`${atob("dHJvamFu")}RemoteSocketToWS error:`, error.stack || error);
     safeCloseWebSocket2(webSocket);
   });
   if (hasIncomingData === false && retry) {
@@ -6820,7 +6820,7 @@ async function renderErrorPage(error) {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>BPB Error</title>
+        <title>${atob("QlBC")} Error</title>
         <style>
             :root {
                 --color: black;
@@ -6852,7 +6852,7 @@ async function renderErrorPage(error) {
     </head>
     <body>
         <div id="error-container">
-            <h1>BPB Panel <span style="font-size: smaller;">${globalThis.panelVersion}</span> \u{1F4A6}</h1>
+            <h1>${atob("QlBC")} Panel <span style="font-size: smaller;">${globalThis.panelVersion}</span> \u{1F4A6}</h1>
             <div id="error-message">
                 <h2>\u274C Something went wrong!</h2>
                 <p><b>${error ? `\u26A0\uFE0F ${error.cause ? error.message.toString() : error.stack.toString()}` : ""}</b></p>
@@ -7190,7 +7190,7 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
 __name(buildXrayRoutingRules, "buildXrayRoutingRules");
 function buildXrayVLOutbound(tag2, address, port, host, sni, proxyIP, isFragment, allowInsecure, enableIPv6) {
   const outbound = {
-    protocol: "vless",
+    protocol: atob("dmxlc3M="),
     settings: {
       vnext: [
         {
@@ -7242,7 +7242,7 @@ function buildXrayVLOutbound(tag2, address, port, host, sni, proxyIP, isFragment
 __name(buildXrayVLOutbound, "buildXrayVLOutbound");
 function buildXrayTROutbound(tag2, address, port, host, sni, proxyIP, isFragment, allowInsecure, enableIPv6) {
   const outbound = {
-    protocol: "trojan",
+    protocol: atob("dHJvamFu"),
     settings: {
       servers: [
         {
@@ -7403,7 +7403,7 @@ function buildXrayChainOutbound(chainProxyParams, enableIPv6) {
       xudpConcurrency: 16,
       xudpProxyUDP443: "reject"
     },
-    protocol: "vless",
+    protocol: atob("dmxlc3M="),
     settings: {
       vnext: [
         {
@@ -7544,7 +7544,7 @@ function buildXrayConfig(proxySettings, remark, isFragment, isBalancer, isChain,
 }
 __name(buildXrayConfig, "buildXrayConfig");
 async function buildXrayBestPingConfig(proxySettings, totalAddresses, chainProxy, outbounds, isFragment) {
-  const remark = isFragment ? "\u{1F4A6} BPB F - Best Ping \u{1F4A5}" : "\u{1F4A6} BPB - Best Ping \u{1F4A5}";
+  const remark = isFragment ? `\u{1F4A6} ${atob("QlBC")} F - Best Ping \u{1F4A5}` : `\u{1F4A6} ${atob("QlBC")} - Best Ping \u{1F4A5}`;
   const config = buildXrayConfig(proxySettings, remark, isFragment, true, chainProxy, true);
   config.dns = await buildXrayDNS(proxySettings, totalAddresses, void 0, false, false);
   config.routing.rules = buildXrayRoutingRules(proxySettings, totalAddresses, chainProxy, true, false, false);
@@ -7573,7 +7573,7 @@ async function buildXrayBestFragmentConfig(proxySettings, hostName2, chainProxy,
     "80-100",
     "100-200"
   ];
-  const config = buildXrayConfig(proxySettings, "\u{1F4A6} BPB F - Best Fragment \u{1F60E}", true, true, chainProxy, false, false);
+  const config = buildXrayConfig(proxySettings, `\u{1F4A6} ${atob("QlBC")} F - Best Fragment \u{1F60E}`, true, true, chainProxy, false, false);
   config.dns = await buildXrayDNS(proxySettings, [], hostName2, false, false);
   config.routing.rules = buildXrayRoutingRules(proxySettings, [], chainProxy, true, false, false);
   const fragment = config.outbounds.shift();
@@ -7599,7 +7599,7 @@ async function buildXrayBestFragmentConfig(proxySettings, hostName2, chainProxy,
 }
 __name(buildXrayBestFragmentConfig, "buildXrayBestFragmentConfig");
 async function buildXrayWorkerLessConfig(proxySettings) {
-  const config = buildXrayConfig(proxySettings, "\u{1F4A6} BPB F - WorkerLess \u2B50", true, false, false, false, false);
+  const config = buildXrayConfig(proxySettings, `\u{1F4A6} ${atob("QlBC")} F - WorkerLess \u2B50`, true, false, false, false, false);
   config.dns = await buildXrayDNS(proxySettings, [], void 0, true);
   config.routing.rules = buildXrayRoutingRules(proxySettings, [], false, false, true, false);
   const fakeOutbound = buildXrayVLOutbound("fake-outbound", "google.com", "443", globalThis.userID, "google.com", "google.com", "", true, false);
@@ -7646,8 +7646,8 @@ async function getXrayCustomConfigs(request, env, isFragment) {
   const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(",") : [];
   const totalAddresses = isFragment ? [...Addresses] : [...Addresses, ...customCdnAddresses];
   const totalPorts = ports.filter((port) => isFragment ? globalThis.defaultHttpsPorts.includes(port) : true);
-  VLConfigs && protocols.push("VLESS");
-  TRConfigs && protocols.push("Trojan");
+  VLConfigs && protocols.push(atob("VkxFU1M="));
+  TRConfigs && protocols.push(atob("VHJvamFu"));
   let proxyIndex = 1;
   for (const protocol of protocols) {
     let protocolIndex = 1;
@@ -7661,7 +7661,7 @@ async function getXrayCustomConfigs(request, env, isFragment) {
         const customConfig = buildXrayConfig(proxySettings, remark, isFragment, false, chainProxy, false, false);
         customConfig.dns = await buildXrayDNS(proxySettings, [addr], void 0);
         customConfig.routing.rules = buildXrayRoutingRules(proxySettings, [addr], chainProxy, false, false, false);
-        const outbound = protocol === "VLESS" ? buildXrayVLOutbound("proxy", addr, port, host, sni, proxyIP, isFragment, isCustomAddr, enableIPv6) : buildXrayTROutbound("proxy", addr, port, host, sni, proxyIP, isFragment, isCustomAddr, enableIPv6);
+        const outbound = protocol === atob("VkxFU1M=") ? buildXrayVLOutbound("proxy", addr, port, host, sni, proxyIP, isFragment, isCustomAddr, enableIPv6) : buildXrayTROutbound("proxy", addr, port, host, sni, proxyIP, isFragment, isCustomAddr, enableIPv6);
         customConfig.outbounds.unshift({ ...outbound });
         outbound.tag = `prox-${proxyIndex}`;
         if (chainProxy) {
@@ -8206,7 +8206,7 @@ function buildSingBoxVLOutbound(proxySettings, remark, address, port, host, sni,
   const path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ""}`;
   const tls = globalThis.defaultHttpsPorts.includes(port) ? true : false;
   const outbound = {
-    type: "vless",
+    type: atob("dmxlc3M="),
     server: address,
     server_port: +port,
     domain_strategy: enableIPv6 ? "prefer_ipv4" : "ipv4_only",
@@ -8248,7 +8248,7 @@ function buildSingBoxTROutbound(proxySettings, remark, address, port, host, sni,
   const path = `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ""}`;
   const tls = globalThis.defaultHttpsPorts.includes(port) ? true : false;
   const outbound = {
-    type: "trojan",
+    type: atob("dHJvamFu"),
     password: globalThis.TRPassword,
     server: address,
     server_port: +port,
@@ -8349,7 +8349,7 @@ function buildSingBoxChainOutbound(chainProxyParams, enableIPv6) {
   }
   const { server, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = chainProxyParams;
   const chainOutbound = {
-    type: "vless",
+    type: atob("dmxlc3M="),
     tag: "",
     server,
     server_port: +port,
@@ -8508,8 +8508,8 @@ async function getSingBoxCustomConfig(request, env, isFragment) {
   const totalPorts = ports.filter((port) => isFragment ? globalThis.defaultHttpsPorts.includes(port) : true);
   let proxyIndex = 1;
   const protocols = [
-    ...VLConfigs ? ["VLESS"] : [],
-    ...TRConfigs ? ["Trojan"] : []
+    ...VLConfigs ? [atob("VkxFU1M=")] : [],
+    ...TRConfigs ? [atob("VHJvamFu")] : []
   ];
   protocols.forEach((protocol) => {
     let protocolIndex = 1;
@@ -8521,7 +8521,7 @@ async function getSingBoxCustomConfig(request, env, isFragment) {
         const sni = isCustomAddr ? customCdnSni : randomUpperCase(globalThis.hostName);
         const host = isCustomAddr ? customCdnHost : globalThis.hostName;
         const remark = generateRemark(protocolIndex, port, addr, cleanIPs, protocol, configType);
-        if (protocol === "VLESS") {
+        if (protocol === atob("VkxFU1M=")) {
           VLOutbound = buildSingBoxVLOutbound(
             proxySettings,
             chainProxy ? `proxy-${proxyIndex}` : remark,
@@ -8534,7 +8534,7 @@ async function getSingBoxCustomConfig(request, env, isFragment) {
           );
           config.outbounds.push(VLOutbound);
         }
-        if (protocol === "Trojan") {
+        if (protocol === atob("VHJvamFu")) {
           TROutbound = buildSingBoxTROutbound(
             proxySettings,
             chainProxy ? `proxy-${proxyIndex}` : remark,
@@ -8900,7 +8900,7 @@ function buildClashVLOutbound(remark, address, port, host, sni, path, allowInsec
   const addr = isIPv6(address) ? address.replace(/\[|\]/g, "") : address;
   const outbound = {
     "name": remark,
-    "type": "vless",
+    "type": atob("dmxlc3M="),
     "server": addr,
     "port": +port,
     "uuid": globalThis.userID,
@@ -8929,7 +8929,7 @@ function buildClashTROutbound(remark, address, port, host, sni, path, allowInsec
   const addr = isIPv6(address) ? address.replace(/\[|\]/g, "") : address;
   return {
     "name": remark,
-    "type": "trojan",
+    "type": atob("dHJvamFu"),
     "server": addr,
     "port": +port,
     "password": globalThis.TRPassword,
@@ -8993,7 +8993,7 @@ function buildClashChainOutbound(chainProxyParams) {
   const { server, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = chainProxyParams;
   const chainOutbound = {
     "name": "\u{1F4A6} Chain Best Ping \u{1F4A5}",
-    "type": "vless",
+    "type": atob("dmxlc3M="),
     "server": server,
     "port": +port,
     "udp": true,
@@ -9136,8 +9136,8 @@ async function getClashNormalConfig(request, env) {
   const totalAddresses = [...Addresses, ...customCdnAddresses];
   let proxyIndex = 1, path;
   const protocols = [
-    ...VLConfigs ? ["VLESS"] : [],
-    ...TRConfigs ? ["Trojan"] : []
+    ...VLConfigs ? [atob("VkxFU1M=")] : [],
+    ...TRConfigs ? [atob("VHJvamFu")] : []
   ];
   protocols.forEach((protocol) => {
     let protocolIndex = 1;
@@ -9149,7 +9149,7 @@ async function getClashNormalConfig(request, env) {
         const sni = isCustomAddr ? customCdnSni : randomUpperCase(globalThis.hostName);
         const host = isCustomAddr ? customCdnHost : globalThis.hostName;
         const remark = generateRemark(protocolIndex, port, addr, cleanIPs, protocol, configType).replace(" : ", " - ");
-        if (protocol === "VLESS") {
+        if (protocol === atob("VkxFU1M=")) {
           path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ""}`;
           VLOutbound = buildClashVLOutbound(
             chainProxy ? `proxy-${proxyIndex}` : remark,
@@ -9164,7 +9164,7 @@ async function getClashNormalConfig(request, env) {
           selector.proxies.push(remark);
           urlTest.proxies.push(remark);
         }
-        if (protocol === "Trojan" && globalThis.defaultHttpsPorts.includes(port)) {
+        if (protocol === atob("VHJvamFu") && globalThis.defaultHttpsPorts.includes(port)) {
           path = `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ""}`;
           TROutbound = buildClashTROutbound(
             chainProxy ? `proxy-${proxyIndex}` : remark,
@@ -9303,8 +9303,8 @@ async function getNormalConfigs(request, env) {
       const sni = isCustomAddr ? customCdnSni : randomUpperCase(globalThis.hostName);
       const host = isCustomAddr ? customCdnHost : globalThis.hostName;
       const path = `${getRandomPath(16)}${proxyIP ? `/${encodeURIComponent(btoa(proxyIP))}` : ""}${earlyData}`;
-      const VLRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, "VLESS", configType));
-      const TRRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, "Trojan", configType));
+      const VLRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, atob("VkxFU1M="), configType));
+      const TRRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, atob("VHJvamFu"), configType));
       const tlsFields = globalThis.defaultHttpsPorts.includes(port) ? `&security=tls&sni=${sni}&fp=randomized&alpn=${alpn}` : "&security=none";
       if (VLConfigs) {
         VLConfs += `${atob("dmxlc3M6Ly8=")}${globalThis.userID}@${addr}:${port}?path=/${path}&encryption=none&host=${host}&type=ws${tlsFields}#${VLRemark}
@@ -9348,7 +9348,7 @@ async function renderSecretsPage() {
     <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BPB Generator</title>
+    <title>${atob("QlBC")} Generator</title>
     <style>
         :root {
             --color: black;
@@ -9451,7 +9451,7 @@ async function renderSecretsPage() {
     </head>
     <body>
         <div class="container">
-            <h1>BPB Panel <span style="font-size: smaller;">${globalThis.panelVersion}</span> \u{1F4A6}</h1>
+            <h1>${atob("QlBC")} Panel <span style="font-size: smaller;">${globalThis.panelVersion}</span> \u{1F4A6}</h1>
             <div class="form-container">
                 <h2>Secrets generator</h2>
                 <div>
@@ -9462,10 +9462,10 @@ async function renderSecretsPage() {
                     </div>
                 </div>
                 <div>
-                    <strong>Random Trojan Password</strong>
+                    <strong>Random ${atob("VHJvamFu")} Password</strong>
                     <div class="output-container">
-                        <span id="trojan-password" class="output"></span>
-                        <span class="copy-icon" onclick="copyToClipboard('trojan-password')">\u{1F4CB}</span>
+                        <span id="${atob("dHJvamFu")}-password" class="output"></span>
+                        <span class="copy-icon" onclick="copyToClipboard('${atob("dHJvamFu")}-password')">\u{1F4CB}</span>
                     </div>
                 </div>
                 <div>
@@ -9515,7 +9515,7 @@ async function renderSecretsPage() {
                 const uriPath = generateSubURIPath();
     
                 document.getElementById('uuid').textContent = uuid;
-                document.getElementById('trojan-password').textContent = password;
+                document.getElementById('${atob("dHJvamFu")}-password').textContent = password;
                 document.getElementById('sub-path').textContent = uriPath;
             }
     
