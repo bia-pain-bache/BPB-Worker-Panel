@@ -1,6 +1,6 @@
 import { initializeParams } from './helpers/init';
-import { VLOverWSHandler } from `./protocols/${atob('dmxlc3M=')}`;
-import { TROverWSHandler } from `./protocols/${atob('dHJvamFu')}`;
+import { VLOverWSHandler } from './protocols/vless';
+import { TROverWSHandler } from './protocols/trojan';
 import { updateWarpConfigs } from './kv/handlers';
 import { logout, resetPassword, login } from './authentication/auth';
 import { renderErrorPage } from './pages/error';
