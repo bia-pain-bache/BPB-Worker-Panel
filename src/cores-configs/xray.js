@@ -636,7 +636,7 @@ function buildXrayConfig (proxySettings, remark, isFragment, isBalancer, isChain
 
     if (isBalancer) {
         const interval = isWarp ? bestWarpInterval : bestVLTRInterval;
-        config.observatory.probeInterval = `${interval}s`;
+        config.observatory.pingConfig.interval = `${interval}s`;
         if (balancerFallback) config.routing.balancers[0].fallbackTag = "prox-2";
         if (isChain) {
             config.observatory.subjectSelector.push("chain");
@@ -969,10 +969,14 @@ const xrayConfigTemp = {
         ]
     },
     observatory: {
-        probeInterval: "30s",
-        probeURL: "https://www.gstatic.com/generate_204",
         subjectSelector: ["prox"],
-        EnableConcurrency: true,
+        pingConfig: {
+            destination: "https://connectivitycheck.gstatic.com/generate_204",
+            connectivity: "https://www.google.com/generate_204",
+            interval: "30s",
+            sampling: 1,
+            timeout: "10s"
+        }
     },
     stats: {}
 };
