@@ -7525,7 +7525,7 @@ function buildXrayConfig(proxySettings, remark, isFragment, isBalancer, isChain,
   }
   if (isBalancer) {
     const interval = isWarp ? bestWarpInterval : bestVLTRInterval;
-    config.observatory.probeInterval = `${interval}s`;
+    config.observatory.pingConfig.interval = `${interval}s`;
     if (balancerFallback)
       config.routing.balancers[0].fallbackTag = "prox-2";
     if (isChain) {
@@ -7860,10 +7860,14 @@ var xrayConfigTemp = {
     ]
   },
   observatory: {
-    probeInterval: "30s",
-    probeURL: "https://www.gstatic.com/generate_204",
     subjectSelector: ["prox"],
-    EnableConcurrency: true
+    pingConfig: {
+      destination: "https://connectivitycheck.gstatic.com/generate_204",
+      connectivity: "https://www.google.com/generate_204",
+      interval: "30s",
+      sampling: 1,
+      timeout: "10s"
+    }
   },
   stats: {}
 };
@@ -8032,17 +8036,7 @@ function buildSingBoxRoutingRules(proxySettings) {
   const customBlockRulesTotal = customBlockRules ? customBlockRules.split(",") : [];
   const defaultRules = [
     {
-      type: "logical",
-      mode: "or",
-      rules: [
-        {
-          inbound: "dns-in"
-        },
-        {
-          network: "udp",
-          port: 53
-        }
-      ],
+      protocol: "dns",
       outbound: "dns-out"
     },
     {
@@ -8582,14 +8576,6 @@ var singboxConfigTemp = {
   },
   inbounds: [
     {
-      type: "direct",
-      tag: "dns-in",
-      listen: "0.0.0.0",
-      listen_port: 6450,
-      override_address: "1.1.1.1",
-      override_port: 53
-    },
-    {
       type: "tun",
       tag: "tun-in",
       address: [
@@ -8607,7 +8593,7 @@ var singboxConfigTemp = {
     {
       type: "mixed",
       tag: "mixed-in",
-      listen: "0.0.0.0",
+      listen: "127.0.0.1",
       listen_port: 2080,
       sniff: true,
       sniff_override_destination: false
