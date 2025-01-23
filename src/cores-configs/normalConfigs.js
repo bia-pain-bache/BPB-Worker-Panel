@@ -34,8 +34,8 @@ export async function getNormalConfigs(request, env) {
             const sni = isCustomAddr ? customCdnSni : randomUpperCase(globalThis.hostName);
             const host = isCustomAddr ? customCdnHost : globalThis.hostName;
             const path = `${getRandomPath(16)}${proxyIP ? `/${encodeURIComponent(btoa(proxyIP))}` : ''}${earlyData}`;
-            const VLRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, 'VLESS', configType));
-            const TRRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, 'Trojan', configType));
+            const VLRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, atob('VkxFU1M='), configType));
+            const TRRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, atob('VHJvamFu'), configType));
             const tlsFields = globalThis.defaultHttpsPorts.includes(port) 
                 ? `&security=tls&sni=${sni}&fp=randomized&alpn=${alpn}`
                 : '&security=none';

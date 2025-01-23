@@ -88,7 +88,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="timestamp" content=${Date.now()}>
-        <title>BPB Panel ${globalThis.panelVersion}</title>
+        <title>${atob('QlBC')} Panel ${globalThis.panelVersion}</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
         <title>Collapsible Sections</title>
@@ -386,11 +386,11 @@ export async function renderHomePage (proxySettings, isPassSet) {
         </style>
     </head>
     <body>
-        <h1>BPB Panel <span style="font-size: smaller;">${globalThis.panelVersion}</span> 💦</h1>
+        <h1>${atob('QlBC')} Panel <span style="font-size: smaller;">${globalThis.panelVersion}</span> 💦</h1>
         <div class="form-container">
             <form id="configForm">
                 <details open>
-                    <summary><h2>VLESS - TROJAN ⚙️</h2></summary>
+                    <summary><h2>${atob('VkxFU1M=')} - ${atob('VFJPSkFO')} ⚙️</h2></summary>
                     <div class="form-control">
                         <label for="remoteDNS">🌏 Remote DNS</label>
                         <input type="url" id="remoteDNS" name="remoteDNS" value="${remoteDNS}" required>
@@ -461,11 +461,11 @@ export async function renderHomePage (proxySettings, isPassSet) {
                         <div style="width: 100%; display: grid; grid-template-columns: 1fr 1fr; align-items: baseline; margin-top: 10px;">
                             <div style = "display: flex; justify-content: center; align-items: center;">
                                 <input type="checkbox" id="VLConfigs" name="VLConfigs" onchange="handleProtocolChange(event)" value="true" ${VLConfigs ? 'checked' : ''}>
-                                <label for="VLConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">VLESS</label>
+                                <label for="VLConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">${atob('VkxFU1M=')}</label>
                             </div>
                             <div style = "display: flex; justify-content: center; align-items: center;">
                                 <input type="checkbox" id="TRConfigs" name="TRConfigs" onchange="handleProtocolChange(event)" value="true" ${TRConfigs ? 'checked' : ''}>
-                                <label for="TRConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">Trojan</label>
+                                <label for="TRConfigs" style="margin: 0 5px; font-weight: normal; font-size: unset;">${atob('VHJvamFu')}</label>
                             </div>
                         </div>
                     </div>
@@ -681,8 +681,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
                             ${supportedApps(['v2rayNG', 'NikaNG', 'MahsaNG', 'v2rayN', 'v2rayN-PRO', 'Shadowrocket', 'Streisand', 'Hiddify', 'Nekoray (Xray)'])}
                         </td>
                         <td>
-                            ${subQR('sub', '', 'BPB-Normal', 'Normal Subscription')}
-                            ${subURL('sub', '', 'BPB-Normal')}
+                            ${subQR('sub', '', `${atob('QlBC')}-Normal`, 'Normal Subscription')}
+                            ${subURL('sub', '', `${atob('QlBC')}-Normal`)}
                         </td>
                     </tr>
                     <tr>
@@ -690,7 +690,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                             ${supportedApps(['husi', 'Nekobox', 'Nekoray (sing-Box)', 'Karing'])}
                         </td>
                         <td>
-                            ${subURL('sub', 'singbox', 'BPB-Normal')}
+                            ${subURL('sub', 'singbox', `${atob('QlBC')}-Normal`)}
                         </td>
                     </tr>
                 </table>
@@ -707,8 +707,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
                             ${supportedApps(['v2rayNG', 'NikaNG', 'MahsaNG', 'v2rayN', 'v2rayN-PRO', 'Streisand'])}
                         </td>
                         <td>
-                            ${subQR('sub', 'xray', 'BPB-Full-Normal', 'Full normal Subscription')}
-                            ${subURL('sub', 'xray', 'BPB-Full-Normal')}
+                            ${subQR('sub', 'xray', `${atob('QlBC')}-Full-Normal`, 'Full normal Subscription')}
+                            ${subURL('sub', 'xray', `${atob('QlBC')}-Full-Normal`)}
                         </td>
                     </tr>
                     <tr>
@@ -716,8 +716,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
                             ${supportedApps(['sing-box', 'v2rayN (sing-box)'])}
                         </td>
                         <td>
-                            ${subQR('sub', 'sfa', 'BPB-Full-Normal', 'Full normal Subscription', true)}
-                            ${subURL('sub', 'sfa', 'BPB-Full-Normal')}
+                            ${subQR('sub', 'sfa', `${atob('QlBC')}-Full-Normal`, 'Full normal Subscription', true)}
+                            ${subURL('sub', 'sfa', `${atob('QlBC')}-Full-Normal`)}
                         </td>
                     </tr>
                     <tr>
@@ -725,8 +725,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
                             ${supportedApps(['Clash Meta', 'Clash Verge', 'FlClash', 'Stash', 'v2rayN (mihomo)'])}
                         </td>
                         <td>
-                            ${subQR('sub', 'clash', 'BPB-Full-Normal', 'Full normal Subscription')}
-                            ${subURL('sub', 'clash', 'BPB-Full-Normal')}
+                            ${subQR('sub', 'clash', `${atob('QlBC')}-Full-Normal`, 'Full normal Subscription')}
+                            ${subURL('sub', 'clash', `${atob('QlBC')}-Full-Normal`)}
                         </td>
                     </tr>
                 </table>
@@ -743,8 +743,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
                             ${supportedApps(['v2rayNG', 'NikaNG', 'MahsaNG', 'v2rayN', 'v2rayN-PRO', 'Streisand'])}
                         </td>
                         <td>
-                            ${subQR('fragsub', '', 'BPB-Fragment', 'Fragment Subscription')}
-                            ${subURL('fragsub', '', 'BPB-Fragment')}
+                            ${subQR('fragsub', '', `${atob('QlBC')}-Fragment`, 'Fragment Subscription')}
+                            ${subURL('fragsub', '', `${atob('QlBC')}-Fragment`)}
                         </td>
                     </tr>
                     <tr>
@@ -752,8 +752,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
                             ${supportedApps(['Hiddify'])}
                         </td>
                         <td>
-                            ${subQR('fragsub', 'hiddify', 'BPB-Fragment', 'Fragment Subscription')}
-                            ${subURL('fragsub', 'hiddify', 'BPB-Fragment')}
+                            ${subQR('fragsub', 'hiddify', `${atob('QlBC')}-Fragment`, 'Fragment Subscription')}
+                            ${subURL('fragsub', 'hiddify', `${atob('QlBC')}-Fragment`)}
                         </td>
                     </tr>
                 </table>
@@ -770,8 +770,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
                             ${supportedApps(['v2rayNG', 'v2rayN', 'Streisand'])}
                         </td>
                         <td>
-                            ${subQR('warpsub', 'xray', 'BPB-Warp', 'Warp Subscription')}
-                            ${subURL('warpsub', 'xray', 'BPB-Warp')}
+                            ${subQR('warpsub', 'xray', `${atob('QlBC')}-Warp`, 'Warp Subscription')}
+                            ${subURL('warpsub', 'xray', `${atob('QlBC')}-Warp`)}
                         </td>
                     </tr>
                     <tr>
@@ -779,8 +779,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
                             ${supportedApps(['Hiddify', 'sing-box', 'v2rayN (sing-box)'])}
                         </td>
                         <td>
-                            ${subQR('sub', 'singbox', 'BPB-Warp', 'Warp Subscription', true)}
-                            ${subURL('warpsub', 'singbox', 'BPB-Warp')}
+                            ${subQR('sub', 'singbox', `${atob('QlBC')}-Warp`, 'Warp Subscription', true)}
+                            ${subURL('warpsub', 'singbox', `${atob('QlBC')}-Warp`)}
                         </td>
                     </tr>
                     <tr>
@@ -788,8 +788,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
                             ${supportedApps(['Clash Meta', 'Clash Verge', 'FlClash', 'Stash', 'v2rayN (mihomo)'])}
                         </td>
                         <td>
-                            ${subQR('warpsub', 'clash', 'BPB-Warp', 'Warp Subscription')}
-                            ${subURL('warpsub', 'clash', 'BPB-Warp')}
+                            ${subQR('warpsub', 'clash', `${atob('QlBC')}-Warp`, 'Warp Subscription')}
+                            ${subURL('warpsub', 'clash', `${atob('QlBC')}-Warp`)}
                         </td>
                     </tr>
                 </table>
@@ -806,8 +806,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
                             ${supportedApps(['NikaNG', 'MahsaNG', 'v2rayN-PRO'])}
                         </td>
                         <td>
-                            ${subQR('warpsub', 'nikang', 'BPB-Warp-Pro', 'Warp Pro Subscription')}
-                            ${subURL('warpsub', 'nikang', 'BPB-Warp-Pro')}
+                            ${subQR('warpsub', 'nikang', `${atob('QlBC')}-Warp-Pro`, 'Warp Pro Subscription')}
+                            ${subURL('warpsub', 'nikang', `${atob('QlBC')}-Warp-Pro`)}
                         </td>
                     </tr>
                     <tr>
@@ -815,8 +815,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
                             ${supportedApps(['Hiddify'])}
                         </td>
                         <td>
-                            ${subQR('warpsub', 'hiddify', 'BPB-Warp-Pro', 'Warp Pro Subscription', true)}
-                            ${subURL('warpsub', 'hiddify', 'BPB-Warp-Pro')}
+                            ${subQR('warpsub', 'hiddify', `${atob('QlBC')}-Warp-Pro`, 'Warp Pro Subscription', true)}
+                            ${subURL('warpsub', 'hiddify', `${atob('QlBC')}-Warp-Pro`)}
                         </td>
                     </tr>
                 </table>
@@ -883,7 +883,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
             <hr>
             <div class="footer">
                 <i class="fa fa-github" style="font-size:36px; margin-right: 10px;"></i>
-                <a class="link" href="https://github.com/bia-pain-bache/BPB-Worker-Panel" style="color: var(--color); text-decoration: underline;" target="_blank">Github</a>
+                <a class="link" href="https://github.com/bia-pain-bache/${atob('QlBC')}-Worker-Panel" style="color: var(--color); text-decoration: underline;" target="_blank">Github</a>
                 <button id="openModalBtn" class="button">Change Password</button>
                 <button type="button" id="logout" style="background: none; color: var(--color); margin: 0; border: none; cursor: pointer;">
                     <i class="fa fa-power-off fa-2x" aria-hidden="true"></i>
@@ -1192,7 +1192,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
             const customBypassRules = document.getElementById('customBypassRules').value?.split(',');                    
             const customBlockRules = document.getElementById('customBlockRules').value?.split(',');                    
             const formData = new FormData(configForm);
-            const isVless = /vless:\\/\\/[^\s@]+@[^\\s:]+:[^\\s]+/.test(chainProxy);
+            const is${atob('Vmxlc3M=')} = /${atob('dmxlc3M=')}:\\/\\/[^\s@]+@[^\\s:]+:[^\\s]+/.test(chainProxy);
             const isSocksHttp = /^(http|socks):\\/\\/(?:([^:@]+):([^:@]+)@)?([^:@]+):(\\d+)$/.test(chainProxy);
             const hasSecurity = /security=/.test(chainProxy);
             const securityRegex = /security=(tls|none|reality)/;
@@ -1200,7 +1200,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
             let match = chainProxy.match(securityRegex);
             const securityType = match ? match[1] : null;
             match = chainProxy.match(/:(\\d+)\\?/);
-            const vlessPort = match ? match[1] : null;
+            const ${atob('dmxlc3M=')}Port = match ? match[1] : null;
             const validTransmission = /type=(tcp|grpc|ws)/.test(chainProxy);
             const validIPDomain = /^((?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,})|(?:(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)(?:\\/(?:\\d|[12]\\d|3[0-2]))?|\\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}|:(?::[a-fA-F0-9]{1,4}){1,7})\\](?:\\/(?:12[0-8]|1[0-1]\\d|[0-9]?\\d))?)$/i;
             const validEndpoint = /^(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|\\[(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,7}:\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}\\]|\\[[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}\\]|\\[:(?::[a-fA-F0-9]{1,4}){1,7}\\]|\\[::(?::[a-fA-F0-9]{1,4}){0,7}\\]):(?:[0-9]{1,5})$/;
@@ -1239,13 +1239,13 @@ export async function renderHomePage (proxySettings, isPassSet) {
                 return false;
             }
 
-            if (!(isVless && (hasSecurity && validSecurityType || !hasSecurity) && validTransmission) && !isSocksHttp && chainProxy) {
-                alert('⛔ Invalid Config! 🫤 \\n - The chain proxy should be VLESS, Socks or Http!\\n - VLESS transmission should be GRPC,WS or TCP\\n - VLESS security should be TLS,Reality or None\\n - socks or http should be like:\\n + (socks or http)://user:pass@host:port\\n + (socks or http)://host:port');               
+            if (!(is${atob('Vmxlc3M=')} && (hasSecurity && validSecurityType || !hasSecurity) && validTransmission) && !isSocksHttp && chainProxy) {
+                alert('⛔ Invalid Config! 🫤 \\n - The chain proxy should be ${atob('VkxFU1M=')}, Socks or Http!\\n - ${atob('VkxFU1M=')} transmission should be GRPC,WS or TCP\\n - ${atob('VkxFU1M=')} security should be TLS,Reality or None\\n - socks or http should be like:\\n + (socks or http)://user:pass@host:port\\n + (socks or http)://host:port');               
                 return false;
             }
 
-            if (isVless && securityType === 'tls' && vlessPort !== '443') {
-                alert('⛔ VLESS TLS port can be only 443 to be used as a proxy chain! 🫤');               
+            if (is${atob('Vmxlc3M=')} && securityType === 'tls' && ${atob('dmxlc3M=')}Port !== '443') {
+                alert('⛔ ${atob('VkxFU1M=')} TLS port can be only 443 to be used as a proxy chain! 🫤');               
                 return false;
             }
 

@@ -26,7 +26,7 @@ jobs:
 
       - name: Build project
         run: |
-          npx wrangler deploy src/worker.js --name bpb-worker-panel --compatibility-flag [nodejs_compat] --compatibility-date 2024-10-26 --dry-run --outdir=dist
+          npx wrangler deploy src/worker.js --name bpb-worker-panel --compatibility-flag [nodejs_compat] --compatibility-date 2025-01-18 --dry-run --outdir=dist
           cp -f dist/worker.js unobfuscated/worker.js
           npx javascript-obfuscator --config ./obfs-config.json dist/worker.js --output _worker.js
 

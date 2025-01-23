@@ -1,10 +1,10 @@
-import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6, isIPv4 } from './helpers';
+import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6, isIPv4, getDomain } from './helpers';
 import { getDataset } from '../kv/handlers';
 import { isDomain } from '../helpers/helpers';
 
 async function buildClashDNS (proxySettings, isChain, isWarp) {
-    const { 
-        remoteDNS, 
+    const {
+        remoteDNS,
         localDNS, 
         VLTRFakeDNS,
         outProxyParams,
@@ -35,19 +35,20 @@ async function buildClashDNS (proxySettings, isChain, isWarp) {
         "listen": "0.0.0.0:1053",
         "ipv6": isIPv6,
         "respect-rules": true,
-        "use-hosts": true,
         "use-system-hosts": false,
         "nameserver": isWarp 
             ? warpRemoteDNS.map(dns => isChain ? `${dns}#💦 Warp - Best Ping 🚀` : `${dns}#✅ Selector`) 
             : [isChain ? `${remoteDNS}#proxy-1` : `${remoteDNS}#✅ Selector`],
-        "proxy-server-nameserver": [`${localDNS}#DIRECT`]
+        "proxy-server-nameserver": [`${localDNS}#DIRECT`],
+        "nameserver-policy": {
+            "raw.githubusercontent.com": `${localDNS}#DIRECT`,
+            "time.apple.com": `${localDNS}#DIRECT`
+        }
     };
 
     if (isChain && !isWarp) {
         const chainOutboundServer = JSON.parse(outProxyParams).server;
-        if (isDomain(chainOutboundServer)) dns["nameserver-policy"] = {
-            [chainOutboundServer]: isChain ? `${remoteDNS}#proxy-1` : `${remoteDNS}#✅ Selector`
-        };    
+        if (isDomain(chainOutboundServer)) dns["nameserver-policy"][chainOutboundServer] = `${remoteDNS}#proxy-1`;
     } 
 
     if (isBypass) { 
@@ -56,18 +57,17 @@ async function buildClashDNS (proxySettings, isChain, isWarp) {
             rule && geosites.push(geosite)
         });
 
-        dns["nameserver-policy"] = {
-            ...dns["nameserver-policy"],
-            [`rule-set:${geosites.join(',')}`]: [`${localDNS}#DIRECT`]
-        };
+        dns["nameserver-policy"][`rule-set:${geosites.join(',')}`] = [`${localDNS}#DIRECT`];
     }
 
     customBypassRulesDomains.forEach( domain => {
-        dns["nameserver-policy"] = {
-            ...dns["nameserver-policy"],
-            [`+.${domain}`]: [`${localDNS}#DIRECT`]
-        };
+        dns["nameserver-policy"][`+.${domain}`] = [`${localDNS}#DIRECT`];
     });
+
+    const dohHost = getDomain(remoteDNS);
+    if (dohHost.isHostDomain && !isWarp) {
+        dns["default-nameserver"] = [`https://8.8.8.8/dns-query#${isChain ? 'proxy-1' : '✅ Selector'}`];
+    }
 
     if (isFakeDNS) Object.assign(dns, {
         "enhanced-mode": "fake-ip",
@@ -252,7 +252,7 @@ function buildClashVLOutbound (remark, address, port, host, sni, path, allowInse
     const addr = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
     const outbound = {
         "name": remark,
-        "type": "vless",
+        "type": atob('dmxlc3M='),
         "server": addr,
         "port": +port,
         "uuid": globalThis.userID,
@@ -283,7 +283,7 @@ function buildClashTROutbound (remark, address, port, host, sni, path, allowInse
     const addr = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
     return {
         "name": remark,
-        "type": "trojan",
+        "type": atob('dHJvamFu'),
         "server": addr,
         "port": +port,
         "password": globalThis.TRPassword,
@@ -349,7 +349,7 @@ function buildClashChainOutbound(chainProxyParams) {
     const { server, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = chainProxyParams;
     const chainOutbound = {
         "name": "💦 Chain Best Ping 💥",
-        "type": "vless",
+        "type": atob('dmxlc3M='),
         "server": server,
         "port": +port,
         "udp": true,
@@ -456,7 +456,6 @@ export async function getClashNormalConfig (request, env) {
     const { proxySettings } = await getDataset(request, env);
     let chainProxy;
     const { 
-        resolvedRemoteDNS,
         cleanIPs, 
         proxyIP, 
         ports, 
@@ -487,13 +486,6 @@ export async function getClashNormalConfig (request, env) {
     }
 
     const config = structuredClone(clashConfigTemp);
-    if (resolvedRemoteDNS.server) {
-        config.hosts = {
-            [resolvedRemoteDNS.server]: resolvedRemoteDNS.staticIPs
-        }
-    } else {
-        delete config.hosts;
-    }
     const { rules, ruleProviders } = buildClashRoutingRules(proxySettings);
     config.dns = await buildClashDNS(proxySettings, chainProxy, false);
     config.rules = rules;
@@ -508,8 +500,8 @@ export async function getClashNormalConfig (request, env) {
     const totalAddresses = [...Addresses, ...customCdnAddresses];
     let proxyIndex = 1, path;
     const protocols = [
-        ...(VLConfigs ? ['VLESS'] : []),
-        ...(TRConfigs ? ['Trojan'] : [])
+        ...(VLConfigs ? [atob('VkxFU1M=')] : []),
+        ...(TRConfigs ? [atob('VHJvamFu')] : [])
     ];
 
     protocols.forEach ( protocol => {
@@ -523,7 +515,7 @@ export async function getClashNormalConfig (request, env) {
                 const host = isCustomAddr ? customCdnHost : globalThis.hostName;
                 const remark = generateRemark(protocolIndex, port, addr, cleanIPs, protocol, configType).replace(' : ', ' - ');
 
-                if (protocol === 'VLESS') {
+                if (protocol === atob('VkxFU1M=')) {
                     path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
                     VLOutbound = buildClashVLOutbound(
                         chainProxy ? `proxy-${proxyIndex}` : remark, 
@@ -539,7 +531,7 @@ export async function getClashNormalConfig (request, env) {
                     urlTest.proxies.push(remark);
                 }
                 
-                if (protocol === 'Trojan' && globalThis.defaultHttpsPorts.includes(port)) {
+                if (protocol === atob('VHJvamFu') && globalThis.defaultHttpsPorts.includes(port)) {
                     path = `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
                     TROutbound = buildClashTROutbound(
                         chainProxy ? `proxy-${proxyIndex}` : remark, 
@@ -601,7 +593,6 @@ const clashConfigTemp = {
         "store-selected": true,
         "store-fake-ip": true
     },
-    "hosts": {},
     "dns": {},
     "tun": {
         "enable": true,
