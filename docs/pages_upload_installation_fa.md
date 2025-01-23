@@ -6,7 +6,9 @@
 ## قدم اول - Cloudflare Pages
 اگر اکانت کلود فلر ندارید از [اینجا](https://dash.cloudflare.com/sign-up) یک اکانت بسازید (اینجا هم فقط یک ایمیل برای ثبت نام لازم دارید، بخاطر حساسیت‌های کلادفلر توصیه میکنم از ایمیل‌های معتبر مثل Gmail استفاده کنید).
 
-از [اینجا](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/worker.zip) فایل زیپ ورکر رو دانلود کنید.
+از یکی از این دو لینک میتونید فایل زیپ ورکر رو دانلود کنید. ممکنه نسخه مبهم‌سازی شده ارور 1101 بده، میتونید از اون یکی  استفاده کنید.
+- [نسخه‌ی مبهم‌سازی شده](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/worker.zip)
+- [نسخه‌ی معمولی](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/unobfuscated-worker.zip)
 
 حالا در اکانت کلادفلرتون از منوی سمت چپ وارد قسمت `Workers and Pages` بشید و `Create Application` رو بزنید و `Pages` رو انتخاب کنید:
 

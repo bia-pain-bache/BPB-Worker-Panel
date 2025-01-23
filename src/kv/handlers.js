@@ -47,35 +47,15 @@ export async function updateDataset (request, env) {
         return fieldValue;
     }
 
-    const remoteDNS = validateField('remoteDNS') ?? currentSettings?.remoteDNS ?? 'https://8.8.8.8/dns-query';
-    const enableIPv6 = validateField('enableIPv6') ?? currentSettings?.enableIPv6 ?? true;
-    const url = new URL(remoteDNS);
-    const remoteDNSServer = url.hostname;
-    const isServerDomain = isDomain(remoteDNSServer);
-    let resolvedRemoteDNS = {};
-    if (isServerDomain) {
-        try {
-            const resolvedDomain = await resolveDNS(remoteDNSServer);
-            resolvedRemoteDNS = {
-                server: remoteDNSServer,
-                staticIPs: enableIPv6 ? [...resolvedDomain.ipv4, ...resolvedDomain.ipv6] : resolvedDomain.ipv4
-            };
-        } catch (error) {
-            console.log(error);
-            throw new Error(`An error occurred while resolving remote DNS server, please try agian! - ${error}`);
-        }
-    } 
-
     const proxySettings = {
-        remoteDNS: remoteDNS,
-        resolvedRemoteDNS: resolvedRemoteDNS,
+        remoteDNS: validateField('remoteDNS') ?? currentSettings?.remoteDNS ?? 'https://8.8.8.8/dns-query',
         localDNS: validateField('localDNS') ?? currentSettings?.localDNS ?? '8.8.8.8',
         VLTRFakeDNS: validateField('VLTRFakeDNS') ?? currentSettings?.VLTRFakeDNS ?? false,
         proxyIP: validateField('proxyIP')?.replaceAll(' ', '') ?? currentSettings?.proxyIP ?? '',
         outProxy: validateField('outProxy') ?? currentSettings?.outProxy ?? '',
         outProxyParams: extractChainProxyParams(validateField('outProxy')) ?? currentSettings?.outProxyParams ?? {},
         cleanIPs: validateField('cleanIPs')?.replaceAll(' ', '') ?? currentSettings?.cleanIPs ?? '',
-        enableIPv6: enableIPv6,
+        enableIPv6: validateField('enableIPv6') ?? currentSettings?.enableIPv6 ?? true,
         customCdnAddrs: validateField('customCdnAddrs')?.replaceAll(' ', '') ?? currentSettings?.customCdnAddrs ?? '',
         customCdnHost: validateField('customCdnHost')?.trim() ?? currentSettings?.customCdnHost ?? '',
         customCdnSni: validateField('customCdnSni')?.trim() ?? currentSettings?.customCdnSni ?? '',
@@ -129,7 +109,7 @@ function extractChainProxyParams(chainProxy) {
     if (!chainProxy) return {};
     const url = new URL(chainProxy);
     const protocol = url.protocol.slice(0, -1);
-    if (protocol === 'vless') {
+    if (protocol === atob('dmxlc3M=')) {
         const params = new URLSearchParams(url.search);
         configParams = {
             protocol: protocol,

@@ -1,9 +1,10 @@
 {
   "deadCodeInjection": true,
   "deadCodeInjectionThreshold": 0.4,
-  "renameGlobals": true,
-  "splitStrings": true,
-  "splitStringsChunkLength": 2,
+  "numbersToExpressions": true,
+  "stringArrayEncoding": ["base64"],
   "transformObjectKeys": true,
+  "renameGlobals": true,
+  "unicodeEscapeSequence": true,
   "target": "node"
 }
