@@ -6,5 +6,7 @@
   "splitStrings": true,
   "splitStringsChunkLength": 2,
   "transformObjectKeys": true,
+  "renameGlobals": true,
+  "unicodeEscapeSequence": true,
   "target": "node"
 }
