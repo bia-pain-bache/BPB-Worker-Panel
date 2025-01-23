@@ -1,6 +1,10 @@
 <h1 align="center">نصب از طریق Cloudflare Workers</h1>
 
-خب اول کد Worker رو از [اینجا](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/worker.js) دانلود کنید، بعد ورکری که ساختید رو Edit code بزنید و از سایدبار سمت چپ فایل‌ worker.js رو delete کنید و فایل جدید رو آپلود کنید، اگر ارور داد فایل package-lock.json رو هم پاک کنید. چون کد خیلی زیاد شده Copy Paste کردن با گوشی خیلی سخت شده، با توجه به عکس زیر آپلود کنید. توی مویایل منوی کناری رو باز کنید و تاح کنید روش نگه دارید و آپلود کنید.
+اول کد Worker رو از یکی از این دو لینک دانلود کنید. اگر نسخه‌ی مبهم‌سازی شده ارور 1101 بده، میتونید از اون یکی  استفاده کنید.
+- [نسخه‌ی مبهم‌سازی شده](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/worker.js)
+- [نسخه‌ی معمولی](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/unobfuscated-worker.js)
+
+بعد ورکری که ساختید رو Edit code بزنید و از سایدبار سمت چپ فایل‌ worker.js رو delete کنید و فایل جدید رو آپلود کنید، اگر ارور داد فایل package-lock.json رو هم پاک کنید. چون کد خیلی زیاد شده Copy Paste کردن با گوشی خیلی سخت شده، با توجه به عکس زیر آپلود کنید. توی مویایل منوی کناری رو باز کنید و تاح کنید روش نگه دارید و آپلود کنید.
 
 <p align="center">
   <img src="assets/images/Worker_mobile_upload.jpg">
