@@ -4319,7 +4319,7 @@ async function renderLoginPage() {
                     console.error('Login failed:', errorMessage);
                     return;
                 }
-                window.location.href = '/panel';
+                window.location.href = '/${globalThis.subPath}/panel';
             } catch (error) {
                 console.error('Error during login:', error);
             }
@@ -5625,7 +5625,7 @@ async function renderHomePage(proxySettings, isPassSet) {
                     const refreshButtonVal = refreshBtn.innerHTML;
                     refreshBtn.innerHTML = '\u231B Loading...';
 
-                    const response = await fetch('/panel', {
+                    const response = await fetch('/${globalThis.subPath}/panel', {
                         method: 'POST',
                         body: formData,
                         credentials: 'include'
@@ -5681,7 +5681,7 @@ async function renderHomePage(proxySettings, isPassSet) {
             try {
                 const ipResponse = await fetch('https://ipwho.is/' + '?nocache=' + Date.now(), { cache: "no-store" });
                 const ipResponseObj = await ipResponse.json();
-                const geoResponse = await fetch('/my-ip', { 
+                const geoResponse = await fetch('/${globalThis.subPath}/my-ip', { 
                     method: 'POST',
                     body: ipResponseObj.ip
                 });
@@ -5689,7 +5689,7 @@ async function renderHomePage(proxySettings, isPassSet) {
                 updateUI(ipResponseObj.ip, ipGeoLocation.country, ipGeoLocation.countryCode, ipGeoLocation.city, ipGeoLocation.isp);
                 const cfIPresponse = await fetch('https://ipv4.icanhazip.com/?nocache=' + Date.now(), { cache: "no-store" });
                 const cfIP = await cfIPresponse.text();
-                const cfGeoResponse = await fetch('/my-ip', { 
+                const cfGeoResponse = await fetch('/${globalThis.subPath}/my-ip', { 
                     method: 'POST',
                     body: cfIP.trim()
                 });
@@ -5905,7 +5905,7 @@ async function renderHomePage(proxySettings, isPassSet) {
                 const applyButtonVal = applyButton.value;
                 applyButton.value = '\u231B Loading...';
 
-                const response = await fetch('/panel', {
+                const response = await fetch('/${globalThis.subPath}/panel', {
                     method: 'POST',
                     body: formData,
                     credentials: 'include'
@@ -5918,7 +5918,7 @@ async function renderHomePage(proxySettings, isPassSet) {
                     const errorMessage = await response.text();
                     console.error(errorMessage, response.status);
                     alert('\u26A0\uFE0F Session expired! Please login again.');
-                    window.location.href = '/login';
+                    window.location.href = '/${globalThis.subPath}/login';
                     return;
                 }                
                 alert('\u2705 Parameters applied successfully \u{1F60E}');
@@ -5932,7 +5932,7 @@ async function renderHomePage(proxySettings, isPassSet) {
             event.preventDefault();
 
             try {
-                const response = await fetch('/logout', {
+                const response = await fetch('/${globalThis.subPath}/logout', {
                     method: 'GET',
                     credentials: 'same-origin'
                 });
@@ -5941,7 +5941,7 @@ async function renderHomePage(proxySettings, isPassSet) {
                     console.error('Failed to log out:', response.status);
                     return;
                 }
-                window.location.href = '/login';
+                window.location.href = '/${globalThis.subPath}/login';
             } catch (error) {
                 console.error('Error:', error);
             }
@@ -5971,7 +5971,7 @@ async function renderHomePage(proxySettings, isPassSet) {
             }
                     
             try {
-                const response = await fetch('/panel/password', {
+                const response = await fetch('/${globalThis.subPath}/panel/password', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'text/plain'
@@ -5984,13 +5984,13 @@ async function renderHomePage(proxySettings, isPassSet) {
                     modal.style.display = "none";
                     document.body.style.overflow = "";
                     alert("\u2705 Password changed successfully! \u{1F44D}");
-                    window.location.href = '/login';
+                    window.location.href = '/${globalThis.subPath}/login';
                 } else if (response.status === 401) {
                     const errorMessage = await response.text();
                     passwordError.textContent = '\u26A0\uFE0F ' + errorMessage;
                     console.error(errorMessage, response.status);
                     alert('\u26A0\uFE0F Session expired! Please login again.');
-                    window.location.href = '/login';
+                    window.location.href = '/${globalThis.subPath}/login';
                 } else {
                     const errorMessage = await response.text();
                     passwordError.textContent = '\u26A0\uFE0F ' + errorMessage;
@@ -6101,19 +6101,19 @@ function initializeParams(request, env) {
   globalThis.panelVersion = "3.0.4";
   globalThis.defaultHttpPorts = ["80", "8080", "2052", "2082", "2086", "2095", "8880"];
   globalThis.defaultHttpsPorts = ["443", "8443", "2053", "2083", "2087", "2096"];
-  globalThis.userID = env.UUID;
-  globalThis.TRPassword = env.TR_PASS;
+  globalThis.userID = env.\u7F16\u53F7 || env.UUID;
+  globalThis.TRPassword = env.\u5BC6\u7801 || env.TR_PASS;
   globalThis.proxyIP = proxyIPs ? proxyIPs[Math.floor(Math.random() * proxyIPs.length)] : atob("YnBiLnlvdXNlZi5pc2VnYXJvLmNvbQ==");
   globalThis.hostName = request.headers.get("Host");
   globalThis.pathName = url.pathname;
   globalThis.client = searchParams.get("app");
   globalThis.urlOrigin = url.origin;
   globalThis.dohURL = env.DOH_URL || "https://cloudflare-dns.com/dns-query";
-  globalThis.fallbackDomain = env.FALLBACK || "speed.cloudflare.com";
-  globalThis.subPath = env.SUB_PATH || userID;
-  if (pathName !== "/secrets") {
+  globalThis.fallbackDomain = env.\u4F2A\u88C5 || env.FALLBACK || "speed.cloudflare.com";
+  globalThis.subPath = env.\u8BA2\u9605 || env.SUB_PATH || userID;
+  if (pathName !== `/${globalThis.subPath}/secrets`) {
     if (!userID || !globalThis.TRPassword)
-      throw new Error(`Please set UUID and ${atob("VHJvamFu")} password first. Please visit <a href="https://${hostName}/secrets" target="_blank">here</a> to generate them.`, { cause: "init" });
+      throw new Error(`Please set UUID and ${atob("VHJvamFu")} password first. Please visit <a href="https://${hostName}/${globalThis.subPath}/secrets" target="_blank">here</a> to generate them.`, { cause: "init" });
     if (userID && !isValidUUID(userID))
       throw new Error(`Invalid UUID: ${userID}`, { cause: "init" });
     if (typeof env.kv !== "object")
@@ -9546,17 +9546,17 @@ var worker_default = {
             if (globalThis.client === "singbox" || globalThis.client === "hiddify")
               return await getSingBoxWarpConfig(request, env, globalThis.client);
             return await getXrayWarpConfigs(request, env, globalThis.client);
-          case "/panel":
+          case `/${globalThis.subPath}/panel`:
             return await handlePanel(request, env);
-          case "/login":
+          case `/${globalThis.subPath}/login`:
             return await login(request, env);
-          case "/logout":
+          case `/${globalThis.subPath}/logout`:
             return logout();
-          case "/panel/password":
+          case `/${globalThis.subPath}/panel/password`:
             return await resetPassword(request, env);
-          case "/my-ip":
+          case `/${globalThis.subPath}/my-ip`:
             return await getMyIP(request);
-          case "/secrets":
+          case `/${globalThis.subPath}/secrets`:
             return await renderSecretsPage();
           default:
             return await fallback(request);
