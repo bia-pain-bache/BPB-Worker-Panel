@@ -976,7 +976,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                     const refreshButtonVal = refreshBtn.innerHTML;
                     refreshBtn.innerHTML = '⌛ Loading...';
 
-                    const response = await fetch('/panel', {
+                    const response = await fetch('/${globalThis.subPath}/panel', {
                         method: 'POST',
                         body: formData,
                         credentials: 'include'
@@ -1032,7 +1032,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
             try {
                 const ipResponse = await fetch('https://ipwho.is/' + '?nocache=' + Date.now(), { cache: "no-store" });
                 const ipResponseObj = await ipResponse.json();
-                const geoResponse = await fetch('/my-ip', { 
+                const geoResponse = await fetch('/${globalThis.subPath}/my-ip', { 
                     method: 'POST',
                     body: ipResponseObj.ip
                 });
@@ -1040,7 +1040,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                 updateUI(ipResponseObj.ip, ipGeoLocation.country, ipGeoLocation.countryCode, ipGeoLocation.city, ipGeoLocation.isp);
                 const cfIPresponse = await fetch('https://ipv4.icanhazip.com/?nocache=' + Date.now(), { cache: "no-store" });
                 const cfIP = await cfIPresponse.text();
-                const cfGeoResponse = await fetch('/my-ip', { 
+                const cfGeoResponse = await fetch('/${globalThis.subPath}/my-ip', { 
                     method: 'POST',
                     body: cfIP.trim()
                 });
@@ -1259,7 +1259,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                 const applyButtonVal = applyButton.value;
                 applyButton.value = '⌛ Loading...';
 
-                const response = await fetch('/panel', {
+                const response = await fetch('/${globalThis.subPath}/panel', {
                     method: 'POST',
                     body: formData,
                     credentials: 'include'
@@ -1272,7 +1272,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                     const errorMessage = await response.text();
                     console.error(errorMessage, response.status);
                     alert('⚠️ Session expired! Please login again.');
-                    window.location.href = '/login';
+                    window.location.href = '/${globalThis.subPath}/login';
                     return;
                 }                
                 alert('✅ Parameters applied successfully 😎');
@@ -1286,7 +1286,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
             event.preventDefault();
 
             try {
-                const response = await fetch('/logout', {
+                const response = await fetch('/${globalThis.subPath}/logout', {
                     method: 'GET',
                     credentials: 'same-origin'
                 });
@@ -1295,7 +1295,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                     console.error('Failed to log out:', response.status);
                     return;
                 }
-                window.location.href = '/login';
+                window.location.href = '/${globalThis.subPath}/login';
             } catch (error) {
                 console.error('Error:', error);
             }
@@ -1325,7 +1325,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
             }
                     
             try {
-                const response = await fetch('/panel/password', {
+                const response = await fetch('/${globalThis.subPath}/panel/password', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'text/plain'
@@ -1338,13 +1338,13 @@ export async function renderHomePage (proxySettings, isPassSet) {
                     modal.style.display = "none";
                     document.body.style.overflow = "";
                     alert("✅ Password changed successfully! 👍");
-                    window.location.href = '/login';
+                    window.location.href = '/${globalThis.subPath}/login';
                 } else if (response.status === 401) {
                     const errorMessage = await response.text();
                     passwordError.textContent = '⚠️ ' + errorMessage;
                     console.error(errorMessage, response.status);
                     alert('⚠️ Session expired! Please login again.');
-                    window.location.href = '/login';
+                    window.location.href = '/${globalThis.subPath}/login';
                 } else {
                     const errorMessage = await response.text();
                     passwordError.textContent = '⚠️ ' + errorMessage;

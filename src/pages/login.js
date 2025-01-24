@@ -135,7 +135,7 @@ export async function renderLoginPage () {
                     console.error('Login failed:', errorMessage);
                     return;
                 }
-                window.location.href = '/panel';
+                window.location.href = '/${globalThis.subPath}/panel';
             } catch (error) {
                 console.error('Error during login:', error);
             }
