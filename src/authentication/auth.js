@@ -81,7 +81,7 @@ export async function resetPassword(request, env) {
 
 export async function login(request, env) {
     const auth = await Authenticate(request, env);
-    if (auth) return Response.redirect(`${globalThis.urlOrigin}/panel`, 302);
+    if (auth) return Response.redirect(`${globalThis.urlOrigin}/${globalThis.subPath}/panel`, 302);
     if (request.method === 'POST') return await generateJWTToken(request, env);
     return await renderLoginPage();
 }

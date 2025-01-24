@@ -121,7 +121,7 @@ export async function renderLoginPage () {
             const password = document.getElementById('password').value;
 
             try {
-                const response = await fetch('/login', {
+                const response = await fetch('/${globalThis.subPath}/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'text/plain'
