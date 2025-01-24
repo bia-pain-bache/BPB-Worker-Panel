@@ -4305,7 +4305,7 @@ async function renderLoginPage() {
             const password = document.getElementById('password').value;
 
             try {
-                const response = await fetch('/login', {
+                const response = await fetch('/${globalThis.subPath}/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'text/plain'
@@ -4421,7 +4421,7 @@ __name(resetPassword, "resetPassword");
 async function login(request, env) {
   const auth = await Authenticate(request, env);
   if (auth)
-    return Response.redirect(`${globalThis.urlOrigin}/panel`, 302);
+    return Response.redirect(`${globalThis.urlOrigin}/${globalThis.subPath}/panel`, 302);
   if (request.method === "POST")
     return await generateJWTToken(request, env);
   return await renderLoginPage();
@@ -6063,7 +6063,7 @@ async function handlePanel(request, env) {
   const { proxySettings } = await getDataset(request, env);
   const pwd = await env.kv.get("pwd");
   if (pwd && !auth)
-    return Response.redirect(`${globalThis.urlOrigin}/login`, 302);
+    return Response.redirect(`${globalThis.urlOrigin}/${globalThis.subPath}/login`, 302);
   const isPassSet = pwd?.length >= 8;
   return await renderHomePage(proxySettings, isPassSet);
 }
