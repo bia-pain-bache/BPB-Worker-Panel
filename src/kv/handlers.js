@@ -1,5 +1,4 @@
 import { fetchWarpConfigs } from '../protocols/warp';
-import { isDomain, resolveDNS } from '../helpers/helpers';
 import { Authenticate } from '../authentication/auth';
 
 export async function getDataset(request, env) {
@@ -82,6 +81,10 @@ export async function updateDataset (request, env) {
         warpEnableIPv6: validateField('warpEnableIPv6') ?? currentSettings?.warpEnableIPv6 ?? true,
         warpPlusLicense: validateField('warpPlusLicense') ?? currentSettings?.warpPlusLicense ?? '',
         bestWarpInterval: validateField('bestWarpInterval') ?? currentSettings?.bestWarpInterval ?? '30',
+        udpXrayNoiseMode: validateField('udpXrayNoiseMode') ?? currentSettings?.udpXrayNoiseMode ?? 'base64',
+        udpXrayNoisePacket: validateField('udpXrayNoisePacket') ?? currentSettings?.udpXrayNoisePacket ?? btoa(globalThis.userID),
+        udpXrayNoiseDelayMin: validateField('udpXrayNoiseDelayMin') ?? currentSettings?.udpXrayNoiseDelayMin ?? '1',
+        udpXrayNoiseDelayMax: validateField('udpXrayNoiseDelayMax') ?? currentSettings?.udpXrayNoiseDelayMax ?? '1',
         hiddifyNoiseMode: validateField('hiddifyNoiseMode') ?? currentSettings?.hiddifyNoiseMode ?? 'm4',
         nikaNGNoiseMode: validateField('nikaNGNoiseMode') ?? currentSettings?.nikaNGNoiseMode ?? 'quic',
         noiseCountMin: validateField('noiseCountMin') ?? currentSettings?.noiseCountMin ?? '10',

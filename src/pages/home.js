@@ -24,6 +24,10 @@ export async function renderHomePage (proxySettings, isPassSet) {
         warpEnableIPv6,
         warpPlusLicense,
         bestWarpInterval,
+        udpXrayNoiseMode,
+        udpXrayNoisePacket,
+        udpXrayNoiseDelayMin,
+        udpXrayNoiseDelayMax,
         hiddifyNoiseMode,
         nikaNGNoiseMode,
         noiseCountMin,
@@ -572,6 +576,32 @@ export async function renderHomePage (proxySettings, isPassSet) {
                 </details>
                 <details>
                     <summary><h2>WARP PRO ⚙️</h2></summary>
+                    <h3>V2RAYNG - V2RAYN 🔧</h3>
+                    <div class="form-control">
+                        <label for="udpXrayNoiseMode">😵‍💫 v2ray Mode</label>
+                        <div class="input-with-select">
+                            <select id="udpXrayNoiseMode" name="udpXrayNoiseMode">
+                                <option value="base64" ${udpXrayNoiseMode === 'base64' ? 'selected' : ''}>Base64</option>
+                                <option value="rand" ${udpXrayNoiseMode === 'rand' ? 'selected' : ''}>Random</option>
+                                <option value="str" ${udpXrayNoiseMode === 'str' ? 'selected' : ''}>String</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-control">
+                        <label for="udpXrayNoisePacket">📥 Noise Packet</label>
+                        <input type="text" id="udpXrayNoisePacket" name="udpXrayNoisePacket" value="${udpXrayNoisePacket}">
+                    </div>
+                    <div class="form-control">
+                        <label for="udpXrayNoiseDelayMin">🕞 Noise Delay</label>
+                        <div class="min-max">
+                            <input type="number" id="udpXrayNoiseDelayMin" name="udpXrayNoiseDelayMin"
+                                value="${udpXrayNoiseDelayMin}" min="1" required>
+                            <span> - </span>
+                            <input type="number" id="udpXrayNoiseDelayMax" name="udpXrayNoiseDelayMax"
+                                value="${udpXrayNoiseDelayMax}" min="1" required>
+                        </div>
+                    </div>
+                    <h3>MAHSANG - NIKANG - HIDDIFY 🔧</h3>
                     <div class="form-control">
                         <label for="hiddifyNoiseMode">😵‍💫 Hiddify Mode</label>
                         <input type="text" id="hiddifyNoiseMode" name="hiddifyNoiseMode" 
@@ -800,6 +830,15 @@ export async function renderHomePage (proxySettings, isPassSet) {
                     <tr>
                         <th>Application</th>
                         <th>Subscription</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            ${supportedApps(['v2rayNG', 'v2rayN'])}
+                        </td>
+                        <td>
+                            ${subQR('warpsub', 'xray-pro', `${atob('QlBC')}-Warp-Pro`, 'Warp Pro Subscription')}
+                            ${subURL('warpsub', 'xray-pro', `${atob('QlBC')}-Warp-Pro`)}
+                        </td>
                     </tr>
                     <tr>
                         <td>
@@ -1180,6 +1219,10 @@ export async function renderHomePage (proxySettings, isPassSet) {
             const customCdnSni = document.getElementById('customCdnSni').value;
             const isCustomCdn = customCdnAddrs.length || customCdnHost !== '' || customCdnSni !== '';
             const warpEndpoints = document.getElementById('warpEndpoints').value?.replaceAll(' ', '').split(',');
+            const xrayNoiseMode = document.getElementById('udpXrayNoiseMode').value;
+            const xrayNoisePacket = document.getElementById('udpXrayNoisePacket').value;
+            const xrayNoiseDelayMin = getValue('udpXrayNoiseDelayMin');
+            const xrayNoiseDelayMax = getValue('udpXrayNoiseDelayMax');
             const noiseCountMin = getValue('noiseCountMin');
             const noiseCountMax = getValue('noiseCountMax');
             const noiseSizeMin = getValue('noiseSizeMin');
@@ -1209,6 +1252,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
             configForm.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
                 !formData.has(checkbox.name) && formData.append(checkbox.name, 'false');    
             });
+            const base64Regex = /^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/;
 
             const invalidIPs = [...cleanIPs, ...proxyIPs, ...customCdnAddrs, ...customBypassRules, ...customBlockRules, customCdnHost, customCdnSni]?.filter(value => {
                 if (value) {
@@ -1252,6 +1296,32 @@ export async function renderHomePage (proxySettings, isPassSet) {
             if (isCustomCdn && !(customCdnAddrs.length && customCdnHost && customCdnSni)) {
                 alert('⛔ All "Custom" fields should be filled or deleted together! 🫤');               
                 return false;
+            }
+                
+            if (xrayNoiseDelayMin > xrayNoiseDelayMax) {
+                alert('⛔ The minimum delay should be smaller or equal to maximum! 🫤');
+                return;
+            }
+
+            switch (xrayNoiseMode) {
+                case 'base64':
+                    if (!base64Regex.test(xrayNoisePacket)) {
+                        alert('⛔ The Packet is not a valid base64 value! 🫤');
+                        return;
+                    }
+                    break;
+
+                case 'rand':
+                    if (!(/^\\d+-\\d+$/.test(xrayNoisePacket))) {
+                        alert('⛔ The Packet should be a range like 0-10 or 10-30! 🫤');
+                        return;
+                    }
+                    const [min, max] = xrayNoisePacket.split("-").map(Number);
+                    if (min > max) {
+                        alert('⛔ The minimum value should be smaller or equal to maximum! 🫤');
+                        return;
+                    }
+                    break;
             }
 
             try {

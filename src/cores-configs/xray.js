@@ -383,7 +383,7 @@ function buildXrayTROutbound (tag, address, port, host, sni, proxyIP, isFragment
     return outbound;
 }
 
-function buildXrayWarpOutbound (proxySettings, warpConfigs, endpoint, isChain, client) {
+function buildXrayWarpOutbound (proxySettings, warpConfigs, endpoint, chain, client) {
     const { 
         warpEnableIPv6,
 		nikaNGNoiseMode,  
@@ -395,12 +395,13 @@ function buildXrayWarpOutbound (proxySettings, warpConfigs, endpoint, isChain, c
 		noiseDelayMax 
 	} = proxySettings;
 
+    const isWoW = chain === 'proxy'; 
     const {
         warpIPv6,
         reserved,
         publicKey,
         privateKey
-    } = extractWireguardParams(warpConfigs, isChain);
+    } = extractWireguardParams(warpConfigs, isWoW);
 
     const outbound = {
         protocol: "wireguard",
@@ -422,15 +423,15 @@ function buildXrayWarpOutbound (proxySettings, warpConfigs, endpoint, isChain, c
         },
         streamSettings: {
             sockopt: {
-                dialerProxy: "proxy",
+                dialerProxy: chain,
                 domainStrategy: warpEnableIPv6 ? "UseIPv4v6" : "UseIPv4",
             }
         },
-        tag: isChain ? "chain" : "proxy"
+        tag: isWoW ? "chain" : "proxy" 
     };
 
-    !isChain && delete outbound.streamSettings;
-    client === 'nikang' && !isChain && Object.assign(outbound.settings, {
+    !chain && delete outbound.streamSettings;
+    client === 'nikang' && !isWoW && delete outbound.streamSettings && Object.assign(outbound.settings, {
         wnoise: nikaNGNoiseMode,
         wnoisecount: noiseCountMin === noiseCountMax ? noiseCountMin : `${noiseCountMin}-${noiseCountMax}`,
         wpayloadsize: noiseSizeMin === noiseSizeMax ? noiseSizeMin : `${noiseSizeMin}-${noiseSizeMax}`,
@@ -613,7 +614,11 @@ function buildXrayConfig (proxySettings, remark, isFragment, isBalancer, isChain
         lengthMax, 
         intervalMin, 
         intervalMax, 
-        fragmentPackets 
+        fragmentPackets,
+        udpXrayNoiseMode,
+        udpXrayNoisePacket,
+        udpXrayNoiseDelayMin,
+        udpXrayNoiseDelayMax
     } = proxySettings;
 
     const isFakeDNS = (VLTRFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
@@ -630,6 +635,17 @@ function buildXrayConfig (proxySettings, remark, isFragment, isBalancer, isChain
         fragment.interval = `${intervalMin}-${intervalMax}`;
         fragment.packets = fragmentPackets;
         config.outbounds[0].settings.domainStrategy = enableIPv6 ? "UseIPv4v6" : "UseIPv4";
+    } else if (udpXrayNoiseMode !== 'none') {
+        const freedomSettings = config.outbounds[0].settings;
+        delete freedomSettings.fragment;
+        config.outbounds[0].tag = 'udp-noise';
+        freedomSettings.noises = [
+            {
+                type: udpXrayNoiseMode,
+                packet: udpXrayNoisePacket,
+                delay: `${udpXrayNoiseDelayMin}-${udpXrayNoiseDelayMax}`
+            }
+        ];
     } else {
         config.outbounds.shift();
     }
@@ -811,16 +827,21 @@ export async function getXrayWarpConfigs (request, env, client) {
     const { warpEndpoints } = proxySettings;
     const outboundDomains = warpEndpoints.split(',').map(endpoint => endpoint.split(':')[0]).filter(address => isDomain(address));
     const proIndicator = client === 'nikang' ? ' Pro ' : ' ';
+    const xrayWarpChain = client === 'xray-pro' ? 'udp-noise' : undefined; 
     
     for (const [index, endpoint] of warpEndpoints.split(',').entries()) {
         const endpointHost = endpoint.split(':')[0];
         const warpConfig = buildXrayConfig(proxySettings, `💦 ${index + 1} - Warp${proIndicator}🇮🇷`, false, false, false, false, true);
         const WoWConfig = buildXrayConfig(proxySettings, `💦 ${index + 1} - WoW${proIndicator}🌍`, false, false, true, false, true);
+        if (client !== 'xray-pro') {
+            warpConfig.outbounds.shift();
+            WoWConfig.outbounds.shift();
+        }
         warpConfig.dns = WoWConfig.dns = await buildXrayDNS(proxySettings, [endpointHost], undefined, false, true);    
         warpConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpointHost], false, false, false, true);
         WoWConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpointHost], true, false, false, true);
-        const warpOutbound = buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, false, client);
-        const WoWOutbound = buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, true, client);
+        const warpOutbound = buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, xrayWarpChain, client);
+        const WoWOutbound = buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, 'proxy', client);
         warpConfig.outbounds.unshift(warpOutbound);
         WoWConfig.outbounds.unshift(WoWOutbound, warpOutbound);
         xrayWarpConfigs.push(warpConfig);
@@ -836,10 +857,12 @@ export async function getXrayWarpConfigs (request, env, client) {
 
     const dnsObject = await buildXrayDNS(proxySettings, outboundDomains, undefined, false, true);
     const xrayWarpBestPing = buildXrayConfig(proxySettings, `💦 Warp${proIndicator}- Best Ping 🚀`, false, true, false, false, true);
+    client !== 'xray-pro' && xrayWarpBestPing.outbounds.shift();
     xrayWarpBestPing.dns = dnsObject;    
     xrayWarpBestPing.routing.rules = buildXrayRoutingRules(proxySettings, outboundDomains, false, true, false, true);
     xrayWarpBestPing.outbounds.unshift(...xrayWarpOutbounds);
     const xrayWoWBestPing = buildXrayConfig(proxySettings, `💦 WoW${proIndicator}- Best Ping 🚀`, false, true, true, false, true);
+    client !== 'xray-pro' && xrayWoWBestPing.outbounds.shift();
     xrayWoWBestPing.dns = dnsObject;
     xrayWoWBestPing.routing.rules = buildXrayRoutingRules(proxySettings, outboundDomains, true, true, false, true);
     xrayWoWBestPing.outbounds.unshift(...xrayWoWOutbounds, ...xrayWarpOutbounds);
