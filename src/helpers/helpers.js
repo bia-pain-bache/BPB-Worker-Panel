@@ -57,10 +57,17 @@ export async function handlePanel(request, env) {
 
 export async function fallback(request) {
     const url = new URL(request.url);
+    if (url.pathname !== '/') return new Response('Invalid path', {status: 400});
     url.hostname = globalThis.fallbackDomain;
     url.protocol = 'https:';
-    request = new Request(url, request);
-    return await fetch(request);
+    const newRequest = new Request(url.toString(), {
+        method: request.method,
+        headers: request.headers,
+        body: request.body,
+        redirect: 'manual'
+    });
+    
+    return await fetch(newRequest);
 }
 
 export async function getMyIP(request) {
