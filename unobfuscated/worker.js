@@ -4581,6 +4581,10 @@ async function updateDataset(request, env) {
     warpEnableIPv6: validateField("warpEnableIPv6") ?? currentSettings?.warpEnableIPv6 ?? true,
     warpPlusLicense: validateField("warpPlusLicense") ?? currentSettings?.warpPlusLicense ?? "",
     bestWarpInterval: validateField("bestWarpInterval") ?? currentSettings?.bestWarpInterval ?? "30",
+    udpXrayNoiseMode: validateField("udpXrayNoiseMode") ?? currentSettings?.udpXrayNoiseMode ?? "base64",
+    udpXrayNoisePacket: validateField("udpXrayNoisePacket") ?? currentSettings?.udpXrayNoisePacket ?? btoa(globalThis.userID),
+    udpXrayNoiseDelayMin: validateField("udpXrayNoiseDelayMin") ?? currentSettings?.udpXrayNoiseDelayMin ?? "1",
+    udpXrayNoiseDelayMax: validateField("udpXrayNoiseDelayMax") ?? currentSettings?.udpXrayNoiseDelayMax ?? "1",
     hiddifyNoiseMode: validateField("hiddifyNoiseMode") ?? currentSettings?.hiddifyNoiseMode ?? "m4",
     nikaNGNoiseMode: validateField("nikaNGNoiseMode") ?? currentSettings?.nikaNGNoiseMode ?? "quic",
     noiseCountMin: validateField("noiseCountMin") ?? currentSettings?.noiseCountMin ?? "10",
@@ -4679,6 +4683,10 @@ async function renderHomePage(proxySettings, isPassSet) {
     warpEnableIPv6,
     warpPlusLicense,
     bestWarpInterval,
+    udpXrayNoiseMode,
+    udpXrayNoisePacket,
+    udpXrayNoiseDelayMin,
+    udpXrayNoiseDelayMax,
     hiddifyNoiseMode,
     nikaNGNoiseMode,
     noiseCountMin,
@@ -5221,6 +5229,32 @@ async function renderHomePage(proxySettings, isPassSet) {
                 </details>
                 <details>
                     <summary><h2>WARP PRO \u2699\uFE0F</h2></summary>
+                    <h3>V2RAYNG - V2RAYN \u{1F527}</h3>
+                    <div class="form-control">
+                        <label for="udpXrayNoiseMode">\u{1F635}\u200D\u{1F4AB} v2ray Mode</label>
+                        <div class="input-with-select">
+                            <select id="udpXrayNoiseMode" name="udpXrayNoiseMode">
+                                <option value="base64" ${udpXrayNoiseMode === "base64" ? "selected" : ""}>Base64</option>
+                                <option value="rand" ${udpXrayNoiseMode === "rand" ? "selected" : ""}>Random</option>
+                                <option value="str" ${udpXrayNoiseMode === "str" ? "selected" : ""}>String</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-control">
+                        <label for="udpXrayNoisePacket">\u{1F4E5} Noise Packet</label>
+                        <input type="text" id="udpXrayNoisePacket" name="udpXrayNoisePacket" value="${udpXrayNoisePacket}">
+                    </div>
+                    <div class="form-control">
+                        <label for="udpXrayNoiseDelayMin">\u{1F55E} Noise Delay</label>
+                        <div class="min-max">
+                            <input type="number" id="udpXrayNoiseDelayMin" name="udpXrayNoiseDelayMin"
+                                value="${udpXrayNoiseDelayMin}" min="1" required>
+                            <span> - </span>
+                            <input type="number" id="udpXrayNoiseDelayMax" name="udpXrayNoiseDelayMax"
+                                value="${udpXrayNoiseDelayMax}" min="1" required>
+                        </div>
+                    </div>
+                    <h3>MAHSANG - NIKANG - HIDDIFY \u{1F527}</h3>
                     <div class="form-control">
                         <label for="hiddifyNoiseMode">\u{1F635}\u200D\u{1F4AB} Hiddify Mode</label>
                         <input type="text" id="hiddifyNoiseMode" name="hiddifyNoiseMode" 
@@ -5449,6 +5483,15 @@ async function renderHomePage(proxySettings, isPassSet) {
                     <tr>
                         <th>Application</th>
                         <th>Subscription</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            ${supportedApps(["v2rayNG", "v2rayN"])}
+                        </td>
+                        <td>
+                            ${subQR("warpsub", "xray-pro", `${atob("QlBC")}-Warp-Pro`, "Warp Pro Subscription")}
+                            ${subURL("warpsub", "xray-pro", `${atob("QlBC")}-Warp-Pro`)}
+                        </td>
                     </tr>
                     <tr>
                         <td>
@@ -5826,6 +5869,10 @@ async function renderHomePage(proxySettings, isPassSet) {
             const customCdnSni = document.getElementById('customCdnSni').value;
             const isCustomCdn = customCdnAddrs.length || customCdnHost !== '' || customCdnSni !== '';
             const warpEndpoints = document.getElementById('warpEndpoints').value?.replaceAll(' ', '').split(',');
+            const xrayNoiseMode = document.getElementById('udpXrayNoiseMode').value;
+            const xrayNoisePacket = document.getElementById('udpXrayNoisePacket').value;
+            const xrayNoiseDelayMin = getValue('udpXrayNoiseDelayMin');
+            const xrayNoiseDelayMax = getValue('udpXrayNoiseDelayMax');
             const noiseCountMin = getValue('noiseCountMin');
             const noiseCountMax = getValue('noiseCountMax');
             const noiseSizeMin = getValue('noiseSizeMin');
@@ -5855,6 +5902,7 @@ async function renderHomePage(proxySettings, isPassSet) {
             configForm.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
                 !formData.has(checkbox.name) && formData.append(checkbox.name, 'false');    
             });
+            const base64Regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
 
             const invalidIPs = [...cleanIPs, ...proxyIPs, ...customCdnAddrs, ...customBypassRules, ...customBlockRules, customCdnHost, customCdnSni]?.filter(value => {
                 if (value) {
@@ -5898,6 +5946,32 @@ async function renderHomePage(proxySettings, isPassSet) {
             if (isCustomCdn && !(customCdnAddrs.length && customCdnHost && customCdnSni)) {
                 alert('\u26D4 All "Custom" fields should be filled or deleted together! \u{1FAE4}');               
                 return false;
+            }
+                
+            if (xrayNoiseDelayMin > xrayNoiseDelayMax) {
+                alert('\u26D4 The minimum delay should be smaller or equal to maximum! \u{1FAE4}');
+                return;
+            }
+
+            switch (xrayNoiseMode) {
+                case 'base64':
+                    if (!base64Regex.test(xrayNoisePacket)) {
+                        alert('\u26D4 The Packet is not a valid base64 value! \u{1FAE4}');
+                        return;
+                    }
+                    break;
+
+                case 'rand':
+                    if (!(/^\\d+-\\d+$/.test(xrayNoisePacket))) {
+                        alert('\u26D4 The Packet should be a range like 0-10 or 10-30! \u{1FAE4}');
+                        return;
+                    }
+                    const [min, max] = xrayNoisePacket.split("-").map(Number);
+                    if (min > max) {
+                        alert('\u26D4 The minimum value should be smaller or equal to maximum! \u{1FAE4}');
+                        return;
+                    }
+                    break;
             }
 
             try {
@@ -6070,10 +6144,17 @@ async function handlePanel(request, env) {
 __name(handlePanel, "handlePanel");
 async function fallback(request) {
   const url = new URL(request.url);
+  if (url.pathname !== "/")
+    return new Response("Invalid path", { status: 400 });
   url.hostname = globalThis.fallbackDomain;
   url.protocol = "https:";
-  request = new Request(url, request);
-  return await fetch(request);
+  const newRequest = new Request(url.toString(), {
+    method: request.method,
+    headers: request.headers,
+    body: request.body,
+    redirect: "manual"
+  });
+  return await fetch(newRequest);
 }
 __name(fallback, "fallback");
 async function getMyIP(request) {
@@ -6098,7 +6179,7 @@ function initializeParams(request, env) {
   const proxyIPs = env.PROXYIP?.split(",").map((proxyIP) => proxyIP.trim());
   const url = new URL(request.url);
   const searchParams = new URLSearchParams(url.search);
-  globalThis.panelVersion = "3.0.4";
+  globalThis.panelVersion = "3.0.5";
   globalThis.defaultHttpPorts = ["80", "8080", "2052", "2082", "2086", "2095", "8880"];
   globalThis.defaultHttpsPorts = ["443", "8443", "2053", "2083", "2087", "2096"];
   globalThis.userID = env.UUID;
@@ -7286,7 +7367,7 @@ function buildXrayTROutbound(tag2, address, port, host, sni, proxyIP, isFragment
   return outbound;
 }
 __name(buildXrayTROutbound, "buildXrayTROutbound");
-function buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, isChain, client) {
+function buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, chain, client) {
   const {
     warpEnableIPv6,
     nikaNGNoiseMode,
@@ -7297,12 +7378,13 @@ function buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, isChain, cl
     noiseDelayMin,
     noiseDelayMax
   } = proxySettings;
+  const isWoW = chain === "proxy";
   const {
     warpIPv6,
     reserved,
     publicKey,
     privateKey
-  } = extractWireguardParams(warpConfigs, isChain);
+  } = extractWireguardParams(warpConfigs, isWoW);
   const outbound = {
     protocol: "wireguard",
     settings: {
@@ -7323,14 +7405,14 @@ function buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, isChain, cl
     },
     streamSettings: {
       sockopt: {
-        dialerProxy: "proxy",
+        dialerProxy: chain,
         domainStrategy: warpEnableIPv6 ? "UseIPv4v6" : "UseIPv4"
       }
     },
-    tag: isChain ? "chain" : "proxy"
+    tag: isWoW ? "chain" : "proxy"
   };
-  !isChain && delete outbound.streamSettings;
-  client === "nikang" && !isChain && Object.assign(outbound.settings, {
+  !chain && delete outbound.streamSettings;
+  client === "nikang" && !isWoW && delete outbound.streamSettings && Object.assign(outbound.settings, {
     wnoise: nikaNGNoiseMode,
     wnoisecount: noiseCountMin === noiseCountMax ? noiseCountMin : `${noiseCountMin}-${noiseCountMax}`,
     wpayloadsize: noiseSizeMin === noiseSizeMax ? noiseSizeMin : `${noiseSizeMin}-${noiseSizeMax}`,
@@ -7505,7 +7587,11 @@ function buildXrayConfig(proxySettings, remark, isFragment, isBalancer, isChain,
     lengthMax,
     intervalMin,
     intervalMax,
-    fragmentPackets
+    fragmentPackets,
+    udpXrayNoiseMode,
+    udpXrayNoisePacket,
+    udpXrayNoiseDelayMin,
+    udpXrayNoiseDelayMax
   } = proxySettings;
   const isFakeDNS = VLTRFakeDNS && !isWarp || warpFakeDNS && isWarp;
   const config = structuredClone(xrayConfigTemp);
@@ -7520,6 +7606,17 @@ function buildXrayConfig(proxySettings, remark, isFragment, isBalancer, isChain,
     fragment.interval = `${intervalMin}-${intervalMax}`;
     fragment.packets = fragmentPackets;
     config.outbounds[0].settings.domainStrategy = enableIPv6 ? "UseIPv4v6" : "UseIPv4";
+  } else if (udpXrayNoiseMode !== "none") {
+    const freedomSettings = config.outbounds[0].settings;
+    delete freedomSettings.fragment;
+    config.outbounds[0].tag = "udp-noise";
+    freedomSettings.noises = [
+      {
+        type: udpXrayNoiseMode,
+        packet: udpXrayNoisePacket,
+        delay: `${udpXrayNoiseDelayMin}-${udpXrayNoiseDelayMax}`
+      }
+    ];
   } else {
     config.outbounds.shift();
   }
@@ -7704,15 +7801,20 @@ async function getXrayWarpConfigs(request, env, client) {
   const { warpEndpoints } = proxySettings;
   const outboundDomains = warpEndpoints.split(",").map((endpoint) => endpoint.split(":")[0]).filter((address) => isDomain(address));
   const proIndicator = client === "nikang" ? " Pro " : " ";
+  const xrayWarpChain = client === "xray-pro" ? "udp-noise" : void 0;
   for (const [index, endpoint] of warpEndpoints.split(",").entries()) {
     const endpointHost = endpoint.split(":")[0];
     const warpConfig = buildXrayConfig(proxySettings, `\u{1F4A6} ${index + 1} - Warp${proIndicator}\u{1F1EE}\u{1F1F7}`, false, false, false, false, true);
     const WoWConfig = buildXrayConfig(proxySettings, `\u{1F4A6} ${index + 1} - WoW${proIndicator}\u{1F30D}`, false, false, true, false, true);
+    if (client !== "xray-pro") {
+      warpConfig.outbounds.shift();
+      WoWConfig.outbounds.shift();
+    }
     warpConfig.dns = WoWConfig.dns = await buildXrayDNS(proxySettings, [endpointHost], void 0, false, true);
     warpConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpointHost], false, false, false, true);
     WoWConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpointHost], true, false, false, true);
-    const warpOutbound = buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, false, client);
-    const WoWOutbound = buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, true, client);
+    const warpOutbound = buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, xrayWarpChain, client);
+    const WoWOutbound = buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, "proxy", client);
     warpConfig.outbounds.unshift(warpOutbound);
     WoWConfig.outbounds.unshift(WoWOutbound, warpOutbound);
     xrayWarpConfigs.push(warpConfig);
@@ -7727,10 +7829,12 @@ async function getXrayWarpConfigs(request, env, client) {
   }
   const dnsObject = await buildXrayDNS(proxySettings, outboundDomains, void 0, false, true);
   const xrayWarpBestPing = buildXrayConfig(proxySettings, `\u{1F4A6} Warp${proIndicator}- Best Ping \u{1F680}`, false, true, false, false, true);
+  client !== "xray-pro" && xrayWarpBestPing.outbounds.shift();
   xrayWarpBestPing.dns = dnsObject;
   xrayWarpBestPing.routing.rules = buildXrayRoutingRules(proxySettings, outboundDomains, false, true, false, true);
   xrayWarpBestPing.outbounds.unshift(...xrayWarpOutbounds);
   const xrayWoWBestPing = buildXrayConfig(proxySettings, `\u{1F4A6} WoW${proIndicator}- Best Ping \u{1F680}`, false, true, true, false, true);
+  client !== "xray-pro" && xrayWoWBestPing.outbounds.shift();
   xrayWoWBestPing.dns = dnsObject;
   xrayWoWBestPing.routing.rules = buildXrayRoutingRules(proxySettings, outboundDomains, true, true, false, true);
   xrayWoWBestPing.outbounds.unshift(...xrayWoWOutbounds, ...xrayWarpOutbounds);
