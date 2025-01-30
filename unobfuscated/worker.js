@@ -7454,7 +7454,7 @@ function buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, chain, clie
         "172.16.0.2/32",
         warpIPv6
       ],
-      mtu: endpoint.includes("[") ? 1420 : 1440,
+      mtu: 1280,
       peers: [
         {
           endpoint,
