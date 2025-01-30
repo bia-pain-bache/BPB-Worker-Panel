@@ -7311,6 +7311,12 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
       rules.push({
         network: "udp",
         port: "53",
+        ip: [
+          "1.1.1.1",
+          "1.0.0.1",
+          "2606:4700:4700::1111",
+          "2606:4700:4700::1001"
+        ],
         ...rule
       });
     }
@@ -7874,7 +7880,7 @@ async function getXrayWarpConfigs(request, env, client) {
   const xrayWarpOutbounds = [];
   const xrayWoWOutbounds = [];
   const outboundDomains = warpEndpoints.split(",").map((endpoint) => endpoint.split(":")[0]).filter((address) => isDomain(address));
-  const proIndicator = client === "nikang" ? " Pro " : " ";
+  const proIndicator = client !== "xray" ? " Pro " : " ";
   const xrayWarpChain = client === "xray-pro" ? "udp-noise" : void 0;
   let freedomOutbound;
   for (const [index, endpoint] of warpEndpoints.split(",").entries()) {
