@@ -4541,7 +4541,6 @@ async function updateDataset(request, env) {
     udpNoises.push(...udpNoiseModes.map((mode, index) => ({
       type: mode,
       packet: udpNoisePackets[index],
-      // Fallback to empty string if undefined
       delay: `${udpNoiseDelaysMin[index]}-${udpNoiseDelaysMax[index]}`
     })));
   } else {
@@ -5788,6 +5787,11 @@ async function renderHomePage(proxySettings, isPassSet) {
         }
         
         const deleteUdpNoise = (button) => {
+            const container = document.getElementById("udp-noise-container");
+            if (container.children.length === 1) {
+                alert('\u26D4 You cannot delete all noises!');
+                return;
+            }   
             const confirmReset = confirm('\u26A0\uFE0F This will delete the noise.\\nAre you sure?');
             if(!confirmReset) return;
             button.closest(".udp-noise").remove();
@@ -5952,6 +5956,10 @@ async function renderHomePage(proxySettings, isPassSet) {
                 !formData.has(checkbox.name) && formData.append(checkbox.name, 'false');    
             });
             const base64Regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
+            const udpNoiseModes = formData.getAll('udpXrayNoiseMode') || [];
+            const udpNoisePackets = formData.getAll('udpXrayNoisePacket') || [];
+            const udpNoiseDelaysMin = formData.getAll('udpXrayNoiseDelayMin') || [];
+            const udpNoiseDelaysMax = formData.getAll('udpXrayNoiseDelayMax') || [];
 
             const invalidIPs = [...cleanIPs, ...proxyIPs, ...customCdnAddrs, ...customBypassRules, ...customBlockRules, customCdnHost, customCdnSni]?.filter(value => {
                 if (value) {
@@ -5996,32 +6004,37 @@ async function renderHomePage(proxySettings, isPassSet) {
                 alert('\u26D4 All "Custom" fields should be filled or deleted together! \u{1FAE4}');               
                 return false;
             }
+            
+            let submisionError = false;
+            for (const [index, mode] of udpNoiseModes.entries()) {
+                if (udpNoiseDelaysMin[index] > udpNoiseDelaysMax[index]) {
+                    alert('\u26D4 The minimum noise delay should be smaller or equal to maximum! \u{1FAE4}');
+                    submisionError = true;
+                    break;
+                }
                 
-            // if (xrayNoiseDelayMin > xrayNoiseDelayMax) {
-            //     alert('\u26D4 The minimum delay should be smaller or equal to maximum! \u{1FAE4}');
-            //     return;
-            // }
-
-            // switch (xrayNoiseMode) {
-            //     case 'base64':
-            //         if (!base64Regex.test(xrayNoisePacket)) {
-            //             alert('\u26D4 The Packet is not a valid base64 value! \u{1FAE4}');
-            //             return;
-            //         }
-            //         break;
-
-            //     case 'rand':
-            //         if (!(/^\\d+-\\d+$/.test(xrayNoisePacket))) {
-            //             alert('\u26D4 The Packet should be a range like 0-10 or 10-30! \u{1FAE4}');
-            //             return;
-            //         }
-            //         const [min, max] = xrayNoisePacket.split("-").map(Number);
-            //         if (min > max) {
-            //             alert('\u26D4 The minimum value should be smaller or equal to maximum! \u{1FAE4}');
-            //             return;
-            //         }
-            //         break;
-            // }
+                switch (mode) {
+                    case 'base64':
+                        if (!base64Regex.test(udpNoisePackets[index])) {
+                            alert('\u26D4 The Base64 noise packet is not a valid base64 value! \u{1FAE4}');
+                            submisionError = true;
+                        }
+                        break;
+    
+                    case 'rand':
+                        if (!(/^\\d+-\\d+$/.test(udpNoisePackets[index]))) {
+                            alert('\u26D4 The Random noise packet should be a range like 0-10 or 10-30! \u{1FAE4}');
+                            submisionError = true;
+                        }
+                        const [min, max] = udpNoisePackets[index].split("-").map(Number);
+                        if (min > max) {
+                            alert('\u26D4 The minimum Random noise packet should be smaller or equal to maximum! \u{1FAE4}');
+                            submisionError = true;
+                        }
+                        break;
+                }
+            }
+            if (submisionError) return false;
 
             try {
                 document.body.style.cursor = 'wait';
@@ -7625,19 +7638,21 @@ function buildXrayChainOutbound(chainProxyParams, enableIPv6) {
   return proxyOutbound;
 }
 __name(buildXrayChainOutbound, "buildXrayChainOutbound");
-function buildFreedomOutbound(domainStrategy, tag2, fragmentPacket, fragmentLength, fragmentInterval, udpNoises) {
+function buildFreedomOutbound(proxySettings, isFragment, isUdpNoises, tag2) {
+  const {
+    xrayUdpNoises,
+    fragmentPackets,
+    lengthMin,
+    lengthMax,
+    intervalMin,
+    intervalMax,
+    enableIPv6,
+    warpEnableIPv6
+  } = proxySettings;
   const outbound = {
     tag: tag2,
     protocol: "freedom",
-    settings: {
-      fragment: {
-        packets: fragmentPacket,
-        length: fragmentLength,
-        interval: fragmentInterval
-      },
-      noises: JSON.parse(udpNoises),
-      domainStrategy
-    },
+    settings: {},
     streamSettings: {
       sockopt: {
         tcpKeepAliveIdle: 30,
@@ -7645,8 +7660,19 @@ function buildFreedomOutbound(domainStrategy, tag2, fragmentPacket, fragmentLeng
       }
     }
   };
-  !fragmentPacket && delete outbound.settings.fragment;
-  !udpNoises && delete outbound.settings.noises;
+  if (isFragment) {
+    outbound.settings.fragment = {
+      packets: fragmentPackets,
+      length: `${lengthMin}-${lengthMax}`,
+      interval: `${intervalMin}-${intervalMax}`
+    };
+    outbound.settings.domainStrategy = enableIPv6 ? "UseIPv4v6" : "UseIPv4";
+  }
+  if (isUdpNoises) {
+    outbound.settings.noises = JSON.parse(xrayUdpNoises);
+    if (!isFragment)
+      outbound.settings.domainStrategy = warpEnableIPv6 ? "UseIPv4v6" : "UseIPv4";
+  }
   return outbound;
 }
 __name(buildFreedomOutbound, "buildFreedomOutbound");
@@ -7739,8 +7765,9 @@ async function buildXrayBestFragmentConfig(proxySettings, hostName2, chainProxy,
   return config;
 }
 __name(buildXrayBestFragmentConfig, "buildXrayBestFragmentConfig");
-async function buildXrayWorkerLessConfig(proxySettings, fragmentOutbound) {
+async function buildXrayWorkerLessConfig(proxySettings) {
   const config = buildXrayConfig(proxySettings, `\u{1F4A6} ${atob("QlBC")} F - WorkerLess \u2B50`, false, false, false, false);
+  const fragmentOutbound = buildFreedomOutbound(proxySettings, true, true, "fragment");
   config.outbounds.unshift(fragmentOutbound);
   config.dns = await buildXrayDNS(proxySettings, [], void 0, true);
   config.routing.rules = buildXrayRoutingRules(proxySettings, [], false, false, true, false);
@@ -7757,11 +7784,6 @@ async function getXrayCustomConfigs(request, env, isFragment) {
   let protocols = [];
   let chainProxy;
   const {
-    lengthMin,
-    lengthMax,
-    intervalMin,
-    intervalMax,
-    fragmentPackets,
     proxyIP,
     outProxy,
     outProxyParams,
@@ -7795,16 +7817,7 @@ async function getXrayCustomConfigs(request, env, isFragment) {
   VLConfigs && protocols.push(atob("VkxFU1M="));
   TRConfigs && protocols.push(atob("VHJvamFu"));
   let proxyIndex = 1;
-  let freedomOutbound;
-  if (isFragment) {
-    freedomOutbound = buildFreedomOutbound(
-      enableIPv6 ? "UseIPv4v6" : "UseIPv4",
-      "fragment",
-      fragmentPackets,
-      `${lengthMin}-${lengthMax}`,
-      `${intervalMin}-${intervalMax}`
-    );
-  }
+  let freedomOutbound = isFragment ? buildFreedomOutbound(proxySettings, true, false, "fragment") : null;
   for (const protocol of protocols) {
     let protocolIndex = 1;
     for (const port of totalPorts) {
@@ -7840,7 +7853,7 @@ async function getXrayCustomConfigs(request, env, isFragment) {
   const finalConfigs = [...configs, bestPing];
   if (isFragment) {
     const bestFragment = await buildXrayBestFragmentConfig(proxySettings, globalThis.hostName, chainProxy, outbounds);
-    const workerLessConfig = await buildXrayWorkerLessConfig(proxySettings, freedomOutbound);
+    const workerLessConfig = await buildXrayWorkerLessConfig(proxySettings);
     finalConfigs.push(bestFragment, workerLessConfig);
   }
   return new Response(JSON.stringify(finalConfigs, null, 4), {
@@ -7855,11 +7868,7 @@ async function getXrayCustomConfigs(request, env, isFragment) {
 __name(getXrayCustomConfigs, "getXrayCustomConfigs");
 async function getXrayWarpConfigs(request, env, client) {
   const { proxySettings, warpConfigs } = await getDataset(request, env);
-  const {
-    warpEndpoints,
-    warpEnableIPv6,
-    xrayUdpNoises
-  } = proxySettings;
+  const { warpEndpoints, warpEnableIPv6 } = proxySettings;
   const xrayWarpConfigs = [];
   const xrayWoWConfigs = [];
   const xrayWarpOutbounds = [];
@@ -7874,7 +7883,7 @@ async function getXrayWarpConfigs(request, env, client) {
     const WoWConfig = buildXrayConfig(proxySettings, `\u{1F4A6} ${index + 1} - WoW${proIndicator}\u{1F30D}`, false, true, false, true);
     if (client === "xray-pro") {
       const domainStrategy = warpEnableIPv6 ? "UseIPv4v6" : "UseIPv4";
-      freedomOutbound = buildFreedomOutbound(domainStrategy, "udp-noise", null, null, null, xrayUdpNoises);
+      freedomOutbound = buildFreedomOutbound(proxySettings, false, true, "udp-noise");
       warpConfig.outbounds.unshift(freedomOutbound);
       WoWConfig.outbounds.unshift(freedomOutbound);
     }
