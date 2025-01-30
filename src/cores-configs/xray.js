@@ -603,26 +603,22 @@ function buildXrayChainOutbound(chainProxyParams, enableIPv6) {
     return proxyOutbound;
 }
 
-function buildFreedomOutbound (
-    domainStrategy, 
-    tag, 
-    fragmentPacket, 
-    fragmentLength, 
-    fragmentInterval, 
-    udpNoises
-) {
+function buildFreedomOutbound (proxySettings, isFragment, isUdpNoises, tag) {
+    const {
+        xrayUdpNoises,
+        fragmentPackets,
+        lengthMin,
+        lengthMax,
+        intervalMin,
+        intervalMax,
+        enableIPv6,
+        warpEnableIPv6
+    } = proxySettings;
+    
     const outbound = {
         tag: tag,
         protocol: "freedom",
-        settings: {
-            fragment: {
-                packets: fragmentPacket,
-                length: fragmentLength,
-                interval: fragmentInterval,
-            },
-            noises: JSON.parse(udpNoises),
-            domainStrategy: domainStrategy
-        },
+        settings: {},
         streamSettings: {
             sockopt: {
                 tcpKeepAliveIdle: 30,
@@ -631,8 +627,19 @@ function buildFreedomOutbound (
         },
     };
 
-    !fragmentPacket && delete outbound.settings.fragment;
-    !udpNoises && delete outbound.settings.noises;
+    if (isFragment) {
+        outbound.settings.fragment = {
+            packets: fragmentPackets,
+            length: `${lengthMin}-${lengthMax}`,
+            interval: `${intervalMin}-${intervalMax}`,
+        };
+        outbound.settings.domainStrategy = enableIPv6 ? "UseIPv4v6" : "UseIPv4";
+    }
+
+    if (isUdpNoises) {
+        outbound.settings.noises = JSON.parse(xrayUdpNoises);
+        if (!isFragment) outbound.settings.domainStrategy = warpEnableIPv6 ? "UseIPv4v6" : "UseIPv4";
+    }
     return outbound;
 }
 
@@ -713,8 +720,9 @@ async function buildXrayBestFragmentConfig(proxySettings, hostName, chainProxy, 
     return config;
 }
 
-async function buildXrayWorkerLessConfig(proxySettings, fragmentOutbound) {
+async function buildXrayWorkerLessConfig(proxySettings) {
     const config = buildXrayConfig(proxySettings, `💦 ${atob('QlBC')} F - WorkerLess ⭐`, false, false, false, false);
+    const fragmentOutbound = buildFreedomOutbound(proxySettings, true, true, 'fragment');
     config.outbounds.unshift(fragmentOutbound);
     config.dns = await buildXrayDNS(proxySettings, [], undefined, true);
     config.routing.rules = buildXrayRoutingRules(proxySettings, [], false, false, true, false);
@@ -731,11 +739,6 @@ export async function getXrayCustomConfigs(request, env, isFragment) {
     let protocols = [];
     let chainProxy;
     const {
-        lengthMin, 
-        lengthMax, 
-        intervalMin, 
-        intervalMax, 
-        fragmentPackets,
         proxyIP,
         outProxy,
         outProxyParams,
@@ -771,16 +774,7 @@ export async function getXrayCustomConfigs(request, env, isFragment) {
     VLConfigs && protocols.push(atob('VkxFU1M='));
     TRConfigs && protocols.push(atob('VHJvamFu'));
     let proxyIndex = 1;
-    let freedomOutbound;
-    if (isFragment) {
-        freedomOutbound = buildFreedomOutbound(
-            enableIPv6 ? "UseIPv4v6" : "UseIPv4",
-            "fragment",
-            fragmentPackets,
-            `${lengthMin}-${lengthMax}`,
-            `${intervalMin}-${intervalMax}`
-        );
-    }
+    let freedomOutbound = isFragment ? buildFreedomOutbound(proxySettings, true, false, 'fragment') : null;
     
     for (const protocol of protocols) {
         let protocolIndex = 1;
@@ -823,7 +817,7 @@ export async function getXrayCustomConfigs(request, env, isFragment) {
     const finalConfigs = [...configs, bestPing];
     if (isFragment) {
         const bestFragment = await buildXrayBestFragmentConfig(proxySettings, globalThis.hostName, chainProxy, outbounds);
-        const workerLessConfig = await buildXrayWorkerLessConfig(proxySettings, freedomOutbound); 
+        const workerLessConfig = await buildXrayWorkerLessConfig(proxySettings); 
         finalConfigs.push(bestFragment, workerLessConfig);
     }
     return new Response(JSON.stringify(finalConfigs, null, 4), { 
@@ -838,11 +832,7 @@ export async function getXrayCustomConfigs(request, env, isFragment) {
 
 export async function getXrayWarpConfigs (request, env, client) {
     const { proxySettings, warpConfigs } = await getDataset(request, env);
-    const { 
-        warpEndpoints,
-        warpEnableIPv6,
-        xrayUdpNoises, 
-    } = proxySettings;
+    const { warpEndpoints,warpEnableIPv6 } = proxySettings;
     const xrayWarpConfigs = [];
     const xrayWoWConfigs = [];
     const xrayWarpOutbounds = [];
@@ -858,7 +848,7 @@ export async function getXrayWarpConfigs (request, env, client) {
         const WoWConfig = buildXrayConfig(proxySettings, `💦 ${index + 1} - WoW${proIndicator}🌍`, false, true, false, true);
         if (client === 'xray-pro') {
             const domainStrategy = warpEnableIPv6 ? "UseIPv4v6" : "UseIPv4";
-            freedomOutbound = buildFreedomOutbound(domainStrategy, 'udp-noise', null, null, null, xrayUdpNoises);
+            freedomOutbound = buildFreedomOutbound(proxySettings, false, true, 'udp-noise');
             warpConfig.outbounds.unshift(freedomOutbound);
             WoWConfig.outbounds.unshift(freedomOutbound);
         }

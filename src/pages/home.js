@@ -1123,6 +1123,11 @@ export async function renderHomePage (proxySettings, isPassSet) {
         }
         
         const deleteUdpNoise = (button) => {
+            const container = document.getElementById("udp-noise-container");
+            if (container.children.length === 1) {
+                alert('⛔ You cannot delete all noises!');
+                return;
+            }   
             const confirmReset = confirm('⚠️ This will delete the noise.\\nAre you sure?');
             if(!confirmReset) return;
             button.closest(".udp-noise").remove();
@@ -1290,6 +1295,10 @@ export async function renderHomePage (proxySettings, isPassSet) {
                 !formData.has(checkbox.name) && formData.append(checkbox.name, 'false');    
             });
             const base64Regex = /^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/;
+            const udpNoiseModes = formData.getAll('udpXrayNoiseMode') || [];
+            const udpNoisePackets = formData.getAll('udpXrayNoisePacket') || [];
+            const udpNoiseDelaysMin = formData.getAll('udpXrayNoiseDelayMin') || [];
+            const udpNoiseDelaysMax = formData.getAll('udpXrayNoiseDelayMax') || [];
 
             const invalidIPs = [...cleanIPs, ...proxyIPs, ...customCdnAddrs, ...customBypassRules, ...customBlockRules, customCdnHost, customCdnSni]?.filter(value => {
                 if (value) {
@@ -1334,32 +1343,37 @@ export async function renderHomePage (proxySettings, isPassSet) {
                 alert('⛔ All "Custom" fields should be filled or deleted together! 🫤');               
                 return false;
             }
+            
+            let submisionError = false;
+            for (const [index, mode] of udpNoiseModes.entries()) {
+                if (udpNoiseDelaysMin[index] > udpNoiseDelaysMax[index]) {
+                    alert('⛔ The minimum noise delay should be smaller or equal to maximum! 🫤');
+                    submisionError = true;
+                    break;
+                }
                 
-            // if (xrayNoiseDelayMin > xrayNoiseDelayMax) {
-            //     alert('⛔ The minimum delay should be smaller or equal to maximum! 🫤');
-            //     return;
-            // }
-
-            // switch (xrayNoiseMode) {
-            //     case 'base64':
-            //         if (!base64Regex.test(xrayNoisePacket)) {
-            //             alert('⛔ The Packet is not a valid base64 value! 🫤');
-            //             return;
-            //         }
-            //         break;
-
-            //     case 'rand':
-            //         if (!(/^\\d+-\\d+$/.test(xrayNoisePacket))) {
-            //             alert('⛔ The Packet should be a range like 0-10 or 10-30! 🫤');
-            //             return;
-            //         }
-            //         const [min, max] = xrayNoisePacket.split("-").map(Number);
-            //         if (min > max) {
-            //             alert('⛔ The minimum value should be smaller or equal to maximum! 🫤');
-            //             return;
-            //         }
-            //         break;
-            // }
+                switch (mode) {
+                    case 'base64':
+                        if (!base64Regex.test(udpNoisePackets[index])) {
+                            alert('⛔ The Base64 noise packet is not a valid base64 value! 🫤');
+                            submisionError = true;
+                        }
+                        break;
+    
+                    case 'rand':
+                        if (!(/^\\d+-\\d+$/.test(udpNoisePackets[index]))) {
+                            alert('⛔ The Random noise packet should be a range like 0-10 or 10-30! 🫤');
+                            submisionError = true;
+                        }
+                        const [min, max] = udpNoisePackets[index].split("-").map(Number);
+                        if (min > max) {
+                            alert('⛔ The minimum Random noise packet should be smaller or equal to maximum! 🫤');
+                            submisionError = true;
+                        }
+                        break;
+                }
+            }
+            if (submisionError) return false;
 
             try {
                 document.body.style.cursor = 'wait';

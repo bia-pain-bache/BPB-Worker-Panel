@@ -41,7 +41,7 @@ export async function updateDataset (request, env) {
         const udpNoiseDelaysMax = newSettings?.getAll('udpXrayNoiseDelayMax') || [];
         udpNoises.push(...udpNoiseModes.map((mode, index) => ({
             type: mode,
-            packet: udpNoisePackets[index], // Fallback to empty string if undefined
+            packet: udpNoisePackets[index],
             delay: `${udpNoiseDelaysMin[index]}-${udpNoiseDelaysMax[index]}`
         })));
     } else {
