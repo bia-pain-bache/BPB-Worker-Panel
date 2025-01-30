@@ -609,9 +609,7 @@ function buildFreedomOutbound (
     fragmentPacket, 
     fragmentLength, 
     fragmentInterval, 
-    udpNoiseMode, 
-    udpNoisePacket, 
-    udpNoiseDelay
+    udpNoises
 ) {
     const outbound = {
         tag: tag,
@@ -622,13 +620,7 @@ function buildFreedomOutbound (
                 length: fragmentLength,
                 interval: fragmentInterval,
             },
-            noises: [
-                {
-                    type: udpNoiseMode,
-                    packet: udpNoisePacket,
-                    delay: udpNoiseDelay
-                }
-            ],
+            noises: JSON.parse(udpNoises),
             domainStrategy: domainStrategy
         },
         streamSettings: {
@@ -640,7 +632,7 @@ function buildFreedomOutbound (
     };
 
     !fragmentPacket && delete outbound.settings.fragment;
-    !udpNoiseMode && delete outbound.settings.noises;
+    !udpNoises && delete outbound.settings.noises;
     return outbound;
 }
 
@@ -849,10 +841,7 @@ export async function getXrayWarpConfigs (request, env, client) {
     const { 
         warpEndpoints,
         warpEnableIPv6,
-        udpXrayNoiseMode,
-        udpXrayNoisePacket,
-        udpXrayNoiseDelayMin,
-        udpXrayNoiseDelayMax 
+        xrayUdpNoises, 
     } = proxySettings;
     const xrayWarpConfigs = [];
     const xrayWoWConfigs = [];
@@ -869,14 +858,10 @@ export async function getXrayWarpConfigs (request, env, client) {
         const WoWConfig = buildXrayConfig(proxySettings, `💦 ${index + 1} - WoW${proIndicator}🌍`, false, true, false, true);
         if (client === 'xray-pro') {
             const domainStrategy = warpEnableIPv6 ? "UseIPv4v6" : "UseIPv4";
-            freedomOutbound = buildFreedomOutbound(domainStrategy, 'udp-noise', null, null, null, udpXrayNoiseMode, udpXrayNoisePacket, `${udpXrayNoiseDelayMin}-${udpXrayNoiseDelayMax}`);
+            freedomOutbound = buildFreedomOutbound(domainStrategy, 'udp-noise', null, null, null, xrayUdpNoises);
             warpConfig.outbounds.unshift(freedomOutbound);
             WoWConfig.outbounds.unshift(freedomOutbound);
         }
-        // if (client !== 'xray-pro') {
-        //     warpConfig.outbounds.shift();
-        //     WoWConfig.outbounds.shift();
-        // }
         warpConfig.dns = WoWConfig.dns = await buildXrayDNS(proxySettings, [endpointHost], undefined, false, true);    
         warpConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpointHost], false, false, false, true);
         WoWConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpointHost], true, false, false, true);

@@ -24,10 +24,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
         warpEnableIPv6,
         warpPlusLicense,
         bestWarpInterval,
-        udpXrayNoiseMode,
-        udpXrayNoisePacket,
-        udpXrayNoiseDelayMin,
-        udpXrayNoiseDelayMax,
+        xrayUdpNoises,
         hiddifyNoiseMode,
         nikaNGNoiseMode,
         noiseCountMin,
@@ -62,6 +59,44 @@ export async function renderHomePage (proxySettings, isPassSet) {
             </div>`;
         globalThis.defaultHttpsPorts.includes(port) ? httpsPortsBlock += portBlock : httpPortsBlock += portBlock;
     });
+
+    let udpNoiseBlocks = '';
+    JSON.parse(xrayUdpNoises).forEach( (noise, index) => {
+        udpNoiseBlocks += `
+            <div id="udp-noise-container-${index}" class="udp-noise">
+                <div class="header-container">
+                    <h4 style="margin: 0 5px;">Noise ${index + 1}</h4>
+                    <button type="button" onclick="deleteUdpNoise(this)" style="background: none; margin: 0; border: none; cursor: pointer;">
+                        <i class="fa fa-minus-circle fa-2x" style="color: var(--button-color);" aria-hidden="true"></i>
+                    </button>      
+                </div>
+                <div class="form-control">
+                    <label for="udpXrayNoiseMode-${index}">😵‍💫 v2ray Mode</label>
+                    <div class="input-with-select">
+                        <select id="udpXrayNoiseMode-${index}" name="udpXrayNoiseMode">
+                            <option value="base64" ${noise.type === 'base64' ? 'selected' : ''}>Base64</option>
+                            <option value="rand" ${noise.type === 'rand' ? 'selected' : ''}>Random</option>
+                            <option value="str" ${noise.type === 'str' ? 'selected' : ''}>String</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-control">
+                    <label for="udpXrayNoisePacket-${index}">📥 Noise Packet</label>
+                    <input type="text" id="udpXrayNoisePacket-${index}" name="udpXrayNoisePacket" value="${noise.packet}">
+                </div>
+                <div class="form-control">
+                    <label for="udpXrayNoiseDelayMin-${index}">🕞 Noise Delay</label>
+                    <div class="min-max">
+                        <input type="number" id="udpXrayNoiseDelayMin-${index}" name="udpXrayNoiseDelayMin"
+                            value="${noise.delay.split('-')[0]}" min="1" required>
+                        <span> - </span>
+                        <input type="number" id="udpXrayNoiseDelayMax-${index}" name="udpXrayNoiseDelayMax"
+                            value="${noise.delay.split('-')[1]}" min="1" required>
+                    </div>
+                </div>
+            </div>`;
+    });
+
 
     const supportedApps = apps => apps.map(app => `
         <div>
@@ -257,7 +292,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
                 margin-bottom: 100px;
             }
-            .table-container { margin-top: 20px; overflow-x: auto; }
+            .table-container { overflow-x: auto; }
             table { 
                 width: 100%;
                 border: 1px solid var(--border-color);
@@ -372,7 +407,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
             #ips th { background-color: var(--hr-text-color); color: var(--background-color); width: unset; }
             #ips td { background-color: unset; }
             #ips td:first-child { background-color: var(--table-active-color); }
-            .header-container { display: flex; align-items: center; justify-content: center; }
+            .header-container { display: flex; justify-content: center; margin-bottom: 20px; }
+            .udp-noise { border: 1px solid var(--border-color); border-radius: 15px; padding: 20px; margin-bottom: 10px;}
             @media only screen and (min-width: 768px) {
                 .form-container { max-width: 70%; }
                 .form-control { 
@@ -576,30 +612,14 @@ export async function renderHomePage (proxySettings, isPassSet) {
                 </details>
                 <details>
                     <summary><h2>WARP PRO ⚙️</h2></summary>
-                    <h3>V2RAYNG - V2RAYN 🔧</h3>
-                    <div class="form-control">
-                        <label for="udpXrayNoiseMode">😵‍💫 v2ray Mode</label>
-                        <div class="input-with-select">
-                            <select id="udpXrayNoiseMode" name="udpXrayNoiseMode">
-                                <option value="base64" ${udpXrayNoiseMode === 'base64' ? 'selected' : ''}>Base64</option>
-                                <option value="rand" ${udpXrayNoiseMode === 'rand' ? 'selected' : ''}>Random</option>
-                                <option value="str" ${udpXrayNoiseMode === 'str' ? 'selected' : ''}>String</option>
-                            </select>
-                        </div>
+                    <div class="header-container">
+                        <h3 style="margin: 0 5px;">V2RAYNG - V2RAYN</h3>
+                        <button type="button" id="add-udp-noise" onclick="addUdpNoise()" style="background: none; margin: 0; border: none; cursor: pointer;">
+                            <i class="fa fa-plus-circle fa-2x" style="color: var(--button-color);" aria-hidden="true"></i>
+                        </button>       
                     </div>
-                    <div class="form-control">
-                        <label for="udpXrayNoisePacket">📥 Noise Packet</label>
-                        <input type="text" id="udpXrayNoisePacket" name="udpXrayNoisePacket" value="${udpXrayNoisePacket}">
-                    </div>
-                    <div class="form-control">
-                        <label for="udpXrayNoiseDelayMin">🕞 Noise Delay</label>
-                        <div class="min-max">
-                            <input type="number" id="udpXrayNoiseDelayMin" name="udpXrayNoiseDelayMin"
-                                value="${udpXrayNoiseDelayMin}" min="1" required>
-                            <span> - </span>
-                            <input type="number" id="udpXrayNoiseDelayMax" name="udpXrayNoiseDelayMax"
-                                value="${udpXrayNoiseDelayMax}" min="1" required>
-                        </div>
+                    <div id="udp-noise-container">
+                        ${udpNoiseBlocks}
                     </div>
                     <h3>MAHSANG - NIKANG - HIDDIFY 🔧</h3>
                     <div class="form-control">
@@ -1092,6 +1112,23 @@ export async function renderHomePage (proxySettings, isPassSet) {
             }
         }
 
+        const addUdpNoise = () => {
+            const container = document.getElementById("udp-noise-container");
+            const noiseBlock = document.getElementById("udp-noise-container-0");
+            const index = container.children.length;
+            const clone = noiseBlock.cloneNode(true);
+            clone.querySelector("h4").textContent = "Noise " + String(index + 1);
+            container.appendChild(clone);
+            document.getElementById("configForm").dispatchEvent(new Event("change"));
+        }
+        
+        const deleteUdpNoise = (button) => {
+            const confirmReset = confirm('⚠️ This will delete the noise.\\nAre you sure?');
+            if(!confirmReset) return;
+            button.closest(".udp-noise").remove();
+            document.getElementById("configForm").dispatchEvent(new Event("change"));
+        }
+
         const getWarpConfigs = async () => {
             const license = document.getElementById('warpPlusLicense').value;
             if (license !== warpPlusLicense) {
@@ -1219,10 +1256,10 @@ export async function renderHomePage (proxySettings, isPassSet) {
             const customCdnSni = document.getElementById('customCdnSni').value;
             const isCustomCdn = customCdnAddrs.length || customCdnHost !== '' || customCdnSni !== '';
             const warpEndpoints = document.getElementById('warpEndpoints').value?.replaceAll(' ', '').split(',');
-            const xrayNoiseMode = document.getElementById('udpXrayNoiseMode').value;
-            const xrayNoisePacket = document.getElementById('udpXrayNoisePacket').value;
-            const xrayNoiseDelayMin = getValue('udpXrayNoiseDelayMin');
-            const xrayNoiseDelayMax = getValue('udpXrayNoiseDelayMax');
+            // const xrayNoiseMode = document.getElementById('udpXrayNoiseMode').value;
+            // const xrayNoisePacket = document.getElementById('udpXrayNoisePacket').value;
+            // const xrayNoiseDelayMin = getValue('udpXrayNoiseDelayMin');
+            // const xrayNoiseDelayMax = getValue('udpXrayNoiseDelayMax');
             const noiseCountMin = getValue('noiseCountMin');
             const noiseCountMax = getValue('noiseCountMax');
             const noiseSizeMin = getValue('noiseSizeMin');
@@ -1298,31 +1335,31 @@ export async function renderHomePage (proxySettings, isPassSet) {
                 return false;
             }
                 
-            if (xrayNoiseDelayMin > xrayNoiseDelayMax) {
-                alert('⛔ The minimum delay should be smaller or equal to maximum! 🫤');
-                return;
-            }
+            // if (xrayNoiseDelayMin > xrayNoiseDelayMax) {
+            //     alert('⛔ The minimum delay should be smaller or equal to maximum! 🫤');
+            //     return;
+            // }
 
-            switch (xrayNoiseMode) {
-                case 'base64':
-                    if (!base64Regex.test(xrayNoisePacket)) {
-                        alert('⛔ The Packet is not a valid base64 value! 🫤');
-                        return;
-                    }
-                    break;
+            // switch (xrayNoiseMode) {
+            //     case 'base64':
+            //         if (!base64Regex.test(xrayNoisePacket)) {
+            //             alert('⛔ The Packet is not a valid base64 value! 🫤');
+            //             return;
+            //         }
+            //         break;
 
-                case 'rand':
-                    if (!(/^\\d+-\\d+$/.test(xrayNoisePacket))) {
-                        alert('⛔ The Packet should be a range like 0-10 or 10-30! 🫤');
-                        return;
-                    }
-                    const [min, max] = xrayNoisePacket.split("-").map(Number);
-                    if (min > max) {
-                        alert('⛔ The minimum value should be smaller or equal to maximum! 🫤');
-                        return;
-                    }
-                    break;
-            }
+            //     case 'rand':
+            //         if (!(/^\\d+-\\d+$/.test(xrayNoisePacket))) {
+            //             alert('⛔ The Packet should be a range like 0-10 or 10-30! 🫤');
+            //             return;
+            //         }
+            //         const [min, max] = xrayNoisePacket.split("-").map(Number);
+            //         if (min > max) {
+            //             alert('⛔ The minimum value should be smaller or equal to maximum! 🫤');
+            //             return;
+            //         }
+            //         break;
+            // }
 
             try {
                 document.body.style.cursor = 'wait';
