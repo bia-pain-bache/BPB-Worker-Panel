@@ -7970,7 +7970,6 @@ var xrayConfigTemp = {
       tag: "http-in"
     },
     {
-      listen: "127.0.0.1",
       port: 10853,
       protocol: "dokodemo-door",
       settings: {
@@ -8204,6 +8203,10 @@ function buildSingBoxRoutingRules(proxySettings) {
   const customBypassRulesTotal = customBypassRules ? customBypassRules.split(",") : [];
   const customBlockRulesTotal = customBlockRules ? customBlockRules.split(",") : [];
   const defaultRules = [
+    {
+      inbound: "dns-in",
+      outbound: "dns-out"
+    },
     {
       protocol: "dns",
       outbound: "dns-out"
@@ -8745,6 +8748,14 @@ var singboxConfigTemp = {
   },
   inbounds: [
     {
+      type: "direct",
+      tag: "dns-in",
+      listen: "0.0.0.0",
+      listen_port: 6450,
+      override_address: "1.1.1.1",
+      override_port: 53
+    },
+    {
       type: "tun",
       tag: "tun-in",
       address: [
@@ -8753,16 +8764,14 @@ var singboxConfigTemp = {
       ],
       mtu: 9e3,
       auto_route: true,
-      strict_route: true,
       stack: "mixed",
-      endpoint_independent_nat: true,
       sniff: true,
       sniff_override_destination: true
     },
     {
       type: "mixed",
       tag: "mixed-in",
-      listen: "127.0.0.1",
+      listen: "0.0.0.0",
       listen_port: 2080,
       sniff: true,
       sniff_override_destination: false
