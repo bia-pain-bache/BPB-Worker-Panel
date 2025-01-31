@@ -936,7 +936,6 @@ const xrayConfigTemp = {
             tag: "http-in",
         },
         {
-            listen: "127.0.0.1",
             port: 10853,
             protocol: "dokodemo-door",
             settings: {

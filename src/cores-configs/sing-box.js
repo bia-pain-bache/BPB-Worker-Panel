@@ -183,6 +183,10 @@ function buildSingBoxRoutingRules (proxySettings) {
     const customBlockRulesTotal = customBlockRules ? customBlockRules.split(',') : [];
     const defaultRules = [
         {
+            inbound: "dns-in",
+            outbound: "dns-out"
+        },
+        {
             protocol: "dns",
             outbound: "dns-out"
         },
@@ -753,6 +757,14 @@ const singboxConfigTemp = {
     },
     inbounds: [
         {
+            type: "direct",
+            tag: "dns-in",
+            listen: "0.0.0.0",
+            listen_port: 6450,
+            override_address: "1.1.1.1",
+            override_port: 53
+        },
+        {
             type: "tun",
             tag: "tun-in",
             address: [
@@ -761,16 +773,14 @@ const singboxConfigTemp = {
             ],
             mtu: 9000,
             auto_route: true,
-            strict_route: true,
             stack: "mixed",
-            endpoint_independent_nat: true,
             sniff: true,
             sniff_override_destination: true
         },
         {
             type: "mixed",
             tag: "mixed-in",
-            listen: "127.0.0.1",
+            listen: "0.0.0.0",
             listen_port: 2080,
             sniff: true,
             sniff_override_destination: false
