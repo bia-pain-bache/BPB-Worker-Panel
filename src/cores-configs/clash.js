@@ -241,8 +241,9 @@ function buildClashRoutingRules (proxySettings) {
         targetRules.push(generateRule(address, action));
     });
 
-    const rules = [...directDomainRules, ...directIPRules, ...blockDomainRules, ...blockIPRules];
+    let rules = [];
     blockUDP443 && rules.push("AND,((NETWORK,udp),(DST-PORT,443)),REJECT");
+    rules = [...rules, ...blockDomainRules, ...blockIPRules, ...directDomainRules, ...directIPRules];
     rules.push("MATCH,✅ Selector");
     return { rules, ruleProviders };
 }

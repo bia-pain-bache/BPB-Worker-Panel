@@ -191,10 +191,6 @@ function buildSingBoxRoutingRules (proxySettings) {
                     inbound: "dns-in"
                 },
                 {
-                    port: 53,
-                    network: "udp"
-                },
-                {
                     protocol: "dns"
                 }
             ],
@@ -360,14 +356,14 @@ function buildSingBoxRoutingRules (proxySettings) {
     
     customBypassRulesTotal.length && processRules(customBypassRulesTotal, 'direct');    
     customBlockRulesTotal.length && processRules(customBlockRulesTotal, 'reject');
-    const rules = [...defaultRules, ...directDomainRules, ...directIPRules, ...blockDomainRules, ...blockIPRules];
+    let rules = [];
     blockUDP443 && rules.push({
         network: "udp",
         port: 443,
         protocol: "quic",
         action: "reject"
     });
-
+    rules = [...rules, ...defaultRules, ...blockDomainRules, ...blockIPRules, ...directDomainRules, ...directIPRules];
     return {rules, rule_set: ruleSets};
 }
 

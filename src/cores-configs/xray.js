@@ -173,6 +173,13 @@ function buildXrayRoutingRules (proxySettings, outboundAddrs, isChain, isBalance
         }
     ];
 
+    blockUDP443 && rules.push({
+        network: "udp",
+        port: "443",
+        outboundTag: "block",
+        type: "field",
+    });
+
     if (!isWorkerLess && (isDomainRule || isBypass)) rules.push({
         ip: [localDNS],
         port: "53",
@@ -223,21 +230,13 @@ function buildXrayRoutingRules (proxySettings, outboundAddrs, isChain, isBalance
             }
         });
         
+        domainBlockRule.domain.length && rules.push(domainBlockRule);
+        ipBlockRule.ip.length && rules.push(ipBlockRule);
         if (!isWorkerLess) {
             domainDirectRule.domain.length && rules.push(domainDirectRule);
             ipDirectRule.ip.length && rules.push(ipDirectRule);
         }
-
-        domainBlockRule.domain.length && rules.push(domainBlockRule);
-        ipBlockRule.ip.length && rules.push(ipBlockRule);
     }
-
-    blockUDP443 && rules.push({
-        network: "udp",
-        port: "443",
-        outboundTag: "block",
-        type: "field",
-    });
 
     if (isChain) {
         const rule = {
