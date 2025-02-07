@@ -7463,7 +7463,7 @@ function buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, chain, clie
       mtu: 1280,
       peers: [
         {
-          endpoint,
+          endpoint: isWoW ? "162.159.192.1:2408" : endpoint,
           publicKey,
           keepAlive: 5
         }
@@ -8375,7 +8375,7 @@ function buildSingBoxRoutingRules(proxySettings) {
     protocol: "quic",
     action: "reject"
   });
-  rules = [...rules, ...defaultRules, ...blockDomainRules, ...blockIPRules, ...directDomainRules, ...directIPRules];
+  rules = [...defaultRules, ...rules, ...blockDomainRules, ...blockIPRules, ...directDomainRules, ...directIPRules];
   return { rules, rule_set: ruleSets };
 }
 __name(buildSingBoxRoutingRules, "buildSingBoxRoutingRules");
@@ -8493,8 +8493,8 @@ function buildSingBoxWarpOutbound(proxySettings, warpConfigs, remark, endpoint, 
     mtu: 1280,
     peers: [
       {
-        address: endpointServer,
-        port: endpointPort,
+        address: chain ? "162.159.192.1" : endpointServer,
+        port: chain ? 2408 : endpointPort,
         public_key: publicKey,
         reserved: base64ToDecimal(reserved),
         allowed_ips: [
@@ -9136,21 +9136,23 @@ function buildClashWarpOutbound(warpConfigs, remark, endpoint, chain) {
     publicKey,
     privateKey
   } = extractWireguardParams(warpConfigs, chain);
-  return {
+  let outbound = {
     "name": remark,
     "type": "wireguard",
     "ip": "172.16.0.2/32",
     "ipv6": warpIPv6,
     "private-key": privateKey,
-    "server": endpointServer,
-    "port": endpointPort,
+    "server": chain ? "162.159.192.1" : endpointServer,
+    "port": chain ? 2408 : endpointPort,
     "public-key": publicKey,
     "allowed-ips": ["0.0.0.0/0", "::/0"],
     "reserved": reserved,
     "udp": true,
-    "mtu": 1280,
-    "dialer-proxy": chain
+    "mtu": 1280
   };
+  if (chain)
+    outbound["dialer-proxy"] = chain;
+  return outbound;
 }
 __name(buildClashWarpOutbound, "buildClashWarpOutbound");
 function buildClashChainOutbound(chainProxyParams) {
