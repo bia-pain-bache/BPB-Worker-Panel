@@ -363,7 +363,7 @@ function buildSingBoxRoutingRules (proxySettings) {
         protocol: "quic",
         action: "reject"
     });
-    rules = [...rules, ...defaultRules, ...blockDomainRules, ...blockIPRules, ...directDomainRules, ...directIPRules];
+    rules = [ ...defaultRules, ...rules, ...blockDomainRules, ...blockIPRules, ...directDomainRules, ...directIPRules];
     return {rules, rule_set: ruleSets};
 }
 
@@ -483,8 +483,8 @@ function buildSingBoxWarpOutbound (proxySettings, warpConfigs, remark, endpoint,
         mtu: 1280,
         peers: [
             {
-                address: endpointServer,
-                port: endpointPort,
+                address: chain ? "162.159.192.1" : endpointServer,
+                port: chain ? 2408 : endpointPort,
                 public_key: publicKey,
                 reserved: base64ToDecimal(reserved),
                 allowed_ips: [

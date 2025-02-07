@@ -315,21 +315,23 @@ function buildClashWarpOutbound (warpConfigs, remark, endpoint, chain) {
         privateKey
     } = extractWireguardParams(warpConfigs, chain);
 
-    return {
+    let outbound = {
         "name": remark,
         "type": "wireguard",
         "ip": "172.16.0.2/32",
         "ipv6": warpIPv6,
         "private-key": privateKey,
-        "server": endpointServer,
-        "port": endpointPort,
+        "server": chain ? "162.159.192.1" : endpointServer,
+        "port": chain ? 2408 : endpointPort,
         "public-key": publicKey,
         "allowed-ips": ["0.0.0.0/0", "::/0"],
         "reserved": reserved,
         "udp": true,
-        "mtu": 1280,
-        "dialer-proxy": chain
+        "mtu": 1280    
     };
+
+    if (chain) outbound["dialer-proxy"] = chain;
+    return outbound;
 }
 
 function buildClashChainOutbound(chainProxyParams) {
