@@ -7236,6 +7236,12 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
       type: "field"
     }
   ];
+  blockUDP443 && rules.push({
+    network: "udp",
+    port: "443",
+    outboundTag: "block",
+    type: "field"
+  });
   if (!isWorkerLess && (isDomainRule || isBypass))
     rules.push({
       ip: [localDNS],
@@ -7281,19 +7287,13 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
         ipBlockRule.ip.push(address);
       }
     });
+    domainBlockRule.domain.length && rules.push(domainBlockRule);
+    ipBlockRule.ip.length && rules.push(ipBlockRule);
     if (!isWorkerLess) {
       domainDirectRule.domain.length && rules.push(domainDirectRule);
       ipDirectRule.ip.length && rules.push(ipDirectRule);
     }
-    domainBlockRule.domain.length && rules.push(domainBlockRule);
-    ipBlockRule.ip.length && rules.push(ipBlockRule);
   }
-  blockUDP443 && rules.push({
-    network: "udp",
-    port: "443",
-    outboundTag: "block",
-    type: "field"
-  });
   if (isChain) {
     const rule = {
       [isBalancer ? "balancerTag" : "outboundTag"]: isBalancer ? "all-proxy" : "proxy",
@@ -8212,10 +8212,6 @@ function buildSingBoxRoutingRules(proxySettings) {
           inbound: "dns-in"
         },
         {
-          port: 53,
-          network: "udp"
-        },
-        {
           protocol: "dns"
         }
       ],
@@ -8372,13 +8368,14 @@ function buildSingBoxRoutingRules(proxySettings) {
   }, "processRules");
   customBypassRulesTotal.length && processRules(customBypassRulesTotal, "direct");
   customBlockRulesTotal.length && processRules(customBlockRulesTotal, "reject");
-  const rules = [...defaultRules, ...directDomainRules, ...directIPRules, ...blockDomainRules, ...blockIPRules];
+  let rules = [];
   blockUDP443 && rules.push({
     network: "udp",
     port: 443,
     protocol: "quic",
     action: "reject"
   });
+  rules = [...rules, ...defaultRules, ...blockDomainRules, ...blockIPRules, ...directDomainRules, ...directIPRules];
   return { rules, rule_set: ruleSets };
 }
 __name(buildSingBoxRoutingRules, "buildSingBoxRoutingRules");
@@ -9068,8 +9065,9 @@ function buildClashRoutingRules(proxySettings) {
     const targetRules = isDirectRule ? isDomain(address) ? directDomainRules : directIPRules : isDomain(address) ? blockDomainRules : blockIPRules;
     targetRules.push(generateRule(address, action));
   });
-  const rules = [...directDomainRules, ...directIPRules, ...blockDomainRules, ...blockIPRules];
+  let rules = [];
   blockUDP443 && rules.push("AND,((NETWORK,udp),(DST-PORT,443)),REJECT");
+  rules = [...rules, ...blockDomainRules, ...blockIPRules, ...directDomainRules, ...directIPRules];
   rules.push("MATCH,\u2705 Selector");
   return { rules, ruleProviders };
 }
