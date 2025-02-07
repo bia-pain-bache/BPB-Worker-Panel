@@ -418,7 +418,7 @@ function buildXrayWarpOutbound (proxySettings, warpConfigs, endpoint, chain, cli
             mtu: 1280,
             peers: [
                 {
-                    endpoint: endpoint,
+                    endpoint: isWoW ? "162.159.192.1:2408" : endpoint,
                     publicKey: publicKey,
                     keepAlive: 5
                 }
