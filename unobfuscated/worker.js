@@ -6241,7 +6241,7 @@ function initializeParams(request, env) {
   const proxyIPs = env.PROXYIP?.split(",").map((proxyIP) => proxyIP.trim());
   const url = new URL(request.url);
   const searchParams = new URLSearchParams(url.search);
-  globalThis.panelVersion = "3.0.5";
+  globalThis.panelVersion = "3.0.6";
   globalThis.defaultHttpPorts = ["80", "8080", "2052", "2082", "2086", "2095", "8880"];
   globalThis.defaultHttpsPorts = ["443", "8443", "2053", "2083", "2087", "2096"];
   globalThis.userID = env.UUID;
@@ -7085,7 +7085,7 @@ function getDomain(url) {
 __name(getDomain, "getDomain");
 
 // src/cores-configs/xray.js
-async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isWorkerLess, isWarp) {
+async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isWorkerLess, isWarp, isChain) {
   const {
     remoteDNS,
     localDNS,
@@ -7173,6 +7173,11 @@ async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isW
     expectIPs: [],
     skipFallback: true
   };
+  if (isChain)
+    localDNSServer.domains = [
+      "full:connectivitycheck.gstatic.com",
+      "full:www.google.com"
+    ];
   if (!isWorkerLess && isBypass) {
     bypassRules.forEach(({ rule, domain, ip }) => {
       if (rule) {
@@ -7189,9 +7194,8 @@ async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isW
   return dnsObject;
 }
 __name(buildXrayDNS, "buildXrayDNS");
-function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer, isWorkerLess, isWarp) {
+function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer, isWorkerLess) {
   const {
-    remoteDNS,
     localDNS,
     bypassLAN,
     bypassIran,
@@ -7292,33 +7296,6 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
     if (!isWorkerLess) {
       domainDirectRule.domain.length && rules.push(domainDirectRule);
       ipDirectRule.ip.length && rules.push(ipDirectRule);
-    }
-  }
-  if (isChain) {
-    const rule = {
-      [isBalancer ? "balancerTag" : "outboundTag"]: isBalancer ? "all-proxy" : "proxy",
-      type: "field"
-    };
-    if (!isWarp) {
-      const url = new URL(remoteDNS);
-      const remoteDNSServer = url.hostname;
-      rules.push({
-        [isDomain(remoteDNSServer) ? "domain" : "ip"]: [remoteDNSServer],
-        network: "tcp",
-        ...rule
-      });
-    } else {
-      rules.push({
-        network: "udp",
-        port: "53",
-        ip: [
-          "1.1.1.1",
-          "1.0.0.1",
-          "2606:4700:4700::1111",
-          "2606:4700:4700::1001"
-        ],
-        ...rule
-      });
     }
   }
   if (isBalancer) {
@@ -7702,12 +7679,8 @@ function buildXrayConfig(proxySettings, remark, isBalancer, isChain, balancerFal
     if (balancerFallback)
       config.routing.balancers[0].fallbackTag = "prox-2";
     if (isChain) {
-      config.observatory.subjectSelector.push("chain");
-      const chainBalancer = structuredClone(config.routing.balancers[0]);
-      if (balancerFallback)
-        chainBalancer.fallbackTag = "chain-2";
-      config.routing.balancers.push({ ...chainBalancer, selector: ["chain"] });
-      config.routing.balancers[0].tag = "all-proxy";
+      config.observatory.subjectSelector = ["chain"];
+      config.routing.balancers[0].selector = ["chain"];
     }
   } else {
     delete config.observatory;
@@ -7719,8 +7692,8 @@ __name(buildXrayConfig, "buildXrayConfig");
 async function buildXrayBestPingConfig(proxySettings, totalAddresses, chainProxy, outbounds, isFragment) {
   const remark = isFragment ? `\u{1F4A6} ${atob("QlBC")} F - Best Ping \u{1F4A5}` : `\u{1F4A6} ${atob("QlBC")} - Best Ping \u{1F4A5}`;
   const config = buildXrayConfig(proxySettings, remark, true, chainProxy, true);
-  config.dns = await buildXrayDNS(proxySettings, totalAddresses, void 0, false, false);
-  config.routing.rules = buildXrayRoutingRules(proxySettings, totalAddresses, chainProxy, true, false, false);
+  config.dns = await buildXrayDNS(proxySettings, totalAddresses, void 0, false, false, true);
+  config.routing.rules = buildXrayRoutingRules(proxySettings, totalAddresses, chainProxy, true, false);
   config.outbounds.unshift(...outbounds);
   return config;
 }
@@ -7747,8 +7720,8 @@ async function buildXrayBestFragmentConfig(proxySettings, hostName2, chainProxy,
     "100-200"
   ];
   const config = buildXrayConfig(proxySettings, `\u{1F4A6} ${atob("QlBC")} F - Best Fragment \u{1F60E}`, true, chainProxy, false, false);
-  config.dns = await buildXrayDNS(proxySettings, [], hostName2, false, false);
-  config.routing.rules = buildXrayRoutingRules(proxySettings, [], chainProxy, true, false, false);
+  config.dns = await buildXrayDNS(proxySettings, [], hostName2, false, false, true);
+  config.routing.rules = buildXrayRoutingRules(proxySettings, [], chainProxy, true, false);
   const bestFragOutbounds = [];
   const freedomOutbound = outbounds.pop();
   bestFragValues.forEach((fragLength, index) => {
@@ -7775,8 +7748,8 @@ async function buildXrayWorkerLessConfig(proxySettings) {
   const config = buildXrayConfig(proxySettings, `\u{1F4A6} ${atob("QlBC")} F - WorkerLess \u2B50`, false, false, false, false);
   const fragmentOutbound = buildFreedomOutbound(proxySettings, true, true, "fragment");
   config.outbounds.unshift(fragmentOutbound);
-  config.dns = await buildXrayDNS(proxySettings, [], void 0, true);
-  config.routing.rules = buildXrayRoutingRules(proxySettings, [], false, false, true, false);
+  config.dns = await buildXrayDNS(proxySettings, [], void 0, true, false);
+  config.routing.rules = buildXrayRoutingRules(proxySettings, [], false, false, true);
   const fakeOutbound = buildXrayVLOutbound("fake-outbound", "google.com", "443", globalThis.userID, "google.com", "google.com", "", true, false);
   fakeOutbound.streamSettings.wsSettings.path = "/";
   config.outbounds.push(fakeOutbound);
@@ -7835,8 +7808,8 @@ async function getXrayCustomConfigs(request, env, isFragment) {
         const remark = generateRemark(protocolIndex, port, addr, cleanIPs, protocol, configType);
         const customConfig = buildXrayConfig(proxySettings, remark, false, chainProxy, false, false);
         isFragment && customConfig.outbounds.unshift(freedomOutbound);
-        customConfig.dns = await buildXrayDNS(proxySettings, [addr], void 0);
-        customConfig.routing.rules = buildXrayRoutingRules(proxySettings, [addr], chainProxy, false, false, false);
+        customConfig.dns = await buildXrayDNS(proxySettings, [addr], void 0, false, false, false);
+        customConfig.routing.rules = buildXrayRoutingRules(proxySettings, [addr], chainProxy, false, false);
         const outbound = protocol === atob("VkxFU1M=") ? buildXrayVLOutbound("proxy", addr, port, host, sni, proxyIP, isFragment, isCustomAddr, enableIPv6) : buildXrayTROutbound("proxy", addr, port, host, sni, proxyIP, isFragment, isCustomAddr, enableIPv6);
         customConfig.outbounds.unshift({ ...outbound });
         outbound.tag = `prox-${proxyIndex}`;
@@ -7888,14 +7861,13 @@ async function getXrayWarpConfigs(request, env, client) {
     const warpConfig = buildXrayConfig(proxySettings, `\u{1F4A6} ${index + 1} - Warp${proIndicator}\u{1F1EE}\u{1F1F7}`, false, false, false, true);
     const WoWConfig = buildXrayConfig(proxySettings, `\u{1F4A6} ${index + 1} - WoW${proIndicator}\u{1F30D}`, false, true, false, true);
     if (client === "xray-pro") {
-      const domainStrategy = warpEnableIPv6 ? "UseIPv4v6" : "UseIPv4";
       freedomOutbound = buildFreedomOutbound(proxySettings, false, true, "udp-noise");
       warpConfig.outbounds.unshift(freedomOutbound);
       WoWConfig.outbounds.unshift(freedomOutbound);
     }
-    warpConfig.dns = WoWConfig.dns = await buildXrayDNS(proxySettings, [endpointHost], void 0, false, true);
-    warpConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpointHost], false, false, false, true);
-    WoWConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpointHost], true, false, false, true);
+    warpConfig.dns = WoWConfig.dns = await buildXrayDNS(proxySettings, [endpointHost], void 0, false, true, false);
+    warpConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpointHost], false, false, false);
+    WoWConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpointHost], true, false, false);
     const warpOutbound = buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, xrayWarpChain, client);
     const WoWOutbound = buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, "proxy", client);
     warpConfig.outbounds.unshift(warpOutbound);
@@ -7910,15 +7882,15 @@ async function getXrayWarpConfigs(request, env, client) {
     xrayWarpOutbounds.push(proxyOutbound);
     xrayWoWOutbounds.push(chainOutbound);
   }
-  const dnsObject = await buildXrayDNS(proxySettings, outboundDomains, void 0, false, true);
+  const dnsObject = await buildXrayDNS(proxySettings, outboundDomains, void 0, false, true, true);
   const xrayWarpBestPing = buildXrayConfig(proxySettings, `\u{1F4A6} Warp${proIndicator}- Best Ping \u{1F680}`, true, false, false, true);
   xrayWarpBestPing.dns = dnsObject;
-  xrayWarpBestPing.routing.rules = buildXrayRoutingRules(proxySettings, outboundDomains, false, true, false, true);
+  xrayWarpBestPing.routing.rules = buildXrayRoutingRules(proxySettings, outboundDomains, false, true, false);
   client === "xray-pro" && xrayWarpBestPing.outbounds.unshift(freedomOutbound);
   xrayWarpBestPing.outbounds.unshift(...xrayWarpOutbounds);
   const xrayWoWBestPing = buildXrayConfig(proxySettings, `\u{1F4A6} WoW${proIndicator}- Best Ping \u{1F680}`, true, true, false, true);
   xrayWoWBestPing.dns = dnsObject;
-  xrayWoWBestPing.routing.rules = buildXrayRoutingRules(proxySettings, outboundDomains, true, true, false, true);
+  xrayWoWBestPing.routing.rules = buildXrayRoutingRules(proxySettings, outboundDomains, true, true, false);
   client === "xray-pro" && xrayWoWBestPing.outbounds.unshift(freedomOutbound);
   xrayWoWBestPing.outbounds.unshift(...xrayWoWOutbounds, ...xrayWarpOutbounds);
   const configs = [...xrayWarpConfigs, ...xrayWoWConfigs, xrayWarpBestPing, xrayWoWBestPing];
@@ -8041,7 +8013,7 @@ var xrayConfigTemp = {
 };
 
 // src/cores-configs/sing-box.js
-function buildSingBoxDNS(proxySettings, outboundAddrs, isWarp, remoteDNSDetour) {
+function buildSingBoxDNS(proxySettings, outboundAddrs, isWarp) {
   const {
     remoteDNS,
     localDNS,
@@ -8077,13 +8049,17 @@ function buildSingBoxDNS(proxySettings, outboundAddrs, isWarp, remoteDNSDetour) 
     {
       address: isWarp ? "1.1.1.1" : remoteDNS,
       address_resolver: dohHost.isHostDomain ? "doh-resolver" : "dns-direct",
-      detour: remoteDNSDetour,
+      detour: "\u2705 Selector",
       tag: "dns-remote"
     },
     {
       address: localDNS,
       detour: "direct",
       tag: "dns-direct"
+    },
+    {
+      address: "local",
+      tag: "dns-local"
     }
   ];
   dohHost.isHostDomain && !isWarp && servers.push({
@@ -8095,7 +8071,6 @@ function buildSingBoxDNS(proxySettings, outboundAddrs, isWarp, remoteDNSDetour) 
   if (isWarp) {
     outboundRule = {
       outbound: "any",
-      action: "route",
       server: "dns-direct"
     };
   } else {
@@ -8103,12 +8078,15 @@ function buildSingBoxDNS(proxySettings, outboundAddrs, isWarp, remoteDNSDetour) 
     const uniqueDomains = [...new Set(outboundDomains)];
     outboundRule = {
       domain: uniqueDomains,
-      action: "route",
       server: "dns-direct"
     };
   }
   const rules = [
     outboundRule,
+    {
+      domain: "www.gstatic.com",
+      server: "dns-local"
+    },
     {
       domain: [
         "raw.githubusercontent.com",
@@ -8605,7 +8583,7 @@ async function getSingBoxWarpConfig(request, env, client) {
   const config = structuredClone(singboxConfigTemp);
   config.endpoints = [];
   const proIndicator = client === "hiddify" ? " Pro " : " ";
-  const dnsObject = buildSingBoxDNS(proxySettings, void 0, true, `\u{1F4A6} Warp${proIndicator}- Best Ping \u{1F680}`);
+  const dnsObject = buildSingBoxDNS(proxySettings, void 0, true);
   const { rules, rule_set } = buildSingBoxRoutingRules(proxySettings);
   config.dns.servers = dnsObject.servers;
   config.dns.rules = dnsObject.rules;
@@ -8680,7 +8658,7 @@ async function getSingBoxCustomConfig(request, env, isFragment) {
   const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(",") : [];
   const totalAddresses = [...Addresses, ...customCdnAddresses];
   const config = structuredClone(singboxConfigTemp);
-  const dnsObject = buildSingBoxDNS(proxySettings, totalAddresses, false, chainProxy ? "proxy-1" : "\u2705 Selector");
+  const dnsObject = buildSingBoxDNS(proxySettings, totalAddresses, false);
   const { rules, rule_set } = buildSingBoxRoutingRules(proxySettings);
   config.dns.servers = dnsObject.servers;
   config.dns.rules = dnsObject.rules;
@@ -8876,11 +8854,12 @@ async function buildClashDNS(proxySettings, isChain, isWarp) {
     "ipv6": isIPv62,
     "respect-rules": true,
     "use-system-hosts": false,
-    "nameserver": isWarp ? warpRemoteDNS.map((dns2) => isChain ? `${dns2}#\u{1F4A6} Warp - Best Ping \u{1F680}` : `${dns2}#\u2705 Selector`) : [isChain ? `${remoteDNS}#proxy-1` : `${remoteDNS}#\u2705 Selector`],
+    "nameserver": isWarp ? warpRemoteDNS.map((dns2) => `${dns2}#\u2705 Selector`) : [isChain ? `${remoteDNS}#proxy-1` : `${remoteDNS}#\u2705 Selector`],
     "proxy-server-nameserver": [`${localDNS}#DIRECT`],
     "nameserver-policy": {
       "raw.githubusercontent.com": `${localDNS}#DIRECT`,
-      "time.apple.com": `${localDNS}#DIRECT`
+      "time.apple.com": `${localDNS}#DIRECT`,
+      "www.gstatic.com": "system"
     }
   };
   if (isChain && !isWarp) {
@@ -9067,6 +9046,7 @@ function buildClashRoutingRules(proxySettings) {
   });
   let rules = [];
   blockUDP443 && rules.push("AND,((NETWORK,udp),(DST-PORT,443)),REJECT");
+  rules.push("OR,((IP-CIDR,10.10.34.34/32),(IP-CIDR,10.10.34.35/32),(IP-CIDR,10.10.34.36/32)),REJECT");
   rules = [...rules, ...blockDomainRules, ...blockIPRules, ...directDomainRules, ...directIPRules];
   rules.push("MATCH,\u2705 Selector");
   return { rules, ruleProviders };
