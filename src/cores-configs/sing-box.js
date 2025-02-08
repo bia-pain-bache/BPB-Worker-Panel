@@ -2,7 +2,7 @@ import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpper
 import { getDataset } from '../kv/handlers';
 import { isDomain } from '../helpers/helpers';
 
-function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp, remoteDNSDetour) {
+function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp) {
     const { 
         remoteDNS,
         localDNS, 
@@ -40,13 +40,17 @@ function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp, remoteDNSDetour)
         {
             address: isWarp ? "1.1.1.1" : remoteDNS,
             address_resolver: dohHost.isHostDomain ? "doh-resolver" : "dns-direct",
-            detour: remoteDNSDetour,
+            detour: "✅ Selector",
             tag: "dns-remote"
         },
         {
             address: localDNS,
             detour: "direct",
             tag: "dns-direct"
+        },
+        {
+            address: "local",
+            tag: "dns-local"
         }
     ];
 
@@ -60,7 +64,6 @@ function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp, remoteDNSDetour)
     if (isWarp) {
         outboundRule = { 
             outbound: "any",
-            action: "route",
             server: "dns-direct" 
         };
     } else {
@@ -68,13 +71,16 @@ function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp, remoteDNSDetour)
         const uniqueDomains = [...new Set(outboundDomains)];
         outboundRule = { 
             domain: uniqueDomains,
-            action: "route", 
             server: "dns-direct" 
         };
     }
 
     const rules = [
         outboundRule,
+        {
+            domain: "www.gstatic.com",
+            server: "dns-local" 
+        },
         { 
             domain: [
                 "raw.githubusercontent.com", 
@@ -604,7 +610,7 @@ export async function getSingBoxWarpConfig (request, env, client) {
     const config = structuredClone(singboxConfigTemp);
     config.endpoints = [];
     const proIndicator = client === 'hiddify' ? ' Pro ' : ' ';
-    const dnsObject = buildSingBoxDNS(proxySettings, undefined, true, `💦 Warp${proIndicator}- Best Ping 🚀`);
+    const dnsObject = buildSingBoxDNS(proxySettings, undefined, true);
     const {rules, rule_set} = buildSingBoxRoutingRules(proxySettings);
     config.dns.servers = dnsObject.servers;
     config.dns.rules = dnsObject.rules;
@@ -682,7 +688,7 @@ export async function getSingBoxCustomConfig(request, env, isFragment) {
     const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
     const totalAddresses = [...Addresses, ...customCdnAddresses];
     const config = structuredClone(singboxConfigTemp);
-    const dnsObject = buildSingBoxDNS(proxySettings, totalAddresses, false, chainProxy ? 'proxy-1' : '✅ Selector');
+    const dnsObject = buildSingBoxDNS(proxySettings, totalAddresses, false);
     const {rules, rule_set} = buildSingBoxRoutingRules(proxySettings);
     config.dns.servers = dnsObject.servers;
     config.dns.rules = dnsObject.rules;
