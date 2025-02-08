@@ -37,12 +37,13 @@ async function buildClashDNS (proxySettings, isChain, isWarp) {
         "respect-rules": true,
         "use-system-hosts": false,
         "nameserver": isWarp 
-            ? warpRemoteDNS.map(dns => isChain ? `${dns}#💦 Warp - Best Ping 🚀` : `${dns}#✅ Selector`) 
+            ? warpRemoteDNS.map(dns => `${dns}#✅ Selector`) 
             : [isChain ? `${remoteDNS}#proxy-1` : `${remoteDNS}#✅ Selector`],
         "proxy-server-nameserver": [`${localDNS}#DIRECT`],
         "nameserver-policy": {
             "raw.githubusercontent.com": `${localDNS}#DIRECT`,
-            "time.apple.com": `${localDNS}#DIRECT`
+            "time.apple.com": `${localDNS}#DIRECT`,
+            "www.gstatic.com": "system"
         }
     };
 
@@ -243,6 +244,7 @@ function buildClashRoutingRules (proxySettings) {
 
     let rules = [];
     blockUDP443 && rules.push("AND,((NETWORK,udp),(DST-PORT,443)),REJECT");
+    rules.push("OR,((IP-CIDR,10.10.34.34/32),(IP-CIDR,10.10.34.35/32),(IP-CIDR,10.10.34.36/32)),REJECT");
     rules = [...rules, ...blockDomainRules, ...blockIPRules, ...directDomainRules, ...directIPRules];
     rules.push("MATCH,✅ Selector");
     return { rules, ruleProviders };
