@@ -94,6 +94,10 @@ export async function renderHomePage (proxySettings, isPassSet) {
                             value="${noise.delay.split('-')[1]}" min="1" required>
                     </div>
                 </div>
+                <div class="form-control">
+                    <label for="udpXrayNoiseCount-${index}">🎚️ Noise Count</label>
+                    <input type="number" id="udpXrayNoiseCount-${index}" name="udpXrayNoiseCount" value="${noise.count}" min="1" required>
+                </div>
             </div>`;
     });
 
