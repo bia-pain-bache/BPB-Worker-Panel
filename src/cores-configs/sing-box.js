@@ -496,7 +496,8 @@ function buildSingBoxWarpOutbound (proxySettings, warpConfigs, remark, endpoint,
                 allowed_ips: [
                     "0.0.0.0/0",
                     "::/0"
-                ]
+                ],
+                persistent_keepalive_interval: 5
             }
         ],
         private_key: privateKey,
