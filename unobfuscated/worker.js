@@ -4749,6 +4749,7 @@ async function renderHomePage(proxySettings, isPassSet) {
                             <option value="base64" ${noise.type === "base64" ? "selected" : ""}>Base64</option>
                             <option value="rand" ${noise.type === "rand" ? "selected" : ""}>Random</option>
                             <option value="str" ${noise.type === "str" ? "selected" : ""}>String</option>
+                            <option value="hex" ${noise.type === "hex" ? "selected" : ""}>Hex</option>
                         </select>
                     </div>
                 </div>
@@ -5929,10 +5930,6 @@ async function renderHomePage(proxySettings, isPassSet) {
             const customCdnSni = document.getElementById('customCdnSni').value;
             const isCustomCdn = customCdnAddrs.length || customCdnHost !== '' || customCdnSni !== '';
             const warpEndpoints = document.getElementById('warpEndpoints').value?.replaceAll(' ', '').split(',');
-            // const xrayNoiseMode = document.getElementById('udpXrayNoiseMode').value;
-            // const xrayNoisePacket = document.getElementById('udpXrayNoisePacket').value;
-            // const xrayNoiseDelayMin = getValue('udpXrayNoiseDelayMin');
-            // const xrayNoiseDelayMax = getValue('udpXrayNoiseDelayMax');
             const noiseCountMin = getValue('noiseCountMin');
             const noiseCountMax = getValue('noiseCountMax');
             const noiseSizeMin = getValue('noiseSizeMin');
@@ -6036,6 +6033,13 @@ async function renderHomePage(proxySettings, isPassSet) {
                         const [min, max] = udpNoisePackets[index].split("-").map(Number);
                         if (min > max) {
                             alert('\u26D4 The minimum Random noise packet should be smaller or equal to maximum! \u{1FAE4}');
+                            submisionError = true;
+                        }
+                        break;
+
+                    case 'hex':
+                        if (!(/^[0-9A-Fa-f]+$/.test(udpNoisePackets[index]))) {
+                            alert('\u26D4 The Hex noise packet is not a valid hex value! \u{1FAE4}');
                             submisionError = true;
                         }
                         break;
@@ -7453,8 +7457,7 @@ function buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, chain, clie
     },
     streamSettings: {
       sockopt: {
-        dialerProxy: chain,
-        domainStrategy: warpEnableIPv6 ? "UseIPv4v6" : "UseIPv4"
+        dialerProxy: chain
       }
     },
     tag: isWoW ? "chain" : "proxy"
@@ -8486,7 +8489,8 @@ function buildSingBoxWarpOutbound(proxySettings, warpConfigs, remark, endpoint, 
         allowed_ips: [
           "0.0.0.0/0",
           "::/0"
-        ]
+        ],
+        persistent_keepalive_interval: 5
       }
     ],
     private_key: privateKey,
