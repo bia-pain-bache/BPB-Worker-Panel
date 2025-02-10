@@ -39,10 +39,12 @@ export async function updateDataset (request, env) {
         const udpNoisePackets = newSettings?.getAll('udpXrayNoisePacket') || [];
         const udpNoiseDelaysMin = newSettings?.getAll('udpXrayNoiseDelayMin') || [];
         const udpNoiseDelaysMax = newSettings?.getAll('udpXrayNoiseDelayMax') || [];
+        const udpNoiseCount = newSettings?.getAll('udpXrayNoiseCount') || [];
         udpNoises.push(...udpNoiseModes.map((mode, index) => ({
             type: mode,
             packet: udpNoisePackets[index],
-            delay: `${udpNoiseDelaysMin[index]}-${udpNoiseDelaysMax[index]}`
+            delay: `${udpNoiseDelaysMin[index]}-${udpNoiseDelaysMax[index]}`,
+            count: udpNoiseCount[index]
         })));
     } else {
         newSettings = null;
@@ -95,7 +97,8 @@ export async function updateDataset (request, env) {
             {
                 type: 'base64',
                 packet: btoa(globalThis.userID),
-                delay: '1-1'
+                delay: '1-1',
+                count: '1'
             }
         ]),
         hiddifyNoiseMode: validateField('hiddifyNoiseMode') ?? currentSettings?.hiddifyNoiseMode ?? 'm4',

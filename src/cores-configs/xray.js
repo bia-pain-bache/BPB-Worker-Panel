@@ -103,11 +103,6 @@ async function buildXrayDNS (proxySettings, outboundAddrs, domainToStaticIPs, is
         skipFallback: true
     };
 
-    if (isChain) localDNSServer.domains = [
-        "full:connectivitycheck.gstatic.com",
-        "full:www.google.com"
-    ];
-
     if (!isWorkerLess && isBypass) {
         bypassRules.forEach(({ rule, domain, ip }) => {
             if (rule) {
@@ -115,7 +110,7 @@ async function buildXrayDNS (proxySettings, outboundAddrs, domainToStaticIPs, is
                 localDNSServer.expectIPs.push(ip);
             }
         });
-
+        
         dnsObject.servers.push(localDNSServer);
     }
 
@@ -172,6 +167,7 @@ function buildXrayRoutingRules (proxySettings, outboundAddrs, isChain, isBalance
                 "http-in"
             ],
             port: "53",
+            network: "udp",
             outboundTag: "dns-out",
             type: "field"
         }
@@ -617,7 +613,13 @@ function buildFreedomOutbound (proxySettings, isFragment, isUdpNoises, tag) {
     }
 
     if (isUdpNoises) {
-        outbound.settings.noises = JSON.parse(xrayUdpNoises);
+        outbound.settings.noises = [];
+        JSON.parse(xrayUdpNoises).forEach(noise => {
+            const count = +noise.count;
+            delete noise.count;
+            outbound.settings.noises.push( ...Array.from({ length: count }, () => noise));
+        });
+        // outbound.settings.noises = JSON.parse(xrayUdpNoises);
         if (!isFragment) outbound.settings.domainStrategy = warpEnableIPv6 ? "UseIPv4v6" : "UseIPv4";
     }
     return outbound;
@@ -641,7 +643,7 @@ function buildXrayConfig (proxySettings, remark, isBalancer, isChain, balancerFa
 
     if (isBalancer) {
         const interval = isWarp ? bestWarpInterval : bestVLTRInterval;
-        config.observatory.pingConfig.interval = `${interval}s`;
+        config.observatory.probeInterval = `${interval}s`;
         if (balancerFallback) config.routing.balancers[0].fallbackTag = "prox-2";
         if (isChain) {
             config.observatory.subjectSelector = ["chain"];
@@ -809,7 +811,7 @@ export async function getXrayCustomConfigs(request, env, isFragment) {
 
 export async function getXrayWarpConfigs (request, env, client) {
     const { proxySettings, warpConfigs } = await getDataset(request, env);
-    const { warpEndpoints,warpEnableIPv6 } = proxySettings;
+    const { warpEndpoints } = proxySettings;
     const xrayWarpConfigs = [];
     const xrayWoWConfigs = [];
     const xrayWarpOutbounds = [];
@@ -923,7 +925,9 @@ const xrayConfigTemp = {
         },
         {
             protocol: "freedom",
-            settings: {},
+            settings: {
+                domainStrategy: "UseIP"
+            },
             tag: "direct",
         },
         {
@@ -964,14 +968,12 @@ const xrayConfigTemp = {
         ]
     },
     observatory: {
-        subjectSelector: ["prox"],
-        pingConfig: {
-            destination: "https://connectivitycheck.gstatic.com/generate_204",
-            connectivity: "https://www.google.com/generate_204",
-            interval: "30s",
-            sampling: 1,
-            timeout: "10s"
-        }
+        subjectSelector:[
+            "prox"
+        ],
+        probeUrl: "https://www.gstatic.com/generate_204",
+        probeInterval: "30s",
+        enableConcurrency: true
     },
     stats: {}
 };
