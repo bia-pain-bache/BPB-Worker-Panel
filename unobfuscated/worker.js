@@ -4538,10 +4538,12 @@ async function updateDataset(request, env) {
     const udpNoisePackets = newSettings?.getAll("udpXrayNoisePacket") || [];
     const udpNoiseDelaysMin = newSettings?.getAll("udpXrayNoiseDelayMin") || [];
     const udpNoiseDelaysMax = newSettings?.getAll("udpXrayNoiseDelayMax") || [];
+    const udpNoiseCount = newSettings?.getAll("udpXrayNoiseCount") || [];
     udpNoises.push(...udpNoiseModes.map((mode, index) => ({
       type: mode,
       packet: udpNoisePackets[index],
-      delay: `${udpNoiseDelaysMin[index]}-${udpNoiseDelaysMax[index]}`
+      delay: `${udpNoiseDelaysMin[index]}-${udpNoiseDelaysMax[index]}`,
+      count: udpNoiseCount[index]
     })));
   } else {
     newSettings = null;
@@ -4595,7 +4597,8 @@ async function updateDataset(request, env) {
       {
         type: "base64",
         packet: btoa(globalThis.userID),
-        delay: "1-1"
+        delay: "1-1",
+        count: "1"
       }
     ]),
     hiddifyNoiseMode: validateField("hiddifyNoiseMode") ?? currentSettings?.hiddifyNoiseMode ?? "m4",
@@ -4762,6 +4765,10 @@ async function renderHomePage(proxySettings, isPassSet) {
                         <input type="number" id="udpXrayNoiseDelayMax-${index}" name="udpXrayNoiseDelayMax"
                             value="${noise.delay.split("-")[1]}" min="1" required>
                     </div>
+                </div>
+                <div class="form-control">
+                    <label for="udpXrayNoiseCount-${index}">\u{1F39A}\uFE0F Noise Count</label>
+                    <input type="number" id="udpXrayNoiseCount-${index}" name="udpXrayNoiseCount" value="${noise.count}" min="1" required>
                 </div>
             </div>`;
   });
@@ -7173,11 +7180,6 @@ async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isW
     expectIPs: [],
     skipFallback: true
   };
-  if (isChain)
-    localDNSServer.domains = [
-      "full:connectivitycheck.gstatic.com",
-      "full:www.google.com"
-    ];
   if (!isWorkerLess && isBypass) {
     bypassRules.forEach(({ rule, domain, ip }) => {
       if (rule) {
@@ -7236,6 +7238,7 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
         "http-in"
       ],
       port: "53",
+      network: "udp",
       outboundTag: "dns-out",
       type: "field"
     }
@@ -7652,7 +7655,12 @@ function buildFreedomOutbound(proxySettings, isFragment, isUdpNoises, tag2) {
     outbound.settings.domainStrategy = enableIPv6 ? "UseIPv4v6" : "UseIPv4";
   }
   if (isUdpNoises) {
-    outbound.settings.noises = JSON.parse(xrayUdpNoises);
+    outbound.settings.noises = [];
+    JSON.parse(xrayUdpNoises).forEach((noise) => {
+      const count = +noise.count;
+      delete noise.count;
+      outbound.settings.noises.push(...Array.from({ length: count }, () => noise));
+    });
     if (!isFragment)
       outbound.settings.domainStrategy = warpEnableIPv6 ? "UseIPv4v6" : "UseIPv4";
   }
@@ -7675,7 +7683,7 @@ function buildXrayConfig(proxySettings, remark, isBalancer, isChain, balancerFal
   }
   if (isBalancer) {
     const interval = isWarp ? bestWarpInterval : bestVLTRInterval;
-    config.observatory.pingConfig.interval = `${interval}s`;
+    config.observatory.probeInterval = `${interval}s`;
     if (balancerFallback)
       config.routing.balancers[0].fallbackTag = "prox-2";
     if (isChain) {
@@ -7847,7 +7855,7 @@ async function getXrayCustomConfigs(request, env, isFragment) {
 __name(getXrayCustomConfigs, "getXrayCustomConfigs");
 async function getXrayWarpConfigs(request, env, client) {
   const { proxySettings, warpConfigs } = await getDataset(request, env);
-  const { warpEndpoints, warpEnableIPv6 } = proxySettings;
+  const { warpEndpoints } = proxySettings;
   const xrayWarpConfigs = [];
   const xrayWoWConfigs = [];
   const xrayWarpOutbounds = [];
@@ -7959,7 +7967,9 @@ var xrayConfigTemp = {
     },
     {
       protocol: "freedom",
-      settings: {},
+      settings: {
+        domainStrategy: "UseIP"
+      },
       tag: "direct"
     },
     {
@@ -8000,14 +8010,12 @@ var xrayConfigTemp = {
     ]
   },
   observatory: {
-    subjectSelector: ["prox"],
-    pingConfig: {
-      destination: "https://connectivitycheck.gstatic.com/generate_204",
-      connectivity: "https://www.google.com/generate_204",
-      interval: "30s",
-      sampling: 1,
-      timeout: "10s"
-    }
+    subjectSelector: [
+      "prox"
+    ],
+    probeUrl: "https://www.gstatic.com/generate_204",
+    probeInterval: "30s",
+    enableConcurrency: true
   },
   stats: {}
 };
