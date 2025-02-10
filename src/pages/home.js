@@ -1374,8 +1374,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
                         break;
 
                     case 'hex':
-                        if (!(/^[0-9A-Fa-f]+$/.test(udpNoisePackets[index]))) {
-                            alert('⛔ The Hex noise packet is not a valid hex value! 🫤');
+                        if (!(/^(?=(?:[0-9A-Fa-f]{2})*$)[0-9A-Fa-f]+$/.test(udpNoisePackets[index]))) {
+                            alert('⛔ The Hex noise packet is not a valid hex value! It should have even length and consisted of 0-9, a-f and A-F. 🫤');
                             submisionError = true;
                         }
                         break;
