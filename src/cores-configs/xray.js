@@ -399,8 +399,7 @@ function buildXrayWarpOutbound (proxySettings, warpConfigs, endpoint, chain, cli
         },
         streamSettings: {
             sockopt: {
-                dialerProxy: chain,
-                domainStrategy: warpEnableIPv6 ? "UseIPv4v6" : "UseIPv4",
+                dialerProxy: chain
             }
         },
         tag: isWoW ? "chain" : "proxy" 
