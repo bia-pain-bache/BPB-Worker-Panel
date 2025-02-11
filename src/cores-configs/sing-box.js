@@ -56,7 +56,7 @@ function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp) {
 
     dohHost.isHostDomain && !isWarp && servers.push({
         address: 'https://8.8.8.8/dns-query',
-        detour: "direct",
+        detour: "✅ Selector",
         tag: "doh-resolver"
     });
 
