@@ -303,7 +303,6 @@ function buildXrayVLOutbound (tag, address, port, host, sni, proxyIP, isFragment
         sockopt.dialerProxy = "fragment";
     } else {
         sockopt.tcpKeepAliveIdle = 30;
-        sockopt.tcpNoDelay = true;
         sockopt.domainStrategy = enableIPv6 ? "UseIPv4v6" : "UseIPv4";
     }
     
@@ -352,7 +351,6 @@ function buildXrayTROutbound (tag, address, port, host, sni, proxyIP, isFragment
         sockopt.dialerProxy = "fragment";
     } else {
         sockopt.tcpKeepAliveIdle = 30;
-        sockopt.tcpNoDelay = true;
         sockopt.domainStrategy = enableIPv6 ? "UseIPv4v6" : "UseIPv4";
     }
     
@@ -440,8 +438,7 @@ function buildXrayChainOutbound(chainProxyParams, enableIPv6) {
                 network: "tcp",
                 sockopt: {
                     dialerProxy: "proxy",
-                    domainStrategy: enableIPv6 ? "UseIPv4v6" : "UseIPv4",
-                    tcpNoDelay: true
+                    domainStrategy: enableIPv6 ? "UseIPv4v6" : "UseIPv4"
                 }
             },
             mux: {
@@ -505,8 +502,7 @@ function buildXrayChainOutbound(chainProxyParams, enableIPv6) {
             security: security,
             sockopt: {
                 dialerProxy: "proxy",
-                domainStrategy: enableIPv6 ? "UseIPv4v6" : "UseIPv4",
-                tcpNoDelay: true
+                domainStrategy: enableIPv6 ? "UseIPv4v6" : "UseIPv4"
             }
         },
         tag: "chain"
@@ -596,8 +592,7 @@ function buildFreedomOutbound (proxySettings, isFragment, isUdpNoises, tag) {
         settings: {},
         streamSettings: {
             sockopt: {
-                tcpKeepAliveIdle: 30,
-                tcpNoDelay: true
+                tcpKeepAliveIdle: 30
             },
         },
     };
@@ -618,7 +613,7 @@ function buildFreedomOutbound (proxySettings, isFragment, isUdpNoises, tag) {
             delete noise.count;
             outbound.settings.noises.push( ...Array.from({ length: count }, () => noise));
         });
-        // outbound.settings.noises = JSON.parse(xrayUdpNoises);
+        
         if (!isFragment) outbound.settings.domainStrategy = warpEnableIPv6 ? "UseIPv4v6" : "UseIPv4";
     }
     return outbound;
