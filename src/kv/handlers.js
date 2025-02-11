@@ -1,5 +1,4 @@
 import { fetchWarpConfigs } from '../protocols/warp';
-import { isDomain, resolveDNS } from '../helpers/helpers';
 import { Authenticate } from '../authentication/auth';
 
 export async function getDataset(request, env) {
@@ -28,6 +27,7 @@ export async function updateDataset (request, env) {
     let newSettings = request.method === 'POST' ? await request.formData() : null;
     const isReset = newSettings?.get('resetSettings') === 'true';
     let currentSettings;
+    let udpNoises = [];
     if (!isReset) {
         try {
             currentSettings = await env.kv.get("proxySettings", {type: 'json'});
@@ -35,6 +35,17 @@ export async function updateDataset (request, env) {
             console.log(error);
             throw new Error(`An error occurred while getting current KV settings - ${error}`);
         }
+        const udpNoiseModes = newSettings?.getAll('udpXrayNoiseMode') || [];
+        const udpNoisePackets = newSettings?.getAll('udpXrayNoisePacket') || [];
+        const udpNoiseDelaysMin = newSettings?.getAll('udpXrayNoiseDelayMin') || [];
+        const udpNoiseDelaysMax = newSettings?.getAll('udpXrayNoiseDelayMax') || [];
+        const udpNoiseCount = newSettings?.getAll('udpXrayNoiseCount') || [];
+        udpNoises.push(...udpNoiseModes.map((mode, index) => ({
+            type: mode,
+            packet: udpNoisePackets[index],
+            delay: `${udpNoiseDelaysMin[index]}-${udpNoiseDelaysMax[index]}`,
+            count: udpNoiseCount[index]
+        })));
     } else {
         newSettings = null;
     }
@@ -82,6 +93,14 @@ export async function updateDataset (request, env) {
         warpEnableIPv6: validateField('warpEnableIPv6') ?? currentSettings?.warpEnableIPv6 ?? true,
         warpPlusLicense: validateField('warpPlusLicense') ?? currentSettings?.warpPlusLicense ?? '',
         bestWarpInterval: validateField('bestWarpInterval') ?? currentSettings?.bestWarpInterval ?? '30',
+        xrayUdpNoises: (udpNoises.length ? JSON.stringify(udpNoises) : currentSettings?.xrayUdpNoises) ?? JSON.stringify([
+            {
+                type: 'base64',
+                packet: btoa(globalThis.userID),
+                delay: '1-1',
+                count: '1'
+            }
+        ]),
         hiddifyNoiseMode: validateField('hiddifyNoiseMode') ?? currentSettings?.hiddifyNoiseMode ?? 'm4',
         nikaNGNoiseMode: validateField('nikaNGNoiseMode') ?? currentSettings?.nikaNGNoiseMode ?? 'quic',
         noiseCountMin: validateField('noiseCountMin') ?? currentSettings?.noiseCountMin ?? '10',

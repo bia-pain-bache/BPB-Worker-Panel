@@ -37,12 +37,13 @@ async function buildClashDNS (proxySettings, isChain, isWarp) {
         "respect-rules": true,
         "use-system-hosts": false,
         "nameserver": isWarp 
-            ? warpRemoteDNS.map(dns => isChain ? `${dns}#💦 Warp - Best Ping 🚀` : `${dns}#✅ Selector`) 
+            ? warpRemoteDNS.map(dns => `${dns}#✅ Selector`) 
             : [isChain ? `${remoteDNS}#proxy-1` : `${remoteDNS}#✅ Selector`],
         "proxy-server-nameserver": [`${localDNS}#DIRECT`],
         "nameserver-policy": {
             "raw.githubusercontent.com": `${localDNS}#DIRECT`,
-            "time.apple.com": `${localDNS}#DIRECT`
+            "time.apple.com": `${localDNS}#DIRECT`,
+            "www.gstatic.com": "system"
         }
     };
 
@@ -241,8 +242,10 @@ function buildClashRoutingRules (proxySettings) {
         targetRules.push(generateRule(address, action));
     });
 
-    const rules = [...directDomainRules, ...directIPRules, ...blockDomainRules, ...blockIPRules];
+    let rules = [];
     blockUDP443 && rules.push("AND,((NETWORK,udp),(DST-PORT,443)),REJECT");
+    rules.push("OR,((IP-CIDR,10.10.34.34/32),(IP-CIDR,10.10.34.35/32),(IP-CIDR,10.10.34.36/32)),REJECT");
+    rules = [...rules, ...blockDomainRules, ...blockIPRules, ...directDomainRules, ...directIPRules];
     rules.push("MATCH,✅ Selector");
     return { rules, ruleProviders };
 }
@@ -314,21 +317,23 @@ function buildClashWarpOutbound (warpConfigs, remark, endpoint, chain) {
         privateKey
     } = extractWireguardParams(warpConfigs, chain);
 
-    return {
+    let outbound = {
         "name": remark,
         "type": "wireguard",
         "ip": "172.16.0.2/32",
         "ipv6": warpIPv6,
         "private-key": privateKey,
-        "server": endpointServer,
-        "port": endpointPort,
+        "server": chain ? "162.159.192.1" : endpointServer,
+        "port": chain ? 2408 : endpointPort,
         "public-key": publicKey,
         "allowed-ips": ["0.0.0.0/0", "::/0"],
         "reserved": reserved,
         "udp": true,
-        "mtu": 1280,
-        "dialer-proxy": chain
+        "mtu": 1280    
     };
+
+    if (chain) outbound["dialer-proxy"] = chain;
+    return outbound;
 }
 
 function buildClashChainOutbound(chainProxyParams) {
