@@ -259,6 +259,7 @@ function buildClashVLOutbound (remark, address, port, host, sni, path, allowInse
         "server": addr,
         "port": +port,
         "uuid": globalThis.userID,
+        "packet-encoding": "",
         "tls": tls,
         "network": "ws",
         "udp": true,
