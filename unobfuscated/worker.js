@@ -6252,7 +6252,7 @@ function initializeParams(request, env) {
   const proxyIPs = env.PROXYIP?.split(",").map((proxyIP) => proxyIP.trim());
   const url = new URL(request.url);
   const searchParams = new URLSearchParams(url.search);
-  globalThis.panelVersion = "3.0.6";
+  globalThis.panelVersion = "3.0.7";
   globalThis.defaultHttpPorts = ["80", "8080", "2052", "2082", "2086", "2095", "8880"];
   globalThis.defaultHttpsPorts = ["443", "8443", "2053", "2083", "2087", "2096"];
   globalThis.userID = env.\u7F16\u53F7 || env.UUID;
@@ -7367,7 +7367,6 @@ function buildXrayVLOutbound(tag2, address, port, host, sni, proxyIP, isFragment
     sockopt.dialerProxy = "fragment";
   } else {
     sockopt.tcpKeepAliveIdle = 30;
-    sockopt.tcpNoDelay = true;
     sockopt.domainStrategy = enableIPv6 ? "UseIPv4v6" : "UseIPv4";
   }
   return outbound;
@@ -7413,7 +7412,6 @@ function buildXrayTROutbound(tag2, address, port, host, sni, proxyIP, isFragment
     sockopt.dialerProxy = "fragment";
   } else {
     sockopt.tcpKeepAliveIdle = 30;
-    sockopt.tcpNoDelay = true;
     sockopt.domainStrategy = enableIPv6 ? "UseIPv4v6" : "UseIPv4";
   }
   return outbound;
@@ -7496,8 +7494,7 @@ function buildXrayChainOutbound(chainProxyParams, enableIPv6) {
         network: "tcp",
         sockopt: {
           dialerProxy: "proxy",
-          domainStrategy: enableIPv6 ? "UseIPv4v6" : "UseIPv4",
-          tcpNoDelay: true
+          domainStrategy: enableIPv6 ? "UseIPv4v6" : "UseIPv4"
         }
       },
       mux: {
@@ -7559,8 +7556,7 @@ function buildXrayChainOutbound(chainProxyParams, enableIPv6) {
       security,
       sockopt: {
         dialerProxy: "proxy",
-        domainStrategy: enableIPv6 ? "UseIPv4v6" : "UseIPv4",
-        tcpNoDelay: true
+        domainStrategy: enableIPv6 ? "UseIPv4v6" : "UseIPv4"
       }
     },
     tag: "chain"
@@ -7644,8 +7640,7 @@ function buildFreedomOutbound(proxySettings, isFragment, isUdpNoises, tag2) {
     settings: {},
     streamSettings: {
       sockopt: {
-        tcpKeepAliveIdle: 30,
-        tcpNoDelay: true
+        tcpKeepAliveIdle: 30
       }
     }
   };
@@ -8075,7 +8070,7 @@ function buildSingBoxDNS(proxySettings, outboundAddrs, isWarp) {
   ];
   dohHost.isHostDomain && !isWarp && servers.push({
     address: "https://8.8.8.8/dns-query",
-    detour: "direct",
+    detour: "\u2705 Selector",
     tag: "doh-resolver"
   });
   let outboundRule;
