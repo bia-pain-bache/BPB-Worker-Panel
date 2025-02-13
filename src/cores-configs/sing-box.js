@@ -381,7 +381,6 @@ function buildSingBoxVLOutbound (proxySettings, remark, address, port, host, sni
         type: atob('dmxlc3M='),
         server: address,
         server_port: +port,
-        domain_strategy: enableIPv6 ? "prefer_ipv4" : "ipv4_only",
         uuid: globalThis.userID,
         packet_encoding: "",
         tls: {
@@ -406,6 +405,7 @@ function buildSingBoxVLOutbound (proxySettings, remark, address, port, host, sni
         tag: remark
     };
 
+    if (isDomain(address)) outbound.domain_strategy = enableIPv6 ? "prefer_ipv4" : "ipv4_only";
     if (!tls) delete outbound.tls;
     if (isFragment) outbound.tls_fragment = {
         enabled: true,
@@ -425,7 +425,6 @@ function buildSingBoxTROutbound (proxySettings, remark, address, port, host, sni
         password: globalThis.TRPassword,
         server: address,
         server_port: +port,
-        domain_strategy: enableIPv6 ? "prefer_ipv4" : "ipv4_only",
         tls: {
             alpn: "http/1.1",
             enabled: true,
@@ -448,6 +447,7 @@ function buildSingBoxTROutbound (proxySettings, remark, address, port, host, sni
         tag: remark
     }
 
+    if (isDomain(address)) outbound.domain_strategy = enableIPv6 ? "prefer_ipv4" : "ipv4_only";
     if (!tls) delete outbound.tls;
     if (isFragment) outbound.tls_fragment = {
         enabled: true,
@@ -463,6 +463,8 @@ function buildSingBoxWarpOutbound (proxySettings, warpConfigs, remark, endpoint,
     const portRegex = /[^:]*$/;
     const endpointServer = endpoint.includes('[') ? endpoint.match(ipv6Regex)[1] : endpoint.split(':')[0];
     const endpointPort = endpoint.includes('[') ? +endpoint.match(portRegex)[0] : +endpoint.split(':')[1];
+    const server = chain ? "162.159.192.1" : endpointServer;
+    const port = chain ? 2408 : endpointPort;
     const { 
         warpEnableIPv6,
 		hiddifyNoiseMode, 
@@ -489,8 +491,8 @@ function buildSingBoxWarpOutbound (proxySettings, warpConfigs, remark, endpoint,
         mtu: 1280,
         peers: [
             {
-                address: chain ? "162.159.192.1" : endpointServer,
-                port: chain ? 2408 : endpointPort,
+                address: server,
+                port: port,
                 public_key: publicKey,
                 reserved: base64ToDecimal(reserved),
                 allowed_ips: [
@@ -501,11 +503,11 @@ function buildSingBoxWarpOutbound (proxySettings, warpConfigs, remark, endpoint,
             }
         ],
         private_key: privateKey,
-        domain_strategy: warpEnableIPv6 ? "prefer_ipv4" : "ipv4_only",
         type: "wireguard",
         tag: remark
     };
 
+    if (isDomain(server)) outbound.domain_strategy = warpEnableIPv6 ? "prefer_ipv4" : "ipv4_only";
     if(chain) outbound.detour = chain;
     client === 'hiddify' && Object.assign(outbound, {
         fake_packets_mode: hiddifyNoiseMode,
@@ -530,7 +532,8 @@ function buildSingBoxChainOutbound (chainProxyParams, enableIPv6) {
             password: pass,
             detour: ""
         };
-    
+
+        if (isDomain(server)) chainOutbound.domain_strategy = enableIPv6 ? "prefer_ipv4" : "ipv4_only";
         if (protocol === 'socks') chainOutbound.version = "5";
         return chainOutbound;
     }
@@ -541,12 +544,12 @@ function buildSingBoxChainOutbound (chainProxyParams, enableIPv6) {
         tag: "",
         server: server,
         server_port: +port,
-        domain_strategy: enableIPv6 ? "prefer_ipv4" : "ipv4_only",
         uuid: uuid,
         flow: flow,
         detour: ""
     };
 
+    if (isDomain(server)) chainOutbound.domain_strategy = enableIPv6 ? "prefer_ipv4" : "ipv4_only";
     if (security === 'tls' || security === 'reality') {
         const tlsAlpns = alpn ? alpn?.split(',').filter(value => value !== 'h2') : [];
         chainOutbound.tls = {
@@ -796,11 +799,12 @@ const singboxConfigTemp = {
             type: "tun",
             tag: "tun-in",
             address: [
-                "172.18.0.1/28",
+                "172.18.0.1/30",
                 "fdfe:dcba:9876::1/126"
             ],
             mtu: 9000,
             auto_route: true,
+            strict_route: true,
             endpoint_independent_nat: true,
             stack: "mixed"
         },
