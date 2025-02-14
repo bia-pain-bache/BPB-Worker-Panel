@@ -251,14 +251,15 @@ function buildClashRoutingRules (proxySettings) {
 }
 
 function buildClashVLOutbound (remark, address, port, host, sni, path, allowInsecure) {
-    const tls = globalThis.defaultHttpsPorts.includes(port) ? true : false;
+    const { userID, defaultHttpsPorts } = globalThis;
+    const tls = defaultHttpsPorts.includes(port) ? true : false;
     const addr = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
     const outbound = {
         "name": remark,
         "type": atob('dmxlc3M='),
         "server": addr,
         "port": +port,
-        "uuid": globalThis.userID,
+        "uuid": userID,
         "packet-encoding": "",
         "tls": tls,
         "network": "ws",
@@ -459,6 +460,7 @@ export async function getClashWarpConfig(request, env) {
 }
 
 export async function getClashNormalConfig (request, env) {
+    const { hostName, defaultHttpsPorts } = globalThis;
     const { proxySettings } = await getDataset(request, env);
     let chainProxy;
     const { 
@@ -517,8 +519,8 @@ export async function getClashNormalConfig (request, env) {
                 let VLOutbound, TROutbound;
                 const isCustomAddr = customCdnAddresses.includes(addr);
                 const configType = isCustomAddr ? 'C' : '';
-                const sni = isCustomAddr ? customCdnSni : randomUpperCase(globalThis.hostName);
-                const host = isCustomAddr ? customCdnHost : globalThis.hostName;
+                const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
+                const host = isCustomAddr ? customCdnHost : hostName;
                 const remark = generateRemark(protocolIndex, port, addr, cleanIPs, protocol, configType).replace(' : ', ' - ');
 
                 if (protocol === atob('VkxFU1M=')) {
@@ -537,7 +539,7 @@ export async function getClashNormalConfig (request, env) {
                     urlTest.proxies.push(remark);
                 }
                 
-                if (protocol === atob('VHJvamFu') && globalThis.defaultHttpsPorts.includes(port)) {
+                if (protocol === atob('VHJvamFu') && defaultHttpsPorts.includes(port)) {
                     path = `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
                     TROutbound = buildClashTROutbound(
                         chainProxy ? `proxy-${proxyIndex}` : remark, 
