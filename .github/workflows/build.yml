@@ -27,15 +27,20 @@ jobs:
       - name: Build project
         run: |
           npx wrangler deploy src/worker.js --name bpb-worker-panel --compatibility-flag [nodejs_compat] --compatibility-date 2025-01-18 --dry-run --outdir=dist
-          cp -f dist/worker.js unobfuscated/worker.js
+          mkdir -p build
+          cp -f dist/worker.js dist/_worker.js
+          cp -f dist/worker.js build/unobfuscated-worker.js
+          zip -j build/unobfuscated-worker.zip dist/_worker.js
           npx javascript-obfuscator --config ./obfs-config.json dist/worker.js --output _worker.js
+          cp -f _worker.js build/worker.js
+          zip -j build/worker.zip _worker.js
 
       - name: Commit and push built worker
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add _worker.js
-          git add -f unobfuscated/worker.js
+          git add -f build/
           git commit -m "Automated build: update _worker.js"
           git push
         env:
