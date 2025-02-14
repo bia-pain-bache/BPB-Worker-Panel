@@ -8,7 +8,11 @@ export async function getNormalConfigs(request, env) {
         proxyIP, 
         ports, 
         VLConfigs, 
-        TRConfigs , 
+        TRConfigs ,
+        lengthMin,
+        lengthMax,
+        intervalMin,
+        intervalMax, 
         outProxy, 
         customCdnAddrs, 
         customCdnHost, 
@@ -29,25 +33,21 @@ export async function getNormalConfigs(request, env) {
     
     ports.forEach(port => {
         totalAddresses.forEach((addr, index) => {
+            const { hostName, defaultHttpsPorts, client, userID } = globalThis;
             const isCustomAddr = index > Addresses.length - 1;
             const configType = isCustomAddr ? 'C' : '';
-            const sni = isCustomAddr ? customCdnSni : randomUpperCase(globalThis.hostName);
-            const host = isCustomAddr ? customCdnHost : globalThis.hostName;
+            const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
+            const host = isCustomAddr ? customCdnHost : hostName;
             const path = `${getRandomPath(16)}${proxyIP ? `/${encodeURIComponent(btoa(proxyIP))}` : ''}${earlyData}`;
             const VLRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, atob('VkxFU1M='), configType));
             const TRRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, atob('VHJvamFu'), configType));
-            const tlsFields = globalThis.defaultHttpsPorts.includes(port) 
+            const tlsFields = defaultHttpsPorts.includes(port) 
                 ? `&security=tls&sni=${sni}&fp=randomized&alpn=${alpn}`
                 : '&security=none';
+            const hiddifyFragment = client === 'hiddify-frag' && defaultHttpsPorts.includes(port) ? `&fragment=${lengthMin}-${lengthMax},${intervalMin}-${intervalMax},hellotls` : '';
 
-            if (VLConfigs) {
-                VLConfs += `${atob('dmxlc3M6Ly8=')}${globalThis.userID}@${addr}:${port}?path=/${path}&encryption=none&host=${host}&type=ws${tlsFields}#${VLRemark}\n`; 
-            }
-
-            if (TRConfigs) {
-                TRConfs += `${atob('dHJvamFuOi8v')}${TRPass}@${addr}:${port}?path=/tr${path}&host=${host}&type=ws${tlsFields}#${TRRemark}\n`;
-            }
-            
+            if (VLConfigs) VLConfs += `${atob('dmxlc3M6Ly8=')}${userID}@${addr}:${port}?path=/${path}&encryption=none&host=${host}&type=ws${tlsFields}${hiddifyFragment}#${VLRemark}\n`; 
+            if (TRConfigs) TRConfs += `${atob('dHJvamFuOi8v')}${TRPass}@${addr}:${port}?path=/tr${path}&host=${host}&type=ws${tlsFields}${hiddifyFragment}#${TRRemark}\n`;
             proxyIndex++;
         });
     });
@@ -75,4 +75,33 @@ export async function getNormalConfigs(request, env) {
             'CDN-Cache-Control': 'no-store'
         }
     });
+}
+
+export async function getHiddifyWarpConfigs (request, env, isPro) {
+    const { proxySettings } = await getDataset(request, env);
+    const {
+        warpEndpoints,
+        hiddifyNoiseMode, 
+		noiseCountMin, 
+		noiseCountMax, 
+		noiseSizeMin, 
+		noiseSizeMax, 
+		noiseDelayMin, 
+		noiseDelayMax
+    } = proxySettings;
+
+    let configs = '';
+    warpEndpoints.split(',').forEach( (endpoint, index) => {
+        configs += `warp://${endpoint}${ isPro ? `?ifp=${noiseCountMin}-${noiseCountMax}&ifps=${noiseSizeMin}-${noiseSizeMax}&ifpd=${noiseDelayMin}-${noiseDelayMax}&ifpm=${hiddifyNoiseMode}` : ''}#${encodeURIComponent(`💦 ${index + 1} - Warp 🇮🇷`)}&&detour=warp://162.159.192.1:2408#${encodeURIComponent(`💦 ${index + 1} - WoW 🌍`)}\n`;
+    });
+
+    return new Response(configs, { 
+        status: 200,
+        headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'CDN-Cache-Control': 'no-store'
+        }
+    });
+
 }
