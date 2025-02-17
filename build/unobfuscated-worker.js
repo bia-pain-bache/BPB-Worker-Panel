@@ -9768,12 +9768,6 @@ var worker_default = {
           case `/warpsub/${subPath}`:
             if (client === "clash")
               return await getClashWarpConfig(request, env);
-<<<<<<< HEAD
-            if (globalThis.client === "singbox" || globalThis.client === "hiddify")
-              return await getSingBoxWarpConfig(request, env, globalThis.client);
-            return await getXrayWarpConfigs(request, env, globalThis.client);
-          case `/${globalThis.subPath}/panel`:
-=======
             if (client === "singbox")
               return await getSingBoxWarpConfig(request, env, client);
             if (client === "hiddify-pro")
@@ -9781,8 +9775,7 @@ var worker_default = {
             if (client === "hiddify")
               return await getHiddifyWarpConfigs(request, env, false);
             return await getXrayWarpConfigs(request, env, client);
-          case "/panel":
->>>>>>> 3568f36e0cc3ae7281036e2bc8ff2f9c6e0f0a55
+          case `/${globalThis.subPath}/panel`:
             return await handlePanel(request, env);
           case `/${globalThis.subPath}/login`:
             return await login(request, env);
