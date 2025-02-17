@@ -807,8 +807,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
                             ${supportedApps(['Hiddify'])}
                         </td>
                         <td>
-                            ${subQR('fragsub', 'hiddify', `${atob('QlBC')}-Fragment`, 'Fragment Subscription')}
-                            ${subURL('fragsub', 'hiddify', `${atob('QlBC')}-Fragment`)}
+                            ${subQR('fragsub', 'hiddify-frag', `${atob('QlBC')}-Fragment`, 'Fragment Subscription')}
+                            ${subURL('fragsub', 'hiddify-frag', `${atob('QlBC')}-Fragment`)}
                         </td>
                     </tr>
                 </table>
@@ -831,11 +831,20 @@ export async function renderHomePage (proxySettings, isPassSet) {
                     </tr>
                     <tr>
                         <td>
-                            ${supportedApps(['Hiddify', 'sing-box', 'v2rayN (sing-box)'])}
+                            ${supportedApps(['sing-box', 'v2rayN (sing-box)'])}
                         </td>
                         <td>
                             ${subQR('sub', 'singbox', `${atob('QlBC')}-Warp`, 'Warp Subscription', true)}
                             ${subURL('warpsub', 'singbox', `${atob('QlBC')}-Warp`)}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            ${supportedApps(['Hiddify'])}
+                        </td>
+                        <td>
+                            ${subQR('warpsub', 'hiddify', `${atob('QlBC')}-Warp`, 'Warp Pro Subscription', true)}
+                            ${subURL('warpsub', 'hiddify', `${atob('QlBC')}-Warp`)}
                         </td>
                     </tr>
                     <tr>
@@ -879,8 +888,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
                             ${supportedApps(['Hiddify'])}
                         </td>
                         <td>
-                            ${subQR('warpsub', 'hiddify', `${atob('QlBC')}-Warp-Pro`, 'Warp Pro Subscription', true)}
-                            ${subURL('warpsub', 'hiddify', `${atob('QlBC')}-Warp-Pro`)}
+                            ${subQR('warpsub', 'hiddify-pro', `${atob('QlBC')}-Warp-Pro`, 'Warp Pro Subscription', true)}
+                            ${subURL('warpsub', 'hiddify-pro', `${atob('QlBC')}-Warp-Pro`)}
                         </td>
                     </tr>
                 </table>

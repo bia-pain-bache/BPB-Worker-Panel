@@ -5474,8 +5474,8 @@ async function renderHomePage(proxySettings, isPassSet) {
                             ${supportedApps(["Hiddify"])}
                         </td>
                         <td>
-                            ${subQR("fragsub", "hiddify", `${atob("QlBC")}-Fragment`, "Fragment Subscription")}
-                            ${subURL("fragsub", "hiddify", `${atob("QlBC")}-Fragment`)}
+                            ${subQR("fragsub", "hiddify-frag", `${atob("QlBC")}-Fragment`, "Fragment Subscription")}
+                            ${subURL("fragsub", "hiddify-frag", `${atob("QlBC")}-Fragment`)}
                         </td>
                     </tr>
                 </table>
@@ -5498,11 +5498,20 @@ async function renderHomePage(proxySettings, isPassSet) {
                     </tr>
                     <tr>
                         <td>
-                            ${supportedApps(["Hiddify", "sing-box", "v2rayN (sing-box)"])}
+                            ${supportedApps(["sing-box", "v2rayN (sing-box)"])}
                         </td>
                         <td>
                             ${subQR("sub", "singbox", `${atob("QlBC")}-Warp`, "Warp Subscription", true)}
                             ${subURL("warpsub", "singbox", `${atob("QlBC")}-Warp`)}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            ${supportedApps(["Hiddify"])}
+                        </td>
+                        <td>
+                            ${subQR("warpsub", "hiddify", `${atob("QlBC")}-Warp`, "Warp Pro Subscription", true)}
+                            ${subURL("warpsub", "hiddify", `${atob("QlBC")}-Warp`)}
                         </td>
                     </tr>
                     <tr>
@@ -5546,8 +5555,8 @@ async function renderHomePage(proxySettings, isPassSet) {
                             ${supportedApps(["Hiddify"])}
                         </td>
                         <td>
-                            ${subQR("warpsub", "hiddify", `${atob("QlBC")}-Warp-Pro`, "Warp Pro Subscription", true)}
-                            ${subURL("warpsub", "hiddify", `${atob("QlBC")}-Warp-Pro`)}
+                            ${subQR("warpsub", "hiddify-pro", `${atob("QlBC")}-Warp-Pro`, "Warp Pro Subscription", true)}
+                            ${subURL("warpsub", "hiddify-pro", `${atob("QlBC")}-Warp-Pro`)}
                         </td>
                     </tr>
                 </table>
@@ -7339,6 +7348,7 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
 }
 __name(buildXrayRoutingRules, "buildXrayRoutingRules");
 function buildXrayVLOutbound(tag2, address, port, host, sni, proxyIP, isFragment, allowInsecure, enableIPv6) {
+  const { userID: userID2, defaultHttpsPorts } = globalThis;
   const outbound = {
     protocol: atob("dmxlc3M="),
     settings: {
@@ -7348,7 +7358,7 @@ function buildXrayVLOutbound(tag2, address, port, host, sni, proxyIP, isFragment
           port: +port,
           users: [
             {
-              id: globalThis.userID,
+              id: userID2,
               encryption: "none",
               level: 8
             }
@@ -7370,7 +7380,7 @@ function buildXrayVLOutbound(tag2, address, port, host, sni, proxyIP, isFragment
     },
     tag: tag2
   };
-  if (globalThis.defaultHttpsPorts.includes(port)) {
+  if (defaultHttpsPorts.includes(port)) {
     outbound.streamSettings.security = "tls";
     outbound.streamSettings.tlsSettings = {
       allowInsecure,
@@ -7390,6 +7400,7 @@ function buildXrayVLOutbound(tag2, address, port, host, sni, proxyIP, isFragment
 }
 __name(buildXrayVLOutbound, "buildXrayVLOutbound");
 function buildXrayTROutbound(tag2, address, port, host, sni, proxyIP, isFragment, allowInsecure, enableIPv6) {
+  const { TRPassword, defaultHttpsPorts } = globalThis;
   const outbound = {
     protocol: atob("dHJvamFu"),
     settings: {
@@ -7397,7 +7408,7 @@ function buildXrayTROutbound(tag2, address, port, host, sni, proxyIP, isFragment
         {
           address,
           port: +port,
-          password: globalThis.TRPassword,
+          password: TRPassword,
           level: 8
         }
       ]
@@ -7415,7 +7426,7 @@ function buildXrayTROutbound(tag2, address, port, host, sni, proxyIP, isFragment
     },
     tag: tag2
   };
-  if (globalThis.defaultHttpsPorts.includes(port)) {
+  if (defaultHttpsPorts.includes(port)) {
     outbound.streamSettings.security = "tls";
     outbound.streamSettings.tlsSettings = {
       allowInsecure,
@@ -7780,6 +7791,7 @@ async function buildXrayWorkerLessConfig(proxySettings) {
 }
 __name(buildXrayWorkerLessConfig, "buildXrayWorkerLessConfig");
 async function getXrayCustomConfigs(request, env, isFragment) {
+  const { hostName: hostName2, defaultHttpsPorts } = globalThis;
   const { proxySettings } = await getDataset(request, env);
   let configs = [];
   let outbounds = [];
@@ -7815,7 +7827,7 @@ async function getXrayCustomConfigs(request, env, isFragment) {
   const Addresses = await getConfigAddresses(cleanIPs, enableIPv6);
   const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(",") : [];
   const totalAddresses = isFragment ? [...Addresses] : [...Addresses, ...customCdnAddresses];
-  const totalPorts = ports.filter((port) => isFragment ? globalThis.defaultHttpsPorts.includes(port) : true);
+  const totalPorts = ports.filter((port) => isFragment ? defaultHttpsPorts.includes(port) : true);
   VLConfigs && protocols.push(atob("VkxFU1M="));
   TRConfigs && protocols.push(atob("VHJvamFu"));
   let proxyIndex = 1;
@@ -7826,8 +7838,8 @@ async function getXrayCustomConfigs(request, env, isFragment) {
       for (const addr of totalAddresses) {
         const isCustomAddr = customCdnAddresses.includes(addr);
         const configType = isCustomAddr ? "C" : isFragment ? "F" : "";
-        const sni = isCustomAddr ? customCdnSni : randomUpperCase(globalThis.hostName);
-        const host = isCustomAddr ? customCdnHost : globalThis.hostName;
+        const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName2);
+        const host = isCustomAddr ? customCdnHost : hostName2;
         const remark = generateRemark(protocolIndex, port, addr, cleanIPs, protocol, configType);
         const customConfig = buildXrayConfig(proxySettings, remark, false, chainProxy, false, false);
         isFragment && customConfig.outbounds.unshift(freedomOutbound);
@@ -7854,7 +7866,7 @@ async function getXrayCustomConfigs(request, env, isFragment) {
   const bestPing = await buildXrayBestPingConfig(proxySettings, totalAddresses, chainProxy, outbounds, isFragment);
   const finalConfigs = [...configs, bestPing];
   if (isFragment) {
-    const bestFragment = await buildXrayBestFragmentConfig(proxySettings, globalThis.hostName, chainProxy, outbounds);
+    const bestFragment = await buildXrayBestFragmentConfig(proxySettings, hostName2, chainProxy, outbounds);
     const workerLessConfig = await buildXrayWorkerLessConfig(proxySettings);
     finalConfigs.push(bestFragment, workerLessConfig);
   }
@@ -8380,15 +8392,16 @@ function buildSingBoxRoutingRules(proxySettings) {
   return { rules, rule_set: ruleSets };
 }
 __name(buildSingBoxRoutingRules, "buildSingBoxRoutingRules");
-function buildSingBoxVLOutbound(proxySettings, remark, address, port, host, sni, allowInsecure, isFragment) {
-  const { enableIPv6, lengthMin, lengthMax, intervalMin, intervalMax, proxyIP } = proxySettings;
+function buildSingBoxVLOutbound(proxySettings, remark, address, port, host, sni, allowInsecure) {
+  const { userID: userID2, defaultHttpsPorts } = globalThis;
+  const { enableIPv6, proxyIP } = proxySettings;
   const path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ""}`;
-  const tls = globalThis.defaultHttpsPorts.includes(port) ? true : false;
+  const tls = defaultHttpsPorts.includes(port) ? true : false;
   const outbound = {
     type: atob("dmxlc3M="),
     server: address,
     server_port: +port,
-    uuid: globalThis.userID,
+    uuid: userID2,
     packet_encoding: "",
     tls: {
       alpn: "http/1.1",
@@ -8415,22 +8428,17 @@ function buildSingBoxVLOutbound(proxySettings, remark, address, port, host, sni,
     outbound.domain_strategy = enableIPv6 ? "prefer_ipv4" : "ipv4_only";
   if (!tls)
     delete outbound.tls;
-  if (isFragment)
-    outbound.tls_fragment = {
-      enabled: true,
-      size: `${lengthMin}-${lengthMax}`,
-      sleep: `${intervalMin}-${intervalMax}`
-    };
   return outbound;
 }
 __name(buildSingBoxVLOutbound, "buildSingBoxVLOutbound");
-function buildSingBoxTROutbound(proxySettings, remark, address, port, host, sni, allowInsecure, isFragment) {
-  const { enableIPv6, lengthMin, lengthMax, intervalMin, intervalMax, proxyIP } = proxySettings;
+function buildSingBoxTROutbound(proxySettings, remark, address, port, host, sni, allowInsecure) {
+  const { TRPassword, defaultHttpsPorts } = globalThis;
+  const { enableIPv6, proxyIP } = proxySettings;
   const path = `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ""}`;
-  const tls = globalThis.defaultHttpsPorts.includes(port) ? true : false;
+  const tls = defaultHttpsPorts.includes(port) ? true : false;
   const outbound = {
     type: atob("dHJvamFu"),
-    password: globalThis.TRPassword,
+    password: TRPassword,
     server: address,
     server_port: +port,
     tls: {
@@ -8458,32 +8466,17 @@ function buildSingBoxTROutbound(proxySettings, remark, address, port, host, sni,
     outbound.domain_strategy = enableIPv6 ? "prefer_ipv4" : "ipv4_only";
   if (!tls)
     delete outbound.tls;
-  if (isFragment)
-    outbound.tls_fragment = {
-      enabled: true,
-      size: `${lengthMin}-${lengthMax}`,
-      sleep: `${intervalMin}-${intervalMax}`
-    };
   return outbound;
 }
 __name(buildSingBoxTROutbound, "buildSingBoxTROutbound");
-function buildSingBoxWarpOutbound(proxySettings, warpConfigs, remark, endpoint, chain, client) {
+function buildSingBoxWarpOutbound(proxySettings, warpConfigs, remark, endpoint, chain) {
   const ipv6Regex = /\[(.*?)\]/;
   const portRegex = /[^:]*$/;
   const endpointServer = endpoint.includes("[") ? endpoint.match(ipv6Regex)[1] : endpoint.split(":")[0];
   const endpointPort = endpoint.includes("[") ? +endpoint.match(portRegex)[0] : +endpoint.split(":")[1];
   const server = chain ? "162.159.192.1" : endpointServer;
   const port = chain ? 2408 : endpointPort;
-  const {
-    warpEnableIPv6,
-    hiddifyNoiseMode,
-    noiseCountMin,
-    noiseCountMax,
-    noiseSizeMin,
-    noiseSizeMax,
-    noiseDelayMin,
-    noiseDelayMax
-  } = proxySettings;
+  const { warpEnableIPv6 } = proxySettings;
   const {
     warpIPv6,
     reserved,
@@ -8517,12 +8510,6 @@ function buildSingBoxWarpOutbound(proxySettings, warpConfigs, remark, endpoint, 
     outbound.domain_strategy = warpEnableIPv6 ? "prefer_ipv4" : "ipv4_only";
   if (chain)
     outbound.detour = chain;
-  client === "hiddify" && Object.assign(outbound, {
-    fake_packets_mode: hiddifyNoiseMode,
-    fake_packets: noiseCountMin === noiseCountMax ? noiseCountMin : `${noiseCountMin}-${noiseCountMax}`,
-    fake_packets_size: noiseSizeMin === noiseSizeMax ? noiseSizeMin : `${noiseSizeMin}-${noiseSizeMax}`,
-    fake_packets_delay: noiseDelayMin === noiseDelayMax ? noiseDelayMin : `${noiseDelayMin}-${noiseDelayMax}`
-  });
   return outbound;
 }
 __name(buildSingBoxWarpOutbound, "buildSingBoxWarpOutbound");
@@ -8609,12 +8596,11 @@ function buildSingBoxChainOutbound(chainProxyParams, enableIPv6) {
   return chainOutbound;
 }
 __name(buildSingBoxChainOutbound, "buildSingBoxChainOutbound");
-async function getSingBoxWarpConfig(request, env, client) {
+async function getSingBoxWarpConfig(request, env) {
   const { proxySettings, warpConfigs } = await getDataset(request, env);
   const { warpEndpoints } = proxySettings;
   const config = structuredClone(singboxConfigTemp);
   config.endpoints = [];
-  const proIndicator = client === "hiddify" ? " Pro " : " ";
   const dnsObject = buildSingBoxDNS(proxySettings, void 0, true);
   const { rules, rule_set } = buildSingBoxRoutingRules(proxySettings);
   config.dns.servers = dnsObject.servers;
@@ -8626,19 +8612,19 @@ async function getSingBoxWarpConfig(request, env, client) {
   config.route.rule_set = rule_set;
   const selector = config.outbounds[0];
   const warpUrlTest = config.outbounds[1];
-  selector.outbounds = [`\u{1F4A6} Warp${proIndicator}- Best Ping \u{1F680}`, `\u{1F4A6} WoW${proIndicator}- Best Ping \u{1F680}`];
+  selector.outbounds = [`\u{1F4A6} Warp - Best Ping \u{1F680}`, `\u{1F4A6} WoW - Best Ping \u{1F680}`];
   config.outbounds.splice(2, 0, structuredClone(warpUrlTest));
   const WoWUrlTest = config.outbounds[2];
-  warpUrlTest.tag = `\u{1F4A6} Warp${proIndicator}- Best Ping \u{1F680}`;
+  warpUrlTest.tag = `\u{1F4A6} Warp - Best Ping \u{1F680}`;
   warpUrlTest.interval = `${proxySettings.bestWarpInterval}s`;
-  WoWUrlTest.tag = `\u{1F4A6} WoW${proIndicator}- Best Ping \u{1F680}`;
+  WoWUrlTest.tag = `\u{1F4A6} WoW - Best Ping \u{1F680}`;
   WoWUrlTest.interval = `${proxySettings.bestWarpInterval}s`;
   const warpRemarks = [], WoWRemarks = [];
   warpEndpoints.split(",").forEach((endpoint, index) => {
     const warpRemark = `\u{1F4A6} ${index + 1} - Warp \u{1F1EE}\u{1F1F7}`;
     const WoWRemark = `\u{1F4A6} ${index + 1} - WoW \u{1F30D}`;
-    const warpOutbound = buildSingBoxWarpOutbound(proxySettings, warpConfigs, warpRemark, endpoint, "", client);
-    const WoWOutbound = buildSingBoxWarpOutbound(proxySettings, warpConfigs, WoWRemark, endpoint, warpRemark, client);
+    const warpOutbound = buildSingBoxWarpOutbound(proxySettings, warpConfigs, warpRemark, endpoint, "");
+    const WoWOutbound = buildSingBoxWarpOutbound(proxySettings, warpConfigs, WoWRemark, endpoint, warpRemark);
     config.endpoints.push(WoWOutbound, warpOutbound);
     warpRemarks.push(warpRemark);
     WoWRemarks.push(WoWRemark);
@@ -8656,7 +8642,8 @@ async function getSingBoxWarpConfig(request, env, client) {
   });
 }
 __name(getSingBoxWarpConfig, "getSingBoxWarpConfig");
-async function getSingBoxCustomConfig(request, env, isFragment) {
+async function getSingBoxCustomConfig(request, env) {
+  const { hostName: hostName2 } = globalThis;
   const { proxySettings } = await getDataset(request, env);
   let chainProxy;
   const {
@@ -8704,7 +8691,6 @@ async function getSingBoxCustomConfig(request, env, isFragment) {
   selector.outbounds = ["\u{1F4A6} Best Ping \u{1F4A5}"];
   urlTest.interval = `${bestVLTRInterval}s`;
   urlTest.tag = "\u{1F4A6} Best Ping \u{1F4A5}";
-  const totalPorts = ports.filter((port) => isFragment ? globalThis.defaultHttpsPorts.includes(port) : true);
   let proxyIndex = 1;
   const protocols = [
     ...VLConfigs ? [atob("VkxFU1M=")] : [],
@@ -8712,13 +8698,13 @@ async function getSingBoxCustomConfig(request, env, isFragment) {
   ];
   protocols.forEach((protocol) => {
     let protocolIndex = 1;
-    totalPorts.forEach((port) => {
+    ports.forEach((port) => {
       totalAddresses.forEach((addr) => {
         let VLOutbound, TROutbound;
         const isCustomAddr = customCdnAddresses.includes(addr);
-        const configType = isCustomAddr ? "C" : isFragment ? "F" : "";
-        const sni = isCustomAddr ? customCdnSni : randomUpperCase(globalThis.hostName);
-        const host = isCustomAddr ? customCdnHost : globalThis.hostName;
+        const configType = isCustomAddr ? "C" : "";
+        const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName2);
+        const host = isCustomAddr ? customCdnHost : hostName2;
         const remark = generateRemark(protocolIndex, port, addr, cleanIPs, protocol, configType);
         if (protocol === atob("VkxFU1M=")) {
           VLOutbound = buildSingBoxVLOutbound(
@@ -8728,8 +8714,7 @@ async function getSingBoxCustomConfig(request, env, isFragment) {
             port,
             host,
             sni,
-            isCustomAddr,
-            isFragment
+            isCustomAddr
           );
           config.outbounds.push(VLOutbound);
         }
@@ -8741,8 +8726,7 @@ async function getSingBoxCustomConfig(request, env, isFragment) {
             port,
             host,
             sni,
-            isCustomAddr,
-            isFragment
+            isCustomAddr
           );
           config.outbounds.push(TROutbound);
         }
@@ -9086,14 +9070,15 @@ function buildClashRoutingRules(proxySettings) {
 }
 __name(buildClashRoutingRules, "buildClashRoutingRules");
 function buildClashVLOutbound(remark, address, port, host, sni, path, allowInsecure) {
-  const tls = globalThis.defaultHttpsPorts.includes(port) ? true : false;
+  const { userID: userID2, defaultHttpsPorts } = globalThis;
+  const tls = defaultHttpsPorts.includes(port) ? true : false;
   const addr = isIPv6(address) ? address.replace(/\[|\]/g, "") : address;
   const outbound = {
     "name": remark,
     "type": atob("dmxlc3M="),
     "server": addr,
     "port": +port,
-    "uuid": globalThis.userID,
+    "uuid": userID2,
     "packet-encoding": "",
     "tls": tls,
     "network": "ws",
@@ -9284,6 +9269,7 @@ async function getClashWarpConfig(request, env) {
 }
 __name(getClashWarpConfig, "getClashWarpConfig");
 async function getClashNormalConfig(request, env) {
+  const { hostName: hostName2, defaultHttpsPorts } = globalThis;
   const { proxySettings } = await getDataset(request, env);
   let chainProxy;
   const {
@@ -9339,8 +9325,8 @@ async function getClashNormalConfig(request, env) {
         let VLOutbound, TROutbound;
         const isCustomAddr = customCdnAddresses.includes(addr);
         const configType = isCustomAddr ? "C" : "";
-        const sni = isCustomAddr ? customCdnSni : randomUpperCase(globalThis.hostName);
-        const host = isCustomAddr ? customCdnHost : globalThis.hostName;
+        const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName2);
+        const host = isCustomAddr ? customCdnHost : hostName2;
         const remark = generateRemark(protocolIndex, port, addr, cleanIPs, protocol, configType).replace(" : ", " - ");
         if (protocol === atob("VkxFU1M=")) {
           path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ""}`;
@@ -9357,7 +9343,7 @@ async function getClashNormalConfig(request, env) {
           selector.proxies.push(remark);
           urlTest.proxies.push(remark);
         }
-        if (protocol === atob("VHJvamFu") && globalThis.defaultHttpsPorts.includes(port)) {
+        if (protocol === atob("VHJvamFu") && defaultHttpsPorts.includes(port)) {
           path = `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ""}`;
           TROutbound = buildClashTROutbound(
             chainProxy ? `proxy-${proxyIndex}` : remark,
@@ -9475,6 +9461,10 @@ async function getNormalConfigs(request, env) {
     ports,
     VLConfigs,
     TRConfigs,
+    lengthMin,
+    lengthMax,
+    intervalMin,
+    intervalMax,
     outProxy,
     customCdnAddrs,
     customCdnHost,
@@ -9491,22 +9481,22 @@ async function getNormalConfigs(request, env) {
   const earlyData = globalThis.client === "singbox" ? "&eh=Sec-WebSocket-Protocol&ed=2560" : encodeURIComponent("?ed=2560");
   ports.forEach((port) => {
     totalAddresses.forEach((addr, index) => {
+      const { hostName: hostName2, defaultHttpsPorts, client, userID: userID2 } = globalThis;
       const isCustomAddr = index > Addresses.length - 1;
       const configType = isCustomAddr ? "C" : "";
-      const sni = isCustomAddr ? customCdnSni : randomUpperCase(globalThis.hostName);
-      const host = isCustomAddr ? customCdnHost : globalThis.hostName;
+      const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName2);
+      const host = isCustomAddr ? customCdnHost : hostName2;
       const path = `${getRandomPath(16)}${proxyIP ? `/${encodeURIComponent(btoa(proxyIP))}` : ""}${earlyData}`;
       const VLRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, atob("VkxFU1M="), configType));
       const TRRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, atob("VHJvamFu"), configType));
-      const tlsFields = globalThis.defaultHttpsPorts.includes(port) ? `&security=tls&sni=${sni}&fp=randomized&alpn=${alpn}` : "&security=none";
-      if (VLConfigs) {
-        VLConfs += `${atob("dmxlc3M6Ly8=")}${globalThis.userID}@${addr}:${port}?path=/${path}&encryption=none&host=${host}&type=ws${tlsFields}#${VLRemark}
+      const tlsFields = defaultHttpsPorts.includes(port) ? `&security=tls&sni=${sni}&fp=randomized&alpn=${alpn}` : "&security=none";
+      const hiddifyFragment = client === "hiddify-frag" && defaultHttpsPorts.includes(port) ? `&fragment=${lengthMin}-${lengthMax},${intervalMin}-${intervalMax},hellotls` : "";
+      if (VLConfigs)
+        VLConfs += `${atob("dmxlc3M6Ly8=")}${userID2}@${addr}:${port}?path=/${path}&encryption=none&host=${host}&type=ws${tlsFields}${hiddifyFragment}#${VLRemark}
 `;
-      }
-      if (TRConfigs) {
-        TRConfs += `${atob("dHJvamFuOi8v")}${TRPass}@${addr}:${port}?path=/tr${path}&host=${host}&type=ws${tlsFields}#${TRRemark}
+      if (TRConfigs)
+        TRConfs += `${atob("dHJvamFuOi8v")}${TRPass}@${addr}:${port}?path=/tr${path}&host=${host}&type=ws${tlsFields}${hiddifyFragment}#${TRRemark}
 `;
-      }
       proxyIndex++;
     });
   });
@@ -9532,6 +9522,33 @@ async function getNormalConfigs(request, env) {
   });
 }
 __name(getNormalConfigs, "getNormalConfigs");
+async function getHiddifyWarpConfigs(request, env, isPro) {
+  const { proxySettings } = await getDataset(request, env);
+  const {
+    warpEndpoints,
+    hiddifyNoiseMode,
+    noiseCountMin,
+    noiseCountMax,
+    noiseSizeMin,
+    noiseSizeMax,
+    noiseDelayMin,
+    noiseDelayMax
+  } = proxySettings;
+  let configs = "";
+  warpEndpoints.split(",").forEach((endpoint, index) => {
+    configs += `warp://${endpoint}${isPro ? `?ifp=${noiseCountMin}-${noiseCountMax}&ifps=${noiseSizeMin}-${noiseSizeMax}&ifpd=${noiseDelayMin}-${noiseDelayMax}&ifpm=${hiddifyNoiseMode}` : ""}#${encodeURIComponent(`\u{1F4A6} ${index + 1} - Warp \u{1F1EE}\u{1F1F7}`)}&&detour=warp://162.159.192.1:2408#${encodeURIComponent(`\u{1F4A6} ${index + 1} - WoW \u{1F30D}`)}
+`;
+  });
+  return new Response(configs, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8",
+      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+      "CDN-Cache-Control": "no-store"
+    }
+  });
+}
+__name(getHiddifyWarpConfigs, "getHiddifyWarpConfigs");
 
 // src/pages/secrets.js
 async function renderSecretsPage() {
@@ -9732,28 +9749,40 @@ var worker_default = {
   async fetch(request, env) {
     try {
       initializeParams(request, env);
+      const { pathName: pathName2, subPath, client } = globalThis;
       const upgradeHeader = request.headers.get("Upgrade");
       if (!upgradeHeader || upgradeHeader !== "websocket") {
-        switch (globalThis.pathName) {
+        switch (pathName2) {
           case "/update-warp":
             return await updateWarpConfigs(request, env);
-          case `/sub/${globalThis.subPath}`:
-            if (globalThis.client === "sfa")
+          case `/sub/${subPath}`:
+            if (client === "sfa")
               return await getSingBoxCustomConfig(request, env, false);
-            if (globalThis.client === "clash")
+            if (client === "clash")
               return await getClashNormalConfig(request, env);
-            if (globalThis.client === "xray")
+            if (client === "xray")
               return await getXrayCustomConfigs(request, env, false);
             return await getNormalConfigs(request, env);
-          case `/fragsub/${globalThis.subPath}`:
-            return globalThis.client === "hiddify" ? await getSingBoxCustomConfig(request, env, true) : await getXrayCustomConfigs(request, env, true);
-          case `/warpsub/${globalThis.subPath}`:
-            if (globalThis.client === "clash")
+          case `/fragsub/${subPath}`:
+            return client === "hiddify-frag" ? await getNormalConfigs(request, env) : await getXrayCustomConfigs(request, env, true);
+          case `/warpsub/${subPath}`:
+            if (client === "clash")
               return await getClashWarpConfig(request, env);
+<<<<<<< HEAD
             if (globalThis.client === "singbox" || globalThis.client === "hiddify")
               return await getSingBoxWarpConfig(request, env, globalThis.client);
             return await getXrayWarpConfigs(request, env, globalThis.client);
           case `/${globalThis.subPath}/panel`:
+=======
+            if (client === "singbox")
+              return await getSingBoxWarpConfig(request, env, client);
+            if (client === "hiddify-pro")
+              return await getHiddifyWarpConfigs(request, env, true);
+            if (client === "hiddify")
+              return await getHiddifyWarpConfigs(request, env, false);
+            return await getXrayWarpConfigs(request, env, client);
+          case "/panel":
+>>>>>>> 3568f36e0cc3ae7281036e2bc8ff2f9c6e0f0a55
             return await handlePanel(request, env);
           case `/${globalThis.subPath}/login`:
             return await login(request, env);
@@ -9769,7 +9798,7 @@ var worker_default = {
             return await fallback(request);
         }
       } else {
-        return globalThis.pathName.startsWith("/tr") ? await TROverWSHandler(request) : await VLOverWSHandler(request);
+        return pathName2.startsWith("/tr") ? await TROverWSHandler(request) : await VLOverWSHandler(request);
       }
     } catch (err) {
       return await renderErrorPage(err);
