@@ -1,8 +1,8 @@
-import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6, getDomain } from './helpers';
+import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6, getDomain, base64ToDecimal } from './helpers';
 import { getDataset } from '../kv/handlers';
 import { isDomain } from '../helpers/helpers';
 
-function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp, remoteDNSDetour) {
+function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp) {
     const { 
         remoteDNS,
         localDNS, 
@@ -40,7 +40,7 @@ function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp, remoteDNSDetour)
         {
             address: isWarp ? "1.1.1.1" : remoteDNS,
             address_resolver: dohHost.isHostDomain ? "doh-resolver" : "dns-direct",
-            detour: remoteDNSDetour,
+            detour: "✅ Selector",
             tag: "dns-remote"
         },
         {
@@ -49,39 +49,43 @@ function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp, remoteDNSDetour)
             tag: "dns-direct"
         },
         {
-            address: "rcode://success",
-            tag: "dns-block"
+            address: "local",
+            tag: "dns-local"
         }
     ];
 
     dohHost.isHostDomain && !isWarp && servers.push({
         address: 'https://8.8.8.8/dns-query',
-        detour: "direct",
+        detour: "✅ Selector",
         tag: "doh-resolver"
     });
 
     let outboundRule;
     if (isWarp) {
         outboundRule = { 
-            outbound: "any", 
+            outbound: "any",
             server: "dns-direct" 
         };
     } else {
         const outboundDomains = outboundAddrs.filter(address => isDomain(address));
         const uniqueDomains = [...new Set(outboundDomains)];
         outboundRule = { 
-            domain: uniqueDomains, 
+            domain: uniqueDomains,
             server: "dns-direct" 
         };
     }
 
     const rules = [
         outboundRule,
+        {
+            domain: "www.gstatic.com",
+            server: "dns-local" 
+        },
         { 
             domain: [
                 "raw.githubusercontent.com", 
                 "time.apple.com"
-            ], 
+            ],
             server: "dns-direct" 
         },
         {
@@ -97,7 +101,7 @@ function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp, remoteDNSDetour)
     let blockRule = {
         disable_cache: true,
         rule_set: [],
-        server: "dns-block"
+        action: "reject"
     };
 
     geoRules.forEach(({ rule, type, geosite, geoip }) => {
@@ -108,7 +112,7 @@ function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp, remoteDNSDetour)
                 { rule_set: geosite },
                 { rule_set: geoip }
             ],
-            "server": "dns-direct"
+            server: "dns-direct"
         });
 
         rule && type === 'block' && blockRule.rule_set.push(geosite);
@@ -116,7 +120,7 @@ function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp, remoteDNSDetour)
 
     rules.push(blockRule);
     const createRule = (server) => ({ 
-        domain_suffix: [], 
+        domain_suffix: [],
         server 
     });
 
@@ -183,8 +187,20 @@ function buildSingBoxRoutingRules (proxySettings) {
     const customBlockRulesTotal = customBlockRules ? customBlockRules.split(',') : [];
     const defaultRules = [
         {
-            protocol: "dns",
-            outbound: "dns-out"
+            action: "sniff"
+        },
+        {
+            action: "hijack-dns",
+            mode: "or",
+            rules: [
+                {
+                    inbound: "dns-in"
+                },
+                {
+                    protocol: "dns"
+                }
+            ],
+            type: "logical"
         },
         {
             clash_mode: "Direct",
@@ -279,10 +295,15 @@ function buildSingBoxRoutingRules (proxySettings) {
         outbound: "direct"
     });
 
-    const createRule = (rule, outbound) => ({
-        [rule]: [],
-        outbound
-    });
+    const createRule = (rule, action) => {
+        return action === 'direct' ? {
+            [rule]: [],
+            outbound: action
+        } : {
+            [rule]: [],
+            action
+        }
+    };
 
     const routingRuleSet = {
         type: "remote",
@@ -294,8 +315,8 @@ function buildSingBoxRoutingRules (proxySettings) {
 
     const directDomainRule = createRule('rule_set', 'direct');;
     const directIPRule = createRule('rule_set', 'direct');;
-    const blockDomainRule = createRule('rule_set', 'block');
-    const blockIPRule = createRule('rule_set', 'block');
+    const blockDomainRule = createRule('rule_set', 'reject');
+    const blockIPRule = createRule('rule_set', 'reject');
 
     geoRules.forEach(({ rule, type, ruleSet }) => {
         if (!rule) return;
@@ -340,28 +361,29 @@ function buildSingBoxRoutingRules (proxySettings) {
     };
     
     customBypassRulesTotal.length && processRules(customBypassRulesTotal, 'direct');    
-    customBlockRulesTotal.length && processRules(customBlockRulesTotal, 'block');
-    const rules = [...defaultRules, ...directDomainRules, ...directIPRules, ...blockDomainRules, ...blockIPRules];
+    customBlockRulesTotal.length && processRules(customBlockRulesTotal, 'reject');
+    let rules = [];
     blockUDP443 && rules.push({
         network: "udp",
         port: 443,
         protocol: "quic",
-        outbound: "block"
+        action: "reject"
     });
-
+    rules = [ ...defaultRules, ...rules, ...blockDomainRules, ...blockIPRules, ...directDomainRules, ...directIPRules];
     return {rules, rule_set: ruleSets};
 }
 
-function buildSingBoxVLOutbound (proxySettings, remark, address, port, host, sni, allowInsecure, isFragment) {
-    const { enableIPv6, lengthMin, lengthMax, intervalMin, intervalMax, proxyIP } = proxySettings;
+function buildSingBoxVLOutbound (proxySettings, remark, address, port, host, sni, allowInsecure) {
+    const { userID, defaultHttpsPorts } = globalThis;
+    const { enableIPv6, proxyIP } = proxySettings;
     const path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
-    const tls = globalThis.defaultHttpsPorts.includes(port) ? true : false;
+    const tls = defaultHttpsPorts.includes(port) ? true : false;
     const outbound =  {
         type: atob('dmxlc3M='),
         server: address,
         server_port: +port,
-        domain_strategy: enableIPv6 ? "prefer_ipv4" : "ipv4_only",
-        uuid: globalThis.userID,
+        uuid: userID,
+        packet_encoding: "",
         tls: {
             alpn: "http/1.1",
             enabled: true,
@@ -384,26 +406,21 @@ function buildSingBoxVLOutbound (proxySettings, remark, address, port, host, sni
         tag: remark
     };
 
+    if (isDomain(address)) outbound.domain_strategy = enableIPv6 ? "prefer_ipv4" : "ipv4_only";
     if (!tls) delete outbound.tls;
-    if (isFragment) outbound.tls_fragment = {
-        enabled: true,
-        size: `${lengthMin}-${lengthMax}`,
-        sleep: `${intervalMin}-${intervalMax}`
-    };
-
     return outbound;
 }
 
-function buildSingBoxTROutbound (proxySettings, remark, address, port, host, sni, allowInsecure, isFragment) {
-    const { enableIPv6, lengthMin, lengthMax, intervalMin, intervalMax, proxyIP } = proxySettings;
+function buildSingBoxTROutbound (proxySettings, remark, address, port, host, sni, allowInsecure) {
+    const { TRPassword, defaultHttpsPorts } = globalThis;
+    const { enableIPv6, proxyIP } = proxySettings;
     const path = `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
-    const tls = globalThis.defaultHttpsPorts.includes(port) ? true : false;
+    const tls = defaultHttpsPorts.includes(port) ? true : false;
     const outbound = {
         type: atob('dHJvamFu'),
-        password: globalThis.TRPassword,
+        password: TRPassword,
         server: address,
         server_port: +port,
-        domain_strategy: enableIPv6 ? "prefer_ipv4" : "ipv4_only",
         tls: {
             alpn: "http/1.1",
             enabled: true,
@@ -426,31 +443,19 @@ function buildSingBoxTROutbound (proxySettings, remark, address, port, host, sni
         tag: remark
     }
 
+    if (isDomain(address)) outbound.domain_strategy = enableIPv6 ? "prefer_ipv4" : "ipv4_only";
     if (!tls) delete outbound.tls;
-    if (isFragment) outbound.tls_fragment = {
-        enabled: true,
-        size: `${lengthMin}-${lengthMax}`,
-        sleep: `${intervalMin}-${intervalMax}`
-    };
-
     return outbound;    
 }
 
-function buildSingBoxWarpOutbound (proxySettings, warpConfigs, remark, endpoint, chain, client) {
+function buildSingBoxWarpOutbound (proxySettings, warpConfigs, remark, endpoint, chain) {
     const ipv6Regex = /\[(.*?)\]/;
     const portRegex = /[^:]*$/;
     const endpointServer = endpoint.includes('[') ? endpoint.match(ipv6Regex)[1] : endpoint.split(':')[0];
     const endpointPort = endpoint.includes('[') ? +endpoint.match(portRegex)[0] : +endpoint.split(':')[1];
-    const { 
-        warpEnableIPv6,
-		hiddifyNoiseMode, 
-		noiseCountMin, 
-		noiseCountMax, 
-		noiseSizeMin, 
-		noiseSizeMax, 
-		noiseDelayMin, 
-		noiseDelayMax 
-	} = proxySettings;
+    const server = chain ? "162.159.192.1" : endpointServer;
+    const port = chain ? 2408 : endpointPort;
+    const { warpEnableIPv6 } = proxySettings;
 
     const {
         warpIPv6,
@@ -460,29 +465,31 @@ function buildSingBoxWarpOutbound (proxySettings, warpConfigs, remark, endpoint,
     } = extractWireguardParams(warpConfigs, chain);
 
     const outbound = {
-        local_address: [
+        address: [
             "172.16.0.2/32",
             warpIPv6
         ],
         mtu: 1280,
-        peer_public_key: publicKey,
+        peers: [
+            {
+                address: server,
+                port: port,
+                public_key: publicKey,
+                reserved: base64ToDecimal(reserved),
+                allowed_ips: [
+                    "0.0.0.0/0",
+                    "::/0"
+                ],
+                persistent_keepalive_interval: 5
+            }
+        ],
         private_key: privateKey,
-        reserved: reserved,
-        server: endpointServer,
-        server_port: endpointPort,
-        domain_strategy: warpEnableIPv6 ? "prefer_ipv4" : "ipv4_only",
         type: "wireguard",
-        detour: chain,
         tag: remark
     };
 
-    client === 'hiddify' && Object.assign(outbound, {
-        fake_packets_mode: hiddifyNoiseMode,
-        fake_packets: noiseCountMin === noiseCountMax ? noiseCountMin : `${noiseCountMin}-${noiseCountMax}`,
-        fake_packets_size: noiseSizeMin === noiseSizeMax ? noiseSizeMin : `${noiseSizeMin}-${noiseSizeMax}`,
-        fake_packets_delay: noiseDelayMin === noiseDelayMax ? noiseDelayMin : `${noiseDelayMin}-${noiseDelayMax}`
-    });
-
+    if (isDomain(server)) outbound.domain_strategy = warpEnableIPv6 ? "prefer_ipv4" : "ipv4_only";
+    if(chain) outbound.detour = chain;
     return outbound;
 }
 
@@ -499,7 +506,8 @@ function buildSingBoxChainOutbound (chainProxyParams, enableIPv6) {
             password: pass,
             detour: ""
         };
-    
+
+        if (isDomain(server)) chainOutbound.domain_strategy = enableIPv6 ? "prefer_ipv4" : "ipv4_only";
         if (protocol === 'socks') chainOutbound.version = "5";
         return chainOutbound;
     }
@@ -510,12 +518,12 @@ function buildSingBoxChainOutbound (chainProxyParams, enableIPv6) {
         tag: "",
         server: server,
         server_port: +port,
-        domain_strategy: enableIPv6 ? "prefer_ipv4" : "ipv4_only",
         uuid: uuid,
         flow: flow,
         detour: ""
     };
 
+    if (isDomain(server)) chainOutbound.domain_strategy = enableIPv6 ? "prefer_ipv4" : "ipv4_only";
     if (security === 'tls' || security === 'reality') {
         const tlsAlpns = alpn ? alpn?.split(',').filter(value => value !== 'h2') : [];
         chainOutbound.tls = {
@@ -574,12 +582,12 @@ function buildSingBoxChainOutbound (chainProxyParams, enableIPv6) {
     return chainOutbound;
 }
 
-export async function getSingBoxWarpConfig (request, env, client) {
+export async function getSingBoxWarpConfig (request, env) {
     const { proxySettings, warpConfigs } = await getDataset(request, env);
     const { warpEndpoints } = proxySettings;
     const config = structuredClone(singboxConfigTemp);
-    const proIndicator = client === 'hiddify' ? ' Pro ' : ' ';
-    const dnsObject = buildSingBoxDNS(proxySettings, undefined, true, `💦 Warp${proIndicator}- Best Ping 🚀`);
+    config.endpoints = [];
+    const dnsObject = buildSingBoxDNS(proxySettings, undefined, true);
     const {rules, rule_set} = buildSingBoxRoutingRules(proxySettings);
     config.dns.servers = dnsObject.servers;
     config.dns.rules = dnsObject.rules;
@@ -589,21 +597,21 @@ export async function getSingBoxWarpConfig (request, env, client) {
     config.route.rule_set = rule_set;
     const selector = config.outbounds[0];
     const warpUrlTest = config.outbounds[1];
-    selector.outbounds = [`💦 Warp${proIndicator}- Best Ping 🚀`, `💦 WoW${proIndicator}- Best Ping 🚀`];
+    selector.outbounds = [`💦 Warp - Best Ping 🚀`, `💦 WoW - Best Ping 🚀`];
     config.outbounds.splice(2, 0, structuredClone(warpUrlTest));
     const WoWUrlTest = config.outbounds[2];
-    warpUrlTest.tag = `💦 Warp${proIndicator}- Best Ping 🚀`;
+    warpUrlTest.tag = `💦 Warp - Best Ping 🚀`;
     warpUrlTest.interval = `${proxySettings.bestWarpInterval}s`;
-    WoWUrlTest.tag = `💦 WoW${proIndicator}- Best Ping 🚀`;
+    WoWUrlTest.tag = `💦 WoW - Best Ping 🚀`;
     WoWUrlTest.interval = `${proxySettings.bestWarpInterval}s`;
     const warpRemarks = [], WoWRemarks = [];
 
     warpEndpoints.split(',').forEach( (endpoint, index) => {
         const warpRemark = `💦 ${index + 1} - Warp 🇮🇷`;
         const WoWRemark = `💦 ${index + 1} - WoW 🌍`;
-        const warpOutbound = buildSingBoxWarpOutbound(proxySettings, warpConfigs, warpRemark, endpoint, '', client);
-        const WoWOutbound = buildSingBoxWarpOutbound(proxySettings, warpConfigs, WoWRemark, endpoint, warpRemark, client);
-        config.outbounds.push(WoWOutbound, warpOutbound);
+        const warpOutbound = buildSingBoxWarpOutbound(proxySettings, warpConfigs, warpRemark, endpoint, '');
+        const WoWOutbound = buildSingBoxWarpOutbound(proxySettings, warpConfigs, WoWRemark, endpoint, warpRemark);
+        config.endpoints.push(WoWOutbound, warpOutbound);
         warpRemarks.push(warpRemark);
         WoWRemarks.push(WoWRemark);
         warpUrlTest.outbounds.push(warpRemark);
@@ -621,7 +629,8 @@ export async function getSingBoxWarpConfig (request, env, client) {
     });
 }
 
-export async function getSingBoxCustomConfig(request, env, isFragment) {
+export async function getSingBoxCustomConfig(request, env) {
+    const { hostName } = globalThis;
     const { proxySettings } = await getDataset(request, env);
     let chainProxy;
     const { 
@@ -657,7 +666,7 @@ export async function getSingBoxCustomConfig(request, env, isFragment) {
     const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
     const totalAddresses = [...Addresses, ...customCdnAddresses];
     const config = structuredClone(singboxConfigTemp);
-    const dnsObject = buildSingBoxDNS(proxySettings, totalAddresses, false, chainProxy ? 'proxy-1' : '✅ Selector');
+    const dnsObject = buildSingBoxDNS(proxySettings, totalAddresses, false);
     const {rules, rule_set} = buildSingBoxRoutingRules(proxySettings);
     config.dns.servers = dnsObject.servers;
     config.dns.rules = dnsObject.rules;
@@ -670,7 +679,6 @@ export async function getSingBoxCustomConfig(request, env, isFragment) {
     selector.outbounds = ['💦 Best Ping 💥'];
     urlTest.interval = `${bestVLTRInterval}s`;
     urlTest.tag = '💦 Best Ping 💥';
-    const totalPorts = ports.filter(port => isFragment ? globalThis.defaultHttpsPorts.includes(port) : true);
     let proxyIndex = 1;
     const protocols = [
         ...(VLConfigs ? [atob('VkxFU1M=')] : []),
@@ -679,13 +687,13 @@ export async function getSingBoxCustomConfig(request, env, isFragment) {
 
     protocols.forEach ( protocol => {
         let protocolIndex = 1;
-        totalPorts.forEach ( port => {
+        ports.forEach ( port => {
             totalAddresses.forEach ( addr => {
                 let VLOutbound, TROutbound;
                 const isCustomAddr = customCdnAddresses.includes(addr);
-                const configType = isCustomAddr ? 'C' : isFragment ? 'F' : '';
-                const sni = isCustomAddr ? customCdnSni : randomUpperCase(globalThis.hostName);
-                const host = isCustomAddr ? customCdnHost : globalThis.hostName;
+                const configType = isCustomAddr ? 'C' : '';
+                const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
+                const host = isCustomAddr ? customCdnHost : hostName;
                 const remark = generateRemark(protocolIndex, port, addr, cleanIPs, protocol, configType);
          
                 if (protocol === atob('VkxFU1M=')) {
@@ -696,8 +704,7 @@ export async function getSingBoxCustomConfig(request, env, isFragment) {
                         port, 
                         host,
                         sni,
-                        isCustomAddr, 
-                        isFragment
+                        isCustomAddr
                     );
                     config.outbounds.push(VLOutbound);
                 }
@@ -710,8 +717,7 @@ export async function getSingBoxCustomConfig(request, env, isFragment) {
                         port, 
                         host,
                         sni,
-                        isCustomAddr,
-                        isFragment
+                        isCustomAddr
                     );
                     config.outbounds.push(TROutbound);
                 }
@@ -753,27 +759,31 @@ const singboxConfigTemp = {
     },
     inbounds: [
         {
+            type: "direct",
+            tag: "dns-in",
+            listen: "0.0.0.0",
+            listen_port: 6450,
+            override_address: "1.1.1.1",
+            override_port: 53
+        },
+        {
             type: "tun",
             tag: "tun-in",
             address: [
-                "172.18.0.1/28",
+                "172.18.0.1/30",
                 "fdfe:dcba:9876::1/126"
             ],
             mtu: 9000,
             auto_route: true,
             strict_route: true,
-            stack: "mixed",
             endpoint_independent_nat: true,
-            sniff: true,
-            sniff_override_destination: true
+            stack: "mixed"
         },
         {
             type: "mixed",
             tag: "mixed-in",
-            listen: "127.0.0.1",
-            listen_port: 2080,
-            sniff: true,
-            sniff_override_destination: false
+            listen: "0.0.0.0",
+            listen_port: 2080
         }
     ],
     outbounds: [
@@ -793,14 +803,6 @@ const singboxConfigTemp = {
             type: "direct",
             domain_strategy: "ipv4_only",
             tag: "direct"
-        },
-        {
-            type: "block",
-            tag: "block"
-        },
-        {
-            type: "dns",
-            tag: "dns-out"
         }
     ],
     route: {
