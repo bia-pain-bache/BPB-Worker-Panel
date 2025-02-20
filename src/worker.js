@@ -8,7 +8,7 @@ import { getXrayCustomConfigs, getXrayWarpConfigs } from './cores-configs/xray';
 import { getSingBoxCustomConfig, getSingBoxWarpConfig } from './cores-configs/sing-box';
 import { getClashNormalConfig, getClashWarpConfig } from './cores-configs/clash';
 import { getHiddifyWarpConfigs, getNormalConfigs } from './cores-configs/normalConfigs';
-import { fallback, getMyIP, handlePanel } from './helpers/helpers';
+import { fallback, getMyIP, getWarpConfigFiles, handlePanel } from './helpers/helpers';
 import { renderSecretsPage } from './pages/secrets';
 
 export default {
@@ -21,6 +21,9 @@ export default {
                 switch (pathName) {                    
                     case '/update-warp':
                         return await updateWarpConfigs(request, env);
+                    
+                    case '/get-warp-configs':
+                        return await getWarpConfigFiles(request, env);
 
                     case `/sub/${subPath}`:
                         if (client === 'sfa') return await getSingBoxCustomConfig(request, env, false);

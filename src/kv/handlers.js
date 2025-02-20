@@ -91,7 +91,6 @@ export async function updateDataset (request, env) {
         warpEndpoints: validateField('warpEndpoints')?.replaceAll(' ', '') ?? currentSettings?.warpEndpoints ?? 'engage.cloudflareclient.com:2408',
         warpFakeDNS: validateField('warpFakeDNS') ?? currentSettings?.warpFakeDNS ?? false,
         warpEnableIPv6: validateField('warpEnableIPv6') ?? currentSettings?.warpEnableIPv6 ?? true,
-        warpPlusLicense: validateField('warpPlusLicense') ?? currentSettings?.warpPlusLicense ?? '',
         bestWarpInterval: validateField('bestWarpInterval') ?? currentSettings?.bestWarpInterval ?? '30',
         xrayUdpNoises: (udpNoises.length ? JSON.stringify(udpNoises) : currentSettings?.xrayUdpNoises) ?? JSON.stringify([
             {
@@ -158,8 +157,7 @@ export async function updateWarpConfigs(request, env) {
     if (!auth) return new Response('Unauthorized', { status: 401 });
     if (request.method === 'POST') {
         try {
-            const { proxySettings } = await getDataset(request, env);
-            const { error: warpPlusError } = await fetchWarpConfigs(env, proxySettings);
+            const { error: warpPlusError } = await fetchWarpConfigs(env);
             if (warpPlusError) return new Response(warpPlusError, { status: 400 });
             return new Response('Warp configs updated successfully', { status: 200 });
         } catch (error) {
