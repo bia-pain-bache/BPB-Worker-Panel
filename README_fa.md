@@ -58,39 +58,39 @@
   <tbody  align="center">
     <tr>
       <td><b>v2rayNG</b></td>
-      <td>1.8.19 و بالاتر</td>
+      <td>1.9.33 و بالاتر</td>
       <td>✔️</td>
-      <td>❌</td>
+      <td>✔️</td>
     </tr>
     <tr>
       <td><b>v2rayN</b></td>
-      <td>6.42 و بالاتر</td>
+      <td>7.8.3 و بالاتر</td>
       <td>✔️</td>
-      <td>❌</td>
+      <td>✔️</td>
     </tr>
     <tr>
       <td><b>v2rayN-Pro</b></td>
-      <td>1.4 و بالاتر</td>
+      <td>1.8 و بالاتر</td>
       <td>✔️</td>
       <td>✔️</td>
     </tr>
     <tr>
-      <td><b>Nekobox</b></td>
+      <td><b>Husi</b></td>
       <td></td>
       <td>❌</td>
       <td>❌</td>
     </tr>
     <tr>
       <td><b>Sing-box</b></td>
-      <td>1.10.1 و بالاتر</td>
+      <td>1.11.2 و بالاتر</td>
       <td>❌</td>
       <td>❌</td>
     </tr>
     <tr>
       <td><b>Streisand</b></td>
-      <td></td>
+      <td>1.6.48 و بالاتر</td>
       <td>✔️</td>
-      <td>❌</td>
+      <td>✔️</td>
     </tr>
     <tr>
       <td><b>V2Box</b></td>
@@ -113,7 +113,7 @@
     <tr>
       <td><b>Hiddify</b></td>
       <td>2.0.5 و بالاتر</td>
-      <td>❌</td>
+      <td>✔️</td>
       <td>✔️</td>
     </tr>
     <tr>
@@ -139,6 +139,42 @@
       <td></td>
       <td>❌</td>
       <td>❌</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+## متغیرهای محیطی (داشبورد کلادفلر)
+<div dir="rtl">
+<table>
+  <thead>
+    <th>متغیر</th>
+    <th>کاربرد</th>
+  </thead>
+  <tbody  align="center">
+    <tr>
+      <td><b>UUID</b></td>
+      <td>UUID برای پروتکل VLESS</td>
+    </tr>
+    <tr>
+      <td><b>TR_PASS</b></td>
+      <td>پسورد پروتکل Trojan</td>
+    </tr>
+    <tr>
+      <td><b>PROXYIP</b></td>
+      <td>Proxy IP برای VLESS و Trojan</td>
+    </tr>
+    <tr>
+      <td><b>SUB_PATH</b></td>
+      <td>مسیر لینک‌های اشتراک شخصی</td>
+    </tr>
+    <tr>
+      <td><b>FALLBACK</b></td>
+      <td>دامنه‌ی پوششی برای VLESS و Trojan</td>
+    </tr>
+    <tr>
+      <td><b>DOH_URL</b></td>
+      <td>DOH برای عملیات داخلی ورکر</td>
     </tr>
   </tbody>
 </table>
