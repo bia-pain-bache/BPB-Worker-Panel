@@ -22,8 +22,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
         warpEndpoints,
         warpFakeDNS,
         warpEnableIPv6,
-        warpPlusLicense,
         bestWarpInterval,
+        xrayUdpNoises,
         hiddifyNoiseMode,
         nikaNGNoiseMode,
         noiseCountMin,
@@ -43,7 +43,6 @@ export async function renderHomePage (proxySettings, isPassSet) {
         customBlockRules
     } = proxySettings;
 
-    const isWarpPlus = warpPlusLicense ? true : false;
     const activeProtocols = (VLConfigs ? 1 : 0) + (TRConfigs ? 1 : 0);
     let httpPortsBlock = '', httpsPortsBlock = '';
     const allPorts = [...(globalThis.hostName.includes('workers.dev') ? globalThis.defaultHttpPorts : []), ...globalThis.defaultHttpsPorts];
@@ -59,22 +58,65 @@ export async function renderHomePage (proxySettings, isPassSet) {
         globalThis.defaultHttpsPorts.includes(port) ? httpsPortsBlock += portBlock : httpPortsBlock += portBlock;
     });
 
+    let udpNoiseBlocks = '';
+    JSON.parse(xrayUdpNoises).forEach( (noise, index) => {
+        udpNoiseBlocks += `
+            <div id="udp-noise-container-${index}" class="udp-noise">
+                <div class="header-container">
+                    <h4 style="margin: 0 5px;">Noise ${index + 1}</h4>
+                    <button type="button" onclick="deleteUdpNoise(this)" style="background: none; margin: 0; border: none; cursor: pointer;">
+                        <i class="fa fa-minus-circle fa-2x" style="color: var(--button-color);" aria-hidden="true"></i>
+                    </button>      
+                </div>
+                <div class="form-control">
+                    <label for="udpXrayNoiseMode-${index}">😵‍💫 v2ray Mode</label>
+                    <div class="input-with-select">
+                        <select id="udpXrayNoiseMode-${index}" name="udpXrayNoiseMode">
+                            <option value="base64" ${noise.type === 'base64' ? 'selected' : ''}>Base64</option>
+                            <option value="rand" ${noise.type === 'rand' ? 'selected' : ''}>Random</option>
+                            <option value="str" ${noise.type === 'str' ? 'selected' : ''}>String</option>
+                            <option value="hex" ${noise.type === 'hex' ? 'selected' : ''}>Hex</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-control">
+                    <label for="udpXrayNoisePacket-${index}">📥 Noise Packet</label>
+                    <input type="text" id="udpXrayNoisePacket-${index}" name="udpXrayNoisePacket" value="${noise.packet}">
+                </div>
+                <div class="form-control">
+                    <label for="udpXrayNoiseDelayMin-${index}">🕞 Noise Delay</label>
+                    <div class="min-max">
+                        <input type="number" id="udpXrayNoiseDelayMin-${index}" name="udpXrayNoiseDelayMin"
+                            value="${noise.delay.split('-')[0]}" min="1" required>
+                        <span> - </span>
+                        <input type="number" id="udpXrayNoiseDelayMax-${index}" name="udpXrayNoiseDelayMax"
+                            value="${noise.delay.split('-')[1]}" min="1" required>
+                    </div>
+                </div>
+                <div class="form-control">
+                    <label for="udpXrayNoiseCount-${index}">🎚️ Noise Count</label>
+                    <input type="number" id="udpXrayNoiseCount-${index}" name="udpXrayNoiseCount" value="${noise.count}" min="1" required>
+                </div>
+            </div>`;
+    });
+
+
     const supportedApps = apps => apps.map(app => `
         <div>
             <span class="material-symbols-outlined symbol">verified</span>
             <span>${app}</span>
         </div>`).join('');
         
-    const subQR = (path, app, tag, title, sbType) => {
-        const url = `${sbType ? 'sing-box://import-remote-profile?url=' : ''}https://${globalThis.hostName}/${path}/${globalThis.subPath}${app ? `?app=${app}` : ''}#${tag}`;
+    const subQR = (path, app, tag, title, sbType, hiddifyType) => {
+        const url = `${sbType ? 'sing-box://import-remote-profile?url=' : ''}${hiddifyType ? 'hiddify://import/' : ''}https://${globalThis.hostName}/${path}/${globalThis.subPath}${app ? `?app=${app}` : ''}#${tag}`;
         return `
             <button onclick="openQR('${url}', '${title}')" style="margin-bottom: 8px;">
                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
             </button>`;
     };
     
-    const subURL = (path, app, tag) => {
-        const url = `https://${globalThis.hostName}/${path}/${globalThis.subPath}${app ? `?app=${app}` : ''}#${tag}`;
+    const subURL = (path, app, tag, hiddifyType) => {
+        const url = `${hiddifyType ? 'hiddify://import/' : ''}https://${globalThis.hostName}/${path}/${globalThis.subPath}${app ? `?app=${app}` : ''}#${tag}`;
         return `
             <button onclick="copyToClipboard('${url}')">
                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
@@ -253,7 +295,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
                 margin-bottom: 100px;
             }
-            .table-container { margin-top: 20px; overflow-x: auto; }
+            .table-container { overflow-x: auto; }
             table { 
                 width: 100%;
                 border: 1px solid var(--border-color);
@@ -368,7 +410,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
             #ips th { background-color: var(--hr-text-color); color: var(--background-color); width: unset; }
             #ips td { background-color: unset; }
             #ips td:first-child { background-color: var(--table-active-color); }
-            .header-container { display: flex; align-items: center; justify-content: center; }
+            .header-container { display: flex; justify-content: center; margin-bottom: 20px; }
+            .udp-noise { border: 1px solid var(--border-color); border-radius: 15px; padding: 20px; margin-bottom: 10px;}
             @media only screen and (min-width: 768px) {
                 .form-container { max-width: 70%; }
                 .form-control { 
@@ -554,12 +597,6 @@ export async function renderHomePage (proxySettings, isPassSet) {
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="warpPlusLicense">➕ Warp+ License</label>
-                        <input type="text" id="warpPlusLicense" name="warpPlusLicense" value="${warpPlusLicense}" 
-                            pattern="^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{8}-[a-zA-Z0-9]{8}$" 
-                            title="Please enter a valid Warp Plus license in xxxxxxxx-xxxxxxxx-xxxxxxxx format">
-                    </div>
-                    <div class="form-control">
                         <label for="refreshBtn">♻️ Warp Configs</label>
                         <button id="refreshBtn" type="button" class="button" style="padding: 10px 0;" onclick="getWarpConfigs()">
                             Update<span class="material-symbols-outlined">autorenew</span>
@@ -569,9 +606,25 @@ export async function renderHomePage (proxySettings, isPassSet) {
                         <label for="bestWarpInterval">🔄 Best Interval</label>
                         <input type="number" id="bestWarpInterval" name="bestWarpInterval" min="10" max="90" value="${bestWarpInterval}">
                     </div>
+                    <div class="form-control">
+                        <label for="dlConfigsBtn">📥 Download Warp Configs</label>
+                        <button id="dlConfigsBtn" type="button" class="button" style="padding: 10px 0;">
+                            Download<span class="material-symbols-outlined">download</span>
+                        </button>
+                    </div>
                 </details>
                 <details>
                     <summary><h2>WARP PRO ⚙️</h2></summary>
+                    <div class="header-container">
+                        <h3 style="margin: 0 5px;">V2RAYNG - V2RAYN</h3>
+                        <button type="button" id="add-udp-noise" onclick="addUdpNoise()" style="background: none; margin: 0; border: none; cursor: pointer;">
+                            <i class="fa fa-plus-circle fa-2x" style="color: var(--button-color);" aria-hidden="true"></i>
+                        </button>       
+                    </div>
+                    <div id="udp-noise-container">
+                        ${udpNoiseBlocks}
+                    </div>
+                    <h3>MAHSANG - NIKANG - HIDDIFY 🔧</h3>
                     <div class="form-control">
                         <label for="hiddifyNoiseMode">😵‍💫 Hiddify Mode</label>
                         <input type="text" id="hiddifyNoiseMode" name="hiddifyNoiseMode" 
@@ -752,8 +805,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
                             ${supportedApps(['Hiddify'])}
                         </td>
                         <td>
-                            ${subQR('fragsub', 'hiddify', `${atob('QlBC')}-Fragment`, 'Fragment Subscription')}
-                            ${subURL('fragsub', 'hiddify', `${atob('QlBC')}-Fragment`)}
+                            ${subQR('fragsub', 'hiddify-frag', `${atob('QlBC')}-Fragment`, 'Fragment Subscription', false, true)}
+                            ${subURL('fragsub', 'hiddify-frag', `${atob('QlBC')}-Fragment`, true)}
                         </td>
                     </tr>
                 </table>
@@ -776,11 +829,20 @@ export async function renderHomePage (proxySettings, isPassSet) {
                     </tr>
                     <tr>
                         <td>
-                            ${supportedApps(['Hiddify', 'sing-box', 'v2rayN (sing-box)'])}
+                            ${supportedApps(['sing-box', 'v2rayN (sing-box)'])}
                         </td>
                         <td>
                             ${subQR('sub', 'singbox', `${atob('QlBC')}-Warp`, 'Warp Subscription', true)}
                             ${subURL('warpsub', 'singbox', `${atob('QlBC')}-Warp`)}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            ${supportedApps(['Hiddify'])}
+                        </td>
+                        <td>
+                            ${subQR('warpsub', 'hiddify', `${atob('QlBC')}-Warp`, 'Warp Pro Subscription', false, true)}
+                            ${subURL('warpsub', 'hiddify', `${atob('QlBC')}-Warp`, true)}
                         </td>
                     </tr>
                     <tr>
@@ -803,6 +865,15 @@ export async function renderHomePage (proxySettings, isPassSet) {
                     </tr>
                     <tr>
                         <td>
+                            ${supportedApps(['v2rayNG', 'v2rayN'])}
+                        </td>
+                        <td>
+                            ${subQR('warpsub', 'xray-pro', `${atob('QlBC')}-Warp-Pro`, 'Warp Pro Subscription')}
+                            ${subURL('warpsub', 'xray-pro', `${atob('QlBC')}-Warp-Pro`)}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
                             ${supportedApps(['NikaNG', 'MahsaNG', 'v2rayN-PRO'])}
                         </td>
                         <td>
@@ -815,8 +886,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
                             ${supportedApps(['Hiddify'])}
                         </td>
                         <td>
-                            ${subQR('warpsub', 'hiddify', `${atob('QlBC')}-Warp-Pro`, 'Warp Pro Subscription', true)}
-                            ${subURL('warpsub', 'hiddify', `${atob('QlBC')}-Warp-Pro`)}
+                            ${subQR('warpsub', 'hiddify-pro', `${atob('QlBC')}-Warp-Pro`, 'Warp Pro Subscription', false, true)}
+                            ${subURL('warpsub', 'hiddify-pro', `${atob('QlBC')}-Warp-Pro`, true)}
                         </td>
                     </tr>
                 </table>
@@ -893,6 +964,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
         <button id="darkModeToggle" class="floating-button">
             <i id="modeIcon" class="fa fa-2x fa-adjust" style="color: var(--background-color);" aria-hidden="true"></i>
         </button>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script type="module" defer>
         import { polyfillCountryFlagEmojis } from "https://cdn.skypack.dev/country-flag-emoji-polyfill";
         polyfillCountryFlagEmojis();
@@ -903,7 +975,6 @@ export async function renderHomePage (proxySettings, isPassSet) {
         let activePortsNo = ${ports.length};
         let activeHttpsPortsNo = ${ports.filter(port => globalThis.defaultHttpsPorts.includes(port)).length};
         let activeProtocols = ${activeProtocols};
-        const warpPlusLicense = '${warpPlusLicense}';
         localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -1007,6 +1078,28 @@ export async function renderHomePage (proxySettings, isPassSet) {
                 localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
             });
 
+            document.getElementById("dlConfigsBtn").addEventListener("click", async function () {
+                try {
+                    const response = await fetch("/get-warp-configs");
+                    const configs = await response.json();
+                    const zip = new JSZip();
+                    configs.forEach( (config, index) => {
+                        zip.file('💦 BPB Warp config - ' + String(index + 1) + '.conf', config);
+                    });
+
+                    zip.generateAsync({ type: "blob" }).then(function (blob) {
+                        const link = document.createElement("a");
+                        link.href = URL.createObjectURL(blob);
+                        link.download = "💦 BPB Warp configs.zip";
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    });
+                } catch (error) {
+                    console.error("Error fetching configs:", error);
+                }
+            });
+
             const isPassSet = ${isPassSet};
             if (!isPassSet) {
                 forcedPassChange = true;
@@ -1053,12 +1146,29 @@ export async function renderHomePage (proxySettings, isPassSet) {
             }
         }
 
+        const addUdpNoise = () => {
+            const container = document.getElementById("udp-noise-container");
+            const noiseBlock = document.getElementById("udp-noise-container-0");
+            const index = container.children.length;
+            const clone = noiseBlock.cloneNode(true);
+            clone.querySelector("h4").textContent = "Noise " + String(index + 1);
+            container.appendChild(clone);
+            document.getElementById("configForm").dispatchEvent(new Event("change"));
+        }
+        
+        const deleteUdpNoise = (button) => {
+            const container = document.getElementById("udp-noise-container");
+            if (container.children.length === 1) {
+                alert('⛔ You cannot delete all noises!');
+                return;
+            }   
+            const confirmReset = confirm('⚠️ This will delete the noise.\\nAre you sure?');
+            if(!confirmReset) return;
+            button.closest(".udp-noise").remove();
+            document.getElementById("configForm").dispatchEvent(new Event("change"));
+        }
+
         const getWarpConfigs = async () => {
-            const license = document.getElementById('warpPlusLicense').value;
-            if (license !== warpPlusLicense) {
-                alert('⚠️ First APPLY SETTINGS and then update Warp configs!');
-                return false;
-            }
             const confirmReset = confirm('⚠️ Are you sure?');
             if(!confirmReset) return;
             const refreshBtn = document.getElementById('refreshBtn');
@@ -1081,10 +1191,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                     alert('⚠️ An error occured, Please try again!\\n⛔ ' + errorMessage);
                     return;
                 }          
-                ${isWarpPlus
-                    ? `alert('✅ Warp configs upgraded to PLUS successfully! 😎');` 
-                    : `alert('✅ Warp configs updated successfully! 😎');`
-                }
+                alert('✅ Warp configs updated successfully! 😎');
             } catch (error) {
                 console.error('Error:', error);
             } 
@@ -1209,6 +1316,11 @@ export async function renderHomePage (proxySettings, isPassSet) {
             configForm.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
                 !formData.has(checkbox.name) && formData.append(checkbox.name, 'false');    
             });
+            const base64Regex = /^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/;
+            const udpNoiseModes = formData.getAll('udpXrayNoiseMode') || [];
+            const udpNoisePackets = formData.getAll('udpXrayNoisePacket') || [];
+            const udpNoiseDelaysMin = formData.getAll('udpXrayNoiseDelayMin') || [];
+            const udpNoiseDelaysMax = formData.getAll('udpXrayNoiseDelayMax') || [];
 
             const invalidIPs = [...cleanIPs, ...proxyIPs, ...customCdnAddrs, ...customBypassRules, ...customBlockRules, customCdnHost, customCdnSni]?.filter(value => {
                 if (value) {
@@ -1253,6 +1365,44 @@ export async function renderHomePage (proxySettings, isPassSet) {
                 alert('⛔ All "Custom" fields should be filled or deleted together! 🫤');               
                 return false;
             }
+            
+            let submisionError = false;
+            for (const [index, mode] of udpNoiseModes.entries()) {
+                if (udpNoiseDelaysMin[index] > udpNoiseDelaysMax[index]) {
+                    alert('⛔ The minimum noise delay should be smaller or equal to maximum! 🫤');
+                    submisionError = true;
+                    break;
+                }
+                
+                switch (mode) {
+                    case 'base64':
+                        if (!base64Regex.test(udpNoisePackets[index])) {
+                            alert('⛔ The Base64 noise packet is not a valid base64 value! 🫤');
+                            submisionError = true;
+                        }
+                        break;
+    
+                    case 'rand':
+                        if (!(/^\\d+-\\d+$/.test(udpNoisePackets[index]))) {
+                            alert('⛔ The Random noise packet should be a range like 0-10 or 10-30! 🫤');
+                            submisionError = true;
+                        }
+                        const [min, max] = udpNoisePackets[index].split("-").map(Number);
+                        if (min > max) {
+                            alert('⛔ The minimum Random noise packet should be smaller or equal to maximum! 🫤');
+                            submisionError = true;
+                        }
+                        break;
+
+                    case 'hex':
+                        if (!(/^(?=(?:[0-9A-Fa-f]{2})*$)[0-9A-Fa-f]+$/.test(udpNoisePackets[index]))) {
+                            alert('⛔ The Hex noise packet is not a valid hex value! It should have even length and consisted of 0-9, a-f and A-F. 🫤');
+                            submisionError = true;
+                        }
+                        break;
+                }
+            }
+            if (submisionError) return false;
 
             try {
                 document.body.style.cursor = 'wait';
