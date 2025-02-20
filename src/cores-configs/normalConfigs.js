@@ -1,9 +1,11 @@
-import { getConfigAddresses, generateRemark, randomUpperCase, getRandomPath } from './helpers';
+import { getConfigAddresses, generateRemark, randomUpperCase, getRandomPath, extractWireguardParams, base64ToDecimal } from './helpers';
 import { getDataset } from '../kv/handlers';
 
 export async function getNormalConfigs(request, env) {
+    const { hostName, defaultHttpsPorts, client, userID, TRPassword } = globalThis;
     const { proxySettings } = await getDataset(request, env);
-    const { 
+    const {
+        remoteDNS,
         cleanIPs, 
         proxyIP, 
         ports, 
@@ -25,15 +27,14 @@ export async function getNormalConfigs(request, env) {
     const Addresses = await getConfigAddresses(cleanIPs, enableIPv6);
     const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
     const totalAddresses = [...Addresses, ...customCdnAddresses];
-    const alpn = globalThis.client === 'singbox' ? 'http/1.1' : 'h2,http/1.1';
-    const TRPass = encodeURIComponent(globalThis.TRPassword);
-    const earlyData = globalThis.client === 'singbox' 
+    const alpn = client === 'singbox' ? 'http/1.1' : 'h2,http/1.1';
+    const TRPass = encodeURIComponent(TRPassword);
+    const earlyData = client === 'singbox' 
         ? '&eh=Sec-WebSocket-Protocol&ed=2560' 
         : encodeURIComponent('?ed=2560');
     
     ports.forEach(port => {
         totalAddresses.forEach((addr, index) => {
-            const { hostName, defaultHttpsPorts, client, userID } = globalThis;
             const isCustomAddr = index > Addresses.length - 1;
             const configType = isCustomAddr ? 'C' : '';
             const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
@@ -67,18 +68,25 @@ export async function getNormalConfigs(request, env) {
     }
 
     const configs = btoa(VLConfs + TRConfs + chainProxy);
+    const headers = {
+        'Content-Type': 'text/plain;charset=utf-8',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'CDN-Cache-Control': 'no-store'
+    };
+
+    client === 'hiddify-frag' && Object.assign(headers, {
+        'Profile-Title': 'BPB Fragment',
+        'DNS': remoteDNS
+    });
+
     return new Response(configs, { 
         status: 200,
-        headers: {
-            'Content-Type': 'text/plain;charset=utf-8',
-            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-            'CDN-Cache-Control': 'no-store'
-        }
+        headers
     });
 }
 
 export async function getHiddifyWarpConfigs (request, env, isPro) {
-    const { proxySettings } = await getDataset(request, env);
+    const { proxySettings, warpConfigs } = await getDataset(request, env);
     const {
         warpEndpoints,
         hiddifyNoiseMode, 
@@ -90,18 +98,25 @@ export async function getHiddifyWarpConfigs (request, env, isPro) {
 		noiseDelayMax
     } = proxySettings;
 
+    // const warp = extractWireguardParams(warpConfigs, false);
+    // const wow = extractWireguardParams(warpConfigs, true);
+
     let configs = '';
     warpEndpoints.split(',').forEach( (endpoint, index) => {
+        // const warpConfig = `wg://${endpoint}/${ isPro ? `?ifp=${noiseCountMin}-${noiseCountMax}&ifps=${noiseSizeMin}-${noiseSizeMax}&ifpd=${noiseDelayMin}-${noiseDelayMax}&ifpm=${hiddifyNoiseMode}` : ''}&pk=${wow.privateKey}&local_address=${encodeURIComponent('172.16.0.2/32')}&peer_pk=${wow.publicKey}&mtu=1280&reserved=${base64ToDecimal(wow.reserved).join(',')}#${encodeURIComponent(`💦 ${index + 1} - Warp 🇮🇷`)}`;
+        // const wowConfig = `wg://162.159.192.1:2408/?pk=${wow.privateKey}&local_address=${encodeURIComponent('172.16.0.2/32')}&peer_pk=${wow.publicKey}&mtu=1280&reserved=${base64ToDecimal(wow.reserved).join(',')}#${encodeURIComponent(`💦 ${index + 1} - WoW 🌍`)}`;
+        // configs += `${warpConfig}&&detour=${wowConfig}\n`;
         configs += `warp://${endpoint}${ isPro ? `?ifp=${noiseCountMin}-${noiseCountMax}&ifps=${noiseSizeMin}-${noiseSizeMax}&ifpd=${noiseDelayMin}-${noiseDelayMax}&ifpm=${hiddifyNoiseMode}` : ''}#${encodeURIComponent(`💦 ${index + 1} - Warp 🇮🇷`)}&&detour=warp://162.159.192.1:2408#${encodeURIComponent(`💦 ${index + 1} - WoW 🌍`)}\n`;
     });
 
-    return new Response(configs, { 
+    return new Response(btoa(configs), { 
         status: 200,
         headers: {
+            'Profile-Title': `BPB Warp${isPro ? ' Pro' : ''}`,
+            'DNS': '1.1.1.1',
             'Content-Type': 'text/plain;charset=utf-8',
             'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
             'CDN-Cache-Control': 'no-store'
         }
     });
-
 }
