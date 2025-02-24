@@ -22,7 +22,6 @@ export async function renderHomePage (proxySettings, isPassSet) {
         warpEndpoints,
         warpFakeDNS,
         warpEnableIPv6,
-        warpPlusLicense,
         bestWarpInterval,
         xrayUdpNoises,
         hiddifyNoiseMode,
@@ -44,7 +43,6 @@ export async function renderHomePage (proxySettings, isPassSet) {
         customBlockRules
     } = proxySettings;
 
-    const isWarpPlus = warpPlusLicense ? true : false;
     const activeProtocols = (VLConfigs ? 1 : 0) + (TRConfigs ? 1 : 0);
     let httpPortsBlock = '', httpsPortsBlock = '';
     const allPorts = [...(globalThis.hostName.includes('workers.dev') ? globalThis.defaultHttpPorts : []), ...globalThis.defaultHttpsPorts];
@@ -109,16 +107,16 @@ export async function renderHomePage (proxySettings, isPassSet) {
             <span>${app}</span>
         </div>`).join('');
         
-    const subQR = (path, app, tag, title, sbType) => {
-        const url = `${sbType ? 'sing-box://import-remote-profile?url=' : ''}https://${globalThis.hostName}/${path}/${globalThis.subPath}${app ? `?app=${app}` : ''}#${tag}`;
+    const subQR = (path, app, tag, title, sbType, hiddifyType) => {
+        const url = `${sbType ? 'sing-box://import-remote-profile?url=' : ''}${hiddifyType ? 'hiddify://import/' : ''}https://${globalThis.hostName}/${path}/${globalThis.subPath}${app ? `?app=${app}` : ''}#${tag}`;
         return `
             <button onclick="openQR('${url}', '${title}')" style="margin-bottom: 8px;">
                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
             </button>`;
     };
     
-    const subURL = (path, app, tag) => {
-        const url = `https://${globalThis.hostName}/${path}/${globalThis.subPath}${app ? `?app=${app}` : ''}#${tag}`;
+    const subURL = (path, app, tag, hiddifyType) => {
+        const url = `${hiddifyType ? 'hiddify://import/' : ''}https://${globalThis.hostName}/${path}/${globalThis.subPath}${app ? `?app=${app}` : ''}#${tag}`;
         return `
             <button onclick="copyToClipboard('${url}')">
                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
@@ -599,12 +597,6 @@ export async function renderHomePage (proxySettings, isPassSet) {
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="warpPlusLicense">➕ Warp+ License</label>
-                        <input type="text" id="warpPlusLicense" name="warpPlusLicense" value="${warpPlusLicense}" 
-                            pattern="^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{8}-[a-zA-Z0-9]{8}$" 
-                            title="Please enter a valid Warp Plus license in xxxxxxxx-xxxxxxxx-xxxxxxxx format">
-                    </div>
-                    <div class="form-control">
                         <label for="refreshBtn">♻️ Warp Configs</label>
                         <button id="refreshBtn" type="button" class="button" style="padding: 10px 0;" onclick="getWarpConfigs()">
                             Update<span class="material-symbols-outlined">autorenew</span>
@@ -613,6 +605,12 @@ export async function renderHomePage (proxySettings, isPassSet) {
                     <div class="form-control">
                         <label for="bestWarpInterval">🔄 Best Interval</label>
                         <input type="number" id="bestWarpInterval" name="bestWarpInterval" min="10" max="90" value="${bestWarpInterval}">
+                    </div>
+                    <div class="form-control">
+                        <label for="dlConfigsBtn">📥 Download Warp Configs</label>
+                        <button id="dlConfigsBtn" type="button" class="button" style="padding: 10px 0;">
+                            Download<span class="material-symbols-outlined">download</span>
+                        </button>
                     </div>
                 </details>
                 <details>
@@ -807,8 +805,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
                             ${supportedApps(['Hiddify'])}
                         </td>
                         <td>
-                            ${subQR('fragsub', 'hiddify-frag', `${atob('QlBC')}-Fragment`, 'Fragment Subscription')}
-                            ${subURL('fragsub', 'hiddify-frag', `${atob('QlBC')}-Fragment`)}
+                            ${subQR('fragsub', 'hiddify-frag', `${atob('QlBC')}-Fragment`, 'Fragment Subscription', false, true)}
+                            ${subURL('fragsub', 'hiddify-frag', `${atob('QlBC')}-Fragment`, true)}
                         </td>
                     </tr>
                 </table>
@@ -843,8 +841,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
                             ${supportedApps(['Hiddify'])}
                         </td>
                         <td>
-                            ${subQR('warpsub', 'hiddify', `${atob('QlBC')}-Warp`, 'Warp Pro Subscription', true)}
-                            ${subURL('warpsub', 'hiddify', `${atob('QlBC')}-Warp`)}
+                            ${subQR('warpsub', 'hiddify', `${atob('QlBC')}-Warp`, 'Warp Pro Subscription', false, true)}
+                            ${subURL('warpsub', 'hiddify', `${atob('QlBC')}-Warp`, true)}
                         </td>
                     </tr>
                     <tr>
@@ -888,8 +886,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
                             ${supportedApps(['Hiddify'])}
                         </td>
                         <td>
-                            ${subQR('warpsub', 'hiddify-pro', `${atob('QlBC')}-Warp-Pro`, 'Warp Pro Subscription', true)}
-                            ${subURL('warpsub', 'hiddify-pro', `${atob('QlBC')}-Warp-Pro`)}
+                            ${subQR('warpsub', 'hiddify-pro', `${atob('QlBC')}-Warp-Pro`, 'Warp Pro Subscription', false, true)}
+                            ${subURL('warpsub', 'hiddify-pro', `${atob('QlBC')}-Warp-Pro`, true)}
                         </td>
                     </tr>
                 </table>
@@ -966,6 +964,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
         <button id="darkModeToggle" class="floating-button">
             <i id="modeIcon" class="fa fa-2x fa-adjust" style="color: var(--background-color);" aria-hidden="true"></i>
         </button>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script type="module" defer>
         import { polyfillCountryFlagEmojis } from "https://cdn.skypack.dev/country-flag-emoji-polyfill";
         polyfillCountryFlagEmojis();
@@ -976,7 +975,6 @@ export async function renderHomePage (proxySettings, isPassSet) {
         let activePortsNo = ${ports.length};
         let activeHttpsPortsNo = ${ports.filter(port => globalThis.defaultHttpsPorts.includes(port)).length};
         let activeProtocols = ${activeProtocols};
-        const warpPlusLicense = '${warpPlusLicense}';
         localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -1080,6 +1078,28 @@ export async function renderHomePage (proxySettings, isPassSet) {
                 localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
             });
 
+            document.getElementById("dlConfigsBtn").addEventListener("click", async function () {
+                try {
+                    const response = await fetch("/get-warp-configs");
+                    const configs = await response.json();
+                    const zip = new JSZip();
+                    configs.forEach( (config, index) => {
+                        zip.file('💦 BPB Warp config - ' + String(index + 1) + '.conf', config);
+                    });
+
+                    zip.generateAsync({ type: "blob" }).then(function (blob) {
+                        const link = document.createElement("a");
+                        link.href = URL.createObjectURL(blob);
+                        link.download = "💦 BPB Warp configs.zip";
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    });
+                } catch (error) {
+                    console.error("Error fetching configs:", error);
+                }
+            });
+
             const isPassSet = ${isPassSet};
             if (!isPassSet) {
                 forcedPassChange = true;
@@ -1149,11 +1169,6 @@ export async function renderHomePage (proxySettings, isPassSet) {
         }
 
         const getWarpConfigs = async () => {
-            const license = document.getElementById('warpPlusLicense').value;
-            if (license !== warpPlusLicense) {
-                alert('⚠️ First APPLY SETTINGS and then update Warp configs!');
-                return false;
-            }
             const confirmReset = confirm('⚠️ Are you sure?');
             if(!confirmReset) return;
             const refreshBtn = document.getElementById('refreshBtn');
@@ -1176,10 +1191,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                     alert('⚠️ An error occured, Please try again!\\n⛔ ' + errorMessage);
                     return;
                 }          
-                ${isWarpPlus
-                    ? `alert('✅ Warp configs upgraded to PLUS successfully! 😎');` 
-                    : `alert('✅ Warp configs updated successfully! 😎');`
-                }
+                alert('✅ Warp configs updated successfully! 😎');
             } catch (error) {
                 console.error('Error:', error);
             } 
