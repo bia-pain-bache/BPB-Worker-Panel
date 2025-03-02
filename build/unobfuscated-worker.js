@@ -6302,8 +6302,6 @@ async function handlePanel(request, env) {
 __name(handlePanel, "handlePanel");
 async function fallback(request) {
   const url = new URL(request.url);
-  if (url.pathname !== "/")
-    return new Response("Invalid path", { status: 400 });
   url.hostname = globalThis.fallbackDomain;
   url.protocol = "https:";
   const newRequest = new Request(url.toString(), {
@@ -7294,22 +7292,19 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
     }
   ];
   if (!isWorkerLess) {
-    const port = isWarp ? "53" : "443";
     const ipDomain = isRemoteDnsDomain ? "domain" : "ip";
     const outboundType = isBalancer ? "balancerTag" : "outboundTag";
     const tag2 = isBalancer ? "all" : finallOutboundTag;
     rules.push({
+      inboundTag: ["dns"],
       [ipDomain]: remoteDNSHosts,
-      port,
       [outboundType]: tag2,
       type: "field"
     });
   }
   if (!isWorkerLess && (isDomainRule || isBypass))
     rules.push({
-      ip: [localDNS],
-      port: "53",
-      network: "udp",
+      inboundTag: ["dns"],
       outboundTag: "direct",
       type: "field"
     });
@@ -8637,7 +8632,6 @@ async function getSingBoxWarpConfig(request, env) {
   const { rules, rule_set } = buildSingBoxRoutingRules(proxySettings);
   config.dns.servers = dnsObject.servers;
   config.dns.rules = dnsObject.rules;
-  config.dns.strategy = proxySettings.warpEnableIPv6 ? "prefer_ipv4" : "ipv4_only";
   if (dnsObject.fakeip)
     config.dns.fakeip = dnsObject.fakeip;
   config.route.rules = rules;
@@ -8715,7 +8709,6 @@ async function getSingBoxCustomConfig(request, env) {
   config.dns.rules = dnsObject.rules;
   if (dnsObject.fakeip)
     config.dns.fakeip = dnsObject.fakeip;
-  config.dns.strategy = enableIPv6 ? "prefer_ipv4" : "ipv4_only";
   config.route.rules = rules;
   config.route.rule_set = rule_set;
   const selector = config.outbounds[0];
@@ -8793,6 +8786,7 @@ var singboxConfigTemp = {
   dns: {
     servers: [],
     rules: [],
+    strategy: "ipv4_only",
     independent_cache: true
   },
   inbounds: [
