@@ -58,7 +58,6 @@ export async function handlePanel(request, env) {
 
 export async function fallback(request) {
     const url = new URL(request.url);
-    if (url.pathname !== '/') return new Response('Invalid path', {status: 400});
     url.hostname = globalThis.fallbackDomain;
     url.protocol = 'https:';
     const newRequest = new Request(url.toString(), {
