@@ -183,22 +183,19 @@ function buildXrayRoutingRules (proxySettings, outboundAddrs, isChain, isBalance
     ];
 
     if (!isWorkerLess) {
-        const port = isWarp ? "53" : "443";
         const ipDomain = isRemoteDnsDomain ? "domain" : "ip";
         const outboundType = isBalancer ? "balancerTag" : "outboundTag";
         const tag = isBalancer ? "all" : finallOutboundTag;
         rules.push({
+            inboundTag: ["dns"],
             [ipDomain]: remoteDNSHosts,
-            port: port,
             [outboundType]: tag,
             type: "field"
         });
     }
     
     if (!isWorkerLess && (isDomainRule || isBypass)) rules.push({
-        ip: [localDNS],
-        port: "53",
-        network: "udp",
+        inboundTag: ["dns"],
         outboundTag: "direct",
         type: "field"
     });
