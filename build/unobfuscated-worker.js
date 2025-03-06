@@ -5812,7 +5812,7 @@ async function renderHomePage(proxySettings, isPassSet) {
                     const configs = await response.json();
                     const zip = new JSZip();
                     configs.forEach( (config, index) => {
-                        zip.file('\u{1F4A6} BPB Warp config - ' + String(index + 1) + '.conf', config);
+                        zip.file('BPB-Warp-config-' + String(index + 1) + '.conf', config);
                     });
 
                     zip.generateAsync({ type: "blob" }).then(function (blob) {
