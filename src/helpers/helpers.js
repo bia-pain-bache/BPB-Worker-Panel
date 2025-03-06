@@ -99,12 +99,11 @@ export async function getWarpConfigFiles(request, env) {
 `[Interface]
 PrivateKey = ${privateKey}
 Address = 172.16.0.2/32, ${warpIPv6}
-DNS = 1.1.1.1, 1.0.0.1, 2606:4700:4700::1111, 2606:4700:4700::1001
+DNS = 1.1.1.1, 1.0.0.1
 MTU = 1280
 [Peer]
 PublicKey = ${publicKey}
-AllowedIPs = 0.0.0.0/0
-AllowedIPs = ::/0
+AllowedIPs = 0.0.0.0/0, ::/0
 Endpoint = ${endpoint}`;
         warpConfs.push(warpConf);
     });
