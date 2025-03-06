@@ -6342,12 +6342,11 @@ async function getWarpConfigFiles(request, env) {
     const warpConf = `[Interface]
 PrivateKey = ${privateKey}
 Address = 172.16.0.2/32, ${warpIPv6}
-DNS = 1.1.1.1, 1.0.0.1, 2606:4700:4700::1111, 2606:4700:4700::1001
+DNS = 1.1.1.1, 1.0.0.1
 MTU = 1280
 [Peer]
 PublicKey = ${publicKey}
-AllowedIPs = 0.0.0.0/0
-AllowedIPs = ::/0
+AllowedIPs = 0.0.0.0/0, ::/0
 Endpoint = ${endpoint}`;
     warpConfs.push(warpConf);
   });
@@ -6365,7 +6364,7 @@ function initializeParams(request, env) {
   const proxyIPs = env.PROXYIP?.split(",").map((proxyIP) => proxyIP.trim());
   const url = new URL(request.url);
   const searchParams = new URLSearchParams(url.search);
-  globalThis.panelVersion = "3.0.9";
+  globalThis.panelVersion = "3.1";
   globalThis.defaultHttpPorts = ["80", "8080", "2052", "2082", "2086", "2095", "8880"];
   globalThis.defaultHttpsPorts = ["443", "8443", "2053", "2083", "2087", "2096"];
   globalThis.userID = env.UUID;
