@@ -5169,7 +5169,7 @@ async function renderHomePage(proxySettings, isPassSet) {
                     <div class="form-control">
                         <label for="localDNS">\u{1F3DA}\uFE0F Local DNS</label>
                         <input type="text" id="localDNS" name="localDNS" value="${localDNS}"
-                            pattern="^(?:\\d{1,3}\\.){3}\\d{1,3}$"
+                            pattern="^(localhost|(?:\\d{1,3}\\.){3}\\d{1,3})$"
                             title="Please enter a valid DNS IP Address!"  required>
                     </div>
                     <div class="form-control">
@@ -5812,13 +5812,13 @@ async function renderHomePage(proxySettings, isPassSet) {
                     const configs = await response.json();
                     const zip = new JSZip();
                     configs.forEach( (config, index) => {
-                        zip.file('BPB-Warp-config-' + String(index + 1) + '.conf', config);
+                        zip.file('BPB-Warp-' + String(index + 1) + '.conf', config);
                     });
 
                     zip.generateAsync({ type: "blob" }).then(function (blob) {
                         const link = document.createElement("a");
                         link.href = URL.createObjectURL(blob);
-                        link.download = "\u{1F4A6} BPB Warp configs.zip";
+                        link.download = "BPB Warp configs.zip";
                         document.body.appendChild(link);
                         link.click();
                         document.body.removeChild(link);
@@ -7286,7 +7286,7 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
       type: "field"
     }
   ];
-  if (!isWorkerLess && (isDomainRule || isBypass))
+  if (!isWorkerLess && (isDomainRule || isBypass) && localDNS !== "localhost")
     rules.push({
       inboundTag: ["dns"],
       ip: [localDNS],
@@ -8107,7 +8107,7 @@ function buildSingBoxDNS(proxySettings, outboundAddrs, isWarp) {
       tag: "dns-remote"
     },
     {
-      address: localDNS,
+      address: localDNS === "localhost" ? "local" : localDNS,
       detour: "direct",
       tag: "dns-direct"
     },
@@ -8874,6 +8874,7 @@ async function buildClashDNS(proxySettings, isChain, isWarp) {
     customBypassRules
   } = proxySettings;
   const warpRemoteDNS = warpEnableIPv6 ? ["1.1.1.1", "1.0.0.1", "[2606:4700:4700::1111]", "[2606:4700:4700::1001]"] : ["1.1.1.1", "1.0.0.1"];
+  const finalLocalDNS = localDNS === "localhost" ? "system" : `${localDNS}#DIRECT`;
   const isFakeDNS = VLTRFakeDNS && !isWarp || warpFakeDNS && isWarp;
   const isIPv62 = enableIPv6 && !isWarp || warpEnableIPv6 && isWarp;
   const customBypassRulesDomains = customBypassRules.split(",").filter((address) => isDomain(address));
@@ -8890,10 +8891,10 @@ async function buildClashDNS(proxySettings, isChain, isWarp) {
     "respect-rules": true,
     "use-system-hosts": false,
     "nameserver": isWarp ? warpRemoteDNS.map((dns2) => `${dns2}#\u2705 Selector`) : [isChain ? `${remoteDNS}#proxy-1` : `${remoteDNS}#\u2705 Selector`],
-    "proxy-server-nameserver": [`${localDNS}#DIRECT`],
+    "proxy-server-nameserver": [finalLocalDNS],
     "nameserver-policy": {
-      "raw.githubusercontent.com": `${localDNS}#DIRECT`,
-      "time.apple.com": `${localDNS}#DIRECT`,
+      "raw.githubusercontent.com": finalLocalDNS,
+      "time.apple.com": finalLocalDNS,
       "www.gstatic.com": "system"
     }
   };
