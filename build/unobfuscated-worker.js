@@ -5812,7 +5812,7 @@ async function renderHomePage(proxySettings, isPassSet) {
                     const configs = await response.json();
                     const zip = new JSZip();
                     configs.forEach( (config, index) => {
-                        zip.file('\u{1F4A6} BPB Warp config - ' + String(index + 1) + '.conf', config);
+                        zip.file('BPB-Warp-config-' + String(index + 1) + '.conf', config);
                     });
 
                     zip.generateAsync({ type: "blob" }).then(function (blob) {
@@ -6302,8 +6302,6 @@ async function handlePanel(request, env) {
 __name(handlePanel, "handlePanel");
 async function fallback(request) {
   const url = new URL(request.url);
-  if (url.pathname !== "/")
-    return new Response("Invalid path", { status: 400 });
   url.hostname = globalThis.fallbackDomain;
   url.protocol = "https:";
   const newRequest = new Request(url.toString(), {
@@ -6344,12 +6342,11 @@ async function getWarpConfigFiles(request, env) {
     const warpConf = `[Interface]
 PrivateKey = ${privateKey}
 Address = 172.16.0.2/32, ${warpIPv6}
-DNS = 1.1.1.1, 1.0.0.1, 2606:4700:4700::1111, 2606:4700:4700::1001
+DNS = 1.1.1.1, 1.0.0.1
 MTU = 1280
 [Peer]
 PublicKey = ${publicKey}
-AllowedIPs = 0.0.0.0/0
-AllowedIPs = ::/0
+AllowedIPs = 0.0.0.0/0, ::/0
 Endpoint = ${endpoint}`;
     warpConfs.push(warpConf);
   });
@@ -6367,7 +6364,7 @@ function initializeParams(request, env) {
   const proxyIPs = env.PROXYIP?.split(",").map((proxyIP) => proxyIP.trim());
   const url = new URL(request.url);
   const searchParams = new URLSearchParams(url.search);
-  globalThis.panelVersion = "3.0.9";
+  globalThis.panelVersion = "3.1";
   globalThis.defaultHttpPorts = ["80", "8080", "2052", "2082", "2086", "2095", "8880"];
   globalThis.defaultHttpsPorts = ["443", "8443", "2053", "2083", "2087", "2096"];
   globalThis.userID = env.\u7F16\u53F7 || env.UUID;
@@ -7241,11 +7238,9 @@ async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isW
   return dnsObject;
 }
 __name(buildXrayDNS, "buildXrayDNS");
-function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer, isWorkerLess, isWarp) {
+function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer, isWorkerLess) {
   const {
-    remoteDNS,
     localDNS,
-    warpEnableIPv6,
     bypassLAN,
     bypassIran,
     bypassChina,
@@ -7272,8 +7267,6 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
   const isBlock = blockAds || blockPorn || customBlockRulesTotal.length > 0;
   const isBypass = bypassIran || bypassChina || bypassRussia || customBypassRulesTotal.length > 0;
   const finallOutboundTag = isChain ? "chain" : isWorkerLess ? "fragment" : "proxy";
-  const { host: dohHost, isHostDomain: isRemoteDnsDomain } = getDomain(remoteDNS);
-  const remoteDNSHosts = isWarp ? warpEnableIPv6 ? ["1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001"] : ["1.1.1.1", "1.0.0.1"] : [isRemoteDnsDomain ? `full:${dohHost}` : dohHost];
   const rules = [
     {
       inboundTag: [
@@ -7293,24 +7286,18 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
       type: "field"
     }
   ];
-  if (!isWorkerLess) {
-    const port = isWarp ? "53" : "443";
-    const ipDomain = isRemoteDnsDomain ? "domain" : "ip";
-    const outboundType = isBalancer ? "balancerTag" : "outboundTag";
-    const tag2 = isBalancer ? "all" : finallOutboundTag;
-    rules.push({
-      [ipDomain]: remoteDNSHosts,
-      port,
-      [outboundType]: tag2,
-      type: "field"
-    });
-  }
   if (!isWorkerLess && (isDomainRule || isBypass))
     rules.push({
+      inboundTag: ["dns"],
       ip: [localDNS],
       port: "53",
-      network: "udp",
       outboundTag: "direct",
+      type: "field"
+    });
+  if (!isWorkerLess)
+    rules.push({
+      inboundTag: ["dns"],
+      [isBalancer ? "balancerTag" : "outboundTag"]: isBalancer ? "all" : finallOutboundTag,
       type: "field"
     });
   blockUDP443 && rules.push({
@@ -7759,7 +7746,7 @@ async function buildXrayBestPingConfig(proxySettings, totalAddresses, chainProxy
   const remark = isFragment ? `\u{1F4A6} ${atob("QlBC")} F - Best Ping \u{1F4A5}` : `\u{1F4A6} ${atob("QlBC")} - Best Ping \u{1F4A5}`;
   const config = buildXrayConfig(proxySettings, remark, true, chainProxy, true);
   config.dns = await buildXrayDNS(proxySettings, totalAddresses, void 0, false, false);
-  config.routing.rules = buildXrayRoutingRules(proxySettings, totalAddresses, chainProxy, true, false, false);
+  config.routing.rules = buildXrayRoutingRules(proxySettings, totalAddresses, chainProxy, true, false);
   config.outbounds.unshift(...outbounds);
   return config;
 }
@@ -7787,7 +7774,7 @@ async function buildXrayBestFragmentConfig(proxySettings, hostName2, chainProxy,
   ];
   const config = buildXrayConfig(proxySettings, `\u{1F4A6} ${atob("QlBC")} F - Best Fragment \u{1F60E}`, true, chainProxy, false, false);
   config.dns = await buildXrayDNS(proxySettings, [], hostName2, false, false);
-  config.routing.rules = buildXrayRoutingRules(proxySettings, [], chainProxy, true, false, false);
+  config.routing.rules = buildXrayRoutingRules(proxySettings, [], chainProxy, true, false);
   const bestFragOutbounds = [];
   const freedomOutbound = outbounds.pop();
   bestFragValues.forEach((fragLength, index) => {
@@ -7815,7 +7802,7 @@ async function buildXrayWorkerLessConfig(proxySettings) {
   const fragmentOutbound = buildFreedomOutbound(proxySettings, true, true, "fragment");
   config.outbounds.unshift(fragmentOutbound);
   config.dns = await buildXrayDNS(proxySettings, [], void 0, true);
-  config.routing.rules = buildXrayRoutingRules(proxySettings, [], false, false, true, false);
+  config.routing.rules = buildXrayRoutingRules(proxySettings, [], false, false, true);
   const fakeOutbound = buildXrayVLOutbound("fake-outbound", "google.com", "443", globalThis.userID, "google.com", "google.com", "", true, false);
   fakeOutbound.streamSettings.wsSettings.path = "/";
   config.outbounds.push(fakeOutbound);
@@ -7876,7 +7863,7 @@ async function getXrayCustomConfigs(request, env, isFragment) {
         const customConfig = buildXrayConfig(proxySettings, remark, false, chainProxy, false, false);
         isFragment && customConfig.outbounds.unshift(freedomOutbound);
         customConfig.dns = await buildXrayDNS(proxySettings, [addr], void 0, false, false);
-        customConfig.routing.rules = buildXrayRoutingRules(proxySettings, [addr], chainProxy, false, false, false);
+        customConfig.routing.rules = buildXrayRoutingRules(proxySettings, [addr], chainProxy, false, false);
         const outbound = protocol === atob("VkxFU1M=") ? buildXrayVLOutbound("proxy", addr, port, host, sni, proxyIP, isFragment, isCustomAddr, enableIPv6) : buildXrayTROutbound("proxy", addr, port, host, sni, proxyIP, isFragment, isCustomAddr, enableIPv6);
         customConfig.outbounds.unshift({ ...outbound });
         outbound.tag = `prox-${proxyIndex}`;
@@ -7933,8 +7920,8 @@ async function getXrayWarpConfigs(request, env, client) {
       WoWConfig.outbounds.unshift(freedomOutbound);
     }
     warpConfig.dns = WoWConfig.dns = await buildXrayDNS(proxySettings, [endpointHost], void 0, false, true);
-    warpConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpointHost], false, false, false, true);
-    WoWConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpointHost], true, false, false, true);
+    warpConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpointHost], false, false, false);
+    WoWConfig.routing.rules = buildXrayRoutingRules(proxySettings, [endpointHost], true, false, false);
     const warpOutbound = buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, xrayWarpChain, client);
     const WoWOutbound = buildXrayWarpOutbound(proxySettings, warpConfigs, endpoint, "proxy", client);
     warpConfig.outbounds.unshift(warpOutbound);
@@ -7952,12 +7939,12 @@ async function getXrayWarpConfigs(request, env, client) {
   const dnsObject = await buildXrayDNS(proxySettings, outboundDomains, void 0, false, true);
   const xrayWarpBestPing = buildXrayConfig(proxySettings, `\u{1F4A6} Warp${proIndicator}- Best Ping \u{1F680}`, true, false, false, true);
   xrayWarpBestPing.dns = dnsObject;
-  xrayWarpBestPing.routing.rules = buildXrayRoutingRules(proxySettings, outboundDomains, false, true, false, true);
+  xrayWarpBestPing.routing.rules = buildXrayRoutingRules(proxySettings, outboundDomains, false, true, false);
   client === "xray-pro" && xrayWarpBestPing.outbounds.unshift(freedomOutbound);
   xrayWarpBestPing.outbounds.unshift(...xrayWarpOutbounds);
   const xrayWoWBestPing = buildXrayConfig(proxySettings, `\u{1F4A6} WoW${proIndicator}- Best Ping \u{1F680}`, true, true, false, true);
   xrayWoWBestPing.dns = dnsObject;
-  xrayWoWBestPing.routing.rules = buildXrayRoutingRules(proxySettings, outboundDomains, true, true, false, true);
+  xrayWoWBestPing.routing.rules = buildXrayRoutingRules(proxySettings, outboundDomains, true, true, false);
   client === "xray-pro" && xrayWoWBestPing.outbounds.unshift(freedomOutbound);
   xrayWoWBestPing.outbounds.unshift(...xrayWoWOutbounds, ...xrayWarpOutbounds);
   const configs = [...xrayWarpConfigs, ...xrayWoWConfigs, xrayWarpBestPing, xrayWoWBestPing];
@@ -8637,7 +8624,6 @@ async function getSingBoxWarpConfig(request, env) {
   const { rules, rule_set } = buildSingBoxRoutingRules(proxySettings);
   config.dns.servers = dnsObject.servers;
   config.dns.rules = dnsObject.rules;
-  config.dns.strategy = proxySettings.warpEnableIPv6 ? "prefer_ipv4" : "ipv4_only";
   if (dnsObject.fakeip)
     config.dns.fakeip = dnsObject.fakeip;
   config.route.rules = rules;
@@ -8715,7 +8701,6 @@ async function getSingBoxCustomConfig(request, env) {
   config.dns.rules = dnsObject.rules;
   if (dnsObject.fakeip)
     config.dns.fakeip = dnsObject.fakeip;
-  config.dns.strategy = enableIPv6 ? "prefer_ipv4" : "ipv4_only";
   config.route.rules = rules;
   config.route.rule_set = rule_set;
   const selector = config.outbounds[0];
@@ -8793,6 +8778,7 @@ var singboxConfigTemp = {
   dns: {
     servers: [],
     rules: [],
+    strategy: "ipv4_only",
     independent_cache: true
   },
   inbounds: [
