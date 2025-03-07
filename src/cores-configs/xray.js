@@ -174,7 +174,7 @@ function buildXrayRoutingRules (proxySettings, outboundAddrs, isChain, isBalance
         }
     ];
 
-    if (!isWorkerLess && (isDomainRule || isBypass)) rules.push({
+    if (!isWorkerLess && (isDomainRule || isBypass) && localDNS !== 'localhost') rules.push({
         inboundTag: ["dns"],
         ip: [localDNS],
         port: "53",

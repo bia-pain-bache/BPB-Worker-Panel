@@ -44,7 +44,7 @@ function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp) {
             tag: "dns-remote"
         },
         {
-            address: localDNS,
+            address: localDNS === 'localhost' ? 'local' : localDNS,
             detour: "direct",
             tag: "dns-direct"
         },

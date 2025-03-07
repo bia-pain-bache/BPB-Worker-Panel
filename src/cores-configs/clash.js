@@ -20,6 +20,7 @@ async function buildClashDNS (proxySettings, isChain, isWarp) {
     const warpRemoteDNS = warpEnableIPv6 
         ? ["1.1.1.1", "1.0.0.1", "[2606:4700:4700::1111]", "[2606:4700:4700::1001]"] 
         : ["1.1.1.1", "1.0.0.1"];
+    const finalLocalDNS = localDNS === 'localhost' ? 'system' : `${localDNS}#DIRECT`;
     const isFakeDNS = (VLTRFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
     const isIPv6 = (enableIPv6 && !isWarp) || (warpEnableIPv6 && isWarp);
     const customBypassRulesDomains = customBypassRules.split(',').filter(address => isDomain(address));
@@ -39,10 +40,10 @@ async function buildClashDNS (proxySettings, isChain, isWarp) {
         "nameserver": isWarp 
             ? warpRemoteDNS.map(dns => `${dns}#✅ Selector`) 
             : [isChain ? `${remoteDNS}#proxy-1` : `${remoteDNS}#✅ Selector`],
-        "proxy-server-nameserver": [`${localDNS}#DIRECT`],
+        "proxy-server-nameserver": [finalLocalDNS],
         "nameserver-policy": {
-            "raw.githubusercontent.com": `${localDNS}#DIRECT`,
-            "time.apple.com": `${localDNS}#DIRECT`,
+            "raw.githubusercontent.com": finalLocalDNS,
+            "time.apple.com": finalLocalDNS,
             "www.gstatic.com": "system"
         }
     };
