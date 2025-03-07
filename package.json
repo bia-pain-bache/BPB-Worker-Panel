@@ -5,8 +5,9 @@
     "name": "Bia Pain Bache"
   },
   "devDependencies": {
-    "wrangler": "latest",
-    "javascript-obfuscator": "latest"
+    "javascript-obfuscator": "latest",
+    "terser": "latest",
+    "wrangler": "latest"
   },
   "dependencies": {
     "jose": "^5.9.4",
