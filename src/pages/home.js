@@ -110,7 +110,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
     const subQR = (path, app, tag, title, sbType, hiddifyType) => {
         const url = `${sbType ? 'sing-box://import-remote-profile?url=' : ''}${hiddifyType ? 'hiddify://import/' : ''}https://${globalThis.hostName}/${path}/${globalThis.subPath}${app ? `?app=${app}` : ''}#${tag}`;
         return `
-            <button onclick="openQR('${url}', '${title}')" style="margin-bottom: 8px;">
+            <button onclick="openQR('${url}', '${title}')">
                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
             </button>`;
     };
@@ -122,6 +122,14 @@ export async function renderHomePage (proxySettings, isPassSet) {
                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
             </button>`;
     }
+
+    const dlConfig = (path, app) => {
+        const url = `https://${globalThis.hostName}/${path}/${globalThis.subPath}${app ? `?app=${app}` : ''}`;
+        return `
+            <button onclick="dlURL('${url}')">
+                Get config<span class="material-symbols-outlined">download</span>
+            </button>`;
+    };
 
     const homePage = `
     <!DOCTYPE html>
@@ -197,7 +205,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
             .footer button:hover, .footer button:focus { background: #3b3b3b;}
             .form-control a, a.link { text-decoration: none; }
             .form-control {
-                margin-bottom: 20px;
+                margin: 20px auto;
                 font-family: Arial, sans-serif;
                 display: flex;
                 flex-direction: column;
@@ -209,9 +217,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
                 color: var(--button-color);
                 border-color: var(--primary-color);
                 border: 1px solid;
+                width: 100%;
             }
-            #apply {display: block; margin-top: 20px;}
-            input.button {font-weight: 600; padding: 15px 0; font-size: 1.1rem;}
             label {
                 display: block;
                 margin-bottom: 5px;
@@ -245,9 +252,9 @@ export async function renderHomePage (proxySettings, isPassSet) {
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                width: 100%;
+                width: 135px;
                 white-space: nowrap;
-                padding: 10px 15px;
+                padding: 10px 0;
                 font-size: 16px;
                 font-weight: 600;
                 letter-spacing: 1px;
@@ -260,12 +267,12 @@ export async function renderHomePage (proxySettings, isPassSet) {
                 box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
                 transition: all 0.3s ease;
             }
+            .button {font-weight: 600; padding: 15px 15px; font-size: 1.1rem; width: max-content; }
             input[type="checkbox"] { 
                 background-color: var(--input-background-color);
                 style="margin: 0; 
                 grid-column: 2;"
             }
-            table button { margin: auto; width: auto; }
             .button.disabled {
                 background-color: #ccc;
                 cursor: not-allowed;
@@ -305,10 +312,27 @@ export async function renderHomePage (proxySettings, isPassSet) {
                 margin-bottom: 20px;
                 overflow: hidden;
             }
-            th, td { padding: 10px; border-bottom: 1px solid var(--border-color); }
+            tbody { display: flex; flex-direction: column; }
+            tr { display: flex; flex-direction: row; }
+            th, td { 
+                display: flex; 
+                flex-direction: column;
+                justify-content: center; 
+                padding: 10px; 
+                width: 100%;
+                gap: 10px;
+                border-bottom: 1px solid var(--border-color); 
+            }
             td div { display: flex; align-items: center; }
             th { background-color: var(--secondary-color); color: white; font-weight: bold; font-size: 1.1rem; width: 50%;}
-            td:last-child { background-color: var(--table-active-color); }               
+            td:last-child { 
+                background-color: var(--table-active-color); 
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-direction: column;
+                gap: 10px;
+            }               
             tr:hover { background-color: var(--table-active-color); }
             .modal {
                 display: none;
@@ -407,8 +431,22 @@ export async function renderHomePage (proxySettings, isPassSet) {
             .input-with-select { width: 100%; }
             body.dark-mode .floating-button { background-color: var(--color); }
             body.dark-mode .floating-button:hover { transform: scale(1.1); }
-            #ips th { background-color: var(--hr-text-color); color: var(--background-color); width: unset; }
-            #ips td { background-color: unset; }
+            #ips th { 
+                background-color: var(--hr-text-color);
+                color: var(--background-color);
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                flex: 1; 
+            }
+            #ips td { 
+                background-color: unset; 
+                overflow: hidden;
+                flex: 1;
+                text-overflow: clip;
+                white-space: nowrap;
+            }
+            #ips tr { flex-wrap: wrap; }
             #ips td:first-child { background-color: var(--table-active-color); }
             .header-container { display: flex; justify-content: center; margin-bottom: 20px; }
             .udp-noise { border: 1px solid var(--border-color); border-radius: 15px; padding: 20px; margin-bottom: 10px;}
@@ -422,7 +460,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                     justify-content: flex-end;
                     font-family: Arial, sans-serif;
                 }
-                #apply { display: block; margin: 20px auto 0 auto; max-width: 50%; }
+                #apply { display: block; margin: 20px auto; max-width: 50%; }
                 .modal-content { width: 30% }
                 .routing { display: grid; grid-template-columns: 4fr 1fr 3fr 4fr; }
             }
@@ -713,9 +751,9 @@ export async function renderHomePage (proxySettings, isPassSet) {
                     </div>
                 </details>
                 <div id="apply" class="form-control">
-                    <div style="grid-column: 2; width: 100%; display: inline-flex;">
+                    <div style="grid-column: 2; width: 100%; display: flex; justify-content: center; gap: 10px;">
                         <input type="submit" id="applyButton" style="margin-right: 10px;" class="button disabled" value="APPLY SETTINGS 💥" form="configForm">
-                        <button type="button" id="resetSettings" style="background: none; margin: 0; border: none; cursor: pointer;">
+                        <button type="button" id="resetSettings" style="background: none; margin: 0; border: none; cursor: pointer; width: max-content;">
                             <i class="fa fa-refresh fa-2x fa-border" style="border-radius: .2em; border-color: var(--border-color);" aria-hidden="true"></i>
                         </button>
                     </div>
@@ -771,6 +809,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                         <td>
                             ${subQR('sub', 'sfa', `${atob('QlBC')}-Full-Normal`, 'Full normal Subscription', true)}
                             ${subURL('sub', 'sfa', `${atob('QlBC')}-Full-Normal`)}
+                            ${dlConfig('sub', 'sfa')}
                         </td>
                     </tr>
                     <tr>
@@ -780,6 +819,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                         <td>
                             ${subQR('sub', 'clash', `${atob('QlBC')}-Full-Normal`, 'Full normal Subscription')}
                             ${subURL('sub', 'clash', `${atob('QlBC')}-Full-Normal`)}
+                            ${dlConfig('sub', 'clash')}
                         </td>
                     </tr>
                 </table>
@@ -832,8 +872,9 @@ export async function renderHomePage (proxySettings, isPassSet) {
                             ${supportedApps(['sing-box', 'v2rayN (sing-box)'])}
                         </td>
                         <td>
-                            ${subQR('sub', 'singbox', `${atob('QlBC')}-Warp`, 'Warp Subscription', true)}
+                            ${subQR('warpsub', 'singbox', `${atob('QlBC')}-Warp`, 'Warp Subscription', true)}
                             ${subURL('warpsub', 'singbox', `${atob('QlBC')}-Warp`)}
+                            ${dlConfig('sub', 'singbox')}
                         </td>
                     </tr>
                     <tr>
@@ -852,6 +893,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                         <td>
                             ${subQR('warpsub', 'clash', `${atob('QlBC')}-Warp`, 'Warp Subscription')}
                             ${subURL('warpsub', 'clash', `${atob('QlBC')}-Warp`)}
+                            ${dlConfig('warpsub', 'clash')}
                         </td>
                     </tr>
                 </table>
@@ -1108,6 +1150,25 @@ export async function renderHomePage (proxySettings, isPassSet) {
 
             await fetchIPInfo();
         });
+
+        const dlURL = async (url) => {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                const blob = new Blob([JSON.stringify(data, null, 4)], { type: 'application/json' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'config.json';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (error) {
+                console.error('There was a problem with the fetch operation:', error);
+            }
+        };
 
         const fetchIPInfo = async () => {
             const updateUI = (ip = '-', country = '-', countryCode = '-', city = '-', isp = '-', cfIP) => {
