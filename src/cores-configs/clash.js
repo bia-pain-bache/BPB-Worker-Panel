@@ -59,11 +59,11 @@ async function buildClashDNS (proxySettings, isChain, isWarp) {
             rule && geosites.push(geosite)
         });
 
-        dns["nameserver-policy"][`rule-set:${geosites.join(',')}`] = [`${localDNS}#DIRECT`];
+        dns["nameserver-policy"][`rule-set:${geosites.join(',')}`] = [finalLocalDNS];
     }
 
     customBypassRulesDomains.forEach( domain => {
-        dns["nameserver-policy"][`+.${domain}`] = [`${localDNS}#DIRECT`];
+        dns["nameserver-policy"][`+.${domain}`] = [finalLocalDNS];
     });
 
     const dohHost = getDomain(remoteDNS);

@@ -95,8 +95,7 @@ export async function getWarpConfigFiles(request, env) {
     const { warpIPv6, publicKey, privateKey} = warpConfig;
     const warpConfs = [];
     warpEndpoints.split(',').forEach( endpoint => {
-        const warpConf = 
-`[Interface]
+        warpConfs.push(`[Interface]
 PrivateKey = ${privateKey}
 Address = 172.16.0.2/32, ${warpIPv6}
 DNS = 1.1.1.1, 1.0.0.1
@@ -104,9 +103,10 @@ MTU = 1280
 [Peer]
 PublicKey = ${publicKey}
 AllowedIPs = 0.0.0.0/0, ::/0
-Endpoint = ${endpoint}`;
-        warpConfs.push(warpConf);
+Endpoint = ${endpoint}
+PersistentKeepalive = 25`);
     });
+
     return new Response(JSON.stringify(warpConfs), { 
         status: 200,
         headers: {
