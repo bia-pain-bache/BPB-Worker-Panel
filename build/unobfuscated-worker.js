@@ -8,9 +8,8 @@ var __name = (target, value) => __defProp(target, "name", { value, configurable:
 var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
   get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
 }) : x)(function(x) {
-  if (typeof require !== "undefined")
-    return require.apply(this, arguments);
-  throw new Error('Dynamic require of "' + x + '" is not supported');
+  if (typeof require !== "undefined") return require.apply(this, arguments);
+  throw Error('Dynamic require of "' + x + '" is not supported');
 });
 var __commonJS = (cb, mod) => function __require2() {
   return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
@@ -45,9 +44,7 @@ var require_nacl_fast = __commonJS({
       "use strict";
       var gf = /* @__PURE__ */ __name(function(init) {
         var i, r = new Float64Array(16);
-        if (init)
-          for (i = 0; i < init.length; i++)
-            r[i] = init[i];
+        if (init) for (i = 0; i < init.length; i++) r[i] = init[i];
         return r;
       }, "gf");
       var randombytes = /* @__PURE__ */ __name(function() {
@@ -70,8 +67,7 @@ var require_nacl_fast = __commonJS({
       __name(ts64, "ts64");
       function vn(x, xi, y, yi, n) {
         var i, d = 0;
-        for (i = 0; i < n; i++)
-          d |= x[xi + i] ^ y[yi + i];
+        for (i = 0; i < n; i++) d |= x[xi + i] ^ y[yi + i];
         return (1 & d - 1 >>> 8) - 1;
       }
       __name(vn, "vn");
@@ -349,14 +345,11 @@ var require_nacl_fast = __commonJS({
       function crypto_stream_salsa20_xor(c, cpos, m, mpos, b, n, k) {
         var z = new Uint8Array(16), x = new Uint8Array(64);
         var u, i;
-        for (i = 0; i < 16; i++)
-          z[i] = 0;
-        for (i = 0; i < 8; i++)
-          z[i] = n[i];
+        for (i = 0; i < 16; i++) z[i] = 0;
+        for (i = 0; i < 8; i++) z[i] = n[i];
         while (b >= 64) {
           crypto_core_salsa20(x, z, k, sigma);
-          for (i = 0; i < 64; i++)
-            c[cpos + i] = m[mpos + i] ^ x[i];
+          for (i = 0; i < 64; i++) c[cpos + i] = m[mpos + i] ^ x[i];
           u = 1;
           for (i = 8; i < 16; i++) {
             u = u + (z[i] & 255) | 0;
@@ -369,8 +362,7 @@ var require_nacl_fast = __commonJS({
         }
         if (b > 0) {
           crypto_core_salsa20(x, z, k, sigma);
-          for (i = 0; i < b; i++)
-            c[cpos + i] = m[mpos + i] ^ x[i];
+          for (i = 0; i < b; i++) c[cpos + i] = m[mpos + i] ^ x[i];
         }
         return 0;
       }
@@ -378,14 +370,11 @@ var require_nacl_fast = __commonJS({
       function crypto_stream_salsa20(c, cpos, b, n, k) {
         var z = new Uint8Array(16), x = new Uint8Array(64);
         var u, i;
-        for (i = 0; i < 16; i++)
-          z[i] = 0;
-        for (i = 0; i < 8; i++)
-          z[i] = n[i];
+        for (i = 0; i < 16; i++) z[i] = 0;
+        for (i = 0; i < 8; i++) z[i] = n[i];
         while (b >= 64) {
           crypto_core_salsa20(x, z, k, sigma);
-          for (i = 0; i < 64; i++)
-            c[cpos + i] = x[i];
+          for (i = 0; i < 64; i++) c[cpos + i] = x[i];
           u = 1;
           for (i = 8; i < 16; i++) {
             u = u + (z[i] & 255) | 0;
@@ -397,8 +386,7 @@ var require_nacl_fast = __commonJS({
         }
         if (b > 0) {
           crypto_core_salsa20(x, z, k, sigma);
-          for (i = 0; i < b; i++)
-            c[cpos + i] = x[i];
+          for (i = 0; i < b; i++) c[cpos + i] = x[i];
         }
         return 0;
       }
@@ -407,8 +395,7 @@ var require_nacl_fast = __commonJS({
         var s = new Uint8Array(32);
         crypto_core_hsalsa20(s, n, k, sigma);
         var sn = new Uint8Array(8);
-        for (var i = 0; i < 8; i++)
-          sn[i] = n[i + 16];
+        for (var i = 0; i < 8; i++) sn[i] = n[i + 16];
         return crypto_stream_salsa20(c, cpos, d, sn, s);
       }
       __name(crypto_stream, "crypto_stream");
@@ -416,8 +403,7 @@ var require_nacl_fast = __commonJS({
         var s = new Uint8Array(32);
         crypto_core_hsalsa20(s, n, k, sigma);
         var sn = new Uint8Array(8);
-        for (var i = 0; i < 8; i++)
-          sn[i] = n[i + 16];
+        for (var i = 0; i < 8; i++) sn[i] = n[i + 16];
         return crypto_stream_salsa20_xor(c, cpos, m, mpos, d, sn, s);
       }
       __name(crypto_stream_xor, "crypto_stream_xor");
@@ -667,8 +653,7 @@ var require_nacl_fast = __commonJS({
         if (this.leftover) {
           i = this.leftover;
           this.buffer[i++] = 1;
-          for (; i < 16; i++)
-            this.buffer[i] = 0;
+          for (; i < 16; i++) this.buffer[i] = 0;
           this.fin = 1;
           this.blocks(this.buffer, 0, 16);
         }
@@ -696,11 +681,9 @@ var require_nacl_fast = __commonJS({
         }
         g[9] -= 1 << 13;
         mask = (c ^ 1) - 1;
-        for (i = 0; i < 10; i++)
-          g[i] &= mask;
+        for (i = 0; i < 10; i++) g[i] &= mask;
         mask = ~mask;
-        for (i = 0; i < 10; i++)
-          this.h[i] = this.h[i] & mask | g[i];
+        for (i = 0; i < 10; i++) this.h[i] = this.h[i] & mask | g[i];
         this.h[0] = (this.h[0] | this.h[1] << 13) & 65535;
         this.h[1] = (this.h[1] >>> 3 | this.h[2] << 10) & 65535;
         this.h[2] = (this.h[2] >>> 6 | this.h[3] << 7) & 65535;
@@ -775,33 +758,27 @@ var require_nacl_fast = __commonJS({
       __name(crypto_onetimeauth_verify, "crypto_onetimeauth_verify");
       function crypto_secretbox(c, m, d, n, k) {
         var i;
-        if (d < 32)
-          return -1;
+        if (d < 32) return -1;
         crypto_stream_xor(c, 0, m, 0, d, n, k);
         crypto_onetimeauth(c, 16, c, 32, d - 32, c);
-        for (i = 0; i < 16; i++)
-          c[i] = 0;
+        for (i = 0; i < 16; i++) c[i] = 0;
         return 0;
       }
       __name(crypto_secretbox, "crypto_secretbox");
       function crypto_secretbox_open(m, c, d, n, k) {
         var i;
         var x = new Uint8Array(32);
-        if (d < 32)
-          return -1;
+        if (d < 32) return -1;
         crypto_stream(x, 0, 32, n, k);
-        if (crypto_onetimeauth_verify(c, 16, c, 32, d - 32, x) !== 0)
-          return -1;
+        if (crypto_onetimeauth_verify(c, 16, c, 32, d - 32, x) !== 0) return -1;
         crypto_stream_xor(m, 0, c, 0, d, n, k);
-        for (i = 0; i < 32; i++)
-          m[i] = 0;
+        for (i = 0; i < 32; i++) m[i] = 0;
         return 0;
       }
       __name(crypto_secretbox_open, "crypto_secretbox_open");
       function set25519(r, a) {
         var i;
-        for (i = 0; i < 16; i++)
-          r[i] = a[i] | 0;
+        for (i = 0; i < 16; i++) r[i] = a[i] | 0;
       }
       __name(set25519, "set25519");
       function car25519(o) {
@@ -826,8 +803,7 @@ var require_nacl_fast = __commonJS({
       function pack25519(o, n) {
         var i, j, b;
         var m = gf(), t = gf();
-        for (i = 0; i < 16; i++)
-          t[i] = n[i];
+        for (i = 0; i < 16; i++) t[i] = n[i];
         car25519(t);
         car25519(t);
         car25519(t);
@@ -863,19 +839,16 @@ var require_nacl_fast = __commonJS({
       __name(par25519, "par25519");
       function unpack25519(o, n) {
         var i;
-        for (i = 0; i < 16; i++)
-          o[i] = n[2 * i] + (n[2 * i + 1] << 8);
+        for (i = 0; i < 16; i++) o[i] = n[2 * i] + (n[2 * i + 1] << 8);
         o[15] &= 32767;
       }
       __name(unpack25519, "unpack25519");
       function A(o, a, b) {
-        for (var i = 0; i < 16; i++)
-          o[i] = a[i] + b[i];
+        for (var i = 0; i < 16; i++) o[i] = a[i] + b[i];
       }
       __name(A, "A");
       function Z(o, a, b) {
-        for (var i = 0; i < 16; i++)
-          o[i] = a[i] - b[i];
+        for (var i = 0; i < 16; i++) o[i] = a[i] - b[i];
       }
       __name(Z, "Z");
       function M(o, a, b) {
@@ -1292,37 +1265,30 @@ var require_nacl_fast = __commonJS({
       function inv25519(o, i) {
         var c = gf();
         var a;
-        for (a = 0; a < 16; a++)
-          c[a] = i[a];
+        for (a = 0; a < 16; a++) c[a] = i[a];
         for (a = 253; a >= 0; a--) {
           S(c, c);
-          if (a !== 2 && a !== 4)
-            M(c, c, i);
+          if (a !== 2 && a !== 4) M(c, c, i);
         }
-        for (a = 0; a < 16; a++)
-          o[a] = c[a];
+        for (a = 0; a < 16; a++) o[a] = c[a];
       }
       __name(inv25519, "inv25519");
       function pow2523(o, i) {
         var c = gf();
         var a;
-        for (a = 0; a < 16; a++)
-          c[a] = i[a];
+        for (a = 0; a < 16; a++) c[a] = i[a];
         for (a = 250; a >= 0; a--) {
           S(c, c);
-          if (a !== 1)
-            M(c, c, i);
+          if (a !== 1) M(c, c, i);
         }
-        for (a = 0; a < 16; a++)
-          o[a] = c[a];
+        for (a = 0; a < 16; a++) o[a] = c[a];
       }
       __name(pow2523, "pow2523");
       function crypto_scalarmult(q, n, p) {
         var z = new Uint8Array(32);
         var x = new Float64Array(80), r, i;
         var a = gf(), b = gf(), c = gf(), d = gf(), e = gf(), f = gf();
-        for (i = 0; i < 31; i++)
-          z[i] = n[i];
+        for (i = 0; i < 31; i++) z[i] = n[i];
         z[31] = n[31] & 127 | 64;
         z[0] &= 248;
         unpack25519(x, p);
@@ -1879,15 +1845,13 @@ var require_nacl_fast = __commonJS({
         hl[7] = 327033209;
         crypto_hashblocks_hl(hh, hl, m, n);
         n %= 128;
-        for (i = 0; i < n; i++)
-          x[i] = m[b - n + i];
+        for (i = 0; i < n; i++) x[i] = m[b - n + i];
         x[n] = 128;
         n = 256 - 128 * (n < 112 ? 1 : 0);
         x[n - 9] = 0;
         ts64(x, n - 8, b / 536870912 | 0, b << 3);
         crypto_hashblocks_hl(hh, hl, x, n);
-        for (i = 0; i < 8; i++)
-          ts64(out, 8 * i, hh[i], hl[i]);
+        for (i = 0; i < 8; i++) ts64(out, 8 * i, hh[i], hl[i]);
         return 0;
       }
       __name(crypto_hash, "crypto_hash");
@@ -1957,16 +1921,14 @@ var require_nacl_fast = __commonJS({
         var d = new Uint8Array(64);
         var p = [gf(), gf(), gf(), gf()];
         var i;
-        if (!seeded)
-          randombytes(sk, 32);
+        if (!seeded) randombytes(sk, 32);
         crypto_hash(d, sk, 32);
         d[0] &= 248;
         d[31] &= 127;
         d[31] |= 64;
         scalarbase(p, d);
         pack(pk, p);
-        for (i = 0; i < 32; i++)
-          sk[i + 32] = pk[i];
+        for (i = 0; i < 32; i++) sk[i + 32] = pk[i];
         return 0;
       }
       __name(crypto_sign_keypair, "crypto_sign_keypair");
@@ -1989,8 +1951,7 @@ var require_nacl_fast = __commonJS({
           carry = x[j] >> 8;
           x[j] &= 255;
         }
-        for (j = 0; j < 32; j++)
-          x[j] -= carry * L[j];
+        for (j = 0; j < 32; j++) x[j] -= carry * L[j];
         for (i = 0; i < 32; i++) {
           x[i + 1] += x[i] >> 8;
           r[i] = x[i] & 255;
@@ -1999,10 +1960,8 @@ var require_nacl_fast = __commonJS({
       __name(modL, "modL");
       function reduce(r) {
         var x = new Float64Array(64), i;
-        for (i = 0; i < 64; i++)
-          x[i] = r[i];
-        for (i = 0; i < 64; i++)
-          r[i] = 0;
+        for (i = 0; i < 64; i++) x[i] = r[i];
+        for (i = 0; i < 64; i++) r[i] = 0;
         modL(r, x);
       }
       __name(reduce, "reduce");
@@ -2015,22 +1974,17 @@ var require_nacl_fast = __commonJS({
         d[31] &= 127;
         d[31] |= 64;
         var smlen = n + 64;
-        for (i = 0; i < n; i++)
-          sm[64 + i] = m[i];
-        for (i = 0; i < 32; i++)
-          sm[32 + i] = d[32 + i];
+        for (i = 0; i < n; i++) sm[64 + i] = m[i];
+        for (i = 0; i < 32; i++) sm[32 + i] = d[32 + i];
         crypto_hash(r, sm.subarray(32), n + 32);
         reduce(r);
         scalarbase(p, r);
         pack(sm, p);
-        for (i = 32; i < 64; i++)
-          sm[i] = sk[i];
+        for (i = 32; i < 64; i++) sm[i] = sk[i];
         crypto_hash(h, sm, n + 64);
         reduce(h);
-        for (i = 0; i < 64; i++)
-          x[i] = 0;
-        for (i = 0; i < 32; i++)
-          x[i] = r[i];
+        for (i = 0; i < 64; i++) x[i] = 0;
+        for (i = 0; i < 32; i++) x[i] = r[i];
         for (i = 0; i < 32; i++) {
           for (j = 0; j < 32; j++) {
             x[i + j] += h[i] * d[j];
@@ -2060,14 +2014,11 @@ var require_nacl_fast = __commonJS({
         M(r[0], t, den);
         S(chk, r[0]);
         M(chk, chk, den);
-        if (neq25519(chk, num))
-          M(r[0], r[0], I);
+        if (neq25519(chk, num)) M(r[0], r[0], I);
         S(chk, r[0]);
         M(chk, chk, den);
-        if (neq25519(chk, num))
-          return -1;
-        if (par25519(r[0]) === p[31] >> 7)
-          Z(r[0], gf0, r[0]);
+        if (neq25519(chk, num)) return -1;
+        if (par25519(r[0]) === p[31] >> 7) Z(r[0], gf0, r[0]);
         M(r[3], r[0], r[1]);
         return 0;
       }
@@ -2076,14 +2027,10 @@ var require_nacl_fast = __commonJS({
         var i;
         var t = new Uint8Array(32), h = new Uint8Array(64);
         var p = [gf(), gf(), gf(), gf()], q = [gf(), gf(), gf(), gf()];
-        if (n < 64)
-          return -1;
-        if (unpackneg(q, pk))
-          return -1;
-        for (i = 0; i < n; i++)
-          m[i] = sm[i];
-        for (i = 0; i < 32; i++)
-          m[i + 32] = pk[i];
+        if (n < 64) return -1;
+        if (unpackneg(q, pk)) return -1;
+        for (i = 0; i < n; i++) m[i] = sm[i];
+        for (i = 0; i < 32; i++) m[i + 32] = pk[i];
         crypto_hash(h, m, n);
         reduce(h);
         scalarmult(p, q, h);
@@ -2092,12 +2039,10 @@ var require_nacl_fast = __commonJS({
         pack(t, p);
         n -= 64;
         if (crypto_verify_32(sm, 0, t, 0)) {
-          for (i = 0; i < n; i++)
-            m[i] = 0;
+          for (i = 0; i < n; i++) m[i] = 0;
           return -1;
         }
-        for (i = 0; i < n; i++)
-          m[i] = sm[i + 64];
+        for (i = 0; i < n; i++) m[i] = sm[i + 64];
         return n;
       }
       __name(crypto_sign_open, "crypto_sign_open");
@@ -2159,17 +2104,13 @@ var require_nacl_fast = __commonJS({
         scalarbase
       };
       function checkLengths(k, n) {
-        if (k.length !== crypto_secretbox_KEYBYTES)
-          throw new Error("bad key size");
-        if (n.length !== crypto_secretbox_NONCEBYTES)
-          throw new Error("bad nonce size");
+        if (k.length !== crypto_secretbox_KEYBYTES) throw new Error("bad key size");
+        if (n.length !== crypto_secretbox_NONCEBYTES) throw new Error("bad nonce size");
       }
       __name(checkLengths, "checkLengths");
       function checkBoxLengths(pk, sk) {
-        if (pk.length !== crypto_box_PUBLICKEYBYTES)
-          throw new Error("bad public key size");
-        if (sk.length !== crypto_box_SECRETKEYBYTES)
-          throw new Error("bad secret key size");
+        if (pk.length !== crypto_box_PUBLICKEYBYTES) throw new Error("bad public key size");
+        if (sk.length !== crypto_box_SECRETKEYBYTES) throw new Error("bad secret key size");
       }
       __name(checkBoxLengths, "checkBoxLengths");
       function checkArrayTypes() {
@@ -2180,8 +2121,7 @@ var require_nacl_fast = __commonJS({
       }
       __name(checkArrayTypes, "checkArrayTypes");
       function cleanup(arr) {
-        for (var i = 0; i < arr.length; i++)
-          arr[i] = 0;
+        for (var i = 0; i < arr.length; i++) arr[i] = 0;
       }
       __name(cleanup, "cleanup");
       nacl3.randomBytes = function(n) {
@@ -2194,8 +2134,7 @@ var require_nacl_fast = __commonJS({
         checkLengths(key, nonce);
         var m = new Uint8Array(crypto_secretbox_ZEROBYTES + msg.length);
         var c = new Uint8Array(m.length);
-        for (var i = 0; i < msg.length; i++)
-          m[i + crypto_secretbox_ZEROBYTES] = msg[i];
+        for (var i = 0; i < msg.length; i++) m[i + crypto_secretbox_ZEROBYTES] = msg[i];
         crypto_secretbox(c, m, m.length, nonce, key);
         return c.subarray(crypto_secretbox_BOXZEROBYTES);
       };
@@ -2204,12 +2143,9 @@ var require_nacl_fast = __commonJS({
         checkLengths(key, nonce);
         var c = new Uint8Array(crypto_secretbox_BOXZEROBYTES + box.length);
         var m = new Uint8Array(c.length);
-        for (var i = 0; i < box.length; i++)
-          c[i + crypto_secretbox_BOXZEROBYTES] = box[i];
-        if (c.length < 32)
-          return null;
-        if (crypto_secretbox_open(m, c, c.length, nonce, key) !== 0)
-          return null;
+        for (var i = 0; i < box.length; i++) c[i + crypto_secretbox_BOXZEROBYTES] = box[i];
+        if (c.length < 32) return null;
+        if (crypto_secretbox_open(m, c, c.length, nonce, key) !== 0) return null;
         return m.subarray(crypto_secretbox_ZEROBYTES);
       };
       nacl3.secretbox.keyLength = crypto_secretbox_KEYBYTES;
@@ -2217,18 +2153,15 @@ var require_nacl_fast = __commonJS({
       nacl3.secretbox.overheadLength = crypto_secretbox_BOXZEROBYTES;
       nacl3.scalarMult = function(n, p) {
         checkArrayTypes(n, p);
-        if (n.length !== crypto_scalarmult_SCALARBYTES)
-          throw new Error("bad n size");
-        if (p.length !== crypto_scalarmult_BYTES)
-          throw new Error("bad p size");
+        if (n.length !== crypto_scalarmult_SCALARBYTES) throw new Error("bad n size");
+        if (p.length !== crypto_scalarmult_BYTES) throw new Error("bad p size");
         var q = new Uint8Array(crypto_scalarmult_BYTES);
         crypto_scalarmult(q, n, p);
         return q;
       };
       nacl3.scalarMult.base = function(n) {
         checkArrayTypes(n);
-        if (n.length !== crypto_scalarmult_SCALARBYTES)
-          throw new Error("bad n size");
+        if (n.length !== crypto_scalarmult_SCALARBYTES) throw new Error("bad n size");
         var q = new Uint8Array(crypto_scalarmult_BYTES);
         crypto_scalarmult_base(q, n);
         return q;
@@ -2285,18 +2218,15 @@ var require_nacl_fast = __commonJS({
           throw new Error("bad public key size");
         var tmp = new Uint8Array(signedMsg.length);
         var mlen = crypto_sign_open(tmp, signedMsg, signedMsg.length, publicKey);
-        if (mlen < 0)
-          return null;
+        if (mlen < 0) return null;
         var m = new Uint8Array(mlen);
-        for (var i = 0; i < m.length; i++)
-          m[i] = tmp[i];
+        for (var i = 0; i < m.length; i++) m[i] = tmp[i];
         return m;
       };
       nacl3.sign.detached = function(msg, secretKey) {
         var signedMsg = nacl3.sign(msg, secretKey);
         var sig = new Uint8Array(crypto_sign_BYTES);
-        for (var i = 0; i < sig.length; i++)
-          sig[i] = signedMsg[i];
+        for (var i = 0; i < sig.length; i++) sig[i] = signedMsg[i];
         return sig;
       };
       nacl3.sign.detached.verify = function(msg, sig, publicKey) {
@@ -2308,10 +2238,8 @@ var require_nacl_fast = __commonJS({
         var sm = new Uint8Array(crypto_sign_BYTES + msg.length);
         var m = new Uint8Array(crypto_sign_BYTES + msg.length);
         var i;
-        for (i = 0; i < crypto_sign_BYTES; i++)
-          sm[i] = sig[i];
-        for (i = 0; i < msg.length; i++)
-          sm[i + crypto_sign_BYTES] = msg[i];
+        for (i = 0; i < crypto_sign_BYTES; i++) sm[i] = sig[i];
+        for (i = 0; i < msg.length; i++) sm[i + crypto_sign_BYTES] = msg[i];
         return crypto_sign_open(m, sm, sm.length, publicKey) >= 0;
       };
       nacl3.sign.keyPair = function() {
@@ -2325,8 +2253,7 @@ var require_nacl_fast = __commonJS({
         if (secretKey.length !== crypto_sign_SECRETKEYBYTES)
           throw new Error("bad secret key size");
         var pk = new Uint8Array(crypto_sign_PUBLICKEYBYTES);
-        for (var i = 0; i < pk.length; i++)
-          pk[i] = secretKey[32 + i];
+        for (var i = 0; i < pk.length; i++) pk[i] = secretKey[32 + i];
         return { publicKey: pk, secretKey: new Uint8Array(secretKey) };
       };
       nacl3.sign.keyPair.fromSeed = function(seed) {
@@ -2335,8 +2262,7 @@ var require_nacl_fast = __commonJS({
           throw new Error("bad seed size");
         var pk = new Uint8Array(crypto_sign_PUBLICKEYBYTES);
         var sk = new Uint8Array(crypto_sign_SECRETKEYBYTES);
-        for (var i = 0; i < 32; i++)
-          sk[i] = seed[i];
+        for (var i = 0; i < 32; i++) sk[i] = seed[i];
         crypto_sign_keypair(pk, sk, true);
         return { publicKey: pk, secretKey: sk };
       };
@@ -2353,10 +2279,8 @@ var require_nacl_fast = __commonJS({
       nacl3.hash.hashLength = crypto_hash_BYTES;
       nacl3.verify = function(x, y) {
         checkArrayTypes(x, y);
-        if (x.length === 0 || y.length === 0)
-          return false;
-        if (x.length !== y.length)
-          return false;
+        if (x.length === 0 || y.length === 0) return false;
+        if (x.length !== y.length) return false;
         return vn(x, 0, y, 0, x.length) === 0 ? true : false;
       };
       nacl3.setPRNG = function(fn) {
@@ -2371,8 +2295,7 @@ var require_nacl_fast = __commonJS({
             for (i = 0; i < n; i += QUOTA) {
               crypto2.getRandomValues(v.subarray(i, i + Math.min(n - i, QUOTA)));
             }
-            for (i = 0; i < n; i++)
-              x[i] = v[i];
+            for (i = 0; i < n; i++) x[i] = v[i];
             cleanup(v);
           });
         } else if (typeof __require !== "undefined") {
@@ -2380,8 +2303,7 @@ var require_nacl_fast = __commonJS({
           if (crypto2 && crypto2.randomBytes) {
             nacl3.setPRNG(function(x, n) {
               var i, v = crypto2.randomBytes(n);
-              for (i = 0; i < n; i++)
-                x[i] = v[i];
+              for (i = 0; i < n; i++) x[i] = v[i];
               cleanup(v);
             });
           }
@@ -2976,6 +2898,9 @@ var decode = /* @__PURE__ */ __name((input) => {
 
 // node_modules/jose/dist/browser/util/errors.js
 var JOSEError = class extends Error {
+  static {
+    __name(this, "JOSEError");
+  }
   constructor(message2, options) {
     super(message2, options);
     this.code = "ERR_JOSE_GENERIC";
@@ -2983,9 +2908,11 @@ var JOSEError = class extends Error {
     Error.captureStackTrace?.(this, this.constructor);
   }
 };
-__name(JOSEError, "JOSEError");
 JOSEError.code = "ERR_JOSE_GENERIC";
 var JWTClaimValidationFailed = class extends JOSEError {
+  static {
+    __name(this, "JWTClaimValidationFailed");
+  }
   constructor(message2, payload, claim = "unspecified", reason = "unspecified") {
     super(message2, { cause: { claim, reason, payload } });
     this.code = "ERR_JWT_CLAIM_VALIDATION_FAILED";
@@ -2994,9 +2921,11 @@ var JWTClaimValidationFailed = class extends JOSEError {
     this.payload = payload;
   }
 };
-__name(JWTClaimValidationFailed, "JWTClaimValidationFailed");
 JWTClaimValidationFailed.code = "ERR_JWT_CLAIM_VALIDATION_FAILED";
 var JWTExpired = class extends JOSEError {
+  static {
+    __name(this, "JWTExpired");
+  }
   constructor(message2, payload, claim = "unspecified", reason = "unspecified") {
     super(message2, { cause: { claim, reason, payload } });
     this.code = "ERR_JWT_EXPIRED";
@@ -3005,103 +2934,126 @@ var JWTExpired = class extends JOSEError {
     this.payload = payload;
   }
 };
-__name(JWTExpired, "JWTExpired");
 JWTExpired.code = "ERR_JWT_EXPIRED";
 var JOSEAlgNotAllowed = class extends JOSEError {
+  static {
+    __name(this, "JOSEAlgNotAllowed");
+  }
   constructor() {
     super(...arguments);
     this.code = "ERR_JOSE_ALG_NOT_ALLOWED";
   }
 };
-__name(JOSEAlgNotAllowed, "JOSEAlgNotAllowed");
 JOSEAlgNotAllowed.code = "ERR_JOSE_ALG_NOT_ALLOWED";
 var JOSENotSupported = class extends JOSEError {
+  static {
+    __name(this, "JOSENotSupported");
+  }
   constructor() {
     super(...arguments);
     this.code = "ERR_JOSE_NOT_SUPPORTED";
   }
 };
-__name(JOSENotSupported, "JOSENotSupported");
 JOSENotSupported.code = "ERR_JOSE_NOT_SUPPORTED";
 var JWEDecryptionFailed = class extends JOSEError {
+  static {
+    __name(this, "JWEDecryptionFailed");
+  }
   constructor(message2 = "decryption operation failed", options) {
     super(message2, options);
     this.code = "ERR_JWE_DECRYPTION_FAILED";
   }
 };
-__name(JWEDecryptionFailed, "JWEDecryptionFailed");
 JWEDecryptionFailed.code = "ERR_JWE_DECRYPTION_FAILED";
 var JWEInvalid = class extends JOSEError {
+  static {
+    __name(this, "JWEInvalid");
+  }
   constructor() {
     super(...arguments);
     this.code = "ERR_JWE_INVALID";
   }
 };
-__name(JWEInvalid, "JWEInvalid");
 JWEInvalid.code = "ERR_JWE_INVALID";
 var JWSInvalid = class extends JOSEError {
+  static {
+    __name(this, "JWSInvalid");
+  }
   constructor() {
     super(...arguments);
     this.code = "ERR_JWS_INVALID";
   }
 };
-__name(JWSInvalid, "JWSInvalid");
 JWSInvalid.code = "ERR_JWS_INVALID";
 var JWTInvalid = class extends JOSEError {
+  static {
+    __name(this, "JWTInvalid");
+  }
   constructor() {
     super(...arguments);
     this.code = "ERR_JWT_INVALID";
   }
 };
-__name(JWTInvalid, "JWTInvalid");
 JWTInvalid.code = "ERR_JWT_INVALID";
 var JWKInvalid = class extends JOSEError {
+  static {
+    __name(this, "JWKInvalid");
+  }
   constructor() {
     super(...arguments);
     this.code = "ERR_JWK_INVALID";
   }
 };
-__name(JWKInvalid, "JWKInvalid");
 JWKInvalid.code = "ERR_JWK_INVALID";
 var JWKSInvalid = class extends JOSEError {
+  static {
+    __name(this, "JWKSInvalid");
+  }
   constructor() {
     super(...arguments);
     this.code = "ERR_JWKS_INVALID";
   }
 };
-__name(JWKSInvalid, "JWKSInvalid");
 JWKSInvalid.code = "ERR_JWKS_INVALID";
 var JWKSNoMatchingKey = class extends JOSEError {
+  static {
+    __name(this, "JWKSNoMatchingKey");
+  }
   constructor(message2 = "no applicable key found in the JSON Web Key Set", options) {
     super(message2, options);
     this.code = "ERR_JWKS_NO_MATCHING_KEY";
   }
 };
-__name(JWKSNoMatchingKey, "JWKSNoMatchingKey");
 JWKSNoMatchingKey.code = "ERR_JWKS_NO_MATCHING_KEY";
 var JWKSMultipleMatchingKeys = class extends JOSEError {
+  static {
+    __name(this, "JWKSMultipleMatchingKeys");
+  }
   constructor(message2 = "multiple matching keys found in the JSON Web Key Set", options) {
     super(message2, options);
     this.code = "ERR_JWKS_MULTIPLE_MATCHING_KEYS";
   }
 };
-__name(JWKSMultipleMatchingKeys, "JWKSMultipleMatchingKeys");
 JWKSMultipleMatchingKeys.code = "ERR_JWKS_MULTIPLE_MATCHING_KEYS";
 var JWKSTimeout = class extends JOSEError {
+  static {
+    __name(this, "JWKSTimeout");
+  }
   constructor(message2 = "request timed out", options) {
     super(message2, options);
     this.code = "ERR_JWKS_TIMEOUT";
   }
 };
-__name(JWKSTimeout, "JWKSTimeout");
 JWKSTimeout.code = "ERR_JWKS_TIMEOUT";
 var JWSSignatureVerificationFailed = class extends JOSEError {
+  static {
+    __name(this, "JWSSignatureVerificationFailed");
+  }
   constructor(message2 = "signature verification failed", options) {
     super(message2, options);
     this.code = "ERR_JWS_SIGNATURE_VERIFICATION_FAILED";
   }
 };
-__name(JWSSignatureVerificationFailed, "JWSSignatureVerificationFailed");
 JWSSignatureVerificationFailed.code = "ERR_JWS_SIGNATURE_VERIFICATION_FAILED";
 
 // node_modules/jose/dist/browser/lib/crypto_key.js
@@ -4010,6 +3962,9 @@ var sign_default = sign;
 
 // node_modules/jose/dist/browser/jws/flattened/sign.js
 var FlattenedSign = class {
+  static {
+    __name(this, "FlattenedSign");
+  }
   constructor(payload) {
     if (!(payload instanceof Uint8Array)) {
       throw new TypeError("payload must be an instance of Uint8Array");
@@ -4082,10 +4037,12 @@ var FlattenedSign = class {
     return jws;
   }
 };
-__name(FlattenedSign, "FlattenedSign");
 
 // node_modules/jose/dist/browser/jws/compact/sign.js
 var CompactSign = class {
+  static {
+    __name(this, "CompactSign");
+  }
   constructor(payload) {
     this._flattened = new FlattenedSign(payload);
   }
@@ -4101,7 +4058,6 @@ var CompactSign = class {
     return `${jws.protected}.${jws.payload}.${jws.signature}`;
   }
 };
-__name(CompactSign, "CompactSign");
 
 // node_modules/jose/dist/browser/jwt/produce.js
 function validateInput(label, input) {
@@ -4112,6 +4068,9 @@ function validateInput(label, input) {
 }
 __name(validateInput, "validateInput");
 var ProduceJWT = class {
+  static {
+    __name(this, "ProduceJWT");
+  }
   constructor(payload = {}) {
     if (!isObject(payload)) {
       throw new TypeError("JWT Claims Set MUST be an object");
@@ -4170,10 +4129,12 @@ var ProduceJWT = class {
     return this;
   }
 };
-__name(ProduceJWT, "ProduceJWT");
 
 // node_modules/jose/dist/browser/jwt/sign.js
 var SignJWT = class extends ProduceJWT {
+  static {
+    __name(this, "SignJWT");
+  }
   setProtectedHeader(protectedHeader) {
     this._protectedHeader = protectedHeader;
     return this;
@@ -4187,7 +4148,6 @@ var SignJWT = class extends ProduceJWT {
     return sig.sign(key, options);
   }
 };
-__name(SignJWT, "SignJWT");
 
 // src/authentication/auth.js
 var import_tweetnacl = __toESM(require_nacl_fast());
@@ -4359,8 +4319,7 @@ __name(renderLoginPage, "renderLoginPage");
 async function generateJWTToken(request, env) {
   const password = await request.text();
   const savedPass = await env.kv.get("pwd");
-  if (password !== savedPass)
-    return new Response("Method Not Allowed", { status: 405 });
+  if (password !== savedPass) return new Response("Method Not Allowed", { status: 405 });
   let secretKey = await env.kv.get("secretKey");
   if (!secretKey) {
     secretKey = generateSecretKey();
@@ -4414,11 +4373,9 @@ __name(logout, "logout");
 async function resetPassword(request, env) {
   let auth = await Authenticate(request, env);
   const oldPwd = await env.kv.get("pwd");
-  if (oldPwd && !auth)
-    return new Response("Unauthorized!", { status: 401 });
+  if (oldPwd && !auth) return new Response("Unauthorized!", { status: 401 });
   const newPwd = await request.text();
-  if (newPwd === oldPwd)
-    return new Response("Please enter a new Password!", { status: 400 });
+  if (newPwd === oldPwd) return new Response("Please enter a new Password!", { status: 400 });
   await env.kv.put("pwd", newPwd);
   return new Response("Success", {
     status: 200,
@@ -4431,10 +4388,8 @@ async function resetPassword(request, env) {
 __name(resetPassword, "resetPassword");
 async function login(request, env) {
   const auth = await Authenticate(request, env);
-  if (auth)
-    return Response.redirect(`${globalThis.urlOrigin}/panel`, 302);
-  if (request.method === "POST")
-    return await generateJWTToken(request, env);
+  if (auth) return Response.redirect(`${globalThis.urlOrigin}/panel`, 302);
+  if (request.method === "POST") return await generateJWTToken(request, env);
   return await renderLoginPage();
 }
 __name(login, "login");
@@ -4576,12 +4531,10 @@ async function getDataset(request, env) {
   if (!proxySettings) {
     proxySettings = await updateDataset(request, env);
     const { error, configs } = await fetchWarpConfigs(env, proxySettings);
-    if (error)
-      throw new Error(`An error occurred while getting Warp configs - ${error}`);
+    if (error) throw new Error(`An error occurred while getting Warp configs - ${error}`);
     warpConfigs = configs;
   }
-  if (globalThis.panelVersion !== proxySettings.panelVersion)
-    proxySettings = await updateDataset(request, env);
+  if (globalThis.panelVersion !== proxySettings.panelVersion) proxySettings = await updateDataset(request, env);
   return { proxySettings, warpConfigs };
 }
 __name(getDataset, "getDataset");
@@ -4613,12 +4566,9 @@ async function updateDataset(request, env) {
   }
   const validateField = /* @__PURE__ */ __name((field) => {
     const fieldValue = newSettings?.get(field);
-    if (fieldValue === void 0)
-      return null;
-    if (fieldValue === "true")
-      return true;
-    if (fieldValue === "false")
-      return false;
+    if (fieldValue === void 0) return null;
+    if (fieldValue === "true") return true;
+    if (fieldValue === "false") return false;
     return fieldValue;
   }, "validateField");
   const proxySettings = {
@@ -4675,8 +4625,7 @@ async function updateDataset(request, env) {
   };
   try {
     await env.kv.put("proxySettings", JSON.stringify(proxySettings));
-    if (isReset)
-      await updateWarpConfigs(request, env);
+    if (isReset) await updateWarpConfigs(request, env);
   } catch (error) {
     console.log(error);
     throw new Error(`An error occurred while updating KV - ${error}`);
@@ -4686,8 +4635,7 @@ async function updateDataset(request, env) {
 __name(updateDataset, "updateDataset");
 function extractChainProxyParams(chainProxy) {
   let configParams = {};
-  if (!chainProxy)
-    return {};
+  if (!chainProxy) return {};
   const url = new URL(chainProxy);
   const protocol = url.protocol.slice(0, -1);
   if (protocol === atob("dmxlc3M=")) {
@@ -4715,13 +4663,11 @@ function extractChainProxyParams(chainProxy) {
 __name(extractChainProxyParams, "extractChainProxyParams");
 async function updateWarpConfigs(request, env) {
   const auth = await Authenticate(request, env);
-  if (!auth)
-    return new Response("Unauthorized", { status: 401 });
+  if (!auth) return new Response("Unauthorized", { status: 401 });
   if (request.method === "POST") {
     try {
       const { error: warpPlusError } = await fetchWarpConfigs(env);
-      if (warpPlusError)
-        return new Response(warpPlusError, { status: 400 });
+      if (warpPlusError) return new Response(warpPlusError, { status: 400 });
       return new Response("Warp configs updated successfully", { status: 200 });
     } catch (error) {
       console.log(error);
@@ -6287,23 +6233,20 @@ __name(isDomain, "isDomain");
 async function handlePanel(request, env) {
   const auth = await Authenticate(request, env);
   if (request.method === "POST") {
-    if (!auth)
-      return new Response("Unauthorized or expired session!", { status: 401 });
+    if (!auth) return new Response("Unauthorized or expired session!", { status: 401 });
     await updateDataset(request, env);
     return new Response("Success", { status: 200 });
   }
   const { proxySettings } = await getDataset(request, env);
   const pwd = await env.kv.get("pwd");
-  if (pwd && !auth)
-    return Response.redirect(`${globalThis.urlOrigin}/login`, 302);
+  if (pwd && !auth) return Response.redirect(`${globalThis.urlOrigin}/login`, 302);
   const isPassSet = pwd?.length >= 8;
   return await renderHomePage(proxySettings, isPassSet);
 }
 __name(handlePanel, "handlePanel");
 async function fallback(request) {
   const url = new URL(request.url);
-  if (url.pathname !== "/")
-    return new Response("Invalid path", { status: 400 });
+  if (url.pathname !== "/") return new Response("Invalid path", { status: 400 });
   url.hostname = globalThis.fallbackDomain;
   url.protocol = "https:";
   const newRequest = new Request(url.toString(), {
@@ -6333,8 +6276,7 @@ async function getMyIP(request) {
 __name(getMyIP, "getMyIP");
 async function getWarpConfigFiles(request, env) {
   const auth = await Authenticate(request, env);
-  if (!auth)
-    return new Response("Unauthorized or expired session!", { status: 401 });
+  if (!auth) return new Response("Unauthorized or expired session!", { status: 401 });
   const { warpConfigs, proxySettings } = await getDataset(request, env);
   const { warpEndpoints } = proxySettings;
   const warpConfig = extractWireguardParams(warpConfigs, false);
@@ -6381,12 +6323,9 @@ function initializeParams(request, env) {
   globalThis.fallbackDomain = env.FALLBACK || "speed.cloudflare.com";
   globalThis.subPath = env.SUB_PATH || userID;
   if (pathName !== "/secrets") {
-    if (!userID || !globalThis.TRPassword)
-      throw new Error(`Please set UUID and ${atob("VHJvamFu")} password first. Please visit <a href="https://${hostName}/secrets" target="_blank">here</a> to generate them.`, { cause: "init" });
-    if (userID && !isValidUUID(userID))
-      throw new Error(`Invalid UUID: ${userID}`, { cause: "init" });
-    if (typeof env.kv !== "object")
-      throw new Error("KV Dataset is not properly set! Please refer to tutorials.", { cause: "init" });
+    if (!userID || !globalThis.TRPassword) throw new Error(`Please set UUID and ${atob("VHJvamFu")} password first. Please visit <a href="https://${hostName}/secrets" target="_blank">here</a> to generate them.`, { cause: "init" });
+    if (userID && !isValidUUID(userID)) throw new Error(`Invalid UUID: ${userID}`, { cause: "init" });
+    if (typeof env.kv !== "object") throw new Error("KV Dataset is not properly set! Please refer to tutorials.", { cause: "init" });
   }
 }
 __name(initializeParams, "initializeParams");
@@ -6495,8 +6434,7 @@ async function checkUuidInApiResponse(targetUuid) {
 __name(checkUuidInApiResponse, "checkUuidInApiResponse");
 async function handleTCPOutBound(remoteSocket, addressRemote, portRemote, rawClientData, webSocket, VLResponseHeader, log) {
   async function connectAndWrite(address, port) {
-    if (/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(address))
-      address = `${atob("d3d3Lg==")}${address}${atob("LnNzbGlwLmlv")}`;
+    if (/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(address)) address = `${atob("d3d3Lg==")}${address}${atob("LnNzbGlwLmlv")}`;
     const tcpSocket2 = connect({
       hostname: address,
       port
@@ -6945,8 +6883,7 @@ async function parseTRHeader(buffer) {
 __name(parseTRHeader, "parseTRHeader");
 async function handleTCPOutBound2(remoteSocket, addressRemote, portRemote, rawClientData, webSocket, log) {
   async function connectAndWrite(address, port) {
-    if (/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(address))
-      address = `${atob("d3d3Lg==")}${address}${atob("LnNzbGlwLmlv")}`;
+    if (/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(address)) address = `${atob("d3d3Lg==")}${address}${atob("LnNzbGlwLmlv")}`;
     const tcpSocket2 = connect2({
       hostname: address,
       port
@@ -7176,16 +7113,14 @@ async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isW
   const dnsHost = {};
   if (isBlock) {
     blockRules.forEach(({ rule, host }) => {
-      if (rule)
-        dnsHost[host] = ["127.0.0.1"];
+      if (rule) dnsHost[host] = ["127.0.0.1"];
     });
     customBlockRulesDomains.forEach((domain) => {
       dnsHost[`domain:${domain}`] = ["127.0.0.1"];
     });
   }
   const staticIPs = domainToStaticIPs ? await resolveDNS(domainToStaticIPs) : void 0;
-  if (staticIPs)
-    dnsHost[domainToStaticIPs] = enableIPv6 ? [...staticIPs.ipv4, ...staticIPs.ipv6] : staticIPs.ipv4;
+  if (staticIPs) dnsHost[domainToStaticIPs] = enableIPv6 ? [...staticIPs.ipv4, ...staticIPs.ipv6] : staticIPs.ipv4;
   if (isWorkerLess) {
     const domains = ["cloudflare-dns.com", "cloudflare.com", "dash.cloudflare.com"];
     const resolved = await Promise.all(domains.map(resolveDNS));
@@ -7204,12 +7139,11 @@ async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isW
     tag: "dns"
   };
   const dohHost = getDomain(remoteDNS);
-  if (dohHost.isHostDomain && !isWorkerLess && !isWarp)
-    dnsObject.servers.push({
-      address: "https://8.8.8.8/dns-query",
-      domains: [`full:${dohHost.host}`],
-      skipFallback: true
-    });
+  if (dohHost.isHostDomain && !isWorkerLess && !isWarp) dnsObject.servers.push({
+    address: "https://8.8.8.8/dns-query",
+    domains: [`full:${dohHost.host}`],
+    skipFallback: true
+  });
   if (isDomainRule) {
     const outboundDomainRules = uniqueOutboundDomains.map((domain) => `full:${domain}`);
     const bypassDomainRules = customBypassRulesDomains.map((domain) => `domain:${domain}`);
@@ -7305,14 +7239,13 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
       type: "field"
     });
   }
-  if (!isWorkerLess && (isDomainRule || isBypass))
-    rules.push({
-      ip: [localDNS],
-      port: "53",
-      network: "udp",
-      outboundTag: "direct",
-      type: "field"
-    });
+  if (!isWorkerLess && (isDomainRule || isBypass)) rules.push({
+    ip: [localDNS],
+    port: "53",
+    network: "udp",
+    outboundTag: "direct",
+    type: "field"
+  });
   blockUDP443 && rules.push({
     network: "udp",
     port: "443",
@@ -7661,17 +7594,15 @@ function buildXrayChainOutbound(chainProxyParams, enableIPv6) {
       }
     };
   }
-  if (type === "tcp" && security !== "reality" && !headerType)
-    proxyOutbound.streamSettings.tcpSettings = {
-      header: {
-        type: "none"
-      }
-    };
-  if (type === "ws")
-    proxyOutbound.streamSettings.wsSettings = {
-      headers: { Host: host },
-      path
-    };
+  if (type === "tcp" && security !== "reality" && !headerType) proxyOutbound.streamSettings.tcpSettings = {
+    header: {
+      type: "none"
+    }
+  };
+  if (type === "ws") proxyOutbound.streamSettings.wsSettings = {
+    headers: { Host: host },
+    path
+  };
   if (type === "grpc") {
     delete proxyOutbound.mux;
     proxyOutbound.streamSettings.grpcSettings = {
@@ -7719,8 +7650,7 @@ function buildFreedomOutbound(proxySettings, isFragment, isUdpNoises, tag2) {
       delete noise.count;
       outbound.settings.noises.push(...Array.from({ length: count }, () => noise));
     });
-    if (!isFragment)
-      outbound.settings.domainStrategy = warpEnableIPv6 ? "UseIPv4v6" : "UseIPv4";
+    if (!isFragment) outbound.settings.domainStrategy = warpEnableIPv6 ? "UseIPv4v6" : "UseIPv4";
   }
   return outbound;
 }
@@ -7742,8 +7672,7 @@ function buildXrayConfig(proxySettings, remark, isBalancer, isChain, balancerFal
   if (isBalancer) {
     const interval = isWarp ? bestWarpInterval : bestVLTRInterval;
     config.observatory.probeInterval = `${interval}s`;
-    if (balancerFallback)
-      config.routing.balancers[0].fallbackTag = "prox-2";
+    if (balancerFallback) config.routing.balancers[0].fallbackTag = "prox-2";
     if (isChain) {
       config.observatory.subjectSelector = ["chain"];
       config.routing.balancers[0].selector = ["chain"];
@@ -8225,8 +8154,7 @@ function buildSingBoxDNS(proxySettings, outboundAddrs, isWarp) {
       enabled: true,
       inet4_range: "198.18.0.0/15"
     };
-    if (isIPv62)
-      fakeip.inet6_range = "fc00::/18";
+    if (isIPv62) fakeip.inet6_range = "fc00::/18";
   }
   return { servers, rules, fakeip };
 }
@@ -8375,8 +8303,7 @@ function buildSingBoxRoutingRules(proxySettings) {
   const blockDomainRule = createRule("rule_set", "reject");
   const blockIPRule = createRule("rule_set", "reject");
   geoRules.forEach(({ rule, type, ruleSet }) => {
-    if (!rule)
-      return;
+    if (!rule) return;
     const { geosite, geoip, geositeURL, geoipURL } = ruleSet;
     const isDirect = type === "direct";
     const domainRule = isDirect ? directDomainRule : blockDomainRule;
@@ -8456,10 +8383,8 @@ function buildSingBoxVLOutbound(proxySettings, remark, address, port, host, sni,
     },
     tag: remark
   };
-  if (isDomain(address))
-    outbound.domain_strategy = enableIPv6 ? "prefer_ipv4" : "ipv4_only";
-  if (!tls)
-    delete outbound.tls;
+  if (isDomain(address)) outbound.domain_strategy = enableIPv6 ? "prefer_ipv4" : "ipv4_only";
+  if (!tls) delete outbound.tls;
   return outbound;
 }
 __name(buildSingBoxVLOutbound, "buildSingBoxVLOutbound");
@@ -8494,10 +8419,8 @@ function buildSingBoxTROutbound(proxySettings, remark, address, port, host, sni,
     },
     tag: remark
   };
-  if (isDomain(address))
-    outbound.domain_strategy = enableIPv6 ? "prefer_ipv4" : "ipv4_only";
-  if (!tls)
-    delete outbound.tls;
+  if (isDomain(address)) outbound.domain_strategy = enableIPv6 ? "prefer_ipv4" : "ipv4_only";
+  if (!tls) delete outbound.tls;
   return outbound;
 }
 __name(buildSingBoxTROutbound, "buildSingBoxTROutbound");
@@ -8538,10 +8461,8 @@ function buildSingBoxWarpOutbound(proxySettings, warpConfigs, remark, endpoint, 
     type: "wireguard",
     tag: remark
   };
-  if (isDomain(server))
-    outbound.domain_strategy = warpEnableIPv6 ? "prefer_ipv4" : "ipv4_only";
-  if (chain)
-    outbound.detour = chain;
+  if (isDomain(server)) outbound.domain_strategy = warpEnableIPv6 ? "prefer_ipv4" : "ipv4_only";
+  if (chain) outbound.detour = chain;
   return outbound;
 }
 __name(buildSingBoxWarpOutbound, "buildSingBoxWarpOutbound");
@@ -8557,10 +8478,8 @@ function buildSingBoxChainOutbound(chainProxyParams, enableIPv6) {
       password: pass,
       detour: ""
     };
-    if (isDomain(server2))
-      chainOutbound2.domain_strategy = enableIPv6 ? "prefer_ipv4" : "ipv4_only";
-    if (protocol === "socks")
-      chainOutbound2.version = "5";
+    if (isDomain(server2)) chainOutbound2.domain_strategy = enableIPv6 ? "prefer_ipv4" : "ipv4_only";
+    if (protocol === "socks") chainOutbound2.version = "5";
     return chainOutbound2;
   }
   const { server, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = chainProxyParams;
@@ -8573,8 +8492,7 @@ function buildSingBoxChainOutbound(chainProxyParams, enableIPv6) {
     flow,
     detour: ""
   };
-  if (isDomain(server))
-    chainOutbound.domain_strategy = enableIPv6 ? "prefer_ipv4" : "ipv4_only";
+  if (isDomain(server)) chainOutbound.domain_strategy = enableIPv6 ? "prefer_ipv4" : "ipv4_only";
   if (security === "tls" || security === "reality") {
     const tlsAlpns = alpn ? alpn?.split(",").filter((value) => value !== "h2") : [];
     chainOutbound.tls = {
@@ -8620,11 +8538,10 @@ function buildSingBoxChainOutbound(chainProxyParams, enableIPv6) {
       early_data_header_name: "Sec-WebSocket-Protocol"
     };
   }
-  if (type === "grpc")
-    chainOutbound.transport = {
-      type: "grpc",
-      service_name: serviceName
-    };
+  if (type === "grpc") chainOutbound.transport = {
+    type: "grpc",
+    service_name: serviceName
+  };
   return chainOutbound;
 }
 __name(buildSingBoxChainOutbound, "buildSingBoxChainOutbound");
@@ -8638,8 +8555,7 @@ async function getSingBoxWarpConfig(request, env) {
   config.dns.servers = dnsObject.servers;
   config.dns.rules = dnsObject.rules;
   config.dns.strategy = proxySettings.warpEnableIPv6 ? "prefer_ipv4" : "ipv4_only";
-  if (dnsObject.fakeip)
-    config.dns.fakeip = dnsObject.fakeip;
+  if (dnsObject.fakeip) config.dns.fakeip = dnsObject.fakeip;
   config.route.rules = rules;
   config.route.rule_set = rule_set;
   const selector = config.outbounds[0];
@@ -8713,8 +8629,7 @@ async function getSingBoxCustomConfig(request, env) {
   const { rules, rule_set } = buildSingBoxRoutingRules(proxySettings);
   config.dns.servers = dnsObject.servers;
   config.dns.rules = dnsObject.rules;
-  if (dnsObject.fakeip)
-    config.dns.fakeip = dnsObject.fakeip;
+  if (dnsObject.fakeip) config.dns.fakeip = dnsObject.fakeip;
   config.dns.strategy = enableIPv6 ? "prefer_ipv4" : "ipv4_only";
   config.route.rules = rules;
   config.route.rule_set = rule_set;
@@ -8913,8 +8828,7 @@ async function buildClashDNS(proxySettings, isChain, isWarp) {
   };
   if (isChain && !isWarp) {
     const chainOutboundServer = JSON.parse(outProxyParams).server;
-    if (isDomain(chainOutboundServer))
-      dns["nameserver-policy"][chainOutboundServer] = `${remoteDNS}#proxy-1`;
+    if (isDomain(chainOutboundServer)) dns["nameserver-policy"][chainOutboundServer] = `${remoteDNS}#proxy-1`;
   }
   if (isBypass) {
     const geosites = [];
@@ -8930,12 +8844,11 @@ async function buildClashDNS(proxySettings, isChain, isWarp) {
   if (dohHost.isHostDomain && !isWarp) {
     dns["default-nameserver"] = [`https://8.8.8.8/dns-query#${isChain ? "proxy-1" : "\u2705 Selector"}`];
   }
-  if (isFakeDNS)
-    Object.assign(dns, {
-      "enhanced-mode": "fake-ip",
-      "fake-ip-range": "198.18.0.1/16",
-      "fake-ip-filter": ["geosite:private"]
-    });
+  if (isFakeDNS) Object.assign(dns, {
+    "enhanced-mode": "fake-ip",
+    "fake-ip-range": "198.18.0.1/16",
+    "fake-ip-filter": ["geosite:private"]
+  });
   return dns;
 }
 __name(buildClashDNS, "buildClashDNS");
@@ -9181,8 +9094,7 @@ function buildClashWarpOutbound(warpConfigs, remark, endpoint, chain) {
     "udp": true,
     "mtu": 1280
   };
-  if (chain)
-    outbound["dialer-proxy"] = chain;
+  if (chain) outbound["dialer-proxy"] = chain;
   return outbound;
 }
 __name(buildClashWarpOutbound, "buildClashWarpOutbound");
@@ -9221,16 +9133,15 @@ function buildClashChainOutbound(chainProxyParams) {
       "client-fingerprint": fp
     });
   }
-  if (security === "reality")
-    Object.assign(chainOutbound, {
-      "tls": true,
-      "servername": sni,
-      "client-fingerprint": fp,
-      "reality-opts": {
-        "public-key": pbk,
-        "short-id": sid
-      }
-    });
+  if (security === "reality") Object.assign(chainOutbound, {
+    "tls": true,
+    "servername": sni,
+    "client-fingerprint": fp,
+    "reality-opts": {
+      "public-key": pbk,
+      "short-id": sid
+    }
+  });
   if (headerType === "http") {
     const httpPaths = path?.split(",");
     chainOutbound["http-opts"] = {
@@ -9254,10 +9165,9 @@ function buildClashChainOutbound(chainProxyParams) {
       "early-data-header-name": "Sec-WebSocket-Protocol"
     };
   }
-  if (type === "grpc")
-    chainOutbound["grpc-opts"] = {
-      "grpc-service-name": serviceName
-    };
+  if (type === "grpc") chainOutbound["grpc-opts"] = {
+    "grpc-service-name": serviceName
+  };
   return chainOutbound;
 }
 __name(buildClashChainOutbound, "buildClashChainOutbound");
@@ -9524,11 +9434,9 @@ async function getNormalConfigs(request, env) {
       const TRRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, atob("VHJvamFu"), configType));
       const tlsFields = defaultHttpsPorts.includes(port) ? `&security=tls&sni=${sni}&fp=randomized&alpn=${alpn}` : "&security=none";
       const hiddifyFragment = client === "hiddify-frag" && defaultHttpsPorts.includes(port) ? `&fragment=${lengthMin}-${lengthMax},${intervalMin}-${intervalMax},hellotls` : "";
-      if (VLConfigs)
-        VLConfs += `${atob("dmxlc3M6Ly8=")}${userID2}@${addr}:${port}?path=/${path}&encryption=none&host=${host}&type=ws${tlsFields}${hiddifyFragment}#${VLRemark}
+      if (VLConfigs) VLConfs += `${atob("dmxlc3M6Ly8=")}${userID2}@${addr}:${port}?path=/${path}&encryption=none&host=${host}&type=ws${tlsFields}${hiddifyFragment}#${VLRemark}
 `;
-      if (TRConfigs)
-        TRConfs += `${atob("dHJvamFuOi8v")}${TRPass}@${addr}:${port}?path=/tr${path}&host=${host}&type=ws${tlsFields}${hiddifyFragment}#${TRRemark}
+      if (TRConfigs) TRConfs += `${atob("dHJvamFuOi8v")}${TRPass}@${addr}:${port}?path=/tr${path}&host=${host}&type=ws${tlsFields}${hiddifyFragment}#${TRRemark}
 `;
       proxyIndex++;
     });
@@ -9798,24 +9706,17 @@ var worker_default = {
           case "/get-warp-configs":
             return await getWarpConfigFiles(request, env);
           case `/sub/${subPath}`:
-            if (client === "sfa")
-              return await getSingBoxCustomConfig(request, env, false);
-            if (client === "clash")
-              return await getClashNormalConfig(request, env);
-            if (client === "xray")
-              return await getXrayCustomConfigs(request, env, false);
+            if (client === "sfa") return await getSingBoxCustomConfig(request, env, false);
+            if (client === "clash") return await getClashNormalConfig(request, env);
+            if (client === "xray") return await getXrayCustomConfigs(request, env, false);
             return await getNormalConfigs(request, env);
           case `/fragsub/${subPath}`:
             return client === "hiddify-frag" ? await getNormalConfigs(request, env) : await getXrayCustomConfigs(request, env, true);
           case `/warpsub/${subPath}`:
-            if (client === "clash")
-              return await getClashWarpConfig(request, env);
-            if (client === "singbox")
-              return await getSingBoxWarpConfig(request, env, client);
-            if (client === "hiddify-pro")
-              return await getHiddifyWarpConfigs(request, env, true);
-            if (client === "hiddify")
-              return await getHiddifyWarpConfigs(request, env, false);
+            if (client === "clash") return await getClashWarpConfig(request, env);
+            if (client === "singbox") return await getSingBoxWarpConfig(request, env, client);
+            if (client === "hiddify-pro") return await getHiddifyWarpConfigs(request, env, true);
+            if (client === "hiddify") return await getHiddifyWarpConfigs(request, env, false);
             return await getXrayWarpConfigs(request, env, client);
           case "/panel":
             return await handlePanel(request, env);
