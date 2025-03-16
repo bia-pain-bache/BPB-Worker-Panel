@@ -10,3 +10,5 @@
 !src/**
 !package.json
 !obfs-config.json
+!unobfuscated/
+!unobfuscated/**

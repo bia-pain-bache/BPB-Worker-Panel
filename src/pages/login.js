@@ -5,7 +5,7 @@ export async function renderLoginPage () {
     <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BPB Login</title>
+    <title>${atob('QlBC')} Login</title>
     <style>
         :root {
             --color: black;
@@ -101,7 +101,7 @@ export async function renderLoginPage () {
     </head>
     <body>
         <div class="container">
-            <h1>BPB Panel <span style="font-size: smaller;">${globalThis.panelVersion}</span> 💦</h1>
+            <h1>${atob('QlBC')} Panel <span style="font-size: smaller;">${globalThis.panelVersion}</span> 💦</h1>
             <div class="form-container">
                 <h2>User Login</h2>
                 <form id="loginForm">

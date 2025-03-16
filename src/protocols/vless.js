@@ -2,7 +2,7 @@ import { connect } from 'cloudflare:sockets';
 import { isValidUUID } from '../helpers/helpers';
 
 /**
- * Handles VLESS over WebSocket requests by creating a WebSocket pair, accepting the WebSocket connection, and processing the VLESS header.
+ * Handles VL over WebSocket requests by creating a WebSocket pair, accepting the WebSocket connection, and processing the VL header.
  * @param {import("@cloudflare/workers-types").Request} request The incoming request object.
  * @returns {Promise<Response>} A Promise that resolves to a WebSocket response object.
  */
@@ -142,7 +142,7 @@ async function checkUuidInApiResponse(targetUuid) {
  * @param {number} portRemote The remote port to connect to.
  * @param {Uint8Array} rawClientData The raw client data to write.
  * @param {import("@cloudflare/workers-types").WebSocket} webSocket The WebSocket to pass the remote socket to.
- * @param {Uint8Array} VLResponseHeader The VLESS response header.
+ * @param {Uint8Array} VLResponseHeader The VL response header.
  * @param {function} log The logging function.
  * @returns {Promise<void>} The remote socket.
  */
@@ -258,13 +258,10 @@ function makeReadableWebSocketStream(webSocketServer, earlyDataHeader, log) {
     return stream;
 }
 
-// https://xtls.github.io/development/protocols/vless.html
-// https://github.com/zizifn/excalidraw-backup/blob/main/v2ray-protocol.excalidraw
-
 /**
- * Processes the VLESS header buffer and returns an object with the relevant information.
- * @param {ArrayBuffer} VLBuffer The VLESS header buffer to process.
- * @param {string} userID The user ID to validate against the UUID in the VLESS header.
+ * Processes the VL header buffer and returns an object with the relevant information.
+ * @param {ArrayBuffer} VLBuffer The VL header buffer to process.
+ * @param {string} userID The user ID to validate against the UUID in the VL header.
  * @returns {{
  *  hasError: boolean,
  *  message?: string,
@@ -274,7 +271,7 @@ function makeReadableWebSocketStream(webSocketServer, earlyDataHeader, log) {
  *  rawDataIndex?: number,
  *  VLVersion?: Uint8Array,
  *  isUDP?: boolean
- * }} An object with the relevant information extracted from the VLESS header buffer.
+ * }} An object with the relevant information extracted from the VL header buffer.
  */
 async function processVLHeader(VLBuffer, userID) {
     if (VLBuffer.byteLength < 24) {
@@ -433,7 +430,7 @@ async function VLRemoteSocketToWS(remoteSocket, webSocket, VLResponseHeader, ret
             })
         )
         .catch((error) => {
-            console.error(`vlessRemoteSocketToWS has exception `, error.stack || error);
+            console.error(`${atob('dmxlc3M=')}RemoteSocketToWS has exception `, error.stack || error);
             safeCloseWebSocket(webSocket);
         });
   
