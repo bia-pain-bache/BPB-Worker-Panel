@@ -131,6 +131,884 @@ export async function renderHomePage (proxySettings, isPassSet) {
             </button>`;
     };
 
+    const style = `
+    :root {
+        --color: black;
+        --primary-color: #09639f;
+        --secondary-color: #3498db;
+        --header-color: #09639f; 
+        --background-color: #fff;
+        --form-background-color: #f9f9f9;
+        --table-active-color: #f2f2f2;
+        --hr-text-color: #3b3b3b;
+        --lable-text-color: #333;
+        --border-color: #ddd;
+        --button-color: #09639f;
+        --input-background-color: white;
+        --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+    }
+    body { font-family: Twemoji Country Flags, system-ui; background-color: var(--background-color); color: var(--color) }
+    body.dark-mode {
+        --color: white;
+        --primary-color: #09639F;
+        --secondary-color: #3498DB;
+        --header-color: #3498DB; 
+        --background-color: #121212;
+        --form-background-color: #121212;
+        --table-active-color: #252525;
+        --hr-text-color: #D5D5D5;
+        --lable-text-color: #DFDFDF;
+        --border-color: #353535;
+        --button-color: #3498DB;
+        --input-background-color: #252525;
+        --header-shadow: 2px 2px 4px rgba(255, 255, 255, 0.25);
+    }
+    .material-symbols-outlined {
+        margin-left: 5px;
+        font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+    }
+    details { border-bottom: 1px solid var(--border-color); }
+    summary {
+        font-weight: bold;
+        cursor: pointer;
+        text-align: center;
+        text-wrap: nowrap;
+    }
+    summary::marker { font-size: 1.5rem; color: var(--secondary-color); }
+    summary h2 { display: inline-flex; }
+    h1 { font-size: 2.5em; text-align: center; color: var(--header-color); text-shadow: var(--header-shadow); }
+    h2,h3 { margin: 30px 0; text-align: center; color: var(--hr-text-color); }
+    hr { border: 1px solid var(--border-color); margin: 20px 0; }
+    .footer {
+        display: flex;
+        font-weight: 600;
+        margin: 10px auto 0 auto;
+        justify-content: center;
+        align-items: center;
+    }
+    .footer button {margin: 0 20px; background: #212121; max-width: fit-content;}
+    .footer button:hover, .footer button:focus { background: #3b3b3b;}
+    .form-control a, a.link { text-decoration: none; }
+    .form-control {
+        margin: 20px auto;
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+    }
+    .form-control button {
+        background-color: var(--form-background-color);
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--button-color);
+        border-color: var(--primary-color);
+        border: 1px solid;
+        width: 100%;
+    }
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 110%;
+        font-weight: 600;
+        color: var(--lable-text-color);
+    }
+    input[type="text"],
+    input[type="number"],
+    input[type="url"],
+    textarea,
+    select {
+        width: 100%;
+        text-align: center;
+        padding: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        font-size: 16px;
+        color: var(--lable-text-color);
+        background-color: var(--input-background-color);
+        box-sizing: border-box;
+        transition: border-color 0.3s ease;
+    }	
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    input[type="url"]:focus,
+    textarea:focus,
+    select:focus { border-color: var(--secondary-color); outline: none; }
+    .button,
+    table button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 135px;
+        white-space: nowrap;
+        padding: 10px 0;
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        border: none;
+        border-radius: 5px;
+        color: white;
+        background-color: var(--primary-color);
+        cursor: pointer;
+        outline: none;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+    }
+    .button {font-weight: 600; padding: 15px 15px; font-size: 1.1rem; width: max-content; }
+    input[type="checkbox"] { 
+        background-color: var(--input-background-color);
+        style="margin: 0; 
+        grid-column: 2;"
+    }
+    .button.disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+        box-shadow: none;
+        pointer-events: none;
+    }
+    .button:hover,
+    table button:hover,
+    table button:focus {
+        background-color: #2980b9;
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+        transform: translateY(-2px);
+    }
+    .header-container button:hover {
+        transform: scale(1.1);
+    }
+    button.button:hover { color: white; }
+    .button:active,
+    table button:active { transform: translateY(1px); box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); }
+    .form-container {
+        max-width: 90%;
+        margin: 0 auto;
+        padding: 20px;
+        background: var(--form-background-color);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 100px;
+    }
+    .table-container { overflow-x: auto; }
+    table { 
+        width: 100%;
+        border: 1px solid var(--border-color);
+        border-collapse: separate;
+        border-spacing: 0; 
+        border-radius: 10px;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    tbody { display: flex; flex-direction: column; }
+    tr { display: flex; flex-direction: row; }
+    th, td { 
+        display: flex; 
+        flex-direction: column;
+        justify-content: center; 
+        padding: 10px; 
+        width: 100%;
+        gap: 10px;
+        border-bottom: 1px solid var(--border-color); 
+    }
+    td div { display: flex; align-items: center; }
+    th { background-color: var(--secondary-color); color: white; font-weight: bold; font-size: 1.1rem; width: 50%;}
+    td:last-child { 
+        background-color: var(--table-active-color); 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 10px;
+    }               
+    tr:hover { background-color: var(--table-active-color); }
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+    .modal-content {
+        background-color: var(--form-background-color);
+        margin: auto;
+        padding: 10px 20px 20px;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        width: 80%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+    .close { color: var(--color); float: right; font-size: 28px; font-weight: bold; }
+    .close:hover,
+    .close:focus { color: black; text-decoration: none; cursor: pointer; }
+    .form-control label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 110%;
+        font-weight: 600;
+        color: var(--lable-text-color);
+        line-height: 1.3em;
+    }
+    .form-control input[type="password"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        font-size: 16px;
+        color: var(--lable-text-color);
+        background-color: var(--input-background-color);
+        box-sizing: border-box;
+        margin-bottom: 15px;
+        transition: border-color 0.3s ease;
+    }
+    .routing { 
+        display: grid;
+        justify-content: flex-start;
+        grid-template-columns: 1fr 1fr 10fr 1fr;
+        margin-bottom: 15px;
+    }
+    .form-control .routing input { grid-column: 2 / 3; }
+    #routing-rules.form-control { display: grid; grid-template-columns: 1fr 1fr; }
+    .routing label {
+        text-align: left;
+        margin: 0 0 0 10px;
+        font-weight: 400;
+        font-size: 100%;
+        text-wrap: nowrap;
+    }
+    .form-control input[type="password"]:focus { border-color: var(--secondary-color); outline: none; }
+    #passwordError { color: red; margin-bottom: 10px; }
+    .symbol { margin-right: 8px; }
+    .modalQR {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+    .floating-button {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        background-color: var(--color);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transition: background-color 0.3s, transform 0.3s;
+    }
+    .floating-button:hover { transform: scale(1.1); }
+    .min-max { display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline; width: 100%; }
+    .min-max span { text-align: center; white-space: pre; }
+    .input-with-select { width: 100%; }
+    body.dark-mode .floating-button { background-color: var(--color); }
+    body.dark-mode .floating-button:hover { transform: scale(1.1); }
+    #ips th { 
+        background-color: var(--hr-text-color);
+        color: var(--background-color);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        flex: 1; 
+    }
+    #ips td { 
+        background-color: unset; 
+        overflow: hidden;
+        flex: 1;
+        text-overflow: clip;
+        white-space: nowrap;
+    }
+    #ips tr { flex-wrap: wrap; }
+    #ips td:first-child { background-color: var(--table-active-color); }
+    .header-container { display: flex; justify-content: center; margin-bottom: 20px; }
+    .udp-noise { border: 1px solid var(--border-color); border-radius: 15px; padding: 20px; margin-bottom: 10px;}
+    @media only screen and (min-width: 768px) {
+        .form-container { max-width: 70%; }
+        .form-control { 
+            margin-bottom: 15px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: baseline;
+            justify-content: flex-end;
+            font-family: Arial, sans-serif;
+        }
+        #apply { display: block; margin: 20px auto; max-width: 50%; }
+        .modal-content { width: 30% }
+        .routing { display: grid; grid-template-columns: 4fr 1fr 3fr 4fr; }
+    }`;
+
+    const js = `
+    const defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
+    let activePortsNo = ${ports.length};
+    let activeHttpsPortsNo = ${ports.filter(port => globalThis.defaultHttpsPorts.includes(port)).length};
+    let activeProtocols = ${activeProtocols};
+    localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const configForm = document.getElementById('configForm');            
+        const changePass = document.getElementById('openModalBtn');
+        const closeBtn = document.querySelector(".close");
+        const passwordChangeForm = document.getElementById('passwordChangeForm');                    
+        const initialFormData = new FormData(configForm);
+        const modal = document.getElementById('myModal');
+        const closeQR = document.getElementById('closeQRModal');
+        const resetSettings = document.getElementById('resetSettings');
+        let modalQR = document.getElementById('myQRModal');
+        let qrcodeContainer = document.getElementById('qrcode-container');
+        let forcedPassChange = false;
+        const darkModeToggle = document.getElementById('darkModeToggle');
+                
+        const hasFormDataChanged = () => {
+            const currentFormData = new FormData(configForm);
+            const currentFormDataEntries = [...currentFormData.entries()];
+
+            const nonCheckboxFieldsChanged = currentFormDataEntries.some(
+                ([key, value]) => !initialFormData.has(key) || initialFormData.get(key) !== value
+            );
+
+            const checkboxFieldsChanged = Array.from(configForm.elements)
+                .filter((element) => element.type === 'checkbox')
+                .some((checkbox) => {
+                const initialValue = initialFormData.has(checkbox.name)
+                    ? initialFormData.get(checkbox.name)
+                    : false;
+                const currentValue = currentFormDataEntries.find(([key]) => key === checkbox.name)?.[1] || false;
+                return initialValue !== currentValue;
+            });
+
+            return nonCheckboxFieldsChanged || checkboxFieldsChanged;
+        };
+        
+        const enableApplyButton = () => {
+            const isChanged = hasFormDataChanged();
+            applyButton.disabled = !isChanged;
+            applyButton.classList.toggle('disabled', !isChanged);
+        };
+                    
+        passwordChangeForm.addEventListener('submit', event => resetPassword(event));
+        document.getElementById('logout').addEventListener('click', event => logout(event));
+        configForm.addEventListener('submit', (event) => applySettings(event, configForm));
+        configForm.addEventListener('input', enableApplyButton);
+        configForm.addEventListener('change', enableApplyButton);
+        changePass.addEventListener('click', () => {
+            forcedPassChange ? closeBtn.style.display = 'none' : closeBtn.style.display = '';
+            modal.style.display = "block";
+            document.body.style.overflow = "hidden";
+            forcedPassChange = false;
+        });        
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = "none";
+            document.body.style.overflow = "";
+        });
+        closeQR.addEventListener('click', () => {
+            modalQR.style.display = "none";
+            qrcodeContainer.lastElementChild.remove();
+        });
+        resetSettings.addEventListener('click', async () => {
+            const confirmReset = confirm('⚠️ This will reset all panel settings.\\nAre you sure?');
+            if(!confirmReset) return;
+            const formData = new FormData();
+            formData.append('resetSettings', 'true');
+            try {
+                document.body.style.cursor = 'wait';
+                const refreshButtonVal = refreshBtn.innerHTML;
+                refreshBtn.innerHTML = '⌛ Loading...';
+
+                const response = await fetch('/panel', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                });
+
+                document.body.style.cursor = 'default';
+                refreshBtn.innerHTML = refreshButtonVal;
+                if (!response.ok) {
+                    const errorMessage = await response.text();
+                    console.error(errorMessage, response.status);
+                    alert('⚠️ An error occured, Please try again!\\n⛔ ' + errorMessage);
+                    return;
+                }       
+                alert('✅ Panel settings reset to default successfully! 😎');
+                window.location.reload(true);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+        window.onclick = (event) => {
+            if (event.target == modalQR) {
+                modalQR.style.display = "none";
+                qrcodeContainer.lastElementChild.remove();
+            }
+        }
+        darkModeToggle.addEventListener('click', () => {
+            const isDarkMode = document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
+        });
+
+        document.getElementById("dlConfigsBtn").addEventListener("click", async function () {
+            try {
+                const response = await fetch("/get-warp-configs");
+                const configs = await response.json();
+                const zip = new JSZip();
+                configs.forEach( (config, index) => {
+                    zip.file('BPB-Warp-' + String(index + 1) + '.conf', config);
+                });
+
+                zip.generateAsync({ type: "blob" }).then(function (blob) {
+                    const link = document.createElement("a");
+                    link.href = URL.createObjectURL(blob);
+                    link.download = "BPB Warp configs.zip";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                });
+            } catch (error) {
+                console.error("Error fetching configs:", error);
+            }
+        });
+
+        const isPassSet = ${isPassSet};
+        if (!isPassSet) {
+            forcedPassChange = true;
+            changePass.click();
+        }
+
+        await fetchIPInfo();
+    });
+
+    const dlURL = async (url) => {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            const blob = new Blob([JSON.stringify(data, null, 4)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'config.json';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (error) {
+            console.error('There was a problem with the fetch operation:', error);
+        }
+    };
+
+    const fetchIPInfo = async () => {
+        const updateUI = (ip = '-', country = '-', countryCode = '-', city = '-', isp = '-', cfIP) => {
+            const flag = countryCode !== '-' ? String.fromCodePoint(...[...countryCode].map(c => 0x1F1E6 + c.charCodeAt(0) - 65)) : '';
+            document.getElementById(cfIP ? 'cf-ip' : 'ip').textContent = ip;
+            document.getElementById(cfIP ? 'cf-country' : 'country').textContent = country + ' ' + flag;
+            document.getElementById(cfIP ? 'cf-city' : 'city').textContent = city;
+            document.getElementById(cfIP ? 'cf-isp' : 'isp').textContent = isp;
+        };
+
+        const refreshIcon = document.getElementById("refresh-geo-location").querySelector('i');
+        refreshIcon.classList.add('fa-spin');
+        document.body.style.cursor = 'wait';
+
+        try {
+            const ipResponse = await fetch('https://ipwho.is/' + '?nocache=' + Date.now(), { cache: "no-store" });
+            const ipResponseObj = await ipResponse.json();
+            const geoResponse = await fetch('/my-ip', { 
+                method: 'POST',
+                body: ipResponseObj.ip
+            });
+            const ipGeoLocation = await geoResponse.json();
+            updateUI(ipResponseObj.ip, ipGeoLocation.country, ipGeoLocation.countryCode, ipGeoLocation.city, ipGeoLocation.isp);
+            const cfIPresponse = await fetch('https://ipv4.icanhazip.com/?nocache=' + Date.now(), { cache: "no-store" });
+            const cfIP = await cfIPresponse.text();
+            const cfGeoResponse = await fetch('/my-ip', { 
+                method: 'POST',
+                body: cfIP.trim()
+            });
+            const cfIPGeoLocation = await cfGeoResponse.json();
+            updateUI(cfIP, cfIPGeoLocation.country, cfIPGeoLocation.countryCode, cfIPGeoLocation.city, cfIPGeoLocation.isp, true);
+            refreshIcon.classList.remove('fa-spin');
+            document.body.style.cursor = 'default';
+        } catch (error) {
+            console.error('Error fetching IP address:', error);
+        }
+    }
+
+    const addUdpNoise = () => {
+        const container = document.getElementById("udp-noise-container");
+        const noiseBlock = document.getElementById("udp-noise-container-0");
+        const index = container.children.length;
+        const clone = noiseBlock.cloneNode(true);
+        clone.querySelector("h4").textContent = "Noise " + String(index + 1);
+        container.appendChild(clone);
+        document.getElementById("configForm").dispatchEvent(new Event("change"));
+    }
+    
+    const deleteUdpNoise = (button) => {
+        const container = document.getElementById("udp-noise-container");
+        if (container.children.length === 1) {
+            alert('⛔ You cannot delete all noises!');
+            return;
+        }   
+        const confirmReset = confirm('⚠️ This will delete the noise.\\nAre you sure?');
+        if(!confirmReset) return;
+        button.closest(".udp-noise").remove();
+        document.getElementById("configForm").dispatchEvent(new Event("change"));
+    }
+
+    const getWarpConfigs = async () => {
+        const confirmReset = confirm('⚠️ Are you sure?');
+        if(!confirmReset) return;
+        const refreshBtn = document.getElementById('refreshBtn');
+
+        try {
+            document.body.style.cursor = 'wait';
+            const refreshButtonVal = refreshBtn.innerHTML;
+            refreshBtn.innerHTML = '⌛ Loading...';
+
+            const response = await fetch('/update-warp', {
+                method: 'POST',
+                credentials: 'include'
+            });
+
+            document.body.style.cursor = 'default';
+            refreshBtn.innerHTML = refreshButtonVal;
+            if (!response.ok) {
+                const errorMessage = await response.text();
+                console.error(errorMessage, response.status);
+                alert('⚠️ An error occured, Please try again!\\n⛔ ' + errorMessage);
+                return;
+            }          
+            alert('✅ Warp configs updated successfully! 😎');
+        } catch (error) {
+            console.error('Error:', error);
+        } 
+    }
+
+    const handlePortChange = (event) => {
+        
+        if(event.target.checked) { 
+            activePortsNo++ 
+            defaultHttpsPorts.includes(event.target.name) && activeHttpsPortsNo++;
+        } else {
+            activePortsNo--;
+            defaultHttpsPorts.includes(event.target.name) && activeHttpsPortsNo--;
+        }
+
+        if (activePortsNo === 0) {
+            event.preventDefault();
+            event.target.checked = !event.target.checked;
+            alert("⛔ At least one port should be selected! 🫤");
+            activePortsNo = 1;
+            defaultHttpsPorts.includes(event.target.name) && activeHttpsPortsNo++;
+            return false;
+        }
+            
+        if (activeHttpsPortsNo === 0) {
+            event.preventDefault();
+            event.target.checked = !event.target.checked;
+            alert("⛔ At least one TLS(https) port should be selected! 🫤");
+            activeHttpsPortsNo = 1;
+            return false;
+        }
+    }
+    
+    const handleProtocolChange = (event) => {
+        
+        if(event.target.checked) { 
+            activeProtocols++ 
+        } else {
+            activeProtocols--;
+        }
+
+        if (activeProtocols === 0) {
+            event.preventDefault();
+            event.target.checked = !event.target.checked;
+            alert("⛔ At least one Protocol should be selected! 🫤");
+            activeProtocols = 1;
+            return false;
+        }
+    }
+
+    const openQR = (url, title) => {
+        let qrcodeContainer = document.getElementById("qrcode-container");
+        let qrcodeTitle = document.getElementById("qrcodeTitle");
+        const modalQR = document.getElementById("myQRModal");
+        qrcodeTitle.textContent = title;
+        modalQR.style.display = "block";
+        let qrcodeDiv = document.createElement("div");
+        qrcodeDiv.className = "qrcode";
+        qrcodeDiv.style.padding = "2px";
+        qrcodeDiv.style.backgroundColor = "#ffffff";
+        new QRCode(qrcodeDiv, {
+            text: url,
+            width: 256,
+            height: 256,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+        qrcodeContainer.appendChild(qrcodeDiv);
+    }
+
+    const copyToClipboard = (text) => {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('📋 Copied to clipboard:\\n\\n' +  text);
+    }
+
+    const applySettings = async (event, configForm) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const applyButton = document.getElementById('applyButton');
+        const getValue = (id) => parseInt(document.getElementById(id).value, 10);              
+        const lengthMin = getValue('fragmentLengthMin');
+        const lengthMax = getValue('fragmentLengthMax');
+        const intervalMin = getValue('fragmentIntervalMin');
+        const intervalMax = getValue('fragmentIntervalMax');
+        const customCdnAddrs = document.getElementById('customCdnAddrs').value?.split(',').filter(addr => addr !== '');
+        const customCdnHost = document.getElementById('customCdnHost').value;
+        const customCdnSni = document.getElementById('customCdnSni').value;
+        const isCustomCdn = customCdnAddrs.length || customCdnHost !== '' || customCdnSni !== '';
+        const warpEndpoints = document.getElementById('warpEndpoints').value?.replaceAll(' ', '').split(',');
+        const noiseCountMin = getValue('noiseCountMin');
+        const noiseCountMax = getValue('noiseCountMax');
+        const noiseSizeMin = getValue('noiseSizeMin');
+        const noiseSizeMax = getValue('noiseSizeMax');
+        const noiseDelayMin = getValue('noiseDelayMin');
+        const noiseDelayMax = getValue('noiseDelayMax');
+        const cleanIPs = document.getElementById('cleanIPs').value?.split(',');
+        const proxyIPs = document.getElementById('proxyIP').value?.split(',');
+        const chainProxy = document.getElementById('outProxy').value?.trim();
+        const customBypassRules = document.getElementById('customBypassRules').value?.split(',');                    
+        const customBlockRules = document.getElementById('customBlockRules').value?.split(',');                    
+        const formData = new FormData(configForm);
+        const is${atob('Vmxlc3M=')} = /${atob('dmxlc3M=')}:\\/\\/[^\s@]+@[^\\s:]+:[^\\s]+/.test(chainProxy);
+        const isSocksHttp = /^(http|socks):\\/\\/(?:([^:@]+):([^:@]+)@)?([^:@]+):(\\d+)$/.test(chainProxy);
+        const hasSecurity = /security=/.test(chainProxy);
+        const securityRegex = /security=(tls|none|reality)/;
+        const validSecurityType = securityRegex.test(chainProxy);
+        let match = chainProxy.match(securityRegex);
+        const securityType = match ? match[1] : null;
+        match = chainProxy.match(/:(\\d+)\\?/);
+        const ${atob('dmxlc3M=')}Port = match ? match[1] : null;
+        const validTransmission = /type=(tcp|grpc|ws)/.test(chainProxy);
+        const validIPDomain = /^((?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,})|(?:(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)(?:\\/(?:\\d|[12]\\d|3[0-2]))?|\\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}|:(?::[a-fA-F0-9]{1,4}){1,7})\\](?:\\/(?:12[0-8]|1[0-1]\\d|[0-9]?\\d))?)$/i;
+        const validEndpoint = /^(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|\\[(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,7}:\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}\\]|\\[[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}\\]|\\[:(?::[a-fA-F0-9]{1,4}){1,7}\\]|\\[::(?::[a-fA-F0-9]{1,4}){0,7}\\]):(?:[0-9]{1,5})$/;
+        const checkedPorts = Array.from(document.querySelectorAll('input[id^="port-"]:checked')).map(input => input.id.split('-')[1]);
+        formData.append('ports', checkedPorts);
+        configForm.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            !formData.has(checkbox.name) && formData.append(checkbox.name, 'false');    
+        });
+        const base64Regex = /^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/;
+        const udpNoiseModes = formData.getAll('udpXrayNoiseMode') || [];
+        const udpNoisePackets = formData.getAll('udpXrayNoisePacket') || [];
+        const udpNoiseDelaysMin = formData.getAll('udpXrayNoiseDelayMin') || [];
+        const udpNoiseDelaysMax = formData.getAll('udpXrayNoiseDelayMax') || [];
+
+        const invalidIPs = [...cleanIPs, ...proxyIPs, ...customCdnAddrs, ...customBypassRules, ...customBlockRules, customCdnHost, customCdnSni]?.filter(value => {
+            if (value) {
+                const trimmedValue = value.trim();
+                return !validIPDomain.test(trimmedValue);
+            }
+        });
+
+        const invalidEndpoints = warpEndpoints?.filter(value => {
+            if (value) {
+                const trimmedValue = value.trim();
+                return !validEndpoint.test(trimmedValue);
+            }
+        });
+
+        if (invalidIPs.length) {
+            alert('⛔ Invalid IPs or Domains 🫤\\n\\n' + invalidIPs.map(ip => '⚠️ ' + ip).join('\\n'));
+            return false;
+        }
+        
+        if (invalidEndpoints.length) {
+            alert('⛔ Invalid endpoint 🫤\\n\\n' + invalidEndpoints.map(endpoint => '⚠️ ' + endpoint).join('\\n'));
+            return false;
+        }
+
+        if (lengthMin >= lengthMax || intervalMin > intervalMax || noiseCountMin > noiseCountMax || noiseSizeMin > noiseSizeMax || noiseDelayMin > noiseDelayMax) {
+            alert('⛔ Minimum should be smaller or equal to Maximum! 🫤');               
+            return false;
+        }
+
+        if (!(is${atob('Vmxlc3M=')} && (hasSecurity && validSecurityType || !hasSecurity) && validTransmission) && !isSocksHttp && chainProxy) {
+            alert('⛔ Invalid Config! 🫤 \\n - The chain proxy should be ${atob('VkxFU1M=')}, Socks or Http!\\n - ${atob('VkxFU1M=')} transmission should be GRPC,WS or TCP\\n - ${atob('VkxFU1M=')} security should be TLS,Reality or None\\n - socks or http should be like:\\n + (socks or http)://user:pass@host:port\\n + (socks or http)://host:port');               
+            return false;
+        }
+
+        if (is${atob('Vmxlc3M=')} && securityType === 'tls' && ${atob('dmxlc3M=')}Port !== '443') {
+            alert('⛔ ${atob('VkxFU1M=')} TLS port can be only 443 to be used as a proxy chain! 🫤');               
+            return false;
+        }
+
+        if (isCustomCdn && !(customCdnAddrs.length && customCdnHost && customCdnSni)) {
+            alert('⛔ All "Custom" fields should be filled or deleted together! 🫤');               
+            return false;
+        }
+        
+        let submisionError = false;
+        for (const [index, mode] of udpNoiseModes.entries()) {
+            if (udpNoiseDelaysMin[index] > udpNoiseDelaysMax[index]) {
+                alert('⛔ The minimum noise delay should be smaller or equal to maximum! 🫤');
+                submisionError = true;
+                break;
+            }
+            
+            switch (mode) {
+                case 'base64':
+                    if (!base64Regex.test(udpNoisePackets[index])) {
+                        alert('⛔ The Base64 noise packet is not a valid base64 value! 🫤');
+                        submisionError = true;
+                    }
+                    break;
+
+                case 'rand':
+                    if (!(/^\\d+-\\d+$/.test(udpNoisePackets[index]))) {
+                        alert('⛔ The Random noise packet should be a range like 0-10 or 10-30! 🫤');
+                        submisionError = true;
+                    }
+                    const [min, max] = udpNoisePackets[index].split("-").map(Number);
+                    if (min > max) {
+                        alert('⛔ The minimum Random noise packet should be smaller or equal to maximum! 🫤');
+                        submisionError = true;
+                    }
+                    break;
+
+                case 'hex':
+                    if (!(/^(?=(?:[0-9A-Fa-f]{2})*$)[0-9A-Fa-f]+$/.test(udpNoisePackets[index]))) {
+                        alert('⛔ The Hex noise packet is not a valid hex value! It should have even length and consisted of 0-9, a-f and A-F. 🫤');
+                        submisionError = true;
+                    }
+                    break;
+            }
+        }
+        if (submisionError) return false;
+
+        try {
+            document.body.style.cursor = 'wait';
+            const applyButtonVal = applyButton.value;
+            applyButton.value = '⌛ Loading...';
+
+            const response = await fetch('/panel', {
+                method: 'POST',
+                body: formData,
+                credentials: 'include'
+            });
+
+            document.body.style.cursor = 'default';
+            applyButton.value = applyButtonVal;
+
+            if (!response.ok) {
+                const errorMessage = await response.text();
+                console.error(errorMessage, response.status);
+                alert('⚠️ Session expired! Please login again.');
+                window.location.href = '/login';
+                return;
+            }                
+            alert('✅ Parameters applied successfully 😎');
+            window.location.reload();
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    const logout = async (event) => {
+        event.preventDefault();
+
+        try {
+            const response = await fetch('/logout', {
+                method: 'GET',
+                credentials: 'same-origin'
+            });
+        
+            if (!response.ok) {
+                console.error('Failed to log out:', response.status);
+                return;
+            }
+            window.location.href = '/login';
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    const resetPassword = async (event) => {
+        event.preventDefault();
+        const modal = document.getElementById('myModal');
+        const newPasswordInput = document.getElementById('newPassword');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const passwordError = document.getElementById('passwordError');             
+        const newPassword = newPasswordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+
+        if (newPassword !== confirmPassword) {
+            passwordError.textContent = "Passwords do not match";
+            return false;
+        }
+
+        const hasCapitalLetter = /[A-Z]/.test(newPassword);
+        const hasNumber = /[0-9]/.test(newPassword);
+        const isLongEnough = newPassword.length >= 8;
+
+        if (!(hasCapitalLetter && hasNumber && isLongEnough)) {
+            passwordError.textContent = '⚠️ Password must contain at least one capital letter, one number, and be at least 8 characters long.';
+            return false;
+        }
+                
+        try {
+            const response = await fetch('/panel/password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/plain'
+                },
+                body: newPassword,
+                credentials: 'same-origin'
+            });
+        
+            if (response.ok) {
+                modal.style.display = "none";
+                document.body.style.overflow = "";
+                alert("✅ Password changed successfully! 👍");
+                window.location.href = '/login';
+            } else if (response.status === 401) {
+                const errorMessage = await response.text();
+                passwordError.textContent = '⚠️ ' + errorMessage;
+                console.error(errorMessage, response.status);
+                alert('⚠️ Session expired! Please login again.');
+                window.location.href = '/login';
+            } else {
+                const errorMessage = await response.text();
+                passwordError.textContent = '⚠️ ' + errorMessage;
+                console.error(errorMessage, response.status);
+                return false;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }`;
+    
     const homePage = `
     <!DOCTYPE html>
     <html lang="en">
@@ -143,327 +1021,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
         <title>Collapsible Sections</title>
         <style>
-            :root {
-                --color: black;
-                --primary-color: #09639f;
-                --secondary-color: #3498db;
-                --header-color: #09639f; 
-                --background-color: #fff;
-                --form-background-color: #f9f9f9;
-                --table-active-color: #f2f2f2;
-                --hr-text-color: #3b3b3b;
-                --lable-text-color: #333;
-                --border-color: #ddd;
-                --button-color: #09639f;
-                --input-background-color: white;
-                --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
-            }
-            body { font-family: Twemoji Country Flags, system-ui; background-color: var(--background-color); color: var(--color) }
-            body.dark-mode {
-                --color: white;
-                --primary-color: #09639F;
-                --secondary-color: #3498DB;
-                --header-color: #3498DB; 
-                --background-color: #121212;
-                --form-background-color: #121212;
-                --table-active-color: #252525;
-                --hr-text-color: #D5D5D5;
-                --lable-text-color: #DFDFDF;
-                --border-color: #353535;
-                --button-color: #3498DB;
-                --input-background-color: #252525;
-                --header-shadow: 2px 2px 4px rgba(255, 255, 255, 0.25);
-            }
-            .material-symbols-outlined {
-                margin-left: 5px;
-                font-variation-settings:
-                'FILL' 0,
-                'wght' 400,
-                'GRAD' 0,
-                'opsz' 24
-            }
-            details { border-bottom: 1px solid var(--border-color); }
-            summary {
-                font-weight: bold;
-                cursor: pointer;
-                text-align: center;
-                text-wrap: nowrap;
-            }
-            summary::marker { font-size: 1.5rem; color: var(--secondary-color); }
-            summary h2 { display: inline-flex; }
-            h1 { font-size: 2.5em; text-align: center; color: var(--header-color); text-shadow: var(--header-shadow); }
-            h2,h3 { margin: 30px 0; text-align: center; color: var(--hr-text-color); }
-            hr { border: 1px solid var(--border-color); margin: 20px 0; }
-            .footer {
-                display: flex;
-                font-weight: 600;
-                margin: 10px auto 0 auto;
-                justify-content: center;
-                align-items: center;
-            }
-            .footer button {margin: 0 20px; background: #212121; max-width: fit-content;}
-            .footer button:hover, .footer button:focus { background: #3b3b3b;}
-            .form-control a, a.link { text-decoration: none; }
-            .form-control {
-                margin: 20px auto;
-                font-family: Arial, sans-serif;
-                display: flex;
-                flex-direction: column;
-            }
-            .form-control button {
-                background-color: var(--form-background-color);
-                font-size: 1.1rem;
-                font-weight: 600;
-                color: var(--button-color);
-                border-color: var(--primary-color);
-                border: 1px solid;
-                width: 100%;
-            }
-            label {
-                display: block;
-                margin-bottom: 5px;
-                font-size: 110%;
-                font-weight: 600;
-                color: var(--lable-text-color);
-            }
-            input[type="text"],
-            input[type="number"],
-            input[type="url"],
-            textarea,
-            select {
-                width: 100%;
-                text-align: center;
-                padding: 10px;
-                border: 1px solid var(--border-color);
-                border-radius: 5px;
-                font-size: 16px;
-                color: var(--lable-text-color);
-                background-color: var(--input-background-color);
-                box-sizing: border-box;
-                transition: border-color 0.3s ease;
-            }	
-            input[type="text"]:focus,
-            input[type="number"]:focus,
-            input[type="url"]:focus,
-            textarea:focus,
-            select:focus { border-color: var(--secondary-color); outline: none; }
-            .button,
-            table button {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 135px;
-                white-space: nowrap;
-                padding: 10px 0;
-                font-size: 16px;
-                font-weight: 600;
-                letter-spacing: 1px;
-                border: none;
-                border-radius: 5px;
-                color: white;
-                background-color: var(--primary-color);
-                cursor: pointer;
-                outline: none;
-                box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-                transition: all 0.3s ease;
-            }
-            .button {font-weight: 600; padding: 15px 15px; font-size: 1.1rem; width: max-content; }
-            input[type="checkbox"] { 
-                background-color: var(--input-background-color);
-                style="margin: 0; 
-                grid-column: 2;"
-            }
-            .button.disabled {
-                background-color: #ccc;
-                cursor: not-allowed;
-                box-shadow: none;
-                pointer-events: none;
-            }
-            .button:hover,
-            table button:hover,
-            table button:focus {
-                background-color: #2980b9;
-                box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
-                transform: translateY(-2px);
-            }
-            .header-container button:hover {
-                transform: scale(1.1);
-            }
-            button.button:hover { color: white; }
-            .button:active,
-            table button:active { transform: translateY(1px); box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); }
-            .form-container {
-                max-width: 90%;
-                margin: 0 auto;
-                padding: 20px;
-                background: var(--form-background-color);
-                border: 1px solid var(--border-color);
-                border-radius: 10px;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                margin-bottom: 100px;
-            }
-            .table-container { overflow-x: auto; }
-            table { 
-                width: 100%;
-                border: 1px solid var(--border-color);
-                border-collapse: separate;
-                border-spacing: 0; 
-                border-radius: 10px;
-                margin-bottom: 20px;
-                overflow: hidden;
-            }
-            tbody { display: flex; flex-direction: column; }
-            tr { display: flex; flex-direction: row; }
-            th, td { 
-                display: flex; 
-                flex-direction: column;
-                justify-content: center; 
-                padding: 10px; 
-                width: 100%;
-                gap: 10px;
-                border-bottom: 1px solid var(--border-color); 
-            }
-            td div { display: flex; align-items: center; }
-            th { background-color: var(--secondary-color); color: white; font-weight: bold; font-size: 1.1rem; width: 50%;}
-            td:last-child { 
-                background-color: var(--table-active-color); 
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                flex-direction: column;
-                gap: 10px;
-            }               
-            tr:hover { background-color: var(--table-active-color); }
-            .modal {
-                display: none;
-                position: fixed;
-                z-index: 1;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                overflow: auto;
-                background-color: rgba(0, 0, 0, 0.4);
-            }
-            .modal-content {
-                background-color: var(--form-background-color);
-                margin: auto;
-                padding: 10px 20px 20px;
-                border: 1px solid var(--border-color);
-                border-radius: 10px;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                width: 80%;
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-            }
-            .close { color: var(--color); float: right; font-size: 28px; font-weight: bold; }
-            .close:hover,
-            .close:focus { color: black; text-decoration: none; cursor: pointer; }
-            .form-control label {
-                display: block;
-                margin-bottom: 8px;
-                font-size: 110%;
-                font-weight: 600;
-                color: var(--lable-text-color);
-                line-height: 1.3em;
-            }
-            .form-control input[type="password"] {
-                width: 100%;
-                padding: 10px;
-                border: 1px solid var(--border-color);
-                border-radius: 5px;
-                font-size: 16px;
-                color: var(--lable-text-color);
-                background-color: var(--input-background-color);
-                box-sizing: border-box;
-                margin-bottom: 15px;
-                transition: border-color 0.3s ease;
-            }
-            .routing { 
-                display: grid;
-                justify-content: flex-start;
-                grid-template-columns: 1fr 1fr 10fr 1fr;
-                margin-bottom: 15px;
-            }
-            .form-control .routing input { grid-column: 2 / 3; }
-            #routing-rules.form-control { display: grid; grid-template-columns: 1fr 1fr; }
-            .routing label {
-                text-align: left;
-                margin: 0 0 0 10px;
-                font-weight: 400;
-                font-size: 100%;
-                text-wrap: nowrap;
-            }
-            .form-control input[type="password"]:focus { border-color: var(--secondary-color); outline: none; }
-            #passwordError { color: red; margin-bottom: 10px; }
-            .symbol { margin-right: 8px; }
-            .modalQR {
-                display: none;
-                position: fixed;
-                z-index: 1;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                overflow: auto;
-                background-color: rgba(0, 0, 0, 0.4);
-            }
-            .floating-button {
-                position: fixed;
-                bottom: 20px;
-                left: 20px;
-                background-color: var(--color);
-                color: white;
-                border: none;
-                border-radius: 50%;
-                width: 60px;
-                height: 60px;
-                font-size: 24px;
-                cursor: pointer;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-                transition: background-color 0.3s, transform 0.3s;
-            }
-            .floating-button:hover { transform: scale(1.1); }
-            .min-max { display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline; width: 100%; }
-            .min-max span { text-align: center; white-space: pre; }
-            .input-with-select { width: 100%; }
-            body.dark-mode .floating-button { background-color: var(--color); }
-            body.dark-mode .floating-button:hover { transform: scale(1.1); }
-            #ips th { 
-                background-color: var(--hr-text-color);
-                color: var(--background-color);
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                flex: 1; 
-            }
-            #ips td { 
-                background-color: unset; 
-                overflow: hidden;
-                flex: 1;
-                text-overflow: clip;
-                white-space: nowrap;
-            }
-            #ips tr { flex-wrap: wrap; }
-            #ips td:first-child { background-color: var(--table-active-color); }
-            .header-container { display: flex; justify-content: center; margin-bottom: 20px; }
-            .udp-noise { border: 1px solid var(--border-color); border-radius: 15px; padding: 20px; margin-bottom: 10px;}
-            @media only screen and (min-width: 768px) {
-                .form-container { max-width: 70%; }
-                .form-control { 
-                    margin-bottom: 15px;
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    align-items: baseline;
-                    justify-content: flex-end;
-                    font-family: Arial, sans-serif;
-                }
-                #apply { display: block; margin: 20px auto; max-width: 50%; }
-                .modal-content { width: 30% }
-                .routing { display: grid; grid-template-columns: 4fr 1fr 3fr 4fr; }
-            }
+            ${style}
         </style>
     </head>
     <body>
@@ -1013,559 +1571,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
-        const defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
-        let activePortsNo = ${ports.length};
-        let activeHttpsPortsNo = ${ports.filter(port => globalThis.defaultHttpsPorts.includes(port)).length};
-        let activeProtocols = ${activeProtocols};
-        localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            const configForm = document.getElementById('configForm');            
-            const changePass = document.getElementById('openModalBtn');
-            const closeBtn = document.querySelector(".close");
-            const passwordChangeForm = document.getElementById('passwordChangeForm');                    
-            const initialFormData = new FormData(configForm);
-            const modal = document.getElementById('myModal');
-            const closeQR = document.getElementById('closeQRModal');
-            const resetSettings = document.getElementById('resetSettings');
-            let modalQR = document.getElementById('myQRModal');
-            let qrcodeContainer = document.getElementById('qrcode-container');
-            let forcedPassChange = false;
-            const darkModeToggle = document.getElementById('darkModeToggle');
-                    
-            const hasFormDataChanged = () => {
-                const currentFormData = new FormData(configForm);
-                const currentFormDataEntries = [...currentFormData.entries()];
-
-                const nonCheckboxFieldsChanged = currentFormDataEntries.some(
-                    ([key, value]) => !initialFormData.has(key) || initialFormData.get(key) !== value
-                );
-
-                const checkboxFieldsChanged = Array.from(configForm.elements)
-                    .filter((element) => element.type === 'checkbox')
-                    .some((checkbox) => {
-                    const initialValue = initialFormData.has(checkbox.name)
-                        ? initialFormData.get(checkbox.name)
-                        : false;
-                    const currentValue = currentFormDataEntries.find(([key]) => key === checkbox.name)?.[1] || false;
-                    return initialValue !== currentValue;
-                });
-
-                return nonCheckboxFieldsChanged || checkboxFieldsChanged;
-            };
-            
-            const enableApplyButton = () => {
-                const isChanged = hasFormDataChanged();
-                applyButton.disabled = !isChanged;
-                applyButton.classList.toggle('disabled', !isChanged);
-            };
-                        
-            passwordChangeForm.addEventListener('submit', event => resetPassword(event));
-            document.getElementById('logout').addEventListener('click', event => logout(event));
-            configForm.addEventListener('submit', (event) => applySettings(event, configForm));
-            configForm.addEventListener('input', enableApplyButton);
-            configForm.addEventListener('change', enableApplyButton);
-            changePass.addEventListener('click', () => {
-                forcedPassChange ? closeBtn.style.display = 'none' : closeBtn.style.display = '';
-                modal.style.display = "block";
-                document.body.style.overflow = "hidden";
-                forcedPassChange = false;
-            });        
-            closeBtn.addEventListener('click', () => {
-                modal.style.display = "none";
-                document.body.style.overflow = "";
-            });
-            closeQR.addEventListener('click', () => {
-                modalQR.style.display = "none";
-                qrcodeContainer.lastElementChild.remove();
-            });
-            resetSettings.addEventListener('click', async () => {
-                const confirmReset = confirm('⚠️ This will reset all panel settings.\\nAre you sure?');
-                if(!confirmReset) return;
-                const formData = new FormData();
-                formData.append('resetSettings', 'true');
-                try {
-                    document.body.style.cursor = 'wait';
-                    const refreshButtonVal = refreshBtn.innerHTML;
-                    refreshBtn.innerHTML = '⌛ Loading...';
-
-                    const response = await fetch('/panel', {
-                        method: 'POST',
-                        body: formData,
-                        credentials: 'include'
-                    });
-
-                    document.body.style.cursor = 'default';
-                    refreshBtn.innerHTML = refreshButtonVal;
-                    if (!response.ok) {
-                        const errorMessage = await response.text();
-                        console.error(errorMessage, response.status);
-                        alert('⚠️ An error occured, Please try again!\\n⛔ ' + errorMessage);
-                        return;
-                    }       
-                    alert('✅ Panel settings reset to default successfully! 😎');
-                    window.location.reload(true);
-                } catch (error) {
-                    console.error('Error:', error);
-                }
-            });
-            window.onclick = (event) => {
-                if (event.target == modalQR) {
-                    modalQR.style.display = "none";
-                    qrcodeContainer.lastElementChild.remove();
-                }
-            }
-            darkModeToggle.addEventListener('click', () => {
-                const isDarkMode = document.body.classList.toggle('dark-mode');
-                localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
-            });
-
-            document.getElementById("dlConfigsBtn").addEventListener("click", async function () {
-                try {
-                    const response = await fetch("/get-warp-configs");
-                    const configs = await response.json();
-                    const zip = new JSZip();
-                    configs.forEach( (config, index) => {
-                        zip.file('BPB-Warp-' + String(index + 1) + '.conf', config);
-                    });
-
-                    zip.generateAsync({ type: "blob" }).then(function (blob) {
-                        const link = document.createElement("a");
-                        link.href = URL.createObjectURL(blob);
-                        link.download = "BPB Warp configs.zip";
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                    });
-                } catch (error) {
-                    console.error("Error fetching configs:", error);
-                }
-            });
-
-            const isPassSet = ${isPassSet};
-            if (!isPassSet) {
-                forcedPassChange = true;
-                changePass.click();
-            }
-
-            await fetchIPInfo();
-        });
-
-        const dlURL = async (url) => {
-            try {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const data = await response.json();
-                const blob = new Blob([JSON.stringify(data, null, 4)], { type: 'application/json' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = 'config.json';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            } catch (error) {
-                console.error('There was a problem with the fetch operation:', error);
-            }
-        };
-
-        const fetchIPInfo = async () => {
-            const updateUI = (ip = '-', country = '-', countryCode = '-', city = '-', isp = '-', cfIP) => {
-                const flag = countryCode !== '-' ? String.fromCodePoint(...[...countryCode].map(c => 0x1F1E6 + c.charCodeAt(0) - 65)) : '';
-                document.getElementById(cfIP ? 'cf-ip' : 'ip').textContent = ip;
-                document.getElementById(cfIP ? 'cf-country' : 'country').textContent = country + ' ' + flag;
-                document.getElementById(cfIP ? 'cf-city' : 'city').textContent = city;
-                document.getElementById(cfIP ? 'cf-isp' : 'isp').textContent = isp;
-            };
-
-            const refreshIcon = document.getElementById("refresh-geo-location").querySelector('i');
-            refreshIcon.classList.add('fa-spin');
-            document.body.style.cursor = 'wait';
-
-            try {
-                const ipResponse = await fetch('https://ipwho.is/' + '?nocache=' + Date.now(), { cache: "no-store" });
-                const ipResponseObj = await ipResponse.json();
-                const geoResponse = await fetch('/my-ip', { 
-                    method: 'POST',
-                    body: ipResponseObj.ip
-                });
-                const ipGeoLocation = await geoResponse.json();
-                updateUI(ipResponseObj.ip, ipGeoLocation.country, ipGeoLocation.countryCode, ipGeoLocation.city, ipGeoLocation.isp);
-                const cfIPresponse = await fetch('https://ipv4.icanhazip.com/?nocache=' + Date.now(), { cache: "no-store" });
-                const cfIP = await cfIPresponse.text();
-                const cfGeoResponse = await fetch('/my-ip', { 
-                    method: 'POST',
-                    body: cfIP.trim()
-                });
-                const cfIPGeoLocation = await cfGeoResponse.json();
-                updateUI(cfIP, cfIPGeoLocation.country, cfIPGeoLocation.countryCode, cfIPGeoLocation.city, cfIPGeoLocation.isp, true);
-                refreshIcon.classList.remove('fa-spin');
-                document.body.style.cursor = 'default';
-            } catch (error) {
-                console.error('Error fetching IP address:', error);
-            }
-        }
-
-        const addUdpNoise = () => {
-            const container = document.getElementById("udp-noise-container");
-            const noiseBlock = document.getElementById("udp-noise-container-0");
-            const index = container.children.length;
-            const clone = noiseBlock.cloneNode(true);
-            clone.querySelector("h4").textContent = "Noise " + String(index + 1);
-            container.appendChild(clone);
-            document.getElementById("configForm").dispatchEvent(new Event("change"));
-        }
-        
-        const deleteUdpNoise = (button) => {
-            const container = document.getElementById("udp-noise-container");
-            if (container.children.length === 1) {
-                alert('⛔ You cannot delete all noises!');
-                return;
-            }   
-            const confirmReset = confirm('⚠️ This will delete the noise.\\nAre you sure?');
-            if(!confirmReset) return;
-            button.closest(".udp-noise").remove();
-            document.getElementById("configForm").dispatchEvent(new Event("change"));
-        }
-
-        const getWarpConfigs = async () => {
-            const confirmReset = confirm('⚠️ Are you sure?');
-            if(!confirmReset) return;
-            const refreshBtn = document.getElementById('refreshBtn');
-
-            try {
-                document.body.style.cursor = 'wait';
-                const refreshButtonVal = refreshBtn.innerHTML;
-                refreshBtn.innerHTML = '⌛ Loading...';
-
-                const response = await fetch('/update-warp', {
-                    method: 'POST',
-                    credentials: 'include'
-                });
-
-                document.body.style.cursor = 'default';
-                refreshBtn.innerHTML = refreshButtonVal;
-                if (!response.ok) {
-                    const errorMessage = await response.text();
-                    console.error(errorMessage, response.status);
-                    alert('⚠️ An error occured, Please try again!\\n⛔ ' + errorMessage);
-                    return;
-                }          
-                alert('✅ Warp configs updated successfully! 😎');
-            } catch (error) {
-                console.error('Error:', error);
-            } 
-        }
-
-        const handlePortChange = (event) => {
-            
-            if(event.target.checked) { 
-                activePortsNo++ 
-                defaultHttpsPorts.includes(event.target.name) && activeHttpsPortsNo++;
-            } else {
-                activePortsNo--;
-                defaultHttpsPorts.includes(event.target.name) && activeHttpsPortsNo--;
-            }
-
-            if (activePortsNo === 0) {
-                event.preventDefault();
-                event.target.checked = !event.target.checked;
-                alert("⛔ At least one port should be selected! 🫤");
-                activePortsNo = 1;
-                defaultHttpsPorts.includes(event.target.name) && activeHttpsPortsNo++;
-                return false;
-            }
-                
-            if (activeHttpsPortsNo === 0) {
-                event.preventDefault();
-                event.target.checked = !event.target.checked;
-                alert("⛔ At least one TLS(https) port should be selected! 🫤");
-                activeHttpsPortsNo = 1;
-                return false;
-            }
-        }
-        
-        const handleProtocolChange = (event) => {
-            
-            if(event.target.checked) { 
-                activeProtocols++ 
-            } else {
-                activeProtocols--;
-            }
-
-            if (activeProtocols === 0) {
-                event.preventDefault();
-                event.target.checked = !event.target.checked;
-                alert("⛔ At least one Protocol should be selected! 🫤");
-                activeProtocols = 1;
-                return false;
-            }
-        }
-
-        const openQR = (url, title) => {
-            let qrcodeContainer = document.getElementById("qrcode-container");
-            let qrcodeTitle = document.getElementById("qrcodeTitle");
-            const modalQR = document.getElementById("myQRModal");
-            qrcodeTitle.textContent = title;
-            modalQR.style.display = "block";
-            let qrcodeDiv = document.createElement("div");
-            qrcodeDiv.className = "qrcode";
-            qrcodeDiv.style.padding = "2px";
-            qrcodeDiv.style.backgroundColor = "#ffffff";
-            new QRCode(qrcodeDiv, {
-                text: url,
-                width: 256,
-                height: 256,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
-            });
-            qrcodeContainer.appendChild(qrcodeDiv);
-        }
-
-        const copyToClipboard = (text) => {
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            alert('📋 Copied to clipboard:\\n\\n' +  text);
-        }
-
-        const applySettings = async (event, configForm) => {
-            event.preventDefault();
-            event.stopPropagation();
-            const applyButton = document.getElementById('applyButton');
-            const getValue = (id) => parseInt(document.getElementById(id).value, 10);              
-            const lengthMin = getValue('fragmentLengthMin');
-            const lengthMax = getValue('fragmentLengthMax');
-            const intervalMin = getValue('fragmentIntervalMin');
-            const intervalMax = getValue('fragmentIntervalMax');
-            const customCdnAddrs = document.getElementById('customCdnAddrs').value?.split(',').filter(addr => addr !== '');
-            const customCdnHost = document.getElementById('customCdnHost').value;
-            const customCdnSni = document.getElementById('customCdnSni').value;
-            const isCustomCdn = customCdnAddrs.length || customCdnHost !== '' || customCdnSni !== '';
-            const warpEndpoints = document.getElementById('warpEndpoints').value?.replaceAll(' ', '').split(',');
-            const noiseCountMin = getValue('noiseCountMin');
-            const noiseCountMax = getValue('noiseCountMax');
-            const noiseSizeMin = getValue('noiseSizeMin');
-            const noiseSizeMax = getValue('noiseSizeMax');
-            const noiseDelayMin = getValue('noiseDelayMin');
-            const noiseDelayMax = getValue('noiseDelayMax');
-            const cleanIPs = document.getElementById('cleanIPs').value?.split(',');
-            const proxyIPs = document.getElementById('proxyIP').value?.split(',');
-            const chainProxy = document.getElementById('outProxy').value?.trim();
-            const customBypassRules = document.getElementById('customBypassRules').value?.split(',');                    
-            const customBlockRules = document.getElementById('customBlockRules').value?.split(',');                    
-            const formData = new FormData(configForm);
-            const is${atob('Vmxlc3M=')} = /${atob('dmxlc3M=')}:\\/\\/[^\s@]+@[^\\s:]+:[^\\s]+/.test(chainProxy);
-            const isSocksHttp = /^(http|socks):\\/\\/(?:([^:@]+):([^:@]+)@)?([^:@]+):(\\d+)$/.test(chainProxy);
-            const hasSecurity = /security=/.test(chainProxy);
-            const securityRegex = /security=(tls|none|reality)/;
-            const validSecurityType = securityRegex.test(chainProxy);
-            let match = chainProxy.match(securityRegex);
-            const securityType = match ? match[1] : null;
-            match = chainProxy.match(/:(\\d+)\\?/);
-            const ${atob('dmxlc3M=')}Port = match ? match[1] : null;
-            const validTransmission = /type=(tcp|grpc|ws)/.test(chainProxy);
-            const validIPDomain = /^((?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,})|(?:(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)(?:\\/(?:\\d|[12]\\d|3[0-2]))?|\\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}|:(?::[a-fA-F0-9]{1,4}){1,7})\\](?:\\/(?:12[0-8]|1[0-1]\\d|[0-9]?\\d))?)$/i;
-            const validEndpoint = /^(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|\\[(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,7}:\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}\\]|\\[(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}\\]|\\[[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}\\]|\\[:(?::[a-fA-F0-9]{1,4}){1,7}\\]|\\[::(?::[a-fA-F0-9]{1,4}){0,7}\\]):(?:[0-9]{1,5})$/;
-            const checkedPorts = Array.from(document.querySelectorAll('input[id^="port-"]:checked')).map(input => input.id.split('-')[1]);
-            formData.append('ports', checkedPorts);
-            configForm.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                !formData.has(checkbox.name) && formData.append(checkbox.name, 'false');    
-            });
-            const base64Regex = /^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/;
-            const udpNoiseModes = formData.getAll('udpXrayNoiseMode') || [];
-            const udpNoisePackets = formData.getAll('udpXrayNoisePacket') || [];
-            const udpNoiseDelaysMin = formData.getAll('udpXrayNoiseDelayMin') || [];
-            const udpNoiseDelaysMax = formData.getAll('udpXrayNoiseDelayMax') || [];
-
-            const invalidIPs = [...cleanIPs, ...proxyIPs, ...customCdnAddrs, ...customBypassRules, ...customBlockRules, customCdnHost, customCdnSni]?.filter(value => {
-                if (value) {
-                    const trimmedValue = value.trim();
-                    return !validIPDomain.test(trimmedValue);
-                }
-            });
-
-            const invalidEndpoints = warpEndpoints?.filter(value => {
-                if (value) {
-                    const trimmedValue = value.trim();
-                    return !validEndpoint.test(trimmedValue);
-                }
-            });
-
-            if (invalidIPs.length) {
-                alert('⛔ Invalid IPs or Domains 🫤\\n\\n' + invalidIPs.map(ip => '⚠️ ' + ip).join('\\n'));
-                return false;
-            }
-            
-            if (invalidEndpoints.length) {
-                alert('⛔ Invalid endpoint 🫤\\n\\n' + invalidEndpoints.map(endpoint => '⚠️ ' + endpoint).join('\\n'));
-                return false;
-            }
-
-            if (lengthMin >= lengthMax || intervalMin > intervalMax || noiseCountMin > noiseCountMax || noiseSizeMin > noiseSizeMax || noiseDelayMin > noiseDelayMax) {
-                alert('⛔ Minimum should be smaller or equal to Maximum! 🫤');               
-                return false;
-            }
-
-            if (!(is${atob('Vmxlc3M=')} && (hasSecurity && validSecurityType || !hasSecurity) && validTransmission) && !isSocksHttp && chainProxy) {
-                alert('⛔ Invalid Config! 🫤 \\n - The chain proxy should be ${atob('VkxFU1M=')}, Socks or Http!\\n - ${atob('VkxFU1M=')} transmission should be GRPC,WS or TCP\\n - ${atob('VkxFU1M=')} security should be TLS,Reality or None\\n - socks or http should be like:\\n + (socks or http)://user:pass@host:port\\n + (socks or http)://host:port');               
-                return false;
-            }
-
-            if (is${atob('Vmxlc3M=')} && securityType === 'tls' && ${atob('dmxlc3M=')}Port !== '443') {
-                alert('⛔ ${atob('VkxFU1M=')} TLS port can be only 443 to be used as a proxy chain! 🫤');               
-                return false;
-            }
-
-            if (isCustomCdn && !(customCdnAddrs.length && customCdnHost && customCdnSni)) {
-                alert('⛔ All "Custom" fields should be filled or deleted together! 🫤');               
-                return false;
-            }
-            
-            let submisionError = false;
-            for (const [index, mode] of udpNoiseModes.entries()) {
-                if (udpNoiseDelaysMin[index] > udpNoiseDelaysMax[index]) {
-                    alert('⛔ The minimum noise delay should be smaller or equal to maximum! 🫤');
-                    submisionError = true;
-                    break;
-                }
-                
-                switch (mode) {
-                    case 'base64':
-                        if (!base64Regex.test(udpNoisePackets[index])) {
-                            alert('⛔ The Base64 noise packet is not a valid base64 value! 🫤');
-                            submisionError = true;
-                        }
-                        break;
-    
-                    case 'rand':
-                        if (!(/^\\d+-\\d+$/.test(udpNoisePackets[index]))) {
-                            alert('⛔ The Random noise packet should be a range like 0-10 or 10-30! 🫤');
-                            submisionError = true;
-                        }
-                        const [min, max] = udpNoisePackets[index].split("-").map(Number);
-                        if (min > max) {
-                            alert('⛔ The minimum Random noise packet should be smaller or equal to maximum! 🫤');
-                            submisionError = true;
-                        }
-                        break;
-
-                    case 'hex':
-                        if (!(/^(?=(?:[0-9A-Fa-f]{2})*$)[0-9A-Fa-f]+$/.test(udpNoisePackets[index]))) {
-                            alert('⛔ The Hex noise packet is not a valid hex value! It should have even length and consisted of 0-9, a-f and A-F. 🫤');
-                            submisionError = true;
-                        }
-                        break;
-                }
-            }
-            if (submisionError) return false;
-
-            try {
-                document.body.style.cursor = 'wait';
-                const applyButtonVal = applyButton.value;
-                applyButton.value = '⌛ Loading...';
-
-                const response = await fetch('/panel', {
-                    method: 'POST',
-                    body: formData,
-                    credentials: 'include'
-                });
-
-                document.body.style.cursor = 'default';
-                applyButton.value = applyButtonVal;
-
-                if (!response.ok) {
-                    const errorMessage = await response.text();
-                    console.error(errorMessage, response.status);
-                    alert('⚠️ Session expired! Please login again.');
-                    window.location.href = '/login';
-                    return;
-                }                
-                alert('✅ Parameters applied successfully 😎');
-                window.location.reload();
-            } catch (error) {
-                console.error('Error:', error);
-            }
-        }
-
-        const logout = async (event) => {
-            event.preventDefault();
-
-            try {
-                const response = await fetch('/logout', {
-                    method: 'GET',
-                    credentials: 'same-origin'
-                });
-            
-                if (!response.ok) {
-                    console.error('Failed to log out:', response.status);
-                    return;
-                }
-                window.location.href = '/login';
-            } catch (error) {
-                console.error('Error:', error);
-            }
-        }
-
-        const resetPassword = async (event) => {
-            event.preventDefault();
-            const modal = document.getElementById('myModal');
-            const newPasswordInput = document.getElementById('newPassword');
-            const confirmPasswordInput = document.getElementById('confirmPassword');
-            const passwordError = document.getElementById('passwordError');             
-            const newPassword = newPasswordInput.value;
-            const confirmPassword = confirmPasswordInput.value;
-
-            if (newPassword !== confirmPassword) {
-                passwordError.textContent = "Passwords do not match";
-                return false;
-            }
-
-            const hasCapitalLetter = /[A-Z]/.test(newPassword);
-            const hasNumber = /[0-9]/.test(newPassword);
-            const isLongEnough = newPassword.length >= 8;
-
-            if (!(hasCapitalLetter && hasNumber && isLongEnough)) {
-                passwordError.textContent = '⚠️ Password must contain at least one capital letter, one number, and be at least 8 characters long.';
-                return false;
-            }
-                    
-            try {
-                const response = await fetch('/panel/password', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain'
-                    },
-                    body: newPassword,
-                    credentials: 'same-origin'
-                });
-            
-                if (response.ok) {
-                    modal.style.display = "none";
-                    document.body.style.overflow = "";
-                    alert("✅ Password changed successfully! 👍");
-                    window.location.href = '/login';
-                } else if (response.status === 401) {
-                    const errorMessage = await response.text();
-                    passwordError.textContent = '⚠️ ' + errorMessage;
-                    console.error(errorMessage, response.status);
-                    alert('⚠️ Session expired! Please login again.');
-                    window.location.href = '/login';
-                } else {
-                    const errorMessage = await response.text();
-                    passwordError.textContent = '⚠️ ' + errorMessage;
-                    console.error(errorMessage, response.status);
-                    return false;
-                }
-            } catch (error) {
-                console.error('Error:', error);
-            }
-        }
+        ${js}
     </script>
     </body>	
     </html>`;
