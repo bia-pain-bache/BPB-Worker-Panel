@@ -290,7 +290,8 @@ function buildXrayVLOutbound (tag, address, port, host, sni, proxyIP, isFragment
                 headers: {
                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
                 },
-                path: `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}?ed=2560`
+                path: `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}?ed=2560`,
+                heartbeatPeriod: 15
             }
         },
         tag: tag
@@ -335,10 +336,12 @@ function buildXrayTROutbound (tag, address, port, host, sni, proxyIP, isFragment
             security: "none",
             sockopt: {},
             wsSettings: {
+                host: host,
                 headers: {
-                    Host: host
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
                 },
-                path: `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}?ed=2560`
+                path: `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}?ed=2560`,
+                heartbeatPeriod: 15
             }
         },
         tag: tag
@@ -366,8 +369,7 @@ function buildXrayTROutbound (tag, address, port, host, sni, proxyIP, isFragment
 
 function buildXrayWarpOutbound (proxySettings, warpConfigs, endpoint, chain, client) {
     const { 
-        warpEnableIPv6,
-		nikaNGNoiseMode,  
+        nikaNGNoiseMode,  
 		noiseCountMin, 
 		noiseCountMax, 
 		noiseSizeMin, 

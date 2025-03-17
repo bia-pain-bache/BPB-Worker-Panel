@@ -261,13 +261,13 @@ function buildClashVLOutbound (remark, address, port, host, sni, path, allowInse
         "server": addr,
         "port": +port,
         "uuid": userID,
-        "packet-encoding": "",
+        "packet-encoding": "packetaddr",
         "tls": tls,
         "network": "ws",
         "udp": true,
         "ws-opts": {
             "path": path,
-            "headers": { "host": host },
+            "headers": { "Host": host },
             "max-early-data": 2560,
             "early-data-header-name": "Sec-WebSocket-Protocol"
         }
@@ -276,7 +276,7 @@ function buildClashVLOutbound (remark, address, port, host, sni, path, allowInse
     if (tls) {
         Object.assign(outbound, {
             "servername": sni,
-            "alpn": ["h2", "http/1.1"],
+            "alpn": ["http/1.1"],
             "client-fingerprint": "random",
             "skip-cert-verify": allowInsecure
         });
@@ -297,12 +297,12 @@ function buildClashTROutbound (remark, address, port, host, sni, path, allowInse
         "udp": true,
         "ws-opts": {
             "path": path,
-            "headers": { "host": host },
+            "headers": { "Host": host },
             "max-early-data": 2560,
             "early-data-header-name": "Sec-WebSocket-Protocol"
         },
         "sni": sni,
-        "alpn": ["h2", "http/1.1"],
+        "alpn": ["http/1.1"],
         "client-fingerprint": "random",
         "skip-cert-verify": allowInsecure
     };
@@ -586,8 +586,8 @@ const clashConfigTemp = {
     "mode": "rule",
     "log-level": "warning",
     "disable-keep-alive": false,
-    "keep-alive-idle": 30,
-    "keep-alive-interval": 30,
+    "keep-alive-idle": 10,
+    "keep-alive-interval": 15,
     "unified-delay": false,
     "geo-auto-update": true,
     "geo-update-interval": 168,
@@ -609,7 +609,10 @@ const clashConfigTemp = {
         "auto-route": true,
         "strict-route": true,
         "auto-detect-interface": true,
-        "dns-hijack": ["any:53"],
+        "dns-hijack": [
+            "any:53",
+            "tcp://any:53"
+        ],
         "mtu": 9000
     },
     "sniffer": {
