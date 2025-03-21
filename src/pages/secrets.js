@@ -5,7 +5,7 @@ export async function renderSecretsPage () {
     <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Login</title>
+    <title>${atob('QlBC')} Generator</title>
     <style>
         :root {
             --color: black;
@@ -108,7 +108,7 @@ export async function renderSecretsPage () {
     </head>
     <body>
         <div class="container">
-            <h1>BPB Panel <span style="font-size: smaller;">${globalThis.panelVersion}</span> 💦</h1>
+            <h1>${atob('QlBC')} Panel <span style="font-size: smaller;">${globalThis.panelVersion}</span> 💦</h1>
             <div class="form-container">
                 <h2>Secrets generator</h2>
                 <div>
@@ -119,10 +119,17 @@ export async function renderSecretsPage () {
                     </div>
                 </div>
                 <div>
-                    <strong>Random Trojan Password</strong>
+                    <strong>Random ${atob('VHJvamFu')} Password</strong>
                     <div class="output-container">
-                        <span id="trojan-password" class="output"></span>
-                        <span class="copy-icon" onclick="copyToClipboard('trojan-password')">📋</span>
+                        <span id="${atob('dHJvamFu')}-password" class="output"></span>
+                        <span class="copy-icon" onclick="copyToClipboard('${atob('dHJvamFu')}-password')">📋</span>
+                    </div>
+                </div>
+                <div>
+                    <strong>Random Subscription URI path</strong>
+                    <div class="output-container">
+                        <span id="sub-path" class="output"></span>
+                        <span class="copy-icon" onclick="copyToClipboard('sub-path')">📋</span>
                     </div>
                 </div>
                 <button class="button" onclick="generateCredentials()">Generate Again ♻️</button>
@@ -146,13 +153,27 @@ export async function renderSecretsPage () {
                 }
                 return password;
             }
+            
+            function generateSubURIPath() {
+                const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@$&*_-+;:,.";
+                let uriPath = '';
+                const randomValues = new Uint8Array(16);
+                crypto.getRandomValues(randomValues);
+    
+                for (let i = 0; i < 16; i++) {
+                    uriPath += charset[randomValues[i] % charset.length];
+                }
+                return uriPath;
+            }
     
             function generateCredentials() {
                 const uuid = generateUUID();
                 const password = generateStrongPassword();
+                const uriPath = generateSubURIPath();
     
                 document.getElementById('uuid').textContent = uuid;
-                document.getElementById('trojan-password').textContent = password;
+                document.getElementById('${atob('dHJvamFu')}-password').textContent = password;
+                document.getElementById('sub-path').textContent = uriPath;
             }
     
             function copyToClipboard(elementId) {

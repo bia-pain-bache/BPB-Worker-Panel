@@ -1,9 +1,8 @@
 import nacl from 'tweetnacl';
 
-export async function fetchWarpConfigs (env, proxySettings) {
+export async function fetchWarpConfigs (env) {
     let warpConfigs = [];
     const apiBaseUrl = 'https://api.cloudflareclient.com/v0a4005/reg';
-    const { warpPlusLicense } = proxySettings;
     const warpKeys = [ generateKeyPair(), generateKeyPair() ];
     const commonPayload = {
         install_id: "",
@@ -27,39 +26,16 @@ export async function fetchWarpConfigs (env, proxySettings) {
         return await response.json();
     };
 
-    const updateAccount = async (accountData, key) => {
-        const response = await fetch(`${apiBaseUrl}/${accountData.id}/account`, {
-            method: 'PUT',
-            headers: {
-                'User-Agent': 'insomnia/8.6.1',
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${accountData.token}`
-            },
-            body: JSON.stringify({ ...commonPayload, key: key.publicKey, license: warpPlusLicense })
-        });
-        return {
-            status: response.status,
-            data: await response.json()
-        };
-    };
-
     for (const key of warpKeys) {
         const accountData = await fetchAccount(key);
         warpConfigs.push({
             privateKey: key.privateKey,
             account: accountData
         });
-
-        if (warpPlusLicense) {
-            const { status, data: responseData } = await updateAccount(accountData, key);
-            if (status !== 200 && !responseData.success) {
-                return { error: responseData.errors[0]?.message, configs: null };
-            }
-        }
     }
     
     const configs = JSON.stringify(warpConfigs)
-    await env.bpb.put('warpConfigs', configs);
+    await env.kv.put('warpConfigs', configs);
     return { error: null, configs };
 }
 

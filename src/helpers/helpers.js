@@ -1,4 +1,5 @@
 import { Authenticate } from "../authentication/auth";
+import { extractWireguardParams } from "../cores-configs/helpers";
 import { getDataset, updateDataset } from "../kv/handlers";
 import { renderHomePage } from "../pages/home";
 
@@ -49,7 +50,7 @@ export async function handlePanel(request, env) {
     }
         
     const { proxySettings } = await getDataset(request, env);
-    const pwd = await env.bpb.get('pwd');
+    const pwd = await env.kv.get('pwd');
     if (pwd && !auth) return Response.redirect(`${globalThis.urlOrigin}/login`, 302);
     const isPassSet = pwd?.length >= 8;
     return await renderHomePage(proxySettings, isPassSet);
@@ -57,10 +58,16 @@ export async function handlePanel(request, env) {
 
 export async function fallback(request) {
     const url = new URL(request.url);
-    url.hostname = 'www.speedtest.net';
+    url.hostname = globalThis.fallbackDomain;
     url.protocol = 'https:';
-    request = new Request(url, request);
-    return await fetch(request);
+    const newRequest = new Request(url.toString(), {
+        method: request.method,
+        headers: request.headers,
+        body: request.body,
+        redirect: 'manual'
+    });
+    
+    return await fetch(newRequest);
 }
 
 export async function getMyIP(request) {
@@ -77,4 +84,33 @@ export async function getMyIP(request) {
     } catch (error) {
         console.error('Error fetching IP address:', error);
     }
+}
+
+export async function getWarpConfigFiles(request, env) {
+    const auth = await Authenticate(request, env);
+    if (!auth) return new Response('Unauthorized or expired session!', { status: 401 });
+    const { warpConfigs, proxySettings } = await getDataset(request, env);
+    const { warpEndpoints } = proxySettings
+    const warpConfig = extractWireguardParams(warpConfigs, false);
+    const { warpIPv6, publicKey, privateKey} = warpConfig;
+    const warpConfs = [];
+    warpEndpoints.split(',').forEach( endpoint => {
+        const warpConf = 
+`[Interface]
+PrivateKey = ${privateKey}
+Address = 172.16.0.2/32, ${warpIPv6}
+DNS = 1.1.1.1, 1.0.0.1
+MTU = 1280
+[Peer]
+PublicKey = ${publicKey}
+AllowedIPs = 0.0.0.0/0, ::/0
+Endpoint = ${endpoint}`;
+        warpConfs.push(warpConf);
+    });
+    return new Response(JSON.stringify(warpConfs), { 
+        status: 200,
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });   
 }
