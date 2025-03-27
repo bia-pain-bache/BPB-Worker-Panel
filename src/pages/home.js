@@ -1327,7 +1327,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                     </tr>
                     <tr>
                         <td>
-                            ${supportedApps(['v2rayNG', 'NikaNG', 'MahsaNG', 'v2rayN', 'v2rayN-PRO', 'Shadowrocket', 'Streisand', 'Hiddify', 'Nekoray (Xray)'])}
+                            ${supportedApps(['v2rayNG', 'NikaNG', 'MahsaNG', 'v2rayN', 'v2rayN-PRO', 'Shadowrocket', 'Streisand', 'Hiddify'])}
                         </td>
                         <td>
                             ${subQR('sub', '', `${atob('QlBC')}-Normal`, 'Normal Subscription')}
@@ -1336,9 +1336,10 @@ export async function renderHomePage (proxySettings, isPassSet) {
                     </tr>
                     <tr>
                         <td>
-                            ${supportedApps(['husi', 'Nekobox', 'Nekoray (sing-Box)', 'Karing'])}
+                            ${supportedApps(['husi', 'Nekobox', 'Nekoray', 'Karing'])}
                         </td>
                         <td>
+                            ${subQR('sub', 'singbox', `${atob('QlBC')}-Normal`, 'Normal Subscription', true)}
                             ${subURL('sub', 'singbox', `${atob('QlBC')}-Normal`)}
                         </td>
                     </tr>
@@ -1465,7 +1466,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                     </tr>
                     <tr>
                         <td>
-                            ${supportedApps(['v2rayNG', 'v2rayN'])}
+                            ${supportedApps(['v2rayNG', 'v2rayN', 'Streisand'])}
                         </td>
                         <td>
                             ${subQR('warpsub', 'xray-pro', `${atob('QlBC')}-Warp-Pro`, 'Warp Pro Subscription')}
