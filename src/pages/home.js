@@ -577,26 +577,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
     });
 
     const downloadWarpConfigs = async (isAmnezia) => {
-        try {
-            const client = isAmnezia ? "?app=amnezia" : "";
-            const response = await fetch("/get-warp-configs" + client);
-            const configs = await response.json();
-            const zip = new JSZip();
-            configs.forEach( (config, index) => {
-                zip.file('BPB-Warp-' + String(index + 1) + '.conf', config);
-            });
-
-            zip.generateAsync({ type: "blob" }).then(function (blob) {
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(blob);
-                link.download = "BPB Warp configs.zip";
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            });
-        } catch (error) {
-            console.error("Error fetching configs:", error);
-        }
+        const client = isAmnezia ? "?app=amnezia" : "";
+        window.location.href = "/get-warp-configs" + client;
     }
 
     const dlURL = async (url) => {
@@ -1611,7 +1593,6 @@ export async function renderHomePage (proxySettings, isPassSet) {
         <button id="darkModeToggle" class="floating-button">
             <i id="modeIcon" class="fa fa-2x fa-adjust" style="color: var(--background-color);" aria-hidden="true"></i>
         </button>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script type="module" defer>
         import { polyfillCountryFlagEmojis } from "https://cdn.skypack.dev/country-flag-emoji-polyfill";
         polyfillCountryFlagEmojis();
