@@ -1471,6 +1471,16 @@ export async function renderHomePage (proxySettings, isPassSet) {
                             ${dlConfig('warpsub', 'clash')}
                         </td>
                     </tr>
+                    <tr>
+                        <td>
+                            ${supportedApps(['Wireguard'])}
+                        </td>
+                        <td>
+                            <button id="dlConfigsBtn" type="button" onclick="downloadWarpConfigs()">
+                                Download<span class="material-symbols-outlined">download</span>
+                            </button>
+                        </td>
+                    </tr>
                 </table>
             </div>
             <h2>🔗 WARP PRO SUB</h2>
@@ -1505,6 +1515,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                         <td>
                             ${subQR('warpsub', 'clash-pro', `${atob('QlBC')}-Warp-Pro`, 'Warp Pro Subscription')}
                             ${subURL('warpsub', 'clash-pro', `${atob('QlBC')}-Warp-Pro`)}
+                            ${dlConfig('warpsub', 'clash-pro')}
                         </td>
                     </tr>
                     <tr>
@@ -1514,16 +1525,6 @@ export async function renderHomePage (proxySettings, isPassSet) {
                         <td>
                             ${subQR('warpsub', 'hiddify-pro', `${atob('QlBC')}-Warp-Pro`, 'Warp Pro Subscription', false, true)}
                             ${subURL('warpsub', 'hiddify-pro', `${atob('QlBC')}-Warp-Pro`, true)}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            ${supportedApps(['Wireguard'])}
-                        </td>
-                        <td>
-                            <button id="dlConfigsBtn" type="button" onclick="downloadWarpConfigs()">
-                                Download<span class="material-symbols-outlined">download</span>
-                            </button>
                         </td>
                     </tr>
                     <tr>
