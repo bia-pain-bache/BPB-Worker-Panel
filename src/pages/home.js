@@ -32,6 +32,9 @@ export async function renderHomePage (proxySettings, isPassSet) {
         noiseSizeMax,
         noiseDelayMin,
         noiseDelayMax,
+        amneziaNoiseCount,
+        amneziaNoiseSizeMin,
+        amneziaNoiseSizeMax,
         bypassLAN,
         bypassIran,
         bypassChina,
@@ -109,16 +112,18 @@ export async function renderHomePage (proxySettings, isPassSet) {
         
     const subQR = (path, app, tag, title, sbType, hiddifyType) => {
         const url = `${sbType ? 'sing-box://import-remote-profile?url=' : ''}${hiddifyType ? 'hiddify://import/' : ''}https://${globalThis.hostName}/${path}/${globalThis.subPath}${app ? `?app=${app}` : ''}#${tag}`;
+        const encodedURL = encodeURI(url);
         return `
-            <button onclick="openQR('${url}', '${title}')">
+            <button onclick="openQR('${encodedURL}', '${title}')">
                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
             </button>`;
     };
     
     const subURL = (path, app, tag, hiddifyType) => {
         const url = `${hiddifyType ? 'hiddify://import/' : ''}https://${globalThis.hostName}/${path}/${globalThis.subPath}${app ? `?app=${app}` : ''}#${tag}`;
+        const encodedURL = encodeURI(url);
         return `
-            <button onclick="copyToClipboard('${url}')">
+            <button onclick="copyToClipboard('${encodedURL}')">
                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
             </button>`;
     }
@@ -562,28 +567,6 @@ export async function renderHomePage (proxySettings, isPassSet) {
             localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
         });
 
-        document.getElementById("dlConfigsBtn").addEventListener("click", async function () {
-            try {
-                const response = await fetch("/get-warp-configs");
-                const configs = await response.json();
-                const zip = new JSZip();
-                configs.forEach( (config, index) => {
-                    zip.file('BPB-Warp-' + String(index + 1) + '.conf', config);
-                });
-
-                zip.generateAsync({ type: "blob" }).then(function (blob) {
-                    const link = document.createElement("a");
-                    link.href = URL.createObjectURL(blob);
-                    link.download = "BPB Warp configs.zip";
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                });
-            } catch (error) {
-                console.error("Error fetching configs:", error);
-            }
-        });
-
         const isPassSet = ${isPassSet};
         if (!isPassSet) {
             forcedPassChange = true;
@@ -592,6 +575,29 @@ export async function renderHomePage (proxySettings, isPassSet) {
 
         await fetchIPInfo();
     });
+
+    const downloadWarpConfigs = async (isAmnezia) => {
+        try {
+            const client = isAmnezia ? "?app=amnezia" : "";
+            const response = await fetch("/get-warp-configs" + client);
+            const configs = await response.json();
+            const zip = new JSZip();
+            configs.forEach( (config, index) => {
+                zip.file('BPB-Warp-' + String(index + 1) + '.conf', config);
+            });
+
+            zip.generateAsync({ type: "blob" }).then(function (blob) {
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = "BPB Warp configs.zip";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+        } catch (error) {
+            console.error("Error fetching configs:", error);
+        }
+    }
 
     const dlURL = async (url) => {
         try {
@@ -1202,12 +1208,6 @@ export async function renderHomePage (proxySettings, isPassSet) {
                         <label for="bestWarpInterval">🔄 Best Interval</label>
                         <input type="number" id="bestWarpInterval" name="bestWarpInterval" min="10" max="90" value="${bestWarpInterval}">
                     </div>
-                    <div class="form-control">
-                        <label for="dlConfigsBtn">📥 Download Warp Configs</label>
-                        <button id="dlConfigsBtn" type="button" class="button" style="padding: 10px 0;">
-                            Download<span class="material-symbols-outlined">download</span>
-                        </button>
-                    </div>
                 </details>
                 <details>
                     <summary><h2>WARP PRO ⚙️</h2></summary>
@@ -1263,6 +1263,22 @@ export async function renderHomePage (proxySettings, isPassSet) {
                             <span> - </span>
                             <input type="number" id="noiseDelayMax" name="noiseDelayMax"
                                 value="${noiseDelayMax}" min="1" required>
+                        </div>
+                    </div>
+                    <h3>CLASH - AMNEZIA 🔧</h3>
+                    <div class="form-control">
+                        <label for="amneziaNoiseCount">🎚️ Noise Count</label>
+                        <input type="number" id="amneziaNoiseCount" name="amneziaNoiseCount"
+                            value="${amneziaNoiseCount}" min="1" required>
+                    </div>
+                    <div class="form-control">
+                        <label for="amneziaNoiseSizeMin">📏 Noise Size</label>
+                        <div class="min-max">
+                            <input type="number" id="amneziaNoiseSizeMin" name="amneziaNoiseSizeMin"
+                                value="${amneziaNoiseSizeMin}" min="1" required>
+                            <span> - </span>
+                            <input type="number" id="amneziaNoiseSizeMax" name="amneziaNoiseSizeMax"
+                                value="${amneziaNoiseSizeMax}" min="1" required>
                         </div>
                     </div>
                 </details>
@@ -1441,7 +1457,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                             ${supportedApps(['Hiddify'])}
                         </td>
                         <td>
-                            ${subQR('warpsub', 'hiddify', `${atob('QlBC')}-Warp`, 'Warp Pro Subscription', false, true)}
+                            ${subQR('warpsub', 'hiddify', `${atob('QlBC')}-Warp`, 'Warp Subscription', false, true)}
                             ${subURL('warpsub', 'hiddify', `${atob('QlBC')}-Warp`, true)}
                         </td>
                     </tr>
@@ -1484,11 +1500,40 @@ export async function renderHomePage (proxySettings, isPassSet) {
                     </tr>
                     <tr>
                         <td>
+                            ${supportedApps(['Clash Meta', 'Clash Verge', 'FlClash', 'Stash', 'v2rayN (mihomo)'])}
+                        </td>
+                        <td>
+                            ${subQR('warpsub', 'clash-pro', `${atob('QlBC')}-Warp-Pro`, 'Warp Pro Subscription')}
+                            ${subURL('warpsub', 'clash-pro', `${atob('QlBC')}-Warp-Pro`)}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
                             ${supportedApps(['Hiddify'])}
                         </td>
                         <td>
                             ${subQR('warpsub', 'hiddify-pro', `${atob('QlBC')}-Warp-Pro`, 'Warp Pro Subscription', false, true)}
                             ${subURL('warpsub', 'hiddify-pro', `${atob('QlBC')}-Warp-Pro`, true)}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            ${supportedApps(['Wireguard'])}
+                        </td>
+                        <td>
+                            <button id="dlConfigsBtn" type="button" onclick="downloadWarpConfigs()">
+                                Download<span class="material-symbols-outlined">download</span>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            ${supportedApps(['Amnezia', 'WG Tunnel'])}
+                        </td>
+                        <td>
+                            <button id="dlAmneziaConfigsBtn" type="button" onclick="downloadWarpConfigs('amnezia')">
+                                Download<span class="material-symbols-outlined">download</span>
+                            </button>
                         </td>
                     </tr>
                 </table>

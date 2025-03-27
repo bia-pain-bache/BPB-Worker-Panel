@@ -86,25 +86,41 @@ export async function getMyIP(request) {
     }
 }
 
-export async function getWarpConfigFiles(request, env) {
+export async function getWarpConfigFiles(request, env, isPro) {
     const auth = await Authenticate(request, env);
     if (!auth) return new Response('Unauthorized or expired session!', { status: 401 });
     const { warpConfigs, proxySettings } = await getDataset(request, env);
-    const { warpEndpoints } = proxySettings
+    const { warpEndpoints, amneziaNoiseCount, amneziaNoiseSizeMin, amneziaNoiseSizeMax } = proxySettings;
     const warpConfig = extractWireguardParams(warpConfigs, false);
     const { warpIPv6, publicKey, privateKey} = warpConfig;
     const warpConfs = [];
+    const trimLines = (string) => string.split("\n").map(line => line.trim()).join("\n");
+    const amneziaNoise = isPro ? trimLines(
+        `Jc = ${amneziaNoiseCount}
+        Jmin = ${amneziaNoiseSizeMin}
+        Jmax = ${amneziaNoiseSizeMax}
+        S1 = 0
+        S2 = 0
+        H1 = 0
+        H2 = 0
+        H3 = 0
+        H4 = 0`
+    ) : '';
+
     warpEndpoints.split(',').forEach( endpoint => {
-        warpConfs.push(`[Interface]
-PrivateKey = ${privateKey}
-Address = 172.16.0.2/32, ${warpIPv6}
-DNS = 1.1.1.1, 1.0.0.1
-MTU = 1280
-[Peer]
-PublicKey = ${publicKey}
-AllowedIPs = 0.0.0.0/0, ::/0
-Endpoint = ${endpoint}
-PersistentKeepalive = 25`);
+        warpConfs.push(trimLines(
+            `[Interface]
+            PrivateKey = ${privateKey}
+            Address = 172.16.0.2/32, ${warpIPv6}
+            DNS = 1.1.1.1, 1.0.0.1
+            MTU = 1280
+            ${amneziaNoise}
+            [Peer]
+            PublicKey = ${publicKey}
+            AllowedIPs = 0.0.0.0/0, ::/0
+            Endpoint = ${endpoint}
+            PersistentKeepalive = 25`
+        ));
     });
 
     return new Response(JSON.stringify(warpConfs), { 

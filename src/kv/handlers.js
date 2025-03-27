@@ -108,6 +108,9 @@ export async function updateDataset (request, env) {
         noiseSizeMax: validateField('noiseSizeMax') ?? currentSettings?.noiseSizeMax ?? '10',
         noiseDelayMin: validateField('noiseDelayMin') ?? currentSettings?.noiseDelayMin ?? '1',
         noiseDelayMax: validateField('noiseDelayMax') ?? currentSettings?.noiseDelayMax ?? '1',
+        amneziaNoiseCount: validateField('amneziaNoiseCount') ?? currentSettings?.amneziaNoiseCount ?? '5',
+        amneziaNoiseSizeMin: validateField('amneziaNoiseSizeMin') ?? currentSettings?.amneziaNoiseSizeMin ?? '50',
+        amneziaNoiseSizeMax: validateField('amneziaNoiseSizeMax') ?? currentSettings?.amneziaNoiseSizeMax ?? '100',
         panelVersion: globalThis.panelVersion
     };
 
