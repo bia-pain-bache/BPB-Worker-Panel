@@ -308,7 +308,8 @@ function buildClashTROutbound (remark, address, port, host, sni, path, allowInse
     };
 }
 
-function buildClashWarpOutbound (warpConfigs, remark, endpoint, chain) {
+function buildClashWarpOutbound (proxySettings, warpConfigs, remark, endpoint, chain, isPro) {
+    const { amneziaNoiseCount, amneziaNoiseSizeMin, amneziaNoiseSizeMax } = proxySettings;
     const ipv6Regex = /\[(.*?)\]/;
     const portRegex = /[^:]*$/;
     const endpointServer = endpoint.includes('[') ? endpoint.match(ipv6Regex)[1] : endpoint.split(':')[0];
@@ -336,6 +337,11 @@ function buildClashWarpOutbound (warpConfigs, remark, endpoint, chain) {
     };
 
     if (chain) outbound["dialer-proxy"] = chain;
+    if (isPro) outbound["amnezia-wg-option"] = {
+        "jc": amneziaNoiseCount,
+        "jmin": amneziaNoiseSizeMin,
+        "jmax": amneziaNoiseSizeMax
+    }
     return outbound;
 }
 
@@ -419,7 +425,7 @@ function buildClashChainOutbound(chainProxyParams) {
     return chainOutbound;
 }
 
-export async function getClashWarpConfig(request, env) {
+export async function getClashWarpConfig(request, env, isPro) {
     const { proxySettings, warpConfigs } = await getDataset(request, env);
     const { warpEndpoints } = proxySettings;
     const config = structuredClone(clashConfigTemp);
@@ -429,19 +435,19 @@ export async function getClashWarpConfig(request, env) {
     config['rule-providers'] = ruleProviders;
     const selector = config['proxy-groups'][0];
     const warpUrlTest = config['proxy-groups'][1];
-    selector.proxies = ['💦 Warp - Best Ping 🚀', '💦 WoW - Best Ping 🚀'];
-    warpUrlTest.name = '💦 Warp - Best Ping 🚀';
+    selector.proxies = [`💦 Warp ${isPro? 'Pro ' : ''}- Best Ping 🚀`, `💦 WoW ${isPro? 'Pro ' : ''}- Best Ping 🚀`];
+    warpUrlTest.name = `💦 Warp ${isPro? 'Pro ' : ''}- Best Ping 🚀`;
     warpUrlTest.interval = +proxySettings.bestWarpInterval;
     config['proxy-groups'].push(structuredClone(warpUrlTest));
     const WoWUrlTest = config['proxy-groups'][2];
-    WoWUrlTest.name = '💦 WoW - Best Ping 🚀';
+    WoWUrlTest.name = `💦 WoW ${isPro? 'Pro ' : ''}- Best Ping 🚀`;
     let warpRemarks = [], WoWRemarks = [];
     
     warpEndpoints.split(',').forEach( (endpoint, index) => {
-        const warpRemark = `💦 ${index + 1} - Warp 🇮🇷`;
-        const WoWRemark = `💦 ${index + 1} - WoW 🌍`;
-        const warpOutbound = buildClashWarpOutbound(warpConfigs, warpRemark, endpoint, '');
-        const WoWOutbound = buildClashWarpOutbound(warpConfigs, WoWRemark, endpoint, warpRemark);
+        const warpRemark = `💦 ${index + 1} - Warp ${isPro? 'Pro ' : ''}🇮🇷`;
+        const WoWRemark = `💦 ${index + 1} - WoW ${isPro? 'Pro ' : ''}🌍`;
+        const warpOutbound = buildClashWarpOutbound(proxySettings, warpConfigs, warpRemark, endpoint, '', isPro);
+        const WoWOutbound = buildClashWarpOutbound(proxySettings, warpConfigs, WoWRemark, endpoint, warpRemark);
         config.proxies.push(WoWOutbound, warpOutbound);
         warpRemarks.push(warpRemark);
         WoWRemarks.push(WoWRemark);
