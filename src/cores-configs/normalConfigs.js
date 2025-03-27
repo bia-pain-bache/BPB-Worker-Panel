@@ -27,7 +27,6 @@ export async function getNormalConfigs(request, env) {
     const Addresses = await getConfigAddresses(cleanIPs, enableIPv6);
     const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
     const totalAddresses = [...Addresses, ...customCdnAddresses];
-    const alpn = client === 'singbox' ? 'http/1.1' : 'h2,http/1.1';
     const TRPass = encodeURIComponent(TRPassword);
     const earlyData = client === 'singbox' 
         ? '&eh=Sec-WebSocket-Protocol&ed=2560' 
@@ -43,7 +42,7 @@ export async function getNormalConfigs(request, env) {
             const VLRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, atob('VkxFU1M='), configType));
             const TRRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, atob('VHJvamFu'), configType));
             const tlsFields = defaultHttpsPorts.includes(port) 
-                ? `&security=tls&sni=${sni}&fp=randomized&alpn=${alpn}`
+                ? `&security=tls&sni=${sni}&fp=randomized&alpn=http/1.1`
                 : '&security=none';
             const hiddifyFragment = client === 'hiddify-frag' && defaultHttpsPorts.includes(port) ? `&fragment=${lengthMin}-${lengthMax},${intervalMin}-${intervalMax},hellotls` : '';
 
@@ -86,7 +85,7 @@ export async function getNormalConfigs(request, env) {
 }
 
 export async function getHiddifyWarpConfigs (request, env, isPro) {
-    const { proxySettings, warpConfigs } = await getDataset(request, env);
+    const { proxySettings } = await getDataset(request, env);
     const {
         warpEndpoints,
         hiddifyNoiseMode, 
@@ -98,14 +97,8 @@ export async function getHiddifyWarpConfigs (request, env, isPro) {
 		noiseDelayMax
     } = proxySettings;
 
-    // const warp = extractWireguardParams(warpConfigs, false);
-    // const wow = extractWireguardParams(warpConfigs, true);
-
     let configs = '';
     warpEndpoints.split(',').forEach( (endpoint, index) => {
-        // const warpConfig = `wg://${endpoint}/${ isPro ? `?ifp=${noiseCountMin}-${noiseCountMax}&ifps=${noiseSizeMin}-${noiseSizeMax}&ifpd=${noiseDelayMin}-${noiseDelayMax}&ifpm=${hiddifyNoiseMode}` : ''}&pk=${wow.privateKey}&local_address=${encodeURIComponent('172.16.0.2/32')}&peer_pk=${wow.publicKey}&mtu=1280&reserved=${base64ToDecimal(wow.reserved).join(',')}#${encodeURIComponent(`💦 ${index + 1} - Warp 🇮🇷`)}`;
-        // const wowConfig = `wg://162.159.192.1:2408/?pk=${wow.privateKey}&local_address=${encodeURIComponent('172.16.0.2/32')}&peer_pk=${wow.publicKey}&mtu=1280&reserved=${base64ToDecimal(wow.reserved).join(',')}#${encodeURIComponent(`💦 ${index + 1} - WoW 🌍`)}`;
-        // configs += `${warpConfig}&&detour=${wowConfig}\n`;
         configs += `warp://${endpoint}${ isPro ? `?ifp=${noiseCountMin}-${noiseCountMax}&ifps=${noiseSizeMin}-${noiseSizeMax}&ifpd=${noiseDelayMin}-${noiseDelayMax}&ifpm=${hiddifyNoiseMode}` : ''}#${encodeURIComponent(`💦 ${index + 1} - Warp 🇮🇷`)}&&detour=warp://162.159.192.1:2408#${encodeURIComponent(`💦 ${index + 1} - WoW 🌍`)}\n`;
     });
 

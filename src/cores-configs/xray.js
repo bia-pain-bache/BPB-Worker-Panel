@@ -164,11 +164,9 @@ function buildXrayRoutingRules (proxySettings, outboundAddrs, isChain, isBalance
         },
         {
             inboundTag: [
-                "socks-in",
-                "http-in"
+                "socks-in"
             ],
             port: "53",
-            network: "udp",
             outboundTag: "dns-out",
             type: "field"
         }
@@ -287,11 +285,7 @@ function buildXrayVLOutbound (tag, address, port, host, sni, proxyIP, isFragment
             sockopt: {},
             wsSettings: {
                 host: host,
-                headers: {
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
-                },
-                path: `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}?ed=2560`,
-                heartbeatPeriod: 15
+                path: `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}?ed=2560`
             }
         },
         tag: tag
@@ -302,7 +296,7 @@ function buildXrayVLOutbound (tag, address, port, host, sni, proxyIP, isFragment
         outbound.streamSettings.tlsSettings = {
             allowInsecure: allowInsecure,
             fingerprint: "randomized",
-            alpn: ["h2", "http/1.1"],
+            alpn: ["http/1.1"],
             serverName: sni
         };
     }
@@ -337,11 +331,7 @@ function buildXrayTROutbound (tag, address, port, host, sni, proxyIP, isFragment
             sockopt: {},
             wsSettings: {
                 host: host,
-                headers: {
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
-                },
-                path: `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}?ed=2560`,
-                heartbeatPeriod: 15
+                path: `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}?ed=2560`
             }
         },
         tag: tag
@@ -352,7 +342,7 @@ function buildXrayTROutbound (tag, address, port, host, sni, proxyIP, isFragment
         outbound.streamSettings.tlsSettings = {
             allowInsecure: allowInsecure,
             fingerprint: "randomized",
-            alpn: ["h2", "http/1.1"],
+            alpn: ["http/1.1"],
             serverName: sni
         };
     }
@@ -634,10 +624,7 @@ function buildXrayConfig (proxySettings, remark, isBalancer, isChain, balancerFa
     const isFakeDNS = (VLTRFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
     const config = structuredClone(xrayConfigTemp);
     config.remarks = remark;
-    if (isFakeDNS) {
-        config.inbounds[0].sniffing.destOverride.push("fakedns");
-        config.inbounds[1].sniffing.destOverride.push("fakedns");
-    }
+    isFakeDNS && config.inbounds[0].sniffing.destOverride.push("fakedns");
 
     if (isBalancer) {
         const interval = isWarp ? bestWarpInterval : bestVLTRInterval;
@@ -890,21 +877,6 @@ const xrayConfigTemp = {
                 routeOnly: true
             },
             tag: "socks-in",
-        },
-        {
-            port: 10809,
-            protocol: "http",
-            settings: {
-                auth: "noauth",
-                udp: true,
-                userLevel: 8,
-            },
-            sniffing: {
-                destOverride: ["http", "tls"],
-                enabled: true,
-                routeOnly: true
-            },
-            tag: "http-in",
         },
         {
             port: 10853,
