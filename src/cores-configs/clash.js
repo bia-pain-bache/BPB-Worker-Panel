@@ -43,8 +43,7 @@ async function buildClashDNS (proxySettings, isChain, isWarp) {
         "proxy-server-nameserver": [finalLocalDNS],
         "nameserver-policy": {
             "raw.githubusercontent.com": finalLocalDNS,
-            "time.apple.com": finalLocalDNS,
-            "www.gstatic.com": "system"
+            "time.apple.com": finalLocalDNS
         }
     };
 
