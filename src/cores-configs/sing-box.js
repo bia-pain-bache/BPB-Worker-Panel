@@ -77,10 +77,6 @@ function buildSingBoxDNS (proxySettings, outboundAddrs, isWarp) {
 
     const rules = [
         outboundRule,
-        {
-            domain: "www.gstatic.com",
-            server: "dns-local" 
-        },
         { 
             domain: [
                 "raw.githubusercontent.com", 
