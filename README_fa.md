@@ -13,7 +13,7 @@
 
 ### این پنل به دو روش راه‌اندازی می‌شود:
 
-- راه‌اندازی با **Cloudflare Worker**
+- راه‌اندازی با **Cloudflare Pages**
 - راه‌اندازی با **Cloudflare Worker**
 <br>
 
