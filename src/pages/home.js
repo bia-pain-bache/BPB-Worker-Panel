@@ -264,8 +264,6 @@ export async function renderHomePage (proxySettings, isPassSet) {
     .button {font-weight: 600; padding: 15px 15px; font-size: 1.1rem; width: max-content; }
     input[type="checkbox"] { 
         background-color: var(--input-background-color);
-        margin: 0; 
-        grid-column: 2;
     }
     .button.disabled {
         background-color: #ccc;
@@ -319,7 +317,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
     }
     td div { display: flex; align-items: center; }
     th { background-color: var(--secondary-color); color: white; font-weight: bold; font-size: 1.1rem; width: 50%;}
-    td:last-child { 
+    td:not(table.my-ip td):last-child { 
         background-color: var(--table-active-color); 
         display: flex;
         align-items: center;
@@ -425,7 +423,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
     .input-with-select { width: 100%; }
     body.dark-mode .floating-button { background-color: var(--color); }
     body.dark-mode .floating-button:hover { transform: scale(1.1); }
-    #ips th { 
+    .my-ip th { 
         background-color: var(--hr-text-color);
         color: var(--background-color);
         overflow: hidden;
@@ -433,15 +431,14 @@ export async function renderHomePage (proxySettings, isPassSet) {
         white-space: nowrap;
         flex: 1; 
     }
-    #ips td { 
+    .my-ip td { 
         background-color: unset; 
         overflow: hidden;
         flex: 1;
         text-overflow: clip;
         white-space: nowrap;
     }
-    #ips tr { flex-wrap: wrap; }
-    #ips td:first-child { background-color: var(--table-active-color); }
+    .my-ip td:first-child { background-color: var(--table-active-color); }
     .header-container { display: flex; justify-content: center; margin-bottom: 20px; }
     .udp-noise { border: 1px solid var(--border-color); border-radius: 15px; padding: 20px; margin-bottom: 10px;}
     @media only screen and (min-width: 768px) {
@@ -1556,7 +1553,7 @@ export async function renderHomePage (proxySettings, isPassSet) {
                 </button>       
             </div>
             <div class="table-container">
-                <table id="ips" style="text-align: center; margin-bottom: 15px; text-wrap-mode: nowrap;">
+                <table id="ips" class="my-ip" style="text-align: center; margin-bottom: 15px; text-wrap-mode: nowrap;">
                     <tr>
                         <th>Target Address</th>
                         <th>IP</th>
