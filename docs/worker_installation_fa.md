@@ -4,13 +4,18 @@
 - [نسخه‌ی مبهم‌سازی شده](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/worker.js)
 - [نسخه‌ی معمولی](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/unobfuscated-worker.js)
 
-بعد ورکری که ساختید رو Edit code بزنید و از سایدبار سمت چپ فایل‌ worker.js رو delete کنید و فایل جدید رو آپلود کنید، اگر ارور داد فایل package-lock.json رو هم پاک کنید. چون کد خیلی زیاد شده Copy Paste کردن با گوشی خیلی سخت شده، با توجه به عکس زیر آپلود کنید. توی مویایل منوی کناری رو باز کنید و تاح کنید روش نگه دارید و آپلود کنید.
+بعد ورکری که ساختید رو Edit code بزنید و از سایدبار سمت چپ فایل‌ worker.js رو delete کنید و فایل جدید رو آپلود کنید، اگر ارور داد فایل package-lock.json رو هم پاک کنید. چون کد خیلی زیاد شده Copy Paste کردن با گوشی خیلی سخت شده، با توجه به عکس زیر آپلود کنید. توی مویایل منوی کناری رو باز کنید و تاچ کنید روش نگه دارید و آپلود کنید.
 
 <p align="center">
   <img src="assets/images/Worker_mobile_upload.jpg">
 </p>
 
 در نهایت ورکر رو `Save and Deploy` کنید.
+
+> [!TIP]
+> دقت کنید مراحل بروز رسانی پنل هم دقیقا همینه، فایل‌های قبلی رو پاک میکنید و جدید رو آپلود میکنید و دپلوی میکنید. تنظیمات قبلی حفظ میشن و فقط پنل آپدیت میشه.
+<br>
+
 حالا از اینجا به داشبورد ورکر برگردید و این مراحل را دنبال کنید:
 
 <p align="center">

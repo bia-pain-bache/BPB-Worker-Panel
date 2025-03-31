@@ -264,8 +264,8 @@ export async function renderHomePage (proxySettings, isPassSet) {
     .button {font-weight: 600; padding: 15px 15px; font-size: 1.1rem; width: max-content; }
     input[type="checkbox"] { 
         background-color: var(--input-background-color);
-        style="margin: 0; 
-        grid-column: 2;"
+        margin: 0; 
+        grid-column: 2;
     }
     .button.disabled {
         background-color: #ccc;
