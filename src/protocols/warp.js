@@ -15,15 +15,19 @@ export async function fetchWarpConfigs (env) {
     };
 
     const fetchAccount = async (key) => {
-        const response = await fetch(apiBaseUrl, {
-            method: 'POST',
-            headers: {
-                'User-Agent': 'insomnia/8.6.1',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ ...commonPayload, key: key.publicKey })
-        });
-        return await response.json();
+        try {
+            const response = await fetch(apiBaseUrl, {
+                method: 'POST',
+                headers: {
+                    'User-Agent': 'insomnia/8.6.1',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ ...commonPayload, key: key.publicKey })
+            });
+            return await response.json();
+        } catch (error) {
+            throw new Error("Failed to get warp configs.", error);
+        }
     };
 
     for (const key of warpKeys) {
@@ -36,7 +40,7 @@ export async function fetchWarpConfigs (env) {
     
     const configs = JSON.stringify(warpConfigs)
     await env.kv.put('warpConfigs', configs);
-    return { error: null, configs };
+    return configs;
 }
 
 const generateKeyPair = () => {

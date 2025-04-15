@@ -1,5 +1,4 @@
 import { connect } from 'cloudflare:sockets';
-import sha256 from 'js-sha256';
 
 export async function TROverWSHandler(request) {
     const webSocketPair = new WebSocketPair();
@@ -86,7 +85,7 @@ async function parseTRHeader(buffer) {
     }
 
     const password = new TextDecoder().decode(buffer.slice(0, crLfIndex));
-    if (password !== sha256.sha224(globalThis.TRPassword)) {
+    if (password !== globalThis.TRHash) {
         return {
             hasError: true,
             message: "invalid password",
@@ -310,7 +309,7 @@ async function TRRemoteSocketToWS(remoteSocket, webSocket, retry, log) {
             })
         )
         .catch((error) => {
-            console.error(`${atob('dHJvamFu')}RemoteSocketToWS error:`, error.stack || error);
+            console.error(`trojanRemoteSocketToWS error:`, error.stack || error);
             safeCloseWebSocket(webSocket);
         });
     

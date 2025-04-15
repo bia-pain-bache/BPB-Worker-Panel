@@ -1,14 +1,14 @@
 import { resolveDNS, isDomain } from '../helpers/helpers';
 
-export async function getConfigAddresses(cleanIPs, enableIPv6) {
+export async function getConfigAddresses(cleanIPs, VLTRenableIPv6) {
     const resolved = await resolveDNS(globalThis.hostName);
-    const defaultIPv6 = enableIPv6 ? resolved.ipv6.map((ip) => `[${ip}]`) : []
+    const defaultIPv6 = VLTRenableIPv6 ? resolved.ipv6.map((ip) => `[${ip}]`) : []
     return [
         globalThis.hostName,
         'www.speedtest.net',
         ...resolved.ipv4,
         ...defaultIPv6,
-        ...(cleanIPs ? cleanIPs.split(',') : [])
+        ...cleanIPs
     ];
 }
 

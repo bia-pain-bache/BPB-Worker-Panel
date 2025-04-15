@@ -7,26 +7,25 @@ export async function getNormalConfigs(request, env) {
     const {
         remoteDNS,
         cleanIPs, 
-        proxyIP, 
+        proxyIPs, 
         ports, 
         VLConfigs, 
         TRConfigs ,
-        lengthMin,
-        lengthMax,
-        intervalMin,
-        intervalMax, 
+        fragmentLengthMin,
+        fragmentLengthMax,
+        fragmentIntervalMin,
+        fragmentIntervalMax, 
         outProxy, 
         customCdnAddrs, 
         customCdnHost, 
         customCdnSni, 
-        enableIPv6
+        VLTRenableIPv6
     } = proxySettings;
     
     let VLConfs = '', TRConfs = '', chainProxy = '';
     let proxyIndex = 1;
-    const Addresses = await getConfigAddresses(cleanIPs, enableIPv6);
-    const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
-    const totalAddresses = [...Addresses, ...customCdnAddresses];
+    const Addresses = await getConfigAddresses(cleanIPs, VLTRenableIPv6);
+    const totalAddresses = [...Addresses, ...customCdnAddrs];
     const TRPass = encodeURIComponent(TRPassword);
     const earlyData = client === 'singbox' 
         ? '&eh=Sec-WebSocket-Protocol&ed=2560' 
@@ -38,16 +37,16 @@ export async function getNormalConfigs(request, env) {
             const configType = isCustomAddr ? 'C' : '';
             const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
             const host = isCustomAddr ? customCdnHost : hostName;
-            const path = `${getRandomPath(16)}${proxyIP ? `/${encodeURIComponent(btoa(proxyIP))}` : ''}${earlyData}`;
-            const VLRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, atob('VkxFU1M='), configType));
-            const TRRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, atob('VHJvamFu'), configType));
+            const path = `${getRandomPath(16)}${proxyIPs.length ? `/${encodeURIComponent(btoa(proxyIPs.join(',')))}` : ''}${earlyData}`;
+            const VLRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, 'VLESS', configType));
+            const TRRemark = encodeURIComponent(generateRemark(proxyIndex, port, addr, cleanIPs, 'Trojan', configType));
             const tlsFields = defaultHttpsPorts.includes(port) 
                 ? `&security=tls&sni=${sni}&fp=randomized&alpn=http/1.1`
                 : '&security=none';
-            const hiddifyFragment = client === 'hiddify-frag' && defaultHttpsPorts.includes(port) ? `&fragment=${lengthMin}-${lengthMax},${intervalMin}-${intervalMax},hellotls` : '';
+            const hiddifyFragment = client === 'hiddify-frag' && defaultHttpsPorts.includes(port) ? `&fragment=${fragmentLengthMin}-${fragmentLengthMax},${fragmentIntervalMin}-${fragmentIntervalMax},hellotls` : '';
 
-            if (VLConfigs) VLConfs += `${atob('dmxlc3M6Ly8=')}${userID}@${addr}:${port}?path=/${path}&encryption=none&host=${host}&type=ws${tlsFields}${hiddifyFragment}#${VLRemark}\n`; 
-            if (TRConfigs) TRConfs += `${atob('dHJvamFuOi8v')}${TRPass}@${addr}:${port}?path=/tr${path}&host=${host}&type=ws${tlsFields}${hiddifyFragment}#${TRRemark}\n`;
+            if (VLConfigs) VLConfs += `vless://${userID}@${addr}:${port}?path=/${path}&encryption=none&host=${host}&type=ws${tlsFields}${hiddifyFragment}#${VLRemark}\n`; 
+            if (TRConfigs) TRConfs += `trojan://${TRPass}@${addr}:${port}?path=/tr${path}&host=${host}&type=ws${tlsFields}${hiddifyFragment}#${TRRemark}\n`;
             proxyIndex++;
         });
     });
@@ -98,7 +97,7 @@ export async function getHiddifyWarpConfigs (request, env, isPro) {
     } = proxySettings;
 
     let configs = '';
-    warpEndpoints.split(',').forEach( (endpoint, index) => {
+    warpEndpoints.forEach( (endpoint, index) => {
         configs += `warp://${endpoint}${ isPro ? `?ifp=${noiseCountMin}-${noiseCountMax}&ifps=${noiseSizeMin}-${noiseSizeMax}&ifpd=${noiseDelayMin}-${noiseDelayMax}&ifpm=${hiddifyNoiseMode}` : ''}#${encodeURIComponent(`💦 ${index + 1} - Warp 🇮🇷`)}&&detour=warp://162.159.192.1:2408#${encodeURIComponent(`💦 ${index + 1} - WoW 🌍`)}\n`;
     });
 
