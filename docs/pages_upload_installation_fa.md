@@ -80,7 +80,7 @@
   <img src="assets/images/Pages_add_variables.jpg">
 </p> 
 
-حالا `Add variable` بزنید خونه اول `PROXYIP` با حروف بزرگ، IP رو هم میتونید از لینک‌ زیر بگیرید، اینا رو باز کنید یه تعدادی IP نشون میده که میتونید کشورشون رو هم چک کنید و یک یا چندتا انتخاب کنید:
+حالا `Add variable` بزنید خونه اول `PROXY_IP` با حروف بزرگ، IP رو هم میتونید از لینک‌ زیر بگیرید، اینا رو باز کنید یه تعدادی IP نشون میده که میتونید کشورشون رو هم چک کنید و یک یا چندتا انتخاب کنید:
 
 >[Proxy IP](https://www.nslookup.io/domains/bpb.yousef.isegaro.com/dns-records/)
 

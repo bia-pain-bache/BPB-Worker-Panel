@@ -9,7 +9,6 @@ export function initializeParams(request, env) {
     globalThis.defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
     globalThis.userID = env.UUID;
     globalThis.TRPassword = env.TR_PASS;
-    globalThis.TRHash = env.TR_HASH;
     globalThis.proxyIP = proxyIPs.length ? proxyIPs[Math.floor(Math.random() * proxyIPs.length)] : 'bpb.yousef.isegaro.com';
     globalThis.hostName = request.headers.get('Host');
     globalThis.pathName = url.pathname;

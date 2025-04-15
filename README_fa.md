@@ -160,7 +160,7 @@
       <td>پسورد پروتکل Trojan</td>
     </tr>
     <tr>
-      <td><b>PROXYIP</b></td>
+      <td><b>PROXY_IP</b></td>
       <td>Proxy IP برای VLESS و Trojan</td>
     </tr>
     <tr>
