@@ -9,7 +9,7 @@
 
 ## معرفی
 
-این پروژه توسعه‌ی یک پنل کاربری برای اسکریپت <a href="https://github.com/yonggekkk/Cloudflare-workers-pages-vless">پروکسی Cloudflare-workers/pages</a> ایجاد شده توسط <a href="https://github.com/yonggekkk">yonggekkk</a> می‌باشد.
+این پروژه توسعه‌ی یک پنل کاربری برای اتصال رایگان از طریق پروتکل‌های VLESS، Trojan و Warp حتی در شرایط فیلتر شدن دامنه و مسدود بودن Warp روی اپراتور می‌باشد، 
 
 ### این پنل به دو روش راه‌اندازی می‌شود:
 
@@ -40,7 +40,6 @@
 
 ## نحوه‌ی راه‌اندازی، تنظیمات و استفاده
 - [روش جدید پیشنهادی نصب به صورت Pages](docs/pages_upload_installation_fa.md)
-- [نصب به صورت Pages](docs/pages_installation_fa.md)
 - [نصب به صورت Workers](docs/worker_installation_fa.md)
 - [نحوه استفاده از پنل](docs/configuration_fa.md)
 - [پرسش‌های متداول (FAQ)](docs/faq.md)
@@ -188,8 +187,6 @@
 ---
 ### تشکر ویژه
 
+- نویسنده پروتکل‌های VLESS و Trojan <a href="https://github.com/yonggekkk/Cloudflare-workers-pages-vless">پروکسی Cloudflare-workers/pages</a>
 - نویسنده کد CF-vless <a href="https://github.com/3Kmfi6HP/EDtunnel">3Kmfi6HP</a>
 - نویسنده برنامه IP ترجیحی CF <a href="https://github.com/badafans/Cloudflare-IP-SpeedTest">badafans</a>، <a href="https://github.com/XIU2/CloudflareSpeedTest">XIU2</a>
-
----
-برای آموزش جزئیات اسکریپت اصلی، لطفاً به <a href="https://ygkkk.blogspot.com/2023/07/cfworkers-vless.html">وبلاگ و آموزش‌های ویدیویی Yongge</a> مراجعه کنید.
