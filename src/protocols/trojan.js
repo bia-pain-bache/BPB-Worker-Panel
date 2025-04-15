@@ -1,4 +1,5 @@
 import { connect } from 'cloudflare:sockets';
+import sha256 from 'js-sha256';
 
 export async function TROverWSHandler(request) {
     const webSocketPair = new WebSocketPair();
@@ -85,7 +86,7 @@ async function parseTRHeader(buffer) {
     }
 
     const password = new TextDecoder().decode(buffer.slice(0, crLfIndex));
-    if (password !== globalThis.TRHash) {
+    if (password !== sha256.sha224(globalThis.TRPassword)) {
         return {
             hasError: true,
             message: "invalid password",

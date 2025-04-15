@@ -63,7 +63,7 @@ This project is dedicated to developing a user panel to access VLESS, Trojan and
 | :-------------: | :-------------: |
 | **UUID**  | VLESS UUID  |
 | **TR_PASS**  | Trojan Password  |
-| **PROXYIP**  | Proxy IP or domain (VLESS, Trojan)  |
+| **PROXY_IP**  | Proxy IP or domain (VLESS, Trojan)  |
 | **SUB_PATH**  | Subscriptions' URI  |
 | **FALLBACK**  | Fallback domain (VLESS, Trojan) |
 | **DOH_URL**  | Core DOH |
