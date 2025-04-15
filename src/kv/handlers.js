@@ -1,12 +1,11 @@
 import { fetchWarpConfigs } from '../protocols/warp';
-import { Authenticate } from '../authentication/auth';
 
 export async function getDataset(request, env) {
     let proxySettings, warpConfigs;
 
     try {
-        proxySettings = await env.kv.get("proxySettings", {type: 'json'});
-        warpConfigs = await env.kv.get('warpConfigs', {type: 'json'});
+        proxySettings = await env.kv.get("proxySettings", { type: 'json' });
+        warpConfigs = await env.kv.get('warpConfigs', { type: 'json' });
     } catch (error) {
         console.log(error);
         throw new Error(`An error occurred while getting KV - ${error}`);
@@ -14,109 +13,131 @@ export async function getDataset(request, env) {
 
     if (!proxySettings) {
         proxySettings = await updateDataset(request, env);
-        const { error, configs } = await fetchWarpConfigs(env, proxySettings);
-        if (error) throw new Error(`An error occurred while getting Warp configs - ${error}`);
+        const configs = await fetchWarpConfigs(env);
         warpConfigs = configs;
     }
-    
+
     if (globalThis.panelVersion !== proxySettings.panelVersion) proxySettings = await updateDataset(request, env);
     return { proxySettings, warpConfigs }
 }
 
-export async function updateDataset (request, env) {
+export async function updateDataset(request, env) {
     let newSettings = request.method === 'POST' ? await request.formData() : null;
     const isReset = newSettings?.get('resetSettings') === 'true';
     let currentSettings;
-    let udpNoises = [];
     if (!isReset) {
         try {
-            currentSettings = await env.kv.get("proxySettings", {type: 'json'});
+            currentSettings = await env.kv.get("proxySettings", { type: 'json' });
         } catch (error) {
             console.log(error);
             throw new Error(`An error occurred while getting current KV settings - ${error}`);
         }
+    }
+
+    const getxrayUdpNoises = () => {
+        if (isReset) return null;
+        let xrayUdpNoises = [];
         const udpNoiseModes = newSettings?.getAll('udpXrayNoiseMode') || [];
         const udpNoisePackets = newSettings?.getAll('udpXrayNoisePacket') || [];
         const udpNoiseDelaysMin = newSettings?.getAll('udpXrayNoiseDelayMin') || [];
         const udpNoiseDelaysMax = newSettings?.getAll('udpXrayNoiseDelayMax') || [];
         const udpNoiseCount = newSettings?.getAll('udpXrayNoiseCount') || [];
-        udpNoises.push(...udpNoiseModes.map((mode, index) => ({
+        xrayUdpNoises.push(...udpNoiseModes?.map((mode, index) => ({
             type: mode,
             packet: udpNoisePackets[index],
             delay: `${udpNoiseDelaysMin[index]}-${udpNoiseDelaysMax[index]}`,
             count: udpNoiseCount[index]
         })));
-    } else {
-        newSettings = null;
+
+        return xrayUdpNoises.length ? xrayUdpNoises : currentSettings?.xrayUdpNoises;
     }
 
-    const validateField = (field) => {
+    const getPorts = () => {
+        if (isReset) return null;
+        const ports = [];
+        [...globalThis.defaultHttpsPorts, ...globalThis.defaultHttpPorts].forEach(port => {
+            validateField(port) && ports.push(port);
+        });
+
+        return ports.length ? ports : currentSettings?.ports;
+    }
+
+    const validateField = (field, isCheckBox, isArray) => {
         const fieldValue = newSettings?.get(field);
-        if (fieldValue === undefined) return null;
+        if (isCheckBox) return fieldValue ? true : false;
+        if (fieldValue === undefined) return currentSettings?.[field];
         if (fieldValue === 'true') return true;
         if (fieldValue === 'false') return false;
-        return fieldValue;
+        if (isArray) return fieldValue === '' ? [] : fieldValue.split('\r\n').map(value => value.trim()).filter(Boolean);
+        return fieldValue?.trim();
+    }
+
+    const populateField = (field, defaultValue, isCheckBox, isArray, callback) => {
+        if (isReset) return defaultValue;
+        if (!newSettings) return currentSettings?.[field] || defaultValue;
+        return typeof callback === 'function'
+            ? callback(validateField(field, isCheckBox, isArray))
+            : validateField(field, isCheckBox, isArray);
     }
 
     const proxySettings = {
-        remoteDNS: validateField('remoteDNS') ?? currentSettings?.remoteDNS ?? 'https://8.8.8.8/dns-query',
-        localDNS: validateField('localDNS') ?? currentSettings?.localDNS ?? '8.8.8.8',
-        VLTRFakeDNS: validateField('VLTRFakeDNS') ?? currentSettings?.VLTRFakeDNS ?? false,
-        proxyIP: validateField('proxyIP')?.replaceAll(' ', '') ?? currentSettings?.proxyIP ?? '',
-        outProxy: validateField('outProxy') ?? currentSettings?.outProxy ?? '',
-        outProxyParams: extractChainProxyParams(validateField('outProxy')) ?? currentSettings?.outProxyParams ?? {},
-        cleanIPs: validateField('cleanIPs')?.replaceAll(' ', '') ?? currentSettings?.cleanIPs ?? '',
-        enableIPv6: validateField('enableIPv6') ?? currentSettings?.enableIPv6 ?? true,
-        customCdnAddrs: validateField('customCdnAddrs')?.replaceAll(' ', '') ?? currentSettings?.customCdnAddrs ?? '',
-        customCdnHost: validateField('customCdnHost')?.trim() ?? currentSettings?.customCdnHost ?? '',
-        customCdnSni: validateField('customCdnSni')?.trim() ?? currentSettings?.customCdnSni ?? '',
-        bestVLTRInterval: validateField('bestVLTRInterval') ?? currentSettings?.bestVLTRInterval ?? '30',
-        VLConfigs: validateField('VLConfigs') ?? currentSettings?.VLConfigs ?? true,
-        TRConfigs: validateField('TRConfigs') ?? currentSettings?.TRConfigs ?? false,
-        ports: validateField('ports')?.split(',') ?? currentSettings?.ports ?? ['443'],
-        lengthMin: validateField('fragmentLengthMin') ?? currentSettings?.lengthMin ?? '100',
-        lengthMax: validateField('fragmentLengthMax') ?? currentSettings?.lengthMax ?? '200',
-        intervalMin: validateField('fragmentIntervalMin') ?? currentSettings?.intervalMin ?? '1',
-        intervalMax: validateField('fragmentIntervalMax') ?? currentSettings?.intervalMax ?? '1',
-        fragmentPackets: validateField('fragmentPackets') ?? currentSettings?.fragmentPackets ?? 'tlshello',
-        bypassLAN: validateField('bypass-lan') ?? currentSettings?.bypassLAN ?? false,
-        bypassIran: validateField('bypass-iran') ?? currentSettings?.bypassIran ?? false,
-        bypassChina: validateField('bypass-china') ?? currentSettings?.bypassChina ?? false,
-        bypassRussia: validateField('bypass-russia') ?? currentSettings?.bypassRussia ?? false,
-        blockAds: validateField('block-ads') ?? currentSettings?.blockAds ?? false,
-        blockPorn: validateField('block-porn') ?? currentSettings?.blockPorn ?? false,
-        blockUDP443: validateField('block-udp-443') ?? currentSettings?.blockUDP443 ?? false,
-        customBypassRules: validateField('customBypassRules')?.replaceAll(' ', '') ?? currentSettings?.customBypassRules ?? '',
-        customBlockRules: validateField('customBlockRules')?.replaceAll(' ', '') ?? currentSettings?.customBlockRules ?? '',
-        warpEndpoints: validateField('warpEndpoints')?.replaceAll(' ', '') ?? currentSettings?.warpEndpoints ?? 'engage.cloudflareclient.com:2408',
-        warpFakeDNS: validateField('warpFakeDNS') ?? currentSettings?.warpFakeDNS ?? false,
-        warpEnableIPv6: validateField('warpEnableIPv6') ?? currentSettings?.warpEnableIPv6 ?? true,
-        bestWarpInterval: validateField('bestWarpInterval') ?? currentSettings?.bestWarpInterval ?? '30',
-        xrayUdpNoises: (udpNoises.length ? JSON.stringify(udpNoises) : currentSettings?.xrayUdpNoises) ?? JSON.stringify([
+        remoteDNS: populateField('remoteDNS', 'https://8.8.8.8/dns-query'),
+        localDNS: populateField('localDNS', '8.8.8.8'),
+        VLTRFakeDNS: populateField('VLTRFakeDNS', false),
+        proxyIPs: populateField('proxyIPs', [], false, true),
+        outProxy: populateField('outProxy', ''),
+        outProxyParams: populateField('outProxy', {}, false, false, field => extractChainProxyParams(field)),
+        cleanIPs: populateField('cleanIPs', [], false, true),
+        VLTRenableIPv6: populateField('VLTRenableIPv6', true, false, true),
+        customCdnAddrs: populateField('customCdnAddrs', [], false, true),
+        customCdnHost: populateField('customCdnHost', ''),
+        customCdnSni: populateField('customCdnSni', ''),
+        bestVLTRInterval: populateField('bestVLTRInterval', '30'),
+        VLConfigs: populateField('VLConfigs', true, true),
+        TRConfigs: populateField('TRConfigs', true, true),
+        ports: getPorts() ?? ['443'],
+        fragmentLengthMin: populateField('fragmentLengthMin', '100'),
+        fragmentLengthMax: populateField('fragmentLengthMax', '200'),
+        fragmentIntervalMin: populateField('fragmentIntervalMin', '1'),
+        fragmentIntervalMax: populateField('fragmentIntervalMax', '1'),
+        fragmentPackets: populateField('fragmentPackets', 'tlshello'),
+        bypassLAN: populateField('bypassLAN', false, true),
+        bypassIran: populateField('bypassIran', false, true),
+        bypassChina: populateField('bypassChina', false, true),
+        bypassRussia: populateField('bypassRussia', false, true),
+        blockAds: populateField('blockAds', false, true),
+        blockPorn: populateField('blockPorn', false, true),
+        blockUDP443: populateField('blockUDP443', false, true),
+        customBypassRules: populateField('customBypassRules', [], false, true),
+        customBlockRules: populateField('customBlockRules', [], false, true),
+        warpEndpoints: populateField('warpEndpoints', ['engage.cloudflareclient.com:2408'], false, true),
+        warpFakeDNS: populateField('warpFakeDNS', false),
+        warpEnableIPv6: populateField('warpEnableIPv6', true),
+        bestWarpInterval: populateField('bestWarpInterval', '30'),
+        xrayUdpNoises: getxrayUdpNoises() ?? [
             {
-                type: 'base64',
-                packet: btoa(globalThis.userID),
+                type: 'rand',
+                packet: '50-100',
                 delay: '1-1',
-                count: '1'
+                count: 5
             }
-        ]),
-        hiddifyNoiseMode: validateField('hiddifyNoiseMode') ?? currentSettings?.hiddifyNoiseMode ?? 'm4',
-        nikaNGNoiseMode: validateField('nikaNGNoiseMode') ?? currentSettings?.nikaNGNoiseMode ?? 'quic',
-        noiseCountMin: validateField('noiseCountMin') ?? currentSettings?.noiseCountMin ?? '10',
-        noiseCountMax: validateField('noiseCountMax') ?? currentSettings?.noiseCountMax ?? '15',
-        noiseSizeMin: validateField('noiseSizeMin') ?? currentSettings?.noiseSizeMin ?? '5',
-        noiseSizeMax: validateField('noiseSizeMax') ?? currentSettings?.noiseSizeMax ?? '10',
-        noiseDelayMin: validateField('noiseDelayMin') ?? currentSettings?.noiseDelayMin ?? '1',
-        noiseDelayMax: validateField('noiseDelayMax') ?? currentSettings?.noiseDelayMax ?? '1',
-        amneziaNoiseCount: validateField('amneziaNoiseCount') ?? currentSettings?.amneziaNoiseCount ?? '5',
-        amneziaNoiseSizeMin: validateField('amneziaNoiseSizeMin') ?? currentSettings?.amneziaNoiseSizeMin ?? '50',
-        amneziaNoiseSizeMax: validateField('amneziaNoiseSizeMax') ?? currentSettings?.amneziaNoiseSizeMax ?? '100',
+        ],
+        hiddifyNoiseMode: populateField('hiddifyNoiseMode', 'm4'),
+        knockerNoiseMode: populateField('knockerNoiseMode', 'quic'),
+        noiseCountMin: populateField('noiseCountMin', '10'),
+        noiseCountMax: populateField('noiseCountMax', '15'),
+        noiseSizeMin: populateField('noiseSizeMin', '5'),
+        noiseSizeMax: populateField('noiseSizeMax', '10'),
+        noiseDelayMin: populateField('noiseDelayMin', '1'),
+        noiseDelayMax: populateField('noiseDelayMax', '1'),
+        amneziaNoiseCount: populateField('amneziaNoiseCount', '5'),
+        amneziaNoiseSizeMin: populateField('amneziaNoiseSizeMin', '50'),
+        amneziaNoiseSizeMax: populateField('amneziaNoiseSizeMax', '100'),
         panelVersion: globalThis.panelVersion
     };
 
-    try {    
+    try {
         await env.kv.put("proxySettings", JSON.stringify(proxySettings));
-        if (isReset) await updateWarpConfigs(request, env);          
     } catch (error) {
         console.log(error);
         throw new Error(`An error occurred while updating KV - ${error}`);
@@ -130,44 +151,27 @@ function extractChainProxyParams(chainProxy) {
     if (!chainProxy) return {};
     const url = new URL(chainProxy);
     const protocol = url.protocol.slice(0, -1);
-    if (protocol === atob('dmxlc3M=')) {
+    if (protocol === 'vless') {
         const params = new URLSearchParams(url.search);
         configParams = {
             protocol: protocol,
-            uuid : url.username,
-            server : url.hostname,
-            port : url.port
+            uuid: url.username,
+            server: url.hostname,
+            port: url.port
         };
-    
-        params.forEach( (value, key) => {
+
+        params.forEach((value, key) => {
             configParams[key] = value;
         });
     } else {
         configParams = {
-            protocol: protocol, 
-            user : url.username,
-            pass : url.password,
-            server : url.host,
-            port : url.port
+            protocol: protocol,
+            user: url.username,
+            pass: url.password,
+            server: url.host,
+            port: url.port
         };
     }
 
-    return JSON.stringify(configParams);
-}
-
-export async function updateWarpConfigs(request, env) {
-    const auth = await Authenticate(request, env); 
-    if (!auth) return new Response('Unauthorized', { status: 401 });
-    if (request.method === 'POST') {
-        try {
-            const { error: warpPlusError } = await fetchWarpConfigs(env);
-            if (warpPlusError) return new Response(warpPlusError, { status: 400 });
-            return new Response('Warp configs updated successfully', { status: 200 });
-        } catch (error) {
-            console.log(error);
-            return new Response(`An error occurred while updating Warp configs! - ${error}`, { status: 500 });
-        }
-    } else {
-        return new Response('Unsupported request', { status: 405 });
-    }
+    return configParams;
 }
