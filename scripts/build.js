@@ -59,8 +59,9 @@ async function buildWorker() {
         bundle: true,
         format: 'esm',
         write: false,
+        minifySyntax: true,
         external: ['cloudflare:sockets'],
-        platform: 'browser',
+        platform: 'node',
         define: {
             __PANEL_HTML_CONTENT__: htmls['panel'] ?? '""',
             __LOGIN_HTML_CONTENT__: htmls['login'] ?? '""',
@@ -83,6 +84,8 @@ async function buildWorker() {
         "renameGlobals": true,
         "deadCodeInjection": true,
         "deadCodeInjectionThreshold": 0.3,
+        "simplify": true,
+        "compact": true,
         "target": "node"
     });
 
