@@ -10,7 +10,6 @@ import pkg from '../package.json' with { type: 'json' };
 
 const { version } = pkg;
 const { obfuscate } = obfs;
-const isObfuscate = true;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = pathDirname(__filename);
@@ -45,6 +44,7 @@ async function processHtmlPages() {
         result[dir] = JSON.stringify(minifiedHtml);
     }
 
+    console.log('✅ Assets bundled successfuly!');
     return result;
 }
 
@@ -72,9 +72,10 @@ async function buildWorker() {
         }
     });
 
-    console.log('✅ Assets bundled successfuly!');
+    console.log('✅ Worker built successfuly!');
+    const finalCode = code.outputFiles[0].text.replace(/\/\*[\s\S]*?\*\//g, '');
 
-    const obfuscationResult = obfuscate(code.outputFiles[0].text, {
+    const obfuscationResult = obfuscate(finalCode, {
         "stringArrayThreshold": 1,
         "stringArrayEncoding": [
             "rc4"
@@ -89,7 +90,7 @@ async function buildWorker() {
         "target": "node"
     });
 
-    const worker = isObfuscate ? obfuscationResult.getObfuscatedCode() : code.outputFiles[0].text;
+    const worker = obfuscationResult.getObfuscatedCode();
     mkdirSync(DIST_PATH, { recursive: true });
     writeFileSync('./dist/worker.js', worker, 'utf8');
 
@@ -100,7 +101,7 @@ async function buildWorker() {
         compression: 'DEFLATE'
     }).then(nodebuffer => writeFileSync('./dist/worker.zip', nodebuffer));
 
-    console.log('✅ Worker built successfuly!');
+    console.log('✅ Worker obfuscated successfuly!');
 }
 
 buildWorker().catch(err => {
