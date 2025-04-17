@@ -14,6 +14,7 @@ async function buildClashDNS(proxySettings, isChain, isWarp) {
         bypassIran,
         bypassChina,
         bypassRussia,
+        bypassOpenAi,
         customBypassRules
     } = proxySettings;
 
@@ -62,6 +63,8 @@ async function buildClashDNS(proxySettings, isChain, isWarp) {
         dns["nameserver-policy"][`+.${domain}`] = [finalLocalDNS];
     });
 
+    if (bypassOpenAi) dns["nameserver-policy"]["rule-set:openai"] = `178.22.122.100#DIRECT`;
+
     const dohHost = getDomain(remoteDNS);
     if (dohHost.isHostDomain && !isWarp) {
         dns["default-nameserver"] = [`https://8.8.8.8/dns-query#✅ Selector`];
@@ -82,6 +85,7 @@ function buildClashRoutingRules(proxySettings, isWarp) {
         bypassIran,
         bypassChina,
         bypassRussia,
+        bypassOpenAi,
         blockAds,
         blockPorn,
         blockUDP443,
@@ -136,6 +140,15 @@ function buildClashRoutingRules(proxySettings, isWarp) {
             }
         },
         {
+            rule: bypassOpenAi,
+            type: 'direct',
+            ruleProvider: {
+                format: "yaml",
+                geosite: "openai",
+                geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/openai.yaml"
+            }
+        },
+        {
             rule: true,
             type: 'block',
             ruleProvider: {
@@ -167,8 +180,8 @@ function buildClashRoutingRules(proxySettings, isWarp) {
             type: 'block',
             ruleProvider: {
                 format: "text",
-                geosite: "ads",
-                geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/ads.txt"
+                geosite: "category-ads-all",
+                geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/category-ads-all.txt"
             }
         },
         {
