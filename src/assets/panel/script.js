@@ -14,7 +14,7 @@ fetch('/panel/settings')
         }
         if (!success) throw new Error(`Data query failed with status ${status}: ${message}`);
         const { subPath, proxySettings } = body;
-        globalThis.subPath = subPath;
+        globalThis.subPath = encodeURIComponent(subPath);
         initiatePanel(proxySettings);
     })
     .catch(error => console.error("Data query error:", error.message || error));

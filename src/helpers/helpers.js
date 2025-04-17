@@ -87,7 +87,7 @@ export async function handleLogin(request, env) {
 export async function handleSubscriptions(request, env) {
     const { subPath, pathName } = globalThis;
 
-    switch (pathName) {
+    switch (decodeURIComponent(pathName)) {
         case `/sub/normal/${subPath}`:
             return await getNormalSub(request, env);
 
