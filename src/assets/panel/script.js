@@ -462,7 +462,7 @@ const updateSettings = (event) => {
             applyButton.value = applyButtonVal;
             if (status === 401) {
                 alert('⚠️ Session expired! Please login again.');
-                window.location.href = '/login/';
+                window.location.href = '/login';
             }
 
             if (!success) throw new Error(`Update settings failed with status ${status}: ${message}`);
