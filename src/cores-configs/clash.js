@@ -2,28 +2,25 @@ import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpper
 import { getDataset } from '../kv/handlers';
 import { isDomain } from '../helpers/helpers';
 
-async function buildClashDNS (proxySettings, isChain, isWarp) {
+async function buildClashDNS(proxySettings, isChain, isWarp) {
     const {
         remoteDNS,
-        localDNS, 
+        localDNS,
         VLTRFakeDNS,
         outProxyParams,
-        enableIPv6, 
+        VLTRenableIPv6,
         warpFakeDNS,
         warpEnableIPv6,
-        bypassIran, 
-        bypassChina, 
+        bypassIran,
+        bypassChina,
         bypassRussia,
         customBypassRules
     } = proxySettings;
 
-    const warpRemoteDNS = warpEnableIPv6 
-        ? ["1.1.1.1", "1.0.0.1", "[2606:4700:4700::1111]", "[2606:4700:4700::1001]"] 
-        : ["1.1.1.1", "1.0.0.1"];
     const finalLocalDNS = localDNS === 'localhost' ? 'system' : `${localDNS}#DIRECT`;
     const isFakeDNS = (VLTRFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
-    const isIPv6 = (enableIPv6 && !isWarp) || (warpEnableIPv6 && isWarp);
-    const customBypassRulesDomains = customBypassRules.split(',').filter(address => isDomain(address));
+    const isIPv6 = (VLTRenableIPv6 && !isWarp) || (warpEnableIPv6 && isWarp);
+    const customBypassRulesDomains = customBypassRules.filter(address => isDomain(address));
     const isBypass = bypassIran || bypassChina || bypassRussia;
     const bypassRules = [
         { rule: bypassIran, geosite: "ir" },
@@ -37,38 +34,37 @@ async function buildClashDNS (proxySettings, isChain, isWarp) {
         "ipv6": isIPv6,
         "respect-rules": true,
         "use-system-hosts": false,
-        "nameserver": isWarp 
-            ? warpRemoteDNS.map(dns => `${dns}#✅ Selector`) 
-            : [isChain ? `${remoteDNS}#proxy-1` : `${remoteDNS}#✅ Selector`],
+        "nameserver": isWarp
+            ? [`1.1.1.1#✅ Selector`]
+            : [`${remoteDNS}#✅ Selector`],
         "proxy-server-nameserver": [finalLocalDNS],
         "nameserver-policy": {
             "raw.githubusercontent.com": finalLocalDNS,
-            "time.apple.com": finalLocalDNS,
-            "www.gstatic.com": "system"
+            "time.apple.com": finalLocalDNS
         }
     };
 
     if (isChain && !isWarp) {
-        const chainOutboundServer = JSON.parse(outProxyParams).server;
+        const chainOutboundServer = outProxyParams.server;
         if (isDomain(chainOutboundServer)) dns["nameserver-policy"][chainOutboundServer] = `${remoteDNS}#proxy-1`;
-    } 
+    }
 
-    if (isBypass) { 
+    if (isBypass) {
         const geosites = [];
         bypassRules.forEach(({ rule, geosite }) => {
             rule && geosites.push(geosite)
         });
 
-        dns["nameserver-policy"][`rule-set:${geosites.join(',')}`] = [`${localDNS}#DIRECT`];
+        dns["nameserver-policy"][`rule-set:${geosites.join(',')}`] = [finalLocalDNS];
     }
 
-    customBypassRulesDomains.forEach( domain => {
-        dns["nameserver-policy"][`+.${domain}`] = [`${localDNS}#DIRECT`];
+    customBypassRulesDomains.forEach(domain => {
+        dns["nameserver-policy"][`+.${domain}`] = [finalLocalDNS];
     });
 
     const dohHost = getDomain(remoteDNS);
     if (dohHost.isHostDomain && !isWarp) {
-        dns["default-nameserver"] = [`https://8.8.8.8/dns-query#${isChain ? 'proxy-1' : '✅ Selector'}`];
+        dns["default-nameserver"] = [`https://8.8.8.8/dns-query#✅ Selector`];
     }
 
     if (isFakeDNS) Object.assign(dns, {
@@ -80,115 +76,113 @@ async function buildClashDNS (proxySettings, isChain, isWarp) {
     return dns;
 }
 
-function buildClashRoutingRules (proxySettings) {
+function buildClashRoutingRules(proxySettings, isWarp) {
     const {
-        bypassLAN, 
-        bypassIran, 
-        bypassChina, 
-        bypassRussia, 
-        blockAds, 
-        blockPorn, 
+        bypassLAN,
+        bypassIran,
+        bypassChina,
+        bypassRussia,
+        blockAds,
+        blockPorn,
         blockUDP443,
         customBypassRules,
         customBlockRules
     } = proxySettings;
 
-    const customBypassRulesTotal = customBypassRules ? customBypassRules.split(',') : [];
-    const customBlockRulesTotal = customBlockRules ? customBlockRules.split(',') : [];
     const geoRules = [
-        { 
+        {
             rule: bypassLAN,
             type: 'direct',
             noResolve: true,
             ruleProvider: {
-                format: "yaml", 
-                geosite: "private", 
+                format: "yaml",
+                geosite: "private",
                 geoip: "private-cidr",
-                geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/private.yaml", 
+                geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/private.yaml",
                 geoipURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/private.yaml"
             }
         },
-        { 
+        {
             rule: bypassIran,
             type: 'direct',
             ruleProvider: {
-                format: "text", 
-                geosite: "ir", 
+                format: "text",
+                geosite: "ir",
                 geoip: "ir-cidr",
-                geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/ir.txt", 
+                geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/ir.txt",
                 geoipURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/ircidr.txt"
             }
         },
-        { 
+        {
             rule: bypassChina,
             type: 'direct',
             ruleProvider: {
-                format: "yaml", 
-                geosite: "cn", 
-                geoip: "cn-cidr", 
-                geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/cn.yaml", 
+                format: "yaml",
+                geosite: "cn",
+                geoip: "cn-cidr",
+                geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/cn.yaml",
                 geoipURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/cn.yaml"
             }
         },
-        { 
+        {
             rule: bypassRussia,
-            type: 'direct', 
+            type: 'direct',
             ruleProvider: {
-                format: "yaml", 
+                format: "yaml",
                 geosite: "ru",
-                geoip: "ru-cidr", 
-                geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ru.yaml", 
+                geoip: "ru-cidr",
+                geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ru.yaml",
                 geoipURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/ru.yaml"
             }
         },
-        { 
+        {
             rule: true,
-            type: 'block', 
+            type: 'block',
             ruleProvider: {
-                format: "text", 
+                format: "text",
                 geosite: "malware",
                 geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/malware.txt"
             }
         },
-        { 
+        {
             rule: true,
             type: 'block',
             ruleProvider: {
-                format: "text", 
-                geosite: "phishing", 
+                format: "text",
+                geosite: "phishing",
                 geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/phishing.txt"
             }
         },
-        { 
+        {
             rule: true,
             type: 'block',
             ruleProvider: {
-                format: "text", 
-                geosite: "cryptominers", 
-                geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/cryptominers.txt" 
+                format: "text",
+                geosite: "cryptominers",
+                geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/cryptominers.txt"
             }
         },
-        { 
+        {
             rule: blockAds,
             type: 'block',
             ruleProvider: {
-                format: "text", 
-                geosite: "ads", 
-                geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/ads.txt" 
+                format: "text",
+                geosite: "ads",
+                geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/ads.txt"
             }
         },
-        { 
+        {
             rule: blockPorn,
-            type: 'block', 
+            type: 'block',
             ruleProvider: {
-                format: "text", 
-                geosite: "nsfw", 
-                geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/nsfw.txt", 
+                format: "text",
+                geosite: "nsfw",
+                geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/nsfw.txt",
             }
         },
     ];
 
-    function buildRuleProvider (tag, format, behavior, url) {
+    function buildRuleProvider(tag, format, behavior, url) {
         const fileExtension = format === 'text' ? 'txt' : format;
         return {
             [tag]: {
@@ -201,9 +195,9 @@ function buildClashRoutingRules (proxySettings) {
             }
         }
     }
-    
+
     const directDomainRules = [], directIPRules = [], blockDomainRules = [], blockIPRules = [], ruleProviders = {};
-    geoRules.forEach( ({ rule, type, ruleProvider, noResolve }) => {
+    geoRules.forEach(({ rule, type, ruleProvider, noResolve }) => {
         const { geosite, geoip, geositeURL, geoipURL, format } = ruleProvider;
         if (rule) {
             if (geosite) {
@@ -211,7 +205,7 @@ function buildClashRoutingRules (proxySettings) {
                 targetRules.push(`RULE-SET,${geosite},${type === 'direct' ? 'DIRECT' : 'REJECT'}`);
                 const ruleProvider = buildRuleProvider(geosite, format, 'domain', geositeURL);
                 Object.assign(ruleProviders, ruleProvider);
-            } 
+            }
 
             if (geoip) {
                 const targetRules = type === 'direct' ? directIPRules : blockIPRules;
@@ -232,42 +226,41 @@ function buildClashRoutingRules (proxySettings) {
             return `${type},${ip}${cidr},${action},no-resolve`;
         }
     };
-    
-    [...customBypassRulesTotal, ...customBlockRulesTotal].forEach((address, index) => {
-        const isDirectRule = index < customBypassRulesTotal.length;
+
+    [...customBypassRules, ...customBlockRules].forEach((address, index) => {
+        const isDirectRule = index < customBypassRules.length;
         const action = isDirectRule ? 'DIRECT' : 'REJECT';
-        const targetRules = isDirectRule 
+        const targetRules = isDirectRule
             ? isDomain(address) ? directDomainRules : directIPRules
             : isDomain(address) ? blockDomainRules : blockIPRules;
-        
+
         targetRules.push(generateRule(address, action));
     });
 
     let rules = [];
-    blockUDP443 && rules.push("AND,((NETWORK,udp),(DST-PORT,443)),REJECT");
-    rules.push("OR,((IP-CIDR,10.10.34.34/32),(IP-CIDR,10.10.34.35/32),(IP-CIDR,10.10.34.36/32)),REJECT");
+    isWarp && blockUDP443 && rules.push("AND,((NETWORK,udp),(DST-PORT,443)),REJECT");
+    !isWarp && rules.push("NETWORK,udp,REJECT");
     rules = [...rules, ...blockDomainRules, ...blockIPRules, ...directDomainRules, ...directIPRules];
     rules.push("MATCH,✅ Selector");
     return { rules, ruleProviders };
 }
 
-function buildClashVLOutbound (remark, address, port, host, sni, path, allowInsecure) {
+function buildClashVLOutbound(remark, address, port, host, sni, path, allowInsecure) {
     const { userID, defaultHttpsPorts } = globalThis;
     const tls = defaultHttpsPorts.includes(port) ? true : false;
     const addr = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
     const outbound = {
         "name": remark,
-        "type": atob('dmxlc3M='),
+        "type": "vless",
         "server": addr,
         "port": +port,
         "uuid": userID,
-        "packet-encoding": "",
+        "packet-encoding": "packetaddr",
         "tls": tls,
         "network": "ws",
-        "udp": true,
         "ws-opts": {
             "path": path,
-            "headers": { "host": host },
+            "headers": { "Host": host },
             "max-early-data": 2560,
             "early-data-header-name": "Sec-WebSocket-Protocol"
         }
@@ -276,7 +269,7 @@ function buildClashVLOutbound (remark, address, port, host, sni, path, allowInse
     if (tls) {
         Object.assign(outbound, {
             "servername": sni,
-            "alpn": ["h2", "http/1.1"],
+            "alpn": ["http/1.1"],
             "client-fingerprint": "random",
             "skip-cert-verify": allowInsecure
         });
@@ -285,30 +278,30 @@ function buildClashVLOutbound (remark, address, port, host, sni, path, allowInse
     return outbound;
 }
 
-function buildClashTROutbound (remark, address, port, host, sni, path, allowInsecure) {
+function buildClashTROutbound(remark, address, port, host, sni, path, allowInsecure) {
     const addr = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
     return {
         "name": remark,
-        "type": atob('dHJvamFu'),
+        "type": "trojan",
         "server": addr,
         "port": +port,
         "password": globalThis.TRPassword,
         "network": "ws",
-        "udp": true,
         "ws-opts": {
             "path": path,
-            "headers": { "host": host },
+            "headers": { "Host": host },
             "max-early-data": 2560,
             "early-data-header-name": "Sec-WebSocket-Protocol"
         },
         "sni": sni,
-        "alpn": ["h2", "http/1.1"],
+        "alpn": ["http/1.1"],
         "client-fingerprint": "random",
         "skip-cert-verify": allowInsecure
     };
 }
 
-function buildClashWarpOutbound (warpConfigs, remark, endpoint, chain) {
+function buildClashWarpOutbound(proxySettings, warpConfigs, remark, endpoint, chain, isPro) {
+    const { amneziaNoiseCount, amneziaNoiseSizeMin, amneziaNoiseSizeMax } = proxySettings;
     const ipv6Regex = /\[(.*?)\]/;
     const portRegex = /[^:]*$/;
     const endpointServer = endpoint.includes('[') ? endpoint.match(ipv6Regex)[1] : endpoint.split(':')[0];
@@ -332,17 +325,22 @@ function buildClashWarpOutbound (warpConfigs, remark, endpoint, chain) {
         "allowed-ips": ["0.0.0.0/0", "::/0"],
         "reserved": reserved,
         "udp": true,
-        "mtu": 1280    
+        "mtu": 1280
     };
 
     if (chain) outbound["dialer-proxy"] = chain;
+    if (isPro) outbound["amnezia-wg-option"] = {
+        "jc": amneziaNoiseCount,
+        "jmin": amneziaNoiseSizeMin,
+        "jmax": amneziaNoiseSizeMax
+    }
     return outbound;
 }
 
 function buildClashChainOutbound(chainProxyParams) {
     if (["socks", "http"].includes(chainProxyParams.protocol)) {
         const { protocol, server, port, user, pass } = chainProxyParams;
-        const proxyType = protocol === 'socks' ? 'socks5' : protocol; 
+        const proxyType = protocol === 'socks' ? 'socks5' : protocol;
         return {
             "name": "",
             "type": proxyType,
@@ -357,7 +355,7 @@ function buildClashChainOutbound(chainProxyParams) {
     const { server, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = chainProxyParams;
     const chainOutbound = {
         "name": "💦 Chain Best Ping 💥",
-        "type": atob('dmxlc3M='),
+        "type": "vless",
         "server": server,
         "port": +port,
         "udp": true,
@@ -386,7 +384,7 @@ function buildClashChainOutbound(chainProxyParams) {
             "short-id": sid
         }
     });
-    
+
     if (headerType === 'http') {
         const httpPaths = path?.split(',');
         chainOutbound["http-opts"] = {
@@ -411,7 +409,7 @@ function buildClashChainOutbound(chainProxyParams) {
             "early-data-header-name": "Sec-WebSocket-Protocol"
         };
     }
- 
+
     if (type === 'grpc') chainOutbound["grpc-opts"] = {
         "grpc-service-name": serviceName
     };
@@ -419,38 +417,38 @@ function buildClashChainOutbound(chainProxyParams) {
     return chainOutbound;
 }
 
-export async function getClashWarpConfig(request, env) {
+export async function getClashWarpConfig(request, env, isPro) {
     const { proxySettings, warpConfigs } = await getDataset(request, env);
     const { warpEndpoints } = proxySettings;
     const config = structuredClone(clashConfigTemp);
     config.dns = await buildClashDNS(proxySettings, true, true);
-    const { rules, ruleProviders } = buildClashRoutingRules(proxySettings);
+    const { rules, ruleProviders } = buildClashRoutingRules(proxySettings, true);
     config.rules = rules;
     config['rule-providers'] = ruleProviders;
     const selector = config['proxy-groups'][0];
     const warpUrlTest = config['proxy-groups'][1];
-    selector.proxies = ['💦 Warp - Best Ping 🚀', '💦 WoW - Best Ping 🚀'];
-    warpUrlTest.name = '💦 Warp - Best Ping 🚀';
+    selector.proxies = [`💦 Warp ${isPro ? 'Pro ' : ''}- Best Ping 🚀`, `💦 WoW ${isPro ? 'Pro ' : ''}- Best Ping 🚀`];
+    warpUrlTest.name = `💦 Warp ${isPro ? 'Pro ' : ''}- Best Ping 🚀`;
     warpUrlTest.interval = +proxySettings.bestWarpInterval;
     config['proxy-groups'].push(structuredClone(warpUrlTest));
     const WoWUrlTest = config['proxy-groups'][2];
-    WoWUrlTest.name = '💦 WoW - Best Ping 🚀';
+    WoWUrlTest.name = `💦 WoW ${isPro ? 'Pro ' : ''}- Best Ping 🚀`;
     let warpRemarks = [], WoWRemarks = [];
-    
-    warpEndpoints.split(',').forEach( (endpoint, index) => {
-        const warpRemark = `💦 ${index + 1} - Warp 🇮🇷`;
-        const WoWRemark = `💦 ${index + 1} - WoW 🌍`;
-        const warpOutbound = buildClashWarpOutbound(warpConfigs, warpRemark, endpoint, '');
-        const WoWOutbound = buildClashWarpOutbound(warpConfigs, WoWRemark, endpoint, warpRemark);
+
+    warpEndpoints.forEach((endpoint, index) => {
+        const warpRemark = `💦 ${index + 1} - Warp ${isPro ? 'Pro ' : ''}🇮🇷`;
+        const WoWRemark = `💦 ${index + 1} - WoW ${isPro ? 'Pro ' : ''}🌍`;
+        const warpOutbound = buildClashWarpOutbound(proxySettings, warpConfigs, warpRemark, endpoint, '', isPro);
+        const WoWOutbound = buildClashWarpOutbound(proxySettings, warpConfigs, WoWRemark, endpoint, warpRemark);
         config.proxies.push(WoWOutbound, warpOutbound);
         warpRemarks.push(warpRemark);
         WoWRemarks.push(WoWRemark);
         warpUrlTest.proxies.push(warpRemark);
         WoWUrlTest.proxies.push(WoWRemark);
     });
-    
+
     selector.proxies.push(...warpRemarks, ...WoWRemarks);
-    return new Response(JSON.stringify(config, null, 4), { 
+    return new Response(JSON.stringify(config, null, 4), {
         status: 200,
         headers: {
             'Content-Type': 'text/plain;charset=utf-8',
@@ -460,34 +458,34 @@ export async function getClashWarpConfig(request, env) {
     });
 }
 
-export async function getClashNormalConfig (request, env) {
+export async function getClashNormalConfig(request, env) {
     const { hostName, defaultHttpsPorts } = globalThis;
     const { proxySettings } = await getDataset(request, env);
     let chainProxy;
-    const { 
-        cleanIPs, 
-        proxyIP, 
-        ports, 
-        VLConfigs, 
-        TRConfigs, 
-        outProxy, 
+    const {
+        cleanIPs,
+        proxyIPs,
+        ports,
+        VLConfigs,
+        TRConfigs,
+        outProxy,
         outProxyParams,
         customCdnAddrs,
         customCdnHost,
         customCdnSni,
         bestVLTRInterval,
-        enableIPv6
-    } = proxySettings; 
+        VLTRenableIPv6
+    } = proxySettings;
 
     if (outProxy) {
-        const proxyParams = JSON.parse(outProxyParams);        
+        const proxyParams = outProxyParams;
         try {
             chainProxy = buildClashChainOutbound(proxyParams);
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
             chainProxy = undefined;
             await env.kv.put("proxySettings", JSON.stringify({
-                ...proxySettings, 
+                ...proxySettings,
                 outProxy: '',
                 outProxyParams: {}
             }));
@@ -495,7 +493,7 @@ export async function getClashNormalConfig (request, env) {
     }
 
     const config = structuredClone(clashConfigTemp);
-    const { rules, ruleProviders } = buildClashRoutingRules(proxySettings);
+    const { rules, ruleProviders } = buildClashRoutingRules(proxySettings, false);
     config.dns = await buildClashDNS(proxySettings, chainProxy, false);
     config.rules = rules;
     config['rule-providers'] = ruleProviders;
@@ -504,34 +502,33 @@ export async function getClashNormalConfig (request, env) {
     selector.proxies = ['💦 Best Ping 💥'];
     urlTest.name = '💦 Best Ping 💥';
     urlTest.interval = +bestVLTRInterval;
-    const Addresses = await getConfigAddresses(cleanIPs, enableIPv6);
-    const customCdnAddresses = customCdnAddrs ? customCdnAddrs.split(',') : [];
-    const totalAddresses = [...Addresses, ...customCdnAddresses];
+    const Addresses = await getConfigAddresses(cleanIPs, VLTRenableIPv6);
+    const totalAddresses = [...Addresses, ...customCdnAddrs];
     let proxyIndex = 1, path;
     const protocols = [
-        ...(VLConfigs ? [atob('VkxFU1M=')] : []),
-        ...(TRConfigs ? [atob('VHJvamFu')] : [])
+        ...(VLConfigs ? ['VLESS'] : []),
+        ...(TRConfigs ? ['Trojan'] : [])
     ];
 
-    protocols.forEach ( protocol => {
+    protocols.forEach(protocol => {
         let protocolIndex = 1;
-        ports.forEach ( port => {
-            totalAddresses.forEach( addr => {
+        ports.forEach(port => {
+            totalAddresses.forEach(addr => {
                 let VLOutbound, TROutbound;
-                const isCustomAddr = customCdnAddresses.includes(addr);
+                const isCustomAddr = customCdnAddrs.includes(addr);
                 const configType = isCustomAddr ? 'C' : '';
                 const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
                 const host = isCustomAddr ? customCdnHost : hostName;
                 const remark = generateRemark(protocolIndex, port, addr, cleanIPs, protocol, configType).replace(' : ', ' - ');
 
-                if (protocol === atob('VkxFU1M=')) {
-                    path = `/${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
+                if (protocol === 'VLESS') {
+                    path = `/${getRandomPath(16)}${proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : ''}`;
                     VLOutbound = buildClashVLOutbound(
-                        chainProxy ? `proxy-${proxyIndex}` : remark, 
-                        addr, 
-                        port,  
+                        chainProxy ? `proxy-${proxyIndex}` : remark,
+                        addr,
+                        port,
                         host,
-                        sni, 
+                        sni,
                         path,
                         isCustomAddr
                     );
@@ -539,15 +536,15 @@ export async function getClashNormalConfig (request, env) {
                     selector.proxies.push(remark);
                     urlTest.proxies.push(remark);
                 }
-                
-                if (protocol === atob('VHJvamFu') && defaultHttpsPorts.includes(port)) {
-                    path = `/tr${getRandomPath(16)}${proxyIP ? `/${btoa(proxyIP)}` : ''}`;
+
+                if (protocol === 'Trojan' && defaultHttpsPorts.includes(port)) {
+                    path = `/tr${getRandomPath(16)}${proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : ''}`;
                     TROutbound = buildClashTROutbound(
-                        chainProxy ? `proxy-${proxyIndex}` : remark, 
-                        addr, 
-                        port,  
+                        chainProxy ? `proxy-${proxyIndex}` : remark,
+                        addr,
+                        port,
                         host,
-                        sni, 
+                        sni,
                         path,
                         isCustomAddr
                     );
@@ -569,7 +566,7 @@ export async function getClashNormalConfig (request, env) {
         });
     });
 
-    return new Response(JSON.stringify(config, null, 4), { 
+    return new Response(JSON.stringify(config, null, 4), {
         status: 200,
         headers: {
             'Content-Type': 'text/plain;charset=utf-8',
@@ -586,8 +583,8 @@ const clashConfigTemp = {
     "mode": "rule",
     "log-level": "warning",
     "disable-keep-alive": false,
-    "keep-alive-idle": 30,
-    "keep-alive-interval": 30,
+    "keep-alive-idle": 10,
+    "keep-alive-interval": 15,
     "unified-delay": false,
     "geo-auto-update": true,
     "geo-update-interval": 168,
@@ -595,7 +592,7 @@ const clashConfigTemp = {
     "external-ui-url": "https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip",
     "external-ui": "ui",
     "external-controller-cors": {
-        "allow-origins": [ "*" ],
+        "allow-origins": ["*"],
         "allow-private-network": true
     },
     "profile": {
@@ -609,7 +606,10 @@ const clashConfigTemp = {
         "auto-route": true,
         "strict-route": true,
         "auto-detect-interface": true,
-        "dns-hijack": ["any:53"],
+        "dns-hijack": [
+            "any:53",
+            "tcp://any:53"
+        ],
         "mtu": 9000
     },
     "sniffer": {

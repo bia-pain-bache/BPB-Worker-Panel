@@ -1,12 +1,10 @@
-name: Build and Deploy Worker
-
-on:
-  push:
-    branches:
-      - dev
+name: Build and Release
 
 permissions:
   contents: write
+
+on:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -15,6 +13,13 @@ jobs:
     steps:
       - name: Check out the code
         uses: actions/checkout@v4
+
+      - name: Get release version
+        id: get_version
+        run: echo "RELEASE_VERSION=$(jq -r .version package.json)" >> $GITHUB_ENV
+
+      - name: Check release version
+        run: echo "Release version is $RELEASE_VERSION"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -25,30 +30,15 @@ jobs:
         run: npm install
 
       - name: Build project
-        run: npx wrangler deploy src/worker.js --name bpb-worker-panel --compatibility-flag [nodejs_compat] --compatibility-date 2025-01-18 --dry-run --minify --outdir=dist
-          
-      - name: Minify JS
-        run: npx terser dist/worker.js --output dist/_worker.js --comments false
-      
-      - name: Organize build files
-        run: |
-          mkdir -p build
-          cp -f dist/_worker.js build/unobfuscated-worker.js
-          zip -j build/unobfuscated-worker.zip dist/_worker.js
+        run: npm run build
 
-      - name: Obfuscate JS
-        run: |
-          npx javascript-obfuscator --config ./obfs-config.json dist/_worker.js --output _worker.js
-          cp -f _worker.js build/worker.js
-          zip -j build/worker.zip _worker.js
-
-      - name: Commit and push built worker
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add _worker.js
-          git add -f build/
-          git commit -m "Automated build: update _worker.js"
-          git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Release Assets
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: dist/*
+          tag: v${{ env.RELEASE_VERSION }}
+          release_name: Release v${{ env.RELEASE_VERSION }}
+          overwrite: true
+          file_glob: true
+          prerelease: true

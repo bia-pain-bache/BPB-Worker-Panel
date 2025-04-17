@@ -60,7 +60,7 @@ export async function VLOverWSHandler(request) {
                     // controller.error(message);
                     throw new Error(message); // cf seems has bug, controller.error will not end stream
                     // webSocket.close(1000, message);
-                    return;
+                    // return;
                 }
                 // if UDP but port not DNS port, close it
                 if (isUDP) {
@@ -69,7 +69,7 @@ export async function VLOverWSHandler(request) {
                     } else {
                         // controller.error('UDP proxy only enable for DNS which is port 53');
                         throw new Error("UDP proxy only enable for DNS which is port 53"); // cf seems has bug, controller.error will not end stream
-                        return;
+                        // return;
                     }
                 }
                 // ["version", "附加信息长度 N"]
@@ -111,27 +111,6 @@ export async function VLOverWSHandler(request) {
         // @ts-ignore
         webSocket: client,
     });
-}
-
-/**
- * Checks if a given UUID is present in the API response.
- * @param {string} targetUuid The UUID to search for.
- * @returns {Promise<boolean>} A Promise that resolves to true if the UUID is present in the API response, false otherwise.
- */
-async function checkUuidInApiResponse(targetUuid) {
-    // Check if any of the environment variables are empty
-  
-    try {
-        const apiResponse = await getApiResponse();
-        if (!apiResponse) {
-            return false;
-        }
-        const isUuidInResponse = apiResponse.users.some((user) => user.uuid === targetUuid);
-        return isUuidInResponse;
-    } catch (error) {
-        console.error("Error:", error);
-        return false;
-    }
 }
 
 /**
@@ -285,13 +264,8 @@ async function processVLHeader(VLBuffer, userID) {
     let isUDP = false;
     const slicedBuffer = new Uint8Array(VLBuffer.slice(1, 17));
     const slicedBufferString = stringify(slicedBuffer);
-
     const uuids = userID.includes(",") ? userID.split(",") : [userID];
-
-    const checkUuidInApi = await checkUuidInApiResponse(slicedBufferString);
-    isValidUser = uuids.some((userUuid) => checkUuidInApi || slicedBufferString === userUuid.trim());
-
-    console.log(`checkUuidInApi: ${await checkUuidInApiResponse(slicedBufferString)}, userID: ${slicedBufferString}`);
+    isValidUser = uuids.some((userUuid) => slicedBufferString === userUuid.trim());
 
     if (!isValidUser) {
         return {
@@ -430,7 +404,7 @@ async function VLRemoteSocketToWS(remoteSocket, webSocket, VLResponseHeader, ret
             })
         )
         .catch((error) => {
-            console.error(`${atob('dmxlc3M=')}RemoteSocketToWS has exception `, error.stack || error);
+            console.error(`VLRemoteSocketToWS has exception `, error.stack || error);
             safeCloseWebSocket(webSocket);
         });
   

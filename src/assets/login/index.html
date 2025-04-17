@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BPB Panel</title>
+    <link rel="icon" href="/favicon.ico" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&icon_names=login,visibility,visibility_off&display=block"
+        rel="stylesheet" />
+    __STYLE__
+</head>
+
+<body>
+    <div class="container">
+        <h1>
+            BPB Panel <span id="panel-version" style="font-size: smaller;">v__PANEL_VERSION__</span> <img class="icon"
+                src="/favicon.ico" alt="BPB Logo">
+        </h1>
+        <div class="form-container">
+            <h2>User Login</h2>
+            <form id="loginForm" class="login-form">
+                <div class="form-control">
+                    <label for="password">Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" name="password" required>
+                        <span id="togglePassword" class="material-symbols-outlined toggle-password">
+                            visibility_off
+                        </span>
+                    </div>
+                </div>
+                <div id="passwordError" class="hint"></div>
+                <button type="submit" class="button">
+                    Login
+                    <span class="material-symbols-outlined">
+                        login
+                    </span>
+                </button>
+            </form>
+        </div>
+    </div>
+    <script>__SCRIPT__</script>
+</body>
+
+</html>
