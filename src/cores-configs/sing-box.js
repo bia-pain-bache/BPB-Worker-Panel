@@ -13,6 +13,7 @@ function buildSingBoxDNS(proxySettings, outboundAddrs, isWarp) {
         bypassIran,
         bypassChina,
         bypassRussia,
+        bypassOpenAi,
         blockAds,
         blockPorn,
         customBypassRules,
@@ -57,6 +58,12 @@ function buildSingBoxDNS(proxySettings, outboundAddrs, isWarp) {
         address: 'https://8.8.8.8/dns-query',
         detour: "✅ Selector",
         tag: "doh-resolver"
+    });
+
+    bypassOpenAi && servers.push({
+        address: "178.22.122.100",
+        detour: "direct",
+        tag: "dns-openai"
     });
 
     let outboundRule;
@@ -138,6 +145,11 @@ function buildSingBoxDNS(proxySettings, outboundAddrs, isWarp) {
         rules.push(domainBlockRule);
     }
 
+    bypassOpenAi && rules.push({
+        rule_set: "geosite-openai",
+        server: "dns-openai"
+    });
+
     if (isFakeDNS) {
         servers.push({
             address: "fakeip",
@@ -171,6 +183,7 @@ function buildSingBoxRoutingRules(proxySettings, isWarp) {
         bypassIran,
         bypassChina,
         bypassRussia,
+        bypassOpenAi,
         blockAds,
         blockPorn,
         blockUDP443,
@@ -222,8 +235,8 @@ function buildSingBoxRoutingRules(proxySettings, isWarp) {
             ruleSet: {
                 geosite: "geosite-cn",
                 geoip: "geoip-cn",
-                geositeURL: "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-cn.srs",
-                geoipURL: "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-cn.srs"
+                geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-cn.srs",
+                geoipURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-cn.srs"
             }
         },
         {
@@ -232,8 +245,16 @@ function buildSingBoxRoutingRules(proxySettings, isWarp) {
             ruleSet: {
                 geosite: "geosite-category-ru",
                 geoip: "geoip-ru",
-                geositeURL: "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-category-ru.srs",
-                geoipURL: "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-ru.srs"
+                geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-category-ru.srs",
+                geoipURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-ru.srs"
+            }
+        },
+        {
+            rule: bypassOpenAi,
+            type: 'direct',
+            ruleSet: {
+                geosite: "geosite-openai",
+                geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-openai.srs"
             }
         },
         {

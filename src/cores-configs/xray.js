@@ -15,6 +15,7 @@ async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isW
         bypassChina,
         blockPorn,
         bypassRussia,
+        bypassOpenAi,
         customBypassRules,
         customBlockRules
     } = proxySettings;
@@ -84,6 +85,12 @@ async function buildXrayDNS(proxySettings, outboundAddrs, domainToStaticIPs, isW
         skipFallback: true
     });
 
+    if (bypassOpenAi) dnsObject.servers.push({
+        address: "178.22.122.100",
+        domains: ["geosite:openai"],
+        skipFallback: true
+    });
+
     if (isDomainRule) {
         const outboundDomainRules = uniqueOutboundDomains.map(domain => `full:${domain}`);
         const bypassDomainRules = customBypassRulesDomains.map(domain => `domain:${domain}`);
@@ -129,6 +136,7 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
         bypassIran,
         bypassChina,
         bypassRussia,
+        bypassOpenAi,
         blockAds,
         blockPorn,
         blockUDP443,
@@ -140,6 +148,8 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
         { rule: bypassLAN, type: 'direct', domain: "geosite:private", ip: "geoip:private" },
         { rule: bypassIran, type: 'direct', domain: "geosite:category-ir", ip: "geoip:ir" },
         { rule: bypassChina, type: 'direct', domain: "geosite:cn", ip: "geoip:cn" },
+        { rule: bypassRussia, type: 'direct', domain: "geosite:ru", ip: "geoip:ru" },
+        { rule: bypassOpenAi, type: 'direct', domain: "geosite:openai" },
         { rule: blockAds, type: 'block', domain: "geosite:category-ads-all" },
         { rule: blockAds, type: 'block', domain: "geosite:category-ads-ir" },
         { rule: blockPorn, type: 'block', domain: "geosite:category-porn" }
@@ -148,7 +158,7 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
     const customBypassRulesDomains = customBypassRules.filter(address => isDomain(address));
     const isDomainRule = [...outboundDomains, ...customBypassRulesDomains].length > 0;
     const isBlock = blockAds || blockPorn || customBlockRules.length > 0;
-    const isBypass = bypassIran || bypassChina || bypassRussia || customBypassRules.length > 0;
+    const isBypass = bypassIran || bypassChina || bypassRussia || bypassOpenAi || customBypassRules.length > 0;
     const finallOutboundTag = isChain ? "chain" : isWorkerLess ? "fragment" : "proxy";
     const rules = [
         {
@@ -176,6 +186,12 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
         type: "field"
     });
 
+    bypassOpenAi && rules.push({
+        ip: ["178.22.122.100"],
+        outboundTag: "direct",
+        type: "field"
+    });
+
     if (!isWorkerLess) rules.push({
         inboundTag: ["dns"],
         [isBalancer ? "balancerTag" : "outboundTag"]: isBalancer ? "all" : finallOutboundTag,
@@ -196,19 +212,17 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
             type: "field"
         });
 
-        let domainDirectRule, ipDirectRule;
-        if (!isWorkerLess) {
-            domainDirectRule = createRule("domain", "direct");
-            ipDirectRule = createRule("ip", "direct");
-        }
+        let domainDirectRule = createRule("domain", "direct");
+        let ipDirectRule = createRule("ip", "direct");
 
         let domainBlockRule = createRule("domain", "block");
         let ipBlockRule = createRule("ip", "block");
+
         geoRules.forEach(({ rule, type, domain, ip }) => {
             if (rule) {
                 if (type === 'direct') {
                     domainDirectRule?.domain.push(domain);
-                    ipDirectRule?.ip?.push(ip);
+                    ip && ipDirectRule?.ip?.push(ip);
                 } else {
                     domainBlockRule.domain.push(domain);
                 }
@@ -233,10 +247,9 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
 
         domainBlockRule.domain.length && rules.push(domainBlockRule);
         ipBlockRule.ip.length && rules.push(ipBlockRule);
-        if (!isWorkerLess) {
-            domainDirectRule.domain.length && rules.push(domainDirectRule);
-            ipDirectRule.ip.length && rules.push(ipDirectRule);
-        }
+
+        domainDirectRule.domain.length && rules.push(domainDirectRule);
+        ipDirectRule.ip.length && rules.push(ipDirectRule);
     }
 
     if (isBalancer) {
