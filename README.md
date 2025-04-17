@@ -8,7 +8,7 @@
 <br>
 
 ## Introduction
-This project is dedicated to developing a user panel to access VLESS, Trojan and Warp configs and stay conntected even with a blocked domain or blocked Warp on ISP, offering two deployment options: 
+This project is aimed to provide a user panel to access FREE and SECURE `VLESS`, `Trojan` and `Warp` configs and stay conntected even with a blocked domain or blocked Warp on ISPs, offering two deployment options: 
 - **Workers** deployment
 - **Pages** deployment
 <br>
@@ -29,6 +29,11 @@ This project is dedicated to developing a user panel to access VLESS, Trojan and
 9. **Password-Protected Panel:** Secure your panel with password protection.
 10. **Fully customizable:** Ability to use online scanner and setting up clean IP-domains, Proxy IP, setting DNS servers, choosing ports and protocols, Warp endpoints...
 <br>
+
+## Limitations
+
+1. **UDP transport**: VLESS and Trojan protocols on workers cannot handle UDP properly, so UDP is blocked by default (some connections like Telegram video calls etc. will not work), also UDP DNS do not work on these protocols (so DOH is supported and set by default which is also safer).
+2. **Request limit**: each worker supports 100K requests per day for VLESS and Trojan, so it's sufficient for only 2-3 users. You can use custom personal domains for bypassing limitation on VLESS/Trojan or Warp configs which are limitless.
 
 ## How to use:
 - [Installation (Pages - New recommended method)](docs/pages_upload_installation_fa.md)
@@ -79,4 +84,3 @@ This project is dedicated to developing a user panel to access VLESS, Trojan and
 - VLESS, Trojan [Cloudflare-workers/pages proxy script](https://github.com/yonggekkk/Cloudflare-workers-pages-vless) created by [yonggekkk](https://github.com/yonggekkk)
 - CF-vless code author [3Kmfi6HP](https://github.com/3Kmfi6HP/EDtunnel)
 - CF preferred IP program author [badafans](https://github.com/badafans/Cloudflare-IP-SpeedTest), [XIU2](https://github.com/XIU2/CloudflareSpeedTest)
-
