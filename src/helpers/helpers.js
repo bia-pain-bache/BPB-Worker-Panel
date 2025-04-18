@@ -138,7 +138,7 @@ async function getSettings(request, env) {
         const { proxySettings } = await getDataset(request, env);
         const settings = {
             proxySettings,
-            isPassSet: pwd,
+            isPassSet: pwd ? true : false,
             subPath: globalThis.subPath
         };
 
