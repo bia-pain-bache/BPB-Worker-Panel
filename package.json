@@ -12,12 +12,13 @@
 		"esbuild": "^0.25.2",
 		"glob": "^10.3.10",
 		"html-minifier": "^4.0.0",
-		"javascript-obfuscator": "latest"
+		"javascript-obfuscator": "latest",
+		"terser": "^5.39.0"
 	},
 	"dependencies": {
 		"jose": "^6.0.10",
+		"js-sha256": "^0.11.0",
 		"jszip": "^3.10.1",
-		"tweetnacl": "^1.0.3",
-		"js-sha256": "^0.11.0"
+		"tweetnacl": "^1.0.3"
 	}
 }
