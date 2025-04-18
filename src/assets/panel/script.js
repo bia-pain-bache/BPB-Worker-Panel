@@ -48,7 +48,7 @@ function initiatePanel(proxySettings) {
     fetchIPInfo();
 }
 
-const populatePanel = (selectElements, checkboxElements, inputElements, textareaElements, proxySettings) => {
+function populatePanel(selectElements, checkboxElements, inputElements, textareaElements, proxySettings) {
     selectElements.forEach(key => document.getElementById(key).value = proxySettings[key]);
     checkboxElements.forEach(key => document.getElementById(key).checked = proxySettings[key]);
     inputElements.forEach(key => document.getElementById(key).value = proxySettings[key]);
@@ -62,7 +62,7 @@ const populatePanel = (selectElements, checkboxElements, inputElements, textarea
     })
 }
 
-const initiateForm = () => {
+function initiateForm() {
     const configForm = document.getElementById('configForm');
     globalThis.initialFormData = new FormData(configForm);
     enableApplyButton();
@@ -86,7 +86,7 @@ window.onclick = (event) => {
     }
 }
 
-const hasFormDataChanged = () => {
+function hasFormDataChanged() {
     const configForm = document.getElementById('configForm');
     const formDataToObject = (formData) => Object.fromEntries(formData.entries());
     const currentFormData = new FormData(configForm);
@@ -95,38 +95,38 @@ const hasFormDataChanged = () => {
     return JSON.stringify(initialFormDataObj) !== JSON.stringify(currentFormDataObj);
 }
 
-const enableApplyButton = () => {
+function enableApplyButton() {
     const applyButton = document.getElementById('applyButton');
     const isChanged = hasFormDataChanged();
     applyButton.disabled = !isChanged;
     applyButton.classList.toggle('disabled', !isChanged);
 }
 
-const openResetPass = () => {
+function openResetPass() {
     const resetPassModal = document.getElementById('resetPassModal');
     resetPassModal.style.display = "block";
     document.body.style.overflow = "hidden";
 }
 
-const closeResetPass = () => {
+function closeResetPass() {
     const resetPassModal = document.getElementById('resetPassModal');
     resetPassModal.style.display = "none";
     document.body.style.overflow = "";
 }
 
-const closeQR = () => {
+function closeQR() {
     const qrModal = document.getElementById('qrModal');
     const qrcodeContainer = document.getElementById('qrcode-container');
     qrModal.style.display = "none";
     qrcodeContainer.lastElementChild.remove();
 }
 
-const darkModeToggle = () => {
+function darkModeToggle() {
     const isDarkMode = document.body.classList.toggle('dark-mode');
     localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
 }
 
-const getIpDetails = async (ip) => {
+async function getIpDetails(ip) {
     try {
         const response = await fetch('/panel/my-ip', { method: 'POST', body: ip });
         const data = await response.json();
@@ -138,7 +138,7 @@ const getIpDetails = async (ip) => {
     }
 }
 
-const fetchIPInfo = async () => {
+async function fetchIPInfo() {
     const refreshIcon = document.getElementById("refresh-geo-location").querySelector('i');
     refreshIcon.classList.add('fa-spin');
     const updateUI = (ip = '-', country = '-', countryCode = '-', city = '-', isp = '-', cfIP) => {
@@ -177,14 +177,17 @@ const fetchIPInfo = async () => {
     }
 }
 
-const downloadWarpConfigs = (isAmnezia) => {
+function downloadWarpConfigs(isAmnezia) {
     const client = isAmnezia ? "?app=amnezia" : "";
     window.location.href = "/panel/get-warp-configs" + client;
 }
 
-const subURL = (path, app, tag, hiddifyType) => copyToClipboard(`${hiddifyType ? 'hiddify://import/' : ''}${window.origin}/sub/${path}/${globalThis.subPath}${app ? `?app=${app}` : ''}#BPB-${tag}`);
+function subURL(path, app, tag, hiddifyType) {
+    const url = `${hiddifyType ? 'hiddify://import/' : ''}${window.origin}/sub/${path}/${globalThis.subPath}${app ? `?app=${app}` : ''}#BPB-${tag}`;
+    copyToClipboard(url);
+}
 
-const dlURL = async (path, app) => {
+async function dlURL(path, app) {
     try {
         const response = await fetch(`${window.origin}/sub/${path}/${subPath}${app ? `?app=${app}` : ''}`);
         const data = await response.text();
@@ -201,7 +204,7 @@ const dlURL = async (path, app) => {
     }
 }
 
-const openQR = (path, app, tag, title, sbType, hiddifyType) => {
+function openQR(path, app, tag, title, sbType, hiddifyType) {
     const qrModal = document.getElementById('qrModal');
     const qrcodeContainer = document.getElementById('qrcode-container');
     const url = `${sbType ? 'sing-box://import-remote-profile?url=' : ''}${hiddifyType ? 'hiddify://import/' : ''}${window.origin}/sub/${path}/${globalThis.subPath}${app ? `?app=${app}` : ''}#BPB-${tag}`;
@@ -223,13 +226,13 @@ const openQR = (path, app, tag, title, sbType, hiddifyType) => {
     qrcodeContainer.appendChild(qrcodeDiv);
 }
 
-const copyToClipboard = (text) => {
+function copyToClipboard(text) {
     navigator.clipboard.writeText(text)
         .then(() => alert('✅ Copied to clipboard:\n\n' + text))
         .catch(error => console.error('Failed to copy:', error));
 }
 
-const updateWarpConfigs = async () => {
+async function updateWarpConfigs() {
     const confirmReset = confirm('⚠️ Are you sure?');
     if (!confirmReset) return;
     const refreshBtn = document.getElementById('refreshBtn');
@@ -253,7 +256,7 @@ const updateWarpConfigs = async () => {
     }
 }
 
-const handleProtocolChange = (event) => {
+function handleProtocolChange(event) {
     if (event.target.checked) {
         globalThis.activeProtocols++;
         return true;
@@ -269,7 +272,7 @@ const handleProtocolChange = (event) => {
     }
 }
 
-const handlePortChange = (event) => {
+function handlePortChange(event) {
     if (event.target.checked) {
         globalThis.activeTlsPorts.push(event.target.name);
         return true;
@@ -285,7 +288,7 @@ const handlePortChange = (event) => {
     }
 }
 
-const resetSettings = () => {
+function resetSettings() {
     const confirmReset = confirm('⚠️ This will reset all panel settings.\nAre you sure?');
     if (!confirmReset) return;
     const resetBtn = document.querySelector('#resetBtn i');
@@ -307,44 +310,78 @@ const resetSettings = () => {
         .catch(error => console.error("Reseting settings error:", error.message || error));
 }
 
-const updateSettings = (event) => {
+function updateSettings(event) {
     event.preventDefault();
     event.stopPropagation();
-    const getValue = (id) => parseInt(document.getElementById(id).value, 10);
-    function isValidIpDomain(value) {
-        const ipv6Regex = /^\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}|:(?::[a-fA-F0-9]{1,4}){1,7})\](?:\/(?:12[0-8]|1[01]?\d|[0-9]?\d))?$/gm;
-        const ipv4Regex = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)(?:\/(?:\d|[12]\d|3[0-2]))?$/gm;
-        const domainRegex = /^(?=.{1,253}$)(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)\.)+[a-zA-Z]{2,63}$/gm;
-        return ipv4Regex.test(value) || ipv6Regex.test(value) || domainRegex.test(value);
+
+    const elementsToCheck = ['cleanIPs', 'customCdnAddrs', 'customCdnSni', 'customCdnHost', 'proxyIPs', 'customBypassRules', 'customBlockRules'];
+    const configForm = document.getElementById('configForm');
+    const formData = new FormData(configForm);
+
+    const validations = [
+        validateMultipleIpDomains(elementsToCheck),
+        validateWarpEndpoints(),
+        validateMinMax(),
+        validateChainProxy(),
+        validateCustomCdn(),
+        validateXrayNoises(formData),
+    ];
+
+    if (!validations.every(Boolean)) return false;
+
+    const applyButton = document.getElementById('applyButton');
+    document.body.style.cursor = 'wait';
+    const applyButtonVal = applyButton.value;
+    applyButton.value = '⌛ Loading...';
+
+    fetch('/panel/update-settings', { method: 'POST', body: formData, credentials: 'include' })
+        .then(response => response.json())
+        .then(data => {
+            const { success, status, message } = data;
+            document.body.style.cursor = 'default';
+            applyButton.value = applyButtonVal;
+            if (status === 401) {
+                alert('⚠️ Session expired! Please login again.');
+                window.location.href = '/login';
+            }
+
+            if (!success) throw new Error(`Update settings failed with status ${status}: ${message}`);
+            initiateForm();
+            alert('✅ Settings applied successfully 😎');
+        })
+        .catch(error => console.error("Update settings error:", error.message || error));
+}
+
+function isValidIpDomain(value) {
+    const ipv6Regex = /^\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}|:(?::[a-fA-F0-9]{1,4}){1,7})\](?:\/(?:12[0-8]|1[01]?\d|[0-9]?\d))?$/gm;
+    const ipv4Regex = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)(?:\/(?:\d|[12]\d|3[0-2]))?$/gm;
+    const domainRegex = /^(?=.{1,253}$)(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)\.)+[a-zA-Z]{2,63}$/gm;
+    return ipv4Regex.test(value) || ipv6Regex.test(value) || domainRegex.test(value);
+}
+
+function validateMultipleIpDomains(elements) {
+
+    const getValue = (id) => document.getElementById(id).value?.split('\n').filter(Boolean);
+
+    const ips = [];
+    elements.forEach(id => ips.push(...getValue(id)));
+    const invalidIPs = ips?.filter(value => value && !isValidIpDomain(value.trim()));
+
+    if (invalidIPs.length) {
+        alert('⛔ Invalid IPs or Domains 🫤\n👉 Please enter each IP/domain in a new line.\n\n' + invalidIPs.map(ip => '⚠️ ' + ip).join('\n'));
+        return false;
     }
+
+    return true;
+}
+
+function validateWarpEndpoints() {
 
     function isValidEndpoint(value) {
         const ipv6Regex = /^\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}|:(?::[a-fA-F0-9]{1,4}){1,7})\](?:\/(?:12[0-8]|1[01]?\d|[0-9]?\d))?:(?:6553[0-5]|655[0-2]\d|65[0-4]\d{2}|6[0-4]\d{3}|[1-5]?\d{1,4})$/gm;
         const ipv4Regex = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)(?:\/(?:\d|[12]\d|3[0-2]))?:(?:6553[0-5]|655[0-2]\d|65[0-4]\d{2}|6[0-4]\d{3}|[1-5]?\d{1,4})$/gm;
         const domainRegex = /^(?=.{1,253}$)(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)\.)+[a-zA-Z]{2,63}:(?:6553[0-5]|655[0-2]\d|65[0-4]\d{2}|6[0-4]\d{3}|[1-5]?\d{1,4})$/gm;
         return ipv4Regex.test(value) || ipv6Regex.test(value) || domainRegex.test(value);
-    }
-
-    const cleanIPs = document.getElementById('cleanIPs').value?.split('\n');
-    const proxyIPs = document.getElementById('proxyIPs').value?.split('\n');
-    const customCdnAddrs = document.getElementById('customCdnAddrs').value?.split('\n').filter(Boolean);
-    const customCdnHost = document.getElementById('customCdnHost').value;
-    const customCdnSni = document.getElementById('customCdnSni').value;
-    const customBypassRules = document.getElementById('customBypassRules').value?.split('\n');
-    const customBlockRules = document.getElementById('customBlockRules').value?.split('\n');
-    const invalidIPs = [
-        ...cleanIPs,
-        ...proxyIPs,
-        ...customCdnAddrs,
-        ...customBypassRules,
-        ...customBlockRules,
-        customCdnHost,
-        customCdnSni
-    ]?.filter(value => value && !isValidIpDomain(value.trim()));
-
-    if (invalidIPs.length) {
-        alert('⛔ Invalid IPs or Domains 🫤\n👉 Please enter each IP/domain in a new line.\n\n' + invalidIPs.map(ip => '⚠️ ' + ip).join('\n'));
-        return false;
     }
 
     const warpEndpoints = document.getElementById('warpEndpoints').value?.split('\n');
@@ -354,6 +391,13 @@ const updateSettings = (event) => {
         alert('⛔ Invalid endpoint 🫤\n\n' + invalidEndpoints.map(endpoint => '⚠️ ' + endpoint).join('\n'));
         return false;
     }
+
+    return true;
+}
+
+function validateMinMax() {
+
+    const getValue = (id) => parseInt(document.getElementById(id).value, 10);
 
     const fragmentLengthMin = getValue('fragmentLengthMin');
     const fragmentLengthMax = getValue('fragmentLengthMax');
@@ -365,10 +409,16 @@ const updateSettings = (event) => {
     const noiseSizeMax = getValue('noiseSizeMax');
     const noiseDelayMin = getValue('noiseDelayMin');
     const noiseDelayMax = getValue('noiseDelayMax');
+
     if (fragmentLengthMin >= fragmentLengthMax || fragmentIntervalMin > fragmentIntervalMax || noiseCountMin > noiseCountMax || noiseSizeMin > noiseSizeMax || noiseDelayMin > noiseDelayMax) {
         alert('⛔ Minimum should be smaller or equal to Maximum! 🫤');
         return false;
     }
+
+    return true;
+}
+
+function validateChainProxy() {
 
     const chainProxy = document.getElementById('outProxy').value?.trim();
     const isVless = /vless:\/\/[^\s@]+@[^\s:]+:[^\s]+/.test(chainProxy);
@@ -391,13 +441,25 @@ const updateSettings = (event) => {
         return false;
     }
 
+    return true;
+}
+
+function validateCustomCdn() {
+
+    const customCdnHost = document.getElementById('customCdnHost').value;
+    const customCdnSni = document.getElementById('customCdnSni').value;
+    const customCdnAddrs = document.getElementById('customCdnAddrs').value?.split('\n').filter(Boolean);
+
     const isCustomCdn = customCdnAddrs.length || customCdnHost !== '' || customCdnSni !== '';
     if (isCustomCdn && !(customCdnAddrs.length && customCdnHost && customCdnSni)) {
         alert('⛔ All "Custom" fields should be filled or deleted together! 🫤');
         return false;
     }
 
-    const formData = new FormData(configForm);
+    return true;
+}
+
+function validateXrayNoises(formData) {
     const udpNoiseModes = formData.getAll('udpXrayNoiseMode') || [];
     const udpNoisePackets = formData.getAll('udpXrayNoisePacket') || [];
     const udpNoiseDelaysMin = formData.getAll('udpXrayNoiseDelayMin') || [];
@@ -448,31 +510,10 @@ const updateSettings = (event) => {
         }
     }
 
-    if (submisionError) return false;
-    const applyButton = document.getElementById('applyButton');
-    document.body.style.cursor = 'wait';
-    const applyButtonVal = applyButton.value;
-    applyButton.value = '⌛ Loading...';
-
-    fetch('/panel/update-settings', { method: 'POST', body: formData, credentials: 'include' })
-        .then(response => response.json())
-        .then(data => {
-            const { success, status, message } = data;
-            document.body.style.cursor = 'default';
-            applyButton.value = applyButtonVal;
-            if (status === 401) {
-                alert('⚠️ Session expired! Please login again.');
-                window.location.href = '/login';
-            }
-
-            if (!success) throw new Error(`Update settings failed with status ${status}: ${message}`);
-            initiateForm();
-            alert('✅ Settings applied successfully 😎');
-        })
-        .catch(error => console.error("Update settings error:", error.message || error));
+    return !submisionError;
 }
 
-const logout = (event) => {
+function logout(event) {
     event.preventDefault();
 
     fetch('/logout', { method: 'GET', credentials: 'same-origin' })
@@ -494,7 +535,7 @@ document.querySelectorAll(".toggle-password").forEach(toggle => {
     });
 });
 
-const resetPassword = (event) => {
+function resetPassword(event) {
     event.preventDefault();
     const resetPassModal = document.getElementById('resetPassModal');
     const newPasswordInput = document.getElementById('newPassword');
@@ -542,7 +583,7 @@ const resetPassword = (event) => {
         }).catch(error => console.error("Reset password error:", error.message || error));
 }
 
-const renderPortsBlock = (ports) => {
+function renderPortsBlock(ports) {
     let noneTlsPortsBlock = '', tlsPortsBlock = '';
     const allPorts = [...(window.origin.includes('workers.dev') ? defaultHttpPorts : []), ...defaultHttpsPorts];
 
@@ -565,7 +606,7 @@ const renderPortsBlock = (ports) => {
     }
 }
 
-const addUdpNoise = () => {
+function addUdpNoise() {
     const container = document.getElementById("noises");
     const noiseBlock = document.getElementById("udp-noise-1");
     const index = container.children.length + 1;
@@ -576,7 +617,7 @@ const addUdpNoise = () => {
     document.getElementById("configForm").dispatchEvent(new Event("change"));
 }
 
-const deleteUdpNoise = (button) => {
+function deleteUdpNoise(button) {
     const container = document.getElementById("noises");
     if (container.children.length === 1) {
         alert('⛔ You cannot delete all noises!');
@@ -589,7 +630,7 @@ const deleteUdpNoise = (button) => {
     document.getElementById("configForm").dispatchEvent(new Event("change"));
 }
 
-const renderUdpNoiseBlock = (xrayUdpNoises) => {
+function renderUdpNoiseBlock(xrayUdpNoises) {
     let udpNoiseBlocks = '';
     xrayUdpNoises.forEach((noise, index) => {
         udpNoiseBlocks += `
