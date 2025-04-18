@@ -60,7 +60,6 @@ async function buildWorker() {
         bundle: true,
         format: 'esm',
         write: false,
-        minifySyntax: true,
         external: ['cloudflare:sockets'],
         platform: 'node',
         define: {
@@ -68,27 +67,32 @@ async function buildWorker() {
             __LOGIN_HTML_CONTENT__: htmls['login'] ?? '""',
             __ERROR_HTML_CONTENT__: htmls['error'] ?? '""',
             __SECRETS_HTML_CONTENT__: htmls['secrets'] ?? '""',
-            __ICON__: JSON.stringify(faviconBase64),
-            __PANEL_VERSION__: JSON.stringify(version)
+            __ICON__: JSON.stringify(faviconBase64)
+        }
+    });
+
+    const minifiedCode = await jsMinify(code.outputFiles[0].text, {
+        module: true,
+        output: {
+            comments: false
         }
     });
 
     console.log('✅ Worker built successfuly!');
-    const finalCode = code.outputFiles[0].text.replace(/\/\*[\s\S]*?\*\//g, '');
 
-    const obfuscationResult = obfuscate(finalCode, {
-        "stringArrayThreshold": 1,
-        "stringArrayEncoding": [
+    const obfuscationResult = obfuscate(minifiedCode.code, {
+        stringArrayThreshold: 1,
+        stringArrayEncoding: [
             "rc4"
         ],
-        "numbersToExpressions": true,
-        "transformObjectKeys": true,
-        "renameGlobals": true,
-        "deadCodeInjection": true,
-        "deadCodeInjectionThreshold": 0.3,
-        "simplify": true,
-        "compact": true,
-        "target": "node"
+        numbersToExpressions: true,
+        transformObjectKeys: true,
+        renameGlobals: true,
+        deadCodeInjection: true,
+        deadCodeInjectionThreshold: 0.2,
+        simplify: true,
+        compact: true,
+        target: "node"
     });
 
     const worker = obfuscationResult.getObfuscatedCode();
