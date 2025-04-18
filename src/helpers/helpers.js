@@ -244,7 +244,8 @@ async function renderPanel(request, env) {
         if (!auth) return Response.redirect(`${globalThis.urlOrigin}/login`, 302);
     }
 
-    return new Response(__PANEL_HTML_CONTENT__, {
+    const html = __PANEL_HTML_CONTENT__.replace(/__PANEL_VERSION__/g, globalThis.panelVersion);
+    return new Response(html, {
         headers: { 'Content-Type': 'text/html' }
     });
 }
@@ -252,19 +253,23 @@ async function renderPanel(request, env) {
 async function renderLogin(request, env) {
     const auth = await Authenticate(request, env);
     if (auth) return Response.redirect(`${globalThis.urlOrigin}/panel`, 302);
-    return new Response(__LOGIN_HTML_CONTENT__, {
+
+    const html = __LOGIN_HTML_CONTENT__.replace(/__PANEL_VERSION__/g, globalThis.panelVersion);
+    return new Response(html, {
         headers: { 'Content-Type': 'text/html' }
     });
 }
 
 export async function renderSecrets() {
-    return new Response(__SECRETS_HTML_CONTENT__, {
+    const html = __SECRETS_HTML_CONTENT__.replace(/__PANEL_VERSION__/g, globalThis.panelVersion);
+    return new Response(html, {
         headers: { 'Content-Type': 'text/html' },
     });
 }
 
 export async function renderError() {
-    return new Response(__ERROR_HTML_CONTENT__, {
+    const html = __ERROR_HTML_CONTENT__.replace(/__PANEL_VERSION__/g, globalThis.panelVersion);
+    return new Response(html, {
         status: 200,
         headers: { 'Content-Type': 'text/html' }
     });
