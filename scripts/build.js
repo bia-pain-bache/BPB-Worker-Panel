@@ -7,10 +7,6 @@ import { minify as jsMinify } from 'terser';
 import { minify as htmlMinify } from 'html-minifier';
 import JSZip from "jszip";
 import obfs from 'javascript-obfuscator';
-import pkg from '../package.json' with { type: 'json' };
-
-const { version } = pkg;
-const { obfuscate } = obfs;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = pathDirname(__filename);
@@ -33,8 +29,7 @@ async function processHtmlPages() {
         const finalScriptCode = await jsMinify(scriptCode);
         const finalHtml = indexHtml
             .replace(/__STYLE__/g, `<style>${styleCode}</style>`)
-            .replace(/__SCRIPT__/g, finalScriptCode.code)
-            .replace(/__PANEL_VERSION__/g, version);
+            .replace(/__SCRIPT__/g, finalScriptCode.code);
 
         const minifiedHtml = htmlMinify(finalHtml, {
             collapseWhitespace: true,
@@ -70,6 +65,8 @@ async function buildWorker() {
             __ICON__: JSON.stringify(faviconBase64)
         }
     });
+    
+    console.log('✅ Worker built successfuly!');
 
     const minifiedCode = await jsMinify(code.outputFiles[0].text, {
         module: true,
@@ -78,8 +75,9 @@ async function buildWorker() {
         }
     });
 
-    console.log('✅ Worker built successfuly!');
+    console.log('✅ Worker minified successfuly!');
 
+    const { obfuscate } = obfs;
     const obfuscationResult = obfuscate(minifiedCode.code, {
         stringArrayThreshold: 1,
         stringArrayEncoding: [
@@ -96,6 +94,8 @@ async function buildWorker() {
     });
 
     const worker = obfuscationResult.getObfuscatedCode();
+    console.log('✅ Worker obfuscated successfuly!');
+
     mkdirSync(DIST_PATH, { recursive: true });
     writeFileSync('./dist/worker.js', worker, 'utf8');
 
@@ -106,7 +106,7 @@ async function buildWorker() {
         compression: 'DEFLATE'
     }).then(nodebuffer => writeFileSync('./dist/worker.zip', nodebuffer));
 
-    console.log('✅ Worker obfuscated successfuly!');
+    console.log('✅ Worker files published successfuly!');
 }
 
 buildWorker().catch(err => {
