@@ -2,9 +2,9 @@
 
 > [!WARNING]
 > 1- PLEASE DO NOT UPDATE TO THIS VERSION, otherwise it will break your panel. You can deploy a new one or update your panel and try to reset settings from Panel. Keep in mind that if updating worked, you have to import Subscriptions from panel again.
-> For security reasons and 1101 issue, the whole project is restructured to prevent code exposure and also maintainability.
-> 2- Renamed `PROXYIP` environment variable to `PROXY_IP`
-> 3- From now on, multiple IPs/domains can be separated by ENTER not comma.
+> 2- For security reasons and 1101 issue, the whole project is restructured to prevent code exposure and also maintainability.
+> 3- Renamed `PROXYIP` environment variable to `PROXY_IP`
+> 4- From now on, multiple IPs/domains can be separated by ENTER not comma.
 
 > [!TIP]
 > 1- None obfuscated files removed from releases forever, due to code exposures to Cloudflare (possible 1101 errors in future). So please choose a Cloudflare account which haven't returned 1101 before.
