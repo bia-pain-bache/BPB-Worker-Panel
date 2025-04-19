@@ -655,7 +655,7 @@ async function buildXrayBestPingConfig(proxySettings, totalAddresses, chainProxy
     const remark = isFragment ? `💦 BPB F - Best Ping 💥` : `💦 BPB - Best Ping 💥`;
     const config = buildXrayConfig(proxySettings, remark, true, chainProxy, true);
     config.dns = await buildXrayDNS(proxySettings, totalAddresses, undefined, false, false);
-    config.routing.rules = buildXrayRoutingRules(proxySettings, totalAddresses, chainProxy, true, false, true);
+    config.routing.rules = buildXrayRoutingRules(proxySettings, totalAddresses, chainProxy, true, false, false);
     config.outbounds.unshift(...outbounds);
     return config;
 }
