@@ -32,6 +32,16 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Read release note
+        id: read_release
+        shell: bash
+        run: |
+          r=$(cat RELEASE.md)         
+          r="${r//'%'/'%25'}"                               
+          r="${r//$'\n'/'%0A'}"                             
+          r="${r//$'\r'/'%0D'}"                             
+          echo "RELEASE_BODY=$r" >> $GITHUB_OUTPUT          
+
       - name: Upload Release Assets
         uses: svenstaro/upload-release-action@v2
         with:
@@ -42,3 +52,4 @@ jobs:
           overwrite: true
           file_glob: true
           prerelease: true
+          body: ${{ steps.read_release.outputs.RELEASE_BODY }}
