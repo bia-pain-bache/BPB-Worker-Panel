@@ -77,8 +77,7 @@ async function buildWorker() {
 
     console.log('✅ Worker minified successfuly!');
 
-    const { obfuscate } = obfs;
-    const obfuscationResult = obfuscate(minifiedCode.code, {
+    const obfuscationResult = obfs.obfuscate(minifiedCode.code, {
         stringArrayThreshold: 1,
         stringArrayEncoding: [
             "rc4"

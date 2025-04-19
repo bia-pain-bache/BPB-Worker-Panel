@@ -7,9 +7,8 @@
     <title>BPB Panel</title>
     <link rel="icon" href="/favicon.ico" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&icon_names=autorenew,download,fingerprint,format_list_bulleted,key_vertical,open_in_new,qr_code,settings,share,terminal,tune,verified,visibility,visibility_off&display=block"
-        rel="stylesheet" />
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&icon_names=autorenew,download,fingerprint,format_list_bulleted,key_vertical,open_in_new,qr_code,settings,share,terminal,tune,verified,visibility,visibility_off&display=block" />
     __STYLE__
 </head>
 
@@ -20,7 +19,7 @@
     </h1>
     <div class="form-container container">
         <h2><span class="material-symbols-outlined">settings</span> Settings</h2>
-        <form id="configForm" class="configForm" onsubmit="updateSettings(event)">
+        <form id="configForm" class="configForm">
             <details class="details">
                 <summary>
                     <h3>VLESS - Trojan</h3>
@@ -117,13 +116,11 @@
                         <div>
                             <div class="protocols inner-container">
                                 <div class="proto">
-                                    <input type="checkbox" id="VLConfigs" name="VLConfigs"
-                                        onchange="handleProtocolChange(event)" value="true">
+                                    <input type="checkbox" id="VLConfigs" name="VLConfigs" value="true">
                                     <label for="VLConfigs">VLESS</label>
                                 </div>
                                 <div class="proto">
-                                    <input type="checkbox" id="TRConfigs" name="TRConfigs"
-                                        onchange="handleProtocolChange(event)" value="true">
+                                    <input type="checkbox" id="TRConfigs" name="TRConfigs" value="true">
                                     <label for="TRConfigs">Trojan</label>
                                 </div>
                             </div>
@@ -195,8 +192,7 @@
                     <div class="form-control">
                         <label for="endpointScanner">🔎 Scan Endpoint</label>
                         <div>
-                            <button type="button" id="endpointScanner" class="button"
-                                onclick="copyToClipboard('bash <(curl -fsSL https://raw.githubusercontent.com/bia-pain-bache/warp-script/refs/heads/main/endip/install.sh)', false)">
+                            <button type="button" id="endpointScanner" class="button">
                                 Copy Script<span class="material-symbols-outlined">terminal</span>
                             </button>
                         </div>
@@ -222,7 +218,7 @@
                     <div class="form-control">
                         <label for="refreshBtn">♻️ Warp Configs</label>
                         <div>
-                            <button id="refreshBtn" type="button" class="button" onclick="updateWarpConfigs()">
+                            <button id="updateWarpConfigs" type="button" class="button">
                                 Update<span class="material-symbols-outlined">autorenew</span>
                             </button>
                         </div>
@@ -312,11 +308,11 @@
                     <div id="udp-noise-container" class="container">
                         <div class="header-container">
                             <h3><span class="material-symbols-outlined">tune</span> v2rayNG - v2rayN</h3>
-                            <button type="button" id="add-udp-noise" class="add-noise" onclick="addUdpNoise()">
+                            <button type="button" id="addUdpNoise" class="add-noise">
                                 <i class="fa fa-plus-circle fa-2x" aria-hidden="true"></i>
                             </button>
                         </div>
-                        <div id="noises"></div>
+                        <div id="noises" class="section"></div>
                     </div>
                 </div>
             </details>
@@ -395,7 +391,7 @@
             <div id="apply" class="form-control apply">
                 <input type="submit" id="applyButton" class="button disabled" value="Apply Settings 💥"
                     form="configForm">
-                <button type="button" id="resetBtn" title="Reset panel settings to default" onclick="resetSettings()">
+                <button type="button" id="resetSettings" title="Reset panel settings to default">
                     <i class="fa fa-refresh fa-2x" aria-hidden="true"></i>
                 </button>
             </div>
@@ -452,7 +448,7 @@
                             <button onclick="openQR('normal', '', 'Normal', 'Normal Subscription')">
                                 QR Code&nbsp;<span class="material-symbols-outlined">qr_code</span>
                             </button>
-                            <button onclick="subURL('normal', '', 'Normal')">
+                            <button class="copySubUrl" onclick="subURL('normal', '', 'Normal')">
                                 Copy Sub<span class="material-symbols-outlined">format_list_bulleted</span>
                             </button>
                         </td>
@@ -778,7 +774,7 @@
                             </div>
                         </td>
                         <td>
-                            <button id="dlConfigsBtn" type="button" onclick="downloadWarpConfigs()">
+                            <button id="dlConfigsBtn" type="button">
                                 Download<span class="material-symbols-outlined">download</span>
                             </button>
                         </td>
@@ -908,7 +904,7 @@
                             </div>
                         </td>
                         <td>
-                            <button id="dlAmneziaConfigsBtn" type="button" onclick="downloadWarpConfigs('amnezia')">
+                            <button id="dlAmneziaConfigsBtn" type="button">
                                 Download<span class="material-symbols-outlined">download</span>
                             </button>
                         </td>
@@ -920,8 +916,8 @@
     <div class="form-container container">
         <div id="resetPassModal" class="modal">
             <div class="modal-content">
-                <span class="close" onclick="closeResetPass()">&times;</span>
-                <form id="passwordChangeForm" onsubmit="resetPassword(event)">
+                <span class="close" id="closeResetPass">&times;</span>
+                <form id="passwordChangeForm">
                     <h2>Change Password</h2>
                     <div class="section">
                         <div class="form-control">
@@ -951,7 +947,7 @@
         <div id="qrModal" class="modalQR">
             <div class="modal-content" class="modal-content">
                 <div class="modal-header">
-                    <span id="closeQRModal" class="close" onclick="closeQR()">&times;</span>
+                    <span id="closeQR" class="close">&times;</span>
                     <span id="qrcodeTitle" class="qr-title"></span>
                 </div>
                 <div id="qrcode-container"></div>
@@ -959,7 +955,7 @@
         </div>
         <div class="header-container">
             <h2><span class="material-symbols-outlined">fingerprint</span> My IP</h2>
-            <button type="button" id="refresh-geo-location" class="refresh-geo-location" onclick="fetchIPInfo()">
+            <button type="button" id="refresh-geo-location" class="refresh-geo-location">
                 <i class="fa fa-refresh fa-2x refresh-my-ip" aria-hidden="true"></i>
             </button>
         </div>
@@ -1002,23 +998,19 @@
                 <a class="link" id="github-link" href="https://github.com/bia-pain-bache/BPB-Worker-Panel"
                     target="_blank">Github</a>
             </div>
-            <button id="openModalBtn" class="button" onclick="openResetPass()">Change Password <span
+            <button id="openResetPass" class="button">Change Password <span
                     class="material-symbols-outlined">key_vertical</span></button>
-            <button type="button" id="logout" class="logout" title="Log out" onclick="logout(event)">
+            <button type="button" id="logout" class="logout" title="Log out">
                 <i class="fa fa-power-off fa-2x" aria-hidden="true"></i>
             </button>
         </div>
     </div>
     </div>
-    <button id="darkModeToggle" class="floating-button" onclick="darkModeToggle()">
+    <button id="darkModeToggle" class="floating-button">
         <i id="modeIcon" class="fa fa-2x fa-adjust dark-mode" aria-hidden="true"></i>
     </button>
 
-    <script>__SCRIPT__</script>
-    <script type="module" defer>
-        import { polyfillCountryFlagEmojis } from "https://cdn.skypack.dev/country-flag-emoji-polyfill";
-        polyfillCountryFlagEmojis();
-    </script>
+    <script type="module">__SCRIPT__</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </body>
 

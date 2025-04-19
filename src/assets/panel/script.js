@@ -1,5 +1,6 @@
-localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
+import { polyfillCountryFlagEmojis } from 'https://cdn.skypack.dev/country-flag-emoji-polyfill';
 
+localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
 const defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
 const defaultHttpPorts = ['80', '8080', '8880', '2052', '2082', '2086', '2095'];
 
@@ -45,7 +46,9 @@ function initiatePanel(proxySettings) {
     renderPortsBlock(ports);
     renderUdpNoiseBlock(xrayUdpNoises);
     initiateForm();
+    bindHandlers();
     fetchIPInfo();
+    polyfillCountryFlagEmojis();
 }
 
 function populatePanel(selectElements, checkboxElements, inputElements, textareaElements, proxySettings) {
@@ -66,8 +69,10 @@ function initiateForm() {
     const configForm = document.getElementById('configForm');
     globalThis.initialFormData = new FormData(configForm);
     enableApplyButton();
+
     configForm.addEventListener('input', enableApplyButton);
     configForm.addEventListener('change', enableApplyButton);
+
     const textareas = document.querySelectorAll("textarea");
     textareas.forEach(textarea => {
         textarea.addEventListener('input', function () {
@@ -77,12 +82,33 @@ function initiateForm() {
     });
 }
 
-window.onclick = (event) => {
-    const qrModal = document.getElementById('qrModal');
-    const qrcodeContainer = document.getElementById('qrcode-container');
-    if (event.target == qrModal) {
-        qrModal.style.display = "none";
-        qrcodeContainer.lastElementChild.remove();
+function bindHandlers() {
+    Object.assign(window, { subURL, openQR, dlURL });
+    document.getElementById('openResetPass').addEventListener('click', openResetPass);
+    document.getElementById('closeResetPass').addEventListener('click', closeResetPass);
+    document.getElementById('closeQR').addEventListener('click', closeQR);
+    document.getElementById('darkModeToggle').addEventListener('click', darkModeToggle);
+    document.getElementById('dlAmneziaConfigsBtn').addEventListener('click', () => downloadWarpConfigs(true));
+    document.getElementById('dlConfigsBtn').addEventListener('click', () => downloadWarpConfigs(false));
+    document.getElementById('endpointScanner').addEventListener('click', () => copyToClipboard('bash <(curl -fsSL https://raw.githubusercontent.com/bia-pain-bache/warp-script/refs/heads/main/endip/install.sh)'));
+    document.getElementById('updateWarpConfigs').addEventListener('click', updateWarpConfigs);
+    document.getElementById('VLConfigs').addEventListener('click', handleProtocolChange);
+    document.getElementById('TRConfigs').addEventListener('click', handleProtocolChange);
+    document.getElementById('resetSettings').addEventListener('click', resetSettings);
+    document.getElementById('configForm').addEventListener('submit', updateSettings);
+    document.getElementById('logout').addEventListener('click', logout);
+    document.getElementById('passwordChangeForm').addEventListener('submit', resetPassword);
+    document.getElementById('addUdpNoise').addEventListener('click', addUdpNoise);
+    document.querySelectorAll('button.delete-noise').forEach(element => element.addEventListener('click', deleteUdpNoise));
+    document.querySelectorAll('.https').forEach(element => element.addEventListener('change', handlePortChange));
+    document.getElementById('refresh-geo-location').addEventListener('click', fetchIPInfo);
+    window.onclick = (event) => {
+        const qrModal = document.getElementById('qrModal');
+        const qrcodeContainer = document.getElementById('qrcode-container');
+        if (event.target == qrModal) {
+            qrModal.style.display = "none";
+            qrcodeContainer.lastElementChild.remove();
+        }
     }
 }
 
@@ -235,7 +261,7 @@ function copyToClipboard(text) {
 async function updateWarpConfigs() {
     const confirmReset = confirm('⚠️ Are you sure?');
     if (!confirmReset) return;
-    const refreshBtn = document.getElementById('refreshBtn');
+    const refreshBtn = document.getElementById('updateWarpConfigs');
     document.body.style.cursor = 'wait';
     const refreshButtonVal = refreshBtn.innerHTML;
     refreshBtn.innerHTML = '⌛ Loading...';
@@ -291,7 +317,7 @@ function handlePortChange(event) {
 function resetSettings() {
     const confirmReset = confirm('⚠️ This will reset all panel settings.\nAre you sure?');
     if (!confirmReset) return;
-    const resetBtn = document.querySelector('#resetBtn i');
+    const resetBtn = document.querySelector('#resetSettings i');
     resetBtn.classList.add('fa-spin');
     const formData = new FormData();
     formData.append('resetSettings', 'true');
@@ -589,10 +615,10 @@ function renderPortsBlock(ports) {
 
     allPorts.forEach(port => {
         const isChecked = ports.includes(port) ? 'checked' : '';
-        const onChangeHandler = defaultHttpsPorts.includes(port) ? 'onchange="handlePortChange(event)"' : '';
+        const clss = defaultHttpsPorts.includes(port) ? 'class="https"' : '';
         const portBlock = `
             <div class="routing">
-                <input type="checkbox" name=${port} ${onChangeHandler} value="true" ${isChecked}>
+                <input type="checkbox" name=${port} ${clss} value="true" ${isChecked}>
                 <label>${port}</label>
             </div>`;
 
@@ -613,11 +639,12 @@ function addUdpNoise() {
     const clone = noiseBlock.cloneNode(true);
     clone.querySelector("h4").textContent = `Noise ${index}`;
     clone.id = `udp-noise-${index}`;
+    clone.querySelector("button").addEventListener('click', deleteUdpNoise);
     container.appendChild(clone);
     document.getElementById("configForm").dispatchEvent(new Event("change"));
 }
 
-function deleteUdpNoise(button) {
+function deleteUdpNoise(event) {
     const container = document.getElementById("noises");
     if (container.children.length === 1) {
         alert('⛔ You cannot delete all noises!');
@@ -626,7 +653,7 @@ function deleteUdpNoise(button) {
 
     const confirmReset = confirm('⚠️ This will delete the noise.\nAre you sure?');
     if (!confirmReset) return;
-    button.closest(".inner-container").remove();
+    event.target.closest(".inner-container").remove();
     document.getElementById("configForm").dispatchEvent(new Event("change"));
 }
 
@@ -637,7 +664,7 @@ function renderUdpNoiseBlock(xrayUdpNoises) {
             <div id="udp-noise-${index + 1}" class="inner-container">
                 <div class="header-container">
                     <h4>Noise ${index + 1}</h4>
-                    <button type="button" class="delete-noise" onclick="deleteUdpNoise(this)">
+                    <button type="button" class="delete-noise">
                         <i class="fa fa-minus-circle fa-2x" aria-hidden="true"></i>
                     </button>      
                 </div>

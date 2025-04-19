@@ -1,5 +1,5 @@
 import { SignJWT, jwtVerify } from 'jose';
-import nacl from 'tweetnacl';
+import { randomBytes } from 'tweetnacl';
 import { respond } from '../helpers/helpers';
 
 export async function generateJWTToken(request, env) {
@@ -26,7 +26,7 @@ export async function generateJWTToken(request, env) {
 }
 
 function generateSecretKey() {
-    const key = nacl.randomBytes(32);
+    const key = randomBytes(32);
     return Array.from(key, byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
