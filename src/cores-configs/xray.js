@@ -260,7 +260,7 @@ function buildXrayRoutingRules(proxySettings, outboundAddrs, isChain, isBalancer
         });
     } else {
         rules.push({
-            network: isWarp ? "tcp,udp" : "tcp",
+            network: isWarp || isWorkerLess ? "tcp,udp" : "tcp",
             outboundTag: finallOutboundTag,
             type: "field"
         });

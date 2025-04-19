@@ -20,6 +20,34 @@ fetch('/panel/settings')
     })
     .catch(error => console.error("Data query error:", error.message || error));
 
+Object.assign(window, { subURL, openQR, dlURL });
+document.getElementById('openResetPass').addEventListener('click', openResetPass);
+document.getElementById('closeResetPass').addEventListener('click', closeResetPass);
+document.getElementById('closeQR').addEventListener('click', closeQR);
+document.getElementById('darkModeToggle').addEventListener('click', darkModeToggle);
+document.getElementById('dlAmneziaConfigsBtn').addEventListener('click', () => downloadWarpConfigs(true));
+document.getElementById('dlConfigsBtn').addEventListener('click', () => downloadWarpConfigs(false));
+document.getElementById('endpointScanner').addEventListener('click', () => copyToClipboard('bash <(curl -fsSL https://raw.githubusercontent.com/bia-pain-bache/warp-script/refs/heads/main/endip/install.sh)'));
+document.getElementById('updateWarpConfigs').addEventListener('click', updateWarpConfigs);
+document.getElementById('VLConfigs').addEventListener('click', handleProtocolChange);
+document.getElementById('TRConfigs').addEventListener('click', handleProtocolChange);
+document.getElementById('resetSettings').addEventListener('click', resetSettings);
+document.getElementById('configForm').addEventListener('submit', updateSettings);
+document.getElementById('logout').addEventListener('click', logout);
+document.getElementById('passwordChangeForm').addEventListener('submit', resetPassword);
+document.getElementById('addUdpNoise').addEventListener('click', addUdpNoise);
+document.querySelectorAll('button.delete-noise').forEach(element => element.addEventListener('click', deleteUdpNoise));
+document.querySelectorAll('.https').forEach(element => element.addEventListener('change', handlePortChange));
+document.getElementById('refresh-geo-location').addEventListener('click', fetchIPInfo);
+window.onclick = (event) => {
+    const qrModal = document.getElementById('qrModal');
+    const qrcodeContainer = document.getElementById('qrcode-container');
+    if (event.target == qrModal) {
+        qrModal.style.display = "none";
+        qrcodeContainer.lastElementChild.remove();
+    }
+}
+
 function initiatePanel(proxySettings) {
     const {
         VLConfigs,
@@ -46,7 +74,6 @@ function initiatePanel(proxySettings) {
     renderPortsBlock(ports);
     renderUdpNoiseBlock(xrayUdpNoises);
     initiateForm();
-    bindHandlers();
     fetchIPInfo();
     polyfillCountryFlagEmojis();
 }
@@ -80,36 +107,6 @@ function initiateForm() {
             this.style.height = `${this.scrollHeight}px`;
         });
     });
-}
-
-function bindHandlers() {
-    Object.assign(window, { subURL, openQR, dlURL });
-    document.getElementById('openResetPass').addEventListener('click', openResetPass);
-    document.getElementById('closeResetPass').addEventListener('click', closeResetPass);
-    document.getElementById('closeQR').addEventListener('click', closeQR);
-    document.getElementById('darkModeToggle').addEventListener('click', darkModeToggle);
-    document.getElementById('dlAmneziaConfigsBtn').addEventListener('click', () => downloadWarpConfigs(true));
-    document.getElementById('dlConfigsBtn').addEventListener('click', () => downloadWarpConfigs(false));
-    document.getElementById('endpointScanner').addEventListener('click', () => copyToClipboard('bash <(curl -fsSL https://raw.githubusercontent.com/bia-pain-bache/warp-script/refs/heads/main/endip/install.sh)'));
-    document.getElementById('updateWarpConfigs').addEventListener('click', updateWarpConfigs);
-    document.getElementById('VLConfigs').addEventListener('click', handleProtocolChange);
-    document.getElementById('TRConfigs').addEventListener('click', handleProtocolChange);
-    document.getElementById('resetSettings').addEventListener('click', resetSettings);
-    document.getElementById('configForm').addEventListener('submit', updateSettings);
-    document.getElementById('logout').addEventListener('click', logout);
-    document.getElementById('passwordChangeForm').addEventListener('submit', resetPassword);
-    document.getElementById('addUdpNoise').addEventListener('click', addUdpNoise);
-    document.querySelectorAll('button.delete-noise').forEach(element => element.addEventListener('click', deleteUdpNoise));
-    document.querySelectorAll('.https').forEach(element => element.addEventListener('change', handlePortChange));
-    document.getElementById('refresh-geo-location').addEventListener('click', fetchIPInfo);
-    window.onclick = (event) => {
-        const qrModal = document.getElementById('qrModal');
-        const qrcodeContainer = document.getElementById('qrcode-container');
-        if (event.target == qrModal) {
-            qrModal.style.display = "none";
-            qrcodeContainer.lastElementChild.remove();
-        }
-    }
 }
 
 function hasFormDataChanged() {
