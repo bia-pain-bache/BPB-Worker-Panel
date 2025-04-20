@@ -1,4 +1,4 @@
-import { getConfigAddresses, generateRemark, randomUpperCase, getRandomPath, extractWireguardParams, base64ToDecimal } from './helpers';
+import { getConfigAddresses, generateRemark, randomUpperCase, getRandomPath } from './helpers';
 import { getDataset } from '../kv/handlers';
 
 export async function getNormalConfigs(request, env) {
@@ -22,17 +22,17 @@ export async function getNormalConfigs(request, env) {
         VLTRenableIPv6
     } = proxySettings;
     
+    const isFragment = globalThis.client === 'hiddify-frag';
     let VLConfs = '', TRConfs = '', chainProxy = '';
     let proxyIndex = 1;
-    const Addresses = await getConfigAddresses(cleanIPs, VLTRenableIPv6);
-    const totalAddresses = [...Addresses, ...customCdnAddrs];
+    const Addresses = await getConfigAddresses(cleanIPs, VLTRenableIPv6, customCdnAddrs, isFragment);
     const TRPass = encodeURIComponent(TRPassword);
     const earlyData = client === 'singbox' 
         ? '&eh=Sec-WebSocket-Protocol&ed=2560' 
         : encodeURIComponent('?ed=2560');
     
     ports.forEach(port => {
-        totalAddresses.forEach((addr, index) => {
+        Addresses.forEach((addr, index) => {
             const isCustomAddr = index > Addresses.length - 1;
             const configType = isCustomAddr ? 'C' : '';
             const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
@@ -72,7 +72,7 @@ export async function getNormalConfigs(request, env) {
         'CDN-Cache-Control': 'no-store'
     };
 
-    client === 'hiddify-frag' && Object.assign(headers, {
+    isFragment && Object.assign(headers, {
         'Profile-Title': 'BPB Fragment',
         'DNS': remoteDNS
     });

@@ -672,9 +672,8 @@ export async function getSingBoxCustomConfig(request, env) {
     } = proxySettings;
 
     if (outProxy) {
-        const proxyParams = outProxyParams;
         try {
-            chainProxy = buildSingBoxChainOutbound(proxyParams, VLTRenableIPv6);
+            chainProxy = buildSingBoxChainOutbound(outProxyParams, VLTRenableIPv6);
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
             chainProxy = undefined;
@@ -686,10 +685,9 @@ export async function getSingBoxCustomConfig(request, env) {
         }
     }
 
-    const Addresses = await getConfigAddresses(cleanIPs, VLTRenableIPv6);
-    const totalAddresses = [...Addresses, ...customCdnAddrs];
+    const Addresses = await getConfigAddresses(cleanIPs, VLTRenableIPv6, customCdnAddrs);
     const config = structuredClone(singboxConfigTemp);
-    const dnsObject = buildSingBoxDNS(proxySettings, totalAddresses, false);
+    const dnsObject = buildSingBoxDNS(proxySettings, Addresses, false);
     const { rules, rule_set } = buildSingBoxRoutingRules(proxySettings, false);
     config.dns.servers = dnsObject.servers;
     config.dns.rules = dnsObject.rules;
@@ -710,7 +708,7 @@ export async function getSingBoxCustomConfig(request, env) {
     protocols.forEach(protocol => {
         let protocolIndex = 1;
         ports.forEach(port => {
-            totalAddresses.forEach(addr => {
+            Addresses.forEach(addr => {
                 let VLOutbound, TROutbound;
                 const isCustomAddr = customCdnAddrs.includes(addr);
                 const configType = isCustomAddr ? 'C' : '';

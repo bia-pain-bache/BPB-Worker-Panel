@@ -56,7 +56,8 @@ async function buildWorker() {
         format: 'esm',
         write: false,
         external: ['cloudflare:sockets'],
-        platform: 'node',
+        platform: 'browser',
+        target: 'es2020',
         define: {
             __PANEL_HTML_CONTENT__: htmls['panel'] ?? '""',
             __LOGIN_HTML_CONTENT__: htmls['login'] ?? '""',
@@ -89,7 +90,7 @@ async function buildWorker() {
         deadCodeInjectionThreshold: 0.2,
         simplify: true,
         compact: true,
-        target: "node"
+        target: "browser"
     });
 
     const worker = obfuscationResult.getObfuscatedCode();

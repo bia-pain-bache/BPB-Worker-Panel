@@ -258,10 +258,12 @@ function buildClashRoutingRules(proxySettings, isWarp) {
     return { rules, ruleProviders };
 }
 
-function buildClashVLOutbound(remark, address, port, host, sni, path, allowInsecure) {
+function buildClashVLOutbound(remark, address, port, host, sni, proxyIPs, allowInsecure) {
     const { userID, defaultHttpsPorts } = globalThis;
     const tls = defaultHttpsPorts.includes(port) ? true : false;
     const addr = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
+    const path = `/${getRandomPath(16)}${proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : ''}`;
+
     const outbound = {
         "name": remark,
         "type": "vless",
@@ -291,8 +293,10 @@ function buildClashVLOutbound(remark, address, port, host, sni, path, allowInsec
     return outbound;
 }
 
-function buildClashTROutbound(remark, address, port, host, sni, path, allowInsecure) {
+function buildClashTROutbound(remark, address, port, host, sni, proxyIPs, allowInsecure) {
     const addr = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
+    const path = `/${getRandomPath(16)}${proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : ''}`;
+
     return {
         "name": remark,
         "type": "trojan",
@@ -491,9 +495,8 @@ export async function getClashNormalConfig(request, env) {
     } = proxySettings;
 
     if (outProxy) {
-        const proxyParams = outProxyParams;
         try {
-            chainProxy = buildClashChainOutbound(proxyParams);
+            chainProxy = buildClashChainOutbound(outProxyParams);
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
             chainProxy = undefined;
@@ -515,9 +518,8 @@ export async function getClashNormalConfig(request, env) {
     selector.proxies = ['💦 Best Ping 💥'];
     urlTest.name = '💦 Best Ping 💥';
     urlTest.interval = +bestVLTRInterval;
-    const Addresses = await getConfigAddresses(cleanIPs, VLTRenableIPv6);
-    const totalAddresses = [...Addresses, ...customCdnAddrs];
-    let proxyIndex = 1, path;
+    const Addresses = await getConfigAddresses(cleanIPs, VLTRenableIPv6, customCdnAddrs);
+    let proxyIndex = 1;
     const protocols = [
         ...(VLConfigs ? ['VLESS'] : []),
         ...(TRConfigs ? ['Trojan'] : [])
@@ -526,7 +528,7 @@ export async function getClashNormalConfig(request, env) {
     protocols.forEach(protocol => {
         let protocolIndex = 1;
         ports.forEach(port => {
-            totalAddresses.forEach(addr => {
+            Addresses.forEach(addr => {
                 let VLOutbound, TROutbound;
                 const isCustomAddr = customCdnAddrs.includes(addr);
                 const configType = isCustomAddr ? 'C' : '';
@@ -535,14 +537,13 @@ export async function getClashNormalConfig(request, env) {
                 const remark = generateRemark(protocolIndex, port, addr, cleanIPs, protocol, configType).replace(' : ', ' - ');
 
                 if (protocol === 'VLESS') {
-                    path = `/${getRandomPath(16)}${proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : ''}`;
                     VLOutbound = buildClashVLOutbound(
                         chainProxy ? `proxy-${proxyIndex}` : remark,
                         addr,
                         port,
                         host,
                         sni,
-                        path,
+                        proxyIPs,
                         isCustomAddr
                     );
                     config.proxies.push(VLOutbound);
@@ -551,14 +552,13 @@ export async function getClashNormalConfig(request, env) {
                 }
 
                 if (protocol === 'Trojan' && defaultHttpsPorts.includes(port)) {
-                    path = `/tr${getRandomPath(16)}${proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : ''}`;
                     TROutbound = buildClashTROutbound(
                         chainProxy ? `proxy-${proxyIndex}` : remark,
                         addr,
                         port,
                         host,
                         sni,
-                        path,
+                        proxyIPs,
                         isCustomAddr
                     );
                     config.proxies.push(TROutbound);
