@@ -88,12 +88,12 @@ async function buildWorker() {
         renameGlobals: true,
         deadCodeInjection: true,
         deadCodeInjectionThreshold: 0.2,
-        simplify: true,
-        compact: true,
         target: "browser"
     });
 
-    const worker = obfuscationResult.getObfuscatedCode();
+    const finalCode = obfuscationResult.getObfuscatedCode();
+    const worker = `// @ts-nocheck\n${finalCode}`;
+    
     console.log('✅ Worker obfuscated successfuly!');
 
     mkdirSync(DIST_PATH, { recursive: true });
