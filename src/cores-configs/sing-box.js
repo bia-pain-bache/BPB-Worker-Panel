@@ -2,7 +2,7 @@ import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpper
 import { getDataset } from '../kv/handlers';
 import { isDomain } from '../helpers/helpers';
 
-function buildSingBoxDNS(proxySettings, outboundAddrs, isWarp) {
+function buildSingBoxDNS(outboundAddrs, isWarp) {
     const {
         remoteDNS,
         localDNS,
@@ -18,7 +18,7 @@ function buildSingBoxDNS(proxySettings, outboundAddrs, isWarp) {
         blockPorn,
         customBypassRules,
         customBlockRules
-    } = proxySettings;
+    } = globalThis.proxySettings;
 
     let fakeip;
     const dohHost = getDomain(remoteDNS);
@@ -177,7 +177,7 @@ function buildSingBoxDNS(proxySettings, outboundAddrs, isWarp) {
     return { servers, rules, fakeip };
 }
 
-function buildSingBoxRoutingRules(proxySettings, isWarp) {
+function buildSingBoxRoutingRules(isWarp) {
     const {
         bypassLAN,
         bypassIran,
@@ -189,7 +189,7 @@ function buildSingBoxRoutingRules(proxySettings, isWarp) {
         blockUDP443,
         customBypassRules,
         customBlockRules
-    } = proxySettings;
+    } = globalThis.proxySettings;
 
     const defaultRules = [
         {
@@ -394,8 +394,8 @@ function buildSingBoxRoutingRules(proxySettings, isWarp) {
     return { rules, rule_set: ruleSets };
 }
 
-function buildSingBoxVLOutbound(proxySettings, remark, address, port, host, sni, allowInsecure) {
-    const { userID, defaultHttpsPorts } = globalThis;
+function buildSingBoxVLOutbound(remark, address, port, host, sni, allowInsecure) {
+    const { userID, defaultHttpsPorts, proxySettings } = globalThis;
     const { VLTRenableIPv6, proxyIPs } = proxySettings;
     const path = `/${getRandomPath(16)}${proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : ''}`;
     const tls = defaultHttpsPorts.includes(port) ? true : false;
@@ -434,8 +434,8 @@ function buildSingBoxVLOutbound(proxySettings, remark, address, port, host, sni,
     return outbound;
 }
 
-function buildSingBoxTROutbound(proxySettings, remark, address, port, host, sni, allowInsecure) {
-    const { TRPassword, defaultHttpsPorts } = globalThis;
+function buildSingBoxTROutbound(remark, address, port, host, sni, allowInsecure) {
+    const { TRPassword, defaultHttpsPorts, proxySettings } = globalThis;
     const { VLTRenableIPv6, proxyIPs } = proxySettings;
     const path = `/tr${getRandomPath(16)}${proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : ''}`;
     const tls = defaultHttpsPorts.includes(port) ? true : false;
@@ -473,14 +473,14 @@ function buildSingBoxTROutbound(proxySettings, remark, address, port, host, sni,
     return outbound;
 }
 
-function buildSingBoxWarpOutbound(proxySettings, warpConfigs, remark, endpoint, chain) {
+function buildSingBoxWarpOutbound(warpConfigs, remark, endpoint, chain) {
     const ipv6Regex = /\[(.*?)\]/;
     const portRegex = /[^:]*$/;
     const endpointServer = endpoint.includes('[') ? endpoint.match(ipv6Regex)[1] : endpoint.split(':')[0];
     const endpointPort = endpoint.includes('[') ? +endpoint.match(portRegex)[0] : +endpoint.split(':')[1];
     const server = chain ? "162.159.192.1" : endpointServer;
     const port = chain ? 2408 : endpointPort;
-    const { warpEnableIPv6 } = proxySettings;
+    const { warpEnableIPv6 } = globalThis.proxySettings;
 
     const {
         warpIPv6,
@@ -610,10 +610,12 @@ function buildSingBoxChainOutbound(chainProxyParams, VLTRenableIPv6) {
 export async function getSingBoxWarpConfig(request, env) {
     const { proxySettings, warpConfigs } = await getDataset(request, env);
     const { warpEndpoints } = proxySettings;
+    globalThis.proxySettings = proxySettings;
+
     const config = structuredClone(singboxConfigTemp);
     config.endpoints = [];
-    const dnsObject = buildSingBoxDNS(proxySettings, undefined, true);
-    const { rules, rule_set } = buildSingBoxRoutingRules(proxySettings, true);
+    const dnsObject = buildSingBoxDNS(undefined, true);
+    const { rules, rule_set } = buildSingBoxRoutingRules(true);
     config.dns.servers = dnsObject.servers;
     config.dns.rules = dnsObject.rules;
     if (dnsObject.fakeip) config.dns.fakeip = dnsObject.fakeip;
@@ -633,8 +635,8 @@ export async function getSingBoxWarpConfig(request, env) {
     warpEndpoints.forEach((endpoint, index) => {
         const warpRemark = `💦 ${index + 1} - Warp 🇮🇷`;
         const WoWRemark = `💦 ${index + 1} - WoW 🌍`;
-        const warpOutbound = buildSingBoxWarpOutbound(proxySettings, warpConfigs, warpRemark, endpoint, '');
-        const WoWOutbound = buildSingBoxWarpOutbound(proxySettings, warpConfigs, WoWRemark, endpoint, warpRemark);
+        const warpOutbound = buildSingBoxWarpOutbound(warpConfigs, warpRemark, endpoint, '');
+        const WoWOutbound = buildSingBoxWarpOutbound(warpConfigs, WoWRemark, endpoint, warpRemark);
         config.endpoints.push(WoWOutbound, warpOutbound);
         warpRemarks.push(warpRemark);
         WoWRemarks.push(WoWRemark);
@@ -656,6 +658,7 @@ export async function getSingBoxWarpConfig(request, env) {
 export async function getSingBoxCustomConfig(request, env) {
     const { hostName } = globalThis;
     const { proxySettings } = await getDataset(request, env);
+    globalThis.proxySettings = proxySettings;
     let chainProxy;
     const {
         cleanIPs,
@@ -687,8 +690,8 @@ export async function getSingBoxCustomConfig(request, env) {
 
     const Addresses = await getConfigAddresses(cleanIPs, VLTRenableIPv6, customCdnAddrs);
     const config = structuredClone(singboxConfigTemp);
-    const dnsObject = buildSingBoxDNS(proxySettings, Addresses, false);
-    const { rules, rule_set } = buildSingBoxRoutingRules(proxySettings, false);
+    const dnsObject = buildSingBoxDNS(Addresses, false);
+    const { rules, rule_set } = buildSingBoxRoutingRules(false);
     config.dns.servers = dnsObject.servers;
     config.dns.rules = dnsObject.rules;
     if (dnsObject.fakeip) config.dns.fakeip = dnsObject.fakeip;
@@ -718,7 +721,6 @@ export async function getSingBoxCustomConfig(request, env) {
 
                 if (protocol === "VLESS") {
                     VLOutbound = buildSingBoxVLOutbound(
-                        proxySettings,
                         chainProxy ? `proxy-${proxyIndex}` : remark,
                         addr,
                         port,
@@ -731,7 +733,6 @@ export async function getSingBoxCustomConfig(request, env) {
 
                 if (protocol === "Trojan") {
                     TROutbound = buildSingBoxTROutbound(
-                        proxySettings,
                         chainProxy ? `proxy-${proxyIndex}` : remark,
                         addr,
                         port,
