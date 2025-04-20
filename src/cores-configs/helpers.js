@@ -1,15 +1,17 @@
 import { resolveDNS, isDomain } from '../helpers/helpers';
 
-export async function getConfigAddresses(cleanIPs, VLTRenableIPv6) {
+export async function getConfigAddresses(cleanIPs, VLTRenableIPv6, customCdnAddrs, isFragment) {
     const resolved = await resolveDNS(globalThis.hostName);
-    const defaultIPv6 = VLTRenableIPv6 ? resolved.ipv6.map((ip) => `[${ip}]`) : []
-    return [
+    const defaultIPv6 = VLTRenableIPv6 ? resolved.ipv6.map((ip) => `[${ip}]`) : [];
+    const addrs = [
         globalThis.hostName,
         'www.speedtest.net',
         ...resolved.ipv4,
         ...defaultIPv6,
         ...cleanIPs
     ];
+    
+    return isFragment ? addrs : [...addrs, ...customCdnAddrs];
 }
 
 export function extractWireguardParams(warpConfigs, isWoW) {
