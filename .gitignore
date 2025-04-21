@@ -4,7 +4,7 @@
 !src/
 !src/**
 !scripts/
-!scripts/**
+!scripts/build.js
 !.github/
 !.github/**
 !README_fa.md

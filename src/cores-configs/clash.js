@@ -447,41 +447,80 @@ function buildClashChainOutbound(chainProxyParams) {
     return chainOutbound;
 }
 
+async function buildClashConfig(selectorTags, urlTestTags, secondUrlTestTags, isChain, isWarp, isPro) {
+
+    const { bestWarpInterval, bestVLTRInterval } = globalThis.proxySettings;
+    const config = structuredClone(clashConfigTemp);
+    config['dns'] = await buildClashDNS(isChain, isWarp);
+
+    const { rules, ruleProviders } = buildClashRoutingRules(isWarp);
+    config['rules'] = rules;
+    config['rule-providers'] = ruleProviders;
+
+    const selector = {
+        "name": "✅ Selector",
+        "type": "select",
+        "proxies": selectorTags
+    };
+
+    const urlTest = {
+        "name": isWarp ? `💦 Warp ${isPro ? 'Pro ' : ''}- Best Ping 🚀` : '💦 Best Ping 💥',
+        "type": "url-test",
+        "url": "https://www.gstatic.com/generate_204",
+        "interval": isWarp ? +bestWarpInterval : +bestVLTRInterval,
+        "tolerance": 50,
+        "proxies": urlTestTags
+    };
+
+    config['proxy-groups'].push(selector, urlTest);
+
+    if (isWarp) {
+        const secondUrlTest = structuredClone(urlTest);
+        secondUrlTest["name"] = `💦 WoW ${isPro ? 'Pro ' : ''}- Best Ping 🚀`;
+        secondUrlTest["proxies"] = secondUrlTestTags;
+        config['proxy-groups'].push(secondUrlTest);
+    }
+
+    return config;
+}
+
 export async function getClashWarpConfig(request, env, isPro) {
+
     const { proxySettings, warpConfigs } = await getDataset(request, env);
     const { warpEndpoints } = proxySettings;
     globalThis.proxySettings = proxySettings;
 
-    const config = structuredClone(clashConfigTemp);
-    config.dns = await buildClashDNS(true, true);
-    const { rules, ruleProviders } = buildClashRoutingRules(true);
-    config.rules = rules;
-    config['rule-providers'] = ruleProviders;
-
-    const selector = config['proxy-groups'][0];
-    const warpUrlTest = config['proxy-groups'][1];
-    selector.proxies = [`💦 Warp ${isPro ? 'Pro ' : ''}- Best Ping 🚀`, `💦 WoW ${isPro ? 'Pro ' : ''}- Best Ping 🚀`];
-    warpUrlTest.name = `💦 Warp ${isPro ? 'Pro ' : ''}- Best Ping 🚀`;
-    warpUrlTest.interval = +proxySettings.bestWarpInterval;
-
-    config['proxy-groups'].push(structuredClone(warpUrlTest));
-    const WoWUrlTest = config['proxy-groups'][2];
-    WoWUrlTest.name = `💦 WoW ${isPro ? 'Pro ' : ''}- Best Ping 🚀`;
-    let warpRemarks = [], WoWRemarks = [];
+    const warpTags = [], wowTags = [];
+    const outbounds = {
+        proxies: [],
+        chains: []
+    }
 
     warpEndpoints.forEach((endpoint, index) => {
-        const warpRemark = `💦 ${index + 1} - Warp ${isPro ? 'Pro ' : ''}🇮🇷`;
-        const WoWRemark = `💦 ${index + 1} - WoW ${isPro ? 'Pro ' : ''}🌍`;
-        const warpOutbound = buildClashWarpOutbound(warpConfigs, warpRemark, endpoint, '', isPro);
-        const WoWOutbound = buildClashWarpOutbound(warpConfigs, WoWRemark, endpoint, warpRemark);
-        config.proxies.push(WoWOutbound, warpOutbound);
-        warpRemarks.push(warpRemark);
-        WoWRemarks.push(WoWRemark);
-        warpUrlTest.proxies.push(warpRemark);
-        WoWUrlTest.proxies.push(WoWRemark);
+        const warpTag = `💦 ${index + 1} - Warp ${isPro ? 'Pro ' : ''}🇮🇷`;
+        warpTags.push(warpTag);
+
+        const wowTag = `💦 ${index + 1} - WoW ${isPro ? 'Pro ' : ''}🌍`;
+        wowTags.push(wowTag);
+
+        const warpOutbound = buildClashWarpOutbound(warpConfigs, warpTag, endpoint, '', isPro);
+        outbounds.proxies.push(warpOutbound);
+
+        const WoWOutbound = buildClashWarpOutbound(warpConfigs, wowTag, endpoint, warpTag);
+        outbounds.chains.push(WoWOutbound);
+
     });
 
-    selector.proxies.push(...warpRemarks, ...WoWRemarks);
+    const selectorTags = [
+        `💦 Warp ${isPro ? 'Pro ' : ''}- Best Ping 🚀`, 
+        `💦 WoW ${isPro ? 'Pro ' : ''}- Best Ping 🚀`, 
+        ...warpTags,
+        ...wowTags
+    ];
+
+    const config = await buildClashConfig(selectorTags, warpTags, wowTags, true, true, isPro);
+    config['proxies'].push(...outbounds.proxies, ...outbounds.chains);
+    
     return new Response(JSON.stringify(config, null, 4), {
         status: 200,
         headers: {
@@ -493,6 +532,7 @@ export async function getClashWarpConfig(request, env, isPro) {
 }
 
 export async function getClashNormalConfig(request, env) {
+
     const { hostName, defaultHttpsPorts } = globalThis;
     const { proxySettings } = await getDataset(request, env);
     globalThis.proxySettings = proxySettings;
@@ -508,7 +548,6 @@ export async function getClashNormalConfig(request, env) {
         customCdnAddrs,
         customCdnHost,
         customCdnSni,
-        bestVLTRInterval,
         VLTRenableIPv6
     } = proxySettings;
 
@@ -526,23 +565,16 @@ export async function getClashNormalConfig(request, env) {
         }
     }
 
-    const config = structuredClone(clashConfigTemp);
-    const { rules, ruleProviders } = buildClashRoutingRules(false);
-    config.dns = await buildClashDNS(chainProxy, false);
-    config.rules = rules;
-    config['rule-providers'] = ruleProviders;
-
-    const selector = config['proxy-groups'][0];
-    const urlTest = config['proxy-groups'][1];
-    selector.proxies = ['💦 Best Ping 💥'];
-    urlTest.name = '💦 Best Ping 💥';
-    urlTest.interval = +bestVLTRInterval;
-
     let proxyIndex = 1;
     const protocols = [];
     VLConfigs && protocols.push('VLESS');
     TRConfigs && protocols.push('Trojan');
     const Addresses = await getConfigAddresses(cleanIPs, VLTRenableIPv6, customCdnAddrs);
+    const tags = [];
+    const outbounds = {
+        proxies: [],
+        chains: []
+    };
 
     protocols.forEach(protocol => {
         let protocolIndex = 1;
@@ -553,11 +585,11 @@ export async function getClashNormalConfig(request, env) {
                 const configType = isCustomAddr ? 'C' : '';
                 const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
                 const host = isCustomAddr ? customCdnHost : hostName;
-                const remark = generateRemark(protocolIndex, port, addr, cleanIPs, protocol, configType).replace(' : ', ' - ');
+                const tag = generateRemark(protocolIndex, port, addr, cleanIPs, protocol, configType).replace(' : ', ' - ');
 
                 if (protocol === 'VLESS') {
                     VLOutbound = buildClashVLOutbound(
-                        chainProxy ? `proxy-${proxyIndex}` : remark,
+                        chainProxy ? `proxy-${proxyIndex}` : tag,
                         addr,
                         port,
                         host,
@@ -565,14 +597,13 @@ export async function getClashNormalConfig(request, env) {
                         proxyIPs,
                         isCustomAddr
                     );
-                    config.proxies.push(VLOutbound);
-                    selector.proxies.push(remark);
-                    urlTest.proxies.push(remark);
+
+                    outbounds.proxies.push(VLOutbound);
                 }
 
                 if (protocol === 'Trojan' && defaultHttpsPorts.includes(port)) {
                     TROutbound = buildClashTROutbound(
-                        chainProxy ? `proxy-${proxyIndex}` : remark,
+                        chainProxy ? `proxy-${proxyIndex}` : tag,
                         addr,
                         port,
                         host,
@@ -580,16 +611,17 @@ export async function getClashNormalConfig(request, env) {
                         proxyIPs,
                         isCustomAddr
                     );
-                    config.proxies.push(TROutbound);
-                    selector.proxies.push(remark);
-                    urlTest.proxies.push(remark);
+
+                    outbounds.proxies.push(TROutbound);
                 }
+
+                tags.push(tag);
 
                 if (chainProxy) {
                     let chain = structuredClone(chainProxy);
-                    chain['name'] = remark;
+                    chain['name'] = tag;
                     chain['dialer-proxy'] = `proxy-${proxyIndex}`;
-                    config.proxies.push(chain);
+                    outbounds.chains.push(chain);
                 }
 
                 proxyIndex++;
@@ -597,6 +629,10 @@ export async function getClashNormalConfig(request, env) {
             });
         });
     });
+
+    const selectorTags = ['💦 Best Ping 💥', ...tags];
+    const config = await buildClashConfig(selectorTags, tags, null, chainProxy, false, false);
+    config['proxies'].push(...outbounds.chains, ...outbounds.proxies);
 
     return new Response(JSON.stringify(config, null, 4), {
         status: 200,
@@ -660,19 +696,19 @@ const clashConfigTemp = {
     },
     "proxies": [],
     "proxy-groups": [
-        {
-            "name": "✅ Selector",
-            "type": "select",
-            "proxies": []
-        },
-        {
-            "name": "",
-            "type": "url-test",
-            "url": "https://www.gstatic.com/generate_204",
-            "interval": 30,
-            "tolerance": 50,
-            "proxies": []
-        }
+        // {
+        //     "name": "✅ Selector",
+        //     "type": "select",
+        //     "proxies": []
+        // },
+        // {
+        //     "name": "",
+        //     "type": "url-test",
+        //     "url": "https://www.gstatic.com/generate_204",
+        //     "interval": 30,
+        //     "tolerance": 50,
+        //     "proxies": []
+        // }
     ],
     "rule-providers": {},
     "rules": [],

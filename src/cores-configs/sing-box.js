@@ -617,49 +617,75 @@ function buildSingBoxChainOutbound(chainProxyParams, VLTRenableIPv6) {
     return chainOutbound;
 }
 
+function buildSingBoxConfig (outboundAddrs, selectorTags, urlTestTags, secondUrlTestTags, isWarp) {
+
+    const { bestWarpInterval, bestVLTRInterval } = globalThis.proxySettings;
+    const config = structuredClone(singboxConfigTemp);
+
+    const { servers, rules, fakeip } = buildSingBoxDNS(outboundAddrs, isWarp);
+    config.dns.servers = servers;
+    config.dns.rules = rules;
+    if (fakeip) config.dns.fakeip = fakeip;
+
+    const { rules: routinRules, rule_set } = buildSingBoxRoutingRules(isWarp);
+    config.route.rules = routinRules;
+    config.route.rule_set = rule_set;
+
+    const selector = {
+        type: "selector",
+        tag: "✅ Selector",
+        outbounds: selectorTags
+    };
+
+    const urlTest = {
+        type: "urltest",
+        tag: isWarp ? `💦 Warp - Best Ping 🚀` : '💦 Best Ping 💥',
+        outbounds: urlTestTags,
+        url: "https://www.gstatic.com/generate_204",
+        interval: isWarp ? `${bestWarpInterval}s` : `${bestVLTRInterval}s`
+    };
+
+    config.outbounds.unshift(selector, urlTest);
+
+    if (isWarp) {
+        const secondUrlTest = structuredClone(urlTest);
+        secondUrlTest.tag = `💦 WoW - Best Ping 🚀`;
+        secondUrlTest.outbounds = secondUrlTestTags;
+        config.outbounds.push(secondUrlTest);
+    }
+
+    return config;
+}
+
 export async function getSingBoxWarpConfig(request, env) {
+
     const { proxySettings, warpConfigs } = await getDataset(request, env);
     const { warpEndpoints } = proxySettings;
     globalThis.proxySettings = proxySettings;
 
-    const config = structuredClone(singboxConfigTemp);
-    config.endpoints = [];
-    const dnsObject = buildSingBoxDNS(undefined, true);
-    const { rules, rule_set } = buildSingBoxRoutingRules(true);
-    config.dns.servers = dnsObject.servers;
-    config.dns.rules = dnsObject.rules;
-    if (dnsObject.fakeip) config.dns.fakeip = dnsObject.fakeip;
-    config.route.rules = rules;
-    config.route.rule_set = rule_set;
-
-    const selector = config.outbounds[0];
-    const warpUrlTest = config.outbounds[1];
-    selector.outbounds = [`💦 Warp - Best Ping 🚀`, `💦 WoW - Best Ping 🚀`];
-    config.outbounds.splice(2, 0, structuredClone(warpUrlTest));
-    const WoWUrlTest = config.outbounds[2];
-    warpUrlTest.tag = `💦 Warp - Best Ping 🚀`;
-    warpUrlTest.interval = `${proxySettings.bestWarpInterval}s`;
-    WoWUrlTest.tag = `💦 WoW - Best Ping 🚀`;
-    WoWUrlTest.interval = `${proxySettings.bestWarpInterval}s`;
-    const warpRemarks = [], WoWRemarks = [];
+    const warpTags = [], wowTags = [];
+    const endpoints = {
+        proxies: [],
+        chains: []
+    }
 
     warpEndpoints.forEach((endpoint, index) => {
-        const warpRemark = `💦 ${index + 1} - Warp 🇮🇷`;
-        const WoWRemark = `💦 ${index + 1} - WoW 🌍`;
+        const warpTag = `💦 ${index + 1} - Warp 🇮🇷`;
+        warpTags.push(warpTag);
 
-        warpRemarks.push(warpRemark);
-        WoWRemarks.push(WoWRemark);
+        const wowTag = `💦 ${index + 1} - WoW 🌍`;
+        wowTags.push(wowTag);
 
-        warpUrlTest.outbounds.push(warpRemark);
-        WoWUrlTest.outbounds.push(WoWRemark);
+        const warpOutbound = buildSingBoxWarpOutbound(warpConfigs, warpTag, endpoint, '');
+        endpoints.proxies.push(warpOutbound);
 
-        const warpOutbound = buildSingBoxWarpOutbound(warpConfigs, warpRemark, endpoint, '');
-        const WoWOutbound = buildSingBoxWarpOutbound(warpConfigs, WoWRemark, endpoint, warpRemark);
-
-        config.endpoints.push(WoWOutbound, warpOutbound);
+        const wowOutbound = buildSingBoxWarpOutbound(warpConfigs, wowTag, endpoint, warpTag);
+        endpoints.chains.push(wowOutbound);
     });
 
-    selector.outbounds.push(...warpRemarks, ...WoWRemarks);
+    const selectorTags = [`💦 Warp - Best Ping 🚀`, `💦 WoW - Best Ping 🚀`, ...warpTags, ...wowTags];
+    const config = buildSingBoxConfig(null, selectorTags, warpTags, wowTags, true);
+    config.endpoints = [...endpoints.chains, ...endpoints.proxies];    
 
     return new Response(JSON.stringify(config, null, 4), {
         status: 200,
@@ -672,6 +698,7 @@ export async function getSingBoxWarpConfig(request, env) {
 }
 
 export async function getSingBoxCustomConfig(request, env) {
+    
     const { hostName } = globalThis;
     const { proxySettings } = await getDataset(request, env);
     globalThis.proxySettings = proxySettings;
@@ -687,7 +714,6 @@ export async function getSingBoxCustomConfig(request, env) {
         customCdnAddrs,
         customCdnHost,
         customCdnSni,
-        bestVLTRInterval,
         VLTRenableIPv6
     } = proxySettings;
 
@@ -704,27 +730,17 @@ export async function getSingBoxCustomConfig(request, env) {
             }));
         }
     }
-
-    const Addresses = await getConfigAddresses(cleanIPs, VLTRenableIPv6, customCdnAddrs);
-    const config = structuredClone(singboxConfigTemp);
-    const dnsObject = buildSingBoxDNS(Addresses, false);
-    const { rules, rule_set } = buildSingBoxRoutingRules(false);
-    config.dns.servers = dnsObject.servers;
-    config.dns.rules = dnsObject.rules;
-    if (dnsObject.fakeip) config.dns.fakeip = dnsObject.fakeip;
-    config.route.rules = rules;
-    config.route.rule_set = rule_set;
-
-    const selector = config.outbounds[0];
-    const urlTest = config.outbounds[1];
-    selector.outbounds = ['💦 Best Ping 💥'];
-    urlTest.interval = `${bestVLTRInterval}s`;
-    urlTest.tag = '💦 Best Ping 💥';
-
+    
     let proxyIndex = 1;
     const protocols = [];
     VLConfigs && protocols.push('VLESS');
     TRConfigs && protocols.push('Trojan');
+    const tags = [];
+    const Addresses = await getConfigAddresses(cleanIPs, VLTRenableIPv6, customCdnAddrs);
+    const outbounds = {
+        proxies: [],
+        chains: []
+    }
 
     protocols.forEach(protocol => {
         let protocolIndex = 1;
@@ -735,47 +751,52 @@ export async function getSingBoxCustomConfig(request, env) {
                 const configType = isCustomAddr ? 'C' : '';
                 const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
                 const host = isCustomAddr ? customCdnHost : hostName;
-                const remark = generateRemark(protocolIndex, port, addr, cleanIPs, protocol, configType);
+                const tag = generateRemark(protocolIndex, port, addr, cleanIPs, protocol, configType);
 
                 if (protocol === "VLESS") {
                     VLOutbound = buildSingBoxVLOutbound(
-                        chainProxy ? `proxy-${proxyIndex}` : remark,
+                        chainProxy ? `proxy-${proxyIndex}` : tag,
                         addr,
                         port,
                         host,
                         sni,
                         isCustomAddr
                     );
-                    config.outbounds.push(VLOutbound);
+
+                    outbounds.proxies.push(VLOutbound);
                 }
 
                 if (protocol === "Trojan") {
                     TROutbound = buildSingBoxTROutbound(
-                        chainProxy ? `proxy-${proxyIndex}` : remark,
+                        chainProxy ? `proxy-${proxyIndex}` : tag,
                         addr,
                         port,
                         host,
                         sni,
                         isCustomAddr
                     );
-                    config.outbounds.push(TROutbound);
+                    
+                    outbounds.proxies.push(TROutbound);
                 }
 
                 if (chainProxy) {
                     const chain = structuredClone(chainProxy);
-                    chain.tag = remark;
+                    chain.tag = tag;
                     chain.detour = `proxy-${proxyIndex}`;
-                    config.outbounds.push(chain);
+                    outbounds.chains.push(chain);
                 }
 
-                selector.outbounds.push(remark);
-                urlTest.outbounds.push(remark);
+                tags.push(tag);
                 
                 proxyIndex++;
                 protocolIndex++;
             });
         });
     });
+
+    const selectorTags = ['💦 Best Ping 💥', ...tags];    
+    const config = buildSingBoxConfig(Addresses, selectorTags, tags, null, false);
+    config.outbounds.push(...outbounds.chains, ...outbounds.proxies);
 
     return new Response(JSON.stringify(config, null, 4), {
         status: 200,
@@ -828,18 +849,6 @@ const singboxConfigTemp = {
         }
     ],
     outbounds: [
-        {
-            type: "selector",
-            tag: "✅ Selector",
-            outbounds: []
-        },
-        {
-            type: "urltest",
-            tag: "",
-            outbounds: [],
-            url: "https://www.gstatic.com/generate_204",
-            interval: ""
-        },
         {
             type: "direct",
             domain_strategy: "ipv4_only",
