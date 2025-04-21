@@ -328,7 +328,8 @@ function buildSingBoxRoutingRules(isWarp) {
     };
 
     const directDomainRule = createRule('rule_set', 'direct');;
-    const directIPRule = createRule('rule_set', 'direct');;
+    const directIPRule = createRule('rule_set', 'direct');
+    ;
     const blockDomainRule = createRule('rule_set', 'reject');
     const blockIPRule = createRule('rule_set', 'reject');
 
@@ -341,6 +342,7 @@ function buildSingBoxRoutingRules(isWarp) {
 
         domainRule.rule_set.push(geosite);
         ruleSets.push({ ...routingRuleSet, tag: geosite, url: geositeURL });
+
         if (geoip) {
             ipRule.rule_set.push(geoip);
             ruleSets.push({ ...routingRuleSet, tag: geoip, url: geoipURL });
@@ -355,12 +357,14 @@ function buildSingBoxRoutingRules(isWarp) {
 
     pushRuleIfNotEmpty(directDomainRule, directDomainRules);
     pushRuleIfNotEmpty(directIPRule, directIPRules);
+
     pushRuleIfNotEmpty(blockDomainRule, blockDomainRules);
     pushRuleIfNotEmpty(blockIPRule, blockIPRules);
 
     const processRules = (addresses, action) => {
         const domainRule = createRule('domain_suffix', action);
         const ipRule = createRule('ip_cidr', action);
+
         addresses.forEach(address => {
             if (isDomain(address)) {
                 domainRule.domain_suffix.push(address);
@@ -399,6 +403,7 @@ function buildSingBoxVLOutbound(remark, address, port, host, sni, allowInsecure)
     const { VLTRenableIPv6, proxyIPs } = proxySettings;
     const path = `/${getRandomPath(16)}${proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : ''}`;
     const tls = defaultHttpsPorts.includes(port) ? true : false;
+
     const outbound = {
         type: "vless",
         server: address,
@@ -431,6 +436,7 @@ function buildSingBoxVLOutbound(remark, address, port, host, sni, allowInsecure)
 
     if (isDomain(address)) outbound.domain_strategy = VLTRenableIPv6 ? "prefer_ipv4" : "ipv4_only";
     if (!tls) delete outbound.tls;
+
     return outbound;
 }
 
@@ -439,6 +445,7 @@ function buildSingBoxTROutbound(remark, address, port, host, sni, allowInsecure)
     const { VLTRenableIPv6, proxyIPs } = proxySettings;
     const path = `/tr${getRandomPath(16)}${proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : ''}`;
     const tls = defaultHttpsPorts.includes(port) ? true : false;
+
     const outbound = {
         type: "trojan",
         password: TRPassword,
@@ -470,6 +477,7 @@ function buildSingBoxTROutbound(remark, address, port, host, sni, allowInsecure)
 
     if (isDomain(address)) outbound.domain_strategy = VLTRenableIPv6 ? "prefer_ipv4" : "ipv4_only";
     if (!tls) delete outbound.tls;
+
     return outbound;
 }
 
@@ -515,6 +523,7 @@ function buildSingBoxWarpOutbound(warpConfigs, remark, endpoint, chain) {
 
     if (isDomain(server)) outbound.domain_strategy = warpEnableIPv6 ? "prefer_ipv4" : "ipv4_only";
     if (chain) outbound.detour = chain;
+
     return outbound;
 }
 
@@ -534,6 +543,7 @@ function buildSingBoxChainOutbound(chainProxyParams, VLTRenableIPv6) {
 
         if (isDomain(server)) chainOutbound.domain_strategy = VLTRenableIPv6 ? "prefer_ipv4" : "ipv4_only";
         if (protocol === 'socks') chainOutbound.version = "5";
+
         return chainOutbound;
     }
 
@@ -621,6 +631,7 @@ export async function getSingBoxWarpConfig(request, env) {
     if (dnsObject.fakeip) config.dns.fakeip = dnsObject.fakeip;
     config.route.rules = rules;
     config.route.rule_set = rule_set;
+
     const selector = config.outbounds[0];
     const warpUrlTest = config.outbounds[1];
     selector.outbounds = [`💦 Warp - Best Ping 🚀`, `💦 WoW - Best Ping 🚀`];
@@ -635,16 +646,21 @@ export async function getSingBoxWarpConfig(request, env) {
     warpEndpoints.forEach((endpoint, index) => {
         const warpRemark = `💦 ${index + 1} - Warp 🇮🇷`;
         const WoWRemark = `💦 ${index + 1} - WoW 🌍`;
-        const warpOutbound = buildSingBoxWarpOutbound(warpConfigs, warpRemark, endpoint, '');
-        const WoWOutbound = buildSingBoxWarpOutbound(warpConfigs, WoWRemark, endpoint, warpRemark);
-        config.endpoints.push(WoWOutbound, warpOutbound);
+
         warpRemarks.push(warpRemark);
         WoWRemarks.push(WoWRemark);
+
         warpUrlTest.outbounds.push(warpRemark);
         WoWUrlTest.outbounds.push(WoWRemark);
+
+        const warpOutbound = buildSingBoxWarpOutbound(warpConfigs, warpRemark, endpoint, '');
+        const WoWOutbound = buildSingBoxWarpOutbound(warpConfigs, WoWRemark, endpoint, warpRemark);
+
+        config.endpoints.push(WoWOutbound, warpOutbound);
     });
 
     selector.outbounds.push(...warpRemarks, ...WoWRemarks);
+
     return new Response(JSON.stringify(config, null, 4), {
         status: 200,
         headers: {
@@ -660,6 +676,7 @@ export async function getSingBoxCustomConfig(request, env) {
     const { proxySettings } = await getDataset(request, env);
     globalThis.proxySettings = proxySettings;
     let chainProxy;
+
     const {
         cleanIPs,
         ports,
@@ -697,16 +714,17 @@ export async function getSingBoxCustomConfig(request, env) {
     if (dnsObject.fakeip) config.dns.fakeip = dnsObject.fakeip;
     config.route.rules = rules;
     config.route.rule_set = rule_set;
+
     const selector = config.outbounds[0];
     const urlTest = config.outbounds[1];
     selector.outbounds = ['💦 Best Ping 💥'];
     urlTest.interval = `${bestVLTRInterval}s`;
     urlTest.tag = '💦 Best Ping 💥';
+
     let proxyIndex = 1;
-    const protocols = [
-        ...(VLConfigs ? ["VLESS"] : []),
-        ...(TRConfigs ? ["Trojan"] : [])
-    ];
+    const protocols = [];
+    VLConfigs && protocols.push('VLESS');
+    TRConfigs && protocols.push('Trojan');
 
     protocols.forEach(protocol => {
         let protocolIndex = 1;
@@ -752,6 +770,7 @@ export async function getSingBoxCustomConfig(request, env) {
 
                 selector.outbounds.push(remark);
                 urlTest.outbounds.push(remark);
+                
                 proxyIndex++;
                 protocolIndex++;
             });
