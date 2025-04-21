@@ -695,21 +695,7 @@ const clashConfigTemp = {
         }
     },
     "proxies": [],
-    "proxy-groups": [
-        // {
-        //     "name": "✅ Selector",
-        //     "type": "select",
-        //     "proxies": []
-        // },
-        // {
-        //     "name": "",
-        //     "type": "url-test",
-        //     "url": "https://www.gstatic.com/generate_204",
-        //     "interval": 30,
-        //     "tolerance": 50,
-        //     "proxies": []
-        // }
-    ],
+    "proxy-groups": [],
     "rule-providers": {},
     "rules": [],
     "ntp": {
