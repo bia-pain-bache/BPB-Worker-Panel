@@ -2,7 +2,6 @@ import { isValidUUID } from "./helpers";
 import pkg from '../../package.json' with { type: 'json' };
 
 export function initializeParams(request, env) {
-    const proxyIPs = env.PROXY_IP?.split(',').map(proxyIP => proxyIP.trim());
     const url = new URL(request.url);
     const searchParams = new URLSearchParams(url.search);
     globalThis.panelVersion = pkg.version;
@@ -10,7 +9,7 @@ export function initializeParams(request, env) {
     globalThis.defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
     globalThis.userID = env.UUID;
     globalThis.TRPassword = env.TR_PASS;
-    globalThis.proxyIP = proxyIPs?.length ? proxyIPs[Math.floor(Math.random() * proxyIPs?.length)] : 'bpb.yousef.isegaro.com';
+    globalThis.proxyIPs = env.PROXY_IP || 'bpb.yousef.isegaro.com';
     globalThis.hostName = request.headers.get('Host');
     globalThis.pathName = url.pathname;
     globalThis.client = searchParams.get('app');
