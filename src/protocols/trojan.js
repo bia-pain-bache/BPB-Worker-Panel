@@ -45,7 +45,7 @@ export async function TROverWSHandler(request) {
 
                     if (hasError) {
                         throw new Error(message);
-                        return;
+                        // return;
                     }
 
                     handleTCPOutBound(remoteSocketWapper, addressRemote, portRemote, rawClientData, webSocket, log);
@@ -197,10 +197,12 @@ async function handleTCPOutBound(
 
     // if the cf connect tcp socket have no incoming data, we retry to redirect ip
     async function retry() {
-        const panelProxyIP = globalThis.pathName.split('/')[2];
-        const panelProxyIPs = panelProxyIP ? atob(panelProxyIP).split(',') : undefined;
-        const finalProxyIP = panelProxyIPs ? panelProxyIPs[Math.floor(Math.random() * panelProxyIPs.length)] : globalThis.proxyIP || addressRemote;
-        const tcpSocket = await connectAndWrite(finalProxyIP, portRemote);
+        const EncodedPanelProxyIPs = globalThis.pathName.split('/')[2] || '';
+        const proxyIPs = atob(EncodedPanelProxyIPs) || globalThis.proxyIPs;
+        const finalProxyIPs = proxyIPs.split(',').map(ip => ip.trim());
+        const proxyIP = finalProxyIPs[Math.floor(Math.random() * finalProxyIPs.length)];
+
+        const tcpSocket = await connectAndWrite(proxyIP || addressRemote, portRemote);
         // no matter retry success or not, close websocket
         tcpSocket.closed
             .catch((error) => {
