@@ -572,7 +572,7 @@ function buildXrayChainOutbound(chainProxyParams, VLTRenableIPv6) {
     };
 
     if (type === 'ws') proxyOutbound.streamSettings.wsSettings = {
-        headers: { Host: host },
+        host: host,
         path: path
     };
 
@@ -803,13 +803,14 @@ export async function getXrayCustomConfigs(request, env, isFragment) {
 
                 customConfig.outbounds.unshift({ ...outbound });
                 outbounds.proxies.push(outbound);
-                configs.push(customConfig);
-
+                
                 if (chainProxy) {
-                    customConfig.outbounds.unshift({ ...chainProxy })
-                    outbounds.chains.push(chainProxy);
+                    customConfig.outbounds.unshift(structuredClone(chainProxy));
+                    outbounds.chains.push(structuredClone(chainProxy));
                 }
 
+                configs.push(customConfig);
+                
                 proxyIndex++;
                 protocolIndex++;
             }
@@ -821,6 +822,7 @@ export async function getXrayCustomConfigs(request, env, isFragment) {
         outbound.tag = `chain-${index + 1}`;
         outbound.streamSettings.sockopt.dialerProxy = `prox-${index + 1}`;
     });
+
     const totalOutbounds = [...outbounds.chains, ...outbounds.proxies];
 
     const bestPing = await buildXrayBestPingConfig(Addresses, chainProxy, totalOutbounds, isFragment);
