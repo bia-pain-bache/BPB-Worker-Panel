@@ -273,7 +273,7 @@ async function updateWarpConfigs() {
             throw new Error(`Updating Warp configs failed with status ${status}: ${message}`);
         }
 
-        alert('✅ Warp configs updated successfully! 😎');
+        alert('✅ Warp configs updated successfully!');
     } catch (error) {
         console.error("Updating Warp configs error:", error.message || error)
     }
@@ -289,7 +289,7 @@ function handleProtocolChange(event) {
     if (globalThis.activeProtocols === 0) {
         event.preventDefault();
         event.target.checked = !event.target.checked;
-        alert("⛔ At least one Protocol should be selected! 🫤");
+        alert("⛔ At least one Protocol should be selected!");
         globalThis.activeProtocols++;
         return false;
     }
@@ -305,7 +305,7 @@ function handlePortChange(event) {
     if (globalThis.activeTlsPorts.length === 0) {
         event.preventDefault();
         event.target.checked = !event.target.checked;
-        alert("⛔ At least one TLS port should be selected! 🫤");
+        alert("⛔ At least one TLS port should be selected!");
         globalThis.activeTlsPorts.push(event.target.name);
         return false;
     }
@@ -328,7 +328,7 @@ function resetSettings() {
             resetBtn.classList.remove('fa-spin');
             if (!success) throw new Error(`Reset settings failed with status ${status}: ${message}`);
             initiatePanel(body);
-            alert('✅ Panel settings reset to default successfully! 😎');
+            alert('✅ Panel settings reset to default successfully!');
         })
         .catch(error => console.error("Reseting settings error:", error.message || error));
 }
@@ -370,7 +370,7 @@ function updateSettings(event) {
 
             if (!success) throw new Error(`Update settings failed with status ${status}: ${message}`);
             initiateForm();
-            alert('✅ Settings applied successfully 😎');
+            alert('✅ Settings applied successfully!');
         })
         .catch(error => console.error("Update settings error:", error.message || error));
 }
@@ -391,7 +391,7 @@ function validateMultipleIpDomains(elements) {
     const invalidIPs = ips?.filter(value => value && !isValidIpDomain(value.trim()));
 
     if (invalidIPs.length) {
-        alert('⛔ Invalid IPs or Domains 🫤\n👉 Please enter each IP/domain in a new line.\n\n' + invalidIPs.map(ip => '⚠️ ' + ip).join('\n'));
+        alert('⛔ Invalid IPs or Domains.\n👉 Please enter each IP/domain in a new line.\n\n' + invalidIPs.map(ip => '⚠️ ' + ip).join('\n'));
         return false;
     }
 
@@ -411,7 +411,7 @@ function validateWarpEndpoints() {
     const invalidEndpoints = warpEndpoints?.filter(value => value && !isValidEndpoint(value.trim()));
 
     if (invalidEndpoints.length) {
-        alert('⛔ Invalid endpoint 🫤\n\n' + invalidEndpoints.map(endpoint => '⚠️ ' + endpoint).join('\n'));
+        alert('⛔ Invalid endpoint.\n\n' + invalidEndpoints.map(endpoint => '⚠️ ' + endpoint).join('\n'));
         return false;
     }
 
@@ -434,7 +434,7 @@ function validateMinMax() {
     const noiseDelayMax = getValue('noiseDelayMax');
 
     if (fragmentLengthMin >= fragmentLengthMax || fragmentIntervalMin > fragmentIntervalMax || noiseCountMin > noiseCountMax || noiseSizeMin > noiseSizeMax || noiseDelayMin > noiseDelayMax) {
-        alert('⛔ Minimum should be smaller or equal to Maximum! 🫤');
+        alert('⛔ Minimum should be smaller or equal to Maximum!');
         return false;
     }
 
@@ -451,7 +451,7 @@ function validateChainProxy() {
     const validSecurityType = securityRegex.test(chainProxy);
     const validTransmission = /type=(tcp|grpc|ws)/.test(chainProxy);
     if (!(isVless && (hasSecurity && validSecurityType || !hasSecurity) && validTransmission) && !isSocksHttp && chainProxy) {
-        alert('⛔ Invalid Config! 🫤 \n - The chain proxy should be VLESS, Socks or Http!\n - VLESS transmission should be GRPC,WS or TCP\n - VLESS security should be TLS,Reality or None\n - socks or http should be like:\n + (socks or http)://user:pass@host:port\n + (socks or http)://host:port');
+        alert('⛔ Invalid Config!\n - The chain proxy should be VLESS, Socks or Http!\n - VLESS transmission should be GRPC,WS or TCP\n - VLESS security should be TLS,Reality or None\n - socks or http should be like:\n + (socks or http)://user:pass@host:port\n + (socks or http)://host:port');
         return false;
     }
 
@@ -460,7 +460,7 @@ function validateChainProxy() {
     match = chainProxy.match(/:(\d+)\?/);
     const vlessPort = match?.[1] || null;
     if (isVless && securityType === 'tls' && vlessPort !== '443') {
-        alert('⛔ VLESS TLS port can be only 443 to be used as a proxy chain! 🫤');
+        alert('⛔ VLESS TLS port can be only 443 to be used as a proxy chain!');
         return false;
     }
 
@@ -475,7 +475,7 @@ function validateCustomCdn() {
 
     const isCustomCdn = customCdnAddrs.length || customCdnHost !== '' || customCdnSni !== '';
     if (isCustomCdn && !(customCdnAddrs.length && customCdnHost && customCdnSni)) {
-        alert('⛔ All "Custom" fields should be filled or deleted together! 🫤');
+        alert('⛔ All "Custom" fields should be filled or deleted together!');
         return false;
     }
 
@@ -491,7 +491,7 @@ function validateXrayNoises(formData) {
     let submisionError = false;
     for (const [index, mode] of udpNoiseModes.entries()) {
         if (udpNoiseDelaysMin[index] > udpNoiseDelaysMax[index]) {
-            alert('⛔ The minimum noise delay should be smaller or equal to maximum! 🫤');
+            alert('⛔ The minimum noise delay should be smaller or equal to maximum!');
             submisionError = true;
             break;
         }
@@ -501,7 +501,7 @@ function validateXrayNoises(formData) {
             case 'base64':
 
                 if (!base64Regex.test(udpNoisePackets[index])) {
-                    alert('⛔ The Base64 noise packet is not a valid base64 value! 🫤');
+                    alert('⛔ The Base64 noise packet is not a valid base64 value!');
                     submisionError = true;
                 }
 
@@ -510,13 +510,13 @@ function validateXrayNoises(formData) {
             case 'rand':
 
                 if (!(/^\d+-\d+$/.test(udpNoisePackets[index]))) {
-                    alert('⛔ The Random noise packet should be a range like 0-10 or 10-30! 🫤');
+                    alert('⛔ The Random noise packet should be a range like 0-10 or 10-30!');
                     submisionError = true;
                 }
 
                 const [min, max] = udpNoisePackets[index].split("-").map(Number);
                 if (min > max) {
-                    alert('⛔ The minimum Random noise packet should be smaller or equal to maximum! 🫤');
+                    alert('⛔ The minimum Random noise packet should be smaller or equal to maximum!');
                     submisionError = true;
                 }
 
@@ -525,7 +525,7 @@ function validateXrayNoises(formData) {
             case 'hex':
 
                 if (!(/^(?=(?:[0-9A-Fa-f]{2})*$)[0-9A-Fa-f]+$/.test(udpNoisePackets[index]))) {
-                    alert('⛔ The Hex noise packet is not a valid hex value! It should have even length and consisted of 0-9, a-f and A-F. 🫤');
+                    alert('⛔ The Hex noise packet is not a valid hex value! It should have even length and consisted of 0-9, a-f and A-F.');
                     submisionError = true;
                 }
 

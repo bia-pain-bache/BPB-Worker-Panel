@@ -25,7 +25,9 @@ export default {
 					: await VLOverWSHandler(request);
 			}
 		} catch (error) {
-			return Response.redirect(`${globalThis.urlOrigin}/error?error=${error.toString()}`, 302);
+			const message = encodeURIComponent(error.message);
+			const stack = encodeURIComponent(error.stack || '');
+			return Response.redirect(`${globalThis.urlOrigin}/error?message=${message}&stack=${stack}`, 302);
 		}
 	}
 };
