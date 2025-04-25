@@ -50,7 +50,7 @@ export async function getNormalConfigs(isFragment) {
 
         if (client === 'singbox') {
             config.searchParams.append('eh', 'Sec-WebSocket-Protocol');
-            config.searchParams.append('ws', '2560');
+            config.searchParams.append('ed', '2560');
             config.searchParams.append('path', `/${pathPrefix}${path}`);
         } else {
             config.searchParams.append('path', `/${pathPrefix}${path}?ed=2560`);
