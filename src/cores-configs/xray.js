@@ -702,6 +702,8 @@ async function buildXrayBestPingConfig(totalAddresses, chainProxy, outbounds, is
 }
 
 async function buildXrayBestFragmentConfig(hostName, chainProxy, outbound) {
+    
+    const { fragmentIntervalMin, fragmentIntervalMax } = globalThis.proxySettings;
     const bestFragValues = ['10-20', '20-30', '30-40', '40-50', '50-60', '60-70',
         '70-80', '80-90', '90-100', '10-30', '20-40', '30-50',
         '40-60', '50-70', '60-80', '70-90', '80-100', '100-200'];
@@ -720,7 +722,7 @@ async function buildXrayBestFragmentConfig(hostName, chainProxy, outbound) {
         const proxy = structuredClone(outbound);
         proxy.tag = `prox-${index + 1}`;
         proxy.streamSettings.sockopt.dialerProxy = `frag-${index + 1}`;
-        const fragmentOutbound = buildFreedomOutbound(true, false, `frag-${index + 1}`, fragLength, '1-1');
+        const fragmentOutbound = buildFreedomOutbound(true, false, `frag-${index + 1}`, fragLength, `${fragmentIntervalMin}-${fragmentIntervalMax}`);
 
         bestFragOutbounds.push(proxy, fragmentOutbound);
     });
@@ -801,14 +803,14 @@ export async function getXrayCustomConfigs(env, isFragment) {
 
                 customConfig.outbounds.unshift({ ...outbound });
                 outbounds.proxies.push(outbound);
-                
+
                 if (chainProxy) {
                     customConfig.outbounds.unshift(structuredClone(chainProxy));
                     outbounds.chains.push(structuredClone(chainProxy));
                 }
 
                 configs.push(customConfig);
-                
+
                 proxyIndex++;
                 protocolIndex++;
             }
@@ -842,7 +844,7 @@ export async function getXrayCustomConfigs(env, isFragment) {
 }
 
 export async function getXrayWarpConfigs(request, env) {
-    
+
     const { warpConfigs } = await getDataset(request, env);
     const { warpEndpoints } = globalThis.proxySettings;
     const { client } = globalThis;
