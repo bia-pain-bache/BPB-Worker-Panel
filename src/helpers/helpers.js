@@ -85,23 +85,33 @@ export async function handleLogin(request, env) {
 }
 
 export async function handleSubscriptions(request, env) {
-    const { subPath, pathName } = globalThis;
+    const { subPath, pathName, client } = globalThis;
+    const { proxySettings } = await getDataset(request, env);
+    globalThis.proxySettings = proxySettings;
 
     switch (decodeURIComponent(pathName)) {
         case `/sub/normal/${subPath}`:
-            return await getNormalSub(request, env);
+            return await getNormalConfigs(false);
 
         case `/sub/full-normal/${subPath}`:
-            return await getFullNormalSub(request, env);
+            if (client === 'sfa') return await getSingBoxCustomConfig(env);
+            if (client === 'clash') return await getClashNormalConfig(env);
+            if (client === 'xray') return await getXrayCustomConfigs(env, false);
 
         case `/sub/fragment/${subPath}`:
-            return await getFragmentSub(request, env);
+            if (client === 'hiddify-frag') return await getNormalConfigs(true);
+            return await getXrayCustomConfigs(env, true);
 
         case `/sub/warp/${subPath}`:
-            return await getWarpSub(request, env);
+            if (client === 'clash') return await getClashWarpConfig(request, env, false);
+            if (client === 'singbox') return await getSingBoxWarpConfig(request, env);
+            if (client === 'hiddify') return await getHiddifyWarpConfigs(false);
+            return await getXrayWarpConfigs(request, env);
 
         case `/sub/warp-pro/${subPath}`:
-            return await getWarpProSub(request, env);
+            if (client === 'clash-pro') return await getClashWarpConfig(request, env, true);
+            if (client === 'hiddify-pro') return await getHiddifyWarpConfigs(true);
+            return await getXrayWarpConfigs(request, env);
 
         default:
             return await fallback(request);
@@ -273,34 +283,6 @@ export async function renderError() {
         status: 200,
         headers: { 'Content-Type': 'text/html' }
     });
-}
-
-async function getWarpSub(request, env) {
-    if (client === 'clash') return await getClashWarpConfig(request, env);
-    if (client === 'singbox') return await getSingBoxWarpConfig(request, env, client);
-    if (client === 'hiddify') return await getHiddifyWarpConfigs(request, env, false);
-    return await getXrayWarpConfigs(request, env, client);
-}
-
-async function getWarpProSub(request, env) {
-    if (client === 'clash-pro') return await getClashWarpConfig(request, env, true);
-    if (client === 'hiddify-pro') return await getHiddifyWarpConfigs(request, env, true);
-    return await getXrayWarpConfigs(request, env);
-}
-
-async function getNormalSub(request, env) {
-    return await getNormalConfigs(request, env);
-}
-
-async function getFullNormalSub(request, env) {
-    if (client === 'sfa') return await getSingBoxCustomConfig(request, env);
-    if (client === 'clash') return await getClashNormalConfig(request, env);
-    if (client === 'xray') return await getXrayCustomConfigs(request, env, false);
-}
-
-async function getFragmentSub(request, env) {
-    if (client === 'hiddify-frag') return await getNormalConfigs(request, env);
-    return await getXrayCustomConfigs(request, env, true);
 }
 
 async function updateWarpConfigs(request, env) {

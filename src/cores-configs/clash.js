@@ -486,9 +486,8 @@ async function buildClashConfig(selectorTags, urlTestTags, secondUrlTestTags, is
 
 export async function getClashWarpConfig(request, env, isPro) {
 
-    const { proxySettings, warpConfigs } = await getDataset(request, env);
-    const { warpEndpoints } = proxySettings;
-    globalThis.proxySettings = proxySettings;
+    const { warpConfigs } = await getDataset(request, env);
+    const { warpEndpoints } = globalThis.proxySettings;
 
     const warpTags = [], wowTags = [];
     const outbounds = {
@@ -531,12 +530,11 @@ export async function getClashWarpConfig(request, env, isPro) {
     });
 }
 
-export async function getClashNormalConfig(request, env) {
+export async function getClashNormalConfig(env) {
 
     const { hostName, defaultHttpsPorts } = globalThis;
-    const { proxySettings } = await getDataset(request, env);
-    globalThis.proxySettings = proxySettings;
     let chainProxy;
+
     const {
         cleanIPs,
         proxyIPs,
@@ -549,7 +547,7 @@ export async function getClashNormalConfig(request, env) {
         customCdnHost,
         customCdnSni,
         VLTRenableIPv6
-    } = proxySettings;
+    } = globalThis.proxySettings;
 
     if (outProxy) {
         try {
