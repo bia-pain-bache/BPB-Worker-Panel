@@ -205,14 +205,29 @@ function downloadWarpConfigs(isAmnezia) {
     window.location.href = "/panel/get-warp-configs" + client;
 }
 
-function subURL(path, app, tag, hiddifyType) {
-    const url = `${hiddifyType ? 'hiddify://import/' : ''}${window.origin}/sub/${path}/${globalThis.subPath}${app ? `?app=${app}` : ''}#BPB-${tag}`;
+function generateSubUrl(path, app, tag, hiddifyType, singboxType) {
+    const url = new URL(window.location.href);
+    url.pathname = `/sub/${path}/${globalThis.subPath}`;
+    app && url.searchParams.append('app', app);
+    if (tag) url.hash = `💦 BPB ${tag}`;
+    
+    let finalUrl = url.href;
+    if (singboxType) finalUrl = `sing-box://import-remote-profile?url=${finalUrl}`;
+    if (hiddifyType) finalUrl = `hiddify://import/${finalUrl}`;
+
+    return finalUrl;
+}
+
+function subURL(path, app, tag, hiddifyType, singboxType) {
+    const url = generateSubUrl(path, app, tag, hiddifyType, singboxType);
     copyToClipboard(url);
 }
 
 async function dlURL(path, app) {
+    const url = generateSubUrl(path, app);
+
     try {
-        const response = await fetch(`${window.origin}/sub/${path}/${subPath}${app ? `?app=${app}` : ''}`);
+        const response = await fetch(url);
         const data = await response.text();
         if (!response.ok) throw new Error(`Download failed with status ${response.status} at ${response.url}: ${data}`);
         const blob = new Blob([data], { type: 'application/json' });
@@ -227,10 +242,10 @@ async function dlURL(path, app) {
     }
 }
 
-function openQR(path, app, tag, title, sbType, hiddifyType) {
+function openQR(path, app, tag, title, singboxType, hiddifyType) {
     const qrModal = document.getElementById('qrModal');
     const qrcodeContainer = document.getElementById('qrcode-container');
-    const url = `${sbType ? 'sing-box://import-remote-profile?url=' : ''}${hiddifyType ? 'hiddify://import/' : ''}${window.origin}/sub/${path}/${globalThis.subPath}${app ? `?app=${app}` : ''}#BPB-${tag}`;
+    const url = generateSubUrl(path, app, tag, hiddifyType, singboxType);
     let qrcodeTitle = document.getElementById("qrcodeTitle");
     qrcodeTitle.textContent = title;
     qrModal.style.display = "block";

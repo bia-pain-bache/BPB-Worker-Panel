@@ -659,9 +659,8 @@ function buildSingBoxConfig (outboundAddrs, selectorTags, urlTestTags, secondUrl
 
 export async function getSingBoxWarpConfig(request, env) {
 
-    const { proxySettings, warpConfigs } = await getDataset(request, env);
-    const { warpEndpoints } = proxySettings;
-    globalThis.proxySettings = proxySettings;
+    const { warpConfigs } = await getDataset(request, env);
+    const { warpEndpoints } = globalThis.proxySettings;
 
     const warpTags = [], wowTags = [];
     const endpoints = {
@@ -697,11 +696,9 @@ export async function getSingBoxWarpConfig(request, env) {
     });
 }
 
-export async function getSingBoxCustomConfig(request, env) {
+export async function getSingBoxCustomConfig(env) {
     
     const { hostName } = globalThis;
-    const { proxySettings } = await getDataset(request, env);
-    globalThis.proxySettings = proxySettings;
     let chainProxy;
 
     const {
@@ -715,7 +712,7 @@ export async function getSingBoxCustomConfig(request, env) {
         customCdnHost,
         customCdnSni,
         VLTRenableIPv6
-    } = proxySettings;
+    } = globalThis.proxySettings;
 
     if (outProxy) {
         try {

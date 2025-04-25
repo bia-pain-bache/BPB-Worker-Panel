@@ -738,10 +738,8 @@ async function buildXrayWorkerLessConfig() {
     return config;
 }
 
-export async function getXrayCustomConfigs(request, env, isFragment) {
+export async function getXrayCustomConfigs(env, isFragment) {
     const { hostName, defaultHttpsPorts } = globalThis;
-    const { proxySettings } = await getDataset(request, env);
-    globalThis.proxySettings = proxySettings;
 
     const {
         proxyIPs,
@@ -755,7 +753,7 @@ export async function getXrayCustomConfigs(request, env, isFragment) {
         VLConfigs,
         TRConfigs,
         ports
-    } = proxySettings;
+    } = globalThis.proxySettings;
 
     let chainProxy;
     if (outProxy) {
@@ -844,9 +842,9 @@ export async function getXrayCustomConfigs(request, env, isFragment) {
 }
 
 export async function getXrayWarpConfigs(request, env) {
-    const { proxySettings, warpConfigs } = await getDataset(request, env);
-    globalThis.proxySettings = proxySettings;
-    const { warpEndpoints } = proxySettings;
+    
+    const { warpConfigs } = await getDataset(request, env);
+    const { warpEndpoints } = globalThis.proxySettings;
     const { client } = globalThis;
 
     const proIndicator = client !== 'xray' ? ' Pro ' : ' ';
