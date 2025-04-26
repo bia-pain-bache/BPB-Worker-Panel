@@ -1,5 +1,4 @@
-import { resolveDNS, isDomain } from '../helpers/helpers';
-import { getConfigAddresses, extractWireguardParams, base64ToDecimal, generateRemark, randomUpperCase, getRandomPath, getDomain } from './helpers';
+import { getConfigAddresses, extractWireguardParams, base64ToDecimal, generateRemark, randomUpperCase, getRandomPath, getDomain, resolveDNS, isDomain } from './helpers';
 import { getDataset } from '../kv/handlers';
 
 async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWarp) {
@@ -372,7 +371,7 @@ function buildXrayTROutbound(tag, address, port, host, sni, proxyIPs, isFragment
     return outbound;
 }
 
-function buildXrayWarpOutbound(warpConfigs, endpoint, chain, client) {
+function buildXrayWarpOutbound(warpConfigs, endpoint, isWoW) {
     const {
         knockerNoiseMode,
         noiseCountMin,
@@ -383,7 +382,6 @@ function buildXrayWarpOutbound(warpConfigs, endpoint, chain, client) {
         noiseDelayMax
     } = globalThis.proxySettings;
 
-    const isWoW = chain === 'proxy';
     const {
         warpIPv6,
         reserved,
@@ -409,21 +407,28 @@ function buildXrayWarpOutbound(warpConfigs, endpoint, chain, client) {
             reserved: base64ToDecimal(reserved),
             secretKey: privateKey
         },
-        streamSettings: {
-            sockopt: {
-                dialerProxy: chain
-            }
-        },
         tag: isWoW ? "chain" : "proxy"
     };
 
-    !chain && delete outbound.streamSettings;
-    client === 'xray-knocker' && !isWoW && delete outbound.streamSettings && Object.assign(outbound.settings, {
-        wnoise: knockerNoiseMode,
-        wnoisecount: noiseCountMin === noiseCountMax ? noiseCountMin : `${noiseCountMin}-${noiseCountMax}`,
-        wpayloadsize: noiseSizeMin === noiseSizeMax ? noiseSizeMin : `${noiseSizeMin}-${noiseSizeMax}`,
-        wnoisedelay: noiseDelayMin === noiseDelayMax ? noiseDelayMin : `${noiseDelayMin}-${noiseDelayMax}`
-    });
+    let chain = '';
+    if (isWoW) chain = "proxy";
+    if (!isWoW && globalThis.client === 'xray-pro') chain = "udp-noise";
+
+    if (chain) outbound.streamSettings = {
+        sockopt: {
+            dialerProxy: chain
+        }
+    };
+
+    if (globalThis.client === 'xray-knocker' && !isWoW) {
+        delete outbound.streamSettings;
+        Object.assign(outbound.settings, {
+            wnoise: knockerNoiseMode,
+            wnoisecount: noiseCountMin === noiseCountMax ? noiseCountMin : `${noiseCountMin}-${noiseCountMax}`,
+            wpayloadsize: noiseSizeMin === noiseSizeMax ? noiseSizeMin : `${noiseSizeMin}-${noiseSizeMax}`,
+            wnoisedelay: noiseDelayMin === noiseDelayMax ? noiseDelayMin : `${noiseDelayMin}-${noiseDelayMax}`
+        });
+    }
 
     return outbound;
 }
@@ -843,15 +848,12 @@ export async function getXrayCustomConfigs(env, isFragment) {
     });
 }
 
-export async function getXrayWarpConfigs(request, env) {
+export async function getXrayWarpConfigs(request, env, isPro) {
 
     const { warpConfigs } = await getDataset(request, env);
     const { warpEndpoints } = globalThis.proxySettings;
-    const { client } = globalThis;
 
-    const proIndicator = client !== 'xray' ? ' Pro ' : ' ';
-    const xrayWarpChain = client === 'xray-pro' ? 'udp-noise' : undefined;
-
+    const proIndicator = isPro ? ' Pro ' : ' ';
     const xrayWarpConfigs = [];
     const xrayWoWConfigs = [];
     const outbounds = {
@@ -865,11 +867,11 @@ export async function getXrayWarpConfigs(request, env) {
         const warpConfig = await buildXrayConfig(`💦 ${index + 1} - Warp${proIndicator}🇮🇷`, false, false, false, true, false, false, [endpointHost], null);
         const WoWConfig = await buildXrayConfig(`💦 ${index + 1} - WoW${proIndicator}🌍`, false, true, false, true, false, false, [endpointHost], null);
 
-        const warpOutbound = buildXrayWarpOutbound(warpConfigs, endpoint, xrayWarpChain, client);
-        const WoWOutbound = buildXrayWarpOutbound(warpConfigs, endpoint, 'proxy', client);
+        const warpOutbound = buildXrayWarpOutbound(warpConfigs, endpoint, false);
+        const WoWOutbound = buildXrayWarpOutbound(warpConfigs, endpoint, true);
 
-        warpConfig.outbounds.unshift({ ...warpOutbound });
-        WoWConfig.outbounds.unshift({ ...WoWOutbound }, { ...warpOutbound });
+        warpConfig.outbounds.unshift(structuredClone(warpOutbound));
+        WoWConfig.outbounds.unshift(structuredClone(WoWOutbound), structuredClone(warpOutbound));
 
         xrayWarpConfigs.push(warpConfig);
         xrayWoWConfigs.push(WoWConfig);

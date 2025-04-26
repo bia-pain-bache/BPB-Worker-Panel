@@ -1,6 +1,5 @@
-import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6, isIPv4, getDomain } from './helpers';
+import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6, isIPv4, isDomain, getDomain } from './helpers';
 import { getDataset } from '../kv/handlers';
-import { isDomain } from '../helpers/helpers';
 
 async function buildClashDNS(isChain, isWarp) {
     const {

@@ -1,6 +1,5 @@
-import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6, getDomain, base64ToDecimal } from './helpers';
+import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6, isDomain, getDomain, base64ToDecimal } from './helpers';
 import { getDataset } from '../kv/handlers';
-import { isDomain } from '../helpers/helpers';
 
 function buildSingBoxDNS(outboundAddrs, isWarp) {
     const {
