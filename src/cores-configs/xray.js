@@ -58,16 +58,8 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
 
     const staticIPs = domainToStaticIPs ? await resolveDNS(domainToStaticIPs) : undefined;
     if (staticIPs) dnsHost[domainToStaticIPs] = VLTRenableIPv6 ? [...staticIPs.ipv4, ...staticIPs.ipv6] : staticIPs.ipv4;
-    if (isWorkerLess) {
-        const domains = ["cloudflare-dns.com", "cloudflare.com", "dash.cloudflare.com"];
-        const resolved = await Promise.all(domains.map(resolveDNS));
-        const hostIPv4 = resolved.flatMap(r => r.ipv4);
-        const hostIPv6 = VLTRenableIPv6 ? resolved.flatMap(r => r.ipv6) : [];
-        dnsHost["cloudflare-dns.com"] = [
-            ...hostIPv4,
-            ...hostIPv6
-        ];
-    }
+
+    if (isWorkerLess) dnsHost["cloudflare-dns.com"] = ["cloudflare.com"];
 
     const hosts = Object.keys(dnsHost).length ? { hosts: dnsHost } : {};
     const dnsObject = {
@@ -100,6 +92,12 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
         });
     }
 
+    isWorkerLess && dnsObject.servers.push({
+        address: "localhost",
+        domains: ["full:cloudflare.com"],
+        skipFallback: true
+    });
+
     const localDNSServer = {
         address: localDNS,
         domains: [],
@@ -107,7 +105,7 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
         skipFallback: true
     };
 
-    if (!isWorkerLess && isBypass) {
+    if (isBypass && !isWorkerLess) {
         bypassRules.forEach(({ rule, domain, ip }) => {
             if (rule) {
                 localDNSServer.domains.push(domain);
@@ -119,8 +117,9 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
     }
 
     if (isFakeDNS) {
-        const fakeDNSServer = isBypass && !isWorkerLess
-            ? { address: "fakedns", domains: localDNSServer.domains }
+        const workerLessDomain = isWorkerLess ? ["full:cloudflare.com"] : [];
+        const fakeDNSServer = isBypass || isWorkerLess
+            ? { address: "fakedns", domains: [...localDNSServer.domains, ...workerLessDomain] }
             : "fakedns";
         dnsObject.servers.unshift(fakeDNSServer);
     }
@@ -153,12 +152,14 @@ function buildXrayRoutingRules(outboundAddrs, isChain, isBalancer, isWorkerLess,
         { rule: blockAds, type: 'block', domain: "geosite:category-ads-ir" },
         { rule: blockPorn, type: 'block', domain: "geosite:category-porn" }
     ];
+
     const outboundDomains = outboundAddrs.filter(address => isDomain(address));
     const customBypassRulesDomains = customBypassRules.filter(address => isDomain(address));
     const isDomainRule = [...outboundDomains, ...customBypassRulesDomains].length > 0;
+
     const isBlock = blockAds || blockPorn || customBlockRules.length > 0;
     const isBypass = bypassIran || bypassChina || bypassRussia || bypassOpenAi || customBypassRules.length > 0;
-    const finallOutboundTag = isChain ? "chain" : isWorkerLess ? "fragment" : "proxy";
+
     const rules = [
         {
             inboundTag: [
@@ -177,7 +178,7 @@ function buildXrayRoutingRules(outboundAddrs, isChain, isBalancer, isWorkerLess,
         }
     ];
 
-    if (!isWorkerLess && (isDomainRule || isBypass) && localDNS !== 'localhost') rules.push({
+    if (!isWorkerLess && (isDomainRule || isBypass || isWorkerLess) && localDNS !== 'localhost') rules.push({
         inboundTag: ["dns"],
         ip: [localDNS],
         port: "53",
@@ -191,9 +192,13 @@ function buildXrayRoutingRules(outboundAddrs, isChain, isBalancer, isWorkerLess,
         type: "field"
     });
 
-    if (!isWorkerLess) rules.push({
+    const finallOutboundTag = isChain ? "chain" : isWorkerLess ? "fragment" : "proxy";
+    const outType = isBalancer ? "balancerTag" : "outboundTag";
+    const outTag = isBalancer ? "all" : finallOutboundTag;
+    
+    rules.push({
         inboundTag: ["dns"],
-        [isBalancer ? "balancerTag" : "outboundTag"]: isBalancer ? "all" : finallOutboundTag,
+        [outType]: outTag,
         type: "field"
     });
 
@@ -247,8 +252,8 @@ function buildXrayRoutingRules(outboundAddrs, isChain, isBalancer, isWorkerLess,
         domainBlockRule.domain.length && rules.push(domainBlockRule);
         ipBlockRule.ip.length && rules.push(ipBlockRule);
 
-        domainDirectRule.domain.length && rules.push(domainDirectRule);
-        ipDirectRule.ip.length && rules.push(ipDirectRule);
+        domainDirectRule.domain.length && !isWorkerLess && rules.push(domainDirectRule);
+        ipDirectRule.ip.length && !isWorkerLess && rules.push(ipDirectRule);
     }
 
     if (isBalancer) {
@@ -707,7 +712,7 @@ async function buildXrayBestPingConfig(totalAddresses, chainProxy, outbounds, is
 }
 
 async function buildXrayBestFragmentConfig(hostName, chainProxy, outbound) {
-    
+
     const { fragmentIntervalMin, fragmentIntervalMax } = globalThis.proxySettings;
     const bestFragValues = ['10-20', '20-30', '30-40', '40-50', '50-60', '60-70',
         '70-80', '80-90', '90-100', '10-30', '20-40', '30-50',
