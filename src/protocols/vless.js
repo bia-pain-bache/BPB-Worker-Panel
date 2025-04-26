@@ -156,7 +156,7 @@ async function handleTCPOutBound(
         const finalProxyIPs = proxyIPs.split(',').map(ip => ip.trim());
         const proxyIP = finalProxyIPs[Math.floor(Math.random() * finalProxyIPs.length)];
 
-        const tcpSocket = await connectAndWrite(proxyIP || addressRemote, portRemote);
+        const tcpSocket = await connectAndWrite(proxyIP || addressRemote, 443);
         // no matter retry success or not, close websocket
         tcpSocket.closed
             .catch((error) => {

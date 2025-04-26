@@ -256,6 +256,12 @@ function buildXrayRoutingRules(outboundAddrs, isChain, isBalancer, isWorkerLess,
         ipDirectRule.ip.length && !isWorkerLess && rules.push(ipDirectRule);
     }
 
+    if (!isWarp && !isWorkerLess) rules.push({
+        network: "udp",
+        outboundTag: "block",
+        type: "field"
+    });
+
     if (isBalancer) {
         rules.push({
             network: isWarp ? "tcp,udp" : "tcp",
