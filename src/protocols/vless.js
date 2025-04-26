@@ -219,10 +219,10 @@ function makeReadableWebSocketStream(webSocketServer, earlyDataHeader, log) {
                 controller.enqueue(earlyData);
             }
         },
-        // pull(controller) {
+        pull(controller) {
             // if ws can stop read if stream is full, we can implement backpressure
             // https://streams.spec.whatwg.org/#example-rs-push-backpressure
-        // },
+        },
         cancel(reason) {
             // 1. pipe WritableStream has error, this cancel will called, so ws handle server close into here
             // 2. if readableStream is cancel, all controller.close/enqueue need skip,

@@ -13,38 +13,6 @@ export function isValidUUID(uuid) {
     return uuidRegex.test(uuid);
 }
 
-export function isDomain(address) {
-    const domainPattern = /^(?!\-)(?:[A-Za-z0-9\-]{1,63}\.)+[A-Za-z]{2,}$/;
-    return domainPattern.test(address);
-}
-
-export async function resolveDNS(domain) {
-    const dohURL = 'https://cloudflare-dns.com/dns-query';
-    const dohURLv4 = `${dohURL}?name=${encodeURIComponent(domain)}&type=A`;
-    const dohURLv6 = `${dohURL}?name=${encodeURIComponent(domain)}&type=AAAA`;
-
-    try {
-        const [ipv4Response, ipv6Response] = await Promise.all([
-            fetch(dohURLv4, { headers: { accept: 'application/dns-json' } }),
-            fetch(dohURLv6, { headers: { accept: 'application/dns-json' } })
-        ]);
-
-        const ipv4Addresses = await ipv4Response.json();
-        const ipv6Addresses = await ipv6Response.json();
-
-        const ipv4 = ipv4Addresses.Answer
-            ? ipv4Addresses.Answer.map((record) => record.data)
-            : [];
-        const ipv6 = ipv6Addresses.Answer
-            ? ipv6Addresses.Answer.map((record) => record.data)
-            : [];
-
-        return { ipv4, ipv6 };
-    } catch (error) {
-        throw new Error(`Error resolving DNS: ${error}`);
-    }
-}
-
 export async function handlePanel(request, env) {
 
     switch (globalThis.pathName) {
@@ -106,12 +74,12 @@ export async function handleSubscriptions(request, env) {
             if (client === 'clash') return await getClashWarpConfig(request, env, false);
             if (client === 'singbox') return await getSingBoxWarpConfig(request, env);
             if (client === 'hiddify') return await getHiddifyWarpConfigs(false);
-            return await getXrayWarpConfigs(request, env);
+            return await getXrayWarpConfigs(request, env, false);
 
         case `/sub/warp-pro/${subPath}`:
             if (client === 'clash-pro') return await getClashWarpConfig(request, env, true);
             if (client === 'hiddify-pro') return await getHiddifyWarpConfigs(true);
-            return await getXrayWarpConfigs(request, env);
+            return await getXrayWarpConfigs(request, env, true);
 
         default:
             return await fallback(request);

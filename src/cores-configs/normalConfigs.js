@@ -1,5 +1,4 @@
-import { getConfigAddresses, generateRemark, randomUpperCase, getRandomPath } from './helpers';
-import { getDataset } from '../kv/handlers';
+import { getConfigAddresses, generateRemark, randomUpperCase, getRandomPath, base64EncodeUnicode } from './helpers';
 
 export async function getNormalConfigs(isFragment) {
     const { hostName, defaultHttpsPorts, client, userID, TRPassword } = globalThis;
@@ -110,20 +109,17 @@ export async function getNormalConfigs(isFragment) {
     }
 
     const configs = btoa(VLConfs + TRConfs + chainProxy);
-    const headers = {
-        'Content-Type': 'text/plain;charset=utf-8',
-        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-        'CDN-Cache-Control': 'no-store'
-    };
-
-    isFragment && Object.assign(headers, {
-        'Profile-Title': 'BPB Fragment',
-        'DNS': remoteDNS
-    });
-
+    const hiddifyHash = base64EncodeUnicode('💦 BPB Normal');
+    
     return new Response(configs, {
         status: 200,
-        headers
+        headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'CDN-Cache-Control': 'no-store',
+            'Profile-Title': `base64:${hiddifyHash}`,
+            'DNS': remoteDNS
+        }
     });
 }
 
@@ -142,17 +138,33 @@ export async function getHiddifyWarpConfigs(isPro) {
 
     let configs = '';
     warpEndpoints.forEach((endpoint, index) => {
-        configs += `warp://${endpoint}${isPro ? `?ifp=${noiseCountMin}-${noiseCountMax}&ifps=${noiseSizeMin}-${noiseSizeMax}&ifpd=${noiseDelayMin}-${noiseDelayMax}&ifpm=${hiddifyNoiseMode}` : ''}#${encodeURIComponent(`💦 ${index + 1} - Warp 🇮🇷`)}&&detour=warp://162.159.192.1:2408#${encodeURIComponent(`💦 ${index + 1} - WoW 🌍`)}\n`;
+        const config = new URL('warp://config');
+        config.host = endpoint;
+        config.hash = `💦 ${index + 1} - Warp 🇮🇷`;
+
+        if (isPro) {
+            config.searchParams.append('ifpm', hiddifyNoiseMode);
+            config.searchParams.append('ifp', `${noiseCountMin}-${noiseCountMax}`);
+            config.searchParams.append('ifps', `${noiseSizeMin}-${noiseSizeMax}`);
+            config.searchParams.append('ifpd', `${noiseDelayMin}-${noiseDelayMax}`);
+        }
+
+        const detour = new URL('warp://config');
+        detour.host = '162.159.192.1:2408';
+        detour.hash = `💦 ${index + 1} - WoW 🌍`;
+
+        configs += `${config.href}&&detour=${detour.href}\n`;
     });
 
+    const hiddifyHash = base64EncodeUnicode(`💦 BPB Warp${isPro ? ' Pro' : ''}`);
     return new Response(btoa(configs), {
         status: 200,
         headers: {
-            'Profile-Title': `BPB Warp${isPro ? ' Pro' : ''}`,
-            'DNS': '1.1.1.1',
             'Content-Type': 'text/plain;charset=utf-8',
             'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-            'CDN-Cache-Control': 'no-store'
+            'CDN-Cache-Control': 'no-store',
+            'Profile-Title': `base64:${hiddifyHash}`,
+            'DNS': '1.1.1.1'
         }
     });
 }
