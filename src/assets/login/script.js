@@ -19,7 +19,6 @@ document.getElementById('loginForm').addEventListener('submit', async (event) =>
         }
 
         window.location.href = '/panel';
-        console.log('true')
     } catch (error) {
         console.error('Login error:', error.message || error);
     }
