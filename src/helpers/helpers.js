@@ -110,13 +110,13 @@ async function resetSettings(request, env) {
 
 async function getSettings(request, env) {
     try {
-        const pwd = await env.kv.get('pwd');
+        const isPassSet = await env.kv.get('pwd') ? true : false;
         const auth = await Authenticate(request, env);
-        if (!auth) return await respond(false, 401, 'Unauthorized or expired session.', { isPassSet: pwd });
+        if (!auth) return await respond(false, 401, 'Unauthorized or expired session.', { isPassSet });
         const { proxySettings } = await getDataset(request, env);
         const settings = {
             proxySettings,
-            isPassSet: pwd ? true : false,
+            isPassSet,
             subPath: globalThis.subPath
         };
 
