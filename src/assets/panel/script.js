@@ -80,6 +80,7 @@ function initiatePanel(proxySettings) {
 
     globalThis.activeProtocols = VLConfigs + TRConfigs;
     globalThis.activeTlsPorts = ports.filter(port => defaultHttpsPorts.includes(port));
+    globalThis.xrayNoiseCount = xrayUdpNoises.length;
 
     const selectElements = ["VLTRFakeDNS", "VLTRenableIPv6", "warpFakeDNS", "warpEnableIPv6"];
     const checkboxElements = ["VLConfigs", "TRConfigs", "bypassLAN", "blockAds", "bypassIran", "blockPorn", "bypassChina", "blockUDP443", "bypassRussia", "bypassOpenAi"];
@@ -137,8 +138,6 @@ function hasFormDataChanged() {
     const currentFormData = new FormData(configForm);
     const initialFormDataObj = formDataToObject(globalThis.initialFormData);
     const currentFormDataObj = formDataToObject(currentFormData);
-    console.log(initialFormDataObj)
-    console.log(currentFormDataObj)
     return JSON.stringify(initialFormDataObj) !== JSON.stringify(currentFormDataObj);
 }
 
@@ -798,6 +797,4 @@ function renderUdpNoiseBlock(xrayUdpNoises) {
     xrayUdpNoises.forEach((noise, index) => {
         addUdpNoise(false, index, noise);
     });
-
-    globalThis.xrayNoiseCount = xrayUdpNoises.length;
 }
