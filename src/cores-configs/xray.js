@@ -105,7 +105,7 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
         skipFallback: true
     };
 
-    if (isBypass && !isWorkerLess) {
+    if (isBypass) {
         bypassRules.forEach(({ rule, domain, ip }) => {
             if (rule) {
                 localDNSServer.domains.push(domain);
@@ -178,7 +178,7 @@ function buildXrayRoutingRules(outboundAddrs, isChain, isBalancer, isWorkerLess,
         }
     ];
 
-    if (!isWorkerLess && (isDomainRule || isBypass || isWorkerLess) && localDNS !== 'localhost') rules.push({
+    if ((isDomainRule || isBypass) && localDNS !== 'localhost') rules.push({
         inboundTag: ["dns"],
         ip: [localDNS],
         port: "53",
@@ -252,8 +252,8 @@ function buildXrayRoutingRules(outboundAddrs, isChain, isBalancer, isWorkerLess,
         domainBlockRule.domain.length && rules.push(domainBlockRule);
         ipBlockRule.ip.length && rules.push(ipBlockRule);
 
-        domainDirectRule.domain.length && !isWorkerLess && rules.push(domainDirectRule);
-        ipDirectRule.ip.length && !isWorkerLess && rules.push(ipDirectRule);
+        domainDirectRule.domain.length && rules.push(domainDirectRule);
+        ipDirectRule.ip.length && rules.push(ipDirectRule);
     }
 
     if (!isWarp && !isWorkerLess) rules.push({
