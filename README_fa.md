@@ -46,8 +46,9 @@
 <br>
 
 ## نحوه‌ی راه‌اندازی، تنظیمات و استفاده
-- [روش جدید پیشنهادی نصب به صورت Pages](docs/pages_upload_installation_fa.md)
-- [نصب به صورت Workers](docs/worker_installation_fa.md)
+- [راه‌اندازی Workers و Pages با Wizard](docs/wizard_installation_fa.md)
+- [راه‌اندازی Pages به روش دستی](docs/pages_upload_installation_fa.md)
+- [راه‌اندازی Workers به روش دستی](docs/worker_installation_fa.md)
 - [نحوه استفاده از پنل](docs/configuration_fa.md)
 - [پرسش‌های متداول (FAQ)](docs/faq.md)
 <br>

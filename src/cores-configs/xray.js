@@ -748,11 +748,7 @@ async function buildXrayBestFragmentConfig(hostName, chainProxy, outbound) {
 }
 
 async function buildXrayWorkerLessConfig() {
-
     const config = await buildXrayConfig(`💦 BPB F - WorkerLess ⭐`, false, false, false, false, true, true, [], null);
-    const fakeOutbound = buildXrayVLOutbound('fake-outbound', 'google.com', '443', 'google.com', 'google.com', [], true, false);
-    fakeOutbound.streamSettings.wsSettings.path = '/';
-    config.outbounds.push(fakeOutbound);
     return config;
 }
 
