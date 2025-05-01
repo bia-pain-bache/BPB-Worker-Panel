@@ -36,9 +36,11 @@ This project is aimed to provide a user panel to access FREE and SECURE `VLESS`,
 2. **Request limit**: each worker supports 100K requests per day for VLESS and Trojan, so it's sufficient for only 2-3 users. You can use custom personal domains for bypassing limitation on VLESS/Trojan or Warp configs which are limitless.
 
 ## How to use:
-- [Installation (Pages - New recommended method)](docs/pages_upload_installation_fa.md)
+- [Wizard installation - Workers and Pages](docs/wizard_installation_fa.md)
 
-- [Installation (Worker)](docs/worker_installation_fa.md)
+- [Manual installation - Pages](docs/pages_upload_installation_fa.md)
+
+- [Manual installation - Workers](docs/worker_installation_fa.md)
 
 - [How to use](docs/configuration_fa.md)
 
