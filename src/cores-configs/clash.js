@@ -596,6 +596,7 @@ export async function getClashNormalConfig(env) {
                     );
 
                     outbounds.proxies.push(VLOutbound);
+                    tags.push(tag);
                 }
 
                 if (protocol === 'Trojan' && defaultHttpsPorts.includes(port)) {
@@ -610,9 +611,9 @@ export async function getClashNormalConfig(env) {
                     );
 
                     outbounds.proxies.push(TROutbound);
+                    tags.push(tag);
                 }
 
-                tags.push(tag);
 
                 if (chainProxy) {
                     let chain = structuredClone(chainProxy);
