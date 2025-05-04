@@ -53,7 +53,7 @@ export async function VLOverWSHandler(request) {
                         rawDataIndex,
                         VLVersion = new Uint8Array([0, 0]),
                         isUDP,
-                    } = processVLHeader(chunk, userID);
+                    } = processVLHeader(chunk, globalThis.userID);
                     address = addressRemote;
                     portWithRandomLog = `${portRemote}--${Math.random()} ${isUDP ? "udp " : "tcp "} `;
                     if (hasError) {

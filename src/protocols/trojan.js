@@ -86,7 +86,7 @@ async function parseTRHeader(buffer) {
     }
 
     const password = new TextDecoder().decode(buffer.slice(0, crLfIndex));
-    if (password !== sha224(TRPassword)) {
+    if (password !== sha224(globalThis.TRPassword)) {
         return {
             hasError: true,
             message: "invalid password",
@@ -199,7 +199,7 @@ async function handleTCPOutBound(
     async function retry() {
         let proxyIP, proxyIpPort;
         const EncodedPanelProxyIPs = pathName.split('/')[2] || '';
-        const proxyIPs = atob(EncodedPanelProxyIPs) || proxyIPs;
+        const proxyIPs = atob(EncodedPanelProxyIPs) || globalThis.proxyIPs;
         const finalProxyIPs = proxyIPs.split(',').map(ip => ip.trim());
         proxyIP = finalProxyIPs[Math.floor(Math.random() * finalProxyIPs.length)];
         if (proxyIP.includes(']:')) {
