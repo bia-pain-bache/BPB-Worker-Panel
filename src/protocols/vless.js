@@ -153,7 +153,7 @@ async function handleTCPOutBound(
     async function retry() {
         let proxyIP, proxyIpPort;
         const EncodedPanelProxyIPs = pathName.split('/')[2] || '';
-        const proxyIPs = atob(EncodedPanelProxyIPs) || proxyIPs;
+        const proxyIPs = atob(EncodedPanelProxyIPs) || globalThis.proxyIPs;
         const finalProxyIPs = proxyIPs.split(',').map(ip => ip.trim());
         proxyIP = finalProxyIPs[Math.floor(Math.random() * finalProxyIPs.length)];
         if (proxyIP.includes(']:')) {
