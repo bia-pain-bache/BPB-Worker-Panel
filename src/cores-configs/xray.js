@@ -2,23 +2,6 @@ import { getConfigAddresses, extractWireguardParams, base64ToDecimal, generateRe
 import { getDataset } from '../kv/handlers';
 
 async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWarp) {
-    const {
-        remoteDNS,
-        localDNS,
-        VLTRFakeDNS,
-        VLTRenableIPv6,
-        warpFakeDNS,
-        warpEnableIPv6,
-        blockAds,
-        bypassIran,
-        bypassChina,
-        blockPorn,
-        bypassRussia,
-        bypassOpenAi,
-        customBypassRules,
-        customBlockRules
-    } = globalThis.proxySettings;
-
     const bypassRules = [
         { rule: bypassIran, domain: "geosite:category-ir", ip: "geoip:ir" },
         { rule: bypassChina, domain: "geosite:cn", ip: "geoip:cn" },
@@ -33,13 +16,16 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
 
     const isFakeDNS = (VLTRFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
     const isIPv6 = (VLTRenableIPv6 && !isWarp) || (warpEnableIPv6 && isWarp);
+
     const outboundDomains = outboundAddrs.filter(address => isDomain(address));
     const customBypassRulesDomains = customBypassRules.filter(address => isDomain(address));
     const customBlockRulesDomains = customBlockRules.filter(address => isDomain(address));
     const uniqueOutboundDomains = [...new Set(outboundDomains)];
+
     const isDomainRule = [...uniqueOutboundDomains, ...customBypassRulesDomains].length > 0;
     const isBypass = bypassIran || bypassChina || bypassRussia;
     const isBlock = blockAds || blockPorn || customBlockRulesDomains.length > 0;
+
     const finalRemoteDNS = isWorkerLess
         ? ["https://cloudflare-dns.com/dns-query"]
         : isWarp
@@ -128,20 +114,6 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
 }
 
 function buildXrayRoutingRules(outboundAddrs, isChain, isBalancer, isWorkerLess, isWarp) {
-    const {
-        localDNS,
-        bypassLAN,
-        bypassIran,
-        bypassChina,
-        bypassRussia,
-        bypassOpenAi,
-        blockAds,
-        blockPorn,
-        blockUDP443,
-        customBypassRules,
-        customBlockRules
-    } = globalThis.proxySettings;
-
     const geoRules = [
         { rule: bypassLAN, type: 'direct', domain: "geosite:private", ip: "geoip:private" },
         { rule: bypassIran, type: 'direct', domain: "geosite:category-ir", ip: "geoip:ir" },
@@ -280,8 +252,6 @@ function buildXrayRoutingRules(outboundAddrs, isChain, isBalancer, isWorkerLess,
 }
 
 function buildXrayVLOutbound(tag, address, port, host, sni, proxyIPs, isFragment, allowInsecure) {
-    const { userID, defaultHttpsPorts } = globalThis;
-    const { VLTRenableIPv6 } = globalThis.proxySettings;
     const proxyIpPath = proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : '';
     const path = `/${getRandomPath(16)}${proxyIpPath}?ed=2560`;
     const outbound = {
@@ -334,8 +304,6 @@ function buildXrayVLOutbound(tag, address, port, host, sni, proxyIPs, isFragment
 }
 
 function buildXrayTROutbound(tag, address, port, host, sni, proxyIPs, isFragment, allowInsecure) {
-    const { TRPassword, defaultHttpsPorts } = globalThis;
-    const { VLTRenableIPv6 } = globalThis.proxySettings;
     const proxyIpPath = proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : '';
     const path = `/tr${getRandomPath(16)}${proxyIpPath}?ed=2560`;
     const outbound = {
@@ -384,16 +352,6 @@ function buildXrayTROutbound(tag, address, port, host, sni, proxyIPs, isFragment
 
 function buildXrayWarpOutbound(warpConfigs, endpoint, isWoW) {
     const {
-        knockerNoiseMode,
-        noiseCountMin,
-        noiseCountMax,
-        noiseSizeMin,
-        noiseSizeMax,
-        noiseDelayMin,
-        noiseDelayMax
-    } = globalThis.proxySettings;
-
-    const {
         warpIPv6,
         reserved,
         publicKey,
@@ -423,7 +381,7 @@ function buildXrayWarpOutbound(warpConfigs, endpoint, isWoW) {
 
     let chain = '';
     if (isWoW) chain = "proxy";
-    if (!isWoW && globalThis.client === 'xray-pro') chain = "udp-noise";
+    if (!isWoW && client === 'xray-pro') chain = "udp-noise";
 
     if (chain) outbound.streamSettings = {
         sockopt: {
@@ -431,7 +389,7 @@ function buildXrayWarpOutbound(warpConfigs, endpoint, isWoW) {
         }
     };
 
-    if (globalThis.client === 'xray-knocker' && !isWoW) {
+    if (client === 'xray-knocker' && !isWoW) {
         delete outbound.streamSettings;
         Object.assign(outbound.settings, {
             wnoise: knockerNoiseMode,
@@ -605,17 +563,6 @@ function buildXrayChainOutbound(chainProxyParams, VLTRenableIPv6) {
 }
 
 function buildFreedomOutbound(isFragment, isUdpNoises, tag, length, interval) {
-    const {
-        xrayUdpNoises,
-        fragmentPackets,
-        fragmentLengthMin,
-        fragmentLengthMax,
-        fragmentIntervalMin,
-        fragmentIntervalMax,
-        VLTRenableIPv6,
-        warpEnableIPv6
-    } = globalThis.proxySettings;
-
     const outbound = {
         tag: tag,
         protocol: "freedom",
@@ -657,14 +604,6 @@ async function buildXrayConfig(
     outboundAddrs,
     domainToStaticIPs
 ) {
-    const { proxySettings, client } = globalThis;
-    const {
-        VLTRFakeDNS,
-        warpFakeDNS,
-        bestVLTRInterval,
-        bestWarpInterval,
-    } = proxySettings;
-
     const config = structuredClone(xrayConfigTemp);
     config.remarks = remark;
 
@@ -718,8 +657,6 @@ async function buildXrayBestPingConfig(totalAddresses, chainProxy, outbounds, is
 }
 
 async function buildXrayBestFragmentConfig(hostName, chainProxy, outbound) {
-
-    const { fragmentIntervalMin, fragmentIntervalMax } = globalThis.proxySettings;
     const bestFragValues = ['10-20', '20-30', '30-40', '40-50', '50-60', '60-70',
         '70-80', '80-90', '90-100', '10-30', '20-40', '30-50',
         '40-60', '50-70', '60-80', '70-90', '80-100', '100-200'];
@@ -753,22 +690,6 @@ async function buildXrayWorkerLessConfig() {
 }
 
 export async function getXrayCustomConfigs(env, isFragment) {
-    const { hostName, defaultHttpsPorts } = globalThis;
-
-    const {
-        proxyIPs,
-        outProxy,
-        outProxyParams,
-        cleanIPs,
-        VLTRenableIPv6,
-        customCdnAddrs,
-        customCdnHost,
-        customCdnSni,
-        VLConfigs,
-        TRConfigs,
-        ports
-    } = globalThis.proxySettings;
-
     let chainProxy;
     if (outProxy) {
         try {
@@ -776,6 +697,7 @@ export async function getXrayCustomConfigs(env, isFragment) {
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
             chainProxy = undefined;
+            const proxySettings = await env.kv.get("proxySettings", { type: 'json' });
             await env.kv.put("proxySettings", JSON.stringify({
                 ...proxySettings,
                 outProxy: '',
@@ -856,10 +778,7 @@ export async function getXrayCustomConfigs(env, isFragment) {
 }
 
 export async function getXrayWarpConfigs(request, env, isPro) {
-
     const { warpConfigs } = await getDataset(request, env);
-    const { warpEndpoints } = globalThis.proxySettings;
-
     const proIndicator = isPro ? ' Pro ' : ' ';
     const xrayWarpConfigs = [];
     const xrayWoWConfigs = [];

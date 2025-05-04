@@ -4,7 +4,6 @@ export function isDomain(address) {
 }
 
 export async function resolveDNS(domain) {
-    
     const dohURL = 'https://cloudflare-dns.com/dns-query';
     const dohURLv4 = `${dohURL}?name=${encodeURIComponent(domain)}&type=A`;
     const dohURLv6 = `${dohURL}?name=${encodeURIComponent(domain)}&type=AAAA`;
@@ -32,10 +31,10 @@ export async function resolveDNS(domain) {
 }
 
 export async function getConfigAddresses(cleanIPs, VLTRenableIPv6, customCdnAddrs, isFragment) {
-    const resolved = await resolveDNS(globalThis.hostName);
+    const resolved = await resolveDNS(hostName);
     const defaultIPv6 = VLTRenableIPv6 ? resolved.ipv6.map((ip) => `[${ip}]`) : [];
     const addrs = [
-        globalThis.hostName,
+        hostName,
         'www.speedtest.net',
         ...resolved.ipv4,
         ...defaultIPv6,

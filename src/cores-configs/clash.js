@@ -2,21 +2,6 @@ import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpper
 import { getDataset } from '../kv/handlers';
 
 async function buildClashDNS(isChain, isWarp) {
-    const {
-        remoteDNS,
-        localDNS,
-        VLTRFakeDNS,
-        outProxyParams,
-        VLTRenableIPv6,
-        warpFakeDNS,
-        warpEnableIPv6,
-        bypassIran,
-        bypassChina,
-        bypassRussia,
-        bypassOpenAi,
-        customBypassRules
-    } = globalThis.proxySettings;
-
     const finalLocalDNS = localDNS === 'localhost' ? 'system' : `${localDNS}#DIRECT`;
     const isFakeDNS = (VLTRFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
     const isIPv6 = (VLTRenableIPv6 && !isWarp) || (warpEnableIPv6 && isWarp);
@@ -79,19 +64,6 @@ async function buildClashDNS(isChain, isWarp) {
 }
 
 function buildClashRoutingRules(isWarp) {
-    const {
-        bypassLAN,
-        bypassIran,
-        bypassChina,
-        bypassRussia,
-        bypassOpenAi,
-        blockAds,
-        blockPorn,
-        blockUDP443,
-        customBypassRules,
-        customBlockRules
-    } = globalThis.proxySettings;
-
     const geoRules = [
         {
             rule: bypassLAN,
@@ -258,11 +230,10 @@ function buildClashRoutingRules(isWarp) {
 }
 
 function buildClashVLOutbound(remark, address, port, host, sni, proxyIPs, allowInsecure) {
-    const { userID, defaultHttpsPorts, proxySettings } = globalThis;
     const tls = defaultHttpsPorts.includes(port) ? true : false;
     const addr = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
     const path = `/${getRandomPath(16)}${proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : ''}`;
-    const ipVersion = proxySettings.VLTRenableIPv6 ? "dual" : "ipv4";
+    const ipVersion = VLTRenableIPv6 ? "dual" : "ipv4";
 
     const outbound = {
         "name": remark,
@@ -297,10 +268,9 @@ function buildClashVLOutbound(remark, address, port, host, sni, proxyIPs, allowI
 }
 
 function buildClashTROutbound(remark, address, port, host, sni, proxyIPs, allowInsecure) {
-    const { TRPassword, proxySettings } = globalThis;
     const addr = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
     const path = `/tr${getRandomPath(16)}${proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : ''}`;
-    const ipVersion = proxySettings.VLTRenableIPv6 ? "dual" : "ipv4";
+    const ipVersion = VLTRenableIPv6 ? "dual" : "ipv4";
 
     return {
         "name": remark,
@@ -327,7 +297,6 @@ function buildClashTROutbound(remark, address, port, host, sni, proxyIPs, allowI
 }
 
 function buildClashWarpOutbound(warpConfigs, remark, endpoint, chain, isPro) {
-    const { amneziaNoiseCount, amneziaNoiseSizeMin, amneziaNoiseSizeMax, warpEnableIPv6 } = globalThis.proxySettings;
     const ipv6Regex = /\[(.*?)\]/;
     const portRegex = /[^:]*$/;
     const endpointServer = endpoint.includes('[') ? endpoint.match(ipv6Regex)[1] : endpoint.split(':')[0];
@@ -447,8 +416,6 @@ function buildClashChainOutbound(chainProxyParams) {
 }
 
 async function buildClashConfig(selectorTags, urlTestTags, secondUrlTestTags, isChain, isWarp, isPro) {
-
-    const { bestWarpInterval, bestVLTRInterval } = globalThis.proxySettings;
     const config = structuredClone(clashConfigTemp);
     config['dns'] = await buildClashDNS(isChain, isWarp);
 
@@ -484,10 +451,7 @@ async function buildClashConfig(selectorTags, urlTestTags, secondUrlTestTags, is
 }
 
 export async function getClashWarpConfig(request, env, isPro) {
-
     const { warpConfigs } = await getDataset(request, env);
-    const { warpEndpoints } = globalThis.proxySettings;
-
     const warpTags = [], wowTags = [];
     const outbounds = {
         proxies: [],
@@ -530,30 +494,14 @@ export async function getClashWarpConfig(request, env, isPro) {
 }
 
 export async function getClashNormalConfig(env) {
-
-    const { hostName, defaultHttpsPorts } = globalThis;
     let chainProxy;
-
-    const {
-        cleanIPs,
-        proxyIPs,
-        ports,
-        VLConfigs,
-        TRConfigs,
-        outProxy,
-        outProxyParams,
-        customCdnAddrs,
-        customCdnHost,
-        customCdnSni,
-        VLTRenableIPv6
-    } = globalThis.proxySettings;
-
     if (outProxy) {
         try {
             chainProxy = buildClashChainOutbound(outProxyParams);
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
             chainProxy = undefined;
+            const proxySettings = await env.kv.get("proxySettings", { type: 'json' });
             await env.kv.put("proxySettings", JSON.stringify({
                 ...proxySettings,
                 outProxy: '',

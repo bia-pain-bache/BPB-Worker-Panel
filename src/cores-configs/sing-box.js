@@ -2,23 +2,6 @@ import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpper
 import { getDataset } from '../kv/handlers';
 
 function buildSingBoxDNS(outboundAddrs, isWarp) {
-    const {
-        remoteDNS,
-        localDNS,
-        VLTRFakeDNS,
-        VLTRenableIPv6,
-        warpFakeDNS,
-        warpEnableIPv6,
-        bypassIran,
-        bypassChina,
-        bypassRussia,
-        bypassOpenAi,
-        blockAds,
-        blockPorn,
-        customBypassRules,
-        customBlockRules
-    } = globalThis.proxySettings;
-
     let fakeip;
     const dohHost = getDomain(remoteDNS);
     const isFakeDNS = (VLTRFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
@@ -177,19 +160,6 @@ function buildSingBoxDNS(outboundAddrs, isWarp) {
 }
 
 function buildSingBoxRoutingRules(isWarp) {
-    const {
-        bypassLAN,
-        bypassIran,
-        bypassChina,
-        bypassRussia,
-        bypassOpenAi,
-        blockAds,
-        blockPorn,
-        blockUDP443,
-        customBypassRules,
-        customBlockRules
-    } = globalThis.proxySettings;
-
     const defaultRules = [
         {
             action: "sniff"
@@ -398,8 +368,6 @@ function buildSingBoxRoutingRules(isWarp) {
 }
 
 function buildSingBoxVLOutbound(remark, address, port, host, sni, allowInsecure) {
-    const { userID, defaultHttpsPorts, proxySettings } = globalThis;
-    const { VLTRenableIPv6, proxyIPs } = proxySettings;
     const path = `/${getRandomPath(16)}${proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : ''}`;
     const tls = defaultHttpsPorts.includes(port) ? true : false;
 
@@ -440,8 +408,6 @@ function buildSingBoxVLOutbound(remark, address, port, host, sni, allowInsecure)
 }
 
 function buildSingBoxTROutbound(remark, address, port, host, sni, allowInsecure) {
-    const { TRPassword, defaultHttpsPorts, proxySettings } = globalThis;
-    const { VLTRenableIPv6, proxyIPs } = proxySettings;
     const path = `/tr${getRandomPath(16)}${proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : ''}`;
     const tls = defaultHttpsPorts.includes(port) ? true : false;
 
@@ -487,7 +453,6 @@ function buildSingBoxWarpOutbound(warpConfigs, remark, endpoint, chain) {
     const endpointPort = endpoint.includes('[') ? +endpoint.match(portRegex)[0] : +endpoint.split(':')[1];
     const server = chain ? "162.159.192.1" : endpointServer;
     const port = chain ? 2408 : endpointPort;
-    const { warpEnableIPv6 } = globalThis.proxySettings;
 
     const {
         warpIPv6,
@@ -617,10 +582,7 @@ function buildSingBoxChainOutbound(chainProxyParams, VLTRenableIPv6) {
 }
 
 function buildSingBoxConfig (outboundAddrs, selectorTags, urlTestTags, secondUrlTestTags, isWarp) {
-
-    const { bestWarpInterval, bestVLTRInterval } = globalThis.proxySettings;
     const config = structuredClone(singboxConfigTemp);
-
     const { servers, rules, fakeip } = buildSingBoxDNS(outboundAddrs, isWarp);
     config.dns.servers = servers;
     config.dns.rules = rules;
@@ -657,10 +619,7 @@ function buildSingBoxConfig (outboundAddrs, selectorTags, urlTestTags, secondUrl
 }
 
 export async function getSingBoxWarpConfig(request, env) {
-
     const { warpConfigs } = await getDataset(request, env);
-    const { warpEndpoints } = globalThis.proxySettings;
-
     const warpTags = [], wowTags = [];
     const endpoints = {
         proxies: [],
@@ -696,29 +655,14 @@ export async function getSingBoxWarpConfig(request, env) {
 }
 
 export async function getSingBoxCustomConfig(env) {
-    
-    const { hostName } = globalThis;
     let chainProxy;
-
-    const {
-        cleanIPs,
-        ports,
-        VLConfigs,
-        TRConfigs,
-        outProxy,
-        outProxyParams,
-        customCdnAddrs,
-        customCdnHost,
-        customCdnSni,
-        VLTRenableIPv6
-    } = globalThis.proxySettings;
-
     if (outProxy) {
         try {
             chainProxy = buildSingBoxChainOutbound(outProxyParams, VLTRenableIPv6);
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
             chainProxy = undefined;
+            const proxySettings = await env.kv.get("proxySettings", { type: 'json' });
             await env.kv.put("proxySettings", JSON.stringify({
                 ...proxySettings,
                 outProxy: '',

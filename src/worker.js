@@ -8,7 +8,6 @@ export default {
 	async fetch(request, env) {
 		try {
 			initializeParams(request, env);
-			const { pathName } = globalThis;
 			const upgradeHeader = request.headers.get('Upgrade');
 			if (!upgradeHeader || upgradeHeader !== 'websocket') {
 				if (pathName.startsWith('/panel')) return await handlePanel(request, env);
@@ -27,7 +26,7 @@ export default {
 		} catch (error) {
 			const message = encodeURIComponent(error.message);
 			const stack = encodeURIComponent(error.stack || '');
-			return Response.redirect(`${globalThis.urlOrigin}/error?message=${message}&stack=${stack}`, 302);
+			return Response.redirect(`${urlOrigin}/error?message=${message}&stack=${stack}`, 302);
 		}
 	}
 };
