@@ -106,7 +106,7 @@ async function buildWorker() {
         compression: 'DEFLATE'
     }).then(nodebuffer => writeFileSync('./dist/worker.zip', nodebuffer));
 
-    console.log('✅ Worker files published successfuly!');
+    console.log('✅ Done!');
 }
 
 buildWorker().catch(err => {
