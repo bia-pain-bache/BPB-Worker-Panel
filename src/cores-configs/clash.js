@@ -510,8 +510,8 @@ export async function getClashWarpConfig(request, env, isPro) {
     });
 
     const selectorTags = [
-        `💦 Warp ${isPro ? 'Pro ' : ''}- Best Ping 🚀`, 
-        `💦 WoW ${isPro ? 'Pro ' : ''}- Best Ping 🚀`, 
+        `💪6️⃣8️⃣ Warp ${isPro ? 'Pro ' : ''}- Best Ping 🚀`, 
+        `💪6️⃣8️⃣ WoW ${isPro ? 'Pro ' : ''}- Best Ping 🚀`, 
         ...warpTags,
         ...wowTags
     ];
