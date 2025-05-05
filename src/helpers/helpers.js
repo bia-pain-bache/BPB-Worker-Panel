@@ -45,6 +45,11 @@ export async function handlePanel(request, env) {
     }
 }
 
+export async function handleError(error) {
+    const message = encodeURIComponent(error.message);
+    return Response.redirect(`${urlOrigin}/error?message=${message}`, 302);
+}
+
 export async function handleLogin(request, env) {
     if (pathName === '/login') return await renderLogin(request, env);
     if (pathName === '/login/authenticate') return await generateJWTToken(request, env);
