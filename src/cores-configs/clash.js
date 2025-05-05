@@ -383,7 +383,7 @@ function buildClashChainOutbound(chainProxyParams) {
 
     const { server, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = chainProxyParams;
     const chainOutbound = {
-        "name": "💦 Chain Best Ping 💥",
+        "name": "💪6️⃣8️⃣ Chain Best Ping 💥",
         "type": "vless",
         "server": server,
         "port": +port,
@@ -391,7 +391,7 @@ function buildClashChainOutbound(chainProxyParams) {
         "uuid": uuid,
         "flow": flow,
         "network": type,
-        "dialer-proxy": "💦 Best Ping 💥"
+        "dialer-proxy": "💪6️⃣8️⃣ Best Ping 💥"
     };
 
     if (security === 'tls') {
@@ -463,7 +463,7 @@ async function buildClashConfig(selectorTags, urlTestTags, secondUrlTestTags, is
     };
 
     const urlTest = {
-        "name": isWarp ? `💦 Warp ${isPro ? 'Pro ' : ''}- Best Ping 🚀` : '💦 Best Ping 💥',
+        "name": isWarp ? `💪6️⃣8️⃣ Warp ${isPro ? 'Pro ' : ''}- Best Ping 🚀` : '💪6️⃣8️⃣ Best Ping 💥',
         "type": "url-test",
         "url": "https://www.gstatic.com/generate_204",
         "interval": isWarp ? +bestWarpInterval : +bestVLTRInterval,
@@ -475,7 +475,7 @@ async function buildClashConfig(selectorTags, urlTestTags, secondUrlTestTags, is
 
     if (isWarp) {
         const secondUrlTest = structuredClone(urlTest);
-        secondUrlTest["name"] = `💦 WoW ${isPro ? 'Pro ' : ''}- Best Ping 🚀`;
+        secondUrlTest["name"] = `💪6️⃣8️⃣ WoW ${isPro ? 'Pro ' : ''}- Best Ping 🚀`;
         secondUrlTest["proxies"] = secondUrlTestTags;
         config['proxy-groups'].push(secondUrlTest);
     }
@@ -495,10 +495,10 @@ export async function getClashWarpConfig(request, env, isPro) {
     }
 
     warpEndpoints.forEach((endpoint, index) => {
-        const warpTag = `💦 ${index + 1} - Warp ${isPro ? 'Pro ' : ''}🇮🇷`;
+        const warpTag = `💪6️⃣8️⃣ ${index + 1} - Warp ${isPro ? 'Pro ' : ''}🇮🇷`;
         warpTags.push(warpTag);
 
-        const wowTag = `💦 ${index + 1} - WoW ${isPro ? 'Pro ' : ''}🌍`;
+        const wowTag = `💪6️⃣8️⃣ ${index + 1} - WoW ${isPro ? 'Pro ' : ''}🌍`;
         wowTags.push(wowTag);
 
         const warpOutbound = buildClashWarpOutbound(warpConfigs, warpTag, endpoint, '', isPro);
@@ -627,7 +627,7 @@ export async function getClashNormalConfig(env) {
         });
     });
 
-    const selectorTags = ['💦 Best Ping 💥', ...tags];
+    const selectorTags = ['💪6️⃣8️⃣ Best Ping 💥', ...tags];
     const config = await buildClashConfig(selectorTags, tags, null, chainProxy, false, false);
     config['proxies'].push(...outbounds.chains, ...outbounds.proxies);
 
