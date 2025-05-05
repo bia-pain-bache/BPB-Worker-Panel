@@ -711,7 +711,7 @@ async function buildXrayConfig(
 }
 
 async function buildXrayBestPingConfig(totalAddresses, chainProxy, outbounds, isFragment) {
-    const remark = isFragment ? `💦 BPB F - Best Ping 💥` : `💦 BPB - Best Ping 💥`;
+    const remark = isFragment ? `💪6️⃣8️⃣ F - Best Ping 💥` : `💪6️⃣8️⃣ - Best Ping 💥`;
     const config = await buildXrayConfig(remark, true, chainProxy, true, false, isFragment, false, totalAddresses, null);
     config.outbounds.unshift(...outbounds);
     return config;
@@ -724,7 +724,7 @@ async function buildXrayBestFragmentConfig(hostName, chainProxy, outbound) {
         '70-80', '80-90', '90-100', '10-30', '20-40', '30-50',
         '40-60', '50-70', '60-80', '70-90', '80-100', '100-200'];
 
-    const config = await buildXrayConfig(`💦 BPB F - Best Fragment 😎`, true, chainProxy, false, false, true, false, [], hostName);
+    const config = await buildXrayConfig(`💪6️⃣8️⃣ F - Best Fragment 😎`, true, chainProxy, false, false, true, false, [], hostName);
     const bestFragOutbounds = [];
 
     bestFragValues.forEach((fragLength, index) => {
@@ -748,7 +748,7 @@ async function buildXrayBestFragmentConfig(hostName, chainProxy, outbound) {
 }
 
 async function buildXrayWorkerLessConfig() {
-    const config = await buildXrayConfig(`💦 BPB F - WorkerLess ⭐`, false, false, false, false, true, true, [], null);
+    const config = await buildXrayConfig(`💪6️⃣8️⃣ F - WorkerLess ⭐`, false, false, false, false, true, true, [], null);
     return config;
 }
 
@@ -871,8 +871,8 @@ export async function getXrayWarpConfigs(request, env, isPro) {
     for (const [index, endpoint] of warpEndpoints.entries()) {
         const endpointHost = endpoint.split(':')[0];
 
-        const warpConfig = await buildXrayConfig(`💦 ${index + 1} - Warp${proIndicator}🇮🇷`, false, false, false, true, false, false, [endpointHost], null);
-        const WoWConfig = await buildXrayConfig(`💦 ${index + 1} - WoW${proIndicator}🌍`, false, true, false, true, false, false, [endpointHost], null);
+        const warpConfig = await buildXrayConfig(`💪6️⃣8️⃣ ${index + 1} - Warp${proIndicator}🇮🇷`, false, false, false, true, false, false, [endpointHost], null);
+        const WoWConfig = await buildXrayConfig(`💪6️⃣8️⃣ ${index + 1} - WoW${proIndicator}🌍`, false, true, false, true, false, false, [endpointHost], null);
 
         const warpOutbound = buildXrayWarpOutbound(warpConfigs, endpoint, false);
         const WoWOutbound = buildXrayWarpOutbound(warpConfigs, endpoint, true);
@@ -896,10 +896,10 @@ export async function getXrayWarpConfigs(request, env, isPro) {
     const totalOutbounds = [...outbounds.chains, ...outbounds.proxies];
     const outboundDomains = warpEndpoints.map(endpoint => endpoint.split(':')[0]).filter(address => isDomain(address));
 
-    const xrayWarpBestPing = await buildXrayConfig(`💦 Warp${proIndicator}- Best Ping 🚀`, true, false, false, true, false, false, outboundDomains, null);
+    const xrayWarpBestPing = await buildXrayConfig(`💪6️⃣8️⃣ Warp${proIndicator}- Best Ping 🚀`, true, false, false, true, false, false, outboundDomains, null);
     xrayWarpBestPing.outbounds.unshift(...outbounds.proxies);
 
-    const xrayWoWBestPing = await buildXrayConfig(`💦 WoW${proIndicator}- Best Ping 🚀`, true, true, false, true, false, false, outboundDomains, null);
+    const xrayWoWBestPing = await buildXrayConfig(`💪6️⃣8️⃣ WoW${proIndicator}- Best Ping 🚀`, true, true, false, true, false, false, outboundDomains, null);
     xrayWoWBestPing.outbounds.unshift(...totalOutbounds);
 
     const configs = [...xrayWarpConfigs, ...xrayWoWConfigs, xrayWarpBestPing, xrayWoWBestPing];
