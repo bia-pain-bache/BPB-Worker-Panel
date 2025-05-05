@@ -95,7 +95,7 @@ export async function getNormalConfigs(isFragment) {
 
     if (outProxy) {
 
-        let chainRemark = `#${encodeURIComponent('💦 Chain proxy 🔗')}`;
+        let chainRemark = `#${encodeURIComponent('💪6️⃣8️⃣ Chain proxy 🔗')}`;
         if (outProxy.startsWith('socks') || outProxy.startsWith('http')) {
             const regex = /^(?:socks|http):\/\/([^@]+)@/;
             const isUserPass = outProxy.match(regex);
@@ -109,7 +109,7 @@ export async function getNormalConfigs(isFragment) {
     }
 
     const configs = btoa(VLConfs + TRConfs + chainProxy);
-    const hiddifyHash = base64EncodeUnicode('💦 BPB Normal');
+    const hiddifyHash = base64EncodeUnicode('💪6️⃣8️⃣ BPB Normal');
     
     return new Response(configs, {
         status: 200,
@@ -140,7 +140,7 @@ export async function getHiddifyWarpConfigs(isPro) {
     warpEndpoints.forEach((endpoint, index) => {
         const config = new URL('warp://config');
         config.host = endpoint;
-        config.hash = `💦 ${index + 1} - Warp 🇮🇷`;
+        config.hash = `💪6️⃣8️⃣ ${index + 1} - Warp 🇮🇷`;
 
         if (isPro) {
             config.searchParams.append('ifpm', hiddifyNoiseMode);
@@ -151,12 +151,12 @@ export async function getHiddifyWarpConfigs(isPro) {
 
         const detour = new URL('warp://config');
         detour.host = '162.159.192.1:2408';
-        detour.hash = `💦 ${index + 1} - WoW 🌍`;
+        detour.hash = `💪6️⃣8️⃣ ${index + 1} - WoW 🌍`;
 
         configs += `${config.href}&&detour=${detour.href}\n`;
     });
 
-    const hiddifyHash = base64EncodeUnicode(`💦 BPB Warp${isPro ? ' Pro' : ''}`);
+    const hiddifyHash = base64EncodeUnicode(`💪6️⃣8️⃣ BPB Warp${isPro ? ' Pro' : ''}`);
     return new Response(btoa(configs), {
         status: 200,
         headers: {
