@@ -638,7 +638,7 @@ function buildSingBoxConfig (outboundAddrs, selectorTags, urlTestTags, secondUrl
 
     const urlTest = {
         type: "urltest",
-        tag: isWarp ? `💦 Warp - Best Ping 🚀` : '💦 Best Ping 💥',
+        tag: isWarp ? `💪6️⃣8️⃣ Warp - Best Ping 🚀` : '💪6️⃣8️⃣ Best Ping 💥',
         outbounds: urlTestTags,
         url: "https://www.gstatic.com/generate_204",
         interval: isWarp ? `${bestWarpInterval}s` : `${bestVLTRInterval}s`
@@ -648,7 +648,7 @@ function buildSingBoxConfig (outboundAddrs, selectorTags, urlTestTags, secondUrl
 
     if (isWarp) {
         const secondUrlTest = structuredClone(urlTest);
-        secondUrlTest.tag = `💦 WoW - Best Ping 🚀`;
+        secondUrlTest.tag = `💪6️⃣8️⃣ WoW - Best Ping 🚀`;
         secondUrlTest.outbounds = secondUrlTestTags;
         config.outbounds.push(secondUrlTest);
     }
@@ -668,10 +668,10 @@ export async function getSingBoxWarpConfig(request, env) {
     }
 
     warpEndpoints.forEach((endpoint, index) => {
-        const warpTag = `💦 ${index + 1} - Warp 🇮🇷`;
+        const warpTag = `💪6️⃣8️⃣ ${index + 1} - Warp 🇮🇷`;
         warpTags.push(warpTag);
 
-        const wowTag = `💦 ${index + 1} - WoW 🌍`;
+        const wowTag = `💪6️⃣8️⃣ ${index + 1} - WoW 🌍`;
         wowTags.push(wowTag);
 
         const warpOutbound = buildSingBoxWarpOutbound(warpConfigs, warpTag, endpoint, '');
@@ -681,7 +681,7 @@ export async function getSingBoxWarpConfig(request, env) {
         endpoints.chains.push(wowOutbound);
     });
 
-    const selectorTags = [`💦 Warp - Best Ping 🚀`, `💦 WoW - Best Ping 🚀`, ...warpTags, ...wowTags];
+    const selectorTags = [`💪6️⃣8️⃣ Warp - Best Ping 🚀`, `💪6️⃣8️⃣ WoW - Best Ping 🚀`, ...warpTags, ...wowTags];
     const config = buildSingBoxConfig(null, selectorTags, warpTags, wowTags, true);
     config.endpoints = [...endpoints.chains, ...endpoints.proxies];    
 
@@ -790,7 +790,7 @@ export async function getSingBoxCustomConfig(env) {
         });
     });
 
-    const selectorTags = ['💦 Best Ping 💥', ...tags];    
+    const selectorTags = ['💪6️⃣8️⃣ Best Ping 💥', ...tags];    
     const config = buildSingBoxConfig(Addresses, selectorTags, tags, null, false);
     config.outbounds.push(...outbounds.chains, ...outbounds.proxies);
 
