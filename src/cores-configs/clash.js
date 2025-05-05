@@ -28,9 +28,9 @@ async function buildClashDNS(isChain, isWarp) {
     };
 
     if (dohHost.isDomain && !isWarp) {
-        const { ipv4, ipv4v6, host } = dohHost;
+        const { ipv4, ipv6, host } = dohHost;
         dns["hosts"] = {
-            [host]: VLTRenableIPv6 ? ipv4v6 : ipv4
+            [host]: VLTRenableIPv6 ? [...ipv4, ...ipv6] : ipv4
         }
     }
 

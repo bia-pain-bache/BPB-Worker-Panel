@@ -93,7 +93,7 @@ export async function updateDataset(request, env) {
             const { ipv4, ipv6 } = await resolveDNS(host);
             dohHost.isDomain = true;
             dohHost.ipv4 = ipv4;
-            dohHost.ipv4v6 = [...ipv4, ...ipv6];
+            dohHost.ipv6 = ipv6;
         }
 
         return dohHost;

@@ -35,8 +35,8 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
     const dnsHost = {};
 
     if (dohHost.isDomain && !isWorkerLess && !isWarp) {
-        const { ipv4, ipv4v6, host } = dohHost;
-        dnsHost[host] = VLTRenableIPv6 ? ipv4v6 : ipv4;
+        const { ipv4, ipv6, host } = dohHost;
+        dnsHost[host] = VLTRenableIPv6 ? [...ipv4, ...ipv6] : ipv4;
     }
 
     if (isBlock) {
