@@ -1,4 +1,4 @@
-import { getConfigAddresses, extractWireguardParams, base64ToDecimal, generateRemark, randomUpperCase, getRandomPath, getDomain, resolveDNS, isDomain } from './helpers';
+import { getConfigAddresses, extractWireguardParams, base64ToDecimal, generateRemark, randomUpperCase, getRandomPath, resolveDNS, isDomain } from './helpers';
 import { getDataset } from '../kv/handlers';
 
 async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWarp) {
@@ -33,6 +33,12 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
             : [remoteDNS];
 
     const dnsHost = {};
+
+    if (dohHost.isDomain && !isWorkerLess && !isWarp) {
+        const { ipv4, ipv4v6, host } = dohHost;
+        dnsHost[host] = VLTRenableIPv6 ? ipv4v6 : ipv4;
+    }
+
     if (isBlock) {
         blockRules.forEach(({ rule, host }) => {
             if (rule) dnsHost[host] = ["127.0.0.1"];
@@ -54,13 +60,6 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
         queryStrategy: isIPv6 ? "UseIP" : "UseIPv4",
         tag: "dns",
     };
-
-    const dohHost = getDomain(remoteDNS);
-    if (dohHost.isHostDomain && !isWorkerLess && !isWarp) dnsObject.servers.push({
-        address: 'https://8.8.8.8/dns-query',
-        domains: [`full:${dohHost.host}`],
-        skipFallback: true
-    });
 
     if (bypassOpenAi) dnsObject.servers.push({
         address: "178.22.122.100",
@@ -167,7 +166,7 @@ function buildXrayRoutingRules(outboundAddrs, isChain, isBalancer, isWorkerLess,
     const finallOutboundTag = isChain ? "chain" : isWorkerLess ? "fragment" : "proxy";
     const outType = isBalancer ? "balancerTag" : "outboundTag";
     const outTag = isBalancer ? "all" : finallOutboundTag;
-    
+
     rules.push({
         inboundTag: ["dns"],
         [outType]: outTag,

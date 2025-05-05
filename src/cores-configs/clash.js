@@ -1,4 +1,4 @@
-import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6, isIPv4, isDomain, getDomain } from './helpers';
+import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6, isIPv4, isDomain } from './helpers';
 import { getDataset } from '../kv/handlers';
 
 async function buildClashDNS(isChain, isWarp) {
@@ -19,15 +19,20 @@ async function buildClashDNS(isChain, isWarp) {
         "ipv6": isIPv6,
         "respect-rules": true,
         "use-system-hosts": false,
-        "nameserver": isWarp
-            ? [`1.1.1.1#✅ Selector`]
-            : [`${remoteDNS}#✅ Selector`],
+        "nameserver": [`${isWarp ? '1.1.1.1' : remoteDNS}#✅ Selector`],
         "proxy-server-nameserver": [finalLocalDNS],
         "nameserver-policy": {
             "raw.githubusercontent.com": finalLocalDNS,
             "time.apple.com": finalLocalDNS
         }
     };
+
+    if (dohHost.isDomain && !isWarp) {
+        const { ipv4, ipv4v6, host } = dohHost;
+        dns["hosts"] = {
+            [host]: VLTRenableIPv6 ? ipv4v6 : ipv4
+        }
+    }
 
     if (isChain && !isWarp) {
         const chainOutboundServer = outProxyParams.server;
@@ -48,11 +53,6 @@ async function buildClashDNS(isChain, isWarp) {
     });
 
     if (bypassOpenAi) dns["nameserver-policy"]["rule-set:openai"] = `178.22.122.100#DIRECT`;
-
-    const dohHost = getDomain(remoteDNS);
-    if (dohHost.isHostDomain && !isWarp) {
-        dns["default-nameserver"] = [`https://8.8.8.8/dns-query#✅ Selector`];
-    }
 
     if (isFakeDNS) Object.assign(dns, {
         "enhanced-mode": "fake-ip",
@@ -474,15 +474,15 @@ export async function getClashWarpConfig(request, env, isPro) {
     });
 
     const selectorTags = [
-        `💦 Warp ${isPro ? 'Pro ' : ''}- Best Ping 🚀`, 
-        `💦 WoW ${isPro ? 'Pro ' : ''}- Best Ping 🚀`, 
+        `💦 Warp ${isPro ? 'Pro ' : ''}- Best Ping 🚀`,
+        `💦 WoW ${isPro ? 'Pro ' : ''}- Best Ping 🚀`,
         ...warpTags,
         ...wowTags
     ];
 
     const config = await buildClashConfig(selectorTags, warpTags, wowTags, true, true, isPro);
     config['proxies'].push(...outbounds.proxies, ...outbounds.chains);
-    
+
     return new Response(JSON.stringify(config, null, 4), {
         status: 200,
         headers: {

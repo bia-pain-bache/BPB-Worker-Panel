@@ -1,8 +1,7 @@
-import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6, isDomain, getDomain, base64ToDecimal, resolveDNS } from './helpers';
+import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6, isDomain, base64ToDecimal } from './helpers';
 import { getDataset } from '../kv/handlers';
 
 async function buildSingBoxDNS(isWarp) {
-    const dohHost = getDomain(remoteDNS);
     const isFakeDNS = (VLTRFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
     const isIPv6 = (VLTRenableIPv6 && !isWarp) || (warpEnableIPv6 && isWarp);
     const customBypassRulesDomains = customBypassRules.filter(address => isDomain(address));
@@ -68,15 +67,12 @@ async function buildSingBoxDNS(isWarp) {
         }
     ];
 
-    if (dohHost.isHostDomain) {
-        const { ipv4, ipv6 } = await resolveDNS(dohHost.host);
-        const answers = ipv4.map(ip => `${dohHost.host}. IN A ${ip}`)
-            .concat(ipv6.map(ip => `${dohHost.host}. IN AAAA ${ip}`));
-
+    if (dohHost.isDomain && !isWarp) {
+        const { ipv4, ipv4v6, host } = dohHost;
         rules.unshift({
-            domain: "dns.google",
+            domain: host,
             action: "predefined",
-            answer: answers
+            answer: VLTRenableIPv6 ? ipv4v6 : ipv4
         });
     }
 

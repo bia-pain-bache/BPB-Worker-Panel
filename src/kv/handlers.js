@@ -1,3 +1,4 @@
+import { getDomain, resolveDNS } from '../cores-configs/helpers';
 import { fetchWarpConfigs } from '../protocols/warp';
 
 export async function getDataset(request, env) {
@@ -80,8 +81,27 @@ export async function updateDataset(request, env) {
             : validateField(field, isCheckBox, isArray);
     }
 
+    const remoteDNS = populateField('remoteDNS', 'https://8.8.8.8/dns-query');
+    const initDoh = async () => {
+        const { host, isHostDomain } = getDomain(remoteDNS);
+        const dohHost = {
+            host,
+            isDomain: isHostDomain
+        }
+
+        if (isHostDomain) {
+            const { ipv4, ipv6 } = await resolveDNS(host);
+            dohHost.isDomain = true;
+            dohHost.ipv4 = ipv4;
+            dohHost.ipv4v6 = [...ipv4, ...ipv6];
+        }
+
+        return dohHost;
+    }
+
     const settings = {
-        remoteDNS: populateField('remoteDNS', 'https://8.8.8.8/dns-query'),
+        remoteDNS,
+        dohHost: await initDoh(), 
         localDNS: populateField('localDNS', '8.8.8.8'),
         VLTRFakeDNS: populateField('VLTRFakeDNS', false),
         proxyIPs: populateField('proxyIPs', [], false, true),
