@@ -49,9 +49,9 @@ export async function getNormalConfigs(isFragment) {
     }
 
     ports.forEach(port => {
-        Addresses.forEach((addr, index) => {
-            const isCustomAddr = index > Addresses.length - 1;
-            const configType = isCustomAddr ? 'C' : '';
+        Addresses.forEach(addr => {
+            const isCustomAddr = customCdnAddrs.includes(addr) && !isFragment;
+            const configType = isCustomAddr ? 'C' : isFragment ? 'F' : '';
             const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
             const host = isCustomAddr ? customCdnHost : hostName;
 
