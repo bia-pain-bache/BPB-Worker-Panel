@@ -8,46 +8,47 @@
 <br>
 
 ## Introduction
-This project is aimed to provide a user panel to access FREE and SECURE `VLESS`, `Trojan` and `Warp` configs and stay conntected even with a blocked domain or blocked Warp on ISPs, offering two deployment options: 
+
+This project is aimed to provide a user panel to access FREE, SECURE and PRIVATE **VLESS**, **Trojan** and **Warp** configs, It ensures connectivity even when domains or Warp services are blocked by ISPs, offering two deployment options:
+
 - **Workers** deployment
 - **Pages** deployment
-<br>
 
 🌟 If you found **BPB Panel** valuable, Your donations make all the difference 🌟
-- **USDT (BEP20):** `0x111EFF917E7cf4b0BfC99Edffd8F1AbC2b23d158`
+
+### USDT (BEP20)
+
+```text
+0x111EFF917E7cf4b0BfC99Edffd8F1AbC2b23d158
+```
 
 ## Features
 
-1. **Free**: No cost involved.
-2. **User-Friendly Panel:** Designed for easy navigation, configuration and usage.
-3. **Protocols:** Provides VLESS, Trojan and Wireguard (Warp) protocols.
+1. **Free and Private**: No costs involved and the server is private.
+2. **Intuitive Panel:** Streamlined for effortless navigation, configuration and use.
+3. **Versatile Protocols:** Provides VLESS, Trojan and Wireguard (Warp) protocols.
 4. **Warp Pro configs:** Optimized Warp for crucial circumstances.
-5. **Support Fragment:** Supports Fragment functionality for crucial network situations.
-6. **Full routing rules:** Bypassing Iran/China/Russia and LAN, Blocking QUIC, Porn, Ads, Malwares, Phishing...
+5. **Fragment support:** Supports Fragment functionality for crucial network situations.
+6. **Comprehensive Routing Rules:** Bypassing Iran/China/Russia and LAN, Blocking QUIC, Porn, Ads, Malwares, Phishing and more.
 7. **Chain Proxy:** Capable of adding a chain proxy to fix IP.
-8. **Supports Wide Range of Clients:** Offers subscription links for Xray, Sing-box and Clash core clients.
-9. **Password-Protected Panel:** Secure your panel with password protection.
-10. **Fully customizable:** Ability to use online scanner and setting up clean IP-domains, Proxy IP, setting DNS servers, choosing ports and protocols, Warp endpoints...
-<br>
+8. **Broad client compatibility:** Offers subscription links for Xray, Sing-box and Clash-Mihomo core clients.
+9. **Password-protected panel:** Provides secure and private panel with password protection.
+10. **Fully customizable:** Supports setting up clean IP-domains, Proxy IPs, DNS servers, choosing ports and protocols, Warp endpoints and more.
 
 ## Limitations
 
-1. **UDP transport**: VLESS and Trojan protocols on workers cannot handle UDP properly, so UDP is blocked by default (some connections like Telegram video calls etc. will not work), also UDP DNS do not work on these protocols (so DOH is supported and set by default which is also safer).
-2. **Request limit**: each worker supports 100K requests per day for VLESS and Trojan, so it's sufficient for only 2-3 users. You can use custom personal domains for bypassing limitation on VLESS/Trojan or Warp configs which are limitless.
+1. **UDP transport**: VLESS and Trojan protocols on workers do not handle **UDP** properly, so it is disabled by default (affecting features like Telegram video calls), UDP DNS is also unsupported. DoH is enabled by default for enhanced security.
+2. **Request limit**: each worker supports 100K requests per day for VLESS and Trojan, suitable for 2-3 users. You can use custom personal domains to bypass limitation on VLESS/Trojan (Workers deployment) or opt for limitless Warp configurations.
 
-## How to use:
-- [Wizard installation - Workers and Pages](docs/wizard_installation_fa.md)
+## Getting started
 
-- [Manual installation - Pages](docs/pages_upload_installation_fa.md)
-
-- [Manual installation - Workers](docs/worker_installation_fa.md)
-
-- [How to use](docs/configuration_fa.md)
-
-- [FAQ](docs/faq.md)
-<br>
+- [Installation methods](https://bia-pain-bache.github.io/bpb-worker-panel/en/installation/wizard.md)
+- [Configuration](https://bia-pain-bache.github.io/bpb-worker-panel/en/configuration/index.md)
+- [How to use](https://bia-pain-bache.github.io/bpb-worker-panel/en/usage/index.md)
+- [FAQ](https://bia-pain-bache.github.io/bpb-worker-panel/en/faq.md)
 
 ## Supported Clients
+
 | Client  | Version | Fragment | Warp Pro |
 | :-------------: | :-------------: | :-------------: | :-------------: |
 | **v2rayNG**  | 1.9.33 or higher  | :heavy_check_mark: | :heavy_check_mark: |
@@ -66,6 +67,7 @@ This project is aimed to provide a user panel to access FREE and SECURE `VLESS`,
 | **FLClash**  |   | :x: | :x: |
 
 ## Environment variables
+
 | Variable  | Usage |
 | :-------------: | :-------------: |
 | **UUID**  | VLESS UUID  |
@@ -78,11 +80,13 @@ This project is aimed to provide a user panel to access FREE and SECURE `VLESS`,
 ---
 
 ## Stargazers Over Time
+
 [![Stargazers Over Time](https://starchart.cc/bia-pain-bache/BPB-Worker-Panel.svg?variant=adaptive)](https://starchart.cc/bia-pain-bache/BPB-Worker-Panel)
 
 ---
 
 ### Special Thanks
+
 - VLESS, Trojan [Cloudflare-workers/pages proxy script](https://github.com/yonggekkk/Cloudflare-workers-pages-vless) created by [yonggekkk](https://github.com/yonggekkk)
 - CF-vless code author [3Kmfi6HP](https://github.com/3Kmfi6HP/EDtunnel)
 - CF preferred IP program author [badafans](https://github.com/badafans/Cloudflare-IP-SpeedTest), [XIU2](https://github.com/XIU2/CloudflareSpeedTest)
