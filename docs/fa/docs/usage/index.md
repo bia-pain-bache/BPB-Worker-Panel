@@ -1,4 +1,4 @@
-# نحوه استفاده
+# :material-lan-connect:{ .md .middle } نحوه استفاده
 
 برای مبتدی‌ها، پیشنهاد می‌کنم از اشتراک‌های **Full Normal** یا **Fragment** استفاده کنید، چون همه تنظیمات لازم برای یه اتصال موفق رو دارن. این اشتراک‌ها کانفیگ‌های **VLESS** و **Trojan** ارائه می‌دن.
 
@@ -9,7 +9,7 @@
 
 <div class="grid cards" markdown>
 
-- :material-cog-outline:{ .lg .middle } **اشتراک Normal**
+- :material-playlist-check:{ .lg .middle } **اشتراک Normal**
 
     ---
 
@@ -17,7 +17,7 @@
 
     [:octicons-arrow-right-24: شروع](normal.md)
 
-- :material-cog-outline:{ .lg .middle } **اشتراک Full Normal**
+- :material-playlist-check:{ .lg .middle } **اشتراک Full Normal**
 
     ---
 
@@ -25,7 +25,7 @@
 
     [:octicons-arrow-right-24: شروع](full-normal.md)
 
-- :material-cog-outline:{ .lg .middle } **اشتراک Fragment**
+- :material-playlist-check:{ .lg .middle } **اشتراک Fragment**
 
     ---
 
@@ -33,7 +33,7 @@
 
     [:octicons-arrow-right-24: شروع](fragment.md)
 
-- :material-cog-outline:{ .lg .middle } **اشتراک Warp**
+- :material-playlist-check:{ .lg .middle } **اشتراک Warp**
 
     ---
 
@@ -41,7 +41,7 @@
 
     [:octicons-arrow-right-24: شروع](warp.md)
 
-- :material-cog-outline:{ .lg .middle } **اشتراک Warp Pro**
+- :material-playlist-check:{ .lg .middle } **اشتراک Warp Pro**
 
     ---
 

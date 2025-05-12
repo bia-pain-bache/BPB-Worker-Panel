@@ -1,4 +1,4 @@
-# Pages Setup - Direct Upload Method
+# :material-new-box:{ .md .middle } Pages Setup - Direct Upload Method
 
 ## Steps
 

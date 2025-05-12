@@ -1,4 +1,4 @@
-# Warp Pro settings
+# :material-cog-outline:{ .md .middle } Warp Pro settings
 
 This section applies exclusively to the **Warp Pro** subscription, as detailed [here](../usage/warp-pro.md).  
 

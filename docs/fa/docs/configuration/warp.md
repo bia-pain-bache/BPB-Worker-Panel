@@ -1,4 +1,4 @@
-# تنظیمات عمومی Warp
+# :material-cog-outline:{ .md .middle } تنظیمات عمومی Warp
 
 این تنظیمات برای اشتراک‌های **Warp** و **Warp Pro** اعمال می‌شن.
 

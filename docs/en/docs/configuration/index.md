@@ -1,4 +1,4 @@
-# Settings Configuration
+# :material-cog-outline:{ .md .middle } Settings Configuration
 
 !!! tip
     Please don't worry about incorrect configurations. There's a `Reset Settings` button next to the `Apply Settings` button that will reset the panel to default settings.

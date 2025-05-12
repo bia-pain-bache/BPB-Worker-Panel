@@ -1,4 +1,4 @@
-# My IP
+# :material-fingerprint:{ .md .middle } My IP
 
 ![My IP](../images/my-ip.jpg)
 

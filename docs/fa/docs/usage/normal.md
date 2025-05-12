@@ -1,4 +1,4 @@
-# اشتراک Normal
+# :material-playlist-check:{ .md .middle } اشتراک Normal
 
 ![Normal subscription](../images/normal-sub.jpg)
 

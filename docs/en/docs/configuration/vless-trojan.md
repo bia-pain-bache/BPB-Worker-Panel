@@ -1,4 +1,4 @@
-# VLESS and Trojan settings
+# :material-cog-outline:{ .md .middle } VLESS and Trojan settings
 
 These settings apply only to **Fragment** and **Full Normal** subscriptions.  
 

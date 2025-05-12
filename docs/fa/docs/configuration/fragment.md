@@ -1,4 +1,4 @@
-# تنظیمات Fragment
+# :material-cog-outline:{ .md .middle } تنظیمات Fragment
 
 راه‌حل Fragment تقریباً مشکل IP تمیز رو برای CDN Cloudflare با مخفی کردن SNI حل می‌کنه، ولی تنظیمات باید بر اساس اپراتور شما تعیین بشن.
 
