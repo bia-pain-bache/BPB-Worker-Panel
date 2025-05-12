@@ -60,7 +60,7 @@ extra:
   alternate:
     - name: Farsi
       lang: fa
-      link: /fa/
+      link: fa/
 
 plugins:
   - search

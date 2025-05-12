@@ -60,7 +60,7 @@ extra:
   alternate:
     - name: English
       lang: en
-      link: /en/
+      link: en/
 
 plugins:
   - search
