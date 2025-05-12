@@ -1,4 +1,4 @@
-# اشتراک Fragment
+# :material-playlist-check:{ .md .middle } اشتراک Fragment
 
 ![Fragment subscription](../images/fragment-sub.jpg)
 

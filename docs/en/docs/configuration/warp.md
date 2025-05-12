@@ -1,4 +1,4 @@
-# Warp General settings
+# :material-cog-outline:{ .md .middle } Warp General settings
 
 These settings apply to both **Warp** and **Warp Pro** subscriptions.  
 

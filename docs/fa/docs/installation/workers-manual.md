@@ -1,4 +1,4 @@
-# نصب از طریق Cloudflare Workers
+# :material-new-box:{ .md .middle } نصب از طریق Cloudflare Workers
 
 ## مراحل راه‌اندازی
 

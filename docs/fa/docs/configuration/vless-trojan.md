@@ -1,4 +1,4 @@
-# تنظیمات VLESS و Trojan
+# :material-cog-outline:{ .md .middle } تنظیمات VLESS و Trojan
 
 این تنظیمات فقط برای اشتراک‌های **Fragment** و **Full Normal** اعمال می‌شن.
 

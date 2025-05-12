@@ -1,4 +1,4 @@
-# Workers and Pages installation - Wizard
+# :material-new-box:{ .md .middle } Workers and Pages installation - Wizard
 
 To simplify the setup process and prevent user mistakes during creation, the [BPB Wizard](https://github.com/bia-pain-bache/BPB-Wizard) project was launched. It supports both Workers and Pages methods and is highly recommended to use.
 

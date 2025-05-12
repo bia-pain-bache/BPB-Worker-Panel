@@ -1,4 +1,4 @@
-# Routing Rules
+# :material-cog-outline:{ .md .middle } Routing Rules
 
 ![Routing Rules](../images/routing-rules.jpg)
 

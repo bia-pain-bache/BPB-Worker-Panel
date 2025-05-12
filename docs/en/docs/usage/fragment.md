@@ -1,4 +1,4 @@
-# Fragment subscription
+# :material-playlist-check:{ .md .middle } Fragment subscription
 
 ![Fragment subscription](../images/fragment-sub.jpg)
 

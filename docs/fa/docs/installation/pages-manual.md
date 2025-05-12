@@ -1,4 +1,4 @@
-# نصب از طریق Cloudflare Pages با آپلود مستقیم
+# :material-new-box:{ .md .middle } نصب از طریق Cloudflare Pages با آپلود مستقیم
 
 ## مراحل ساخت
 

@@ -1,4 +1,4 @@
-# Installation via Cloudflare Workers
+# :material-new-box:{ .md .middle } Installation via Cloudflare Workers
 
 ## Installation
 

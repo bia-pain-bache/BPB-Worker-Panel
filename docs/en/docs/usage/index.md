@@ -1,4 +1,4 @@
-# How to use
+# :material-lan-connect:{ .md .middle } How to use
 
 For beginners, I recommend using **Full Normal** or **Fragment** subscriptions, as they have all required settings for a successfull connection. These subscriptions provide **VLESS** and **Trojan** configs.
 
@@ -9,7 +9,7 @@ On the other hand, **Warp** and **Warp Pro** which provide **WireGuard** configs
 
 <div class="grid cards" markdown>
 
-- :material-cog-outline:{ .lg .middle } **Normal**
+- :material-playlist-check:{ .lg .middle } **Normal**
 
     ---
 
@@ -17,7 +17,7 @@ On the other hand, **Warp** and **Warp Pro** which provide **WireGuard** configs
 
     [:octicons-arrow-right-24: Getting started](normal.md)
 
-- :material-cog-outline:{ .lg .middle } **Full Normal**
+- :material-playlist-check:{ .lg .middle } **Full Normal**
 
     ---
 
@@ -25,7 +25,7 @@ On the other hand, **Warp** and **Warp Pro** which provide **WireGuard** configs
 
     [:octicons-arrow-right-24: Getting started](full-normal.md)
 
-- :material-cog-outline:{ .lg .middle } **Fragment**
+- :material-playlist-check:{ .lg .middle } **Fragment**
 
     ---
 
@@ -33,7 +33,7 @@ On the other hand, **Warp** and **Warp Pro** which provide **WireGuard** configs
 
     [:octicons-arrow-right-24: Getting started](fragment.md)
 
-- :material-cog-outline:{ .lg .middle } **Warp**
+- :material-playlist-check:{ .lg .middle } **Warp**
 
     ---
 
@@ -41,7 +41,7 @@ On the other hand, **Warp** and **Warp Pro** which provide **WireGuard** configs
 
     [:octicons-arrow-right-24: Getting started](warp.md)
 
-- :material-cog-outline:{ .lg .middle } **Warp Pro**
+- :material-playlist-check:{ .lg .middle } **Warp Pro**
 
     ---
 

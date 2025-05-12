@@ -1,4 +1,4 @@
-# Full Normal subscription
+# :material-playlist-check:{ .md .middle } Full Normal subscription
 
 ![Full Normal subscription](../images/full-normal-sub.jpg)
 

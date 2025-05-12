@@ -1,4 +1,4 @@
-# Warp subscriptions
+# :material-playlist-check:{ .md .middle } Warp subscriptions
 
 ![Warp subscriptions](../images/warp-sub.jpg)
 

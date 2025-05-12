@@ -1,4 +1,4 @@
-# اشتراک Warp Pro
+# :material-playlist-check:{ .md .middle } اشتراک Warp Pro
 
 ![Warp Pro subscription](../images/warp-pro-sub.jpg)
 

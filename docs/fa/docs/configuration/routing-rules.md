@@ -1,4 +1,4 @@
-# قوانین مسیریابی یا Routing Rules
+# :material-cog-outline:{ .md .middle } قوانین مسیریابی یا Routing Rules
 
 ![Routing Rules](../images/routing-rules.jpg)
 

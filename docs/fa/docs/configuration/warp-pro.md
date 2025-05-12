@@ -1,4 +1,4 @@
-# تنظیمات Warp Pro
+# :material-cog-outline:{ .md .middle } تنظیمات Warp Pro
 
 این بخش فقط برای اشتراک **Warp Pro** اعمال می‌شه، همون‌طور که [اینجا](../usage/warp-pro.md) توضیح داده شده.
 

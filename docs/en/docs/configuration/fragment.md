@@ -1,4 +1,4 @@
-# Fragment settings
+# :material-cog-outline:{ .md .middle } Fragment settings
 
 Fragment solution almost solves Clean IP issue for Cloudflare CDN by hiding SNI from MitM, however, settings should be obtained based on ISP.
 
