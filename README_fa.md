@@ -42,10 +42,10 @@
 
 ## شروع به کار
 
-* [روش‌های راه‌اندازی](https://bia-pain-bache.github.io/bpb-worker-panel/fa/installation/wizard/)
-* [راهنمای تنظیمات](https://bia-pain-bache.github.io/bpb-worker-panel/fa/configuration/)
-* [نحوه‌ی استفاده](https://bia-pain-bache.github.io/bpb-worker-panel/fa/usage/)
-* [پرسش‌های متداول (FAQ)](https://bia-pain-bache.github.io/bpb-worker-panel/en/faq/)
+* [روش‌های راه‌اندازی](https://bia-pain-bache.github.io/BPB-Worker-Panel/fa/installation/wizard/)
+* [راهنمای تنظیمات](https://bia-pain-bache.github.io/BPB-Worker-Panel/fa/configuration/)
+* [نحوه‌ی استفاده](https://bia-pain-bache.github.io/BPB-Worker-Panel/fa/usage/)
+* [پرسش‌های متداول (FAQ)](https://bia-pain-bache.github.io/BPB-Worker-Panel/en/faq/)
 
 ## برنامه‌های پشتیبانی شده
 <div dir="rtl">
