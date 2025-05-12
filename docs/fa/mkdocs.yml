@@ -1,5 +1,5 @@
 site_name: BPB Panel
-site_url: https://bia-pain-bache.github.io
+site_url: https://bia-pain-bache.github.io/BPB-Worker-Panel
 
 use_directory_urls: true
 site_dir: ../../site/fa
@@ -60,7 +60,7 @@ extra:
   alternate:
     - name: English
       lang: en
-      link: /docs/en/
+      link: /en/
 
 plugins:
   - search
