@@ -1,3 +1,4 @@
+import { getDomain, resolveDNS } from '../cores-configs/helpers';
 import { fetchWarpConfigs } from '../protocols/warp';
 
 export async function getDataset(request, env) {
@@ -17,7 +18,7 @@ export async function getDataset(request, env) {
         warpConfigs = configs;
     }
 
-    if (globalThis.panelVersion !== proxySettings.panelVersion) proxySettings = await updateDataset(request, env);
+    if (panelVersion !== proxySettings.panelVersion) proxySettings = await updateDataset(request, env);
     return { proxySettings, warpConfigs }
 }
 
@@ -55,7 +56,7 @@ export async function updateDataset(request, env) {
     const getPorts = () => {
         if (isReset) return null;
         const ports = [];
-        [...globalThis.defaultHttpsPorts, ...globalThis.defaultHttpPorts].forEach(port => {
+        [...defaultHttpsPorts, ...defaultHttpPorts].forEach(port => {
             validateField(port) && ports.push(port);
         });
 
@@ -80,8 +81,27 @@ export async function updateDataset(request, env) {
             : validateField(field, isCheckBox, isArray);
     }
 
-    const proxySettings = {
-        remoteDNS: populateField('remoteDNS', 'https://8.8.8.8/dns-query'),
+    const remoteDNS = populateField('remoteDNS', 'https://8.8.8.8/dns-query');
+    const initDoh = async () => {
+        const { host, isHostDomain } = getDomain(remoteDNS);
+        const dohHost = {
+            host,
+            isDomain: isHostDomain
+        }
+
+        if (isHostDomain) {
+            const { ipv4, ipv6 } = await resolveDNS(host);
+            dohHost.isDomain = true;
+            dohHost.ipv4 = ipv4;
+            dohHost.ipv6 = ipv6;
+        }
+
+        return dohHost;
+    }
+
+    const settings = {
+        remoteDNS,
+        dohHost: await initDoh(), 
         localDNS: populateField('localDNS', '8.8.8.8'),
         VLTRFakeDNS: populateField('VLTRFakeDNS', false),
         proxyIPs: populateField('proxyIPs', [], false, true),
@@ -134,17 +154,17 @@ export async function updateDataset(request, env) {
         amneziaNoiseCount: populateField('amneziaNoiseCount', '5'),
         amneziaNoiseSizeMin: populateField('amneziaNoiseSizeMin', '50'),
         amneziaNoiseSizeMax: populateField('amneziaNoiseSizeMax', '100'),
-        panelVersion: globalThis.panelVersion
+        panelVersion: panelVersion
     };
 
     try {
-        await env.kv.put("proxySettings", JSON.stringify(proxySettings));
+        await env.kv.put("proxySettings", JSON.stringify(settings));
     } catch (error) {
         console.log(error);
         throw new Error(`An error occurred while updating KV - ${error}`);
     }
 
-    return proxySettings;
+    return settings;
 }
 
 function extractChainProxyParams(chainProxy) {

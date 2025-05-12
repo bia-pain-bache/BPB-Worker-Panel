@@ -1,31 +1,11 @@
 import { getConfigAddresses, generateRemark, randomUpperCase, getRandomPath, base64EncodeUnicode } from './helpers';
 
 export async function getNormalConfigs(isFragment) {
-    const { hostName, defaultHttpsPorts, client, userID, TRPassword } = globalThis;
-    const {
-        remoteDNS,
-        cleanIPs,
-        proxyIPs,
-        ports,
-        VLConfigs,
-        TRConfigs,
-        fragmentLengthMin,
-        fragmentLengthMax,
-        fragmentIntervalMin,
-        fragmentIntervalMax,
-        outProxy,
-        customCdnAddrs,
-        customCdnHost,
-        customCdnSni,
-        VLTRenableIPv6
-    } = globalThis.proxySettings;
-
     let VLConfs = '', TRConfs = '', chainProxy = '';
     let proxyIndex = 1;
     const Addresses = await getConfigAddresses(cleanIPs, VLTRenableIPv6, customCdnAddrs, isFragment);
 
     const buildConfig = (protocol, addr, port, host, sni, remark) => {
-
         const isTLS = defaultHttpsPorts.includes(port);
         const security = isTLS ? 'tls' : 'none';
         const path = `${getRandomPath(16)}${proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : ''}`;
@@ -69,10 +49,9 @@ export async function getNormalConfigs(isFragment) {
     }
 
     ports.forEach(port => {
-        Addresses.forEach((addr, index) => {
-
-            const isCustomAddr = index > Addresses.length - 1;
-            const configType = isCustomAddr ? 'C' : '';
+        Addresses.forEach(addr => {
+            const isCustomAddr = customCdnAddrs.includes(addr) && !isFragment;
+            const configType = isCustomAddr ? 'C' : isFragment ? 'F' : '';
             const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
             const host = isCustomAddr ? customCdnHost : hostName;
 
@@ -94,7 +73,6 @@ export async function getNormalConfigs(isFragment) {
     });
 
     if (outProxy) {
-
         let chainRemark = `#${encodeURIComponent('💦 Chain proxy 🔗')}`;
         if (outProxy.startsWith('socks') || outProxy.startsWith('http')) {
             const regex = /^(?:socks|http):\/\/([^@]+)@/;
@@ -124,18 +102,6 @@ export async function getNormalConfigs(isFragment) {
 }
 
 export async function getHiddifyWarpConfigs(isPro) {
-
-    const {
-        warpEndpoints,
-        hiddifyNoiseMode,
-        noiseCountMin,
-        noiseCountMax,
-        noiseSizeMin,
-        noiseSizeMax,
-        noiseDelayMin,
-        noiseDelayMax
-    } = globalThis.proxySettings;
-
     let configs = '';
     warpEndpoints.forEach((endpoint, index) => {
         const config = new URL('warp://config');

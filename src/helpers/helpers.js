@@ -15,7 +15,7 @@ export function isValidUUID(uuid) {
 
 export async function handlePanel(request, env) {
 
-    switch (globalThis.pathName) {
+    switch (pathName) {
         case '/panel':
             return await renderPanel(request, env);
 
@@ -45,17 +45,22 @@ export async function handlePanel(request, env) {
     }
 }
 
+export async function handleError(error) {
+    const message = encodeURIComponent(error.message);
+    return Response.redirect(`${urlOrigin}/error?message=${message}`, 302);
+}
+
 export async function handleLogin(request, env) {
-    const { pathName } = globalThis;
     if (pathName === '/login') return await renderLogin(request, env);
     if (pathName === '/login/authenticate') return await generateJWTToken(request, env);
     return await fallback(request);
 }
 
 export async function handleSubscriptions(request, env) {
-    const { subPath, pathName, client } = globalThis;
     const { proxySettings } = await getDataset(request, env);
-    globalThis.proxySettings = proxySettings;
+    Object.entries(proxySettings).forEach(([Key, Value]) => {
+        globalThis[Key] = Value;
+    })
 
     switch (decodeURIComponent(pathName)) {
         case `/sub/normal/${subPath}`:
@@ -117,7 +122,7 @@ async function getSettings(request, env) {
         const settings = {
             proxySettings,
             isPassSet,
-            subPath: globalThis.subPath
+            subPath: subPath
         };
 
         return await respond(true, 200, null, settings);
@@ -128,7 +133,7 @@ async function getSettings(request, env) {
 
 export async function fallback(request) {
     const url = new URL(request.url);
-    url.hostname = globalThis.fallbackDomain;
+    url.hostname = fallbackDomain;
     url.protocol = 'https:';
     const newRequest = new Request(url.toString(), {
         method: request.method,
@@ -153,11 +158,10 @@ async function getMyIP(request) {
 }
 
 async function getWarpConfigs(request, env) {
-    const isPro = globalThis.client === 'amnezia';
+    const isPro = client === 'amnezia';
     const auth = await Authenticate(request, env);
     if (!auth) return new Response('Unauthorized or expired session.', { status: 401 });
-    const { warpConfigs, proxySettings } = await getDataset(request, env);
-    const { warpEndpoints, amneziaNoiseCount, amneziaNoiseSizeMin, amneziaNoiseSizeMax } = proxySettings;
+    const { warpConfigs } = await getDataset(request, env);
     const warpConfig = extractWireguardParams(warpConfigs, false);
     const { warpIPv6, publicKey, privateKey } = warpConfig;
     const zip = new JSZip();
@@ -219,10 +223,10 @@ async function renderPanel(request, env) {
     const pwd = await env.kv.get('pwd');
     if (pwd) {
         const auth = await Authenticate(request, env);
-        if (!auth) return Response.redirect(`${globalThis.urlOrigin}/login`, 302);
+        if (!auth) return Response.redirect(`${urlOrigin}/login`, 302);
     }
 
-    const html = __PANEL_HTML_CONTENT__.replace(/__PANEL_VERSION__/g, globalThis.panelVersion);
+    const html = __PANEL_HTML_CONTENT__.replace(/__PANEL_VERSION__/g, panelVersion);
     return new Response(html, {
         headers: { 'Content-Type': 'text/html' }
     });
@@ -230,23 +234,23 @@ async function renderPanel(request, env) {
 
 async function renderLogin(request, env) {
     const auth = await Authenticate(request, env);
-    if (auth) return Response.redirect(`${globalThis.urlOrigin}/panel`, 302);
+    if (auth) return Response.redirect(`${urlOrigin}/panel`, 302);
 
-    const html = __LOGIN_HTML_CONTENT__.replace(/__PANEL_VERSION__/g, globalThis.panelVersion);
+    const html = __LOGIN_HTML_CONTENT__.replace(/__PANEL_VERSION__/g, panelVersion);
     return new Response(html, {
         headers: { 'Content-Type': 'text/html' }
     });
 }
 
 export async function renderSecrets() {
-    const html = __SECRETS_HTML_CONTENT__.replace(/__PANEL_VERSION__/g, globalThis.panelVersion);
+    const html = __SECRETS_HTML_CONTENT__.replace(/__PANEL_VERSION__/g, panelVersion);
     return new Response(html, {
         headers: { 'Content-Type': 'text/html' },
     });
 }
 
 export async function renderError() {
-    const html = __ERROR_HTML_CONTENT__.replace(/__PANEL_VERSION__/g, globalThis.panelVersion);
+    const html = __ERROR_HTML_CONTENT__.replace(/__PANEL_VERSION__/g, panelVersion);
     return new Response(html, {
         status: 200,
         headers: { 'Content-Type': 'text/html' }

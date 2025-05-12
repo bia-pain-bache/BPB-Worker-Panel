@@ -1,26 +1,7 @@
-import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6, isDomain, getDomain, base64ToDecimal } from './helpers';
+import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6, isDomain, base64ToDecimal } from './helpers';
 import { getDataset } from '../kv/handlers';
 
-function buildSingBoxDNS(outboundAddrs, isWarp) {
-    const {
-        remoteDNS,
-        localDNS,
-        VLTRFakeDNS,
-        VLTRenableIPv6,
-        warpFakeDNS,
-        warpEnableIPv6,
-        bypassIran,
-        bypassChina,
-        bypassRussia,
-        bypassOpenAi,
-        blockAds,
-        blockPorn,
-        customBypassRules,
-        customBlockRules
-    } = globalThis.proxySettings;
-
-    let fakeip;
-    const dohHost = getDomain(remoteDNS);
+async function buildSingBoxDNS(isWarp) {
     const isFakeDNS = (VLTRFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
     const isIPv6 = (VLTRenableIPv6 && !isWarp) || (warpEnableIPv6 && isWarp);
     const customBypassRulesDomains = customBypassRules.filter(address => isDomain(address));
@@ -37,51 +18,38 @@ function buildSingBoxDNS(outboundAddrs, isWarp) {
 
     const servers = [
         {
-            address: isWarp ? "1.1.1.1" : remoteDNS,
-            address_resolver: dohHost.isHostDomain ? "doh-resolver" : "dns-direct",
+            type: isWarp ? "udp" : "https",
+            server: isWarp ? "1.1.1.1" : dohHost.host,
+            server_port: isWarp ? 53 : 443,
             detour: "✅ Selector",
             tag: "dns-remote"
         },
-        {
-            address: localDNS === 'localhost' ? 'local' : localDNS,
-            detour: "direct",
-            tag: "dns-direct"
-        },
-        {
-            address: "local",
-            tag: "dns-local"
-        }
     ];
 
-    dohHost.isHostDomain && !isWarp && servers.push({
-        address: 'https://8.8.8.8/dns-query',
-        detour: "✅ Selector",
-        tag: "doh-resolver"
-    });
+    if (localDNS === 'localhost') {
+        servers.push({
+            type: "local",
+            tag: "dns-direct"
+        });
+    } else {
+        servers.push({
+            type: "udp",
+            server: localDNS,
+            server_port: 53,
+            detour: "direct",
+            tag: "dns-direct"
+        });
+    }
 
     bypassOpenAi && servers.push({
-        address: "178.22.122.100",
+        type: "udp",
+        server: "178.22.122.100",
+        server_port: 53,
         detour: "direct",
         tag: "dns-openai"
     });
 
-    let outboundRule;
-    if (isWarp) {
-        outboundRule = {
-            outbound: "any",
-            server: "dns-direct"
-        };
-    } else {
-        const outboundDomains = outboundAddrs.filter(address => isDomain(address));
-        const uniqueDomains = [...new Set(outboundDomains)];
-        outboundRule = {
-            domain: uniqueDomains,
-            server: "dns-direct"
-        };
-    }
-
     const rules = [
-        outboundRule,
         {
             domain: [
                 "raw.githubusercontent.com",
@@ -98,6 +66,20 @@ function buildSingBoxDNS(outboundAddrs, isWarp) {
             server: "dns-remote"
         }
     ];
+
+    if (dohHost.isDomain && !isWarp) {
+        const { ipv4, ipv6, host } = dohHost;
+        const answers = [
+            ...ipv4.map(ip => `${host}. IN A ${ip}`),
+            ...(VLTRenableIPv6 ? ipv6.map(ip => `${host}. IN AAAA ${ip}`) : [])
+        ];
+
+        rules.unshift({
+            domain: host,
+            action: "predefined",
+            answer: answers
+        });
+    }
 
     let blockRule = {
         disable_cache: true,
@@ -150,10 +132,14 @@ function buildSingBoxDNS(outboundAddrs, isWarp) {
     });
 
     if (isFakeDNS) {
-        servers.push({
-            address: "fakeip",
-            tag: "dns-fake"
-        });
+        const fakeip = {
+            type: "fakeip",
+            tag: "dns-fake",
+            inet4_range: "198.18.0.0/15"
+        };
+
+        if (isIPv6) fakeip.inet6_range = "fc00::/18";
+        servers.push(fakeip);
 
         rules.push({
             disable_cache: true,
@@ -164,32 +150,17 @@ function buildSingBoxDNS(outboundAddrs, isWarp) {
             ],
             server: "dns-fake"
         });
-
-        fakeip = {
-            enabled: true,
-            inet4_range: "198.18.0.0/15"
-        };
-
-        if (isIPv6) fakeip.inet6_range = "fc00::/18";
     }
 
-    return { servers, rules, fakeip };
+    return {
+        servers,
+        rules,
+        strategy: isIPv6 ? "prefer_ipv4" : "ipv4_only",
+        independent_cache: true
+    }
 }
 
 function buildSingBoxRoutingRules(isWarp) {
-    const {
-        bypassLAN,
-        bypassIran,
-        bypassChina,
-        bypassRussia,
-        bypassOpenAi,
-        blockAds,
-        blockPorn,
-        blockUDP443,
-        customBypassRules,
-        customBlockRules
-    } = globalThis.proxySettings;
-
     const defaultRules = [
         {
             action: "sniff"
@@ -394,31 +365,26 @@ function buildSingBoxRoutingRules(isWarp) {
     });
 
     rules = [...defaultRules, ...rules, ...blockDomainRules, ...blockIPRules, ...directDomainRules, ...directIPRules];
-    return { rules, rule_set: ruleSets };
+    return {
+        rules,
+        rule_set: ruleSets,
+        auto_detect_interface: true,
+        override_android_vpn: true,
+        final: "✅ Selector"
+    }
 }
 
 function buildSingBoxVLOutbound(remark, address, port, host, sni, allowInsecure) {
-    const { userID, defaultHttpsPorts, proxySettings } = globalThis;
-    const { VLTRenableIPv6, proxyIPs } = proxySettings;
     const path = `/${getRandomPath(16)}${proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : ''}`;
     const tls = defaultHttpsPorts.includes(port) ? true : false;
 
     const outbound = {
+        tag: remark,
         type: "vless",
         server: address,
         server_port: +port,
         uuid: userID,
         packet_encoding: "",
-        tls: {
-            alpn: "http/1.1",
-            enabled: true,
-            insecure: allowInsecure,
-            server_name: sni,
-            utls: {
-                enabled: true,
-                fingerprint: "randomized"
-            }
-        },
         transport: {
             early_data_header_name: "Sec-WebSocket-Protocol",
             max_early_data: 2560,
@@ -428,38 +394,39 @@ function buildSingBoxVLOutbound(remark, address, port, host, sni, allowInsecure)
             path: path,
             type: "ws"
         },
+        domain_resolver: {
+            server: "dns-direct",
+            strategy: VLTRenableIPv6 ? "prefer_ipv4" : "ipv4_only",
+            rewrite_ttl: 60
+        },
         tcp_fast_open: true,
-        tcp_multi_path: true,
-        tag: remark
+        tcp_multi_path: true
     };
 
-    if (isDomain(address)) outbound.domain_strategy = VLTRenableIPv6 ? "prefer_ipv4" : "ipv4_only";
-    if (!tls) delete outbound.tls;
+    if (tls) outbound.tls = {
+        alpn: "http/1.1",
+        enabled: true,
+        insecure: allowInsecure,
+        server_name: sni,
+        utls: {
+            enabled: true,
+            fingerprint: "randomized"
+        }
+    };
 
     return outbound;
 }
 
 function buildSingBoxTROutbound(remark, address, port, host, sni, allowInsecure) {
-    const { TRPassword, defaultHttpsPorts, proxySettings } = globalThis;
-    const { VLTRenableIPv6, proxyIPs } = proxySettings;
     const path = `/tr${getRandomPath(16)}${proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : ''}`;
     const tls = defaultHttpsPorts.includes(port) ? true : false;
 
     const outbound = {
+        tag: remark,
         type: "trojan",
         password: TRPassword,
         server: address,
         server_port: +port,
-        tls: {
-            alpn: "http/1.1",
-            enabled: true,
-            insecure: allowInsecure,
-            server_name: sni,
-            utls: {
-                enabled: true,
-                fingerprint: "randomized"
-            }
-        },
         transport: {
             early_data_header_name: "Sec-WebSocket-Protocol",
             max_early_data: 2560,
@@ -469,13 +436,25 @@ function buildSingBoxTROutbound(remark, address, port, host, sni, allowInsecure)
             path: path,
             type: "ws"
         },
+        domain_resolver: {
+            server: "dns-direct",
+            strategy: VLTRenableIPv6 ? "prefer_ipv4" : "ipv4_only",
+            rewrite_ttl: 60
+        },
         tcp_fast_open: true,
-        tcp_multi_path: true,
-        tag: remark
+        tcp_multi_path: true
     }
 
-    if (isDomain(address)) outbound.domain_strategy = VLTRenableIPv6 ? "prefer_ipv4" : "ipv4_only";
-    if (!tls) delete outbound.tls;
+    if (tls) outbound.tls = {
+        alpn: "http/1.1",
+        enabled: true,
+        insecure: allowInsecure,
+        server_name: sni,
+        utls: {
+            enabled: true,
+            fingerprint: "randomized"
+        }
+    };
 
     return outbound;
 }
@@ -487,7 +466,6 @@ function buildSingBoxWarpOutbound(warpConfigs, remark, endpoint, chain) {
     const endpointPort = endpoint.includes('[') ? +endpoint.match(portRegex)[0] : +endpoint.split(':')[1];
     const server = chain ? "162.159.192.1" : endpointServer;
     const port = chain ? 2408 : endpointPort;
-    const { warpEnableIPv6 } = globalThis.proxySettings;
 
     const {
         warpIPv6,
@@ -497,6 +475,8 @@ function buildSingBoxWarpOutbound(warpConfigs, remark, endpoint, chain) {
     } = extractWireguardParams(warpConfigs, chain);
 
     const outbound = {
+        tag: remark,
+        type: "wireguard",
         address: [
             "172.16.0.2/32",
             warpIPv6
@@ -516,17 +496,18 @@ function buildSingBoxWarpOutbound(warpConfigs, remark, endpoint, chain) {
             }
         ],
         private_key: privateKey,
-        type: "wireguard",
-        tag: remark
+        domain_resolver: {
+            server: chain ? "dns-remote" : "dns-direct",
+            strategy: warpEnableIPv6 ? "prefer_ipv4" : "ipv4_only",
+            rewrite_ttl: 60
+        }
     };
 
-    if (isDomain(server)) outbound.domain_strategy = warpEnableIPv6 ? "prefer_ipv4" : "ipv4_only";
     if (chain) outbound.detour = chain;
-
     return outbound;
 }
 
-function buildSingBoxChainOutbound(chainProxyParams, VLTRenableIPv6) {
+function buildSingBoxChainOutbound(chainProxyParams) {
     if (["socks", "http"].includes(chainProxyParams.protocol)) {
         const { protocol, server, port, user, pass } = chainProxyParams;
 
@@ -537,12 +518,15 @@ function buildSingBoxChainOutbound(chainProxyParams, VLTRenableIPv6) {
             server_port: +port,
             username: user,
             password: pass,
+            domain_resolver: {
+                server: "dns-remote",
+                strategy: VLTRenableIPv6 ? "prefer_ipv4" : "ipv4_only",
+                rewrite_ttl: 60
+            },
             detour: ""
         };
 
-        if (isDomain(server)) chainOutbound.domain_strategy = VLTRenableIPv6 ? "prefer_ipv4" : "ipv4_only";
         if (protocol === 'socks') chainOutbound.version = "5";
-
         return chainOutbound;
     }
 
@@ -554,10 +538,14 @@ function buildSingBoxChainOutbound(chainProxyParams, VLTRenableIPv6) {
         server_port: +port,
         uuid: uuid,
         flow: flow,
+        domain_resolver: {
+            server: "dns-remote",
+            strategy: VLTRenableIPv6 ? "prefer_ipv4" : "ipv4_only",
+            rewrite_ttl: 60
+        },
         detour: ""
     };
 
-    if (isDomain(server)) chainOutbound.domain_strategy = VLTRenableIPv6 ? "prefer_ipv4" : "ipv4_only";
     if (security === 'tls' || security === 'reality') {
         const tlsAlpns = alpn ? alpn?.split(',').filter(value => value !== 'h2') : [];
         chainOutbound.tls = {
@@ -616,19 +604,10 @@ function buildSingBoxChainOutbound(chainProxyParams, VLTRenableIPv6) {
     return chainOutbound;
 }
 
-function buildSingBoxConfig (outboundAddrs, selectorTags, urlTestTags, secondUrlTestTags, isWarp) {
-
-    const { bestWarpInterval, bestVLTRInterval } = globalThis.proxySettings;
+async function buildSingBoxConfig(selectorTags, urlTestTags, secondUrlTestTags, isWarp) {
     const config = structuredClone(singboxConfigTemp);
-
-    const { servers, rules, fakeip } = buildSingBoxDNS(outboundAddrs, isWarp);
-    config.dns.servers = servers;
-    config.dns.rules = rules;
-    if (fakeip) config.dns.fakeip = fakeip;
-
-    const { rules: routinRules, rule_set } = buildSingBoxRoutingRules(isWarp);
-    config.route.rules = routinRules;
-    config.route.rule_set = rule_set;
+    config.dns = await buildSingBoxDNS(isWarp);
+    config.route = buildSingBoxRoutingRules(isWarp);
 
     const selector = {
         type: "selector",
@@ -657,10 +636,7 @@ function buildSingBoxConfig (outboundAddrs, selectorTags, urlTestTags, secondUrl
 }
 
 export async function getSingBoxWarpConfig(request, env) {
-
     const { warpConfigs } = await getDataset(request, env);
-    const { warpEndpoints } = globalThis.proxySettings;
-
     const warpTags = [], wowTags = [];
     const endpoints = {
         proxies: [],
@@ -682,8 +658,8 @@ export async function getSingBoxWarpConfig(request, env) {
     });
 
     const selectorTags = [`💦 Warp - Best Ping 🚀`, `💦 WoW - Best Ping 🚀`, ...warpTags, ...wowTags];
-    const config = buildSingBoxConfig(null, selectorTags, warpTags, wowTags, true);
-    config.endpoints = [...endpoints.chains, ...endpoints.proxies];    
+    const config = await buildSingBoxConfig(selectorTags, warpTags, wowTags, true);
+    config.endpoints = [...endpoints.chains, ...endpoints.proxies];
 
     return new Response(JSON.stringify(config, null, 4), {
         status: 200,
@@ -696,29 +672,14 @@ export async function getSingBoxWarpConfig(request, env) {
 }
 
 export async function getSingBoxCustomConfig(env) {
-    
-    const { hostName } = globalThis;
     let chainProxy;
-
-    const {
-        cleanIPs,
-        ports,
-        VLConfigs,
-        TRConfigs,
-        outProxy,
-        outProxyParams,
-        customCdnAddrs,
-        customCdnHost,
-        customCdnSni,
-        VLTRenableIPv6
-    } = globalThis.proxySettings;
-
     if (outProxy) {
         try {
             chainProxy = buildSingBoxChainOutbound(outProxyParams, VLTRenableIPv6);
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
             chainProxy = undefined;
+            const proxySettings = await env.kv.get("proxySettings", { type: 'json' });
             await env.kv.put("proxySettings", JSON.stringify({
                 ...proxySettings,
                 outProxy: '',
@@ -726,7 +687,7 @@ export async function getSingBoxCustomConfig(env) {
             }));
         }
     }
-    
+
     let proxyIndex = 1;
     const protocols = [];
     VLConfigs && protocols.push('VLESS');
@@ -771,7 +732,7 @@ export async function getSingBoxCustomConfig(env) {
                         sni,
                         isCustomAddr
                     );
-                    
+
                     outbounds.proxies.push(TROutbound);
                 }
 
@@ -783,15 +744,15 @@ export async function getSingBoxCustomConfig(env) {
                 }
 
                 tags.push(tag);
-                
+
                 proxyIndex++;
                 protocolIndex++;
             });
         });
     });
 
-    const selectorTags = ['💦 Best Ping 💥', ...tags];    
-    const config = buildSingBoxConfig(Addresses, selectorTags, tags, null, false);
+    const selectorTags = ['💦 Best Ping 💥', ...tags];
+    const config = await buildSingBoxConfig(selectorTags, tags, null, false);
     config.outbounds.push(...outbounds.chains, ...outbounds.proxies);
 
     return new Response(JSON.stringify(config, null, 4), {
@@ -809,12 +770,7 @@ const singboxConfigTemp = {
         level: "warn",
         timestamp: true
     },
-    dns: {
-        servers: [],
-        rules: [],
-        strategy: "ipv4_only",
-        independent_cache: true
-    },
+    dns: {},
     inbounds: [
         {
             type: "direct",
@@ -847,17 +803,14 @@ const singboxConfigTemp = {
     outbounds: [
         {
             type: "direct",
-            domain_strategy: "ipv4_only",
+            domain_resolver: {
+                server: "dns-direct",
+                strategy: "ipv4_only"
+            },
             tag: "direct"
         }
     ],
-    route: {
-        rules: [],
-        rule_set: [],
-        auto_detect_interface: true,
-        override_android_vpn: true,
-        final: "✅ Selector"
-    },
+    route: {},
     ntp: {
         enabled: true,
         server: "time.apple.com",

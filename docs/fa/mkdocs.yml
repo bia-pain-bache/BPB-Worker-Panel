@@ -1,0 +1,110 @@
+site_name: BPB Panel
+site_url: https://bia-pain-bache.github.io
+
+use_directory_urls: true
+site_dir: ../../site/fa
+extra_css:
+  - stylesheet/extra.css
+
+theme:
+  name: material
+  custom_dir: ../assets
+  logo: favicon.ico
+  favicon: favicon.ico
+  direction: rtl
+  language: fa
+  font:
+    text: Vazirmatn
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default 
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.tabs.sticky
+    - navigation.expand
+    - navigation.path
+    - navigation.indexes
+    - navigation.top
+    - content.code.copy
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - attr_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - md_in_html
+  
+extra:
+  alternate:
+    - name: English
+      lang: en
+      link: /docs/en/
+
+plugins:
+  - search
+
+nav:
+  - خانه:
+    - خانه: index.md
+    - راه‌اندازی:
+      - خودکار: installation/wizard.md
+      - Pages دستی: installation/pages-manual.md
+      - Workers دستی: installation/workers-manual.md
+    - راهنمای تنظیمات:
+      - راهنمای تنظیمات: configuration/index.md
+      - پروتکل‌های VLESS و Trojan: configuration/vless-trojan.md 
+      - تنظیمات Fragment: configuration/fragment.md
+      - تنظیمات عمومی Warp: configuration/warp.md
+      - تنظیمات Warp PRO: configuration/warp-pro.md
+      - قوانین مسیریابی یا Routing Rules: configuration/routing-rules.md
+    - نحوه‌ی استفاده: 
+      - نحوه‌ی استفاده: usage/index.md
+      - اشتراک Normal: usage/normal.md
+      - اشتراک Full Normal: usage/full-normal.md
+      - اشتراک Fragment: usage/fragment.md
+      - اشتراک Warp: usage/warp.md
+      - اشتراک Warp PRO: usage/warp-pro.md
+      - IP من: usage/my-ip.md
+    - سوالات متداول: faq.md
+  - راه‌اندازی:
+    - خودکار: installation/wizard.md
+    - Pages دستی: installation/pages-manual.md
+    - Workers دستی: installation/workers-manual.md
+  -  راهنمای تنظیمات:
+      - راهنمای تنظیمات: configuration/index.md
+      - پروتکل‌های VLESS و Trojan: configuration/vless-trojan.md 
+      - تنظیمات Fragment: configuration/fragment.md
+      - تنظیمات عمومی Warp: configuration/warp.md
+      - تنظیمات Warp PRO: configuration/warp-pro.md
+      - قوانین مسیریابی یا Routing Rules: configuration/routing-rules.md
+  - نحوه‌ی استفاده: 
+      - نحوه‌ی استفاده: usage/index.md
+      - اشتراک Normal: usage/normal.md
+      - اشتراک Full Normal: usage/full-normal.md
+      - اشتراک Fragment: usage/fragment.md
+      - اشتراک Warp: usage/warp.md
+      - اشتراک Warp PRO: usage/warp-pro.md
+      - IP من: usage/my-ip.md
+  - سوالات متداول: faq.md

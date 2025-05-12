@@ -1,0 +1,108 @@
+site_name: BPB Panel
+site_url: https://bia-pain-bache.github.io
+
+use_directory_urls: true
+site_dir: ../../site/en
+extra_css:
+  - stylesheet/extra.css
+
+theme:
+  name: material
+  custom_dir: ../assets
+  logo: favicon.ico
+  favicon: favicon.ico
+  direction: ltr
+  language: en
+  font:
+    text: Vazirmatn
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default 
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.tabs.sticky
+    - navigation.expand
+    - navigation.path
+    - navigation.indexes
+    - navigation.top
+    - content.code.copy
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - attr_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - md_in_html
+
+extra:
+  alternate:
+    - name: Farsi
+      lang: fa
+      link: /docs/fa/
+
+plugins:
+  - search
+
+nav:
+  - Home:
+    - Home: index.md
+    - Installation:
+      - Wizard: installation/wizard.md
+      - Manual - Pages: installation/pages-manual.md
+      - Manual - Workers: installation/workers-manual.md
+    - Configuration:
+      - VLESS - Trojan: configuration/vless-trojan.md 
+      - Fragment: configuration/fragment.md
+      - Warp General: configuration/warp.md
+      - Warp PRO: configuration/warp-pro.md
+      - Routing rules: configuration/routing-rules.md
+    - Usage:
+      - Normal: usage/normal.md
+      - Full Normal: usage/full-normal.md
+      - Fragment: usage/fragment.md
+      - Warp: usage/warp.md
+      - Warp PRO: usage/warp-pro.md
+      - My IP: usage/my-ip.md
+    - FAQ: faq.md
+  - Installation:
+    - Wizard: installation/wizard.md
+    - Manual - Pages: installation/pages-manual.md
+    - Manual - Workers: installation/workers-manual.md
+  - Configuration:
+    - Configuration: configuration/index.md  
+    - VLESS - Trojan: configuration/vless-trojan.md  
+    - Fragment: configuration/fragment.md
+    - Warp General: configuration/warp.md
+    - Warp PRO: configuration/warp-pro.md
+    - Routing rules: configuration/routing-rules.md
+  - Usage:
+    - Usage: usage/index.md
+    - Normal: usage/normal.md
+    - Full Normal: usage/full-normal.md
+    - Fragment: usage/fragment.md
+    - Warp: usage/warp.md
+    - Warp PRO: usage/warp-pro.md
+    - My IP: usage/my-ip.md
+  - FAQ: faq.md

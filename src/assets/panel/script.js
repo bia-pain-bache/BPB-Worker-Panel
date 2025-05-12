@@ -1,9 +1,6 @@
 localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
 import { polyfillCountryFlagEmojis } from 'https://cdn.skypack.dev/country-flag-emoji-polyfill';
 
-const defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
-const defaultHttpPorts = ['80', '8080', '8880', '2052', '2082', '2086', '2095'];
-
 fetch('/panel/settings')
     .then(async response => response.json())
     .then(data => {
@@ -78,9 +75,12 @@ function initiatePanel(proxySettings) {
         xrayUdpNoises
     } = proxySettings;
 
-    globalThis.activeProtocols = VLConfigs + TRConfigs;
-    globalThis.activeTlsPorts = ports.filter(port => defaultHttpsPorts.includes(port));
-    globalThis.xrayNoiseCount = xrayUdpNoises.length;
+    globalThis.defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
+    Object.assign(globalThis, {
+        activeProtocols: VLConfigs + TRConfigs,
+        activeTlsPorts: ports.filter(port => defaultHttpsPorts.includes(port)),
+        xrayNoiseCount: xrayUdpNoises.length,
+    });
 
     const selectElements = ["VLTRFakeDNS", "VLTRenableIPv6", "warpFakeDNS", "warpEnableIPv6"];
     const checkboxElements = ["VLConfigs", "TRConfigs", "bypassLAN", "blockAds", "bypassIran", "blockPorn", "bypassChina", "blockUDP443", "bypassRussia", "bypassOpenAi"];
@@ -373,12 +373,13 @@ function updateSettings(event) {
     event.preventDefault();
     event.stopPropagation();
 
-    const elementsToCheck = ['cleanIPs', 'customCdnAddrs', 'customCdnSni', 'customCdnHost', 'proxyIPs', 'customBypassRules', 'customBlockRules'];
+    const elementsToCheck = ['cleanIPs', 'customCdnAddrs', 'customCdnSni', 'customCdnHost', 'customBypassRules', 'customBlockRules'];
     const configForm = document.getElementById('configForm');
     const formData = new FormData(configForm);
 
     const validations = [
-        validateMultipleIpDomains(elementsToCheck),
+        validateMultipleHostNames(elementsToCheck),
+        validateProxyIPs(),
         validateWarpEndpoints(),
         validateMinMax(),
         validateChainProxy(),
@@ -414,20 +415,25 @@ function updateSettings(event) {
         });
 }
 
-function isValidIpDomain(value) {
-    const ipv6Regex = /^\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}|:(?::[a-fA-F0-9]{1,4}){1,7})\](?:\/(?:12[0-8]|1[01]?\d|[0-9]?\d))?$/gm;
-    const ipv4Regex = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)(?:\/(?:\d|[12]\d|3[0-2]))?$/gm;
-    const domainRegex = /^(?=.{1,253}$)(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)\.)+[a-zA-Z]{2,63}$/gm;
-    return ipv4Regex.test(value) || ipv6Regex.test(value) || domainRegex.test(value);
+function isValidHostName(value, isHost) {
+    const ipv6Regex = /^\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}|:(?::[a-fA-F0-9]{1,4}){1,7})\](?:\/(?:12[0-8]|1[01]?\d|[0-9]?\d))?/;
+    const ipv4Regex = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)(?:\/(?:\d|[12]\d|3[0-2]))?/;
+    const domainRegex = /^(?=.{1,253}$)(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)\.)+[a-zA-Z]{2,63}/;
+    const portRegex = /:(?:6553[0-5]|655[0-2]\d|65[0-4]\d{2}|6[0-4]\d{3}|[1-5]?\d{1,4})$/;
+    const append = isHost ? portRegex.source : '$';
+    const ipv6Reg = new RegExp(ipv6Regex.source + append, 'gm');
+    const ipv4Reg = new RegExp(ipv4Regex.source + append, 'gm');
+    const domainReg = new RegExp(domainRegex.source + append, 'gm');
+    return ipv4Reg.test(value) || ipv6Reg.test(value) || domainReg.test(value);
 }
 
-function validateMultipleIpDomains(elements) {
+function validateMultipleHostNames(elements) {
 
     const getValue = (id) => document.getElementById(id).value?.split('\n').filter(Boolean);
 
     const ips = [];
     elements.forEach(id => ips.push(...getValue(id)));
-    const invalidIPs = ips?.filter(value => value && !isValidIpDomain(value.trim()));
+    const invalidIPs = ips?.filter(value => value && !isValidHostName(value.trim()));
 
     if (invalidIPs.length) {
         alert('⛔ Invalid IPs or Domains.\n👉 Please enter each IP/domain in a new line.\n\n' + invalidIPs.map(ip => '⚠️ ' + ip).join('\n'));
@@ -437,17 +443,21 @@ function validateMultipleIpDomains(elements) {
     return true;
 }
 
-function validateWarpEndpoints() {
+function validateProxyIPs() {
+    const proxyIPs = document.getElementById('proxyIPs').value?.split('\n').filter(Boolean).map(ip => ip.trim());
+    const invalidValues = proxyIPs?.filter(value => !isValidHostName(value) && !isValidHostName(value, true));
 
-    function isValidEndpoint(value) {
-        const ipv6Regex = /^\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}|:(?::[a-fA-F0-9]{1,4}){1,7})\](?:\/(?:12[0-8]|1[01]?\d|[0-9]?\d))?:(?:6553[0-5]|655[0-2]\d|65[0-4]\d{2}|6[0-4]\d{3}|[1-5]?\d{1,4})$/gm;
-        const ipv4Regex = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)(?:\/(?:\d|[12]\d|3[0-2]))?:(?:6553[0-5]|655[0-2]\d|65[0-4]\d{2}|6[0-4]\d{3}|[1-5]?\d{1,4})$/gm;
-        const domainRegex = /^(?=.{1,253}$)(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)\.)+[a-zA-Z]{2,63}:(?:6553[0-5]|655[0-2]\d|65[0-4]\d{2}|6[0-4]\d{3}|[1-5]?\d{1,4})$/gm;
-        return ipv4Regex.test(value) || ipv6Regex.test(value) || domainRegex.test(value);
+    if (invalidValues.length) {
+        alert('⛔ Invalid proxy IPs.\n👉 Please enter each IP/domain in a new line.\n\n' + invalidValues.map(ip => '⚠️ ' + ip).join('\n'));
+        return false;
     }
 
+    return true;
+}
+
+function validateWarpEndpoints() {
     const warpEndpoints = document.getElementById('warpEndpoints').value?.split('\n');
-    const invalidEndpoints = warpEndpoints?.filter(value => value && !isValidEndpoint(value.trim()));
+    const invalidEndpoints = warpEndpoints?.filter(value => value && !isValidHostName(value.trim(), true));
 
     if (invalidEndpoints.length) {
         alert('⛔ Invalid endpoint.\n\n' + invalidEndpoints.map(endpoint => '⚠️ ' + endpoint).join('\n'));
@@ -649,6 +659,7 @@ function resetPassword(event) {
 }
 
 function renderPortsBlock(ports) {
+    const defaultHttpPorts = ['80', '8080', '8880', '2052', '2082', '2086', '2095'];
     let noneTlsPortsBlock = '', tlsPortsBlock = '';
     const allPorts = [...(window.origin.includes('workers.dev') ? defaultHttpPorts : []), ...defaultHttpsPorts];
 
