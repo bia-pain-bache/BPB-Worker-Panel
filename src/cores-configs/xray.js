@@ -723,7 +723,7 @@ export async function getXrayCustomConfigs(env, isFragment) {
         let protocolIndex = 1;
         for (const port of totalPorts) {
             for (const addr of Addresses) {
-                const isCustomAddr = customCdnAddrs.includes(addr);
+                const isCustomAddr = customCdnAddrs.includes(addr) && !isFragment;
                 const configType = isCustomAddr ? 'C' : isFragment ? 'F' : '';
                 const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
                 const host = isCustomAddr ? customCdnHost : hostName;
