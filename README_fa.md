@@ -3,7 +3,7 @@
 #### 🌏 [English](README.md)
 
 <p align="center">
-  <img src="docs/assets/images/Panel.jpg">
+  <img src="docs/assets/images/panel-overview.jpg">
 </p>
 <br>
 
