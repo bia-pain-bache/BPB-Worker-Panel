@@ -69,7 +69,7 @@ plugins:
 
 nav:
   - خانه:
-    - خانه: index.md
+    - index.md
     - راه‌اندازی:
       - خودکار: installation/wizard.md
       - Pages دستی: installation/pages-manual.md

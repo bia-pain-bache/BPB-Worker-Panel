@@ -43,6 +43,6 @@ If you choose option 1, it will ask a series of configuration questions. You can
 
 If you choose option 2, it lists deployed Workers and Pages projects and you can choose which one to modify.
 
-## Upgrading Panel
+## Updating Panel
 
 Just run wizard and select option 2 for the first question. It will show you a list of project names in your account — you can choose any to update or delete.
