@@ -1,5 +1,6 @@
 site_name: BPB Panel
 site_url: https://bia-pain-bache.github.io
+repo_url: https://github.com/bia-pain-bache/BPB-Worker-Panel
 
 use_directory_urls: true
 site_dir: ../../site/fa
@@ -32,13 +33,14 @@ theme:
         name: Switch to system preference
   features:
     - navigation.tabs
-    - navigation.sections
     - navigation.tabs.sticky
-    - navigation.expand
-    - navigation.path
+    - navigation.sections
+    - navigation.instant
     - navigation.indexes
     - navigation.top
     - content.code.copy
+    - toc.integrate
+    - navigation.tracking
 
 markdown_extensions:
   - admonition

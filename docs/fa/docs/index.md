@@ -1,4 +1,4 @@
-# پنل BPB 💦
+# 💦 پنل BPB
 
 ![پنل BPB](images/panel-overview.jpg)
 

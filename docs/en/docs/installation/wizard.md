@@ -34,7 +34,7 @@ curl -L -# -o BPB-Wizard.tar.gz https://github.com/bia-pain-bache/BPB-Wizard/rel
 
 The first question asks whether you want to create a new panel or modify existing panels in the account.
 
-Then logs into your Cloudflare account, return to the terminal and asks you a series of questions.
+Then logs into your Cloudflare account, Asks for your permission, returns to the terminal and asks you a series of questions.
 
 If you choose option 1, it will ask a series of configuration questions. You can use the default values or input your own. In the end, it opens the panel for you in your browser — that’s it.
 
