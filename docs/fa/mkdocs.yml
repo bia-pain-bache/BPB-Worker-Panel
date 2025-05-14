@@ -62,7 +62,7 @@ extra:
   alternate:
     - name: English
       lang: en
-      link: /BPB-Worker-Panel/en/
+      link: /BPB-Worker-Panel/
 
 plugins:
   - search
