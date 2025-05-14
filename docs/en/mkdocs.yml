@@ -1,6 +1,7 @@
 site_name: BPB Panel
 site_url: https://bia-pain-bache.github.io
 repo_url: https://github.com/bia-pain-bache/BPB-Worker-Panel
+copyright: Copyright &copy; BPB
 
 use_directory_urls: true
 site_dir: ../../site
@@ -63,44 +64,29 @@ extra:
     - name: Farsi
       lang: fa
       link: /BPB-Worker-Panel/fa/
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/bia-pain-bache/BPB-Worker-Panel
+      name: Source code
 
 plugins:
   - search
 
 nav:
-  - Home:
-    - index.md
-    - Installation:
-      - Wizard: installation/wizard.md
-      - Manual - Pages: installation/pages-manual.md
-      - Manual - Workers: installation/workers-manual.md
-    - Configuration:
-      - VLESS - Trojan: configuration/vless-trojan.md 
-      - Fragment: configuration/fragment.md
-      - Warp General: configuration/warp.md
-      - Warp PRO: configuration/warp-pro.md
-      - Routing rules: configuration/routing-rules.md
-    - Usage:
-      - Normal: usage/normal.md
-      - Full Normal: usage/full-normal.md
-      - Fragment: usage/fragment.md
-      - Warp: usage/warp.md
-      - Warp PRO: usage/warp-pro.md
-      - My IP: usage/my-ip.md
-    - FAQ: faq.md
+  - Home: index.md
   - Installation:
     - Wizard: installation/wizard.md
     - Manual - Pages: installation/pages-manual.md
     - Manual - Workers: installation/workers-manual.md
   - Configuration:
-    - Configuration: configuration/index.md  
-    - VLESS - Trojan: configuration/vless-trojan.md  
+    - configuration/index.md
+    - VLESS - Trojan: configuration/vless-trojan.md 
     - Fragment: configuration/fragment.md
     - Warp General: configuration/warp.md
     - Warp PRO: configuration/warp-pro.md
     - Routing rules: configuration/routing-rules.md
   - Usage:
-    - Usage: usage/index.md
+    - usage/index.md
     - Normal: usage/normal.md
     - Full Normal: usage/full-normal.md
     - Fragment: usage/fragment.md

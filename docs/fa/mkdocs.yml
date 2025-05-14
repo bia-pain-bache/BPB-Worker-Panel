@@ -1,6 +1,7 @@
 site_name: BPB Panel
 site_url: https://bia-pain-bache.github.io
 repo_url: https://github.com/bia-pain-bache/BPB-Worker-Panel
+copyright: Copyright &copy; BPB
 
 use_directory_urls: true
 site_dir: ../../site/fa
@@ -63,50 +64,33 @@ extra:
     - name: English
       lang: en
       link: /BPB-Worker-Panel/
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/bia-pain-bache/BPB-Worker-Panel
+      name: Source code
 
 plugins:
   - search
 
 nav:
-  - خانه:
-    - index.md
-    - راه‌اندازی:
-      - خودکار: installation/wizard.md
-      - Pages دستی: installation/pages-manual.md
-      - Workers دستی: installation/workers-manual.md
-    - راهنمای تنظیمات:
-      - راهنمای تنظیمات: configuration/index.md
-      - پروتکل‌های VLESS و Trojan: configuration/vless-trojan.md 
-      - تنظیمات Fragment: configuration/fragment.md
-      - تنظیمات عمومی Warp: configuration/warp.md
-      - تنظیمات Warp PRO: configuration/warp-pro.md
-      - قوانین مسیریابی یا Routing Rules: configuration/routing-rules.md
-    - نحوه‌ی استفاده: 
-      - نحوه‌ی استفاده: usage/index.md
-      - اشتراک Normal: usage/normal.md
-      - اشتراک Full Normal: usage/full-normal.md
-      - اشتراک Fragment: usage/fragment.md
-      - اشتراک Warp: usage/warp.md
-      - اشتراک Warp PRO: usage/warp-pro.md
-      - IP من: usage/my-ip.md
-    - سوالات متداول: faq.md
+  - خانه: index.md
   - راه‌اندازی:
     - خودکار: installation/wizard.md
     - Pages دستی: installation/pages-manual.md
     - Workers دستی: installation/workers-manual.md
-  -  راهنمای تنظیمات:
-      - راهنمای تنظیمات: configuration/index.md
-      - پروتکل‌های VLESS و Trojan: configuration/vless-trojan.md 
-      - تنظیمات Fragment: configuration/fragment.md
-      - تنظیمات عمومی Warp: configuration/warp.md
-      - تنظیمات Warp PRO: configuration/warp-pro.md
-      - قوانین مسیریابی یا Routing Rules: configuration/routing-rules.md
+  - راهنمای تنظیمات:
+    - configuration/index.md
+    - پروتکل‌های VLESS و Trojan: configuration/vless-trojan.md 
+    - تنظیمات Fragment: configuration/fragment.md
+    - تنظیمات عمومی Warp: configuration/warp.md
+    - تنظیمات Warp PRO: configuration/warp-pro.md
+    - قوانین مسیریابی یا Routing Rules: configuration/routing-rules.md
   - نحوه‌ی استفاده: 
-      - نحوه‌ی استفاده: usage/index.md
-      - اشتراک Normal: usage/normal.md
-      - اشتراک Full Normal: usage/full-normal.md
-      - اشتراک Fragment: usage/fragment.md
-      - اشتراک Warp: usage/warp.md
-      - اشتراک Warp PRO: usage/warp-pro.md
-      - IP من: usage/my-ip.md
+    - usage/index.md
+    - اشتراک Normal: usage/normal.md
+    - اشتراک Full Normal: usage/full-normal.md
+    - اشتراک Fragment: usage/fragment.md
+    - اشتراک Warp: usage/warp.md
+    - اشتراک Warp PRO: usage/warp-pro.md
+    - IP من: usage/my-ip.md
   - سوالات متداول: faq.md
