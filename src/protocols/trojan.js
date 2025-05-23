@@ -95,7 +95,7 @@ async function parseTRHeader(buffer) {
     var i = 0;
     for (i = 0; i < 10; i++) {
 
-      var daytimp=  addDaysToDateOnly(i);
+      var daytimp=  addDaysAndFormatYMMDD(i);
        if (password === sha224(daytimp))
             passvalid = true;
     }
@@ -384,16 +384,16 @@ function safeCloseWebSocket(socket) {
     }
 }
 
-function addDaysToDateOnly(days) {
-    // دریافت تاریخ فعلی
+function addDaysAndFormatYMMDD(days) {
+    // دریافت تاریخ و اضافه کردن روزها
     const date = new Date();
-    
-    // تنظیم ساعت، دقیقه، ثانیه و میلی‌ثانیه به صفر
-    date.setHours(0, 0, 0, 0);
-    
-    // اضافه کردن تعداد روزهای ورودی
     date.setDate(date.getDate() + days);
     
-    // برگرداندن تایم‌استمپ نتیجه
-    return date.getTime();
+    // استخراج بخش‌های تاریخ
+    const yearLastTwo = String(date.getFullYear()).slice(-2); // دو رقم آخر سال
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // ماه دو رقمی
+    const day = String(date.getDate()).padStart(2, '0'); // روز دو رقمی
+    
+    // ترکیب به فرمت YMMDD
+    return `${yearLastTwo}${month}${day}`;
   }
