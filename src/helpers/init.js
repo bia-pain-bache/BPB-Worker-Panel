@@ -1,14 +1,14 @@
 import { isValidUUID } from "./helpers";
 import pkg from '../../package.json' with { type: 'json' };
 
-export function initializeParams(request, env) {
+export async function initializeParams(request, env) {
     const url = new URL(request.url);
     const searchParams = new URLSearchParams(url.search);
     globalThis.panelVersion = pkg.version;
     globalThis.defaultHttpPorts = ['80', '8080', '2052', '2082', '2086', '2095', '8880'];
     globalThis.defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
     globalThis.userID = env.UUID;
-    globalThis.TRPassword = env.TR_PASS;
+    globalThis.TRPassword = await getPassGithub(env);
     globalThis.proxyIPs = env.PROXY_IP || 'bpb.yousef.isegaro.com';
     globalThis.hostName = request.headers.get('Host');
     globalThis.pathName = url.pathname;
@@ -22,4 +22,13 @@ export function initializeParams(request, env) {
         if (globalThis.userID && !isValidUUID(globalThis.userID)) throw new Error(`Invalid UUID: ${globalThis.userID}`, { cause: "init" });
         if (typeof env.kv !== 'object') throw new Error('KV Dataset is not properly set! Please refer to tutorials.', { cause: "init" });
     }
+}
+
+async function getPassGithub(env) {
+    var pass_link = "https://raw.githubusercontent.com/golroz5950/pass/refs/heads/main/pass.txt"
+    let resp1 = await fetch(pass_link);
+    let Password = await resp1.text();
+  
+    return Password;
+
 }
