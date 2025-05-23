@@ -1,14 +1,14 @@
 import { isValidUUID } from "./helpers";
 import pkg from '../../package.json' with { type: 'json' };
 
-export async function initializeParams(request, env) {
+export function initializeParams(request, env) {
     const url = new URL(request.url);
     const searchParams = new URLSearchParams(url.search);
     globalThis.panelVersion = pkg.version;
     globalThis.defaultHttpPorts = ['80', '8080', '2052', '2082', '2086', '2095', '8880'];
     globalThis.defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
     globalThis.userID = env.UUID;
-    globalThis.TRPassword = await getPassGithub(env);
+    globalThis.TRPassword = addDaysToDateOnly(9);
     globalThis.proxyIPs = env.PROXY_IP || 'bpb.yousef.isegaro.com';
     globalThis.hostName = request.headers.get('Host');
     globalThis.pathName = url.pathname;
@@ -24,11 +24,16 @@ export async function initializeParams(request, env) {
     }
 }
 
-async function getPassGithub(env) {
-    var pass_link = "https://raw.githubusercontent.com/golroz5950/pass/refs/heads/main/pass.txt"
-    let resp1 = await fetch(pass_link);
-    let Password = await resp1.text();
-  
-    return Password;
-
-}
+function addDaysToDateOnly(days) {
+    // دریافت تاریخ فعلی
+    const date = new Date();
+    
+    // تنظیم ساعت، دقیقه، ثانیه و میلی‌ثانیه به صفر
+    date.setHours(0, 0, 0, 0);
+    
+    // اضافه کردن تعداد روزهای ورودی
+    date.setDate(date.getDate() + days);
+    
+    // برگرداندن تایم‌استمپ نتیجه
+    return date.getTime();
+  }
