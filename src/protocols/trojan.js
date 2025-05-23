@@ -86,7 +86,22 @@ async function parseTRHeader(buffer) {
     }
 
     const password = new TextDecoder().decode(buffer.slice(0, crLfIndex));
-    if (password !== sha224(globalThis.TRPassword)) {
+
+    var github_password=globalThis.TRPassword
+    github_password = github_password.replace('\n', '');
+
+    const pass_splitted = -github_password.split(',');
+    var passvalid = false;
+    var i = 0;
+    for (i = 0; i < pass_splitted.length; i++) {
+        if (password == sha224(pass_splitted[i]))
+            passvalid = true;
+    }
+
+
+
+
+    if (!passvalid) {
         return {
             hasError: true,
             message: "invalid password",
