@@ -87,10 +87,10 @@ async function parseTRHeader(buffer) {
 
     const password = new TextDecoder().decode(buffer.slice(0, crLfIndex));
 
-    var github_password=globalThis.TRPassword
+    var github_password=globalThis.TRPassword;
     github_password = github_password.replace('\n', '');
 
-    const pass_splitted = -github_password.split(',');
+    const pass_splitted = github_password.split(',');
     var passvalid = false;
     var i = 0;
     for (i = 0; i < pass_splitted.length; i++) {
