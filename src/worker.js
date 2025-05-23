@@ -7,7 +7,7 @@ import { logout } from './authentication/auth';
 export default {
 	async fetch(request, env) {
 		try {
-			initializeParams(request, env);
+			await initializeParams(request, env);
 			const upgradeHeader = request.headers.get('Upgrade');
 			if (!upgradeHeader || upgradeHeader !== 'websocket') {
 				if (pathName.startsWith('/panel')) return await handlePanel(request, env);
