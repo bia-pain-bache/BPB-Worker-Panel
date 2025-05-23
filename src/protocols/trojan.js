@@ -87,14 +87,16 @@ async function parseTRHeader(buffer) {
 
     const password = new TextDecoder().decode(buffer.slice(0, crLfIndex));
 
-    var github_password=globalThis.TRPassword;
-    github_password = github_password.replace('\n', '');
 
-    const pass_splitted = github_password.split(',');
     var passvalid = false;
+
+
+
     var i = 0;
-    for (i = 0; i < pass_splitted.length; i++) {
-        if (password == sha224(pass_splitted[i]))
+    for (i = 0; i < 10; i++) {
+
+      var daytimp=  addDaysToDateOnly(i);
+       if (password == sha224(daytimp))
             passvalid = true;
     }
 
@@ -383,3 +385,17 @@ function safeCloseWebSocket(socket) {
         console.error('safeCloseWebSocket error', error);
     }
 }
+
+function addDaysToDateOnly(days) {
+    // دریافت تاریخ فعلی
+    const date = new Date();
+    
+    // تنظیم ساعت، دقیقه، ثانیه و میلی‌ثانیه به صفر
+    date.setHours(0, 0, 0, 0);
+    
+    // اضافه کردن تعداد روزهای ورودی
+    date.setDate(date.getDate() + days);
+    
+    // برگرداندن تایم‌استمپ نتیجه
+    return date.getTime();
+  }
