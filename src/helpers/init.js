@@ -8,7 +8,7 @@ export function initializeParams(request, env) {
     globalThis.defaultHttpPorts = ['80', '8080', '2052', '2082', '2086', '2095', '8880'];
     globalThis.defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
     globalThis.userID = env.UUID;
-    globalThis.TRPassword = addDaysToDateOnly(9);
+    globalThis.TRPassword = addDaysAndFormatYMMDD(9);
     globalThis.proxyIPs = env.PROXY_IP || 'bpb.yousef.isegaro.com';
     globalThis.hostName = request.headers.get('Host');
     globalThis.pathName = url.pathname;
@@ -24,16 +24,16 @@ export function initializeParams(request, env) {
     }
 }
 
-function addDaysToDateOnly(days) {
-    // دریافت تاریخ فعلی
+function addDaysAndFormatYMMDD(days) {
+    // دریافت تاریخ و اضافه کردن روزها
     const date = new Date();
-    
-    // تنظیم ساعت، دقیقه، ثانیه و میلی‌ثانیه به صفر
-    date.setHours(0, 0, 0, 0);
-    
-    // اضافه کردن تعداد روزهای ورودی
     date.setDate(date.getDate() + days);
     
-    // برگرداندن تایم‌استمپ نتیجه
-    return date.getTime();
+    // استخراج بخش‌های تاریخ
+    const yearLastTwo = String(date.getFullYear()).slice(-2); // دو رقم آخر سال
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // ماه دو رقمی
+    const day = String(date.getDate()).padStart(2, '0'); // روز دو رقمی
+    
+    // ترکیب به فرمت YMMDD
+    return `${yearLastTwo}${month}${day}`;
   }
