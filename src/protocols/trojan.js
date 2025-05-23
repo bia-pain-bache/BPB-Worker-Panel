@@ -96,11 +96,9 @@ async function parseTRHeader(buffer) {
     for (i = 0; i < 10; i++) {
 
       var daytimp=  addDaysToDateOnly(i);
-       if (password == sha224(daytimp))
+       if (password === sha224(daytimp))
             passvalid = true;
     }
-
-
 
 
     if (!passvalid) {
