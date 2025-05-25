@@ -96,12 +96,14 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
 
     if (isWorkerLess) localHostDnsServerDomains.push("full:cloudflare.com");
 
-    const server = buildDnsServer("localhost", localHostDnsServerDomains, null, true);
-    dnsObject.servers.push(server);
+    if (localHostDnsServerDomains.length) {
+        const server = buildDnsServer("localhost", localHostDnsServerDomains, null, true);
+        dnsObject.servers.push(server);
+    }
 
+    
     const localDnsServerDomains = [];
     const localDnsServerExpectIps = [];
-
     if (isBypass) {
         bypassRules.forEach(({ rule, domain, ip }) => {
             if (rule) {
