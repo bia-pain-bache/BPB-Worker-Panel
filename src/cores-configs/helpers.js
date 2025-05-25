@@ -40,7 +40,7 @@ export async function getConfigAddresses(cleanIPs, VLTRenableIPv6, customCdnAddr
         ...defaultIPv6,
         ...cleanIPs
     ];
-    
+
     return isFragment ? addrs : [...addrs, ...customCdnAddrs];
 }
 
@@ -61,12 +61,12 @@ export function generateRemark(index, port, address, cleanIPs, protocol, configT
 
     cleanIPs.includes(address)
         ? addressType = 'Clean IP'
-        : addressType = isDomain(address) ? 'Domain': isIPv4(address) ? 'IPv4' : isIPv6(address) ? 'IPv6' : '';
+        : addressType = isDomain(address) ? 'Domain' : isIPv4(address) ? 'IPv4' : isIPv6(address) ? 'IPv6' : '';
 
     return `💦 ${index} - ${protocol}${type} - ${addressType} : ${port}`;
 }
 
-export function randomUpperCase (str) {
+export function randomUpperCase(str) {
     let result = '';
     for (let i = 0; i < str.length; i++) {
         result += Math.random() < 0.5 ? str[i].toUpperCase() : str[i];
@@ -74,7 +74,7 @@ export function randomUpperCase (str) {
     return result;
 }
 
-export function getRandomPath (length) {
+export function getRandomPath(length) {
     let result = '';
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     const charactersLength = characters.length;
@@ -84,7 +84,7 @@ export function getRandomPath (length) {
     return result;
 }
 
-export function base64ToDecimal (base64) {
+export function base64ToDecimal(base64) {
     const binaryString = atob(base64);
     const hexString = Array.from(binaryString).map(char => char.charCodeAt(0).toString(16).padStart(2, '0')).join('');
     const decimalArray = hexString.match(/.{2}/g).map(hex => parseInt(hex, 16));
@@ -102,10 +102,14 @@ export function isIPv6(address) {
 }
 
 export function getDomain(url) {
-    const newUrl = new URL(url);
-    const host = newUrl.hostname;
-    const isHostDomain = isDomain(host);
-    return {host, isHostDomain};
+    try {
+        const newUrl = new URL(url);
+        const host = newUrl.hostname;
+        const isHostDomain = isDomain(host);
+        return { host, isHostDomain };
+    } catch (_) {
+        return { host: null, isHostDomain: false };
+    }
 }
 
 export function base64EncodeUnicode(str) {
