@@ -1,18 +1,9 @@
-import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6, isIPv4, isDomain } from './helpers';
+import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6, isIPv4, isDomain, getDomain } from './helpers';
 import { getDataset } from '../kv/handlers';
 
 async function buildClashDNS(isChain, isWarp) {
     const finalLocalDNS = localDNS === 'localhost' ? 'system' : `${localDNS}#DIRECT`;
-    const isFakeDNS = (VLTRFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
     const isIPv6 = (VLTRenableIPv6 && !isWarp) || (warpEnableIPv6 && isWarp);
-    const customBypassRulesDomains = customBypassRules.filter(address => isDomain(address));
-    const isBypass = bypassIran || bypassChina || bypassRussia;
-    const bypassRules = [
-        { rule: bypassIran, geosite: "ir" },
-        { rule: bypassChina, geosite: "cn" },
-        { rule: bypassRussia, geosite: "ru" }
-    ];
-
     const dns = {
         "enable": true,
         "listen": "0.0.0.0:1053",
@@ -39,6 +30,13 @@ async function buildClashDNS(isChain, isWarp) {
         if (isDomain(chainOutboundServer)) dns["nameserver-policy"][chainOutboundServer] = `${remoteDNS}#proxy-1`;
     }
 
+    const isBypass = bypassIran || bypassChina || bypassRussia;
+    const bypassRules = [
+        { rule: bypassIran, geosite: "ir" },
+        { rule: bypassChina, geosite: "cn" },
+        { rule: bypassRussia, geosite: "ru" }
+    ];
+
     if (isBypass) {
         const geosites = [];
         bypassRules.forEach(({ rule, geosite }) => {
@@ -48,12 +46,33 @@ async function buildClashDNS(isChain, isWarp) {
         dns["nameserver-policy"][`rule-set:${geosites.join(',')}`] = [finalLocalDNS];
     }
 
-    customBypassRulesDomains.forEach(domain => {
-        dns["nameserver-policy"][`+.${domain}`] = [finalLocalDNS];
+    const totalCustomBypassDomains = customBypassRules.filter(address => isDomain(address));
+    totalCustomBypassDomains.push(...customBypassSanctionRules);
+    totalCustomBypassDomains.forEach(domain => {
+        dns["nameserver-policy"][`+.${domain}`] = finalLocalDNS;
     });
 
-    if (bypassOpenAi) dns["nameserver-policy"]["rule-set:openai"] = `178.22.122.100#DIRECT`;
+    const isAntiSanctionRule = bypassOpenAi || bypassGoogle || customBypassSanctionRules.length > 0;
+    const bypassSanctionRules = [
+        { rule: bypassOpenAi, rule_set: "openai" },
+        { rule: bypassGoogle, rule_set: "google" },
+    ];
 
+    if (isAntiSanctionRule) {
+        const dnsHost = getDomain(antiSanctionDNS);
+        if (dnsHost.isHostDomain) dns["nameserver-policy"][dnsHost.host] = `${localDNS}#DIRECT`;
+        if (bypassOpenAi || bypassGoogle) {
+            bypassSanctionRules.forEach(rule => {
+                if(rule.rule) dns["nameserver-policy"][`rule-set:${rule.rule_set}`] = `${antiSanctionDNS}#DIRECT`
+            });
+        }
+        
+        customBypassSanctionRules.forEach(domain => {
+            dns["nameserver-policy"][`+.${domain}`] = `${antiSanctionDNS}#DIRECT`;
+        });
+    }
+
+    const isFakeDNS = (VLTRFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
     if (isFakeDNS) Object.assign(dns, {
         "enhanced-mode": "fake-ip",
         "fake-ip-range": "198.18.0.1/16",
@@ -117,6 +136,15 @@ function buildClashRoutingRules(isWarp) {
                 format: "yaml",
                 geosite: "openai",
                 geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/openai.yaml"
+            }
+        },
+        {
+            rule: bypassGoogle,
+            type: 'direct',
+            ruleProvider: {
+                format: "yaml",
+                geosite: "google",
+                geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/google.yaml"
             }
         },
         {
@@ -211,14 +239,15 @@ function buildClashRoutingRules(isWarp) {
         }
     };
 
-    [...customBypassRules, ...customBlockRules].forEach((address, index) => {
-        const isDirectRule = index < customBypassRules.length;
-        const action = isDirectRule ? 'DIRECT' : 'REJECT';
-        const targetRules = isDirectRule
-            ? isDomain(address) ? directDomainRules : directIPRules
-            : isDomain(address) ? blockDomainRules : blockIPRules;
-
-        targetRules.push(generateRule(address, action));
+    const totalCustomBypassDomains = [...customBypassRules, ...customBypassSanctionRules];
+    totalCustomBypassDomains.forEach( address => {
+        const targetRules = isDomain(address) ? directDomainRules : directIPRules
+        targetRules.push(generateRule(address, 'DIRECT'));
+    });
+    
+    [...customBlockRules].forEach( address => {
+        const targetRules = isDomain(address) ? blockDomainRules : blockIPRules;
+        targetRules.push(generateRule(address, 'REJECT'));
     });
 
     let rules = [];

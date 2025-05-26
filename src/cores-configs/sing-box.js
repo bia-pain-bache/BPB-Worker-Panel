@@ -2,27 +2,12 @@ import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpper
 import { getDataset } from '../kv/handlers';
 
 async function buildSingBoxDNS(isWarp) {
-    const isFakeDNS = (VLTRFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
-    const isIPv6 = (VLTRenableIPv6 && !isWarp) || (warpEnableIPv6 && isWarp);
-    const customBypassRulesDomains = customBypassRules.filter(address => isDomain(address));
-    const isAntiSanctionRule = bypassOpenAi || bypassGoogle || customBypassSanctionRules.length > 0;
-
-    const geoRules = [
-        { rule: bypassIran, type: 'direct', geosite: "geosite-ir", geoip: "geoip-ir" },
-        { rule: bypassChina, type: 'direct', geosite: "geosite-cn", geoip: "geoip-cn" },
-        { rule: bypassRussia, type: 'direct', geosite: "geosite-category-ru", geoip: "geoip-ru" },
-        { rule: true, type: 'block', geosite: "geosite-malware" },
-        { rule: true, type: 'block', geosite: "geosite-phishing" },
-        { rule: true, type: 'block', geosite: "geosite-cryptominers" },
-        { rule: blockAds, type: 'block', geosite: "geosite-category-ads-all" },
-        { rule: blockPorn, type: 'block', geosite: "geosite-nsfw" }
-    ];
-
-    const buildDnsServer = (type, server, server_port, detour, tag) => ({
+    const buildDnsServer = (type, server, server_port, detour, tag, domain_resolver) => ({
         type,
         ...(server && { server }),
         ...(server_port && { server_port }),
         ...(detour && { detour }),
+        ...(domain_resolver && { domain_resolver }),
         tag
     });
 
@@ -50,14 +35,15 @@ async function buildSingBoxDNS(isWarp) {
         "time.apple.com"
     ];
 
+    const isAntiSanctionRule = bypassOpenAi || bypassGoogle || customBypassSanctionRules.length > 0;
     if (isAntiSanctionRule) {
         const dnsHost = getDomain(antiSanctionDNS);
         let server = {};
         if (dnsHost.isHostDomain) {
             localDnsRuleDomains.push(dnsHost.host);
-            server = buildDnsServer("https", dnsHost.host, 443, "direct", "dns-anti-sanction");
+            server = buildDnsServer("https", dnsHost.host, 443, "direct", "dns-anti-sanction", "dns-direct");
         } else {
-            server = buildDnsServer("udp", antiSanctionDNS, 53, "direct", "dns-anti-sanction");
+            server = buildDnsServer("udp", antiSanctionDNS, 53, "direct", "dns-anti-sanction", null);
         }
 
         servers.push(server);
@@ -98,6 +84,17 @@ async function buildSingBoxDNS(isWarp) {
         action: "reject"
     };
 
+    const geoRules = [
+        { rule: bypassIran, type: 'direct', geosite: "geosite-ir", geoip: "geoip-ir" },
+        { rule: bypassChina, type: 'direct', geosite: "geosite-cn", geoip: "geoip-cn" },
+        { rule: bypassRussia, type: 'direct', geosite: "geosite-category-ru", geoip: "geoip-ru" },
+        { rule: true, type: 'block', geosite: "geosite-malware" },
+        { rule: true, type: 'block', geosite: "geosite-phishing" },
+        { rule: true, type: 'block', geosite: "geosite-cryptominers" },
+        { rule: blockAds, type: 'block', geosite: "geosite-category-ads-all" },
+        { rule: blockPorn, type: 'block', geosite: "geosite-nsfw" }
+    ];
+
     geoRules.forEach(({ rule, type, geosite, geoip }) => {
         rule && type === 'direct' && rules.push({
             type: "logical",
@@ -119,6 +116,7 @@ async function buildSingBoxDNS(isWarp) {
     });
 
     let domainDirectRule, domainBlockRule;
+    const customBypassRulesDomains = customBypassRules.filter(address => isDomain(address));
     if (customBypassRulesDomains.length) {
         domainDirectRule = createRule("dns-direct");
         customBypassRulesDomains.forEach(domain => {
@@ -137,25 +135,32 @@ async function buildSingBoxDNS(isWarp) {
         rules.push(domainBlockRule);
     }
 
+    const bypassSanctionRules = [
+        { rule: bypassOpenAi, geosite: "geosite-openai" },
+        { rule: bypassGoogle, geosite: "geosite-google" },
+    ];
+
     if (isAntiSanctionRule) {
-        rules.push({
-            type: "logical",
-            mode: "or",
-            rules: [
-                {
-                    rule_set: [
-                        "geosite-openai",
-                        "geosite-google"
-                    ]
-                },
-                {
-                    domain_suffix: customBypassSanctionRules
-                }
-            ],
+        if (bypassOpenAi || bypassGoogle) {
+            const rule_set = bypassSanctionRules.reduce((acc, rule) => {
+                rule.rule && acc.push(rule.geosite);
+                return acc;
+            }, []);
+
+            rules.push({
+                rule_set,
+                server: "dns-anti-sanction"
+            });
+        }
+
+        customBypassSanctionRules.length && rules.push({
+            domain_suffix: customBypassSanctionRules,
             server: "dns-anti-sanction"
         });
     }
 
+    const isFakeDNS = (VLTRFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
+    const isIPv6 = (VLTRenableIPv6 && !isWarp) || (warpEnableIPv6 && isWarp);
     if (isFakeDNS) {
         const fakeip = {
             type: "fakeip",
@@ -381,8 +386,8 @@ function buildSingBoxRoutingRules(isWarp) {
         pushRuleIfNotEmpty(ipRule, action === 'direct' ? directIPRules : blockIPRules);
     };
 
-    const allCustomBypassDomains = [...customBypassRules, ...customBypassSanctionRules];
-    allCustomBypassDomains.length && processRules(allCustomBypassDomains, 'direct');
+    const totalCustomBypassDomains = [...customBypassRules, ...customBypassSanctionRules];
+    totalCustomBypassDomains.length && processRules(totalCustomBypassDomains, 'direct');
     customBlockRules.length && processRules(customBlockRules, 'reject');
     let rules = [];
 
