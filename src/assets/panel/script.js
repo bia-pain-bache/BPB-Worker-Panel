@@ -825,7 +825,9 @@ function deleteUdpNoise(event) {
 }
 
 function renderUdpNoiseBlock(xrayUdpNoises) {
+    document.getElementById("noises").innerHTML = '';
     xrayUdpNoises.forEach((noise, index) => {
         addUdpNoise(false, index, noise);
     });
+    globalThis.xrayNoiseCount = xrayUdpNoises.length;
 }
