@@ -24,14 +24,15 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
     const isFakeDNS = (VLTRFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
     const isIPv6 = (VLTRenableIPv6 && !isWarp) || (warpEnableIPv6 && isWarp);
 
-    const outboundDomains = outboundAddrs.filter(address => isDomain(address));
     const customBypassRulesDomains = customBypassRules.filter(address => isDomain(address));
     const customBlockRulesDomains = customBlockRules.filter(address => isDomain(address));
+
+    const outboundDomains = outboundAddrs.filter(address => isDomain(address));
     const uniqueOutboundDomains = [...new Set(outboundDomains)];
 
-    const isDomainRule = [...uniqueOutboundDomains, ...customBypassRulesDomains].length > 0;
     const isBypass = bypassIran || bypassChina || bypassRussia;
     const isBlock = blockAds || blockPorn || customBlockRulesDomains.length > 0;
+    const isDomainRule = [...uniqueOutboundDomains, ...customBypassRulesDomains].length > 0;
     const isAntiSanctionRule = bypassOpenAi || bypassGoogle || customBypassSanctionRules.length > 0;
 
     const finalRemoteDNS = isWorkerLess
@@ -57,7 +58,9 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
     }
 
     const staticIPs = domainToStaticIPs ? await resolveDNS(domainToStaticIPs) : undefined;
-    if (staticIPs) dnsHost[domainToStaticIPs] = VLTRenableIPv6 ? [...staticIPs.ipv4, ...staticIPs.ipv6] : staticIPs.ipv4;
+    if (staticIPs) dnsHost[domainToStaticIPs] = VLTRenableIPv6 
+        ? [...staticIPs.ipv4, ...staticIPs.ipv6] 
+        : staticIPs.ipv4;
 
     if (isWorkerLess) dnsHost["cloudflare-dns.com"] = ["cloudflare.com"];
 
@@ -80,45 +83,42 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
         dnsObject.servers.push(server);
     }
 
+    const localDnsServerDomains = [];
     if (isDomainRule) {
         const outboundDomainRules = uniqueOutboundDomains.map(domain => `full:${domain}`);
         const bypassDomainRules = customBypassRulesDomains.map(domain => `domain:${domain}`);
-        const server = buildDnsServer(localDNS, [...outboundDomainRules, ...bypassDomainRules], null, true);
-        dnsObject.servers.push(server);
+        localDnsServerDomains.push(...outboundDomainRules, ...bypassDomainRules);
     }
-
-    const localHostDnsServerDomains = [];
 
     if (isAntiSanctionRule) {
         const dnsHost = getDomain(antiSanctionDNS);
-        dnsHost.isHostDomain && localHostDnsServerDomains.push(`full:${dnsHost.host}`);
+        dnsHost.isHostDomain && localDnsServerDomains.push(`full:${dnsHost.host}`);
     }
 
-    if (isWorkerLess) localHostDnsServerDomains.push("full:cloudflare.com");
+    if (isWorkerLess) localDnsServerDomains.push("full:cloudflare.com");
 
-    if (localHostDnsServerDomains.length) {
-        const server = buildDnsServer("localhost", localHostDnsServerDomains, null, true);
+    if (localDnsServerDomains.length) {
+        const server = buildDnsServer(localDNS, localDnsServerDomains, null, true);
         dnsObject.servers.push(server);
     }
-
     
-    const localDnsServerDomains = [];
-    const localDnsServerExpectIps = [];
+    const bypassRulesDomains = [];
+    const bypassRulesExpectIps = [];
     if (isBypass) {
         bypassRules.forEach(({ rule, domain, ip }) => {
             if (rule) {
-                localDnsServerDomains.push(domain);
-                localDnsServerExpectIps.push(ip);
+                bypassRulesDomains.push(domain);
+                bypassRulesExpectIps.push(ip);
             }
         });
 
-        const server = buildDnsServer(localDNS, localDnsServerDomains, localDnsServerExpectIps, true);
+        const server = buildDnsServer(localDNS, bypassRulesDomains, bypassRulesExpectIps, true);
         dnsObject.servers.push(server);
     }
 
     if (isFakeDNS) {
-        const fakeDNSServer = len(localDnsServerDomains)
-            ? buildDnsServer("fakedns", localDnsServerDomains, null, false)
+        const fakeDNSServer = len(bypassRulesDomains)
+            ? buildDnsServer("fakedns", bypassRulesDomains, null, false)
             : "fakedns";
         dnsObject.servers.unshift(fakeDNSServer);
     }
@@ -186,8 +186,8 @@ function buildXrayRoutingRules(outboundAddrs, isChain, isBalancer, isWorkerLess,
         const host = dnsHost.host || antiSanctionDNS;
 
         const rule = buildRoutingRule(
-            null,
-            dnsHost.isHostDomain ? [host] : null,
+            "dns",
+            dnsHost.isHostDomain ? [`full:${host}`] : null,
             !dnsHost.isHostDomain ? [host] : null,
             null,
             null,
