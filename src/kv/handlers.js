@@ -128,6 +128,7 @@ export async function updateDataset(request, env) {
         bypassRussia: populateField('bypassRussia', false, true),
         bypassOpenAi: populateField('bypassOpenAi', false, true),
         bypassGoogle: populateField('bypassGoogle', false, true),
+        bypassMicrosoft: populateField('bypassMicrosoft', false, true),
         blockAds: populateField('blockAds', false, true),
         blockPorn: populateField('blockPorn', false, true),
         blockUDP443: populateField('blockUDP443', false, true),

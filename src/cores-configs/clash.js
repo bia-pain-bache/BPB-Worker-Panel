@@ -56,6 +56,7 @@ async function buildClashDNS(isChain, isWarp) {
     const bypassSanctionRules = [
         { rule: bypassOpenAi, rule_set: "openai" },
         { rule: bypassGoogle, rule_set: "google" },
+        { rule: bypassMicrosoft, rule_set: "microsoft" },
     ];
 
     if (isAntiSanctionRule) {
@@ -145,6 +146,15 @@ function buildClashRoutingRules(isWarp) {
                 format: "yaml",
                 geosite: "google",
                 geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/google.yaml"
+            }
+        },
+        {
+            rule: bypassMicrosoft,
+            type: 'direct',
+            ruleProvider: {
+                format: "yaml",
+                geosite: "microsoft",
+                geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/microsoft.yaml"
             }
         },
         {

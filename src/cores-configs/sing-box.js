@@ -144,6 +144,7 @@ async function buildSingBoxDNS(isWarp) {
     const bypassSanctionRules = [
         { rule: bypassOpenAi, geosite: "geosite-openai" },
         { rule: bypassGoogle, geosite: "geosite-google" },
+        { rule: bypassMicrosoft, geosite: "geosite-microsoft" }
     ];
 
     if (isAntiSanctionRule) {
@@ -268,6 +269,14 @@ function buildSingBoxRoutingRules(isWarp) {
             ruleSet: {
                 geosite: "geosite-google",
                 geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-google.srs"
+            }
+        },
+        {
+            rule: bypassMicrosoft,
+            type: 'direct',
+            ruleSet: {
+                geosite: "geosite-microsoft",
+                geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-microsoft.srs"
             }
         },
         {

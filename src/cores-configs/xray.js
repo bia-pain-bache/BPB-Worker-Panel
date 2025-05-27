@@ -31,14 +31,14 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
             dnsHost[`domain:${domain}`] = ["127.0.0.1"];
         });
     }
-    
+
     const staticIPs = domainToStaticIPs ? await resolveDNS(domainToStaticIPs) : undefined;
     if (staticIPs) dnsHost[domainToStaticIPs] = VLTRenableIPv6
-    ? [...staticIPs.ipv4, ...staticIPs.ipv6]
-    : staticIPs.ipv4;
-    
+        ? [...staticIPs.ipv4, ...staticIPs.ipv6]
+        : staticIPs.ipv4;
+
     if (isWorkerLess) dnsHost["cloudflare-dns.com"] = ["cloudflare.com"];
-    
+
     const hosts = Object.keys(dnsHost).length ? { hosts: dnsHost } : {};
     const isIPv6 = (VLTRenableIPv6 && !isWarp) || (warpEnableIPv6 && isWarp);
     const finalRemoteDNS = isWorkerLess
@@ -54,11 +54,17 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
     };
 
     const isAntiSanctionRule = bypassOpenAi || bypassGoogle || customBypassSanctionRules.length > 0;
+    const bypassSanctionRules = [
+        { rule: bypassOpenAi, geosite: "geosite:openai" },
+        { rule: bypassGoogle, geosite: "geosite:google" },
+        { rule: bypassMicrosoft, geosite: "geosite:microsoft" },
+    ];
+
     if (isAntiSanctionRule) {
-        const domains = [
-            ...(bypassOpenAi ? ["geosite:openai"] : []),
-            ...(bypassGoogle ? ["geosite:google"] : [])
-        ];
+        const domains = bypassSanctionRules.reduce((acc, rule) => {
+            rule.rule && acc.push(rule.geosite);
+            return acc;
+        }, []);
 
         customBypassSanctionRules.length && customBypassSanctionRules.forEach(domain => domains.push(`domain:${domain}`));
         const dnsServer = antiSanctionDNS.includes("https") ? antiSanctionDNS.replace("https", "https+local") : antiSanctionDNS;
@@ -129,6 +135,7 @@ function buildXrayRoutingRules(outboundAddrs, isChain, isBalancer, isWorkerLess,
         { rule: bypassRussia, type: 'direct', domain: "geosite:ru", ip: "geoip:ru" },
         { rule: bypassOpenAi, type: 'direct', domain: "geosite:openai" },
         { rule: bypassGoogle, type: 'direct', domain: "geosite:google" },
+        { rule: bypassMicrosoft, type: 'direct', domain: "geosite:microsoft" },
         { rule: blockAds, type: 'block', domain: "geosite:category-ads-all" },
         { rule: blockAds, type: 'block', domain: "geosite:category-ads-ir" },
         { rule: blockPorn, type: 'block', domain: "geosite:category-porn" }
