@@ -284,8 +284,13 @@ a.link {
     width: fit-content;
 }
 
-.material-symbols-outlined {
+.material-symbols-rounded {
     margin: 0 5px 0 5px;
+    font-variation-settings:
+        'FILL' 1,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
 }
 
 details:not(:last-of-type) {
@@ -310,8 +315,11 @@ summary:focus-visible {
 
 h2,
 h3 {
+    display: flex;
     text-align: center;
     color: var(--hr-text-color);
+    justify-content: center;
+    align-items: center;
 }
 
 hr {
@@ -490,6 +498,7 @@ table button:active {
 }
 
 .table-container tr td:first-child {
+    color: var(--lable-text-color);
     text-wrap: nowrap;
 }
 
