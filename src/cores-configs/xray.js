@@ -61,7 +61,8 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
         ];
 
         customBypassSanctionRules.length && customBypassSanctionRules.forEach(domain => domains.push(`domain:${domain}`));
-        const server = buildDnsServer(antiSanctionDNS, domains, null, true);
+        const dnsServer = antiSanctionDNS.includes("https") ? antiSanctionDNS.replace("https", "https+local") : antiSanctionDNS;
+        const server = buildDnsServer(dnsServer, domains, null, true);
         dnsObject.servers.push(server);
     }
 
@@ -173,14 +174,11 @@ function buildXrayRoutingRules(outboundAddrs, isChain, isBalancer, isWorkerLess,
     }
 
     const isAntiSanctionRule = bypassOpenAi || bypassGoogle || customBypassSanctionRules.length > 0;
-    if (isAntiSanctionRule) {
-        const dnsHost = getDomain(antiSanctionDNS);
-        const host = dnsHost.host || antiSanctionDNS;
-
+    if (isAntiSanctionRule && !antiSanctionDNS.includes("://")) {
         const rule = buildRoutingRule(
             "dns",
-            dnsHost.isHostDomain ? [`full:${host}`] : null,
-            !dnsHost.isHostDomain ? [host] : null,
+            null,
+            antiSanctionDNS,
             null,
             null,
             "direct"
