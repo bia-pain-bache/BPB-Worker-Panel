@@ -2,12 +2,18 @@ import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpper
 import { getDataset } from '../kv/handlers';
 
 async function buildSingBoxDNS(isWarp) {
+    const isIPv6 = (VLTRenableIPv6 && !isWarp) || (warpEnableIPv6 && isWarp);
     const buildDnsServer = (type, server, server_port, detour, tag, domain_resolver) => ({
         type,
         ...(server && { server }),
         ...(server_port && { server_port }),
         ...(detour && { detour }),
-        ...(domain_resolver && { domain_resolver }),
+        ...(domain_resolver && {
+            domain_resolver: {
+                server: domain_resolver,
+                strategy: isIPv6 ? "prefer_ipv4" : "ipv4_only"
+            }
+        }),
         tag
     });
 
@@ -25,7 +31,7 @@ async function buildSingBoxDNS(isWarp) {
     if (localDNS === 'localhost') {
         localDnsServer = buildDnsServer("local", null, null, null, "dns-direct");
     } else {
-        localDnsServer = buildDnsServer("udp", localDNS, 53, "direct", "dns-direct");
+        localDnsServer = buildDnsServer("udp", localDNS, 53, null, "dns-direct");
     }
 
     servers.push(localDnsServer);
@@ -41,9 +47,9 @@ async function buildSingBoxDNS(isWarp) {
         let server = {};
         if (dnsHost.isHostDomain) {
             localDnsRuleDomains.push(dnsHost.host);
-            server = buildDnsServer("https", dnsHost.host, 443, "direct", "dns-anti-sanction", "dns-direct");
+            server = buildDnsServer("https", dnsHost.host, 443, null, "dns-anti-sanction", "dns-direct");
         } else {
-            server = buildDnsServer("udp", antiSanctionDNS, 53, "direct", "dns-anti-sanction", null);
+            server = buildDnsServer("udp", antiSanctionDNS, 53, null, "dns-anti-sanction", null);
         }
 
         servers.push(server);
@@ -160,7 +166,6 @@ async function buildSingBoxDNS(isWarp) {
     }
 
     const isFakeDNS = (VLTRFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
-    const isIPv6 = (VLTRenableIPv6 && !isWarp) || (warpEnableIPv6 && isWarp);
     if (isFakeDNS) {
         const fakeip = {
             type: "fakeip",
@@ -842,10 +847,10 @@ const singboxConfigTemp = {
     outbounds: [
         {
             type: "direct",
-            domain_resolver: {
-                server: "dns-direct",
-                strategy: "ipv4_only"
-            },
+            // domain_resolver: {
+            //     server: "dns-direct",
+            //     strategy: "ipv4_only"
+            // },
             tag: "direct"
         }
     ],
