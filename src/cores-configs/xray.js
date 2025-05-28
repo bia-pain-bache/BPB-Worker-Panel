@@ -2,11 +2,12 @@ import { getConfigAddresses, extractWireguardParams, base64ToDecimal, generateRe
 import { getDataset } from '../kv/handlers';
 
 async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWarp) {
-    const buildDnsServer = (address, domains, expectIPs, skipFallback) => ({
+    const buildDnsServer = (address, domains, expectIPs, skipFallback, tag) => ({
         address,
-        domains,
+        ...(domains && { domains }),
         ...(expectIPs && { expectIPs }),
-        ...(skipFallback && { skipFallback })
+        ...(skipFallback && { skipFallback }),
+        ...(tag && { tag })
     });
 
     const dnsHost = {};
@@ -15,22 +16,19 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
         dnsHost[host] = VLTRenableIPv6 ? [...ipv4, ...ipv6] : ipv4;
     }
 
-    const customBlockRulesDomains = customBlockRules.filter(address => isDomain(address));
-    const isBlock = blockAds || blockPorn || customBlockRulesDomains.length > 0;
     const blockRules = [
         { rule: blockAds, host: "geosite:category-ads-all" },
         { rule: blockAds, host: "geosite:category-ads-ir" },
         { rule: blockPorn, host: "geosite:category-porn" }
     ];
 
-    if (isBlock) {
-        blockRules.forEach(({ rule, host }) => {
-            if (rule) dnsHost[host] = ["127.0.0.1"];
-        });
-        customBlockRulesDomains.forEach(domain => {
-            dnsHost[`domain:${domain}`] = ["127.0.0.1"];
-        });
-    }
+    customBlockRules.forEach(value => {
+        isDomain(value) && blockRules.push({ rule: true, host: value });
+    });
+
+    blockRules.forEach(({ rule, host }) => {
+        if (rule) dnsHost[host] = ["127.0.0.1"];
+    });
 
     const staticIPs = domainToStaticIPs ? await resolveDNS(domainToStaticIPs) : undefined;
     if (staticIPs) dnsHost[domainToStaticIPs] = VLTRenableIPv6
@@ -41,85 +39,73 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
 
     const hosts = Object.keys(dnsHost).length ? { hosts: dnsHost } : {};
     const isIPv6 = (VLTRenableIPv6 && !isWarp) || (warpEnableIPv6 && isWarp);
-    const finalRemoteDNS = isWorkerLess
-        ? ["https://cloudflare-dns.com/dns-query"]
-        : isWarp
-            ? ["1.1.1.1"]
-            : [remoteDNS];
     const dnsObject = {
         ...hosts,
-        servers: finalRemoteDNS,
+        servers: [],
         queryStrategy: isIPv6 ? "UseIP" : "UseIPv4",
         tag: "dns",
     };
 
-    const isAntiSanctionRule = bypassOpenAi || bypassGoogle || customBypassSanctionRules.length > 0;
-    const bypassSanctionRules = [
-        { rule: bypassOpenAi, geosite: "geosite:openai" },
-        { rule: bypassGoogle, geosite: "geosite:google" },
-        { rule: bypassMicrosoft, geosite: "geosite:microsoft" },
-    ];
+    const finalRemoteDNS = isWorkerLess
+        ? "https://cloudflare-dns.com/dns-query"
+        : isWarp
+            ? "1.1.1.1"
+            : remoteDNS;
 
-    if (isAntiSanctionRule) {
-        const domains = bypassSanctionRules.reduce((acc, rule) => {
-            rule.rule && acc.push(rule.geosite);
-            return acc;
-        }, []);
+    const remoteDnsServer = buildDnsServer(finalRemoteDNS, null, null, null, "remote-dns");
+    dnsObject.servers.push(remoteDnsServer);
 
-        customBypassSanctionRules.length && customBypassSanctionRules.forEach(domain => domains.push(`domain:${domain}`));
-        const dnsServer = antiSanctionDNS.includes("https") ? antiSanctionDNS.replace("https", "https+local") : antiSanctionDNS;
-        const server = buildDnsServer(dnsServer, domains, null, true);
-        dnsObject.servers.push(server);
-    }
-
-    const outboundDomains = outboundAddrs.filter(address => isDomain(address));
-    const uniqueOutboundDomains = [...new Set(outboundDomains)];
-    const customBypassRulesDomains = customBypassRules.filter(address => isDomain(address));
-    const isDomainRule = [...uniqueOutboundDomains, ...customBypassRulesDomains].length > 0;
-    const localDnsServerDomains = [];
-    if (isDomainRule) {
-        const outboundDomainRules = uniqueOutboundDomains.map(domain => `full:${domain}`);
-        const bypassDomainRules = customBypassRulesDomains.map(domain => `domain:${domain}`);
-        localDnsServerDomains.push(...outboundDomainRules, ...bypassDomainRules);
-    }
-
-    if (isAntiSanctionRule) {
-        const dnsHost = getDomain(antiSanctionDNS);
-        dnsHost.isHostDomain && localDnsServerDomains.push(`full:${dnsHost.host}`);
-    }
-
-    if (isWorkerLess) localDnsServerDomains.push("full:cloudflare.com");
-
-    if (localDnsServerDomains.length) {
-        const server = buildDnsServer(localDNS, localDnsServerDomains, null, true);
-        dnsObject.servers.push(server);
-    }
-
-    const bypassRulesDomains = [];
-    const bypassRulesExpectIps = [];
     const bypassRules = [
-        { rule: bypassIran, domain: "geosite:category-ir", ip: "geoip:ir" },
-        { rule: bypassChina, domain: "geosite:cn", ip: "geoip:cn" },
-        { rule: bypassRussia, domain: "geosite:category-ru", ip: "geoip:ru" }
+        { rule: bypassIran, domain: "geosite:category-ir", ip: "geoip:ir", dns: localDNS },
+        { rule: bypassChina, domain: "geosite:cn", ip: "geoip:cn", dns: localDNS },
+        { rule: bypassRussia, domain: "geosite:category-ru", ip: "geoip:ru", dns: localDNS },
+        { rule: bypassOpenAi, domain: "geosite:openai", dns: antiSanctionDNS },
+        { rule: bypassGoogle, domain: "geosite:google", dns: antiSanctionDNS },
+        { rule: bypassMicrosoft, domain: "geosite:microsoft", dns: antiSanctionDNS },
     ];
 
-    const isBypass = bypassIran || bypassChina || bypassRussia;
-    if (isBypass) {
-        bypassRules.forEach(({ rule, domain, ip }) => {
-            if (rule) {
-                bypassRulesDomains.push(domain);
-                bypassRulesExpectIps.push(ip);
-            }
-        });
+    [...outboundAddrs, ...customBypassRules].forEach(value => {
+        const type = outboundAddrs.includes(value) ? 'full' : 'domain';
+        isDomain(value) && bypassRules.push({ rule: true, domain: `${type}:${value}`, dns: localDNS });
+    });
 
-        const server = buildDnsServer(localDNS, bypassRulesDomains, bypassRulesExpectIps, true);
-        dnsObject.servers.push(server);
+    const { host, isHostDomain } = getDomain(antiSanctionDNS);
+    if (isHostDomain) {
+        bypassRules.push({ rule: true, domain: `full:${host}`, dns: localDNS });
+    }
+
+    customBypassSanctionRules.forEach(value => {
+        isDomain(value) && bypassRules.push({ rule: true, domain: `domain:${value}`, dns: antiSanctionDNS });
+    });
+
+    isWorkerLess && bypassRules.push({ rule: true, domain: "full:cloudflare.com", dns: localDNS });
+    
+    const totalDomainRules = [];
+    const groupedDomainRules = new Map();
+    bypassRules.forEach(({ rule, domain, ip, dns }) => {
+        if (!rule) return;
+        if (ip) {
+            const server = buildDnsServer(dns, [domain], ip ? [ip] : null, true);
+            dnsObject.servers.push(server);
+        } else {
+            !groupedDomainRules.has(dns) && groupedDomainRules.set(dns, []);
+            groupedDomainRules.get(dns).push(domain)
+            totalDomainRules.push(domain);
+        }
+
+    });
+
+    for (const [dns, domain] of groupedDomainRules) {
+        if (domain.length) {
+            const server = buildDnsServer(dns, domain, null, true);
+            dnsObject.servers.push(server);
+        }
     }
 
     const isFakeDNS = (VLTRFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
     if (isFakeDNS) {
-        const fakeDNSServer = len(bypassRulesDomains)
-            ? buildDnsServer("fakedns", bypassRulesDomains, null, false)
+        const fakeDNSServer = totalDomainRules.length
+            ? buildDnsServer("fakedns", totalDomainRules, null, false)
             : "fakedns";
         dnsObject.servers.unshift(fakeDNSServer);
     }
@@ -127,19 +113,7 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
     return dnsObject;
 }
 
-function buildXrayRoutingRules(outboundAddrs, isChain, isBalancer, isWorkerLess, isWarp) {
-    const geoRules = [
-        { rule: bypassLAN, type: 'direct', domain: "geosite:private", ip: "geoip:private" },
-        { rule: bypassIran, type: 'direct', domain: "geosite:category-ir", ip: "geoip:ir" },
-        { rule: bypassChina, type: 'direct', domain: "geosite:cn", ip: "geoip:cn" },
-        { rule: bypassRussia, type: 'direct', domain: "geosite:ru", ip: "geoip:ru" },
-        { rule: bypassOpenAi, type: 'direct', domain: "geosite:openai" },
-        { rule: bypassGoogle, type: 'direct', domain: "geosite:google" },
-        { rule: bypassMicrosoft, type: 'direct', domain: "geosite:microsoft" },
-        { rule: blockAds, type: 'block', domain: "geosite:category-ads-all" },
-        { rule: blockAds, type: 'block', domain: "geosite:category-ads-ir" },
-        { rule: blockPorn, type: 'block', domain: "geosite:category-porn" }
-    ];
+function buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
 
     const buildRoutingRule = (inboundTag, domain, ip, port, network, outboundTag, isBalancer) => ({
         ...(inboundTag && { inboundTag: [inboundTag] }),
@@ -171,93 +145,67 @@ function buildXrayRoutingRules(outboundAddrs, isChain, isBalancer, isWorkerLess,
         }
     ];
 
-    const outboundDomains = outboundAddrs.filter(address => isDomain(address));
-    const customBypassRulesDomains = customBypassRules.filter(address => isDomain(address));
-    const isDomainRule = [...outboundDomains, ...customBypassRulesDomains].length > 0;
-    const isBypass = bypassIran || bypassChina || bypassRussia || bypassOpenAi || customBypassRules.length > 0;
-    if ((isDomainRule || isBypass) && localDNS !== 'localhost') {
-        const rule = buildRoutingRule("dns", null, [localDNS], 53, null, "direct");
-        rules.push(rule);
-    }
-
-    const isAntiSanctionRule = bypassOpenAi || bypassGoogle || customBypassSanctionRules.length > 0;
-    if (isAntiSanctionRule && !antiSanctionDNS.includes("://")) {
-        const rule = buildRoutingRule(
-            "dns",
-            null,
-            antiSanctionDNS,
-            null,
-            null,
-            "direct"
-        );
-
-        rules.push(rule);
-    }
-
     const finallOutboundTag = isChain ? "chain" : isWorkerLess ? "fragment" : "proxy";
     const outTag = isBalancer ? "all" : finallOutboundTag;
-
-    const remoteDnsRule = buildRoutingRule("dns", null, null, null, null, outTag, isBalancer);
-    rules.push(remoteDnsRule);
+    const remoteDnsRule = buildRoutingRule("remote-dns", null, null, null, null, outTag, isBalancer);
+    const localDnsRule = buildRoutingRule("dns", null, null, null, null, "direct");
+    rules.push(remoteDnsRule, localDnsRule);
 
     if (isWarp && blockUDP443) {
         const rule = buildRoutingRule(null, null, null, 443, "udp", "direct");
         rules.push(rule);
     }
 
-    const isBlock = blockAds || blockPorn || customBlockRules.length > 0;
-    if (isBypass || isBlock) {
-        const domainDirectRule = [];
-        const ipDirectRule = [];
+    const geoRules = [
+        { rule: blockAds, type: 'block', domain: "geosite:category-ads-all" },
+        { rule: blockAds, type: 'block', domain: "geosite:category-ads-ir" },
+        { rule: blockPorn, type: 'block', domain: "geosite:category-porn" },
+        { rule: bypassLAN, type: 'direct', domain: "geosite:private", ip: "geoip:private" },
+        { rule: bypassIran, type: 'direct', domain: "geosite:category-ir", ip: "geoip:ir" },
+        { rule: bypassChina, type: 'direct', domain: "geosite:cn", ip: "geoip:cn" },
+        { rule: bypassRussia, type: 'direct', domain: "geosite:ru", ip: "geoip:ru" },
+        { rule: bypassOpenAi, type: 'direct', domain: "geosite:openai" },
+        { rule: bypassGoogle, type: 'direct', domain: "geosite:google" },
+        { rule: bypassMicrosoft, type: 'direct', domain: "geosite:microsoft" }
+    ];
 
-        const domainBlockRule = [];
-        const ipBlockRule = [];
-
-        geoRules.forEach(({ rule, type, domain, ip }) => {
-            if (rule) {
-                if (type === 'direct') {
-                    domainDirectRule.push(domain);
-                    ip && ipDirectRule.push(ip);
-                } else {
-                    domainBlockRule.push(domain);
-                }
-            }
+    [...customBypassRules, ...customBypassSanctionRules].forEach(value => {
+        const isDomainValue = isDomain(value);
+        geoRules.push({
+            rule: true,
+            type: 'direct',
+            domain: isDomainValue ? `domain:${value}` : null,
+            ip: isDomainValue ? null : value
         });
+    });
 
-        const totalCustomBypassDomains = [...customBypassRules, ...customBypassSanctionRules];
-        totalCustomBypassDomains.forEach(address => {
-            if (isDomain(address)) {
-                domainDirectRule.push(`domain:${address}`);
-            } else {
-                ipDirectRule.push(address);
-            }
+    customBlockRules.forEach(value => {
+        const isDomainValue = isDomain(value);
+        geoRules.push({
+            rule: true,
+            type: 'block',
+            domain: isDomainValue ? `domain:${value}` : null,
+            ip: isDomainValue ? null : value
         });
+    });
 
-        customBlockRules.forEach(address => {
-            if (isDomain(address)) {
-                domainBlockRule.push(`domain:${address}`);
-            } else {
-                ipBlockRule.push(address);
-            }
-        });
+    const groupedRules = new Map();
+    geoRules.forEach(({ rule, type, domain, ip }) => {
+        if (!rule) return;
+        !groupedRules.has(type) && groupedRules.set(type, { domain: [], ip: [] });
+        domain && groupedRules.get(type).domain.push(domain);
+        ip && groupedRules.get(type).ip.push(ip);
+    });
 
-        if (domainBlockRule.length) {
-            const rule = buildRoutingRule(null, domainBlockRule, null, null, null, "block", null);
+    for (const [type, rule] of groupedRules) {
+        const { domain, ip } = rule;
+        if (domain.length) {
+            const rule = buildRoutingRule(null, domain, null, null, null, type, null);
             rules.push(rule);
         }
 
-        if (ipBlockRule.length) {
-            const rule = buildRoutingRule(null, null, ipBlockRule, null, null, "block", null);
-            rules.push(rule);
-        }
-
-        if (domainDirectRule.length) {
-            const rule = buildRoutingRule(null, domainDirectRule, null, null, null, "direct", null);
-            rules.push(rule);
-        }
-
-        if (ipBlockRule.length) {
-            const rule = buildRoutingRule(null, null, ipDirectRule, null, null, "direct", null);
+        if (ip.length) {
+            const rule = buildRoutingRule(null, null, ip, null, null, type, null);
             rules.push(rule);
         }
     }
@@ -650,7 +598,7 @@ async function buildXrayConfig(
         config.outbounds.unshift(udpNoiseOutbound);
     }
 
-    config.routing.rules = buildXrayRoutingRules(outboundAddrs, isChain, isBalancer, isWorkerLess, isWarp);
+    config.routing.rules = buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp);
 
     if (isBalancer) {
         config.routing.balancers = [
