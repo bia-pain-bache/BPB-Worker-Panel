@@ -79,7 +79,7 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
     });
 
     isWorkerLess && bypassRules.push({ rule: true, domain: "full:cloudflare.com", dns: localDNS });
-    
+
     const totalDomainRules = [];
     const groupedDomainRules = new Map();
     bypassRules.forEach(({ rule, domain, ip, dns }) => {
@@ -114,19 +114,6 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
 }
 
 function buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
-
-    const buildRoutingRule = (inboundTag, domain, ip, port, network, outboundTag, isBalancer) => ({
-        ...(inboundTag && { inboundTag: [inboundTag] }),
-        ...(domain && { domain }),
-        ...(ip && { ip }),
-        ...(port && { port }),
-        ...(network && { network }),
-        ...(isBalancer
-            ? { balancerTag: outboundTag }
-            : { outboundTag }),
-        type: "field"
-    });
-
     const rules = [
         {
             inboundTag: [
@@ -145,18 +132,25 @@ function buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
         }
     ];
 
+    const addRoutingRule = (inboundTag, domain, ip, port, network, outboundTag, isBalancer) => rules.push({
+        ...(inboundTag && { inboundTag: [inboundTag] }),
+        ...(domain && { domain }),
+        ...(ip && { ip }),
+        ...(port && { port }),
+        ...(network && { network }),
+        ...(isBalancer
+            ? { balancerTag: outboundTag }
+            : { outboundTag }),
+        type: "field"
+    });
+
     const finallOutboundTag = isChain ? "chain" : isWorkerLess ? "fragment" : "proxy";
     const outTag = isBalancer ? "all" : finallOutboundTag;
-    const remoteDnsRule = buildRoutingRule("remote-dns", null, null, null, null, outTag, isBalancer);
-    const localDnsRule = buildRoutingRule("dns", null, null, null, null, "direct");
-    rules.push(remoteDnsRule, localDnsRule);
+    addRoutingRule("remote-dns", null, null, null, null, outTag, isBalancer);
+    addRoutingRule("dns", null, null, null, null, "direct");
+    if (isWarp && blockUDP443) addRoutingRule(null, null, null, 443, "udp", "direct");
 
-    if (isWarp && blockUDP443) {
-        const rule = buildRoutingRule(null, null, null, 443, "udp", "direct");
-        rules.push(rule);
-    }
-
-    const geoRules = [
+    const routingRules = [
         { rule: blockAds, type: 'block', domain: "geosite:category-ads-all" },
         { rule: blockAds, type: 'block', domain: "geosite:category-ads-ir" },
         { rule: blockPorn, type: 'block', domain: "geosite:category-porn" },
@@ -171,7 +165,7 @@ function buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
 
     [...customBypassRules, ...customBypassSanctionRules].forEach(value => {
         const isDomainValue = isDomain(value);
-        geoRules.push({
+        routingRules.push({
             rule: true,
             type: 'direct',
             domain: isDomainValue ? `domain:${value}` : null,
@@ -181,7 +175,7 @@ function buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
 
     customBlockRules.forEach(value => {
         const isDomainValue = isDomain(value);
-        geoRules.push({
+        routingRules.push({
             rule: true,
             type: 'block',
             domain: isDomainValue ? `domain:${value}` : null,
@@ -190,7 +184,7 @@ function buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
     });
 
     const groupedRules = new Map();
-    geoRules.forEach(({ rule, type, domain, ip }) => {
+    routingRules.forEach(({ rule, type, domain, ip }) => {
         if (!rule) return;
         !groupedRules.has(type) && groupedRules.set(type, { domain: [], ip: [] });
         domain && groupedRules.get(type).domain.push(domain);
@@ -199,21 +193,11 @@ function buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
 
     for (const [type, rule] of groupedRules) {
         const { domain, ip } = rule;
-        if (domain.length) {
-            const rule = buildRoutingRule(null, domain, null, null, null, type, null);
-            rules.push(rule);
-        }
-
-        if (ip.length) {
-            const rule = buildRoutingRule(null, null, ip, null, null, type, null);
-            rules.push(rule);
-        }
+        if (domain.length) addRoutingRule(null, domain, null, null, null, type, null);
+        if (ip.length) addRoutingRule(null, null, ip, null, null, type, null);
     }
 
-    if (!isWarp && !isWorkerLess) {
-        const rule = buildRoutingRule(null, null, null, null, "udp", "block", null);
-        rules.push(rule);
-    }
+    if (!isWarp && !isWorkerLess) addRoutingRule(null, null, null, null, "udp", "block", null);
 
     let network;
     if (isBalancer) {
@@ -222,9 +206,7 @@ function buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
         network = isWarp || isWorkerLess ? "tcp,udp" : "tcp";
     }
 
-    const finalRule = buildRoutingRule(null, null, null, null, network, outTag, isBalancer);
-    rules.push(finalRule);
-
+    addRoutingRule(null, null, null, null, network, outTag, isBalancer);
     return rules;
 }
 
