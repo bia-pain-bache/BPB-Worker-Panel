@@ -57,6 +57,11 @@ async function buildClashDNS(isChain, isWarp) {
         { rule: bypassOpenAi, rule_set: "openai" },
         { rule: bypassGoogle, rule_set: "google" },
         { rule: bypassMicrosoft, rule_set: "microsoft" },
+        { rule: bypassOracle, rule_set: "oracle" },
+        { rule: bypassDocker, rule_set: "docker" },
+        { rule: bypassIntel, rule_set: "intel" },
+        { rule: bypassAsus, rule_set: "asus" },
+        { rule: bypassHp, rule_set: "hp" },
     ];
 
     if (isAntiSanctionRule) {
@@ -155,6 +160,51 @@ function buildClashRoutingRules(isWarp) {
                 format: "yaml",
                 geosite: "microsoft",
                 geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/microsoft.yaml"
+            }
+        },
+        {
+            rule: bypassOracle,
+            type: 'direct',
+            ruleProvider: {
+                format: "yaml",
+                geosite: "oracle",
+                geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/oracle.yaml"
+            }
+        },
+        {
+            rule: bypassDocker,
+            type: 'direct',
+            ruleProvider: {
+                format: "yaml",
+                geosite: "docker",
+                geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/docker.yaml"
+            }
+        },
+        {
+            rule: bypassIntel,
+            type: 'direct',
+            ruleProvider: {
+                format: "yaml",
+                geosite: "intel",
+                geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/intel.yaml"
+            }
+        },
+        {
+            rule: bypassAsus,
+            type: 'direct',
+            ruleProvider: {
+                format: "yaml",
+                geosite: "asus",
+                geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/asus.yaml"
+            }
+        },
+        {
+            rule: bypassHp,
+            type: 'direct',
+            ruleProvider: {
+                format: "yaml",
+                geosite: "hp",
+                geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/hp.yaml"
             }
         },
         {
