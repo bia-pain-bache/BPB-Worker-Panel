@@ -62,6 +62,11 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
         { rule: bypassOpenAi, domain: "geosite:openai", dns: antiSanctionDNS },
         { rule: bypassGoogle, domain: "geosite:google", dns: antiSanctionDNS },
         { rule: bypassMicrosoft, domain: "geosite:microsoft", dns: antiSanctionDNS },
+        { rule: bypassOracle, domain: "geosite:oracle", dns: antiSanctionDNS },
+        { rule: bypassDocker, domain: "geosite:docker", dns: antiSanctionDNS },
+        { rule: bypassIntel, domain: "geosite:intel", dns: antiSanctionDNS },
+        { rule: bypassAsus, domain: "geosite:asus", dns: antiSanctionDNS },
+        { rule: bypassHp, domain: "geosite:hp", dns: antiSanctionDNS },
     ];
 
     [...outboundAddrs, ...customBypassRules].forEach(value => {
@@ -160,7 +165,12 @@ function buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
         { rule: bypassRussia, type: 'direct', domain: "geosite:ru", ip: "geoip:ru" },
         { rule: bypassOpenAi, type: 'direct', domain: "geosite:openai" },
         { rule: bypassGoogle, type: 'direct', domain: "geosite:google" },
-        { rule: bypassMicrosoft, type: 'direct', domain: "geosite:microsoft" }
+        { rule: bypassMicrosoft, type: 'direct', domain: "geosite:microsoft" },
+        { rule: bypassOracle, type: 'direct', domain: "geosite:oracle" },
+        { rule: bypassDocker, type: 'direct', domain: "geosite:docker" },
+        { rule: bypassIntel, type: 'direct', domain: "geosite:intel" },
+        { rule: bypassAsus, type: 'direct', domain: "geosite:asus" },
+        { rule: bypassHp, type: 'direct', domain: "geosite:hp" }
     ];
 
     [...customBypassRules, ...customBypassSanctionRules].forEach(value => {

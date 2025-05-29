@@ -105,7 +105,12 @@ async function buildSingBoxDNS(isWarp) {
         { rule: bypassRussia, geosite: "geosite-category-ru", geoip: "geoip-ru", dns: "dns-direct" },
         { rule: bypassOpenAi, geosite: "geosite-openai", dns: "dns-anti-sanction" },
         { rule: bypassGoogle, geosite: "geosite-google", dns: "dns-anti-sanction" },
-        { rule: bypassMicrosoft, geosite: "geosite-microsoft", dns: "dns-anti-sanction" }
+        { rule: bypassMicrosoft, geosite: "geosite-microsoft", dns: "dns-anti-sanction" },
+        { rule: bypassOracle, geosite: "geosite-oracle", dns: "dns-anti-sanction" },
+        { rule: bypassDocker, geosite: "geosite-docker", dns: "dns-anti-sanction" },
+        { rule: bypassIntel, geosite: "geosite-intel", dns: "dns-anti-sanction" },
+        { rule: bypassAsus, geosite: "geosite-asus", dns: "dns-anti-sanction" },
+        { rule: bypassHp, geosite: "geosite-hp", dns: "dns-anti-sanction" },
     ];
 
     customBlockRules.forEach(value => {
@@ -288,6 +293,36 @@ function buildSingBoxRoutingRules(isWarp) {
             type: 'direct',
             geosite: "geosite-microsoft",
             geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-microsoft.srs"
+        },
+        {
+            rule: bypassOracle,
+            type: 'direct',
+            geosite: "geosite-oracle",
+            geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-oracle.srs"
+        },
+        {
+            rule: bypassDocker,
+            type: 'direct',
+            geosite: "geosite-docker",
+            geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-docker.srs"
+        },
+        {
+            rule: bypassIntel,
+            type: 'direct',
+            geosite: "geosite-intel",
+            geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-intel.srs"
+        },
+        {
+            rule: bypassAsus,
+            type: 'direct',
+            geosite: "geosite-asus",
+            geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-asus.srs"
+        },
+        {
+            rule: bypassHp,
+            type: 'direct',
+            geosite: "geosite-hp",
+            geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-hp.srs"
         }
     ];
 
