@@ -44,9 +44,9 @@
 
 |       Client        |     Version      | Fragment support | Warp Pro support |
 | :-----------------: | :--------------: | :--------------: | :--------------: |
-|     **v2rayNG**     | 1.9.33 یا بالاتر | :material-check: | :material-check: |
-|     **v2rayN**      | 7.8.3 یا بالاتر  | :material-check: | :material-check: |
-|   **v2rayN-PRO**    |  1.8 یا بالاتر   | :material-check: | :material-check: |
+|     **v2rayNG**     | 1.10.2 یا بالاتر | :material-check: | :material-check: |
+|     **v2rayN**      | 7.12.5 یا بالاتر | :material-check: | :material-check: |
+|   **v2rayN-PRO**    |  1.9 یا بالاتر   | :material-check: | :material-check: |
 |      **Husi**       |                  | :material-close: | :material-close: |
 |    **Sing-box**     | 1.11.2 یا بالاتر | :material-close: | :material-close: |
 |    **Streisand**    | 1.6.48 یا بالاتر | :material-check: | :material-check: |
@@ -58,6 +58,8 @@
 |   **Clash Meta**    |                  | :material-close: | :material-close: |
 | **Clash Verge Rev** |                  | :material-close: | :material-close: |
 |     **FLClash**     |                  | :material-close: | :material-close: |
+|   **AmneziaVPN**    |                  | :material-close: | :material-check: |
+|    **WG Tunnel**    |                  | :material-close: | :material-check: |
 
 ---
 

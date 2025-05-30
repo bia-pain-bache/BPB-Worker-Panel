@@ -56,3 +56,17 @@ There are cases which predefined rules cannot help. For example, if you have blo
     ```title="IPv6 CIDR"
     [2606:4700::6810:85e5]/128
     ```
+
+## Sanction Rules
+
+In case you need some websites to just bypass sanctions and connect directly (without proxy), you can use this section.
+You can set your desired DNS server (which should be a transparent proxy also) and choose preset rules or fill in custom addresses. you can even use configs like `WorkerLess` which do not use any proxy and access sanctioned websites. The default DNS server is Shecan (for iranian users).
+
+!!! info 
+    DNS server can be in shape of an IP (UDP DNS) or DoH like `https://free.shecan.ir/dns-query`.
+
+!!! warning
+    Please avoid using `Bypass Google` pre-set rule (unless you are a pro and know what's happening), it conflicts a wide range of addresses which may conflict with your proxy settings and leads to malfunctioning sometimes. It's recommended to fill your single desired addresses in custom rules section instead.
+
+!!! info
+    Please be aware that if you enter `google.com` in custom rules, all of its subdomains will also be routed directly, such as `drive.google.com` or `mail.google.com`.

@@ -59,19 +59,19 @@
   <tbody  align="center">
     <tr>
       <td><b>v2rayNG</b></td>
-      <td>1.9.33 و بالاتر</td>
+      <td>1.10.2 و بالاتر</td>
       <td>✔️</td>
       <td>✔️</td>
     </tr>
     <tr>
       <td><b>v2rayN</b></td>
-      <td>7.8.3 و بالاتر</td>
+      <td>7.12.5 و بالاتر</td>
       <td>✔️</td>
       <td>✔️</td>
     </tr>
     <tr>
       <td><b>v2rayN-Pro</b></td>
-      <td>1.8 و بالاتر</td>
+      <td>1.9 و بالاتر</td>
       <td>✔️</td>
       <td>✔️</td>
     </tr>
@@ -118,8 +118,8 @@
       <td>✔️</td>
     </tr>
     <tr>
-      <td><b>NikaNG</b></td>
-      <td></td>
+      <td><b>MahsaNG</b></td>
+      <td>13 و بالاتر</td>
       <td>✔️</td>
       <td>✔️</td>
     </tr>
@@ -140,6 +140,18 @@
       <td></td>
       <td>❌</td>
       <td>❌</td>
+    </tr>
+    <tr>
+      <td><b>AmneziaVPN</b></td>
+      <td></td>
+      <td>❌</td>
+      <td>✔️</td>
+    </tr>
+    <tr>
+      <td><b>WG Tunnel</b></td>
+      <td></td>
+      <td>❌</td>
+      <td>✔️</td>
     </tr>
   </tbody>
 </table>
