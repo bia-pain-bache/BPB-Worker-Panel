@@ -42,10 +42,7 @@ async function buildSingBoxDNS(isWarp) {
 
     const rules = [
         {
-            domain: [
-                "raw.githubusercontent.com",
-                "time.apple.com"
-            ],
+            domain: ["raw.githubusercontent.com"],
             server: "dns-direct"
         },
         {
@@ -165,7 +162,6 @@ function buildSingBoxRoutingRules(isWarp) {
             action: "hijack-dns",
             mode: "or",
             rules: [
-                { inbound: "dns-in" },
                 { port: 53 },
                 { protocol: "dns" }
             ],
@@ -671,14 +667,6 @@ const singboxConfigTemp = {
     dns: {},
     inbounds: [
         {
-            type: "direct",
-            tag: "dns-in",
-            listen: "0.0.0.0",
-            listen_port: 6450,
-            override_address: "1.1.1.1",
-            override_port: 53
-        },
-        {
             type: "tun",
             tag: "tun-in",
             address: [
@@ -717,7 +705,7 @@ const singboxConfigTemp = {
         enabled: true,
         server: "time.apple.com",
         server_port: 123,
-        detour: "direct",
+        domain_resolver: "dns-direct",
         interval: "30m",
         write_to_system: false
     },
