@@ -54,7 +54,7 @@
 |  **Shadowrocket**   |                  | :material-close: | :material-close: |
 |     **Nekoray**     |                  | :material-check: | :material-close: |
 |     **Hiddify**     | 2.5.7 یا بالاتر  | :material-check: | :material-check: |
-|     **NikaNG**      |                  | :material-check: | :material-check: |
+|     **MahsaNG**     |                  | :material-check: | :material-check: |
 |   **Clash Meta**    |                  | :material-close: | :material-close: |
 | **Clash Verge Rev** |                  | :material-close: | :material-close: |
 |     **FLClash**     |                  | :material-close: | :material-close: |

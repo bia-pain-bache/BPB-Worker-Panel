@@ -24,7 +24,7 @@
 
 بازه زمانی بین فرستادن بسته‌های نویز.
 
-## MahsaNG، NikaNG و Hiddify
+## MahsaNG و Hiddify
 
 ### Hiddify Mode
 
@@ -32,7 +32,7 @@
 * حالت `h_HEX`، که HEX یه مقدار بین `00` و `FF` هست (مثل `h_0a`، `h_f9`، `h_9c`)
 * حالت `g_HEX_HEX_HEX`، که HEX همون فرمت رو داره (مثل `g_0a_ff_9c`)
 
-### MahsaNG, NikaNG Mode
+### MahsaNG Mode
 
 * **none**: هیچ نویزی اعمال نمی‌شه، مثل یه کانفیگ Warp معمولی.
 * **quic**: توسط توسعه‌دهنده‌ها برای شرایط ایران توصیه شده.

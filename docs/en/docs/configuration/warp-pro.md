@@ -24,7 +24,7 @@ The size of each noise packet, measured in bytes.
 
 The interval between sending noise packets.
 
-## MahsaNG, NikaNG, and Hiddify
+## MahsaNG and Hiddify
 
 ### Hiddify Modes
 
@@ -32,7 +32,7 @@ The interval between sending noise packets.
 - Mode `h_HEX`, where HEX is a value between `00` and `FF` (e.g., `h_0a`, `h_f9`, `h_9c`)
 - Mode `g_HEX_HEX_HEX`, where HEX follows the same format (e.g., `g_0a_ff_9c`)
 
-### MahsaNG and NikaNG Modes
+### MahsaNG Mode
 
 - **none**: No noise is applied, equivalent to a standard Warp config.
 - **quic**: Recommended by developers for conditions in Iran.

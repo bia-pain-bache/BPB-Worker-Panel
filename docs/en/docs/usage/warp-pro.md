@@ -2,7 +2,7 @@
 
 ![Warp Pro subscription](../images/warp-pro-sub.jpg)
 
-Recent advancements by the GFW-Knocker and Hiddify teams on Xray and Sing-box cores have enabled Warp unblocking, resulting in applications like **MahsaNG**, **NikaNG**, **v2rayN-PRO**, and **Hiddify**. These developments optimize Warp connections for specific conditions in Iran, similar to efforts by the **Oblivion** team. The **Warp Pro** subscription has been added to the panel, with customizable settings.
+Recent advancements by the GFW-Knocker and Hiddify teams on Xray and Sing-box cores have enabled Warp unblocking, resulting in applications like **MahsaNG**, **v2rayN-PRO**, and **Hiddify**. These developments optimize Warp connections for specific conditions in Iran, similar to efforts by the **Oblivion** team. The **Warp Pro** subscription has been added to the panel, with customizable settings.
 
 Optimal values for each ISP are determined experimentally and may vary over time, like fragment settings. The default values are tested and currently effective; you only need to scan and set clean Endpoints.
 
