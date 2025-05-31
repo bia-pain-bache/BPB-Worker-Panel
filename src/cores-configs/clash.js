@@ -575,7 +575,7 @@ const clashConfigTemp = {
     "rules": [],
     "ntp": {
         "enable": true,
-        "server": "time.apple.com",
+        "server": "time.cloudflare.com",
         "port": 123,
         "interval": 30
     }

@@ -13,19 +13,21 @@ async function buildSingBoxDNS(isWarp) {
         },
     ];
 
-    const addDnsServer = (type, server, server_port, detour, tag, domain_resolver) => servers.push({
-        type,
-        ...(server && { server }),
-        ...(server_port && { server_port }),
-        ...(detour && { detour }),
-        ...(domain_resolver && {
-            domain_resolver: {
-                server: domain_resolver,
-                strategy: isIPv6 ? "prefer_ipv4" : "ipv4_only"
-            }
-        }),
-        tag
-    });
+    function addDnsServer(type, server, server_port, detour, tag, domain_resolver) {
+        servers.push({
+            type,
+            ...(server && { server }),
+            ...(server_port && { server_port }),
+            ...(detour && { detour }),
+            ...(domain_resolver && {
+                domain_resolver: {
+                    server: domain_resolver,
+                    strategy: isIPv6 ? "prefer_ipv4" : "ipv4_only"
+                }
+            }),
+            tag
+        });
+    }
 
     if (localDNS === 'localhost') {
         addDnsServer("local", null, null, null, "dns-direct");
@@ -69,7 +71,7 @@ async function buildSingBoxDNS(isWarp) {
         });
     }
 
-    const addDnsRule = (geosite, geoip, domain, dns) => {
+    function addDnsRule(geosite, geoip, domain, dns) {
         let type, mode;
         const ruleSets = [];
         if (geoip) {
@@ -182,7 +184,7 @@ function buildSingBoxRoutingRules(isWarp) {
         outbound: "direct"
     });
 
-    const addRoutingRule = (domain, ip, geosite, geoip, network, protocol, port, type) => {
+    function addRoutingRule(domain, ip, geosite, geoip, network, protocol, port, type) {
         const action = type === 'reject' ? 'reject' : 'route';
         const outbound = type === 'direct' ? 'direct' : null;
         rules.push({
@@ -703,7 +705,7 @@ const singboxConfigTemp = {
     route: {},
     ntp: {
         enabled: true,
-        server: "time.apple.com",
+        server: "time.cloudflare.com",
         server_port: 123,
         domain_resolver: "dns-direct",
         interval: "30m",
