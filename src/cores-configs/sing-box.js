@@ -96,21 +96,20 @@ async function buildSingBoxDNS(isWarp) {
 
     const routingRules = getRoutingRules();
 
-    customBlockRules.forEach(value => {
-        isDomain(value) && routingRules.unshift({ rule: true, domain: value, type: 'reject' });
+    customBlockRules.filter(isDomain).forEach(domain => {
+        routingRules.unshift({ rule: true, domain: domain, type: 'reject' });
     });
 
-    customBypassRules.forEach(value => {
-        isDomain(value) && routingRules.push({ rule: true, domain: value, type: 'direct', dns: "dns-direct" });
+    customBypassRules.filter(isDomain).forEach(domain => {
+        routingRules.push({ rule: true, domain: domain, type: 'direct', dns: "dns-direct" });
     });
 
-    customBypassSanctionRules.forEach(value => {
-        isDomain(value) && routingRules.push({ rule: true, domain: value, type: 'direct', dns: "dns-anti-sanction" });
+    customBypassSanctionRules.filter(isDomain).forEach(domain => {
+        routingRules.push({ rule: true, domain: domain, type: 'direct', dns: "dns-anti-sanction" });
     });
 
     const groupedRules = new Map();
-    routingRules.forEach(({ rule, geosite, geoip, domain, type, dns }) => {
-        if (!rule) return;
+    routingRules.filter(({ rule }) => rule).forEach(({ geosite, geoip, domain, type, dns }) => {
         if (geosite && geoip && type === 'direct') {
             addDnsRule(geosite, geoip, null, dns);
         } else {
@@ -248,9 +247,8 @@ function buildSingBoxRoutingRules(isWarp) {
     }
 
     const groupedRules = new Map();
-    routingRules.forEach(routingRule => {
-        const { rule, type, domain, ip, geosite, geoip } = routingRule;
-        if (!rule) return;
+    routingRules.filter(({ rule }) => rule).forEach(routingRule => {
+        const { type, domain, ip, geosite, geoip } = routingRule;
         !groupedRules.has(type) && groupedRules.set(type, { domain: [], ip: [], geosite: [], geoip: [] });
         domain && groupedRules.get(type).domain.push(domain);
         ip && groupedRules.get(type).ip.push(ip);

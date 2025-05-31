@@ -22,12 +22,12 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
         { rule: blockPorn, host: "geosite:category-porn" }
     ];
 
-    customBlockRules.forEach(value => {
-        isDomain(value) && blockRules.push({ rule: true, host: value });
+    customBlockRules.filter(isDomain).forEach(domain => {
+        blockRules.push({ rule: true, host: domain });
     });
 
-    blockRules.forEach(({ rule, host }) => {
-        if (rule) dnsHost[host] = ["127.0.0.1"];
+    blockRules.filter(({ rule }) => rule).forEach(({ host }) => {
+        dnsHost[host] = ["127.0.0.1"];
     });
 
     const staticIPs = domainToStaticIPs ? await resolveDNS(domainToStaticIPs) : undefined;
@@ -69,9 +69,9 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
         { rule: bypassHp, domain: "geosite:hp", dns: antiSanctionDNS },
     ];
 
-    [...outboundAddrs, ...customBypassRules].forEach(value => {
-        const type = outboundAddrs.includes(value) ? 'full' : 'domain';
-        isDomain(value) && bypassRules.push({ rule: true, domain: `${type}:${value}`, dns: localDNS });
+    [...outboundAddrs, ...customBypassRules].filter(isDomain).forEach(domain => {
+        const type = outboundAddrs.includes(domain) ? 'full' : 'domain';
+        bypassRules.push({ rule: true, domain: `${type}:${domain}`, dns: localDNS });
     });
 
     const { host, isHostDomain } = getDomain(antiSanctionDNS);
@@ -79,16 +79,15 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
         bypassRules.push({ rule: true, domain: `full:${host}`, dns: localDNS });
     }
 
-    customBypassSanctionRules.forEach(value => {
-        isDomain(value) && bypassRules.push({ rule: true, domain: `domain:${value}`, dns: antiSanctionDNS });
+    customBypassSanctionRules.filter(isDomain).forEach(domain => {
+        bypassRules.push({ rule: true, domain: `domain:${domain}`, dns: antiSanctionDNS });
     });
 
     isWorkerLess && bypassRules.push({ rule: true, domain: "full:cloudflare.com", dns: localDNS });
 
     const totalDomainRules = [];
     const groupedDomainRules = new Map();
-    bypassRules.forEach(({ rule, domain, ip, dns }) => {
-        if (!rule) return;
+    bypassRules.filter(({ rule }) => rule).forEach(({ domain, ip, dns }) => {
         if (ip) {
             const server = buildDnsServer(dns, [domain], ip ? [ip] : null, true);
             dnsObject.servers.push(server);
@@ -97,7 +96,6 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
             groupedDomainRules.get(dns).push(domain)
             totalDomainRules.push(domain);
         }
-
     });
 
     for (const [dns, domain] of groupedDomainRules) {
@@ -194,8 +192,7 @@ function buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
     });
 
     const groupedRules = new Map();
-    routingRules.forEach(({ rule, type, domain, ip }) => {
-        if (!rule) return;
+    routingRules.filter(({ rule }) => rule).forEach(({ type, domain, ip }) => {
         !groupedRules.has(type) && groupedRules.set(type, { domain: [], ip: [] });
         domain && groupedRules.get(type).domain.push(domain);
         ip && groupedRules.get(type).ip.push(ip);

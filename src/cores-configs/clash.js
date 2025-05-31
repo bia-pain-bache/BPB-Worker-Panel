@@ -37,24 +37,29 @@ async function buildClashDNS(isChain, isWarp) {
 
     const routingRules = getRoutingRules();
 
-    customBypassRules.forEach(value => {
-        isDomain(value) && routingRules.push({ rule: true, domain: value, type: 'DIRECT', dns: `${localDNS}#DIRECT` });
+    customBlockRules.filter(isDomain).forEach(domain => {
+        if (!dnsObject["hosts"]) dnsObject["hosts"] = {};
+        dnsObject["hosts"][`+.${domain}`] = "127.0.0.1";
     });
 
-    customBypassSanctionRules.forEach(value => {
-        isDomain(value) && routingRules.push({ rule: true, domain: value, type: 'DIRECT', dns: `${antiSanctionDNS}#DIRECT` });
+    customBypassRules.filter(isDomain).forEach(domain => {
+        dnsObject["nameserver-policy"][`+.${domain}`] = `${localDNS}#DIRECT`;
     });
 
-    routingRules.forEach(({ rule, type, domain, dns, ruleProvider }) => {
-        if (!rule) return;
-        if (ruleProvider?.geosite) {
-            dnsObject["nameserver-policy"][`rule-set:${ruleProvider?.geosite}`] = type === 'DIRECT' ? dns : "127.0.0.1";
-        }
-
-        if (domain) {
-            dnsObject["nameserver-policy"][`+.${domain}`] = type === 'DIRECT' ? dns : "127.0.0.1";
-        }
+    customBypassSanctionRules.filter(isDomain).forEach(domain => {
+        dnsObject["nameserver-policy"][`+.${domain}`] = `${antiSanctionDNS}#DIRECT`;
     });
+
+    routingRules
+        .filter(({ rule, ruleProvider }) => rule && ruleProvider?.geosite)
+        .forEach(({ type, dns, ruleProvider }) => {
+            if (type === 'DIRECT') {
+                dnsObject["nameserver-policy"][`rule-set:${ruleProvider.geosite}`] = dns;
+            } else {
+                if (!dnsObject["hosts"]) dnsObject["hosts"] = {};
+                dnsObject["hosts"][`rule-set:${ruleProvider.geosite}`] = "127.0.0.1";
+            }
+        });
 
     const isFakeDNS = (VLTRFakeDNS && !isWarp) || (warpFakeDNS && isWarp);
     if (isFakeDNS) Object.assign(dnsObject, {
@@ -111,9 +116,8 @@ function buildClashRoutingRules(isWarp) {
     }
 
     const groupedRules = new Map();
-    routingRules.forEach(routingRule => {
-        const { rule, type, domain, ip, ruleProvider } = routingRule;
-        if (!rule) return;
+    routingRules.filter(({ rule }) => rule).forEach(routingRule => {
+        const { type, domain, ip, ruleProvider } = routingRule;
         const { geosite, geoip } = ruleProvider || {};
         !groupedRules.has(type) && groupedRules.set(type, { domain: [], ip: [], geosite: [], geoip: [] });
         domain && groupedRules.get(type).domain.push(domain);
