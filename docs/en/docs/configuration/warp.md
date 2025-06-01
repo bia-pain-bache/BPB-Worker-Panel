@@ -6,7 +6,7 @@ These settings apply to both **Warp** and **Warp Pro** subscriptions.
 
 ## Endpoints - Scanner
 
-Endpoints for Warp function similarly to Clean IPs for VLESS and Trojan. The panel provides a scanner script that you can run on Termux (Android) or Linux and input the results here. Note that the results are not 100% reliable, so testing is necessary.
+Endpoints for Warp function similarly to Clean IPs for VLESS and Trojan. The panel provides a scanner that you can run on Termux (Android), Windows, macOS or Linux and input the results here. Note that the results are not 100% reliable, so testing is necessary. Please note that you have to exit any proxy app before testing, if you use v2rayN, you should completely exit it from taskbar, clearing proxy is not enough.
 
 !!! info
     - Endpoints are formatted as IP:Port or Domain:Port and must be entered one per line.

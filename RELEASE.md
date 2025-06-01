@@ -4,7 +4,7 @@ Added to routing rules to provide a more stable and solid connection for website
 You can set a desired DNS and choose preset rules or custom rules for bypassing. This feature makes WorkerLess config a special config which not only can access most of blocked addresses but also can bypass sanctions.
 
 > [!CAUTION]
-> Please avoid using `Bypass Google` pre-set rule (unless you are a pro and know what's happening), it conflicts a wide range of addresses which may conflict with your proxy settings and leads to malfunctioning sometimes. It's recommended to fill your single desired addresses in custom rules section instead.
+> Please avoid using `Bypass Google` pre-set rule (unless you are a pro and know what's happening), it includes a wide range of addresses which may conflict with your proxy settings and leads to malfunctioning sometimes. It's recommended to fill your single desired addresses in Sanction custom rules instead.
 
 ## Migrate to sing-box 1.12.0
 
@@ -18,7 +18,7 @@ You can set a desired DNS and choose preset rules or custom rules for bypassing.
 > [!CAUTION]
 > You have to update your sing-box clients to 1.12.x before updating panel to this version.  
 > You have to update your Xray clients to the latest, v2rayNG should be at least v1.10.2, v2rayN 7.12.5 and MahsaNG v13.  
-> NikaNG is removed from supported apps as it's not gonna be developed anymore, use MahsaNG instead.
+> NikaNG is removed from supported clients as it's not gonna be maintained anymore, use MahsaNG instead.
 
 ## ⚙️ Bug fixes and Improvements
 
@@ -26,10 +26,12 @@ You can set a desired DNS and choose preset rules or custom rules for bypassing.
 - Fixed Clash Trojan bug in 3.2.5
 - Improved performance of all cores on DOH with `https://Domain/dns-query` format.
 - Added `Sanction rules` with DNS settings.
+- Added fallback Google DoH to Workerless config.
 - Fixed UI bug (UDP noises).
 - Added new Malware and Phishing geoips for Clash.
 - Xray, Sing-box and Clash DNS and routing improvements.
 - Revised Sing-box Tun hijack
 - Fixed Clash DNS block
-- Changed Sing-box and Clash NTP servers to Cloudflare
+- Changed Sing-box and Clash NTP servers to Cloudflare.
+- Changed warp endpoint scanner to [BPB Warp Scanner](https://github.com/bia-pain-bache/BPB-Warp-Scanner)
 - Refactored cores and some other bug fixes.
