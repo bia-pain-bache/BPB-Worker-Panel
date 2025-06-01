@@ -60,19 +60,22 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
 
     const bypassRules = routingRules.filter(({ type }) => type === 'direct');
 
-    [...outboundAddrs, ...customBypassRules].filter(isDomain).forEach(domain => {
-        const type = outboundAddrs.includes(domain) ? 'full' : 'domain';
-        bypassRules.push({ rule: true, domain: `${type}:${domain}`, dns: localDNS });
+    outboundAddrs.filter(isDomain).forEach(domain => {
+        bypassRules.push({ rule: true, domain: `full:${domain}`, dns: localDNS });
+    });
+    
+    customBypassRules.filter(isDomain).forEach(domain => {
+        bypassRules.push({ rule: true, domain: `domain:${domain}`, dns: localDNS });
+    });
+
+    customBypassSanctionRules.filter(isDomain).forEach(domain => {
+        bypassRules.push({ rule: true, domain: `domain:${domain}`, dns: antiSanctionDNS });
     });
 
     const { host, isHostDomain } = getDomain(antiSanctionDNS);
     if (isHostDomain) {
         bypassRules.push({ rule: true, domain: `full:${host}`, dns: localDNS });
     }
-
-    customBypassSanctionRules.filter(isDomain).forEach(domain => {
-        bypassRules.push({ rule: true, domain: `domain:${domain}`, dns: antiSanctionDNS });
-    });
 
     isWorkerLess && bypassRules.push({ rule: true, domain: "full:cloudflare.com", dns: localDNS });
 

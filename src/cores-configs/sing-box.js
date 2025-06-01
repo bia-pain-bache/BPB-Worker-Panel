@@ -3,11 +3,13 @@ import { getDataset } from '../kv/handlers';
 
 async function buildSingBoxDNS(isWarp) {
     const isIPv6 = (VLTRenableIPv6 && !isWarp) || (warpEnableIPv6 && isWarp);
+    const url = new URL(remoteDNS);
+    const dnsProtocol = url.protocol.replace(':', '');
+    
     const servers = [
         {
-            type: isWarp ? "udp" : "https",
+            type: isWarp ? "udp" : dnsProtocol,
             server: isWarp ? "1.1.1.1" : dohHost.host,
-            server_port: isWarp ? 53 : 443,
             detour: "✅ Selector",
             tag: "dns-remote"
         },
