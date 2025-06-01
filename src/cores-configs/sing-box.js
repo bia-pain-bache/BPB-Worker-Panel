@@ -283,6 +283,7 @@ function buildSingBoxVLOutbound(remark, address, port, host, sni, allowInsecure)
         server: address,
         server_port: +port,
         uuid: userID,
+        network: "tcp",
         packet_encoding: "",
         transport: {
             early_data_header_name: "Sec-WebSocket-Protocol",
@@ -326,6 +327,7 @@ function buildSingBoxTROutbound(remark, address, port, host, sni, allowInsecure)
         password: TRPassword,
         server: address,
         server_port: +port,
+        network: "tcp",
         transport: {
             early_data_header_name: "Sec-WebSocket-Protocol",
             max_early_data: 2560,
