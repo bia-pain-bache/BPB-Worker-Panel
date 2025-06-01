@@ -147,7 +147,7 @@ function buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
     const outTag = isBalancer ? "all" : finallOutboundTag;
     const remoteDnsServers = isWorkerLess ? ["remote-dns", "remote-dns-fallback"] : ["remote-dns"];
     addRoutingRule(remoteDnsServers, null, null, null, null, outTag, isBalancer);
-    addRoutingRule("dns", null, null, null, null, "direct");
+    addRoutingRule(["dns"], null, null, null, null, "direct");
 
     if (bypassLAN) {
         addRoutingRule(null, ["geosite:private"], null, null, null, "direct");

@@ -249,7 +249,7 @@ a.link {
     flex-wrap: wrap;
 }
 
-.routing {
+.form-control div.routing {
     gap: 5px;
     display: flex;
     flex: 1;

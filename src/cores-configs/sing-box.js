@@ -5,7 +5,7 @@ async function buildSingBoxDNS(isWarp) {
     const isIPv6 = (VLTRenableIPv6 && !isWarp) || (warpEnableIPv6 && isWarp);
     const url = new URL(remoteDNS);
     const dnsProtocol = url.protocol.replace(':', '');
-    
+
     const servers = [
         {
             type: isWarp ? "udp" : dnsProtocol,
@@ -37,11 +37,14 @@ async function buildSingBoxDNS(isWarp) {
         addDnsServer("udp", localDNS, 53, null, "dns-direct");
     }
 
-    const dnsHost = getDomain(antiSanctionDNS);
-    if (dnsHost.isHostDomain) {
-        addDnsServer("https", dnsHost.host, 443, null, "dns-anti-sanction", "dns-direct");
-    } else {
-        addDnsServer("udp", antiSanctionDNS, 53, null, "dns-anti-sanction", null);
+    const isSanctionRule = customBypassSanctionRules.filter(isDomain).length;
+    if (isSanctionRule) {
+        const dnsHost = getDomain(antiSanctionDNS);
+        if (dnsHost.isHostDomain) {
+            addDnsServer("https", dnsHost.host, 443, null, "dns-anti-sanction", "dns-direct");
+        } else {
+            addDnsServer("udp", antiSanctionDNS, 53, null, "dns-anti-sanction", null);
+        }
     }
 
     const rules = [
