@@ -287,7 +287,7 @@ a.link {
 .material-symbols-rounded {
     margin: 0 5px 0 5px;
     font-variation-settings:
-        'FILL' 1,
+        'FILL' 0,
         'wght' 400,
         'GRAD' 0,
         'opsz' 24
@@ -381,8 +381,7 @@ label {
     color: var(--lable-text-color);
 }
 
-.button,
-table button {
+.button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -404,6 +403,24 @@ table button {
     margin-left: auto;
 }
 
+table button {
+    margin-top: auto;
+    margin-bottom: auto;
+    max-height: fit-content;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    background-color: unset;
+    cursor: pointer;
+    color: var(--lable-text-color);
+    padding: 0;
+}
+
+table button span.material-symbols-rounded{
+    font-size: 28px;
+    margin: 0;
+}
+
 .button {
     font-weight: 600;
     font-size: 1.1rem;
@@ -421,11 +438,15 @@ input[type="checkbox"] {
     pointer-events: none;
 }
 
-.button:hover,
-table button:hover,
-table button:focus {
+.button:hover {
     background-color: #2980b9;
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+}
+
+table button:hover,
+table button:focus {
+    color: var(--primary-color);
     transform: translateY(-2px);
 }
 
@@ -448,10 +469,13 @@ button.button:hover {
     color: white;
 }
 
-.button:active,
-table button:active {
+.button:active {
     transform: translateY(1px);
     box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+}
+
+table button:active {
+    transform: translateY(1px);
 }
 
 .table-container {
@@ -500,6 +524,11 @@ table button:active {
 .table-container tr td:first-child {
     color: var(--lable-text-color);
     text-wrap: nowrap;
+}
+
+.table-container tr td:nth-child(2) {
+    flex-direction: row;
+    gap: 8px;
 }
 
 .my-ip {
