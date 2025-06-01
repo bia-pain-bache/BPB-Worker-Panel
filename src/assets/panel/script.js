@@ -85,8 +85,8 @@ function initiatePanel(proxySettings) {
     const selectElements = ["VLTRFakeDNS", "VLTRenableIPv6", "warpFakeDNS", "warpEnableIPv6"];
     const checkboxElements = [
         "VLConfigs", "TRConfigs", "bypassLAN", "blockAds", "bypassIran", "blockPorn", "bypassChina",
-        "blockUDP443", "bypassRussia", "bypassOpenAi", "bypassGoogle", "bypassMicrosoft", "bypassOracle",
-        "bypassDocker", "bypassIntel", "bypassAsus", "bypassHp"
+        "blockUDP443", "bypassRussia", "bypassOpenAi", "bypassMicrosoft", "bypassOracle","bypassDocker", 
+        "bypassIntel", "bypassAsus", "bypassHp"
     ];
     const inputElements = [
         "remoteDNS", "localDNS", "outProxy", "customCdnHost", "customCdnSni", "bestVLTRInterval",

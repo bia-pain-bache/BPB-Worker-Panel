@@ -804,13 +804,6 @@ function getRoutingRules() {
             geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-openai.srs"
         },
         {
-            rule: bypassGoogle,
-            type: 'direct',
-            dns: "dns-anti-sanction",
-            geosite: "geosite-google",
-            geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-google.srs"
-        },
-        {
             rule: bypassMicrosoft,
             type: 'direct',
             dns: "dns-anti-sanction",

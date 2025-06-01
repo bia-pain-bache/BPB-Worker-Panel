@@ -127,7 +127,6 @@ export async function updateDataset(request, env) {
         bypassChina: populateField('bypassChina', false, true),
         bypassRussia: populateField('bypassRussia', false, true),
         bypassOpenAi: populateField('bypassOpenAi', false, true),
-        bypassGoogle: populateField('bypassGoogle', false, true),
         bypassMicrosoft: populateField('bypassMicrosoft', false, true),
         bypassOracle: populateField('bypassOracle', false, true),
         bypassDocker: populateField('bypassDocker', false, true),

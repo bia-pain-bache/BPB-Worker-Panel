@@ -692,16 +692,6 @@ function getRoutingRules() {
             }
         },
         {
-            rule: bypassGoogle,
-            type: 'DIRECT',
-            dns: `${antiSanctionDNS}#DIRECT`,
-            ruleProvider: {
-                format: "yaml",
-                geosite: "google",
-                geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/google.yaml"
-            }
-        },
-        {
             rule: bypassMicrosoft,
             type: 'DIRECT',
             dns: `${antiSanctionDNS}#DIRECT`,
