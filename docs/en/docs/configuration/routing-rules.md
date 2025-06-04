@@ -67,3 +67,6 @@ You can set your desired DNS server (which should be a transparent proxy also) a
 
 !!! info
     Please be aware that if you enter `google.com` in custom rules, all of its subdomains will also be routed directly, such as `drive.google.com` or `mail.google.com`.
+
+!!! note
+    When these rules are activated, you should make sure the DNS supports domain, for example if you activate `Microsoft` rule and the DNS does not support it, you will fail to connect to Microsoft domains. Please check DNS catalogue and make sure your target rule or domain is supported.

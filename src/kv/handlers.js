@@ -103,7 +103,7 @@ export async function updateDataset(request, env) {
         remoteDNS,
         dohHost: await initDoh(), 
         localDNS: populateField('localDNS', '8.8.8.8'),
-        antiSanctionDNS: populateField('antiSanctionDNS', '178.22.122.100'),
+        antiSanctionDNS: populateField('antiSanctionDNS', '78.157.42.100'),
         VLTRFakeDNS: populateField('VLTRFakeDNS', false),
         proxyIPs: populateField('proxyIPs', [], false, true),
         outProxy: populateField('outProxy', ''),
