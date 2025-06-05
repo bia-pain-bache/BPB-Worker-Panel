@@ -161,9 +161,10 @@ async function getWarpConfigs(request, env) {
     const isPro = client === 'amnezia';
     const auth = await Authenticate(request, env);
     if (!auth) return new Response('Unauthorized or expired session.', { status: 401 });
-    const { warpConfigs } = await getDataset(request, env);
+    const { warpConfigs, proxySettings } = await getDataset(request, env);
     const warpConfig = extractWireguardParams(warpConfigs, false);
     const { warpIPv6, publicKey, privateKey } = warpConfig;
+    const { warpEndpoints, amneziaNoiseCount, amneziaNoiseSizeMin, amneziaNoiseSizeMax } = proxySettings;
     const zip = new JSZip();
     const trimLines = (string) => string.split("\n").map(line => line.trim()).join("\n");
     const amneziaNoise = isPro
