@@ -722,6 +722,26 @@ function getRoutingRules() {
             }
         },
         {
+            rule: bypassAdobe,
+            type: 'DIRECT',
+            dns: `${antiSanctionDNS}#DIRECT`,
+            ruleProvider: {
+                format: "yaml",
+                geosite: "adobe",
+                geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/adobe.yaml"
+            }
+        },
+        {
+            rule: bypassEpicGames,
+            type: 'DIRECT',
+            dns: `${antiSanctionDNS}#DIRECT`,
+            ruleProvider: {
+                format: "yaml",
+                geosite: "epicgames",
+                geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/epicgames.yaml"
+            }
+        },
+        {
             rule: bypassIntel,
             type: 'DIRECT',
             dns: `${antiSanctionDNS}#DIRECT`,
@@ -729,6 +749,26 @@ function getRoutingRules() {
                 format: "yaml",
                 geosite: "intel",
                 geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/intel.yaml"
+            }
+        },
+        {
+            rule: bypassAmd,
+            type: 'DIRECT',
+            dns: `${antiSanctionDNS}#DIRECT`,
+            ruleProvider: {
+                format: "yaml",
+                geosite: "amd",
+                geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/amd.yaml"
+            }
+        },
+        {
+            rule: bypassNvidia,
+            type: 'DIRECT',
+            dns: `${antiSanctionDNS}#DIRECT`,
+            ruleProvider: {
+                format: "yaml",
+                geosite: "nvidia",
+                geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/nvidia.yaml"
             }
         },
         {
@@ -750,6 +790,16 @@ function getRoutingRules() {
                 geosite: "hp",
                 geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/hp.yaml"
             }
-        }
+        },
+        {
+            rule: bypassLenovo,
+            type: 'DIRECT',
+            dns: `${antiSanctionDNS}#DIRECT`,
+            ruleProvider: {
+                format: "yaml",
+                geosite: "lenovo",
+                geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/lenovo.yaml"
+            }
+        },
     ];
 }

@@ -859,8 +859,13 @@ function getRoutingRules() {
         { rule: bypassMicrosoft, type: 'direct', domain: "geosite:microsoft", dns: antiSanctionDNS },
         { rule: bypassOracle, type: 'direct', domain: "geosite:oracle", dns: antiSanctionDNS },
         { rule: bypassDocker, type: 'direct', domain: "geosite:docker", dns: antiSanctionDNS },
+        { rule: bypassAdobe, type: 'direct', domain: "geosite:adobe", dns: antiSanctionDNS },
+        { rule: bypassEpicGames, type: 'direct', domain: "geosite:epicgames", dns: antiSanctionDNS },
         { rule: bypassIntel, type: 'direct', domain: "geosite:intel", dns: antiSanctionDNS },
+        { rule: bypassAmd, type: 'direct', domain: "geosite:amd", dns: antiSanctionDNS },
+        { rule: bypassNvidia, type: 'direct', domain: "geosite:nvidia", dns: antiSanctionDNS },
         { rule: bypassAsus, type: 'direct', domain: "geosite:asus", dns: antiSanctionDNS },
-        { rule: bypassHp, type: 'direct', domain: "geosite:hp", dns: antiSanctionDNS }
+        { rule: bypassHp, type: 'direct', domain: "geosite:hp", dns: antiSanctionDNS },
+        { rule: bypassLenovo, type: 'direct', domain: "geosite:lenovo", dns: antiSanctionDNS },
     ];
 }

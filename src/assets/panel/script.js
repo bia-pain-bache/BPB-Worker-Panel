@@ -86,7 +86,8 @@ function initiatePanel(proxySettings) {
     const checkboxElements = [
         "VLConfigs", "TRConfigs", "bypassLAN", "blockAds", "bypassIran", "blockPorn", "bypassChina",
         "blockUDP443", "bypassRussia", "bypassOpenAi", "bypassMicrosoft", "bypassOracle","bypassDocker", 
-        "bypassIntel", "bypassAsus", "bypassHp"
+        "bypassIntel", "bypassAsus", "bypassHp", "bypassAdobe", "bypassEpicGames", "bypassAmd",
+        "bypassNvidia", "bypassLenovo"
     ];
     const inputElements = [
         "remoteDNS", "localDNS", "outProxy", "customCdnHost", "customCdnSni", "bestVLTRInterval",

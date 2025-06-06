@@ -255,6 +255,7 @@ a.link {
     flex: 1;
     margin: 0;
     align-items: center;
+    max-width: fit-content;
 }
 
 .routing label {

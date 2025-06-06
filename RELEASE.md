@@ -35,4 +35,5 @@ You can set a desired DNS and choose preset rules or custom rules for bypassing.
 - Changed Sing-box and Clash NTP servers to Cloudflare.
 - Changed warp endpoint scanner to [BPB Warp Scanner](https://github.com/bia-pain-bache/BPB-Warp-Scanner)
 - UI improvements
+- Bug fix #877
 - Refactored cores and some other bug fixes.

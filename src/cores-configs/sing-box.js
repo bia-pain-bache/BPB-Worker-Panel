@@ -825,11 +825,39 @@ function getRoutingRules() {
             geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-docker.srs"
         },
         {
+            rule: bypassAdobe,
+            type: 'direct',
+            dns: "dns-anti-sanction",
+            geosite: "geosite-adobe",
+            geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-adobe.srs"
+        },
+        {
+            rule: bypassEpicGames,
+            type: 'direct',
+            dns: "dns-anti-sanction",
+            geosite: "geosite-epicgames",
+            geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-epicgames.srs"
+        },
+        {
             rule: bypassIntel,
             type: 'direct',
             dns: "dns-anti-sanction",
             geosite: "geosite-intel",
             geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-intel.srs"
+        },
+        {
+            rule: bypassAmd,
+            type: 'direct',
+            dns: "dns-anti-sanction",
+            geosite: "geosite-amd",
+            geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-amd.srs"
+        },
+        {
+            rule: bypassNvidia,
+            type: 'direct',
+            dns: "dns-anti-sanction",
+            geosite: "geosite-nvidia",
+            geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-nvidia.srs"
         },
         {
             rule: bypassAsus,
@@ -844,6 +872,13 @@ function getRoutingRules() {
             dns: "dns-anti-sanction",
             geosite: "geosite-hp",
             geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-hp.srs"
-        }
+        },
+        {
+            rule: bypassLenovo,
+            type: 'direct',
+            dns: "dns-anti-sanction",
+            geosite: "geosite-lenovo",
+            geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-lenovo.srs"
+        },
     ];
 }
