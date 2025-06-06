@@ -273,7 +273,7 @@ function buildSingBoxRoutingRules(isWarp) {
         rules,
         rule_set: ruleSets,
         auto_detect_interface: true,
-        override_android_vpn: true,
+        // override_android_vpn: true,
         final: "✅ Selector"
     }
 }
