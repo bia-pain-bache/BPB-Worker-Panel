@@ -2,7 +2,6 @@ import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpper
 import { getDataset } from '../kv/handlers';
 
 async function buildSingBoxDNS(isWarp) {
-    const isIPv6 = (VLTRenableIPv6 && !isWarp) || (warpEnableIPv6 && isWarp);
     const url = new URL(remoteDNS);
     const dnsProtocol = url.protocol.replace(':', '');
 
@@ -24,7 +23,7 @@ async function buildSingBoxDNS(isWarp) {
             ...(domain_resolver && {
                 domain_resolver: {
                     server: domain_resolver,
-                    strategy: isIPv6 ? "prefer_ipv4" : "ipv4_only"
+                    strategy: "ipv4_only"
                 }
             }),
             tag
@@ -138,6 +137,7 @@ async function buildSingBoxDNS(isWarp) {
             inet4_range: "198.18.0.0/15"
         };
 
+        const isIPv6 = (VLTRenableIPv6 && !isWarp) || (warpEnableIPv6 && isWarp);
         if (isIPv6) fakeip.inet6_range = "fc00::/18";
         servers.push(fakeip);
 
@@ -155,7 +155,7 @@ async function buildSingBoxDNS(isWarp) {
     return {
         servers,
         rules,
-        strategy: isIPv6 ? "prefer_ipv4" : "ipv4_only",
+        strategy: "ipv4_only",
         independent_cache: true
     }
 }
