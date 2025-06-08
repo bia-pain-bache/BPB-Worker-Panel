@@ -75,28 +75,40 @@ function initiatePanel(proxySettings) {
         xrayUdpNoises
     } = proxySettings;
 
-    globalThis.defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
+    const defaultHttpsPorts = [443, 8443, 2053, 2083, 2087, 2096];
+
     Object.assign(globalThis, {
+        defaultHttpsPorts,
+        defaultHttpPorts: [80, 8080, 8880, 2052, 2082, 2086, 2095],
         activeProtocols: VLConfigs + TRConfigs,
         activeTlsPorts: ports.filter(port => defaultHttpsPorts.includes(port)),
         xrayNoiseCount: xrayUdpNoises.length,
     });
 
-    const selectElements = ["VLTRFakeDNS", "VLTRenableIPv6", "warpFakeDNS", "warpEnableIPv6"];
-    const checkboxElements = [
+    globalThis.selectElements = ["VLTRFakeDNS", "VLTRenableIPv6", "warpFakeDNS", "warpEnableIPv6"];
+    globalThis.checkboxElements = [
         "VLConfigs", "TRConfigs", "bypassLAN", "blockAds", "bypassIran", "blockPorn", "bypassChina",
-        "blockUDP443", "bypassRussia", "bypassOpenAi", "bypassMicrosoft", "bypassOracle","bypassDocker", 
+        "blockUDP443", "bypassRussia", "bypassOpenAi", "bypassMicrosoft", "bypassOracle", "bypassDocker",
         "bypassIntel", "bypassAsus", "bypassHp", "bypassAdobe", "bypassEpicGames", "bypassAmd",
         "bypassNvidia", "bypassLenovo"
     ];
-    const inputElements = [
-        "remoteDNS", "localDNS", "outProxy", "customCdnHost", "customCdnSni", "bestVLTRInterval",
+
+    globalThis.numInputElements = [
         "fragmentLengthMin", "fragmentLengthMax", "fragmentIntervalMin", "fragmentIntervalMax",
-        "fragmentPackets", "bestWarpInterval", "hiddifyNoiseMode", "knockerNoiseMode", "noiseCountMin",
-        "noiseCountMax", "noiseSizeMin", "noiseSizeMax", "noiseDelayMin", "noiseDelayMax",
-        "amneziaNoiseCount", "amneziaNoiseSizeMin", "amneziaNoiseSizeMax", "antiSanctionDNS"
+        "bestWarpInterval", "noiseCountMin", "noiseCountMax", "noiseSizeMin", "noiseSizeMax",
+        "noiseDelayMin", "noiseDelayMax", "amneziaNoiseCount", "amneziaNoiseSizeMin", "amneziaNoiseSizeMax",
     ];
-    const textareaElements = ["proxyIPs", "cleanIPs", "customCdnAddrs", "warpEndpoints", "customBypassRules", "customBlockRules", "customBypassSanctionRules"];
+
+    globalThis.inputElements = [
+        ...numInputElements,
+        "remoteDNS", "localDNS", "outProxy", "customCdnHost", "customCdnSni", "bestVLTRInterval",
+        "fragmentPackets", "hiddifyNoiseMode", "knockerNoiseMode", "antiSanctionDNS"
+    ];
+
+    globalThis.textareaElements = [
+        "proxyIPs", "cleanIPs", "customCdnAddrs", "warpEndpoints", 
+        "customBypassRules", "customBlockRules", "customBypassSanctionRules"
+    ];
 
     populatePanel(selectElements, checkboxElements, inputElements, textareaElements, proxySettings);
     renderPortsBlock(ports);
@@ -109,7 +121,7 @@ function initiatePanel(proxySettings) {
 function populatePanel(selectElements, checkboxElements, inputElements, textareaElements, proxySettings) {
     selectElements.forEach(key => document.getElementById(key).value = proxySettings[key]);
     checkboxElements.forEach(key => document.getElementById(key).checked = proxySettings[key]);
-    inputElements.forEach(key => document.getElementById(key).value = proxySettings[key]);
+    inputElements.forEach(key => document.getElementById(key).value = proxySettings[key].toString());
     textareaElements.forEach(key => {
         const element = document.getElementById(key);
         const value = proxySettings[key]?.join('\r\n');
@@ -337,17 +349,18 @@ function handleProtocolChange(event) {
 }
 
 function handlePortChange(event) {
+    const portField = Number(event.target.name);
     if (event.target.checked) {
-        globalThis.activeTlsPorts.push(event.target.name);
+        globalThis.activeTlsPorts.push(portField);
         return true;
     }
 
-    globalThis.activeTlsPorts = globalThis.activeTlsPorts.filter(port => port !== event.target.name);
+    globalThis.activeTlsPorts = globalThis.activeTlsPorts.filter(port => port !== portField);
     if (globalThis.activeTlsPorts.length === 0) {
         event.preventDefault();
         event.target.checked = !event.target.checked;
         alert("⛔ At least one TLS port should be selected!");
-        globalThis.activeTlsPorts.push(event.target.name);
+        globalThis.activeTlsPorts.push(portField);
         return false;
     }
 }
@@ -357,11 +370,15 @@ function resetSettings() {
     if (!confirmReset) return;
     const resetBtn = document.querySelector('#resetSettings i');
     resetBtn.classList.add('fa-spin');
-    const formData = new FormData();
-    formData.append('resetSettings', 'true');
+    const body = { resetSettings: true };
     document.body.style.cursor = 'wait';
 
-    fetch('/panel/reset-settings', { method: 'POST', body: formData, credentials: 'include' })
+    fetch('/panel/reset-settings', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+    })
         .then(response => response.json())
         .then(data => {
             const { success, status, message, body } = data;
@@ -382,6 +399,25 @@ function updateSettings(event) {
     const configForm = document.getElementById('configForm');
     const formData = new FormData(configForm);
 
+    const xrayUdpNoises = [];
+    const fields = [
+        'udpXrayNoiseMode',
+        'udpXrayNoisePacket',
+        'udpXrayNoiseDelayMin',
+        'udpXrayNoiseDelayMax',
+        'udpXrayNoiseCount'
+    ].map(field => formData.getAll(field));
+
+    const [modes, packets, delaysMin, delaysMax, counts] = fields;
+    modes.forEach((mode, index) => {
+        xrayUdpNoises.push({
+            type: mode,
+            packet: packets[index],
+            delay: `${delaysMin[index]}-${delaysMax[index]}`,
+            count: counts[index]
+        });
+    });
+
     const validations = [
         validateMultipleHostNames(elementsToCheck),
         validateProxyIPs(),
@@ -389,18 +425,49 @@ function updateSettings(event) {
         validateMinMax(),
         validateChainProxy(),
         validateCustomCdn(),
-        validateXrayNoises(formData),
+        validateXrayNoises(fields),
         validateSanctionDns()
     ];
 
     if (!validations.every(Boolean)) return false;
+
+    const form = Object.fromEntries(formData.entries());
+    form.xrayUdpNoises = xrayUdpNoises;
+    const ports = [...globalThis.defaultHttpPorts, ...globalThis.defaultHttpsPorts];
+
+    form.ports = ports.reduce((acc, port) => {
+        formData.has(port.toString()) && acc.push(port);
+        return acc;
+    }, []);
+
+    checkboxElements.forEach(elm => {
+        form[elm] = formData.has(elm);
+    });
+
+    selectElements.forEach(elm => {
+        form[elm] = form[elm] === 'true';
+    });
+
+    numInputElements.forEach(elm => {
+        form[elm] = Number(form[elm]);
+    });
+
+    textareaElements.forEach(elm => {
+        const value = form[elm];
+        form[elm] = value === '' ? [] : value.split('\r\n').map(val => val.trim()).filter(Boolean);
+    });
 
     const applyButton = document.getElementById('applyButton');
     document.body.style.cursor = 'wait';
     const applyButtonVal = applyButton.value;
     applyButton.value = '⌛ Loading...';
 
-    fetch('/panel/update-settings', { method: 'POST', body: formData, credentials: 'include' })
+    fetch('/panel/update-settings', {
+        method: 'POST',
+        body: JSON.stringify(form),
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+    })
         .then(response => response.json())
         .then(data => {
 
@@ -493,21 +560,28 @@ function validateWarpEndpoints() {
 }
 
 function validateMinMax() {
-
     const getValue = (id) => parseInt(document.getElementById(id).value, 10);
+    const [
+        fragmentLengthMin, fragmentLengthMax,
+        fragmentIntervalMin, fragmentIntervalMax,
+        noiseCountMin, noiseCountMax,
+        noiseSizeMin, noiseSizeMax,
+        noiseDelayMin, noiseDelayMax,
 
-    const fragmentLengthMin = getValue('fragmentLengthMin');
-    const fragmentLengthMax = getValue('fragmentLengthMax');
-    const fragmentIntervalMin = getValue('fragmentIntervalMin');
-    const fragmentIntervalMax = getValue('fragmentIntervalMax');
-    const noiseCountMin = getValue('noiseCountMin');
-    const noiseCountMax = getValue('noiseCountMax');
-    const noiseSizeMin = getValue('noiseSizeMin');
-    const noiseSizeMax = getValue('noiseSizeMax');
-    const noiseDelayMin = getValue('noiseDelayMin');
-    const noiseDelayMax = getValue('noiseDelayMax');
+    ] = [
+        'fragmentLengthMin', 'fragmentLengthMax',
+        'fragmentIntervalMin', 'fragmentIntervalMax',
+        'noiseCountMin', 'noiseCountMax',
+        'noiseSizeMin', 'noiseSizeMax',
+        'noiseDelayMin', 'noiseDelayMax'
+    ].map(getValue);
 
-    if (fragmentLengthMin >= fragmentLengthMax || fragmentIntervalMin > fragmentIntervalMax || noiseCountMin > noiseCountMax || noiseSizeMin > noiseSizeMax || noiseDelayMin > noiseDelayMax) {
+    if (fragmentLengthMin >= fragmentLengthMax ||
+        fragmentIntervalMin > fragmentIntervalMax ||
+        noiseCountMin > noiseCountMax ||
+        noiseSizeMin > noiseSizeMax ||
+        noiseDelayMin > noiseDelayMax
+    ) {
         alert('⛔ Minimum should be smaller or equal to Maximum!');
         return false;
     }
@@ -558,25 +632,22 @@ function validateCustomCdn() {
     return true;
 }
 
-function validateXrayNoises(formData) {
-    const udpNoiseModes = formData.getAll('udpXrayNoiseMode') || [];
-    const udpNoisePackets = formData.getAll('udpXrayNoisePacket') || [];
-    const udpNoiseDelaysMin = formData.getAll('udpXrayNoiseDelayMin') || [];
-    const udpNoiseDelaysMax = formData.getAll('udpXrayNoiseDelayMax') || [];
+function validateXrayNoises(fields) {
+    const [modes, packets, delaysMin, delaysMax, counts] = fields;
     const base64Regex = /^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/;
     let submisionError = false;
 
-    for (const [index, mode] of udpNoiseModes.entries()) {
-        if (udpNoiseDelaysMin[index] > udpNoiseDelaysMax[index]) {
+    modes.forEach((mode, index) => {
+        if (delaysMin[index] > delaysMax[index]) {
             alert('⛔ The minimum noise delay should be smaller or equal to maximum!');
             submisionError = true;
-            break;
+            return;
         }
 
         switch (mode) {
 
             case 'base64':
-                if (!base64Regex.test(udpNoisePackets[index])) {
+                if (!base64Regex.test(packets[index])) {
                     alert('⛔ The Base64 noise packet is not a valid base64 value!');
                     submisionError = true;
                 }
@@ -584,12 +655,12 @@ function validateXrayNoises(formData) {
                 break;
 
             case 'rand':
-                if (!(/^\d+-\d+$/.test(udpNoisePackets[index]))) {
+                if (!(/^\d+-\d+$/.test(packets[index]))) {
                     alert('⛔ The Random noise packet should be a range like 0-10 or 10-30!');
                     submisionError = true;
                 }
 
-                const [min, max] = udpNoisePackets[index].split("-").map(Number);
+                const [min, max] = packets[index].split("-").map(Number);
                 if (min > max) {
                     alert('⛔ The minimum Random noise packet should be smaller or equal to maximum!');
                     submisionError = true;
@@ -598,14 +669,14 @@ function validateXrayNoises(formData) {
                 break;
 
             case 'hex':
-                if (!(/^(?=(?:[0-9A-Fa-f]{2})*$)[0-9A-Fa-f]+$/.test(udpNoisePackets[index]))) {
+                if (!(/^(?=(?:[0-9A-Fa-f]{2})*$)[0-9A-Fa-f]+$/.test(packets[index]))) {
                     alert('⛔ The Hex noise packet is not a valid hex value! It should have even length and consisted of 0-9, a-f and A-F.');
                     submisionError = true;
                 }
 
                 break;
         }
-    }
+    });
 
     return !submisionError;
 }
@@ -684,20 +755,24 @@ function resetPassword(event) {
 }
 
 function renderPortsBlock(ports) {
-    const defaultHttpPorts = ['80', '8080', '8880', '2052', '2082', '2086', '2095'];
     let noneTlsPortsBlock = '', tlsPortsBlock = '';
-    const allPorts = [...(window.origin.includes('workers.dev') ? defaultHttpPorts : []), ...defaultHttpsPorts];
+    const allPorts = [
+        ...(window.origin.includes('workers.dev') ? globalThis.defaultHttpPorts : []),
+        ...globalThis.defaultHttpsPorts
+    ];
 
     allPorts.forEach(port => {
         const isChecked = ports.includes(port) ? 'checked' : '';
-        const clss = defaultHttpsPorts.includes(port) ? 'class="https"' : '';
+        const clss = globalThis.defaultHttpsPorts.includes(port) ? 'class="https"' : '';
         const portBlock = `
             <div class="routing">
                 <input type="checkbox" name=${port} ${clss} value="true" ${isChecked}>
                 <label>${port}</label>
             </div>`;
 
-        defaultHttpsPorts.includes(port) ? tlsPortsBlock += portBlock : noneTlsPortsBlock += portBlock;
+        globalThis.defaultHttpsPorts.includes(port)
+            ? tlsPortsBlock += portBlock
+            : noneTlsPortsBlock += portBlock;
     });
 
     document.getElementById("tls-ports").innerHTML = tlsPortsBlock;
@@ -822,7 +897,7 @@ function deleteUdpNoise(event) {
         return;
     }
 
-    const confirmReset = confirm('⚠️ This will delete the noise.\n❓ Are you sure?');
+    const confirmReset = confirm('⚠️ This will delete the noise.\n\n❓ Are you sure?');
     if (!confirmReset) return;
     event.target.closest(".inner-container").remove();
     enableApplyButton();

@@ -214,7 +214,7 @@ function buildXrayVLOutbound(tag, address, port, host, sni, proxyIPs, isFragment
             vnext: [
                 {
                     address: address,
-                    port: +port,
+                    port: port,
                     users: [
                         {
                             id: userID,
@@ -266,7 +266,7 @@ function buildXrayTROutbound(tag, address, port, host, sni, proxyIPs, isFragment
             servers: [
                 {
                     address: address,
-                    port: +port,
+                    port: port,
                     password: TRPassword,
                     level: 8
                 }
@@ -347,9 +347,9 @@ function buildXrayWarpOutbound(warpConfigs, endpoint, isWoW) {
         delete outbound.streamSettings;
         Object.assign(outbound.settings, {
             wnoise: knockerNoiseMode,
-            wnoisecount: noiseCountMin === noiseCountMax ? noiseCountMin : `${noiseCountMin}-${noiseCountMax}`,
-            wpayloadsize: noiseSizeMin === noiseSizeMax ? noiseSizeMin : `${noiseSizeMin}-${noiseSizeMax}`,
-            wnoisedelay: noiseDelayMin === noiseDelayMax ? noiseDelayMin : `${noiseDelayMin}-${noiseDelayMax}`
+            wnoisecount: noiseCountMin === noiseCountMax ? String(noiseCountMin) : `${noiseCountMin}-${noiseCountMax}`,
+            wpayloadsize: noiseSizeMin === noiseSizeMax ? String(noiseSizeMin) : `${noiseSizeMin}-${noiseSizeMax}`,
+            wnoisedelay: noiseDelayMin === noiseDelayMax ? String(noiseDelayMin) : `${noiseDelayMin}-${noiseDelayMax}`
         });
     }
 

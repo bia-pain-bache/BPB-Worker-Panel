@@ -168,7 +168,7 @@ function buildClashVLOutbound(remark, address, port, host, sni, proxyIPs, allowI
         "name": remark,
         "type": "vless",
         "server": addr,
-        "port": +port,
+        "port": port,
         "uuid": userID,
         "packet-encoding": "packetaddr",
         "ip-version": ipVersion,
@@ -205,7 +205,7 @@ function buildClashTROutbound(remark, address, port, host, sni, proxyIPs, allowI
         "name": remark,
         "type": "trojan",
         "server": addr,
-        "port": +port,
+        "port": port,
         "password": TRPassword,
         "ip-version": ipVersion,
         "tls": true,
@@ -257,9 +257,9 @@ function buildClashWarpOutbound(warpConfigs, remark, endpoint, chain, isPro) {
 
     if (chain) outbound["dialer-proxy"] = chain;
     if (isPro) outbound["amnezia-wg-option"] = {
-        "jc": amneziaNoiseCount,
-        "jmin": amneziaNoiseSizeMin,
-        "jmax": amneziaNoiseSizeMax
+        "jc": String(amneziaNoiseCount),
+        "jmin": String(amneziaNoiseSizeMin),
+        "jmax": String(amneziaNoiseSizeMax)
     }
     return outbound;
 }
@@ -362,7 +362,7 @@ async function buildClashConfig(selectorTags, urlTestTags, secondUrlTestTags, is
         "name": isWarp ? `💦 Warp ${isPro ? 'Pro ' : ''}- Best Ping 🚀` : '💦 Best Ping 💥',
         "type": "url-test",
         "url": "https://www.gstatic.com/generate_204",
-        "interval": isWarp ? +bestWarpInterval : +bestVLTRInterval,
+        "interval": isWarp ? bestWarpInterval : bestVLTRInterval,
         "tolerance": 50,
         "proxies": urlTestTags
     };

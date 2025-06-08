@@ -286,7 +286,7 @@ function buildSingBoxVLOutbound(remark, address, port, host, sni, allowInsecure)
         tag: remark,
         type: "vless",
         server: address,
-        server_port: +port,
+        server_port: port,
         uuid: userID,
         network: "tcp",
         packet_encoding: "",
@@ -331,7 +331,7 @@ function buildSingBoxTROutbound(remark, address, port, host, sni, allowInsecure)
         type: "trojan",
         password: TRPassword,
         server: address,
-        server_port: +port,
+        server_port: port,
         network: "tcp",
         transport: {
             early_data_header_name: "Sec-WebSocket-Protocol",
