@@ -14,7 +14,7 @@
 		"@eslint/markdown": "^6.5.0",
 		"esbuild": "^0.25.5",
 		"eslint": "^9.28.0",
-		"glob": "^11.0.2",
+		"glob": "^10.3.10",
 		"globals": "^16.2.0",
 		"html-minifier": "^4.0.0",
 		"javascript-obfuscator": "latest",
