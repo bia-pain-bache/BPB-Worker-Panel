@@ -40,7 +40,7 @@ function generateCredentials() {
     document.getElementById('sub-path').textContent = uriPath;
 }
 
-function copyToClipboard(elementId) {
+window.copyToClipboard = function (elementId) {
     const textToCopy = document.getElementById(elementId).textContent;
     navigator.clipboard.writeText(textToCopy)
         .then(() => alert('✅ Copied to clipboard!'))

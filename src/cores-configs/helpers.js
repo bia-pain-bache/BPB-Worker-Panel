@@ -1,5 +1,5 @@
 export function isDomain(address) {
-    const domainPattern = /^(?!\-)(?:[A-Za-z0-9\-]{1,63}\.)+[A-Za-z]{2,}$/;
+    const domainPattern = /^(?!-)(?:[A-Za-z0-9-]{1,63}.)+[A-Za-z]{2,}$/;
     return domainPattern.test(address);
 }
 
@@ -30,18 +30,19 @@ export async function resolveDNS(domain) {
     }
 }
 
-export async function getConfigAddresses(cleanIPs, VLTRenableIPv6, customCdnAddrs, isFragment) {
+export async function getConfigAddresses(isFragment) {
+    const { settings, hostName } = globalThis;
     const resolved = await resolveDNS(hostName);
-    const defaultIPv6 = VLTRenableIPv6 ? resolved.ipv6.map((ip) => `[${ip}]`) : [];
+    const defaultIPv6 = settings.VLTRenableIPv6 ? resolved.ipv6.map((ip) => `[${ip}]`) : [];
     const addrs = [
         hostName,
         'www.speedtest.net',
         ...resolved.ipv4,
         ...defaultIPv6,
-        ...cleanIPs
+        ...settings.cleanIPs
     ];
 
-    return isFragment ? addrs : [...addrs, ...customCdnAddrs];
+    return isFragment ? addrs : [...addrs, ...settings.customCdnAddrs];
 }
 
 export function extractWireguardParams(warpConfigs, isWoW) {
@@ -107,7 +108,7 @@ export function getDomain(url) {
         const host = newUrl.hostname;
         const isHostDomain = isDomain(host);
         return { host, isHostDomain };
-    } catch (_) {
+    } catch {
         return { host: null, isHostDomain: false };
     }
 }

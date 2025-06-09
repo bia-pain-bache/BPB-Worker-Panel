@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
 import { connect } from 'cloudflare:sockets';
 import { isValidUUID } from '../helpers/helpers';
 
@@ -294,8 +296,7 @@ function processVLHeader(VLBuffer, userID) {
     // 0x01 TCP
     // 0x02 UDP
     // 0x03 MUX
-    if (command === 1) {
-    } else if (command === 2) {
+    if (command === 1) { /* empty */ } else if (command === 2) {
         isUDP = true;
     } else {
         return {
@@ -328,7 +329,7 @@ function processVLHeader(VLBuffer, userID) {
             addressValueIndex += 1;
             addressValue = new TextDecoder().decode(VLBuffer.slice(addressValueIndex, addressValueIndex + addressLength));
             break;
-        case 3:
+        case 3: {
             addressLength = 16;
             const dataView = new DataView(VLBuffer.slice(addressValueIndex, addressValueIndex + addressLength));
             // 2001:0db8:85a3:0000:0000:8a2e:0370:7334
@@ -339,6 +340,7 @@ function processVLHeader(VLBuffer, userID) {
             addressValue = ipv6.join(":");
             // seems no need add [] for ipv6
             break;
+        }
         default:
             return {
                 hasError: true,

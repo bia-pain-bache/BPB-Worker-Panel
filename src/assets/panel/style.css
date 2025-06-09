@@ -181,7 +181,7 @@ a.link {
     text-decoration: none;
 }
 
-.form-control button {
+button.reverse {
     width: 100%;
     background-color: var(--form-background-color);
     font-weight: 600;
@@ -274,15 +274,18 @@ a.link {
     flex: unset;
 }
 
-.apply input {
+button.apply-settings {
     margin: 0;
 }
 
-.form-control.apply button {
+button.reset-settings {
     flex: unset;
     border: none;
     cursor: pointer;
     width: fit-content;
+    margin: 0;
+    background: none;
+    color: var(--primary-color);
 }
 
 .material-symbols-rounded {
@@ -417,7 +420,7 @@ table button {
     padding: 0;
 }
 
-table button span.material-symbols-rounded{
+table button span.material-symbols-rounded {
     font-size: 28px;
     margin: 0;
 }
@@ -434,6 +437,7 @@ input[type="checkbox"] {
 
 .button.disabled {
     background-color: #ccc;
+    color: white;
     cursor: not-allowed;
     box-shadow: none;
     pointer-events: none;

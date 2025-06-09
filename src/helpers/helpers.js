@@ -15,31 +15,23 @@ export function isValidUUID(uuid) {
 
 export async function handlePanel(request, env) {
 
-    switch (pathName) {
+    switch (globalThis.pathName) {
         case '/panel':
             return await renderPanel(request, env);
-
         case '/panel/settings':
             return await getSettings(request, env);
-
         case '/panel/update-settings':
             return await updateSettings(request, env);
-
         case '/panel/reset-settings':
             return await resetSettings(request, env);
-
         case '/panel/reset-password':
             return await resetPassword(request, env);
-
         case '/panel/my-ip':
             return await getMyIP(request);
-
         case '/panel/update-warp':
             return await updateWarpConfigs(request, env);
-
         case '/panel/get-warp-configs':
             return await getWarpConfigs(request, env);
-
         default:
             return await fallback(request);
     }
@@ -47,44 +39,65 @@ export async function handlePanel(request, env) {
 
 export async function handleError(error) {
     const message = encodeURIComponent(error.message);
-    return Response.redirect(`${urlOrigin}/error?message=${message}`, 302);
+    return Response.redirect(`${globalThis.urlOrigin}/error?message=${message}`, 302);
 }
 
 export async function handleLogin(request, env) {
-    if (pathName === '/login') return await renderLogin(request, env);
-    if (pathName === '/login/authenticate') return await generateJWTToken(request, env);
+    if (globalThis.pathName === '/login') return await renderLogin(request, env);
+    if (globalThis.pathName === '/login/authenticate') return await generateJWTToken(request, env);
     return await fallback(request);
 }
 
 export async function handleSubscriptions(request, env) {
-    const { proxySettings } = await getDataset(request, env);
-    Object.entries(proxySettings).forEach(([Key, Value]) => {
-        globalThis[Key] = Value;
-    })
+    const { proxySettings: settings } = await getDataset(request, env);
+    globalThis.settings = settings;
+    const { pathName, client, subPath } = globalThis;
 
     switch (decodeURIComponent(pathName)) {
         case `/sub/normal/${subPath}`:
             return await getNormalConfigs(false);
 
         case `/sub/full-normal/${subPath}`:
-            if (client === 'sfa') return await getSingBoxCustomConfig(env);
-            if (client === 'clash') return await getClashNormalConfig(env);
-            if (client === 'xray') return await getXrayCustomConfigs(env, false);
+            switch (client) {
+                case 'sfa':
+                    return await getSingBoxCustomConfig(env);
+                case 'clash':
+                    return await getClashNormalConfig(env);
+                case 'xray':
+                    return await getXrayCustomConfigs(env, false);
+                default:
+                    break;
+            }
 
         case `/sub/fragment/${subPath}`:
             if (client === 'hiddify-frag') return await getNormalConfigs(true);
             return await getXrayCustomConfigs(env, true);
 
         case `/sub/warp/${subPath}`:
-            if (client === 'clash') return await getClashWarpConfig(request, env, false);
-            if (client === 'singbox') return await getSingBoxWarpConfig(request, env);
-            if (client === 'hiddify') return await getHiddifyWarpConfigs(false);
-            return await getXrayWarpConfigs(request, env, false);
+            switch (client) {
+                case 'clash':
+                    return await getClashWarpConfig(request, env, false);
+                case 'singbox':
+                    return await getSingBoxWarpConfig(request, env);
+                case 'hiddify':
+                    return await getHiddifyWarpConfigs(false);
+                case 'xray':
+                    return await getXrayWarpConfigs(request, env, false);
+                default:
+                    break;
+            }
 
         case `/sub/warp-pro/${subPath}`:
-            if (client === 'clash-pro') return await getClashWarpConfig(request, env, true);
-            if (client === 'hiddify-pro') return await getHiddifyWarpConfigs(true);
-            return await getXrayWarpConfigs(request, env, true);
+            switch (client) {
+                case 'clash-pro':
+                    return await getClashWarpConfig(request, env, true);
+                case 'hiddify-pro':
+                    return await getHiddifyWarpConfigs(true);
+                case 'xray-pro':
+                    return await getXrayWarpConfigs(request, env, true);
+                default:
+                    break;
+            }
 
         default:
             return await fallback(request);
@@ -122,7 +135,7 @@ async function getSettings(request, env) {
         const settings = {
             proxySettings,
             isPassSet,
-            subPath: subPath
+            subPath: globalThis.subPath
         };
 
         return await respond(true, 200, null, settings);
@@ -133,7 +146,7 @@ async function getSettings(request, env) {
 
 export async function fallback(request) {
     const url = new URL(request.url);
-    url.hostname = fallbackDomain;
+    url.hostname = globalThis.fallbackDomain;
     url.protocol = 'https:';
     const newRequest = new Request(url.toString(), {
         method: request.method,
@@ -158,7 +171,7 @@ async function getMyIP(request) {
 }
 
 async function getWarpConfigs(request, env) {
-    const isPro = client === 'amnezia';
+    const isPro = globalThis.client === 'amnezia';
     const auth = await Authenticate(request, env);
     if (!auth) return new Response('Unauthorized or expired session.', { status: 401 });
     const { warpConfigs, proxySettings } = await getDataset(request, env);
@@ -224,10 +237,10 @@ async function renderPanel(request, env) {
     const pwd = await env.kv.get('pwd');
     if (pwd) {
         const auth = await Authenticate(request, env);
-        if (!auth) return Response.redirect(`${urlOrigin}/login`, 302);
+        if (!auth) return Response.redirect(`${globalThis.urlOrigin}/login`, 302);
     }
 
-    const html = __PANEL_HTML_CONTENT__.replace(/__PANEL_VERSION__/g, panelVersion);
+    const html = __PANEL_HTML_CONTENT__.replace(/__PANEL_VERSION__/g, globalThis.panelVersion);
     return new Response(html, {
         headers: { 'Content-Type': 'text/html' }
     });
@@ -237,21 +250,21 @@ async function renderLogin(request, env) {
     const auth = await Authenticate(request, env);
     if (auth) return Response.redirect(`${urlOrigin}/panel`, 302);
 
-    const html = __LOGIN_HTML_CONTENT__.replace(/__PANEL_VERSION__/g, panelVersion);
+    const html = __LOGIN_HTML_CONTENT__.replace(/__PANEL_VERSION__/g, globalThis.panelVersion);
     return new Response(html, {
         headers: { 'Content-Type': 'text/html' }
     });
 }
 
 export async function renderSecrets() {
-    const html = __SECRETS_HTML_CONTENT__.replace(/__PANEL_VERSION__/g, panelVersion);
+    const html = __SECRETS_HTML_CONTENT__.replace(/__PANEL_VERSION__/g, globalThis.panelVersion);
     return new Response(html, {
         headers: { 'Content-Type': 'text/html' },
     });
 }
 
 export async function renderError() {
-    const html = __ERROR_HTML_CONTENT__.replace(/__PANEL_VERSION__/g, panelVersion);
+    const html = __ERROR_HTML_CONTENT__.replace(/__PANEL_VERSION__/g, globalThis.panelVersion);
     return new Response(html, {
         status: 200,
         headers: { 'Content-Type': 'text/html' }

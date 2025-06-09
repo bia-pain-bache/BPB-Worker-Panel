@@ -16,8 +16,8 @@ export function initializeParams(request, env) {
     globalThis.urlOrigin = url.origin;
     globalThis.dohURL = env.DOH_URL || 'https://cloudflare-dns.com/dns-query';
     globalThis.fallbackDomain = env.FALLBACK || 'speed.cloudflare.com';
-    globalThis.subPath = env.SUB_PATH || userID;
-    if (!['/error', '/secrets', '/favicon.ico'].includes(pathName)) {
+    globalThis.subPath = env.SUB_PATH || globalThis.userID;
+    if (!['/error', '/secrets', '/favicon.ico'].includes(globalThis.pathName)) {
         if (!globalThis.userID || !globalThis.TRPassword) throw new Error(`Please set UUID and Trojan password first. Please visit <a href="${globalThis.urlOrigin}/secrets" target="_blank">here</a> to generate them.`, { cause: "init" });
         if (globalThis.userID && !isValidUUID(globalThis.userID)) throw new Error(`Invalid UUID: ${globalThis.userID}`, { cause: "init" });
         if (typeof env.kv !== 'object') throw new Error('KV Dataset is not properly set! Please refer to tutorials.', { cause: "init" });

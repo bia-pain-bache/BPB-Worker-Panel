@@ -1,22 +1,23 @@
 import { getConfigAddresses, generateRemark, randomUpperCase, getRandomPath, base64EncodeUnicode } from './helpers';
 
 export async function getNormalConfigs(isFragment) {
+    const settings = globalThis.settings;
     let VLConfs = '', TRConfs = '', chainProxy = '';
     let proxyIndex = 1;
-    const Addresses = await getConfigAddresses(cleanIPs, VLTRenableIPv6, customCdnAddrs, isFragment);
+    const Addresses = await getConfigAddresses(isFragment);
 
     const buildConfig = (protocol, addr, port, host, sni, remark) => {
-        const isTLS = defaultHttpsPorts.includes(port);
+        const isTLS = globalThis.defaultHttpsPorts.includes(port);
         const security = isTLS ? 'tls' : 'none';
-        const path = `${getRandomPath(16)}${proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : ''}`;
+        const path = `${getRandomPath(16)}${settings.proxyIPs.length ? `/${btoa(settings.proxyIPs.join(','))}` : ''}`;
         const config = new URL(`${protocol}://config`);
         let pathPrefix = '';
 
         if (protocol === 'vless') {
-            config.username = userID;
+            config.username = globalThis.userID;
             config.searchParams.append('encryption', 'none');
         } else {
-            config.username = TRPassword;
+            config.username = globalThis.TRPassword;
             pathPrefix = 'tr';
         }
 
@@ -27,7 +28,7 @@ export async function getNormalConfigs(isFragment) {
         config.searchParams.append('security', security);
         config.hash = remark;
 
-        if (client === 'singbox') {
+        if (globalThis.client === 'singbox') {
             config.searchParams.append('eh', 'Sec-WebSocket-Protocol');
             config.searchParams.append('ed', '2560');
             config.searchParams.append('path', `/${pathPrefix}${path}`);
@@ -40,30 +41,30 @@ export async function getNormalConfigs(isFragment) {
             config.searchParams.append('fp', 'randomized');
             config.searchParams.append('alpn', 'http/1.1');
 
-            if (client === 'hiddify-frag') {
-                config.searchParams.append('fragment', `${fragmentLengthMin}-${fragmentLengthMax},${fragmentIntervalMin}-${fragmentIntervalMax},hellotls`);
+            if (globalThis.client === 'hiddify-frag') {
+                config.searchParams.append('fragment', `${settings.fragmentLengthMin}-${settings.fragmentLengthMax},${settings.fragmentIntervalMin}-${settings.fragmentIntervalMax},hellotls`);
             }
         }
 
         return config.href;
     }
 
-    ports.forEach(port => {
+    settings.ports.forEach(port => {
         Addresses.forEach(addr => {
-            const isCustomAddr = customCdnAddrs.includes(addr) && !isFragment;
+            const isCustomAddr = settings.customCdnAddrs.includes(addr) && !isFragment;
             const configType = isCustomAddr ? 'C' : isFragment ? 'F' : '';
-            const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
-            const host = isCustomAddr ? customCdnHost : hostName;
+            const sni = isCustomAddr ? settings.customCdnSni : randomUpperCase(globalThis.hostName);
+            const host = isCustomAddr ? settings.customCdnHost : globalThis.hostName;
 
-            const VLRemark = generateRemark(proxyIndex, port, addr, cleanIPs, 'VLESS', configType);
-            const TRRemark = generateRemark(proxyIndex, port, addr, cleanIPs, 'Trojan', configType);
+            const VLRemark = generateRemark(proxyIndex, port, addr, settings.cleanIPs, 'VLESS', configType);
+            const TRRemark = generateRemark(proxyIndex, port, addr, settings.cleanIPs, 'Trojan', configType);
 
-            if (VLConfigs) {
+            if (settings.VLConfigs) {
                 const vlessConfig = buildConfig('vless', addr, port, host, sni, VLRemark);
                 VLConfs += `${vlessConfig}\n`;
             }
 
-            if (TRConfigs) {
+            if (settings.TRConfigs) {
                 const trojanConfig = buildConfig('trojan', addr, port, host, sni, TRRemark);
                 TRConfs += `${trojanConfig}\n`;
             }
@@ -72,17 +73,17 @@ export async function getNormalConfigs(isFragment) {
         });
     });
 
-    if (outProxy) {
+    if (settings.outProxy) {
         let chainRemark = `#${encodeURIComponent('💦 Chain proxy 🔗')}`;
-        if (outProxy.startsWith('socks') || outProxy.startsWith('http')) {
+        if (settings.outProxy.startsWith('socks') || settings.outProxy.startsWith('http')) {
             const regex = /^(?:socks|http):\/\/([^@]+)@/;
-            const isUserPass = outProxy.match(regex);
+            const isUserPass = settings.outProxy.match(regex);
             const userPass = isUserPass ? isUserPass[1] : false;
             chainProxy = userPass
-                ? outProxy.replace(userPass, btoa(userPass)) + chainRemark
-                : outProxy + chainRemark;
+                ? settings.outProxy.replace(userPass, btoa(userPass)) + chainRemark
+                : settings.outProxy + chainRemark;
         } else {
-            chainProxy = outProxy.split('#')[0] + chainRemark;
+            chainProxy = settings.outProxy.split('#')[0] + chainRemark;
         }
     }
 
@@ -96,23 +97,24 @@ export async function getNormalConfigs(isFragment) {
             'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
             'CDN-Cache-Control': 'no-store',
             'Profile-Title': `base64:${hiddifyHash}`,
-            'DNS': remoteDNS
+            'DNS': settings.remoteDNS
         }
     });
 }
 
 export async function getHiddifyWarpConfigs(isPro) {
+    const settings = globalThis.settings;
     let configs = '';
-    warpEndpoints.forEach((endpoint, index) => {
+    settings.warpEndpoints.forEach((endpoint, index) => {
         const config = new URL('warp://config');
         config.host = endpoint;
         config.hash = `💦 ${index + 1} - Warp 🇮🇷`;
 
         if (isPro) {
-            config.searchParams.append('ifpm', hiddifyNoiseMode);
-            config.searchParams.append('ifp', `${noiseCountMin}-${noiseCountMax}`);
-            config.searchParams.append('ifps', `${noiseSizeMin}-${noiseSizeMax}`);
-            config.searchParams.append('ifpd', `${noiseDelayMin}-${noiseDelayMax}`);
+            config.searchParams.append('ifpm', settings.hiddifyNoiseMode);
+            config.searchParams.append('ifp', `${settings.noiseCountMin}-${settings.noiseCountMax}`);
+            config.searchParams.append('ifps', `${settings.noiseSizeMin}-${settings.noiseSizeMax}`);
+            config.searchParams.append('ifpd', `${settings.noiseDelayMin}-${settings.noiseDelayMax}`);
         }
 
         const detour = new URL('warp://config');

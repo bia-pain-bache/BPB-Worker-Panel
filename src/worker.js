@@ -9,17 +9,18 @@ export default {
 		try {
 			initializeParams(request, env);
 			const upgradeHeader = request.headers.get('Upgrade');
+			const path = globalThis.pathName;
 			if (!upgradeHeader || upgradeHeader !== 'websocket') {
-				if (pathName.startsWith('/panel')) return await handlePanel(request, env);
-				if (pathName.startsWith('/sub')) return await handleSubscriptions(request, env);
-				if (pathName.startsWith('/login')) return await handleLogin(request, env);
-				if (pathName.startsWith('/logout')) return await logout(request, env);
-				if (pathName.startsWith('/error')) return await renderError();
-				if (pathName.startsWith('/secrets')) return await renderSecrets();
-				if (pathName.startsWith('/favicon.ico')) return await serveIcon();
+				if (path.startsWith('/panel')) return await handlePanel(request, env);
+				if (path.startsWith('/sub')) return await handleSubscriptions(request, env);
+				if (path.startsWith('/login')) return await handleLogin(request, env);
+				if (path.startsWith('/logout')) return await logout(request, env);
+				if (path.startsWith('/error')) return await renderError();
+				if (path.startsWith('/secrets')) return await renderSecrets();
+				if (path.startsWith('/favicon.ico')) return await serveIcon();
 				return await fallback(request);
 			} else {
-				return pathName.startsWith('/tr')
+				return path.startsWith('/tr')
 					? await TROverWSHandler(request)
 					: await VLOverWSHandler(request);
 			}
