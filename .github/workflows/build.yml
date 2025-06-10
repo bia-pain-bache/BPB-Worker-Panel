@@ -27,7 +27,7 @@ jobs:
           node-version: "latest"
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --production
 
       - name: Build project
         run: npm run build

@@ -12,15 +12,15 @@
 		"@eslint/css": "^0.8.1",
 		"@eslint/js": "^9.28.0",
 		"@eslint/markdown": "^6.5.0",
+		"eslint": "^9.28.0"
+	},
+	"dependencies": {
 		"esbuild": "^0.25.5",
-		"eslint": "^9.28.0",
 		"glob": "^10.3.10",
 		"globals": "^16.2.0",
 		"html-minifier": "^4.0.0",
 		"javascript-obfuscator": "latest",
-		"terser": "^5.42.0"
-	},
-	"dependencies": {
+		"terser": "^5.42.0",
 		"jose": "^6.0.11",
 		"js-sha256": "^0.11.1",
 		"jszip": "^3.10.1",
