@@ -11,7 +11,7 @@ const [
 ] = [
     'select',
     'input[type=number]',
-    'input',
+    'input:not([type=file])',
     'textarea',
     'input[type=checkbox]'
 ].map(query => form.querySelectorAll(query));
@@ -218,15 +218,47 @@ async function dlURL(path, app) {
         const response = await fetch(url);
         const data = await response.text();
         if (!response.ok) throw new Error(`status ${response.status} at ${response.url} - ${data}`);
-        const blob = new Blob([data], { type: 'application/json' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'config.json';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        downloadJSON(data, "config.json");
     } catch (error) {
         console.error("Download error:", error.message || error);
+    }
+}
+
+function downloadJSON(data, fileName) {
+    const blob = new Blob([data], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function exportSettings() {
+    const form = validateSettings();
+    const data = JSON.stringify(form, null, 4);
+    const encodedData = btoa(data);
+    downloadJSON(encodedData, "BPB-settings.dat");
+}
+
+function importSettings(event) {
+    const input = document.getElementById('fileInput');
+    input.value = '';
+    input.click();
+}
+
+async function uploadSettings(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    try {
+        const text = await file.text();
+        const data = atob(text);
+        const settings = JSON.parse(data);
+        updateSettings(event, settings);
+        initiatePanel(settings);
+    } catch (err) {
+        console.error('Failed to import settings:', err.message);
     }
 }
 
@@ -341,10 +373,7 @@ function resetSettings() {
         .catch(error => console.error("Reseting settings error:", error.message || error));
 }
 
-function updateSettings(event) {
-    event.preventDefault();
-    event.stopPropagation();
-
+function validateSettings() {
     const elementsToCheck = [
         'cleanIPs', 'customCdnAddrs', 'customCdnSni', 'customCdnHost',
         'customBypassRules', 'customBlockRules', 'customBypassSanctionRules'
@@ -414,6 +443,14 @@ function updateSettings(event) {
         form[key] = value === '' ? [] : value.split('\r\n').map(val => val.trim()).filter(Boolean);
     });
 
+    return form;
+}
+
+function updateSettings(event, data) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const form = data ? data : validateSettings();
     const applyButton = document.getElementById('applyButton');
     document.body.style.cursor = 'wait';
     const applyButtonVal = applyButton.value;

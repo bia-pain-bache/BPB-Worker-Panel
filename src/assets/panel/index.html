@@ -466,9 +466,16 @@
                 <button type="submit" id="applyButton" class="button disabled apply-settings" form="configForm">
                     Apply Settings 💥
                 </button>
-                <button type="button" class="reset-settings" title="Reset panel settings to default"
+                <button type="button" class="panel-settings" title="Reset panel settings to default"
                     onclick="resetSettings()">
                     <i id="refresh-btn" class="fa fa-refresh fa-2x" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="panel-settings" title="Export panel settings" onclick="exportSettings()">
+                    <i class="fa fa-cloud-download fa-2x" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="panel-settings" title="Import panel settings" onclick="importSettings()">
+                    <i class="fa fa-cloud-upload fa-2x" aria-hidden="true"></i>
+                    <input type="file" id="fileInput" accept=".dat" style="display: none;" onchange="uploadSettings(event)" />
                 </button>
             </div>
         </form>

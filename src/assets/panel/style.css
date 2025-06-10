@@ -278,7 +278,7 @@ button.apply-settings {
     margin: 0;
 }
 
-button.reset-settings {
+button.panel-settings {
     flex: unset;
     border: none;
     cursor: pointer;
