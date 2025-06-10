@@ -61,7 +61,7 @@ function initiatePanel(proxySettings) {
     });
 
     populatePanel(proxySettings);
-    renderPortsBlock(ports);
+    renderPortsBlock(ports.map(Number));
     renderUdpNoiseBlock(xrayUdpNoises);
     initiateForm();
     fetchIPInfo();
