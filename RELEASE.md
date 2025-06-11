@@ -43,6 +43,6 @@ From now on, you can export and import panel settings, this is to make sharing s
 - Changed Sing-box and Clash NTP servers to Cloudflare.
 - Changed warp endpoint scanner to [BPB Warp Scanner](https://github.com/bia-pain-bache/BPB-Warp-Scanner)
 - UI improvements
-- Bug fix #877
+- Bug fix #877 #884 #855
 - Updated packages
 - Refactored cores and some other bug fixes.
