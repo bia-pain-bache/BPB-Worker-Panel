@@ -1,6 +1,6 @@
 {
 	"name": "bpb-panel",
-	"version": "3.3.2",
+	"version": "3.3.3",
 	"homepage": "https://github.com/bia-pain-bache/BPB-Worker-Panel",
 	"license": "GPL-3.0",
 	"private": true,
@@ -16,14 +16,14 @@
 	},
 	"dependencies": {
 		"esbuild": "^0.25.5",
-		"glob": "^10.3.10",
+		"glob": "^11.0.2",
 		"globals": "^16.2.0",
 		"html-minifier": "^4.0.0",
 		"javascript-obfuscator": "latest",
-		"terser": "^5.42.0",
 		"jose": "^6.0.11",
 		"js-sha256": "^0.11.1",
 		"jszip": "^3.10.1",
+		"terser": "^5.42.0",
 		"tweetnacl": "^1.0.3"
 	}
 }

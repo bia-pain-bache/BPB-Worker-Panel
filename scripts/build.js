@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join, dirname as pathDirname } from 'path';
 import { fileURLToPath } from 'url';
 import { build } from 'esbuild';
-import { sync } from 'glob';
+import { globSync } from 'glob';
 import { minify as jsMinify } from 'terser';
 import { minify as htmlMinify } from 'html-minifier';
 import JSZip from "jszip";
@@ -18,7 +18,7 @@ const ASSET_PATH = join(__dirname, '../src/assets');
 const DIST_PATH = join(__dirname, '../dist/');
 
 async function processHtmlPages() {
-    const indexFiles = sync('**/index.html', { cwd: ASSET_PATH });
+    const indexFiles = globSync('**/index.html', { cwd: ASSET_PATH });
     const result = {};
 
     for (const relativeIndexPath of indexFiles) {
