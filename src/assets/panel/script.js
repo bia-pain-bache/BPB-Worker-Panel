@@ -440,7 +440,7 @@ function validateSettings() {
     textareaElements.forEach(elm => {
         const key = elm.id;
         const value = form[key];
-        form[key] = value === '' ? [] : value.split('\r\n').map(val => val.trim()).filter(Boolean);
+        form[key] = value === '' ? [] : value.split('\n').map(val => val.trim()).filter(Boolean);
     });
 
     return form;

@@ -88,7 +88,7 @@ export async function getNormalConfigs(isFragment) {
     }
 
     const configs = btoa(VLConfs + TRConfs + chainProxy);
-    const hiddifyHash = base64EncodeUnicode('💦 BPB Normal');
+    const hiddifyHash = base64EncodeUnicode( isFragment ? '💦 BPB Fragment' : '💦 BPB Normal');
     
     return new Response(configs, {
         status: 200,
