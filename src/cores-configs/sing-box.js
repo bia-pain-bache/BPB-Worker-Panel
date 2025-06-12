@@ -37,16 +37,6 @@ async function buildSingBoxDNS(isWarp) {
         addDnsServer("udp", settings.localDNS, 53, null, "dns-direct");
     }
 
-    const isSanctionRule = settings.customBypassSanctionRules.filter(isDomain).length;
-    if (isSanctionRule) {
-        const dnsHost = getDomain(settings.antiSanctionDNS);
-        if (dnsHost.isHostDomain) {
-            addDnsServer("https", dnsHost.host, 443, null, "dns-anti-sanction", "dns-direct");
-        } else {
-            addDnsServer("udp", settings.antiSanctionDNS, 53, null, "dns-anti-sanction", null);
-        }
-    }
-
     const rules = [
         {
             domain: ["raw.githubusercontent.com"],
@@ -128,6 +118,16 @@ async function buildSingBoxDNS(isWarp) {
         const { geosite, domain } = rule;
         if (domain.length) addDnsRule(null, null, domain, dnsType);
         if (geosite.length) addDnsRule(geosite, null, null, dnsType);
+    }
+
+    const isSanctionRule = groupedRules.has("dns-anti-sanction");
+    if (isSanctionRule) {
+        const dnsHost = getDomain(settings.antiSanctionDNS);
+        if (dnsHost.isHostDomain) {
+            addDnsServer("https", dnsHost.host, 443, null, "dns-anti-sanction", "dns-direct");
+        } else {
+            addDnsServer("udp", settings.antiSanctionDNS, 53, null, "dns-anti-sanction", null);
+        }
     }
 
     const isFakeDNS = (settings.VLTRFakeDNS && !isWarp) || (settings.warpFakeDNS && isWarp);

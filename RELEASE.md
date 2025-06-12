@@ -3,9 +3,6 @@
 Added to routing rules to provide a more stable and solid connection for websites which applied sanctions and are not blocked by ISP.
 You can set a desired DNS and choose preset rules or custom rules for bypassing. This feature makes WorkerLess config a special config which not only can access most of blocked addresses but also can bypass sanctions.
 
-> [!CAUTION]
-> Please avoid using `Bypass Google` pre-set rule (unless you are a pro and know what's happening), it includes a wide range of addresses which may conflict with your proxy settings and leads to malfunctioning sometimes. It's recommended to fill your single desired addresses in Sanction custom rules instead.
-
 ## Import/Export settings
 
 From now on, you can export and import panel settings, this is to make sharing settings with others easier and also is useful when some updates need reseting settings.
@@ -33,7 +30,6 @@ From now on, you can export and import panel settings, this is to make sharing s
 - Fixed Clash Trojan bug in 3.2.5
 - Improved performance of all cores on DOH with `https://Domain/dns-query` format.
 - Added `Sanction rules` with DNS settings.
-- Added fallback Google DoH to Workerless config.
 - Fixed UI bug (UDP noises).
 - Added new Malware and Phishing geoips for Clash.
 - Xray, Sing-box and Clash DNS and routing improvements.
