@@ -181,6 +181,12 @@ a.link {
     text-decoration: none;
 }
 
+a.scanner {
+    margin-left: 8px;
+    width: unset;
+    color: var(--button-color);
+}
+
 button.reverse {
     width: 100%;
     background-color: var(--form-background-color);
@@ -267,9 +273,10 @@ button.reverse {
 }
 
 .form-control.apply {
+    flex-wrap: wrap;
     flex-direction: row;
     padding: var(--container-padding) 0;
-    gap: 16px;
+    gap: 8px;
     justify-content: center;
     flex: unset;
 }
@@ -289,6 +296,8 @@ button.panel-settings {
 }
 
 .material-symbols-rounded {
+    vertical-align: middle;
+    display: inline-block;
     margin: 0 5px 0 5px;
     font-variation-settings:
         'FILL' 0,

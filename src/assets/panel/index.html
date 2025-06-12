@@ -63,21 +63,14 @@
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="cleanIPs">✨ Clean IPs / Domains</label>
+                        <label for="cleanIPs">
+                            ✨ Clean IPs / Domains
+                            <a class="scanner" href="https://github.com/bia-pain-bache/Cloudflare-Clean-IP-Scanner" title="Scanner" target="_blank" rel="noopener noreferrer">
+                                <span class="material-symbols-rounded">open_in_new</span>
+                            </a>
+                        </label>
                         <div>
                             <textarea type="text" id="cleanIPs" name="cleanIPs" rows="1"></textarea>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="scanner">🔎 Clean IP Scanner</label>
-                        <div>
-                            <a href="https://github.com/bia-pain-bache/Cloudflare-Clean-IP-Scanner/releases/tag/v2.2.5"
-                                name="scanner" target="_blank">
-                                <button type="button" id="scanner" class="button reverse">
-                                    Scanner
-                                    <span class="material-symbols-rounded">open_in_new</span>
-                                </button>
-                            </a>
                         </div>
                     </div>
                     <div class="form-control">
@@ -186,24 +179,26 @@
                     <h3>Warp General</h3>
                 </summary>
                 <div class="section">
-
                     <div class="form-control">
-                        <label for="warpEndpoints">✨ Endpoints</label>
+                        <label for="warpEndpoints">
+                            ✨ Endpoints
+                            <a class="scanner" href="https://github.com/bia-pain-bache/BPB-Warp-Scanner" title="Scanner" target="_blank" rel="noopener noreferrer">
+                                <span class="material-symbols-rounded">open_in_new</span>
+                            </a>
+                        </label>
                         <div>
                             <textarea type="text" id="warpEndpoints" name="warpEndpoints" rows="1" required></textarea>
                         </div>
                     </div>
-                    <div class="form-control">
-                        <label for="endpointScanner">🔎 Scan Endpoint</label>
+                    <!-- <div class="form-control">
+                        <label for="endpointScanner">
+                            🔎 Scan Endpoint
+                        </label>
                         <div>
-                            <a href="https://github.com/bia-pain-bache/BPB-Warp-Scanner" target="_blank"
-                                rel="noopener noreferrer">
-                                <button type="button" id="endpointScanner" class="button reverse">
-                                    Scanner<span class="material-symbols-rounded">terminal</span>
+                            <button type="button" id="endpointScanner" class="button reverse">
                                 </button>
-                            </a>
                         </div>
-                    </div>
+                    </div> -->
                     <div class="form-control">
                         <label for="warpFakeDNS">🧢 Fake DNS</label>
                         <div>
@@ -223,17 +218,17 @@
                         </div>
                     </div>
                     <div class="form-control">
+                        <label for="bestWarpInterval">🔄 Best Interval</label>
+                        <div>
+                            <input type="number" id="bestWarpInterval" name="bestWarpInterval" min="10" max="90">
+                        </div>
+                    </div>
+                    <div class="form-control">
                         <label for="refreshBtn">♻️ Warp Configs</label>
                         <div>
                             <button type="button" class="button reverse" onclick="updateWarpConfigs()">
                                 Update<span id="warp-update" class="material-symbols-rounded">autorenew</span>
                             </button>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="bestWarpInterval">🔄 Best Interval</label>
-                        <div>
-                            <input type="number" id="bestWarpInterval" name="bestWarpInterval" min="10" max="90">
                         </div>
                     </div>
                 </div>
