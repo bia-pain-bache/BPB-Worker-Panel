@@ -31,10 +31,10 @@ You can enable Fake DNS for Warp configs to reduce DNS latency. However, use cau
 
 If your ISP does not support IPv6, disable it to optimize DNS and proxy performance.
 
-## Updating Warp configs
-
-Updating the subscription retrieves new Warp configs from **Cloudflare**. This process does not affect connection speed.
-
 ## Best Interval
 
 **Warp** and **Warp Pro** subscriptions include **Best Ping** configs. By default, these test configs every 30 seconds to identify the optimal config or Endpoint for connection. On slower networks, this interval may cause lag during activities like video streaming or gaming. You can adjust the interval between 10 and 90 seconds.
+
+## Warp Accounts
+
+Updating the accounts retrieves new Warp accounts from **Cloudflare**. This process does not affect connection speed or other settings.
