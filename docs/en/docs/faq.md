@@ -100,5 +100,5 @@
 ??? question "I used the Pages upload method but I get a 404."
     Cloudflare takes about 4–5 minutes to register Pages domains. Give it time, refresh, and it should work.  
 
-??? question "Why doesn’t the panel show the Block Ads toggle?"
+??? question "Why doesn’t the panel show the Block Ads checkbox?"
     Extensions like `uBlock`, `AdGuard` or even some browsers with built-in ad-block settings, can hide it. Disable them for the panel.  

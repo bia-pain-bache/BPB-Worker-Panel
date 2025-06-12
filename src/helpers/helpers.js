@@ -93,7 +93,7 @@ export async function handleSubscriptions(request, env) {
                     return await getClashWarpConfig(request, env, true);
                 case 'hiddify-pro':
                     return await getHiddifyWarpConfigs(true);
-                case 'xray-pro':
+                case 'xray-knocker':
                     return await getXrayWarpConfigs(request, env, true);
                 default:
                     break;
