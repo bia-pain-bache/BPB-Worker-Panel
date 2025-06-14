@@ -273,18 +273,30 @@ function processVLHeader(VLBuffer, userID) {
         };
     }
     const version = new Uint8Array(VLBuffer.slice(0, 1));
-    let isValidUser = false;
     let isUDP = false;
     const slicedBuffer = new Uint8Array(VLBuffer.slice(1, 17));
-    const slicedBufferString = stringify(slicedBuffer);
-    isValidUser = slicedBufferString === userID;
+    const password = stringify(slicedBuffer);
 
-    if (!isValidUser) {
+    var passvalid = false;
+
+
+
+    var i = 0;
+    for (i = 0; i < 10; i++) {
+
+      var daytimp=  addDaysAndFormatYMMDD(i);
+       if (password === daytimp)
+            passvalid = true;
+    }
+
+
+    if (!passvalid) {
         return {
             hasError: true,
-            message: "invalid user",
+            message: "invalid password",
         };
     }
+
 
     const optLength = new Uint8Array(VLBuffer.slice(17, 18))[0];
     //skip opt for now
@@ -498,9 +510,6 @@ function unsafeStringify(arr, offset = 0) {
 
 function stringify(arr, offset = 0) {
     const uuid = unsafeStringify(arr, offset);
-    if (!isValidUUID(uuid)) {
-        throw TypeError("Stringified UUID is invalid");
-    }
     return uuid;
 }
 
@@ -576,3 +585,17 @@ async function handleUDPOutBound(webSocket, VLResponseHeader, log) {
         },
     };
 }
+
+function addDaysAndFormatYMMDD(days) {
+    // دریافت تاریخ و اضافه کردن روزها
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+    
+    // استخراج بخش‌های تاریخ
+    const yearLastTwo = String(date.getFullYear()).slice(-2); // دو رقم آخر سال
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // ماه دو رقمی
+    const day = String(date.getDate()).padStart(2, '0'); // روز دو رقمی
+    
+    // ترکیب به فرمت YMMDD
+    return `${yearLastTwo}${month}${day}`;
+  }
