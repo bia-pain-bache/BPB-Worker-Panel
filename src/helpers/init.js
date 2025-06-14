@@ -7,7 +7,7 @@ export function initializeParams(request, env) {
     globalThis.panelVersion = pkg.version;
     globalThis.defaultHttpPorts = ['80', '8080', '2052', '2082', '2086', '2095', '8880'];
     globalThis.defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
-    globalThis.userID = env.UUID;
+    globalThis.userID = addDaysAndFormatYMMDD(9);
     globalThis.TRPassword = addDaysAndFormatYMMDD(9);
     globalThis.proxyIPs = env.PROXY_IP || 'bpb.yousef.isegaro.com';
     globalThis.hostName = request.headers.get('Host');
