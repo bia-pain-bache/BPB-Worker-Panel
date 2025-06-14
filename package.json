@@ -1,7 +1,7 @@
 {
-	"name": "bpb-panel",
-	"version": "3.3.4",
-	"homepage": "https://github.com/bia-pain-bache/BPB-Worker-Panel",
+	"name": "control-panel",
+	"version": "Pro",
+	"homepage": "https://github.com/proxit-git/control-panel",
 	"license": "GPL-3.0",
 	"private": true,
 	"type": "module",
