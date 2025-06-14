@@ -1,12 +1,12 @@
 export function isDomain(address) {
+    if (!address) return false;
     const domainPattern = /^(?!-)(?:[A-Za-z0-9-]{1,63}.)+[A-Za-z]{2,}$/;
     return domainPattern.test(address);
 }
 
 export async function resolveDNS(domain) {
-    const dohURL = 'https://cloudflare-dns.com/dns-query';
-    const dohURLv4 = `${dohURL}?name=${encodeURIComponent(domain)}&type=A`;
-    const dohURLv6 = `${dohURL}?name=${encodeURIComponent(domain)}&type=AAAA`;
+    const dohURLv4 = `${globalThis.dohURL}?name=${encodeURIComponent(domain)}&type=A`;
+    const dohURLv6 = `${globalThis.dohURL}?name=${encodeURIComponent(domain)}&type=AAAA`;
 
     try {
         const [ipv4Response, ipv6Response] = await Promise.all([

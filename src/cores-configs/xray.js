@@ -1,7 +1,7 @@
 import { getConfigAddresses, extractWireguardParams, base64ToDecimal, generateRemark, randomUpperCase, getRandomPath, resolveDNS, isDomain, getDomain } from './helpers';
 import { getDataset } from '../kv/handlers';
 
-async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWarp) {
+async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWarp, customDns, customDnsHosts) {
     const settings = globalThis.settings;
     function buildDnsServer(address, domains, expectIPs, skipFallback, tag) {
         return {
@@ -49,18 +49,17 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
 
     if (isWorkerLess) {
         if (!dnsObject.hosts) dnsObject.hosts = {};
-        dnsObject.hosts["cloudflare-dns.com"] = ["cloudflare.com"];
+        finalRemoteDNS = `https://${customDns}/dns-query`;
+        dnsObject.hosts[customDns] = customDnsHosts;
         skipFallback = false;
         dnsObject.disableFallback = true;
-        finalRemoteDNS = "https://cloudflare-dns.com/dns-query";
-        // const fallbackRemoteDns = buildDnsServer('https://dns.google/dns-query', null, null, null, "remote-dns-fallback");
-        // dnsObject.servers.push(fallbackRemoteDns);
     }
 
     const remoteDnsServer = buildDnsServer(finalRemoteDNS, null, null, null, "remote-dns");
     dnsObject.servers.push(remoteDnsServer);
 
     const bypassRules = routingRules.filter(({ type }) => type === 'direct');
+    if (isDomain(customDnsHosts?.[0])) bypassRules.push({ rule: true, domain: `full:${customDnsHosts[0]}`, dns: settings.localDNS });
 
     outboundAddrs.filter(isDomain).forEach(domain => {
         bypassRules.push({ rule: true, domain: `full:${domain}`, dns: settings.localDNS });
@@ -79,8 +78,6 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
         bypassRules.push({ rule: true, domain: `full:${host}`, dns: settings.localDNS });
     }
 
-    if(isWorkerLess) bypassRules.push({ rule: true, domain: "full:cloudflare.com", dns: settings.localDNS });
-
     const totalDomainRules = [];
     const groupedDomainRules = new Map();
     bypassRules.filter(({ rule }) => rule).forEach(({ domain, ip, dns }) => {
@@ -88,10 +85,11 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
             const server = buildDnsServer(dns, [domain], ip ? [ip] : null, skipFallback);
             dnsObject.servers.push(server);
         } else {
-            if(!groupedDomainRules.has(dns)) groupedDomainRules.set(dns, []);
+            if (!groupedDomainRules.has(dns)) groupedDomainRules.set(dns, []);
             groupedDomainRules.get(dns).push(domain)
-            totalDomainRules.push(domain);
         }
+        
+        if (domain) totalDomainRules.push(domain);
     });
 
     for (const [dns, domain] of groupedDomainRules) {
@@ -184,9 +182,9 @@ function buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
 
     const groupedRules = new Map();
     routingRules.filter(({ rule }) => rule).forEach(({ type, domain, ip }) => {
-        if(!groupedRules.has(type)) groupedRules.set(type, { domain: [], ip: [] });
-        if(domain) groupedRules.get(type).domain.push(domain);
-        if(ip) groupedRules.get(type).ip.push(ip);
+        if (!groupedRules.has(type)) groupedRules.set(type, { domain: [], ip: [] });
+        if (domain) groupedRules.get(type).domain.push(domain);
+        if (ip) groupedRules.get(type).ip.push(ip);
     });
 
     for (const [type, rule] of groupedRules) {
@@ -553,15 +551,17 @@ async function buildXrayConfig(
     isFragment,
     isWorkerLess,
     outboundAddrs,
-    domainToStaticIPs
+    domainToStaticIPs,
+    customDns,
+    customDnsHosts
 ) {
     const settings = globalThis.settings;
     const config = structuredClone(xrayConfigTemp);
     config.remarks = remark;
 
-    config.dns = await buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWarp);
+    config.dns = await buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWarp, customDns, customDnsHosts);
     const isFakeDNS = (settings.VLTRFakeDNS && !isWarp) || (settings.warpFakeDNS && isWarp);
-    if(isFakeDNS) config.inbounds[0].sniffing.destOverride.push("fakedns");
+    if (isFakeDNS) config.inbounds[0].sniffing.destOverride.push("fakedns");
 
     if (isFragment) {
         const fragmentOutbound = buildFreedomOutbound(true, isWorkerLess, 'fragment');
@@ -592,10 +592,10 @@ async function buildXrayConfig(
                 isChain ? "chain" : "prox"
             ],
             probeUrl: "https://www.gstatic.com/generate_204",
-            probeInterval: `${isWarp 
-                ? settings.bestWarpInterval 
+            probeInterval: `${isWarp
+                ? settings.bestWarpInterval
                 : settings.bestVLTRInterval
-            }s`,
+                }s`,
             enableConcurrency: true
         };
 
@@ -642,8 +642,9 @@ async function buildXrayBestFragmentConfig(hostName, chainProxy, outbound) {
 }
 
 async function buildXrayWorkerLessConfig() {
-    const config = await buildXrayConfig(`💦 BPB F - WorkerLess ⭐`, false, false, false, false, true, true, [], false);
-    return config;
+    const cfDnsConfig = await buildXrayConfig(`💦 BPB F - WorkerLess - 1 ⭐`, false, false, false, false, true, true, [], false, "cloudflare-dns.com", ["cloudflare.com"]);
+    const googleDnsConfig = await buildXrayConfig(`💦 BPB F - WorkerLess - 2 ⭐`, false, false, false, false, true, true, [], false, "dns.google", ["8.8.8.8", "8.8.4.4"]);
+    return [cfDnsConfig, googleDnsConfig];
 }
 
 export async function getXrayCustomConfigs(env, isFragment) {
@@ -668,8 +669,8 @@ export async function getXrayCustomConfigs(env, isFragment) {
     const totalPorts = settings.ports.filter(port => isFragment ? globalThis.defaultHttpsPorts.includes(port) : true);
 
     let protocols = [];
-    if(settings.VLConfigs) protocols.push('VLESS');
-    if(settings.TRConfigs) protocols.push('Trojan');
+    if (settings.VLConfigs) protocols.push('VLESS');
+    if (settings.TRConfigs) protocols.push('Trojan');
 
     let configs = [];
     let outbounds = {
@@ -707,7 +708,7 @@ export async function getXrayCustomConfigs(env, isFragment) {
     }
 
     outbounds.proxies.forEach((outbound, index) => outbound.tag = `prox-${index + 1}`);
-    if(chainProxy)  outbounds.chains.forEach((outbound, index) => {
+    if (chainProxy) outbounds.chains.forEach((outbound, index) => {
         outbound.tag = `chain-${index + 1}`;
         outbound.streamSettings.sockopt.dialerProxy = `prox-${index + 1}`;
     });
@@ -718,8 +719,8 @@ export async function getXrayCustomConfigs(env, isFragment) {
     const finalConfigs = [...configs, bestPing];
     if (isFragment) {
         const bestFragment = await buildXrayBestFragmentConfig(globalThis.hostName, chainProxy, outbounds.proxies[0]);
-        const workerLessConfig = await buildXrayWorkerLessConfig();
-        finalConfigs.push(bestFragment, workerLessConfig);
+        const workerLessConfigs = await buildXrayWorkerLessConfig();
+        finalConfigs.push(bestFragment, ...workerLessConfigs);
     }
 
     return new Response(JSON.stringify(finalConfigs, null, 4), {

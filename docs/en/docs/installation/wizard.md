@@ -21,12 +21,8 @@ Based on your operating system, [download the ZIP file](https://github.com/bia-p
 
 Android users who have Termux installed on their phone can install the BPB Panel by just copying this code into Termux:
 
-```bash title="ARM v8"
-curl -L -# -o BPB-Wizard.tar.gz https://github.com/bia-pain-bache/BPB-Wizard/releases/latest/download/BPB-Wizard-linux-arm64.tar.gz && tar xzf BPB-Wizard.tar.gz && chmod +x ./BPB-Wizard-linux-arm64 && ./BPB-Wizard-linux-arm64
-```
-
-```bash title="ARM v7"
-curl -L -# -o BPB-Wizard.tar.gz https://github.com/bia-pain-bache/BPB-Wizard/releases/latest/download/BPB-Wizard-linux-arm.tar.gz && tar xzf BPB-Wizard.tar.gz && chmod +x ./BPB-Wizard-linux-arm && ./BPB-Wizard-linux-arm
+```bash title="Termux - Linux"
+bash <(curl -fsSL https://raw.githubusercontent.com/bia-pain-bache/BPB-Wizard/main/install.sh)
 ```
 
 !!! warning  
