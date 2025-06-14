@@ -72,8 +72,35 @@ async function buildWorker() {
     
     console.log('✅ Worker built successfuly!');
 
-    // Just use the built code directly without obfuscation or heavy minification
-    const finalCode = code.outputFiles[0].text;
+    let finalCode;
+    if (devMode) {
+        finalCode = code.outputFiles[0].text;
+    } else {
+        const minifiedCode = await jsMinify(code.outputFiles[0].text, {
+            module: true,
+            output: {
+                comments: false
+            }
+        });
+    
+        console.log('✅ Worker minified successfuly!');
+    
+        const obfuscationResult = obfs.obfuscate(minifiedCode.code, {
+            stringArrayThreshold: 1,
+            stringArrayEncoding: [
+                "rc4"
+            ],
+            numbersToExpressions: true,
+            transformObjectKeys: true,
+            renameGlobals: true,
+            deadCodeInjection: true,
+            deadCodeInjectionThreshold: 0.2,
+            target: "browser"
+        });
+    
+        console.log('✅ Worker obfuscated successfuly!');
+        finalCode = obfuscationResult.getObfuscatedCode();
+    }
 
     const worker = `// @ts-nocheck\n${finalCode}`;
     mkdirSync(DIST_PATH, { recursive: true });
