@@ -281,7 +281,7 @@ function buildSingBoxRoutingRules(isWarp) {
     }
 }
 
-function buildSingBoxVLOutbound(remark, address, port, host, sni, allowInsecure) {
+function buildSingBoxVLOutbound(remark, address, port, host, sni, allowInsecure, isFragment) {
     const settings = globalThis.settings;
     const path = `/${getRandomPath(16)}${settings.proxyIPs.length ? `/${btoa(settings.proxyIPs.join(','))}` : ''}`;
     const tls = globalThis.defaultHttpsPorts.includes(port) ? true : false;
@@ -317,6 +317,7 @@ function buildSingBoxVLOutbound(remark, address, port, host, sni, allowInsecure)
         enabled: true,
         insecure: allowInsecure,
         server_name: sni,
+        record_fragment: isFragment,
         utls: {
             enabled: true,
             fingerprint: "randomized"
@@ -326,7 +327,7 @@ function buildSingBoxVLOutbound(remark, address, port, host, sni, allowInsecure)
     return outbound;
 }
 
-function buildSingBoxTROutbound(remark, address, port, host, sni, allowInsecure) {
+function buildSingBoxTROutbound(remark, address, port, host, sni, allowInsecure, isFragment) {
     const settings = globalThis.settings;
     const path = `/tr${getRandomPath(16)}${settings.proxyIPs.length ? `/${btoa(settings.proxyIPs.join(','))}` : ''}`;
     const tls = globalThis.defaultHttpsPorts.includes(port) ? true : false;
@@ -361,6 +362,7 @@ function buildSingBoxTROutbound(remark, address, port, host, sni, allowInsecure)
         enabled: true,
         insecure: allowInsecure,
         server_name: sni,
+        record_fragment: isFragment,
         utls: {
             enabled: true,
             fingerprint: "randomized"
@@ -583,7 +585,7 @@ export async function getSingBoxWarpConfig(request, env) {
     });
 }
 
-export async function getSingBoxCustomConfig(env) {
+export async function getSingBoxCustomConfig(env, isFragment) {
     const settings = globalThis.settings;
     let chainProxy;
 
@@ -613,9 +615,13 @@ export async function getSingBoxCustomConfig(env) {
         chains: []
     }
 
+    const ports = isFragment 
+        ? settings.ports.filter(port => globalThis.defaultHttpsPorts.includes(port))
+        : settings.ports;
+
     protocols.forEach(protocol => {
         let protocolIndex = 1;
-        settings.ports.forEach(port => {
+        ports.forEach(port => {
             Addresses.forEach(addr => {
                 let VLOutbound, TROutbound;
                 const isCustomAddr = settings.customCdnAddrs.includes(addr);
@@ -631,7 +637,8 @@ export async function getSingBoxCustomConfig(env) {
                         port,
                         host,
                         sni,
-                        isCustomAddr
+                        isCustomAddr,
+                        isFragment
                     );
 
                     outbounds.proxies.push(VLOutbound);
@@ -644,7 +651,8 @@ export async function getSingBoxCustomConfig(env) {
                         port,
                         host,
                         sni,
-                        isCustomAddr
+                        isCustomAddr,
+                        isFragment
                     );
 
                     outbounds.proxies.push(TROutbound);

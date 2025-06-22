@@ -83,8 +83,8 @@
     </tr>
     <tr>
       <td><b>Sing-box</b></td>
-      <td>1.11.2 و بالاتر</td>
-      <td>❌</td>
+      <td>1.12.0 و بالاتر</td>
+      <td>✔️</td>
       <td>❌</td>
     </tr>
     <tr>

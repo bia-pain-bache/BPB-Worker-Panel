@@ -48,7 +48,7 @@ This project is aimed to provide a user panel to access FREE, SECURE and PRIVATE
 |     **v2rayN**      | 7.12.5 or higher | :material-check: | :material-check: |
 |   **v2rayN-PRO**    |  1.9 or higher   | :material-check: | :material-check: |
 |      **Husi**       |                  | :material-close: | :material-close: |
-|    **Sing-box**     | 1.11.2 or higher | :material-close: | :material-close: |
+|    **Sing-box**     | 1.12.0 or higher | :material-check: | :material-close: |
 |    **Streisand**    | 1.6.48 or higher | :material-check: | :material-check: |
 |      **V2Box**      |                  | :material-close: | :material-close: |
 |  **Shadowrocket**   |                  | :material-close: | :material-close: |

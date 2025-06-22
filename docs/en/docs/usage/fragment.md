@@ -16,6 +16,10 @@ This applies to clients using the Xray core, such as v2rayNG, MansaNG, and v2ray
 ???+ question "What is the Best Fragment config?"
     The Best Fragment config tests 18 different fragment settings, selecting the fastest based on your ISP’s performance. These modes are designed to cover all primary scenarios, with the config testing all modes every 30s and connecting to the optimal one. Advanced fragment settings are detailed [here](../configuration/fragment.md).
 
+## Fragment for sing-box
+
+Starting from version 1.12.0 sing-box core and related clients support fragment, you can use this sub by official sing-box client like husi or v2rayN which has sing-box core embeded.
+
 ## Fragment for Hiddify
 
 Many panel settings are not applied to this subscription, as Hiddify overrides most settings. The following must be configured manually in Hiddify:

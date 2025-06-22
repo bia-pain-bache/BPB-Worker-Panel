@@ -60,7 +60,7 @@ export async function handleSubscriptions(request, env) {
         case `/sub/full-normal/${subPath}`:
             switch (client) {
                 case 'sfa':
-                    return await getSingBoxCustomConfig(env);
+                    return await getSingBoxCustomConfig(env, false);
                 case 'clash':
                     return await getClashNormalConfig(env);
                 case 'xray':
@@ -70,8 +70,14 @@ export async function handleSubscriptions(request, env) {
             }
 
         case `/sub/fragment/${subPath}`:
-            if (client === 'hiddify-frag') return await getNormalConfigs(true);
-            return await getXrayCustomConfigs(env, true);
+            switch (client) {
+                case 'sfa':
+                    return await getSingBoxCustomConfig(env, true);
+                case 'hiddify-frag':
+                    return await getNormalConfigs(true);
+                default:
+                    return await getXrayCustomConfigs(env, true);
+            }
 
         case `/sub/warp/${subPath}`:
             switch (client) {
