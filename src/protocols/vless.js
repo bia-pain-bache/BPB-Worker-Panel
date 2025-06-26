@@ -269,10 +269,8 @@ function processVLHeader(VLBuffer, userID) {
  
     const version = new Uint8Array(VLBuffer.slice(0, 1));
     let isUDP = false;
-    const slicedBuffer = new Uint8Array(VLBuffer.slice(1, 17));
+    const slicedBuffer = new Uint8Array(VLBuffer.slice(1, 4));
     const password = stringify(slicedBuffer);
-    password=password.trim();
-
     var passvalid = false;
 
 
