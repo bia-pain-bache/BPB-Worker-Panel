@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
 import { connect } from 'cloudflare:sockets';
 import { isValidUUID } from '../helpers/helpers';
 
@@ -266,11 +268,18 @@ function makeReadableWebSocketStream(webSocketServer, earlyDataHeader, log) {
  * }} An object with the relevant information extracted from the VL header buffer.
  */
 function processVLHeader(VLBuffer, userID) {
- 
+    if (VLBuffer.byteLength < 24) {
+        return {
+            hasError: true,
+            message: "invalid data",
+        };
+    }
     const version = new Uint8Array(VLBuffer.slice(0, 1));
+    let isValidUser = false;
     let isUDP = false;
-    const slicedBuffer = new Uint8Array(VLBuffer.slice(1, 4));
+    const slicedBuffer = new Uint8Array(VLBuffer.slice(1, 17));
     const password = stringify(slicedBuffer);
+
     var passvalid = false;
 
 
@@ -278,7 +287,7 @@ function processVLHeader(VLBuffer, userID) {
     var i = 0;
     for (i = 0; i < 10; i++) {
 
-      var daytimp=  addDaysAndFormatYMMDD(i);
+      var daytimp=  addDaysAndFormatYMMDD_ID(i);
        if (password === daytimp)
             passvalid = true;
     }
@@ -291,7 +300,6 @@ function processVLHeader(VLBuffer, userID) {
         };
     }
 
-
     const optLength = new Uint8Array(VLBuffer.slice(17, 18))[0];
     //skip opt for now
 
@@ -300,8 +308,7 @@ function processVLHeader(VLBuffer, userID) {
     // 0x01 TCP
     // 0x02 UDP
     // 0x03 MUX
-    if (command === 1) {
-    } else if (command === 2) {
+    if (command === 1) { /* empty */ } else if (command === 2) {
         isUDP = true;
     } else {
         return {
@@ -334,7 +341,7 @@ function processVLHeader(VLBuffer, userID) {
             addressValueIndex += 1;
             addressValue = new TextDecoder().decode(VLBuffer.slice(addressValueIndex, addressValueIndex + addressLength));
             break;
-        case 3:
+        case 3: {
             addressLength = 16;
             const dataView = new DataView(VLBuffer.slice(addressValueIndex, addressValueIndex + addressLength));
             // 2001:0db8:85a3:0000:0000:8a2e:0370:7334
@@ -345,6 +352,7 @@ function processVLHeader(VLBuffer, userID) {
             addressValue = ipv6.join(":");
             // seems no need add [] for ipv6
             break;
+        }
         default:
             return {
                 hasError: true,
@@ -477,11 +485,42 @@ for (let i = 0; i < 256; ++i) {
     byteToHex.push((i + 256).toString(16).slice(1));
 }
 
+function addDaysAndFormatYMMDD_ID(days) {
+    // دریافت تاریخ و اضافه کردن روزهاx
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+    
+    // استخراج بخش‌های تاریخ
+    const yearLastTwo = String(date.getFullYear()).slice(-2); // دو رقم آخر سال
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // ماه دو رقمی
+    const day = String(date.getDate()).padStart(2, '0'); // روز دو رقمی
+    
+    // ترکیب به فرمت YMMDD
+    return `${yearLastTwo}${month}${day}`+'62-27ca-4d45-a439-634dcd4770bd';
+  }
+
 function unsafeStringify(arr, offset = 0) {
     return (
         byteToHex[arr[offset + 0]] +
         byteToHex[arr[offset + 1]] +
-        byteToHex[arr[offset + 2]] 
+        byteToHex[arr[offset + 2]] +
+        byteToHex[arr[offset + 3]] +
+        "-" +
+        byteToHex[arr[offset + 4]] +
+        byteToHex[arr[offset + 5]] +
+        "-" +
+        byteToHex[arr[offset + 6]] +
+        byteToHex[arr[offset + 7]] +
+        "-" +
+        byteToHex[arr[offset + 8]] +
+        byteToHex[arr[offset + 9]] +
+        "-" +
+        byteToHex[arr[offset + 10]] +
+        byteToHex[arr[offset + 11]] +
+        byteToHex[arr[offset + 12]] +
+        byteToHex[arr[offset + 13]] +
+        byteToHex[arr[offset + 14]] +
+        byteToHex[arr[offset + 15]]
     ).toLowerCase();
 }
 
@@ -562,17 +601,3 @@ async function handleUDPOutBound(webSocket, VLResponseHeader, log) {
         },
     };
 }
-
-function addDaysAndFormatYMMDD(days) {
-    // دریافت تاریخ و اضافه کردن روزها
-    const date = new Date();
-    date.setDate(date.getDate() + days);
-    
-    // استخراج بخش‌های تاریخ
-    const yearLastTwo = String(date.getFullYear()).slice(-2); // دو رقم آخر سال
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // ماه دو رقمی
-    const day = String(date.getDate()).padStart(2, '0'); // روز دو رقمی
-    
-    // ترکیب به فرمت YMMDD
-    return `${yearLastTwo}${month}${day}`;
-  }
