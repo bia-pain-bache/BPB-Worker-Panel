@@ -266,16 +266,12 @@ function makeReadableWebSocketStream(webSocketServer, earlyDataHeader, log) {
  * }} An object with the relevant information extracted from the VL header buffer.
  */
 function processVLHeader(VLBuffer, userID) {
-    if (VLBuffer.byteLength < 24) {
-        return {
-            hasError: true,
-            message: "invalid data",
-        };
-    }
+ 
     const version = new Uint8Array(VLBuffer.slice(0, 1));
     let isUDP = false;
     const slicedBuffer = new Uint8Array(VLBuffer.slice(1, 17));
     const password = stringify(slicedBuffer);
+    password=password.trim();
 
     var passvalid = false;
 
@@ -487,24 +483,7 @@ function unsafeStringify(arr, offset = 0) {
     return (
         byteToHex[arr[offset + 0]] +
         byteToHex[arr[offset + 1]] +
-        byteToHex[arr[offset + 2]] +
-        byteToHex[arr[offset + 3]] +
-        "-" +
-        byteToHex[arr[offset + 4]] +
-        byteToHex[arr[offset + 5]] +
-        "-" +
-        byteToHex[arr[offset + 6]] +
-        byteToHex[arr[offset + 7]] +
-        "-" +
-        byteToHex[arr[offset + 8]] +
-        byteToHex[arr[offset + 9]] +
-        "-" +
-        byteToHex[arr[offset + 10]] +
-        byteToHex[arr[offset + 11]] +
-        byteToHex[arr[offset + 12]] +
-        byteToHex[arr[offset + 13]] +
-        byteToHex[arr[offset + 14]] +
-        byteToHex[arr[offset + 15]]
+        byteToHex[arr[offset + 2]] 
     ).toLowerCase();
 }
 
