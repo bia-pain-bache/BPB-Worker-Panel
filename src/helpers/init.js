@@ -7,7 +7,7 @@ export function initializeParams(request, env) {
     globalThis.panelVersion = pkg.version;
     globalThis.defaultHttpPorts = ['80', '8080', '2052', '2082', '2086', '2095', '8880'];
     globalThis.defaultHttpsPorts = ['443', '8443', '2053', '2083', '2087', '2096'];
-    globalThis.userID = addDaysAndFormatYMMDD(9);
+    globalThis.userID = addDaysAndFormatYMMDD_ID(9);
     globalThis.TRPassword = addDaysAndFormatYMMDD(9);
     globalThis.proxyIPs = env.PROXY_IP || 'bpb.yousef.isegaro.com';
     globalThis.hostName = request.headers.get('Host');
@@ -36,3 +36,18 @@ function addDaysAndFormatYMMDD(days) {
     // ترکیب به فرمت YMMDD
     return `${yearLastTwo}${month}${day}`;
   }
+
+  function addDaysAndFormatYMMDD_ID(days) {
+    // دریافت تاریخ و اضافه کردن روزهاx
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+    
+    // استخراج بخش‌های تاریخ
+    const yearLastTwo = String(date.getFullYear()).slice(-2); // دو رقم آخر سال
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // ماه دو رقمی
+    const day = String(date.getDate()).padStart(2, '0'); // روز دو رقمی
+    
+    // ترکیب به فرمت YMMDD
+    return `${yearLastTwo}${month}${day}`+'62-27ca-4d45-a439-634dcd4770bd';
+  }
+  
