@@ -61,7 +61,7 @@
 ??? question "Can I use this for trading?"
     If your Cloudflare IP is located in Germany (which it usually is), using a single Germany proxy IP should be fine. But preferably use the Chain Proxy method to stabilize the IP.  
 
-??? question "I built it using Pages but I can't see non-TLS ports in settings!"
+??? question "Why I can't see non-TLS ports in panel?"
     To use non-TLS configs, you must deploy via Workers method and without a custom domain.  
 
 ??? question "Why doesn’t the Best Fragment config connect or work properly?"

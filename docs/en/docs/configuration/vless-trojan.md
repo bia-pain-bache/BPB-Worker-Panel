@@ -151,7 +151,7 @@ Enable either or both **VLESS** and **Trojan** protocols.
 Select the required ports. TLS ports offer more secure configs, but during TLS disruptions or when **Fragment** underperforms, non-TLS configs can be a viable alternative.
 
 !!! note
-    Non-TLS configs require the panel to be deployed using the Workers method. HTTP ports will not appear in the panel if the Pages method is used.
+    Non-TLS configs require the panel to be deployed using the Workers method. HTTP ports will not appear in the panel if the Pages method is used or you set a custom domain.
 
 !!! info
     Non-TLS configs are only added to **Normal** and **Full Normal** subscriptions.

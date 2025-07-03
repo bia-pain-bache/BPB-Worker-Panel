@@ -19,7 +19,7 @@
 ### USDT (BEP20)
 
 ```text
-0x111EFF917E7cf4b0BfC99Edffd8F1AbC2b23d158
+0xbdf15d41C56f861f25b2b11C835bd45dfD5b792F
 ```
 
 ## ویژگی‌ها
