@@ -10,7 +10,7 @@ If you don’t have a Cloudflare account, create one [here](https://dash.cloudfl
 
 Download the Worker zip file [from here](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/worker.zip).
 
-In your Cloudflare account, navigate to the `Compute (Workers)` > `Workers & Pages` section in the left menu, click `Create`, and select `Pages` and then `Use direct upload` > `Get started`.
+In your Cloudflare account, navigate to the `Developer Platform` section, click `Create application`, select `Pages` tab and then `Use direct upload` > `Get started`.
 
 Enter a `Project Name`, which will form your panel’s domain.
 
@@ -38,7 +38,7 @@ From the left menu, go to `Storage and Databases` > `KV`:
 
 Click `Create`, assign a desired name, and click `Add`.
 
-Return to the `Workers & Pages` section and open your Pages project. Go to the `Settings` section, as shown below:
+Return to the `Workers & Pages` section and open your Pages project. Go to the `Binding` section, as shown below:
 
 ![Pages Application](../images/settings-functions.jpg)
 

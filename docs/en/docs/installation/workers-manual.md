@@ -10,14 +10,14 @@ If you don’t have a Cloudflare account, create one [here](https://dash.cloudfl
 
 First, download the Worker code from [here](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/worker.js).
 
-In your Cloudflare account, navigate to the `Compute (Workers)` > `Workers & Pages` section in the left menu, click `Create`, and select `Workers` and then `Start with Hello World!` > `Get started`.
+In your Cloudflare account, navigate to the `Developer Platform` tab and click `Create application`, from `Workers` tab find `Start with Hello World!` and `Get started`.
 
 Enter a desired name, which will form your panel’s domain and `Deploy`.
 
 !!! danger
     Choose a name that does not include the word `bpb`, as this may trigger Cloudflare’s detection and result in a `1101` error.
 
-Then click `Edit` here. In the left sidebar, delete the `worker.js` file and upload the new one. If it gives an error, delete the `package-lock.json` file too. Since the code has become large, copying and pasting on mobile is difficult — refer to the image below and upload it properly. On mobile, open the side menu, long-press the Explorer, and click `Upload...`.
+Then click `Edit code` here. In the left sidebar, delete the `worker.js` file and upload the new one. If it gives an error, delete the `package-lock.json` file too. Since the code has become large, copying and pasting on mobile is difficult — refer to the image below and upload it properly. On mobile, open the side menu, long-press the Explorer, and click `Upload...`.
 
 ![Mobile upload](../images/worker-mobile-upload.jpg)
 
@@ -42,7 +42,7 @@ From here, go to the `KV` page:
 
 In the KV section, click `Create`, give it a name (e.g., Test), and click `Add`.
 
-Again, go to the `Workers & Pages` section from the sidebar, open the Worker you created, go to `Settings`, and find `Bindings`. Click `Add` and choose `KV Namespace`. From the dropdown, select the KV you just created (e.g., Test). What’s important is the first field — it **must** be set to `kv`. Then click `Deploy`.
+Again, go to the `Developer Platform` section, open the Worker you just created, go to `Bindings`. Click `Add binding` and choose `KV Namespace`. From the dropdown, select the KV you just created (e.g., Test). What’s important is the first field — it **must** be set to `kv`. Then click `Deploy`.
 
 ![Bind KV](../images/bind-kv.jpg)
 

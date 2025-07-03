@@ -10,7 +10,7 @@
 
 فایل زیپ Worker رو از [اینجا](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/worker.zip) دانلود کنید.
 
-توی اکانت Cloudflare، از منوی سمت چپ به بخش `Compute (Workers)` > `Workers & Pages` برید، روی `Create` کلیک کنید، `Pages` رو انتخاب کنید و بعد `Use direct upload` > `Get started` رو بزنید.
+توی اکانت Cloudflare به بخش  `Developer Platform` برید، روی `Create application` کلیک کنید، تب `Pages` رو انتخاب کنید و بعد `Use direct upload` > `Get started` رو بزنید.
 
 یه `Project Name` وارد کنید که دامنه پنل شما رو تشکیل می‌ده.
 
