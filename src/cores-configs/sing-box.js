@@ -165,16 +165,8 @@ function buildSingBoxRoutingRules(isWarp) {
     const settings = globalThis.settings;
     const rules = [
         {
-            action: "sniff"
-        },
-        {
-            action: "hijack-dns",
-            mode: "or",
-            rules: [
-                { port: 53 },
-                { protocol: "dns" }
-            ],
-            type: "logical"
+            ip_cidr: "172.18.0.2",
+            action: "hijack-dns"
         },
         {
             clash_mode: "Direct",
@@ -183,6 +175,13 @@ function buildSingBoxRoutingRules(isWarp) {
         {
             clash_mode: "Global",
             outbound: "✅ Selector"
+        },
+        {
+            action: "sniff"
+        },
+        {
+            protocol: "dns",
+            action: "hijack-dns"
         }
     ];
 

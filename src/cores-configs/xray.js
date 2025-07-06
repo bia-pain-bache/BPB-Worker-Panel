@@ -119,14 +119,6 @@ function buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
             ],
             outboundTag: "dns-out",
             type: "field"
-        },
-        {
-            inboundTag: [
-                "socks-in"
-            ],
-            port: 53,
-            outboundTag: "dns-out",
-            type: "field"
         }
     ];
 
