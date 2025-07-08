@@ -164,7 +164,7 @@ async function handleTCPOutBound(
     // if the cf connect tcp socket have no incoming data, we retry to redirect ip
     async function retry() {
         let proxyIP, proxyIpPort;
-        const EncodedPanelProxyIPs = pathName.split('/')[2] || '';
+        const EncodedPanelProxyIPs = globalThis.pathName.split('/')[2] || '';
         const proxyIPs = atob(EncodedPanelProxyIPs) || globalThis.proxyIPs;
         const finalProxyIPs = proxyIPs.split(',').map(ip => ip.trim());
         proxyIP = finalProxyIPs[Math.floor(Math.random() * finalProxyIPs.length)];
