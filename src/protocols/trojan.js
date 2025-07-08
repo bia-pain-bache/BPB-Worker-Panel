@@ -184,7 +184,11 @@ async function handleTCPOutBound(
     log
 ) {
     async function connectAndWrite(address, port) {
-        if (/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(address)) address = `${atob('d3d3Lg==')}${address}${atob('LnNzbGlwLmlv')}`;
+        const originalAddress = address;
+        if (/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(address)) {
+            address = `${atob('d3d3Lg==')}${address}${atob('LnNzbGlwLmlv')}`;
+        }
+
         /** @type {import("@cloudflare/workers-types").Socket} */
         const tcpSocket = connect({
             hostname: address,
@@ -192,9 +196,15 @@ async function handleTCPOutBound(
         });
         remoteSocket.value = tcpSocket;
         log(`connected to ${address}:${port}`);
-        const writer = tcpSocket.writable.getWriter();
-        await writer.write(rawClientData); // first write, nomal is tls client hello
-        writer.releaseLock();
+
+        try {
+            const writer = tcpSocket.writable.getWriter();
+            await writer.write(rawClientData); // first write, nomal is tls client hello
+            writer.releaseLock();
+        } catch (error) {
+            throw error;
+        }
+
         return tcpSocket;
     }
 
@@ -205,28 +215,41 @@ async function handleTCPOutBound(
         const proxyIPs = atob(EncodedPanelProxyIPs) || globalThis.proxyIPs;
         const finalProxyIPs = proxyIPs.split(',').map(ip => ip.trim());
         proxyIP = finalProxyIPs[Math.floor(Math.random() * finalProxyIPs.length)];
+
+        // Handle IPv6 with port: [ipv6]:port
         if (proxyIP.includes(']:')) {
             const match = proxyIP.match(/^(\[.*?\]):(\d+)$/);
-            proxyIP = match[1];
-            proxyIpPort = +match[2];
+            if (match) {
+                proxyIP = match[1];
+                proxyIpPort = +match[2];
+            }
+        }
+        // Handle IPv4 or domain with port: ip:port or domain:port
+        // Only split if it's not an IPv6 address (doesn't start with [)
+        else if (!proxyIP.startsWith('[') && proxyIP.split(':').length === 2) {
+            const parts = proxyIP.split(':');
+            proxyIP = parts[0];
+            proxyIpPort = +parts[1];
         }
 
-        if (proxyIP.split(':').length === 2) {
-            proxyIP = proxyIP.split(':')[0];
-            proxyIpPort = +proxyIP.split(':')[1];
+        const finalAddress = proxyIP || addressRemote;
+        const finalPort = proxyIpPort || portRemote;
+
+        try {
+            const tcpSocket = await connectAndWrite(finalAddress, finalPort);
+            // no matter retry success or not, close websocket
+            tcpSocket.closed
+                .catch((error) => {
+                    console.log("retry tcpSocket closed error", error);
+                })
+                .finally(() => {
+                    safeCloseWebSocket(webSocket);
+                });
+
+            TRRemoteSocketToWS(tcpSocket, webSocket, null, log);
+        } catch (error) {
+            safeCloseWebSocket(webSocket);
         }
-
-        const tcpSocket = await connectAndWrite(proxyIP || addressRemote, proxyIpPort || portRemote);
-        // no matter retry success or not, close websocket
-        tcpSocket.closed
-            .catch((error) => {
-                console.log("retry tcpSocket closed error", error);
-            })
-            .finally(() => {
-                safeCloseWebSocket(webSocket);
-            });
-
-        TRRemoteSocketToWS(tcpSocket, webSocket, null, log);
     }
 
     const tcpSocket = await connectAndWrite(addressRemote, portRemote);
