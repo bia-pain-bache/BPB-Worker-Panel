@@ -209,9 +209,7 @@ async function handleTCPOutBound(
             const match = proxyIP.match(/^(\[.*?\]):(\d+)$/);
             proxyIP = match[1];
             proxyIpPort = +match[2];
-        }
-
-        if (proxyIP.split(':').length === 2) {
+        } else {
             proxyIP = proxyIP.split(':')[0];
             proxyIpPort = +proxyIP.split(':')[1];
         }
