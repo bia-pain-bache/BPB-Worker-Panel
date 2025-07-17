@@ -21,6 +21,11 @@ async function processHtmlPages() {
     const indexFiles = globSync('**/index.html', { cwd: ASSET_PATH });
     const result = {};
 
+    // 随机字符串生成函数
+    function randomString(len = 8) {
+        return Math.random().toString(36).substring(2, 2 + len);
+    }
+
     for (const relativeIndexPath of indexFiles) {
         const dir = pathDirname(relativeIndexPath);
         const base = (file) => join(ASSET_PATH, dir, file);
@@ -30,7 +35,19 @@ async function processHtmlPages() {
         const scriptCode = readFileSync(base('script.js'), 'utf8');
 
         const finalScriptCode = await jsMinify(scriptCode);
-        const finalHtml = indexHtml
+
+        // 1. 随机化 title
+        let html = indexHtml.replace(/<title>.*?<\/title>/i, `<title>${randomString(10)}</title>`);
+        // 2. 替换项目名等特征性字符串
+        html = html.replace(/BPB-Worker-Panel/gi, randomString(12));
+        // 3. 移除注释
+        html = html.replace(/<!--[\s\S]*?-->/g, '');
+        // 4. 移除或随机化 meta
+        html = html.replace(/<meta[^>]+(generator|description|keywords)[^>]*>/gi, '');
+        // 5. 插入随机不可见元素
+        html = html.replace(/<body.*?>/, match => `${match}<div style="display:none">${randomString(16)}</div>`);
+
+        const finalHtml = html
             .replace(/__STYLE__/g, `<style>${styleCode}</style>`)
             .replace(/__SCRIPT__/g, finalScriptCode.code);
 
