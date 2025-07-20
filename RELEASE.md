@@ -1,4 +1,4 @@
 # ⚙️ Bug fixes and Improvements
 
-- Fixed Warp PRO subscription #895.
-- Updated docs.
+- Revised DNS hijack in Xray and sing-box.
+- Added scheduled build. The project will be built every 6 hourse to prevent Cloudflare 1101 errors.
