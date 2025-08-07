@@ -7,6 +7,7 @@ import { minify as jsMinify } from 'terser';
 import { minify as htmlMinify } from 'html-minifier';
 import JSZip from "jszip";
 import obfs from 'javascript-obfuscator';
+import pkg from '../package.json' with { type: 'json' };
 
 const env = process.env.NODE_ENV || 'production';
 const devMode = env !== 'production';
@@ -30,9 +31,11 @@ async function processHtmlPages() {
         const scriptCode = readFileSync(base('script.js'), 'utf8');
 
         const finalScriptCode = await jsMinify(scriptCode);
+        const encodedScript = Buffer.from(finalScriptCode.code, 'utf8').toString('base64');
         const finalHtml = indexHtml
             .replace(/__STYLE__/g, `<style>${styleCode}</style>`)
-            .replace(/__SCRIPT__/g, finalScriptCode.code);
+            .replace(/__SCRIPT__/g, encodedScript)
+            .replaceAll('__PANEL_VERSION__', pkg.version);
 
         const minifiedHtml = htmlMinify(finalHtml, {
             collapseWhitespace: true,
@@ -66,25 +69,26 @@ async function buildWorker() {
             __LOGIN_HTML_CONTENT__: htmls['login'] ?? '""',
             __ERROR_HTML_CONTENT__: htmls['error'] ?? '""',
             __SECRETS_HTML_CONTENT__: htmls['secrets'] ?? '""',
-            __ICON__: JSON.stringify(faviconBase64)
+            __ICON__: JSON.stringify(faviconBase64),
+            __PANEL_VERSION__: JSON.stringify(pkg.version)
         }
     });
     
     console.log('✅ Worker built successfuly!');
 
     let finalCode;
+    const minifiedCode = await jsMinify(code.outputFiles[0].text, {
+        module: true,
+        output: {
+            comments: false
+        }
+    });
+
+    console.log('✅ Worker minified successfuly!');
+
     if (devMode) {
-        finalCode = code.outputFiles[0].text;
+        finalCode = minifiedCode.code;
     } else {
-        const minifiedCode = await jsMinify(code.outputFiles[0].text, {
-            module: true,
-            output: {
-                comments: false
-            }
-        });
-    
-        console.log('✅ Worker minified successfuly!');
-    
         const obfuscationResult = obfs.obfuscate(minifiedCode.code, {
             stringArrayThreshold: 1,
             stringArrayEncoding: [

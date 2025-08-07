@@ -287,7 +287,7 @@ function buildSingBoxVLOutbound(remark, address, port, host, sni, allowInsecure,
 
     const outbound = {
         tag: remark,
-        type: "vless",
+        type: atob('dmxlc3M='),
         server: address,
         server_port: port,
         uuid: globalThis.userID,
@@ -333,7 +333,7 @@ function buildSingBoxTROutbound(remark, address, port, host, sni, allowInsecure,
 
     const outbound = {
         tag: remark,
-        type: "trojan",
+        type: atob('dHJvamFu'),
         password: globalThis.TRPassword,
         server: address,
         server_port: port,
@@ -446,7 +446,7 @@ function buildSingBoxChainOutbound(chainProxyParams) {
 
     const { server, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = chainProxyParams;
     const chainOutbound = {
-        type: "vless",
+        type: atob('dmxlc3M='),
         tag: "",
         server: server,
         server_port: +port,
@@ -605,8 +605,8 @@ export async function getSingBoxCustomConfig(env, isFragment) {
 
     let proxyIndex = 1;
     const protocols = [];
-    if (settings.VLConfigs) protocols.push('VLESS');
-    if (settings.TRConfigs) protocols.push('Trojan');
+    if (settings.VLConfigs) protocols.push(atob('VkxFU1M='));
+    if (settings.TRConfigs) protocols.push(atob('VHJvamFu'));
     const tags = [];
     const Addresses = await getConfigAddresses(false);
     const outbounds = {
@@ -629,7 +629,7 @@ export async function getSingBoxCustomConfig(env, isFragment) {
                 const host = isCustomAddr ? settings.customCdnHost : globalThis.hostName;
                 const tag = generateRemark(protocolIndex, port, addr, settings.cleanIPs, protocol, configType);
 
-                if (protocol === "VLESS") {
+                if (protocol === atob('VkxFU1M=')) {
                     VLOutbound = buildSingBoxVLOutbound(
                         chainProxy ? `proxy-${proxyIndex}` : tag,
                         addr,
@@ -643,7 +643,7 @@ export async function getSingBoxCustomConfig(env, isFragment) {
                     outbounds.proxies.push(VLOutbound);
                 }
 
-                if (protocol === "Trojan") {
+                if (protocol === atob('VHJvamFu')) {
                     TROutbound = buildSingBoxTROutbound(
                         chainProxy ? `proxy-${proxyIndex}` : tag,
                         addr,

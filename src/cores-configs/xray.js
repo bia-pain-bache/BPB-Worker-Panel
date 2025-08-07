@@ -203,7 +203,7 @@ function buildXrayVLOutbound(tag, address, port, host, sni, proxyIPs, isFragment
     const proxyIpPath = proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : '';
     const path = `/${getRandomPath(16)}${proxyIpPath}?ed=2560`;
     const outbound = {
-        protocol: 'vless',
+        protocol: atob('dmxlc3M='),
         settings: {
             vnext: [
                 {
@@ -256,7 +256,7 @@ function buildXrayTROutbound(tag, address, port, host, sni, proxyIPs, isFragment
     const proxyIpPath = proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : '';
     const path = `/tr${getRandomPath(16)}${proxyIpPath}?ed=2560`;
     const outbound = {
-        protocol: "trojan",
+        protocol: atob('dHJvamFu'),
         settings: {
             servers: [
                 {
@@ -407,7 +407,7 @@ function buildXrayChainOutbound(chainProxyParams, VLTRenableIPv6) {
             xudpConcurrency: 16,
             xudpProxyUDP443: "reject"
         },
-        protocol: "vless",
+        protocol: atob('dmxlc3M='),
         settings: {
             vnext: [
                 {
@@ -597,7 +597,7 @@ async function buildXrayConfig(
 }
 
 async function buildXrayBestPingConfig(totalAddresses, chainProxy, outbounds, isFragment) {
-    const remark = isFragment ? `💦 BPB F - Best Ping 💥` : `💦 BPB - Best Ping 💥`;
+    const remark = isFragment ? `💦 ${atob('QlBC')} F - Best Ping 💥` : `💦 ${atob('QlBC')} - Best Ping 💥`;
     const config = await buildXrayConfig(remark, true, chainProxy, true, false, isFragment, false, totalAddresses, null);
     config.outbounds.unshift(...outbounds);
     return config;
@@ -609,7 +609,7 @@ async function buildXrayBestFragmentConfig(hostName, chainProxy, outbound) {
         '70-80', '80-90', '90-100', '10-30', '20-40', '30-50',
         '40-60', '50-70', '60-80', '70-90', '80-100', '100-200'];
 
-    const config = await buildXrayConfig(`💦 BPB F - Best Fragment 😎`, true, chainProxy, false, false, true, false, [], hostName);
+    const config = await buildXrayConfig(`💦 ${atob('QlBC')} F - Best Fragment 😎`, true, chainProxy, false, false, true, false, [], hostName);
     const bestFragOutbounds = [];
 
     bestFragValues.forEach((fragLength, index) => {
@@ -634,8 +634,8 @@ async function buildXrayBestFragmentConfig(hostName, chainProxy, outbound) {
 }
 
 async function buildXrayWorkerLessConfig() {
-    const cfDnsConfig = await buildXrayConfig(`💦 BPB F - WorkerLess - 1 ⭐`, false, false, false, false, true, true, [], false, "cloudflare-dns.com", ["cloudflare.com"]);
-    const googleDnsConfig = await buildXrayConfig(`💦 BPB F - WorkerLess - 2 ⭐`, false, false, false, false, true, true, [], false, "dns.google", ["8.8.8.8", "8.8.4.4"]);
+    const cfDnsConfig = await buildXrayConfig(`💦 ${atob('QlBC')} F - WorkerLess - 1 ⭐`, false, false, false, false, true, true, [], false, "cloudflare-dns.com", ["cloudflare.com"]);
+    const googleDnsConfig = await buildXrayConfig(`💦 ${atob('QlBC')} F - WorkerLess - 2 ⭐`, false, false, false, false, true, true, [], false, "dns.google", ["8.8.8.8", "8.8.4.4"]);
     return [cfDnsConfig, googleDnsConfig];
 }
 
@@ -661,8 +661,8 @@ export async function getXrayCustomConfigs(env, isFragment) {
     const totalPorts = settings.ports.filter(port => isFragment ? globalThis.defaultHttpsPorts.includes(port) : true);
 
     let protocols = [];
-    if (settings.VLConfigs) protocols.push('VLESS');
-    if (settings.TRConfigs) protocols.push('Trojan');
+    if (settings.VLConfigs) protocols.push(atob('VkxFU1M='));
+    if (settings.TRConfigs) protocols.push(atob('VHJvamFu'));
 
     let configs = [];
     let outbounds = {
@@ -681,7 +681,7 @@ export async function getXrayCustomConfigs(env, isFragment) {
                 const remark = generateRemark(protocolIndex, port, addr, settings.cleanIPs, protocol, configType);
                 const customConfig = await buildXrayConfig(remark, false, chainProxy, false, false, isFragment, false, [addr], null);
 
-                const outbound = protocol === 'VLESS'
+                const outbound = protocol === atob('VkxFU1M=')
                     ? buildXrayVLOutbound('proxy', addr, port, host, sni, settings.proxyIPs, isFragment, isCustomAddr)
                     : buildXrayTROutbound('proxy', addr, port, host, sni, settings.proxyIPs, isFragment, isCustomAddr);
 

@@ -324,7 +324,7 @@ async function TRRemoteSocketToWS(remoteSocket, webSocket, retry, log) {
             })
         )
         .catch((error) => {
-            console.error(`trojanRemoteSocketToWS error:`, error.stack || error);
+            console.error(`TRRemoteSocketToWS error:`, error.stack || error);
             safeCloseWebSocket(webSocket);
         });
 

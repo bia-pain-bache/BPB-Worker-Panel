@@ -145,7 +145,7 @@ function extractChainProxyParams(chainProxy) {
     if (!chainProxy) return {};
     const url = new URL(chainProxy);
     const protocol = url.protocol.slice(0, -1);
-    if (protocol === 'vless') {
+    if (protocol === atob('dmxlc3M=')) {
         const params = new URLSearchParams(url.search);
         configParams = {
             protocol: protocol,

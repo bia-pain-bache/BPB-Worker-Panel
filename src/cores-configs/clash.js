@@ -178,7 +178,7 @@ function buildClashVLOutbound(remark, address, port, host, sni, proxyIPs, allowI
 
     const outbound = {
         "name": remark,
-        "type": "vless",
+        "type": atob('dmxlc3M='),
         "server": addr,
         "port": port,
         "uuid": globalThis.userID,
@@ -216,7 +216,7 @@ function buildClashTROutbound(remark, address, port, host, sni, proxyIPs, allowI
 
     return {
         "name": remark,
-        "type": "trojan",
+        "type": atob('dHJvamFu'),
         "server": addr,
         "port": port,
         "password": globalThis.TRPassword,
@@ -296,7 +296,7 @@ function buildClashChainOutbound(chainProxyParams) {
     const { server, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = chainProxyParams;
     const chainOutbound = {
         "name": "💦 Chain Best Ping 💥",
-        "type": "vless",
+        "type": atob('dmxlc3M='),
         "server": server,
         "port": +port,
         "udp": true,
@@ -458,8 +458,8 @@ export async function getClashNormalConfig(env) {
 
     let proxyIndex = 1;
     const protocols = [];
-    if(settings.VLConfigs) protocols.push('VLESS');
-    if(settings.TRConfigs) protocols.push('Trojan');
+    if(settings.VLConfigs) protocols.push(atob('VkxFU1M='));
+    if(settings.TRConfigs) protocols.push(atob('VHJvamFu'));
     const Addresses = await getConfigAddresses(false);
     const tags = [];
     const outbounds = {
@@ -478,7 +478,7 @@ export async function getClashNormalConfig(env) {
                 const host = isCustomAddr ? settings.customCdnHost : hostName;
                 const tag = generateRemark(protocolIndex, port, addr, settings.cleanIPs, protocol, configType).replace(' : ', ' - ');
 
-                if (protocol === 'VLESS') {
+                if (protocol === atob('VkxFU1M=')) {
                     VLOutbound = buildClashVLOutbound(
                         chainProxy ? `proxy-${proxyIndex}` : tag,
                         addr,
@@ -493,7 +493,7 @@ export async function getClashNormalConfig(env) {
                     tags.push(tag);
                 }
 
-                if (protocol === 'Trojan' && globalThis.defaultHttpsPorts.includes(port)) {
+                if (protocol === atob('VHJvamFu') && globalThis.defaultHttpsPorts.includes(port)) {
                     TROutbound = buildClashTROutbound(
                         chainProxy ? `proxy-${proxyIndex}` : tag,
                         addr,

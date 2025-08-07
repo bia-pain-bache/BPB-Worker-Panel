@@ -199,7 +199,7 @@ function generateSubUrl(path, app, tag, hiddifyType, singboxType) {
     const url = new URL(window.location.href);
     url.pathname = `/sub/${path}/${globalThis.subPath}`;
     app && url.searchParams.append('app', app);
-    if (tag) url.hash = `💦 BPB ${tag}`;
+    if (tag) url.hash = `💦 ${atob('QlBC')} ${tag}`;
 
     if (singboxType) return `sing-box://import-remote-profile?url=${url.href}`;
     if (hiddifyType) return `hiddify://import/${url.href}`;
@@ -238,10 +238,10 @@ function exportSettings() {
     const form = validateSettings();
     const data = JSON.stringify(form, null, 4);
     const encodedData = btoa(data);
-    downloadJSON(encodedData, "BPB-settings.dat");
+    downloadJSON(encodedData, `${atob('QlBC')}-settings.dat`);
 }
 
-function importSettings(event) {
+function importSettings() {
     const input = document.getElementById('fileInput');
     input.value = '';
     input.click();
