@@ -247,7 +247,8 @@ async function renderPanel(request, env) {
         if (!auth) return Response.redirect(`${globalThis.urlOrigin}/login`, 302);
     }
 
-    const html = __PANEL_HTML_CONTENT__;
+    const encodedHtml = __PANEL_HTML_CONTENT__;
+    const html = Buffer.from(encodedHtml, 'base64').toString('utf8');
     return new Response(html, {
         headers: { 'Content-Type': 'text/html' }
     });
@@ -257,21 +258,24 @@ async function renderLogin(request, env) {
     const auth = await Authenticate(request, env);
     if (auth) return Response.redirect(`${urlOrigin}/panel`, 302);
 
-    const html = __LOGIN_HTML_CONTENT__;
+    const encodedHtml = __LOGIN_HTML_CONTENT__;
+    const html = Buffer.from(encodedHtml, 'base64').toString('utf8');
     return new Response(html, {
         headers: { 'Content-Type': 'text/html' }
     });
 }
 
 export async function renderSecrets() {
-    const html = __SECRETS_HTML_CONTENT__;
+    const encodedHtml = __SECRETS_HTML_CONTENT__;
+    const html = Buffer.from(encodedHtml, 'base64').toString('utf8');
     return new Response(html, {
         headers: { 'Content-Type': 'text/html' },
     });
 }
 
 export async function renderError() {
-    const html = __ERROR_HTML_CONTENT__;
+    const encodedHtml = __ERROR_HTML_CONTENT__;
+    const html = Buffer.from(encodedHtml, 'base64').toString('utf8');
     return new Response(html, {
         status: 200,
         headers: { 'Content-Type': 'text/html' }

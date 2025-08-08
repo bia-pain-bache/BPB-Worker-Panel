@@ -5,8 +5,8 @@ permissions:
 
 on:
   workflow_dispatch:
-  # schedule:
-  #   - cron: '0 */3 * * *'
+  schedule:
+    - cron: '0 */1 * * *'
 
 jobs:
   build:
@@ -35,7 +35,7 @@ jobs:
         run: npm install --production
 
       - name: Build project
-        run: NODE_ENV=dev npm run build
+        run: NODE_ENV=mangle npm run build
 
       - name: Read release note
         id: read_release
