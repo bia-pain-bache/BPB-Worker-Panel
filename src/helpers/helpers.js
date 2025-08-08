@@ -248,7 +248,7 @@ async function renderPanel(request, env) {
     }
 
     const encodedHtml = __PANEL_HTML_CONTENT__;
-    const html = Buffer.from(encodedHtml, 'base64').toString('utf8');
+    const html = new TextDecoder('utf-8').decode(Uint8Array.from(atob(encodedHtml), c => c.charCodeAt(0)));
     return new Response(html, {
         headers: { 'Content-Type': 'text/html' }
     });
@@ -259,7 +259,7 @@ async function renderLogin(request, env) {
     if (auth) return Response.redirect(`${urlOrigin}/panel`, 302);
 
     const encodedHtml = __LOGIN_HTML_CONTENT__;
-    const html = Buffer.from(encodedHtml, 'base64').toString('utf8');
+    const html = new TextDecoder('utf-8').decode(Uint8Array.from(atob(encodedHtml), c => c.charCodeAt(0)));
     return new Response(html, {
         headers: { 'Content-Type': 'text/html' }
     });
@@ -267,7 +267,7 @@ async function renderLogin(request, env) {
 
 export async function renderSecrets() {
     const encodedHtml = __SECRETS_HTML_CONTENT__;
-    const html = Buffer.from(encodedHtml, 'base64').toString('utf8');
+    const html = new TextDecoder('utf-8').decode(Uint8Array.from(atob(encodedHtml), c => c.charCodeAt(0)));
     return new Response(html, {
         headers: { 'Content-Type': 'text/html' },
     });
@@ -275,7 +275,7 @@ export async function renderSecrets() {
 
 export async function renderError() {
     const encodedHtml = __ERROR_HTML_CONTENT__;
-    const html = Buffer.from(encodedHtml, 'base64').toString('utf8');
+    const html = new TextDecoder('utf-8').decode(Uint8Array.from(atob(encodedHtml), c => c.charCodeAt(0)));
     return new Response(html, {
         status: 200,
         headers: { 'Content-Type': 'text/html' }
