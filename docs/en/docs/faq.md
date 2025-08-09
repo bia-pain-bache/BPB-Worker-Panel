@@ -45,7 +45,7 @@
 ??? question "Why is my Ping test so high?"
     Never use `https://1.1.1.1/dns-query` or any Cloudflare related DNS for remote DNS, as it increases ping.  
 
-??? question "I extracted and used a Proxy IP regarding tutorials, why sites still won't open!"  
+??? question "I extracted and used a Proxy IP regarding tutorials, why some sites or applications like X still won't work!"  
     There are many public IPs and some of them might be unstable. You need to test to find a good one.  
 
 ??? question "It worked when I set a proxy IP, but now it's not working!"
