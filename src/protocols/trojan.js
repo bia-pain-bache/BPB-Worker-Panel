@@ -199,19 +199,18 @@ async function handleTCPOutBound(
     }
 
     // if the cf connect tcp socket have no incoming data, we retry to redirect ip
-    async function retry() {
+    async function retry() { 
         let proxyIP, proxyIpPort;
-        const EncodedPanelProxyIPs = globalThis.pathName.split('/')[2] || '';
-        const proxyIPs = atob(EncodedPanelProxyIPs) || globalThis.proxyIPs;
-        const finalProxyIPs = proxyIPs.split(',').map(ip => ip.trim());
-        proxyIP = finalProxyIPs[Math.floor(Math.random() * finalProxyIPs.length)];
-        if (proxyIP.includes(']:')) {
-            const match = proxyIP.match(/^(\[.*?\]):(\d+)$/);
+        const encodedPanelProxyIPs = globalThis.pathName.split('/')[2] || '';
+        const decodedProxyIPs = encodedPanelProxyIPs ? atob(encodedPanelProxyIPs) : globalThis.proxyIPs;
+        const proxyIpList = decodedProxyIPs.split(',').map(ip => ip.trim());
+        const selectedProxyIP = proxyIpList[Math.floor(Math.random() * proxyIpList.length)];
+        if (selectedProxyIP.includes(']:')) {
+            const match = selectedProxyIP.match(/^(\[.*?\]):(\d+)$/);
             proxyIP = match[1];
-            proxyIpPort = +match[2];
+            proxyIpPort = match[2];
         } else {
-            proxyIP = proxyIP.split(':')[0];
-            proxyIpPort = +proxyIP.split(':')[1];
+            [proxyIP, proxyIpPort] = selectedProxyIP.split(':');
         }
 
         const tcpSocket = await connectAndWrite(proxyIP || addressRemote, proxyIpPort || portRemote);
