@@ -1,13 +1,13 @@
-import { initializeParams } from './helpers/init';
-import { VLOverWSHandler } from './protocols/vless';
-import { TROverWSHandler } from './protocols/trojan';
+import { init } from './helpers/init';
+import { VlOverWSHandler } from './protocols/vless';
+import { TrOverWSHandler } from './protocols/trojan';
 import { fallback, serveIcon, renderError, renderSecrets, handlePanel, handleSubscriptions, handleLogin, handleError } from './helpers/helpers';
 import { logout } from './authentication/auth';
 
 export default {
 	async fetch(request, env) {
 		try {
-			initializeParams(request, env);
+			init(request, env);
 			const upgradeHeader = request.headers.get('Upgrade');
 			const path = globalThis.pathName;
 			if (!upgradeHeader || upgradeHeader !== 'websocket') {
@@ -21,8 +21,8 @@ export default {
 				return await fallback(request);
 			} else {
 				return path.startsWith('/tr')
-					? await TROverWSHandler(request)
-					: await VLOverWSHandler(request);
+					? await TrOverWSHandler(request)
+					: await VlOverWSHandler(request);
 			}
 		} catch (error) {
 			return await handleError(error);

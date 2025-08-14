@@ -319,7 +319,7 @@ function buildSingBoxVLOutbound(remark, address, port, host, sni, allowInsecure,
         record_fragment: isFragment,
         utls: {
             enabled: true,
-            fingerprint: "randomized"
+            fingerprint: settings.fingerprint
         }
     };
 
@@ -364,7 +364,7 @@ function buildSingBoxTROutbound(remark, address, port, host, sni, allowInsecure,
         record_fragment: isFragment,
         utls: {
             enabled: true,
-            fingerprint: "randomized"
+            fingerprint: settings.fingerprint
         }
     };
 

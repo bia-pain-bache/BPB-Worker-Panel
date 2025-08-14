@@ -77,6 +77,7 @@ export async function updateDataset(request, env) {
         VLConfigs: populateField('VLConfigs', true),
         TRConfigs: populateField('TRConfigs', true),
         ports: populateField('ports', [443]),
+        fingerprint: populateField('fingerprint', 'randomized'),
         fragmentLengthMin: populateField('fragmentLengthMin', 100),
         fragmentLengthMax: populateField('fragmentLengthMax', 200),
         fragmentIntervalMin: populateField('fragmentIntervalMin', 1),

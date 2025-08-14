@@ -1,16 +1,9 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
-import { connect } from 'cloudflare:sockets';
 import { isValidUUID } from '../helpers/helpers';
+import { handleTCPOutBound, makeReadableWebSocketStream, WS_READY_STATE_OPEN } from './common';
 
-/**
- * Handles VL over WebSocket requests by creating a WebSocket pair, accepting the WebSocket connection, and processing the VL header.
- * @param {import("@cloudflare/workers-types").Request} request The incoming request object.
- * @returns {Promise<Response>} A Promise that resolves to a WebSocket response object.
- */
-export async function VLOverWSHandler(request) {
-    /** @type {import("@cloudflare/workers-types").WebSocket[]} */
-    // @ts-ignore
+export async function VlOverWSHandler(request) {
     const webSocketPair = new WebSocketPair();
     const [client, webSocket] = Object.values(webSocketPair);
 
@@ -18,14 +11,13 @@ export async function VLOverWSHandler(request) {
 
     let address = "";
     let portWithRandomLog = "";
-    const log = (/** @type {string} */ info, /** @type {string | undefined} */ event) => {
+    const log = (info, event) => {
         console.log(`[${address}:${portWithRandomLog}] ${info}`, event || "");
     };
     const earlyDataHeader = request.headers.get("sec-websocket-protocol") || "";
 
     const readableWebSocketStream = makeReadableWebSocketStream(webSocket, earlyDataHeader, log);
 
-    /** @type {{ value: import("@cloudflare/workers-types").Socket | null}}*/
     let remoteSocketWapper = {
         value: null,
     };
@@ -110,160 +102,10 @@ export async function VLOverWSHandler(request) {
 
     return new Response(null, {
         status: 101,
-        // @ts-ignore
         webSocket: client,
     });
 }
 
-/**
- * Handles outbound TCP connections.
- *
- * @param {any} remoteSocket
- * @param {string} addressRemote The remote address to connect to.
- * @param {number} portRemote The remote port to connect to.
- * @param {Uint8Array} rawClientData The raw client data to write.
- * @param {import("@cloudflare/workers-types").WebSocket} webSocket The WebSocket to pass the remote socket to.
- * @param {Uint8Array} VLResponseHeader The VL response header.
- * @param {function} log The logging function.
- * @returns {Promise<void>} The remote socket.
- */
-async function handleTCPOutBound(
-    remoteSocket,
-    addressRemote,
-    portRemote,
-    rawClientData,
-    webSocket,
-    VLResponseHeader,
-    log
-) {
-    async function connectAndWrite(address, port) {
-        if (/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(address)) address = `${atob('d3d3Lg==')}${address}${atob('LnNzbGlwLmlv')}`;
-        /** @type {import("@cloudflare/workers-types").Socket} */
-        const tcpSocket = connect({
-            hostname: address,
-            port: port,
-        });
-        remoteSocket.value = tcpSocket;
-        log(`connected to ${address}:${port}`);
-        const writer = tcpSocket.writable.getWriter();
-        await writer.write(rawClientData); // first write, nomal is tls client hello
-        writer.releaseLock();
-        return tcpSocket;
-    }
-
-    // if the cf connect tcp socket have no incoming data, we retry to redirect ip
-    async function retry() {
-        let proxyIP, proxyIpPort;
-        const encodedPanelProxyIPs = globalThis.pathName.split('/')[2] || '';
-        const decodedProxyIPs = encodedPanelProxyIPs ? atob(encodedPanelProxyIPs) : globalThis.proxyIPs;
-        const proxyIpList = decodedProxyIPs.split(',').map(ip => ip.trim());
-        const selectedProxyIP = proxyIpList[Math.floor(Math.random() * proxyIpList.length)];
-        if (selectedProxyIP.includes(']:')) {
-            const match = selectedProxyIP.match(/^(\[.*?\]):(\d+)$/);
-            proxyIP = match[1];
-            proxyIpPort = match[2];
-        } else {
-            [proxyIP, proxyIpPort] = selectedProxyIP.split(':');
-        }
-
-        const tcpSocket = await connectAndWrite(proxyIP || addressRemote, +proxyIpPort || portRemote);
-        // no matter retry success or not, close websocket
-        tcpSocket.closed
-            .catch((error) => {
-                console.log("retry tcpSocket closed error", error);
-            })
-            .finally(() => {
-                safeCloseWebSocket(webSocket);
-            });
-
-        VLRemoteSocketToWS(tcpSocket, webSocket, VLResponseHeader, null, log);
-    }
-
-    const tcpSocket = await connectAndWrite(addressRemote, portRemote);
-
-    // when remoteSocket is ready, pass to websocket
-    // remote--> ws
-    VLRemoteSocketToWS(tcpSocket, webSocket, VLResponseHeader, retry, log);
-}
-
-/**
- * Creates a readable stream from a WebSocket server, allowing for data to be read from the WebSocket.
- * @param {import("@cloudflare/workers-types").WebSocket} webSocketServer The WebSocket server to create the readable stream from.
- * @param {string} earlyDataHeader The header containing early data for WebSocket 0-RTT.
- * @param {(info: string)=> void} log The logging function.
- * @returns {ReadableStream} A readable stream that can be used to read data from the WebSocket.
- */
-function makeReadableWebSocketStream(webSocketServer, earlyDataHeader, log) {
-    let readableStreamCancel = false;
-    const stream = new ReadableStream({
-        start(controller) {
-            webSocketServer.addEventListener("message", (event) => {
-                if (readableStreamCancel) {
-                    return;
-                }
-                const message = event.data;
-                controller.enqueue(message);
-            });
-
-            // The event means that the client closed the client -> server stream.
-            // However, the server -> client stream is still open until you call close() on the server side.
-            // The WebSocket protocol says that a separate close message must be sent in each direction to fully close the socket.
-            webSocketServer.addEventListener("close", () => {
-                // client send close, need close server
-                // if stream is cancel, skip controller.close
-                safeCloseWebSocket(webSocketServer);
-                if (readableStreamCancel) {
-                    return;
-                }
-                controller.close();
-            });
-            webSocketServer.addEventListener("error", (err) => {
-                log("webSocketServer has error");
-                controller.error(err);
-            });
-            // for ws 0rtt
-            const { earlyData, error } = base64ToArrayBuffer(earlyDataHeader);
-            if (error) {
-                controller.error(error);
-            } else if (earlyData) {
-                controller.enqueue(earlyData);
-            }
-        },
-        pull(controller) {
-            // if ws can stop read if stream is full, we can implement backpressure
-            // https://streams.spec.whatwg.org/#example-rs-push-backpressure
-        },
-        cancel(reason) {
-            // 1. pipe WritableStream has error, this cancel will called, so ws handle server close into here
-            // 2. if readableStream is cancel, all controller.close/enqueue need skip,
-            // 3. but from testing controller.error still work even if readableStream is cancel
-            if (readableStreamCancel) {
-                return;
-            }
-            log(`ReadableStream was canceled, due to ${reason}`);
-            readableStreamCancel = true;
-            safeCloseWebSocket(webSocketServer);
-        },
-    });
-
-    return stream;
-}
-
-/**
- * Processes the VL header buffer and returns an object with the relevant information.
- * @param {ArrayBuffer} VLBuffer The VL header buffer to process.
- * @param {string} userID The user ID to validate against the UUID in the VL header.
- * @returns {{
- *  hasError: boolean,
- *  message?: string,
- *  addressRemote?: string,
- *  addressType?: number,
- *  portRemote?: number,
- *  rawDataIndex?: number,
- *  VLVersion?: Uint8Array,
- *  isUDP?: boolean
- * }} An object with the relevant information extracted from the VL header buffer.
- */
 function processVLHeader(VLBuffer, userID) {
     if (VLBuffer.byteLength < 24) {
         return {
@@ -362,108 +204,6 @@ function processVLHeader(VLBuffer, userID) {
     };
 }
 
-/**
- * Converts a remote socket to a WebSocket connection.
- * @param {import("@cloudflare/workers-types").Socket} remoteSocket The remote socket to convert.
- * @param {import("@cloudflare/workers-types").WebSocket} webSocket The WebSocket to connect to.
- * @param {ArrayBuffer | null} VLResponseHeader The VL response header.
- * @param {(() => Promise<void>) | null} retry The function to retry the connection if it fails.
- * @param {(info: string) => void} log The logging function.
- * @returns {Promise<void>} A Promise that resolves when the conversion is complete.
- */
-async function VLRemoteSocketToWS(remoteSocket, webSocket, VLResponseHeader, retry, log) {
-    // remote--> ws
-    let remoteChunkCount = 0;
-    let chunks = [];
-    /** @type {ArrayBuffer | null} */
-    let VLHeader = VLResponseHeader;
-    let hasIncomingData = false; // check if remoteSocket has incoming data
-    await remoteSocket.readable
-        .pipeTo(
-            new WritableStream({
-                start() { },
-                /**
-                 *
-                 * @param {Uint8Array} chunk
-                 * @param {*} controller
-                 */
-                async write(chunk, controller) {
-                    hasIncomingData = true;
-                    // remoteChunkCount++;
-                    if (webSocket.readyState !== WS_READY_STATE_OPEN) {
-                        controller.error("webSocket.readyState is not open, maybe close");
-                    }
-                    if (VLHeader) {
-                        webSocket.send(await new Blob([VLHeader, chunk]).arrayBuffer());
-                        VLHeader = null;
-                    } else {
-                        // seems no need rate limit this, CF seems fix this??..
-                        // if (remoteChunkCount > 20000) {
-                        // 	// cf one package is 4096 byte(4kb),  4096 * 20000 = 80M
-                        // 	await delay(1);
-                        // }
-                        webSocket.send(chunk);
-                    }
-                },
-                close() {
-                    log(`remoteConnection!.readable is close with hasIncomingData is ${hasIncomingData}`);
-                    // safeCloseWebSocket(webSocket); // no need server close websocket frist for some case will casue HTTP ERR_CONTENT_LENGTH_MISMATCH issue, client will send close event anyway.
-                },
-                abort(reason) {
-                    console.error(`remoteConnection!.readable abort`, reason);
-                },
-            })
-        )
-        .catch((error) => {
-            console.error(`VLRemoteSocketToWS has exception `, error.stack || error);
-            safeCloseWebSocket(webSocket);
-        });
-
-    // seems is cf connect socket have error,
-    // 1. Socket.closed will have error
-    // 2. Socket.readable will be close without any data coming
-    if (hasIncomingData === false && retry) {
-        log(`retry`);
-        retry();
-    }
-}
-
-/**
- * Decodes a base64 string into an ArrayBuffer.
- * @param {string} base64Str The base64 string to decode.
- * @returns {{earlyData: ArrayBuffer|null, error: Error|null}} An object containing the decoded ArrayBuffer or null if there was an error, and any error that occurred during decoding or null if there was no error.
- */
-function base64ToArrayBuffer(base64Str) {
-    if (!base64Str) {
-        return { earlyData: null, error: null };
-    }
-    try {
-        // go use modified Base64 for URL rfc4648 which js atob not support
-        base64Str = base64Str.replace(/-/g, '+').replace(/_/g, '/');
-        const decode = atob(base64Str);
-        const arryBuffer = Uint8Array.from(decode, (c) => c.charCodeAt(0));
-        return { earlyData: arryBuffer.buffer, error: null };
-    } catch (error) {
-        return { earlyData: null, error };
-    }
-}
-
-const WS_READY_STATE_OPEN = 1;
-const WS_READY_STATE_CLOSING = 2;
-/**
- * Closes a WebSocket connection safely without throwing exceptions.
- * @param {import("@cloudflare/workers-types").WebSocket} socket The WebSocket connection to close.
- */
-function safeCloseWebSocket(socket) {
-    try {
-        if (socket.readyState === WS_READY_STATE_OPEN || socket.readyState === WS_READY_STATE_CLOSING) {
-            socket.close();
-        }
-    } catch (error) {
-        console.error('safeCloseWebSocket error', error);
-    }
-}
-
 const byteToHex = [];
 
 for (let i = 0; i < 256; ++i) {
@@ -503,13 +243,6 @@ function stringify(arr, offset = 0) {
     return uuid;
 }
 
-/**
- * Handles outbound UDP traffic by transforming the data into DNS queries and sending them over a WebSocket connection.
- * @param {import("@cloudflare/workers-types").WebSocket} webSocket The WebSocket connection to send the DNS queries over.
- * @param {ArrayBuffer} VLResponseHeader The VL response header.
- * @param {(string) => void} log The logging function.
- * @returns {{write: (chunk: Uint8Array) => void}} An object with a write method that accepts a Uint8Array chunk to write to the transform stream.
- */
 async function handleUDPOutBound(webSocket, VLResponseHeader, log) {
     let isVLHeaderSent = false;
     const transformStream = new TransformStream({
@@ -566,10 +299,6 @@ async function handleUDPOutBound(webSocket, VLResponseHeader, log) {
     const writer = transformStream.writable.getWriter();
 
     return {
-        /**
-         *
-         * @param {Uint8Array} chunk
-        */
         write(chunk) {
             writer.write(chunk);
         },

@@ -44,7 +44,7 @@ async function processHtmlPages() {
         const finalHtml = indexHtml
             .replaceAll('__STYLE__', `<style>${styleCode}</style>`)
             .replaceAll('__SCRIPT__', finalScriptCode.code)
-            .replaceAll('__PANEL_VERSION__', version);
+            .replaceAll('__VERSION__', version);
 
         const minifiedHtml = htmlMinify(finalHtml, {
             collapseWhitespace: true,
@@ -101,7 +101,7 @@ async function buildWorker() {
             __ERROR_HTML_CONTENT__: htmls['error'] ?? '""',
             __SECRETS_HTML_CONTENT__: htmls['secrets'] ?? '""',
             __ICON__: JSON.stringify(faviconBase64),
-            __PANEL_VERSION__: JSON.stringify(version)
+            __VERSION__: JSON.stringify(version)
         }
     });
 

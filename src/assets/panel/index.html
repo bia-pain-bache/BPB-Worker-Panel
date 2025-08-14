@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BPB Panel v__PANEL_VERSION__</title>
+    <title>BPB Panel v__VERSION__</title>
     <link rel="icon" href="/favicon.ico" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet"
@@ -16,7 +16,7 @@
     <h1>
         <img class="icon" src="/favicon.ico" alt="BPB Logo"> BPB Panel <span id="panel-version"
             style="font-size: smaller;">
-            v__PANEL_VERSION__
+            v__VERSION__
         </span>
     </h1>
     <div class="form-container container">
@@ -65,7 +65,8 @@
                     <div class="form-control">
                         <label for="cleanIPs">
                             ✨ Clean IPs / Domains
-                            <a class="scanner" href="https://github.com/bia-pain-bache/Cloudflare-Clean-IP-Scanner" title="Scanner" target="_blank" rel="noopener noreferrer">
+                            <a class="scanner" href="https://github.com/bia-pain-bache/Cloudflare-Clean-IP-Scanner"
+                                title="Scanner" target="_blank" rel="noopener noreferrer">
                                 <span class="material-symbols-rounded">open_in_new</span>
                             </a>
                         </label>
@@ -135,6 +136,23 @@
                             <div id="non-tls-ports" class="rules inner-container"></div>
                         </div>
                     </div>
+                    <div class="form-control">
+                        <label for="fingerprint">👆 Fingerprint</label>
+                        <div>
+                            <select id="fingerprint" name="fingerprint">
+                                <option value="chrome">chrome</option>
+                                <option value="firefox">firefox</option>
+                                <option value="safari">safari</option>
+                                <option value="ios">ios</option>
+                                <option value="android">android</option>
+                                <option value="edge">edge</option>
+                                <option value="360">360</option>
+                                <option value="qq">qq</option>
+                                <option value="random">random</option>
+                                <option value="randomized">randomized</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </details>
             <details>
@@ -182,7 +200,8 @@
                     <div class="form-control">
                         <label for="warpEndpoints">
                             ✨ Endpoints
-                            <a class="scanner" href="https://github.com/bia-pain-bache/BPB-Warp-Scanner" title="Scanner" target="_blank" rel="noopener noreferrer">
+                            <a class="scanner" href="https://github.com/bia-pain-bache/BPB-Warp-Scanner" title="Scanner"
+                                target="_blank" rel="noopener noreferrer">
                                 <span class="material-symbols-rounded">open_in_new</span>
                             </a>
                         </label>
@@ -470,7 +489,8 @@
                 </button>
                 <button type="button" class="panel-settings" title="Import panel settings" onclick="importSettings()">
                     <i class="fa fa-cloud-upload fa-2x" aria-hidden="true"></i>
-                    <input type="file" id="fileInput" accept=".dat" style="display: none;" onchange="uploadSettings(event)" />
+                    <input type="file" id="fileInput" accept=".dat" style="display: none;"
+                        onchange="uploadSettings(event)" />
                 </button>
             </div>
         </form>
@@ -727,8 +747,7 @@
                                 onclick="openQR('fragment', 'sfa', 'Fragment', 'Fragment Subscription', true, false)">
                                 <span class="material-symbols-rounded">qr_code</span>
                             </button>
-                            <button title="Copy subscription URL"
-                                onclick="subURL('fragment', 'sfa', 'Fragment')">
+                            <button title="Copy subscription URL" onclick="subURL('fragment', 'sfa', 'Fragment')">
                                 <span class="material-symbols-rounded">content_copy</span>
                             </button>
                             <button title="Download config" onclick="dlURL('fragment', 'sfa')">

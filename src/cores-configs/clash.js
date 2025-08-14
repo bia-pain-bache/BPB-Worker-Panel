@@ -175,6 +175,7 @@ function buildClashVLOutbound(remark, address, port, host, sni, proxyIPs, allowI
     const addr = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
     const path = `/${getRandomPath(16)}${proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : ''}`;
     const ipVersion = settings.VLTRenableIPv6 ? "dual" : "ipv4";
+    const fingerprint = settings.fingerprint === "randomized" ? "random" : settings.fingerprint;
 
     const outbound = {
         "name": remark,
@@ -200,7 +201,7 @@ function buildClashVLOutbound(remark, address, port, host, sni, proxyIPs, allowI
         Object.assign(outbound, {
             "servername": sni,
             "alpn": ["http/1.1"],
-            "client-fingerprint": "random",
+            "client-fingerprint": fingerprint,
             "skip-cert-verify": allowInsecure
         });
     }
@@ -213,6 +214,7 @@ function buildClashTROutbound(remark, address, port, host, sni, proxyIPs, allowI
     const addr = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
     const path = `/tr${getRandomPath(16)}${proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : ''}`;
     const ipVersion = settings.VLTRenableIPv6 ? "dual" : "ipv4";
+    const fingerprint = settings.fingerprint === "randomized" ? "random" : settings.fingerprint;
 
     return {
         "name": remark,
@@ -233,7 +235,7 @@ function buildClashTROutbound(remark, address, port, host, sni, proxyIPs, allowI
         },
         "sni": sni,
         "alpn": ["http/1.1"],
-        "client-fingerprint": "random",
+        "client-fingerprint": fingerprint,
         "skip-cert-verify": allowInsecure
     };
 }
