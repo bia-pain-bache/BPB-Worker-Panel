@@ -52,6 +52,16 @@ async function buildSingBoxDNS(isWarp) {
         }
     ];
 
+    if (settings.outProxy) {
+        const { server } = settings.outProxyParams;
+        if (isDomain(server)) {
+            rules.unshift({
+                domain: server,
+                server: "dns-remote"
+            });
+        }
+    }
+
     if (settings.dohHost.isDomain && !isWarp) {
         const { ipv4, ipv6, host } = settings.dohHost;
         const answers = [
@@ -275,6 +285,11 @@ function buildSingBoxRoutingRules(isWarp) {
         rules,
         rule_set: ruleSets,
         auto_detect_interface: true,
+        default_domain_resolver: {
+            server: "dns-direct",
+            strategy: settings.VLTRenableIPv6 ? "prefer_ipv4" : "ipv4_only",
+            rewrite_ttl: 60
+        },
         // override_android_vpn: true,
         final: "✅ Selector"
     }
@@ -301,11 +316,6 @@ function buildSingBoxVLOutbound(remark, address, port, host, sni, allowInsecure,
             },
             path: path,
             type: "ws"
-        },
-        domain_resolver: {
-            server: "dns-direct",
-            strategy: settings.VLTRenableIPv6 ? "prefer_ipv4" : "ipv4_only",
-            rewrite_ttl: 60
         },
         tcp_fast_open: true,
         tcp_multi_path: true
@@ -346,11 +356,6 @@ function buildSingBoxTROutbound(remark, address, port, host, sni, allowInsecure,
             },
             path: path,
             type: "ws"
-        },
-        domain_resolver: {
-            server: "dns-direct",
-            strategy: settings.VLTRenableIPv6 ? "prefer_ipv4" : "ipv4_only",
-            rewrite_ttl: 60
         },
         tcp_fast_open: true,
         tcp_multi_path: true
@@ -420,10 +425,11 @@ function buildSingBoxWarpOutbound(warpConfigs, remark, endpoint, chain) {
     return outbound;
 }
 
-function buildSingBoxChainOutbound(chainProxyParams) {
-    const settings = globalThis.settings;
-    if (["socks", "http"].includes(chainProxyParams.protocol)) {
-        const { protocol, server, port, user, pass } = chainProxyParams;
+function buildSingBoxChainOutbound() {
+    const { outProxyParams } = globalThis.settings;
+    const { protocol } = outProxyParams;
+    if (["socks", "http"].includes(protocol)) {
+        const { server, port, user, pass } = outProxyParams;
 
         const chainOutbound = {
             type: protocol,
@@ -432,11 +438,6 @@ function buildSingBoxChainOutbound(chainProxyParams) {
             server_port: +port,
             username: user,
             password: pass,
-            domain_resolver: {
-                server: "dns-remote",
-                strategy: settings.VLTRenableIPv6 ? "prefer_ipv4" : "ipv4_only",
-                rewrite_ttl: 60
-            },
             detour: ""
         };
 
@@ -444,7 +445,7 @@ function buildSingBoxChainOutbound(chainProxyParams) {
         return chainOutbound;
     }
 
-    const { server, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = chainProxyParams;
+    const { server, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = outProxyParams;
     const chainOutbound = {
         type: atob('dmxlc3M='),
         tag: "",
@@ -452,11 +453,6 @@ function buildSingBoxChainOutbound(chainProxyParams) {
         server_port: +port,
         uuid: uuid,
         flow: flow,
-        domain_resolver: {
-            server: "dns-remote",
-            strategy: settings.VLTRenableIPv6 ? "prefer_ipv4" : "ipv4_only",
-            rewrite_ttl: 60
-        },
         detour: ""
     };
 
@@ -590,7 +586,7 @@ export async function getSingBoxCustomConfig(env, isFragment) {
 
     if (settings.outProxy) {
         try {
-            chainProxy = buildSingBoxChainOutbound(settings.outProxyParams, settings.VLTRenableIPv6);
+            chainProxy = buildSingBoxChainOutbound(settings.outProxyParams);
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
             chainProxy = undefined;
@@ -614,7 +610,7 @@ export async function getSingBoxCustomConfig(env, isFragment) {
         chains: []
     }
 
-    const ports = isFragment 
+    const ports = isFragment
         ? settings.ports.filter(port => globalThis.defaultHttpsPorts.includes(port))
         : settings.ports;
 

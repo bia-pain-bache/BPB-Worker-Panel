@@ -141,8 +141,8 @@ function buildClashRoutingRules(isWarp) {
     if (settings.bypassLAN) rules.push(`GEOIP,lan,DIRECT,no-resolve`);
 
     function addRoutingRule(geosites, geoips, domains, ips, type) {
-        if(domains) domains.forEach(domain => rules.push(`DOMAIN-SUFFIX,${domain},${type}`));
-        if(geosites) geosites.forEach(geosite => rules.push(`RULE-SET,${geosite},${type}`));
+        if (domains) domains.forEach(domain => rules.push(`DOMAIN-SUFFIX,${domain},${type}`));
+        if (geosites) geosites.forEach(geosite => rules.push(`RULE-SET,${geosite},${type}`));
         if (ips) ips.forEach(value => {
             const ipType = isIPv4(value) ? 'IP-CIDR' : 'IP-CIDR6';
             const ip = isIPv6(value) ? value.replace(/\[|\]/g, '') : value;
@@ -280,9 +280,12 @@ function buildClashWarpOutbound(warpConfigs, remark, endpoint, chain, isPro) {
     return outbound;
 }
 
-function buildClashChainOutbound(chainProxyParams) {
-    if (["socks", "http"].includes(chainProxyParams.protocol)) {
-        const { protocol, server, port, user, pass } = chainProxyParams;
+function buildClashChainOutbound() {
+    const { outProxyParams } = globalThis.settings;
+    const { protocol } = outProxyParams;
+
+    if (["socks", "http"].includes(protocol)) {
+        const { protocol, server, port, user, pass } = outProxyParams;
         const proxyType = protocol === 'socks' ? 'socks5' : protocol;
         return {
             "name": "",
@@ -295,7 +298,7 @@ function buildClashChainOutbound(chainProxyParams) {
         };
     }
 
-    const { server, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = chainProxyParams;
+    const { server, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = outProxyParams;
     const chainOutbound = {
         "name": "💦 Chain Best Ping 💥",
         "type": atob('dmxlc3M='),
@@ -443,9 +446,10 @@ export async function getClashWarpConfig(request, env, isPro) {
 export async function getClashNormalConfig(env) {
     const { settings, hostName } = globalThis;
     let chainProxy;
+    
     if (settings.outProxy) {
         try {
-            chainProxy = buildClashChainOutbound(settings.outProxyParams);
+            chainProxy = buildClashChainOutbound();
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
             chainProxy = undefined;
@@ -460,8 +464,8 @@ export async function getClashNormalConfig(env) {
 
     let proxyIndex = 1;
     const protocols = [];
-    if(settings.VLConfigs) protocols.push(atob('VkxFU1M='));
-    if(settings.TRConfigs) protocols.push(atob('VHJvamFu'));
+    if (settings.VLConfigs) protocols.push(atob('VkxFU1M='));
+    if (settings.TRConfigs) protocols.push(atob('VHJvamFu'));
     const Addresses = await getConfigAddresses(false);
     const tags = [];
     const outbounds = {

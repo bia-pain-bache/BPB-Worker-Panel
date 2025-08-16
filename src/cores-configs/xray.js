@@ -88,7 +88,7 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
             if (!groupedDomainRules.has(dns)) groupedDomainRules.set(dns, []);
             groupedDomainRules.get(dns).push(domain)
         }
-        
+
         if (domain) totalDomainRules.push(domain);
     });
 
@@ -358,9 +358,12 @@ function buildXrayWarpOutbound(warpConfigs, endpoint, isWoW) {
     return outbound;
 }
 
-function buildXrayChainOutbound(chainProxyParams, VLTRenableIPv6) {
-    if (['socks', 'http'].includes(chainProxyParams.protocol)) {
-        const { protocol, server, port, user, pass } = chainProxyParams;
+function buildXrayChainOutbound() {
+    const { outProxyParams, VLTRenableIPv6 } = globalThis.settings;
+    const { protocol } = outProxyParams;
+
+    if (['socks', 'http'].includes(protocol)) {
+        const { server, port, user, pass } = outProxyParams;
         return {
             protocol: protocol,
             settings: {
@@ -398,7 +401,7 @@ function buildXrayChainOutbound(chainProxyParams, VLTRenableIPv6) {
     const {
         server, port, uuid, flow, security, type, sni, fp, alpn, pbk,
         sid, spx, headerType, host, path, authority, serviceName, mode
-    } = chainProxyParams;
+    } = outProxyParams;
 
     const proxyOutbound = {
         mux: {
@@ -644,7 +647,7 @@ export async function getXrayCustomConfigs(env, isFragment) {
     let chainProxy;
     if (settings.outProxy) {
         try {
-            chainProxy = buildXrayChainOutbound(settings.outProxyParams, settings.VLTRenableIPv6);
+            chainProxy = buildXrayChainOutbound();
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
             chainProxy = undefined;
