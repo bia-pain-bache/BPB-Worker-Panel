@@ -38,8 +38,15 @@ export async function handlePanel(request, env) {
 }
 
 export async function handleError(error) {
-    const message = encodeURIComponent(error.message);
-    return Response.redirect(`${globalThis.urlOrigin}/error?message=${message}`, 302);
+    const encodedHtml = __ERROR_HTML_CONTENT__;
+    const html = new TextDecoder('utf-8')
+        .decode(Uint8Array.from(atob(encodedHtml), c => c.charCodeAt(0)))
+        .replace('__ERROR_MESSAGE__', error.message);
+
+    return new Response(html, {
+        status: 200,
+        headers: { 'Content-Type': 'text/html' }
+    });
 }
 
 export async function handleLogin(request, env) {
@@ -270,15 +277,6 @@ export async function renderSecrets() {
     const html = new TextDecoder('utf-8').decode(Uint8Array.from(atob(encodedHtml), c => c.charCodeAt(0)));
     return new Response(html, {
         headers: { 'Content-Type': 'text/html' },
-    });
-}
-
-export async function renderError() {
-    const encodedHtml = __ERROR_HTML_CONTENT__;
-    const html = new TextDecoder('utf-8').decode(Uint8Array.from(atob(encodedHtml), c => c.charCodeAt(0)));
-    return new Response(html, {
-        status: 200,
-        headers: { 'Content-Type': 'text/html' }
     });
 }
 

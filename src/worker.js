@@ -1,7 +1,7 @@
 import { init } from './helpers/init';
 import { VlOverWSHandler } from './protocols/vless';
 import { TrOverWSHandler } from './protocols/trojan';
-import { fallback, serveIcon, renderError, renderSecrets, handlePanel, handleSubscriptions, handleLogin, handleError } from './helpers/helpers';
+import { fallback, serveIcon, renderSecrets, handlePanel, handleSubscriptions, handleLogin, handleError } from './helpers/helpers';
 import { logout } from './authentication/auth';
 
 export default {
@@ -15,7 +15,6 @@ export default {
 				if (path.startsWith('/sub')) return await handleSubscriptions(request, env);
 				if (path.startsWith('/login')) return await handleLogin(request, env);
 				if (path.startsWith('/logout')) return await logout(request, env);
-				if (path.startsWith('/error')) return await renderError();
 				if (path.startsWith('/secrets')) return await renderSecrets();
 				if (path.startsWith('/favicon.ico')) return await serveIcon();
 				return await fallback(request);

@@ -35,7 +35,7 @@ jobs:
         run: npm install --production
 
       - name: Build project
-        run: NODE_ENV=mangle npm run build
+        run: npm run build
 
       - name: Read release note
         id: read_release
