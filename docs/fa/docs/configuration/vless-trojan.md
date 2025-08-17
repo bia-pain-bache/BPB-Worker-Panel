@@ -155,3 +155,7 @@ https://www.nslookup.io/domains/bpb.yousef.isegaro.com/dns-records/
 
 !!! info "راهنمایی"
     کانفیگ‌های غیر TLS فقط به اشتراک‌های **Normal** و **Full Normal** اضافه می‌شن.
+
+## انتخاب Fingerprint
+
+از این قسمت میتونید Fingerprint یا اثر انگشت TLS رو انتخاب کنید که بصورت پیشفرض روی randomized هست.

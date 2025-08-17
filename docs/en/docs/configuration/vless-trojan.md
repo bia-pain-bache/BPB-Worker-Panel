@@ -155,3 +155,7 @@ Select the required ports. TLS ports offer more secure configs, but during TLS d
 
 !!! info
     Non-TLS configs are only added to **Normal** and **Full Normal** subscriptions.
+
+## Fingerprint
+
+Here you can select TLS fingerprint, default to randomized.
