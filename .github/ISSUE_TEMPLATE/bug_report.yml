@@ -42,7 +42,7 @@ body:
           label: Relevant log output | لاگ برنامه یا پنل
           description: |
             Refer to the client logs if you have connection issues, otherwise paste panel error.<br>
-            اگر مشکل اتصال دارید به قسمت log فیلترشکن بروید و اینجا کپی کنید و در غیر اینصورت خطای پنل را اینجا قرار دهید. 
+            اگر مشکل اتصال دارید به قسمت لاگ فیلترشکن بروید و در غیر اینصورت خطای پنل را اینجا کپی دهید. 
           render: shell
       validations:
           required: true
