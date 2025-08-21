@@ -35,13 +35,16 @@ function generateCredentials() {
     const password = generateStrongPassword();
     const uriPath = generateSubURIPath();
 
-    document.getElementById('uuid').textContent = uuid;
-    document.getElementById('tr-password').textContent = password;
-    document.getElementById('sub-path').textContent = uriPath;
+    // 将三个值合并为一个.env格式的文本
+    const credentialsText = `UUID=${uuid}
+TR_PASS=${password}
+SUB_PATH=${uriPath}`;
+
+    document.getElementById('credentials').value = credentialsText;
 }
 
 window.copyToClipboard = function (elementId) {
-    const textToCopy = document.getElementById(elementId).textContent;
+    const textToCopy = document.getElementById(elementId).value;
     navigator.clipboard.writeText(textToCopy)
         .then(() => alert('✅ Copied to clipboard!'))
         .catch(err => console.error('Failed to copy text:', err));
