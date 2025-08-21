@@ -46,9 +46,9 @@
 
 ![Bind KV](../images/bind-kv.jpg)
 
-### ۴. تنظیم UUID و پسورد Trojan
+### ۴. تنظیم UUID ، پسورد Trojanو مسیر امن لینک‌های اشتراک
 
-توی همون `Settings`، یه بخش به اسم `Variables and Secrets` می‌بینید. روی `Add` کلیک کنید، `UUID` (با حروف بزرگ) رو به‌عنوان `Variable name` وارد کنید، UUID رو از **Secrets generator** کپی کنید و توی قسمت Value بذارید، روی `+ Add variable` کلیک کنید و `Variable name` رو `TR_PASS` (با حروف بزرگ) بذارید، پسورد Trojan رو از **Secrets generator** بگیرید و بعد `Deploy` کنید.
+به صفحه `Secrets generator` که از قبل باز کرده بودید برید و `Copy all` رو بزنید. به داشبورد کلادفلر برگردید، توی همون بخش `Settings`، قسمت `Variables and Secrets` رو پیدا کنید. روی `Add` کلیک کنید. توی خونه `Variable name`  کپی کنید و `Deploy` رو بزنید. این کار بصورت خودکار هر 3 متغیر رو به پنل شما اضافه میکنه.
 
 دوباره توی داشبورد Worker روی `Visit` کلیک کنید، توی مرورگر speedtest رو می‌بینید، فقط `/panel` رو به آخر آدرس اضافه کنید و پنلتون رو ببینید:
 

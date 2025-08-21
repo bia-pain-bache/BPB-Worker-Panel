@@ -46,9 +46,9 @@ Again, go to the `Developer Platform` section, open the Worker you just created,
 
 ![Bind KV](../images/bind-kv.jpg)
 
-### 4. Set UUID and Trojan password
+### 4. Set UUID, Trojan password and Subscription path
 
-Still in `Settings`, you'll see a section called `Variables and Secrets`. Click `Add`, enter `UUID` (in uppercase) as the `Variable name`, paste the UUID **Secrets generator** into the Value field, click `+ Add variable` and set `Variable name` to `TR_PASS` (uppercase), get the Trojan password from **Secrets generator**, then `Deploy`.
+Click `Copy all` from the `Secrets generator` page provided earlier, In Cloudflare dashboard go to `Settings` section, locate the `Variables and Secrets` section. Click `Add` and paste into the `Variable name` field and click `Deploy`. This will automatically add these 3 parameters to panel.
 
 Again click `Visit` in your worker dashboard, you see speedtest in browser, just add `/panel` to the end of address and see your panel:
 

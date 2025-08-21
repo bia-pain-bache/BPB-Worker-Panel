@@ -1,4 +1,7 @@
 # ⚙️ Bug fixes and Improvements
 
-- Fixed Fingerprint not applied to Normal configs
-- Display errors in same page
+- Added proxy IPs link to panel
+- Added `Copy all` to secrets generator, PR #975
+
+> [!TIP]
+> You can now copy all environment variables and just copy into `Variable name` field in Cloudflare dashboard instead of creating env vars one by one.

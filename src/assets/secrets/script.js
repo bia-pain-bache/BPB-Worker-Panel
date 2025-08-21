@@ -1,5 +1,6 @@
 localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
 generateCredentials();
+let uuid, password, uriPath;
 
 function generateUUID() {
     return crypto.randomUUID();
@@ -31,9 +32,9 @@ function generateSubURIPath() {
 }
 
 function generateCredentials() {
-    const uuid = generateUUID();
-    const password = generateStrongPassword();
-    const uriPath = generateSubURIPath();
+    uuid = generateUUID();
+    password = generateStrongPassword();
+    uriPath = generateSubURIPath();
 
     document.getElementById('uuid').textContent = uuid;
     document.getElementById('tr-password').textContent = password;
@@ -41,7 +42,10 @@ function generateCredentials() {
 }
 
 window.copyToClipboard = function (elementId) {
-    const textToCopy = document.getElementById(elementId).textContent;
+    const textToCopy = elementId 
+        ? document.getElementById(elementId).textContent
+        : `UUID=${uuid}\nTR_PASS=${password}\nSUB_PATH=${uriPath}`;
+
     navigator.clipboard.writeText(textToCopy)
         .then(() => alert('✅ Copied to clipboard!'))
         .catch(err => console.error('Failed to copy text:', err));

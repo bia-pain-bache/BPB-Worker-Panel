@@ -48,9 +48,9 @@ In the `Bindings` section, click `Add` and select `KV Namespace`. Set the `Varia
 
 The KV setup is now complete.
 
-### 4. Set UUID and Trojan password
+### 4. Set UUID, Trojan password and Subscription path
 
-In the same `Settings` section, locate the `Variables and Secrets` section. Click `Add`. Enter `UUID` (in capital letters) in the first box and copy the UUID from the link provided earlier into the `Value` field. Click `Add variable`. Then, enter `TR_PASS` (in capital letters) in the first box, copy the Trojan Password from the link into the `Value` field, and click `Save`.
+Click `Copy all` from the `Secrets generator` page provided earlier, In Cloudflare dashboard go to `Settings` section, locate the `Variables and Secrets` section. Click `Add` and paste into the `Variable name` field and click `Save`. This will automatically add these 3 parameters to panel.
 
 Click `Create deployment` at the top of the page and upload the same zip file again, as done previously.
 
