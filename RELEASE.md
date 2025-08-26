@@ -1,8 +1,7 @@
 # ⚙️ Bug fixes and Improvements
 
-- Added proxy IPs link to panel
-- Added `Copy all` to secrets generator, PR #975
-- Revised Xray DNS hijack to adjust with recent v2rayNG version
+- Added NAT64 support as an alternative method for Proxy IP. You can add a NAT64 prefix to panel or add via Cloudflare dashboard using environment variable named `NAT64_PREFIX` #932 #977
+- Improved Panel UI and data entry validation
 
-> [!TIP]
-> You can now copy all environment variables and just copy into `Variable name` field in Cloudflare dashboard instead of creating env vars one by one.
+> [!WARNING]
+> Among the free public NAT64 prefixes, only a few are compatible with the panel. Start by testing the panel’s default NAT64 prefix. If it works, you can then try other prefixes to see which ones work.

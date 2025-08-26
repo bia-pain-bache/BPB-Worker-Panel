@@ -244,6 +244,9 @@ function convertToNAT64IPv6(ipv4Address, nat64Prefix) {
         return num.toString(16).padStart(2, '0');
     });
 
-    return `[${nat64Prefix}${hex[0]}${hex[1]}:${hex[2]}${hex[3]}]`;
+    const match = nat64Prefix.match(/^\[([0-9A-Fa-f:]+)\]$/);
+    if (match) {
+        return `[${match[1]}${hex[0]}${hex[1]}:${hex[2]}${hex[3]}]`;
+    }
 }
 
