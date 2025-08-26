@@ -146,7 +146,7 @@ function buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
 
     const finallOutboundTag = isChain ? "chain" : isWorkerLess ? "fragment" : "proxy";
     const outTag = isBalancer ? "all" : finallOutboundTag;
-    // const remoteDnsServers = isWorkerLess ? ["remote-dns", "remote-dns-fallback"] : ["remote-dns"];
+
     addRoutingRule(["remote-dns"], null, null, null, null, outTag, isBalancer);
     addRoutingRule(["dns"], null, null, null, null, "direct");
 
@@ -208,8 +208,17 @@ function buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
 
 function buildXrayVLOutbound(tag, address, port, host, sni, proxyIPs, isFragment, allowInsecure) {
     const settings = globalThis.settings;
-    const proxyIpPath = proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : '';
-    const path = `/${getRandomPath(16)}${proxyIpPath}?ed=2560`;
+    let proxyIpPath = '';
+    if (settings.proxyIPMode === 'proxyip' && settings.proxyIPs.length) {
+        proxyIpPath = `/${btoa(settings.proxyIPs.join(','))}`;
+    }
+
+    if (settings.proxyIPMode === 'nat64' && settings.nat64Prefix) {
+        proxyIpPath = `/${btoa(settings.nat64Prefix)}`;
+    }
+    
+    // const proxyIpPath = proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : '';
+    const path = `/${getRandomPath(16)}${proxyIpPath}?ed=2560&mode=${settings.proxyIPMode}`;
     const outbound = {
         protocol: atob('dmxlc3M='),
         settings: {
@@ -261,8 +270,16 @@ function buildXrayVLOutbound(tag, address, port, host, sni, proxyIPs, isFragment
 
 function buildXrayTROutbound(tag, address, port, host, sni, proxyIPs, isFragment, allowInsecure) {
     const settings = globalThis.settings;
-    const proxyIpPath = proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : '';
-    const path = `/tr${getRandomPath(16)}${proxyIpPath}?ed=2560`;
+    let proxyIpPath = '';
+    if (settings.proxyIPMode === 'proxyip' && settings.proxyIPs.length) {
+        proxyIpPath = `/${btoa(settings.proxyIPs.join(','))}`;
+    }
+
+    if (settings.proxyIPMode === 'nat64' && settings.nat64Prefix) {
+        proxyIpPath = `/${btoa(settings.nat64Prefix)}`;
+    }
+    // const proxyIpPath = proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : '';
+    const path = `/tr${getRandomPath(16)}${proxyIpPath}?ed=2560&mode=${settings.proxyIPMode}`;
     const outbound = {
         protocol: atob('dHJvamFu'),
         settings: {

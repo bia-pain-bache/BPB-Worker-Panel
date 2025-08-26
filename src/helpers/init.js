@@ -9,9 +9,11 @@ export function init(request, env) {
     globalThis.userID = env.UUID;
     globalThis.TRPassword = env.TR_PASS;
     globalThis.proxyIPs = env.PROXY_IP || atob('YnBiLnlvdXNlZi5pc2VnYXJvLmNvbQ==');
+    globalThis.nat64 = env.NAT64_PREFIX || '2a02:898:146:64::';
     globalThis.hostName = request.headers.get('Host');
     globalThis.pathName = url.pathname;
     globalThis.client = searchParams.get('app');
+    globalThis.proxyMode = searchParams.get('mode') || 'proxyip';
     globalThis.urlOrigin = url.origin;
     globalThis.dohURL = env.DOH_URL || 'https://cloudflare-dns.com/dns-query';
     globalThis.fallbackDomain = env.FALLBACK || 'speed.cloudflare.com';

@@ -173,7 +173,16 @@ function buildClashVLOutbound(remark, address, port, host, sni, proxyIPs, allowI
     const settings = globalThis.settings;
     const tls = globalThis.defaultHttpsPorts.includes(port) ? true : false;
     const addr = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
-    const path = `/${getRandomPath(16)}${proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : ''}`;
+    let proxyIpPath = '';
+    if (settings.proxyIPMode === 'proxyip' && settings.proxyIPs.length) {
+        proxyIpPath = `/${btoa(settings.proxyIPs.join(','))}`;
+    }
+
+    if (settings.proxyIPMode === 'nat64' && settings.nat64Prefix) {
+        proxyIpPath = `/${btoa(settings.nat64Prefix)}`;
+    }
+
+    const path = `/${getRandomPath(16)}${proxyIpPath}?mode=${settings.proxyIPMode}`;
     const ipVersion = settings.VLTRenableIPv6 ? "dual" : "ipv4";
     const fingerprint = settings.fingerprint === "randomized" ? "random" : settings.fingerprint;
 
@@ -212,7 +221,16 @@ function buildClashVLOutbound(remark, address, port, host, sni, proxyIPs, allowI
 function buildClashTROutbound(remark, address, port, host, sni, proxyIPs, allowInsecure) {
     const settings = globalThis.settings;
     const addr = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
-    const path = `/tr${getRandomPath(16)}${proxyIPs.length ? `/${btoa(proxyIPs.join(','))}` : ''}`;
+    let proxyIpPath = '';
+    if (settings.proxyIPMode === 'proxyip' && settings.proxyIPs.length) {
+        proxyIpPath = `/${btoa(settings.proxyIPs.join(','))}`;
+    }
+
+    if (settings.proxyIPMode === 'nat64' && settings.nat64Prefix) {
+        proxyIpPath = `/${btoa(settings.nat64Prefix)}`;
+    }
+
+    const path = `/tr${getRandomPath(16)}${proxyIpPath}?mode=${settings.proxyIPMode}`;
     const ipVersion = settings.VLTRenableIPv6 ? "dual" : "ipv4";
     const fingerprint = settings.fingerprint === "randomized" ? "random" : settings.fingerprint;
 

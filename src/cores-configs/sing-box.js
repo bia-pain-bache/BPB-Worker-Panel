@@ -297,7 +297,16 @@ function buildSingBoxRoutingRules(isWarp) {
 
 function buildSingBoxVLOutbound(remark, address, port, host, sni, allowInsecure, isFragment) {
     const settings = globalThis.settings;
-    const path = `/${getRandomPath(16)}${settings.proxyIPs.length ? `/${btoa(settings.proxyIPs.join(','))}` : ''}`;
+    let proxyIpPath = '';
+    if (settings.proxyIPMode === 'proxyip' && settings.proxyIPs.length) {
+        proxyIpPath = `/${btoa(settings.proxyIPs.join(','))}`;
+    }
+
+    if (settings.proxyIPMode === 'nat64' && settings.nat64Prefix) {
+        proxyIpPath = `/${btoa(settings.nat64Prefix)}`;
+    }
+
+    const path = `/${getRandomPath(16)}${proxyIpPath}?mode=${settings.proxyIPMode}`;
     const tls = globalThis.defaultHttpsPorts.includes(port) ? true : false;
 
     const outbound = {
@@ -338,7 +347,16 @@ function buildSingBoxVLOutbound(remark, address, port, host, sni, allowInsecure,
 
 function buildSingBoxTROutbound(remark, address, port, host, sni, allowInsecure, isFragment) {
     const settings = globalThis.settings;
-    const path = `/tr${getRandomPath(16)}${settings.proxyIPs.length ? `/${btoa(settings.proxyIPs.join(','))}` : ''}`;
+    let proxyIpPath = '';
+    if (settings.proxyIPMode === 'proxyip' && settings.proxyIPs.length) {
+        proxyIpPath = `/${btoa(settings.proxyIPs.join(','))}`;
+    }
+
+    if (settings.proxyIPMode === 'nat64' && settings.nat64Prefix) {
+        proxyIpPath = `/${btoa(settings.nat64Prefix)}`;
+    }
+
+    const path = `/tr${getRandomPath(16)}${proxyIpPath}?mode=${settings.proxyIPMode}`;
     const tls = globalThis.defaultHttpsPorts.includes(port) ? true : false;
 
     const outbound = {

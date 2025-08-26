@@ -4,25 +4,25 @@ export function isDomain(address) {
     return domainPattern.test(address);
 }
 
-export async function resolveDNS(domain) {
+export async function resolveDNS(domain, onlyIPv4 = false) {
     const dohURLv4 = `${globalThis.dohURL}?name=${encodeURIComponent(domain)}&type=A`;
     const dohURLv6 = `${globalThis.dohURL}?name=${encodeURIComponent(domain)}&type=AAAA`;
 
     try {
-        const [ipv4Response, ipv6Response] = await Promise.all([
-            fetch(dohURLv4, { headers: { accept: 'application/dns-json' } }),
-            fetch(dohURLv6, { headers: { accept: 'application/dns-json' } })
-        ]);
-
+        const ipv4Response = await fetch(dohURLv4, { headers: { accept: 'application/dns-json' } });
         const ipv4Addresses = await ipv4Response.json();
-        const ipv6Addresses = await ipv6Response.json();
-
         const ipv4 = ipv4Addresses.Answer
             ? ipv4Addresses.Answer.map((record) => record.data)
             : [];
-        const ipv6 = ipv6Addresses.Answer
-            ? ipv6Addresses.Answer.map((record) => record.data)
-            : [];
+
+        let ipv6 = [];
+        if (!onlyIPv4) {
+            const ipv6Response = await fetch(dohURLv6, { headers: { accept: 'application/dns-json' } });
+            const ipv6Addresses = await ipv6Response.json();
+            ipv6 = ipv6Addresses.Answer
+                ? ipv6Addresses.Answer.map((record) => record.data)
+                : [];
+        }
 
         return { ipv4, ipv6 };
     } catch (error) {

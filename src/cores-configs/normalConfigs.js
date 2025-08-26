@@ -9,7 +9,17 @@ export async function getNormalConfigs(isFragment) {
     const buildConfig = (protocol, addr, port, host, sni, remark) => {
         const isTLS = globalThis.defaultHttpsPorts.includes(port);
         const security = isTLS ? 'tls' : 'none';
-        const path = `${getRandomPath(16)}${settings.proxyIPs.length ? `/${btoa(settings.proxyIPs.join(','))}` : ''}`;
+
+        let finalProxyIP = '';
+        if (settings.proxyIPMode === 'proxyip' && settings.proxyIPs.length) {
+            finalProxyIP = `/${btoa(settings.proxyIPs.join(','))}`;
+        }
+        
+        if (settings.proxyIPMode === 'nat64' && settings.nat64Prefix) {
+            finalProxyIP = `/${btoa(settings.nat64Prefix)}`;
+        }
+        
+        const path = `${getRandomPath(16)}${finalProxyIP}`;
         const config = new URL(`${protocol}://config`);
         let pathPrefix = '';
 
@@ -31,9 +41,9 @@ export async function getNormalConfigs(isFragment) {
         if (globalThis.client === 'singbox') {
             config.searchParams.append('eh', 'Sec-WebSocket-Protocol');
             config.searchParams.append('ed', '2560');
-            config.searchParams.append('path', `/${pathPrefix}${path}`);
+            config.searchParams.append('path', `/${pathPrefix}${path}?mode=${settings.proxyIPMode}`);
         } else {
-            config.searchParams.append('path', `/${pathPrefix}${path}?ed=2560`);
+            config.searchParams.append('path', `/${pathPrefix}${path}?ed=2560&mode=${settings.proxyIPMode}`);
         }
 
         if (isTLS) {
