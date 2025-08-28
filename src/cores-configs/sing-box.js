@@ -1,4 +1,4 @@
-import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6, isDomain, base64ToDecimal, getDomain } from './helpers';
+import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, isIPv6, isDomain, base64ToDecimal, getDomain, generateWsPath } from './helpers';
 import { getDataset } from '../kv/handlers';
 
 async function buildSingBoxDNS(isWarp) {
@@ -297,16 +297,6 @@ function buildSingBoxRoutingRules(isWarp) {
 
 function buildSingBoxVLOutbound(remark, address, port, host, sni, allowInsecure, isFragment) {
     const settings = globalThis.settings;
-    let proxyIpPath = '';
-    if (settings.proxyIPMode === 'proxyip' && settings.proxyIPs.length) {
-        proxyIpPath = `/${btoa(settings.proxyIPs.join(','))}`;
-    }
-
-    if (settings.proxyIPMode === 'nat64' && settings.nat64Prefix) {
-        proxyIpPath = `/${btoa(settings.nat64Prefix)}`;
-    }
-
-    const path = `/${getRandomPath(16)}${proxyIpPath}?mode=${settings.proxyIPMode}`;
     const tls = globalThis.defaultHttpsPorts.includes(port) ? true : false;
 
     const outbound = {
@@ -316,6 +306,7 @@ function buildSingBoxVLOutbound(remark, address, port, host, sni, allowInsecure,
         server_port: port,
         uuid: globalThis.userID,
         network: "tcp",
+        tcp_fast_open: true,
         packet_encoding: "",
         transport: {
             early_data_header_name: "Sec-WebSocket-Protocol",
@@ -323,11 +314,9 @@ function buildSingBoxVLOutbound(remark, address, port, host, sni, allowInsecure,
             headers: {
                 Host: host
             },
-            path: path,
+            path: generateWsPath("vl"),
             type: "ws"
-        },
-        tcp_fast_open: true,
-        tcp_multi_path: true
+        }
     };
 
     if (tls) outbound.tls = {
@@ -347,16 +336,6 @@ function buildSingBoxVLOutbound(remark, address, port, host, sni, allowInsecure,
 
 function buildSingBoxTROutbound(remark, address, port, host, sni, allowInsecure, isFragment) {
     const settings = globalThis.settings;
-    let proxyIpPath = '';
-    if (settings.proxyIPMode === 'proxyip' && settings.proxyIPs.length) {
-        proxyIpPath = `/${btoa(settings.proxyIPs.join(','))}`;
-    }
-
-    if (settings.proxyIPMode === 'nat64' && settings.nat64Prefix) {
-        proxyIpPath = `/${btoa(settings.nat64Prefix)}`;
-    }
-
-    const path = `/tr${getRandomPath(16)}${proxyIpPath}?mode=${settings.proxyIPMode}`;
     const tls = globalThis.defaultHttpsPorts.includes(port) ? true : false;
 
     const outbound = {
@@ -366,17 +345,16 @@ function buildSingBoxTROutbound(remark, address, port, host, sni, allowInsecure,
         server: address,
         server_port: port,
         network: "tcp",
+        tcp_fast_open: true,
         transport: {
             early_data_header_name: "Sec-WebSocket-Protocol",
             max_early_data: 2560,
             headers: {
                 Host: host
             },
-            path: path,
+            path: generateWsPath("tr"),
             type: "ws"
-        },
-        tcp_fast_open: true,
-        tcp_multi_path: true
+        }
     }
 
     if (tls) outbound.tls = {
@@ -730,7 +708,8 @@ const singboxConfigTemp = {
         {
             type: "selector",
             tag: "✅ Selector",
-            outbounds: []
+            outbounds: [],
+            interrupt_exist_connections: false
         },
         {
             type: "direct",

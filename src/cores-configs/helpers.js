@@ -79,7 +79,7 @@ export function randomUpperCase(str) {
     return result;
 }
 
-export function getRandomPath(length) {
+export function getRandomString(length) {
     let result = '';
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     const charactersLength = characters.length;
@@ -87,6 +87,20 @@ export function getRandomPath(length) {
         result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
     return result;
+}
+
+export function generateWsPath(protocol) {
+    const settings = globalThis.settings;
+    const config = {
+        protocol: protocol,
+        junk: getRandomString(16),
+        mode: settings.proxyIPMode,
+        proxyIPs: settings.proxyIPs,
+        nat64Prefixes: settings.nat64Prefix
+    };
+
+    const encodedConfig = btoa(JSON.stringify(config));
+    return `/${encodedConfig}`;
 }
 
 export function base64ToDecimal(base64) {

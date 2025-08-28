@@ -7,8 +7,8 @@ import { logout } from './authentication/auth';
 export default {
 	async fetch(request, env) {
 		try {
-			init(request, env);
 			const upgradeHeader = request.headers.get('Upgrade');
+			init(request, env, upgradeHeader);
 			const path = globalThis.pathName;
 			if (!upgradeHeader || upgradeHeader !== 'websocket') {
 				if (path.startsWith('/panel')) return await handlePanel(request, env);
@@ -19,9 +19,9 @@ export default {
 				if (path.startsWith('/favicon.ico')) return await serveIcon();
 				return await fallback(request);
 			} else {
-				return path.startsWith('/tr')
-					? await TrOverWSHandler(request)
-					: await VlOverWSHandler(request);
+				if (globalThis.wsProtocol === 'vl') return await VlOverWSHandler(request);
+				if (globalThis.wsProtocol === 'tr') return await TrOverWSHandler(request);
+				return await fallback(request);
 			}
 		} catch (error) {
 			return await handleError(error);

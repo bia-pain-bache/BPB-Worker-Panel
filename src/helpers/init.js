@@ -1,16 +1,26 @@
 import { isValidUUID } from "./helpers";
 
-export function init(request, env) {
+export function init(request, env, upgradeHeader) {
     const url = new URL(request.url);
     const searchParams = new URLSearchParams(url.search);
     const NAT64Prefixes = ['[2a02:898:146:64::]', '[2602:fc59:b0:64::]', '[2602:fc59:11:64::]'];
     const defaultNAT64Prefix = NAT64Prefixes[Math.floor(Math.random() * NAT64Prefixes.length)];
+
+    if (upgradeHeader === 'websocket') {
+        const encodedPathConfig = url.pathname.replace("/", "") || '';
+        const pathConfig = JSON.parse(atob(encodedPathConfig));
+        globalThis.wsProtocol = pathConfig.protocol;
+        console.log(pathConfig.protocol);
+        globalThis.proxyMode = pathConfig.mode || 'proxyip';
+        globalThis.panelProxyIP = pathConfig.proxyIPs;
+        globalThis.panelNat64Prefix = pathConfig.nat64Prefixes;
+    }
+
     globalThis.panelVersion = __VERSION__;
     globalThis.defaultHttpPorts = [80, 8080, 2052, 2082, 2086, 2095, 8880];
     globalThis.defaultHttpsPorts = [443, 8443, 2053, 2083, 2087, 2096];
     globalThis.userID = env.UUID;
     globalThis.TRPassword = env.TR_PASS;
-    globalThis.proxyMode = searchParams.get('mode') || 'proxyip';
     globalThis.proxyIPs = env.PROXY_IP || atob('YnBiLnlvdXNlZi5pc2VnYXJvLmNvbQ==');
     globalThis.nat64 = env.NAT64_PREFIX || defaultNAT64Prefix;
     globalThis.hostName = request.headers.get('Host');

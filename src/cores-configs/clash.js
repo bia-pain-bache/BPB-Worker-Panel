@@ -1,4 +1,4 @@
-import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, getRandomPath, isIPv6, isIPv4, isDomain, getDomain } from './helpers';
+import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, isIPv6, isIPv4, isDomain, getDomain, generateWsPath } from './helpers';
 import { getDataset } from '../kv/handlers';
 
 async function buildClashDNS(isChain, isWarp) {
@@ -173,16 +173,6 @@ function buildClashVLOutbound(remark, address, port, host, sni, proxyIPs, allowI
     const settings = globalThis.settings;
     const tls = globalThis.defaultHttpsPorts.includes(port) ? true : false;
     const addr = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
-    let proxyIpPath = '';
-    if (settings.proxyIPMode === 'proxyip' && settings.proxyIPs.length) {
-        proxyIpPath = `/${btoa(settings.proxyIPs.join(','))}`;
-    }
-
-    if (settings.proxyIPMode === 'nat64' && settings.nat64Prefix) {
-        proxyIpPath = `/${btoa(settings.nat64Prefix)}`;
-    }
-
-    const path = `/${getRandomPath(16)}${proxyIpPath}?mode=${settings.proxyIPMode}`;
     const ipVersion = settings.VLTRenableIPv6 ? "dual" : "ipv4";
     const fingerprint = settings.fingerprint === "randomized" ? "random" : settings.fingerprint;
 
@@ -199,7 +189,7 @@ function buildClashVLOutbound(remark, address, port, host, sni, proxyIPs, allowI
         "tfo": true,
         "mptcp": true,
         "ws-opts": {
-            "path": path,
+            "path": generateWsPath("vl"),
             "headers": { "Host": host },
             "max-early-data": 2560,
             "early-data-header-name": "Sec-WebSocket-Protocol"
@@ -221,16 +211,6 @@ function buildClashVLOutbound(remark, address, port, host, sni, proxyIPs, allowI
 function buildClashTROutbound(remark, address, port, host, sni, proxyIPs, allowInsecure) {
     const settings = globalThis.settings;
     const addr = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
-    let proxyIpPath = '';
-    if (settings.proxyIPMode === 'proxyip' && settings.proxyIPs.length) {
-        proxyIpPath = `/${btoa(settings.proxyIPs.join(','))}`;
-    }
-
-    if (settings.proxyIPMode === 'nat64' && settings.nat64Prefix) {
-        proxyIpPath = `/${btoa(settings.nat64Prefix)}`;
-    }
-
-    const path = `/tr${getRandomPath(16)}${proxyIpPath}?mode=${settings.proxyIPMode}`;
     const ipVersion = settings.VLTRenableIPv6 ? "dual" : "ipv4";
     const fingerprint = settings.fingerprint === "randomized" ? "random" : settings.fingerprint;
 
@@ -246,7 +226,7 @@ function buildClashTROutbound(remark, address, port, host, sni, proxyIPs, allowI
         "tfo": true,
         "mptcp": true,
         "ws-opts": {
-            "path": path,
+            "path": generateWsPath("tr"),
             "headers": { "Host": host },
             "max-early-data": 2560,
             "early-data-header-name": "Sec-WebSocket-Protocol"
