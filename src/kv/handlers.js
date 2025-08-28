@@ -67,7 +67,7 @@ export async function updateDataset(request, env) {
         VLTRFakeDNS: populateField('VLTRFakeDNS', false),
         proxyIPMode: populateField('proxyIPMode', 'proxyip'),
         proxyIPs: populateField('proxyIPs', []),
-        nat64Prefix: populateField('nat64Prefix', ''),
+        nat64Prefixes: populateField('nat64Prefixes', []),
         outProxy: populateField('outProxy', ''),
         outProxyParams: populateField('outProxy', {}, field => extractChainProxyParams(field)),
         cleanIPs: populateField('cleanIPs', []),

@@ -57,8 +57,10 @@ export async function handleTCPOutBound(
         } else if (mode === 'nat64') {
             log(`direct connection failed, trying to generate dynamic NAT64 IP for ${addressRemote}`);
             try {
-                const nat64Prefix = globalThis.panelNat64Prefix || globalThis.nat64;
-                const dynamicProxyIP = await getDynamicProxyIP(addressRemote, nat64Prefix);
+                const panelPrefixes = globalThis.panelNat64Prefixes;
+                const prefixes = panelPrefixes.length ? panelPrefixes : globalThis.nat64Prefixes;
+                const selectedPrefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+                const dynamicProxyIP = await getDynamicProxyIP(addressRemote, selectedPrefix);
                 tcpSocket = await connectAndWrite(dynamicProxyIP, portRemote);
             } catch (error) {
                 console.error('NAT64 connection failed:', error);

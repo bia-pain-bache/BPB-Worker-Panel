@@ -406,7 +406,7 @@ function validateSettings() {
     const validations = [
         validateMultipleHostNames(elementsToCheck),
         validateProxyIPs(),
-        validateNAT64(),
+        validateNAT64Prefixes(),
         validateWarpEndpoints(),
         validateMinMax(),
         validateChainProxy(),
@@ -544,13 +544,14 @@ function validateProxyIPs() {
     return true;
 }
 
-function validateNAT64() {
-    const ipv6Reg = new RegExp(ipv6Regex.source + '$', 'gm');
-    const nat64Prefix = document.getElementById('nat64Prefix').value?.trim();
-    if (nat64Prefix) {
-        const valid = ipv6Reg.test(nat64Prefix);
-        if (!valid) alert('⛔ Invalid NAT64 Prefix');
-        return valid;
+function validateNAT64Prefixes() {
+    const ipv6Reg = new RegExp('^' + ipv6Regex.source + '$');
+    const nat64Prefixes = document.getElementById('nat64Prefixes').value?.split('\n').filter(Boolean).map(ip => ip.trim());
+    const invalidValues = nat64Prefixes?.filter(value => !ipv6Reg.test(value));
+
+    if (invalidValues.length) {
+        alert('⛔ Invalid NAT64 prefix.\n👉 Please enter each prefix in a new line using [].\n\n' + invalidValues.map(ip => '⚠️ ' + ip).join('\n'));
+        return false;
     }
 
     return true;
