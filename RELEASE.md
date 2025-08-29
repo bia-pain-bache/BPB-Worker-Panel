@@ -11,3 +11,6 @@
 
 > [!TIP]
 > The NAT64 prefix format is [IPv6] without CIDR notation, so if you found a NAT64 like 2001:67c:2960:6464::/96, it should be converted to [2001:67c:2960:6464::].
+
+> [!TIP]
+> NAT64 prefixes entry format in Cloudflare dashboard environment variable `NAT64_PREFIX` is the same as `PROXY_IP` i.e. IPs should be filled in comma-separated in contrary to panel which should be filled below each other.

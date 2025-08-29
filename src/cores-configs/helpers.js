@@ -79,10 +79,11 @@ export function randomUpperCase(str) {
     return result;
 }
 
-export function getRandomString(length) {
+export function getRandomString(lengthMin, lengthMax) {
     let result = '';
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     const charactersLength = characters.length;
+    const length = Math.floor(Math.random() * (lengthMax - lengthMin + 1)) + lengthMin;
     for (let i = 0; i < length; i++) {
         result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
@@ -92,11 +93,10 @@ export function getRandomString(length) {
 export function generateWsPath(protocol) {
     const settings = globalThis.settings;
     const config = {
+        junk: getRandomString(8, 16),
         protocol: protocol,
-        junk: getRandomString(16),
         mode: settings.proxyIPMode,
-        proxyIPs: settings.proxyIPs,
-        nat64Prefixes: settings.nat64Prefixes
+        panelIPs: settings.proxyIPMode === 'proxyip' ? settings.proxyIPs : settings.nat64Prefixes
     };
 
     const encodedConfig = btoa(JSON.stringify(config));

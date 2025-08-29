@@ -3,15 +3,20 @@ import { isValidUUID } from "./helpers";
 export function init(request, env, upgradeHeader) {
     const url = new URL(request.url);
     const searchParams = new URLSearchParams(url.search);
-    const defaultNat64Prefixes = ['[2a02:898:146:64::]', '[2602:fc59:b0:64::]', '[2602:fc59:11:64::]'];
 
     if (upgradeHeader === 'websocket') {
         const encodedPathConfig = url.pathname.replace("/", "") || '';
-        const pathConfig = JSON.parse(atob(encodedPathConfig));
-        globalThis.wsProtocol = pathConfig.protocol;
-        globalThis.proxyMode = pathConfig.mode || 'proxyip';
-        globalThis.panelProxyIP = pathConfig.proxyIPs;
-        globalThis.panelNat64Prefixes = pathConfig.nat64Prefixes;
+        try {
+            const { protocol, mode, panelIPs } = JSON.parse(atob(encodedPathConfig));
+            globalThis.wsProtocol = protocol;
+            globalThis.proxyMode = mode || 'proxyip';
+            globalThis.panelIPs = panelIPs;
+        } catch (error) {
+            throw new Error(`Failed to parse WebSocket path config: ${error.message}`);
+        }
+
+        globalThis.proxyIPs = env.PROXY_IP || atob('YnBiLnlvdXNlZi5pc2VnYXJvLmNvbQ==');
+        globalThis.nat64Prefixes = env.NAT64_PREFIX || '[2a02:898:146:64::],[2602:fc59:b0:64::],[2602:fc59:11:64::]';
     }
 
     globalThis.panelVersion = __VERSION__;
@@ -19,8 +24,6 @@ export function init(request, env, upgradeHeader) {
     globalThis.defaultHttpsPorts = [443, 8443, 2053, 2083, 2087, 2096];
     globalThis.userID = env.UUID;
     globalThis.TRPassword = env.TR_PASS;
-    globalThis.proxyIPs = env.PROXY_IP || atob('YnBiLnlvdXNlZi5pc2VnYXJvLmNvbQ==');
-    globalThis.nat64Prefixes = env.NAT64_PREFIX || defaultNat64Prefixes;
     globalThis.hostName = request.headers.get('Host');
     globalThis.pathName = url.pathname;
     globalThis.client = searchParams.get('app');

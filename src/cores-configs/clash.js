@@ -169,7 +169,7 @@ function buildClashRoutingRules(isWarp) {
     return { rules, ruleProviders };
 }
 
-function buildClashVLOutbound(remark, address, port, host, sni, proxyIPs, allowInsecure) {
+function buildClashVLOutbound(remark, address, port, host, sni, allowInsecure) {
     const settings = globalThis.settings;
     const tls = globalThis.defaultHttpsPorts.includes(port) ? true : false;
     const addr = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
@@ -208,7 +208,7 @@ function buildClashVLOutbound(remark, address, port, host, sni, proxyIPs, allowI
     return outbound;
 }
 
-function buildClashTROutbound(remark, address, port, host, sni, proxyIPs, allowInsecure) {
+function buildClashTROutbound(remark, address, port, host, sni, allowInsecure) {
     const settings = globalThis.settings;
     const addr = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
     const ipVersion = settings.VLTRenableIPv6 ? "dual" : "ipv4";
@@ -489,7 +489,6 @@ export async function getClashNormalConfig(env) {
                         port,
                         host,
                         sni,
-                        settings.proxyIPs,
                         isCustomAddr
                     );
 
@@ -504,7 +503,6 @@ export async function getClashNormalConfig(env) {
                         port,
                         host,
                         sni,
-                        settings.proxyIPs,
                         isCustomAddr
                     );
 
