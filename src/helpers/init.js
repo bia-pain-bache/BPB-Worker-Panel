@@ -9,10 +9,10 @@ export function init(request, env, upgradeHeader) {
         try {
             const { protocol, mode, panelIPs } = JSON.parse(atob(encodedPathConfig));
             globalThis.wsProtocol = protocol;
-            globalThis.proxyMode = mode || 'proxyip';
+            globalThis.proxyMode = mode;
             globalThis.panelIPs = panelIPs;
         } catch (error) {
-            throw new Error(`Failed to parse WebSocket path config: ${error.message}`);
+            return new Response('Failed to parse WebSocket path config', { status: 400 });
         }
 
         globalThis.proxyIPs = env.PROXY_IP || atob('YnBiLnlvdXNlZi5pc2VnYXJvLmNvbQ==');
