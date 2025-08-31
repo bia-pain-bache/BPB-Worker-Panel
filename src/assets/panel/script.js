@@ -18,6 +18,9 @@ const [
 
 const defaultHttpsPorts = [443, 8443, 2053, 2083, 2087, 2096];
 const defaultHttpPorts = [80, 8080, 8880, 2052, 2082, 2086, 2095];
+const ipv6Regex = /^\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}|:(?::[a-fA-F0-9]{1,4}){1,7})\](?:\/(?:12[0-8]|1[01]?\d|[0-9]?\d))?/;
+const ipv4Regex = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)(?:\/(?:\d|[12]\d|3[0-2]))?/;
+const domainRegex = /^(?=.{1,253}$)(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)\.)+[a-zA-Z]{2,63}/;
 
 fetch('/panel/settings')
     .then(async response => response.json())
@@ -403,6 +406,7 @@ function validateSettings() {
     const validations = [
         validateMultipleHostNames(elementsToCheck),
         validateProxyIPs(),
+        validateNAT64Prefixes(),
         validateWarpEndpoints(),
         validateMinMax(),
         validateChainProxy(),
@@ -450,7 +454,9 @@ function updateSettings(event, data) {
     event.preventDefault();
     event.stopPropagation();
 
-    const form = data ? data : validateSettings();
+    const validatedForm = validateSettings();
+    if (!validatedForm) return false;
+    const form = data ? data : validatedForm;
     const applyButton = document.getElementById('applyButton');
     document.body.style.cursor = 'wait';
     const applyButtonVal = applyButton.value;
@@ -503,9 +509,6 @@ function validateSanctionDns() {
 }
 
 function isValidHostName(value, isHost) {
-    const ipv6Regex = /^\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}|:(?::[a-fA-F0-9]{1,4}){1,7})\](?:\/(?:12[0-8]|1[01]?\d|[0-9]?\d))?/;
-    const ipv4Regex = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)(?:\/(?:\d|[12]\d|3[0-2]))?/;
-    const domainRegex = /^(?=.{1,253}$)(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)\.)+[a-zA-Z]{2,63}/;
     const portRegex = /:(?:6553[0-5]|655[0-2]\d|65[0-4]\d{2}|6[0-4]\d{3}|[1-5]?\d{1,4})$/;
     const append = isHost ? portRegex.source : '$';
     const ipv6Reg = new RegExp(ipv6Regex.source + append, 'gm');
@@ -535,6 +538,19 @@ function validateProxyIPs() {
 
     if (invalidValues.length) {
         alert('⛔ Invalid proxy IPs.\n👉 Please enter each IP/domain in a new line.\n\n' + invalidValues.map(ip => '⚠️ ' + ip).join('\n'));
+        return false;
+    }
+
+    return true;
+}
+
+function validateNAT64Prefixes() {
+    const ipv6Reg = new RegExp('^' + ipv6Regex.source + '$');
+    const nat64Prefixes = document.getElementById('nat64Prefixes').value?.split('\n').filter(Boolean).map(ip => ip.trim());
+    const invalidValues = nat64Prefixes?.filter(value => !ipv6Reg.test(value));
+
+    if (invalidValues.length) {
+        alert('⛔ Invalid NAT64 prefix.\n👉 Please enter each prefix in a new line using [].\n\n' + invalidValues.map(ip => '⚠️ ' + ip).join('\n'));
         return false;
     }
 

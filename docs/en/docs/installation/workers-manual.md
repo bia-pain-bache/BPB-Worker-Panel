@@ -87,6 +87,27 @@ https://www.nslookup.io/domains/bpb.yousef.isegaro.com/dns-records/
 
 Enter the IPs in the `Value` field and click `Deploy`.
 
+### Fixing the NAT64 Prefixes
+
+By default, the code uses multiple NAT64 prefixes randomly, assigning a new random prefix for each connection to Cloudflare addresses (covering much of the web). This IP rotation may cause issues, particularly for traders. From version 3.4.2 onward, you can change the prefixes via the panel and update the subscription. However, the method below is recommended:
+
+!!! note
+    Changing the NAT64 prefixes via the panel requires updating the subscription if the IP stops working, which can disrupt donated configurations, as users without an active subscription cannot update them. Use this method only for personal use. Other methods don’t require subscription updates.
+
+In the project’s `Settings` section, open `Variables and Secrets`, click `Add` and enter `NAT64_PREFIX` (in capital letters) in the first box. Obtain IPs from the following link, which lists IPs from various regions and ISPs:
+
+```text
+https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/src/protocols/NAT64Prefixes.md
+```
+
+!!! info
+    To use multiple IPs, fill them comma-separated.
+    ```title="Example"
+    [2602:fc59:b0:64::], [2602:fc59:11:64::]
+    ```
+
+Enter the IPs in the `Value` field and click `Deploy`.
+
 ### Setting Fallback Domain
 
 By default, accessing the main Worker domain redirects to the Cloudflare speed test site. To change this, follow the same steps as for the Proxy IP, but set the variable name to `FALLBACK` and provide a domain (without `https://` or `http://`) as the value, e.g., `www.speedtest.net` or `npmjs.org`.  
