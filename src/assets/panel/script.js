@@ -65,10 +65,17 @@ function initiatePanel(proxySettings) {
     renderUdpNoiseBlock(xrayUdpNoises);
     initiateForm();
     fetchIPInfo();
+    
+    // Load proxy IPs
+    loadProxyIPs();
 }
 
 function populatePanel(proxySettings) {
-    selectElements.forEach(elm => elm.value = proxySettings[elm.id]);
+    selectElements.forEach(elm => {
+        if (elm.id !== 'proxyIPsSelect') {
+            elm.value = proxySettings[elm.id];
+        }
+    });
     checkboxElements.forEach(elm => elm.checked = proxySettings[elm.id]);
     inputElements.forEach(elm => elm.value = proxySettings[elm.id]);
     textareaElements.forEach(elm => {
@@ -907,3 +914,78 @@ function renderUdpNoiseBlock(xrayUdpNoises) {
     });
     globalThis.xrayNoiseCount = xrayUdpNoises.length;
 }
+
+// 新增ProxyIPs相关函数
+let proxyIPsData = [];
+
+async function loadProxyIPs() {
+    const refreshBtn = document.getElementById('refreshProxyIPs');
+    const selectElement = document.getElementById('proxyIPsSelect');
+    
+    try {
+        refreshBtn.classList.add('fa-spin');
+        const response = await fetch('https://raw.githubusercontent.com/happymy/Pip_Json_DEMO2/refs/heads/main/output.json');
+        proxyIPsData = await response.json();
+        
+        // 按国家排序
+        proxyIPsData.sort((a, b) => {
+            const countryA = a.location.split(', ').pop();
+            const countryB = b.location.split(', ').pop();
+            return countryA.localeCompare(countryB);
+        });
+        
+        // 清空现有选项
+        selectElement.innerHTML = '<option value="">Select Proxy IP</option>';
+        
+        // 按国家分组
+        const groupedIPs = {};
+        proxyIPsData.forEach(item => {
+            const parts = item.location.split(', ');
+            const country = parts[parts.length - 1];
+            if (!groupedIPs[country]) {
+                groupedIPs[country] = [];
+            }
+            groupedIPs[country].push(item);
+        });
+        
+        // 添加分组选项
+        Object.keys(groupedIPs).sort().forEach(country => {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = country;
+            groupedIPs[country].forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.ip;
+                option.textContent = `${item.ip} (${item.location})`;
+                optgroup.appendChild(option);
+            });
+            selectElement.appendChild(optgroup);
+        });
+    } catch (error) {
+        console.error('Failed to load proxy IPs:', error);
+        selectElement.innerHTML = '<option value="">Failed to load IPs</option>';
+    } finally {
+        refreshBtn.classList.remove('fa-spin');
+    }
+}
+
+document.getElementById('proxyIPsSelect').addEventListener('change', function() {
+    const selectedIP = this.value;
+    if (selectedIP) {
+        const proxyIPsTextarea = document.getElementById('proxyIPs');
+        const currentIPs = proxyIPsTextarea.value.split('\n').filter(ip => ip.trim() !== '');
+        
+        // 如果IP尚未添加，则添加它
+        if (!currentIPs.includes(selectedIP)) {
+            currentIPs.push(selectedIP);
+            proxyIPsTextarea.value = currentIPs.join('\n');
+            // 自动调整高度
+            proxyIPsTextarea.style.height = 'auto';
+            proxyIPsTextarea.style.height = `${proxyIPsTextarea.scrollHeight}px`;
+            // 触发input事件以启用应用按钮
+            proxyIPsTextarea.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        
+        // 重置选择框
+        this.value = '';
+    }
+});
