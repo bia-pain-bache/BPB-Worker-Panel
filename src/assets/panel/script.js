@@ -22,6 +22,9 @@ const ipv6Regex = /^\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]
 const ipv4Regex = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)(?:\/(?:\d|[12]\d|3[0-2]))?/;
 const domainRegex = /^(?=.{1,253}$)(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)\.)+[a-zA-Z]{2,63}/;
 
+// 存储从远程获取的Proxy IPs数据
+let proxyIPsData = [];
+
 fetch('/panel/settings')
     .then(async response => response.json())
     .then(data => {
@@ -68,10 +71,17 @@ function initiatePanel(proxySettings) {
     renderUdpNoiseBlock(xrayUdpNoises);
     initiateForm();
     fetchIPInfo();
+    
+    // Load proxy IPs
+    loadProxyIPs();
 }
 
 function populatePanel(proxySettings) {
-    selectElements.forEach(elm => elm.value = proxySettings[elm.id]);
+    selectElements.forEach(elm => {
+        if (elm.id !== 'proxyIPsSelect') {
+            elm.value = proxySettings[elm.id];
+        }
+    });
     checkboxElements.forEach(elm => elm.checked = proxySettings[elm.id]);
     inputElements.forEach(elm => elm.value = proxySettings[elm.id]);
     textareaElements.forEach(elm => {
@@ -797,6 +807,121 @@ function renderPortsBlock(ports) {
     }
 }
 
+async function loadProxyIPs() {
+    try {
+        const response = await fetch('https://raw.githubusercontent.com/happymy/Pip_Json_DEMO2/refs/heads/main/output.json');
+        const data = await response.json();
+        
+        // 保存数据供后续使用
+        proxyIPsData = data;
+        
+        // 按国家排序
+        const sortedData = data.sort((a, b) => {
+            const countryA = a.location.split(', ').pop();
+            const countryB = b.location.split(', ').pop();
+            return countryA.localeCompare(countryB);
+        });
+        
+        // 按国家分组
+        const groupedIPs = {};
+        sortedData.forEach(item => {
+            const parts = item.location.split(', ');
+            const country = parts[parts.length - 1];
+            
+            if (!groupedIPs[country]) {
+                groupedIPs[country] = [];
+            }
+            groupedIPs[country].push(item);
+        });
+        
+        // 创建菜单内容
+        const menuContent = document.getElementById('proxyIPsMenuContent');
+        menuContent.innerHTML = '';
+        
+        Object.keys(groupedIPs)
+            .sort()
+            .forEach(country => {
+                const countryGroup = document.createElement('div');
+                countryGroup.className = 'proxy-ips-country-group';
+                countryGroup.innerHTML = `<h4>${country}</h4>`;
+                
+                const ipList = document.createElement('div');
+                ipList.className = 'proxy-ips-list';
+                
+                groupedIPs[country]
+                    .forEach(item => {
+                        const ipItem = document.createElement('div');
+                        ipItem.className = 'proxy-ips-item';
+                        ipItem.innerHTML = `${item.ip} (${item.location})`;
+                        ipItem.dataset.ip = item.ip;
+                        ipItem.onclick = () => addProxyIP(item.ip);
+                        ipList.appendChild(ipItem);
+                    });
+                
+                countryGroup.appendChild(ipList);
+                menuContent.appendChild(countryGroup);
+            });
+        
+    } catch (error) {
+        console.error('Failed to load proxy IPs:', error);
+        const menuContent = document.getElementById('proxyIPsMenuContent');
+        menuContent.innerHTML = '<div class="proxy-ips-error">Failed to load proxy IPs. Please try again.</div>';
+    }
+}
+
+function toggleProxyIPsMenu() {
+    const menu = document.getElementById('proxyIPsMenu');
+    if (menu.style.display === 'block') {
+        menu.style.display = 'none';
+    } else {
+        // 如果菜单内容为空，则加载数据
+        const menuContent = document.getElementById('proxyIPsMenuContent');
+        if (menuContent.innerHTML === '') {
+            loadProxyIPs();
+        }
+        menu.style.display = 'block';
+        
+        // 点击其他地方关闭菜单
+        setTimeout(() => {
+            document.addEventListener('click', closeProxyIPsMenuOnClickOutside);
+        }, 0);
+    }
+}
+
+function closeProxyIPsMenuOnClickOutside(event) {
+    const menu = document.getElementById('proxyIPsMenu');
+    const menuBtn = document.getElementById('proxyIPsMenuBtn');
+    
+    if (!menu.contains(event.target) && event.target !== menuBtn && !menuBtn.contains(event.target)) {
+        menu.style.display = 'none';
+        document.removeEventListener('click', closeProxyIPsMenuOnClickOutside);
+    }
+}
+
+function addProxyIP(ip) {
+    const proxyIPsTextarea = document.getElementById('proxyIPs');
+    const currentIPs = proxyIPsTextarea.value.split('\n').filter(ip => ip.trim() !== '');
+    
+    // 如果IP尚未添加，则添加它
+    if (!currentIPs.includes(ip)) {
+        currentIPs.push(ip);
+        proxyIPsTextarea.value = currentIPs.join('\n');
+        // 自动调整高度
+        proxyIPsTextarea.style.height = 'auto';
+        proxyIPsTextarea.style.height = `${proxyIPsTextarea.scrollHeight}px`;
+        // 触发input事件以启用应用按钮
+        proxyIPsTextarea.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    
+    // 关闭菜单
+    const menu = document.getElementById('proxyIPsMenu');
+    menu.style.display = 'none';
+    document.removeEventListener('click', closeProxyIPsMenuOnClickOutside);
+}
+
+// 在页面加载时初始化Proxy IPs功能
+loadProxyIPs();
+
 function addUdpNoise(isManual, noiseIndex, udpNoise) {
     const index = noiseIndex ?? globalThis.xrayNoiseCount;
     const noise = udpNoise || {
@@ -923,3 +1048,78 @@ function renderUdpNoiseBlock(xrayUdpNoises) {
     });
     globalThis.xrayNoiseCount = xrayUdpNoises.length;
 }
+
+// 新增ProxyIPs相关函数
+let proxyIPsData = [];
+
+async function loadProxyIPs() {
+    const refreshBtn = document.getElementById('refreshProxyIPs');
+    const selectElement = document.getElementById('proxyIPsSelect');
+    
+    try {
+        refreshBtn.classList.add('fa-spin');
+        const response = await fetch('https://raw.githubusercontent.com/happymy/Pip_Json_DEMO2/refs/heads/main/output.json');
+        proxyIPsData = await response.json();
+        
+        // 按国家排序
+        proxyIPsData.sort((a, b) => {
+            const countryA = a.location.split(', ').pop();
+            const countryB = b.location.split(', ').pop();
+            return countryA.localeCompare(countryB);
+        });
+        
+        // 清空现有选项
+        selectElement.innerHTML = '<option value="">Select Proxy IP</option>';
+        
+        // 按国家分组
+        const groupedIPs = {};
+        proxyIPsData.forEach(item => {
+            const parts = item.location.split(', ');
+            const country = parts[parts.length - 1];
+            if (!groupedIPs[country]) {
+                groupedIPs[country] = [];
+            }
+            groupedIPs[country].push(item);
+        });
+        
+        // 添加分组选项
+        Object.keys(groupedIPs).sort().forEach(country => {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = country;
+            groupedIPs[country].forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.ip;
+                option.textContent = `${item.ip} (${item.location})`;
+                optgroup.appendChild(option);
+            });
+            selectElement.appendChild(optgroup);
+        });
+    } catch (error) {
+        console.error('Failed to load proxy IPs:', error);
+        selectElement.innerHTML = '<option value="">Failed to load IPs</option>';
+    } finally {
+        refreshBtn.classList.remove('fa-spin');
+    }
+}
+
+document.getElementById('proxyIPsSelect').addEventListener('change', function() {
+    const selectedIP = this.value;
+    if (selectedIP) {
+        const proxyIPsTextarea = document.getElementById('proxyIPs');
+        const currentIPs = proxyIPsTextarea.value.split('\n').filter(ip => ip.trim() !== '');
+        
+        // 如果IP尚未添加，则添加它
+        if (!currentIPs.includes(selectedIP)) {
+            currentIPs.push(selectedIP);
+            proxyIPsTextarea.value = currentIPs.join('\n');
+            // 自动调整高度
+            proxyIPsTextarea.style.height = 'auto';
+            proxyIPsTextarea.style.height = `${proxyIPsTextarea.scrollHeight}px`;
+            // 触发input事件以启用应用按钮
+            proxyIPsTextarea.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        
+        // 重置选择框
+        this.value = '';
+    }
+});
