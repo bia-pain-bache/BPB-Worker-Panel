@@ -13,7 +13,7 @@ export async function resolveDNS(domain, onlyIPv4 = false) {
 
     try {
         const ipv4 = await fetchDNSRecords(dohURLs.ipv4, 1);
-        const ipv6 = onlyIPv4 ? [] : await fetchDNSRecords(dohURLs.ipv4, 28);
+        const ipv6 = onlyIPv4 ? [] : await fetchDNSRecords(dohURLs.ipv6, 28);
         return { ipv4, ipv6 };
     } catch (error) {
         throw new Error(`Error resolving DNS for ${domain}: ${error.message}`);
