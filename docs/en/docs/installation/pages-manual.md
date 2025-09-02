@@ -80,9 +80,30 @@ https://www.nslookup.io/domains/bpb.yousef.isegaro.com/dns-records/
 ![Pages Application](../images/proxy-ips.jpg)
 
 !!! info
-    To use multiple Proxy IPs, enter them comma-separated.
+    To use multiple Proxy IPs, fill them comma-separated.
     ```title="Example"
     151.213.181.145, 5.163.51.41, bpb.yousef.isegaro.com
+    ```
+
+Enter the IPs in the `Value` field and click `Save`. Click `Create deployment` at the top of the page and upload the zip file again. The changes will take effect.
+
+### Fixing the NAT64 Prefixes
+
+By default, the code uses multiple NAT64 prefixes randomly, assigning a new random prefix for each connection to Cloudflare addresses (covering much of the web). This IP rotation may cause issues, particularly for traders. From version 3.4.2 onward, you can change the prefixes via the panel and update the subscription. However, the method below is recommended:
+
+!!! note
+    Changing the NAT64 prefixes via the panel requires updating the subscription if the IP stops working, which can disrupt donated configurations, as users without an active subscription cannot update them. Use this method only for personal use. Other methods don’t require subscription updates.
+
+In the project’s `Settings` section, open `Variables and Secrets`, click `Add` and enter `NAT64_PREFIX` (in capital letters) in the first box. Obtain IPs from the following link, which lists IPs from various regions and ISPs:
+
+```text
+https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/src/protocols/NAT64Prefixes.md
+```
+
+!!! info
+    To use multiple IPs, fill them comma-separated.
+    ```title="Example"
+    [2602:fc59:b0:64::], [2602:fc59:11:64::]
     ```
 
 Enter the IPs in the `Value` field and click `Save`. Click `Create deployment` at the top of the page and upload the zip file again. The changes will take effect.

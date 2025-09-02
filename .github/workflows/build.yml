@@ -57,4 +57,5 @@ jobs:
           overwrite: true
           file_glob: true
           prerelease: ${{ github.ref != 'refs/heads/main' }}
+          promote: ${{ github.ref == 'refs/heads/main' }}
           body: ${{ steps.read_release.outputs.RELEASE_BODY }}

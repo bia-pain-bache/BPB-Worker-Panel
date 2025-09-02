@@ -25,77 +25,76 @@ export async function VlOverWSHandler(request) {
     let isDns = false;
 
     // ws --> remote
-    readableWebSocketStream
-        .pipeTo(
-            new WritableStream({
-                async write(chunk, controller) {
-                    if (isDns && udpStreamWrite) {
-                        return udpStreamWrite(chunk);
-                    }
-                    if (remoteSocketWapper.value) {
-                        const writer = remoteSocketWapper.value.writable.getWriter();
-                        await writer.write(chunk);
-                        writer.releaseLock();
-                        return;
-                    }
+    readableWebSocketStream.pipeTo(new WritableStream({
+        async write(chunk) {
+            if (isDns && udpStreamWrite) {
+                return udpStreamWrite(chunk);
+            }
 
-                    const {
-                        hasError,
-                        message,
-                        portRemote = 443,
-                        addressRemote = "",
-                        rawDataIndex,
-                        VLVersion = new Uint8Array([0, 0]),
-                        isUDP,
-                    } = processVLHeader(chunk, globalThis.userID);
-                    address = addressRemote;
-                    portWithRandomLog = `${portRemote}--${Math.random()} ${isUDP ? "udp " : "tcp "} `;
-                    if (hasError) {
-                        // controller.error(message);
-                        throw new Error(message); // cf seems has bug, controller.error will not end stream
-                        // webSocket.close(1000, message);
-                        // return;
-                    }
-                    // if UDP but port not DNS port, close it
-                    if (isUDP) {
-                        if (portRemote === 53) {
-                            isDns = true;
-                        } else {
-                            // controller.error('UDP proxy only enable for DNS which is port 53');
-                            throw new Error("UDP proxy only enable for DNS which is port 53"); // cf seems has bug, controller.error will not end stream
-                            // return;
-                        }
-                    }
-                    // ["version", "附加信息长度 N"]
-                    const VLResponseHeader = new Uint8Array([VLVersion[0], 0]);
-                    const rawClientData = chunk.slice(rawDataIndex);
+            if (remoteSocketWapper.value) {
+                const writer = remoteSocketWapper.value.writable.getWriter();
+                await writer.write(chunk);
+                writer.releaseLock();
+                return;
+            }
 
-                    // TODO: support udp here when cf runtime has udp support
-                    if (isDns) {
-                        const { write } = await handleUDPOutBound(webSocket, VLResponseHeader, log);
-                        udpStreamWrite = write;
-                        udpStreamWrite(rawClientData);
-                        return;
-                    }
+            const {
+                hasError,
+                message,
+                portRemote = 443,
+                addressRemote = "",
+                rawDataIndex,
+                VLVersion = new Uint8Array([0, 0]),
+                isUDP,
+            } = processVLHeader(chunk, globalThis.userID);
+            
+            address = addressRemote;
+            portWithRandomLog = `${portRemote}--${Math.random()} ${isUDP ? "udp " : "tcp "} `;
+            
+            if (hasError) {
+                // controller.error(message);
+                throw new Error(message); // cf seems has bug, controller.error will not end stream
+                // webSocket.close(1000, message);
+                // return;
+            }
+            
+            // ["version", "附加信息长度 N"]
+            const VLResponseHeader = new Uint8Array([VLVersion[0], 0]);
+            const rawClientData = chunk.slice(rawDataIndex);
+            
+            // if UDP but port not DNS port, close it
+            if (isUDP) {
+                if (portRemote === 53) {
+                    isDns = true;
+                    const { write } = await handleUDPOutBound(webSocket, VLResponseHeader, log);
+                    udpStreamWrite = write;
+                    udpStreamWrite(rawClientData);
+                    return;
+                } else {
+                    // controller.error('UDP proxy only enable for DNS which is port 53');
+                    throw new Error("UDP proxy only enable for DNS which is port 53"); // cf seems has bug, controller.error will not end stream
+                    // return;
+                }
+            }
 
-                    handleTCPOutBound(
-                        remoteSocketWapper,
-                        addressRemote,
-                        portRemote,
-                        rawClientData,
-                        webSocket,
-                        VLResponseHeader,
-                        log
-                    );
-                },
-                close() {
-                    log(`readableWebSocketStream is close`);
-                },
-                abort(reason) {
-                    log(`readableWebSocketStream is abort`, JSON.stringify(reason));
-                },
-            })
-        )
+            handleTCPOutBound(
+                remoteSocketWapper,
+                addressRemote,
+                portRemote,
+                rawClientData,
+                webSocket,
+                VLResponseHeader,
+                log
+            );
+        },
+        close() {
+            log(`readableWebSocketStream is close`);
+        },
+        abort(reason) {
+            log(`readableWebSocketStream is abort`, JSON.stringify(reason));
+        },
+    })
+    )
         .catch((err) => {
             log("readableWebSocketStream pipeTo error", err);
         });

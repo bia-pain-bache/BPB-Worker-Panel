@@ -51,18 +51,6 @@
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="proxyIPs">
-                            📍 Proxy IPs / Domains
-                            <a class="scanner" href="https://www.nslookup.io/domains/bpb.yousef.isegaro.com/dns-records/"
-                                title="Proxy IPs" target="_blank" rel="noopener noreferrer">
-                                <span class="material-symbols-rounded">open_in_new</span>
-                            </a>
-                        </label>
-                        <div>
-                            <textarea type="text" id="proxyIPs" name="proxyIPs" rows="1"></textarea>
-                        </div>
-                    </div>
-                    <div class="form-control">
                         <label for="outProxy">✈️ Chain Proxy</label>
                         <div>
                             <input type="text" id="outProxy" name="outProxy">
@@ -87,30 +75,6 @@
                                 <option value="true">Enabled</option>
                                 <option value="false">Disabled</option>
                             </select>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="customCdnAddrs">💀 Custom CDN Addrs</label>
-                        <div>
-                            <textarea type="text" id="customCdnAddrs" name="customCdnAddrs" rows="1"></textarea>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="customCdnHost">💀 Custom CDN Host</label>
-                        <div>
-                            <input type="text" id="customCdnHost" name="customCdnHost">
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="customCdnSni">💀 Custom CDN SNI</label>
-                        <div>
-                            <input type="text" id="customCdnSni" name="customCdnSni">
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="bestVLTRInterval">🔄 Best Interval</label>
-                        <div>
-                            <input type="number" id="bestVLTRInterval" name="bestVLTRInterval" min="10" max="90">
                         </div>
                     </div>
                     <div class="form-control">
@@ -159,7 +123,6 @@
                             </select>
                         </div>
                     </div>
-<<<<<<< HEAD
                     <div class="form-control">
                         <label for="bestVLTRInterval">🔄 Best Interval</label>
                         <div>
@@ -186,9 +149,6 @@
                                         title="Proxy IPs" target="_blank" rel="noopener noreferrer">
                                         <span class="material-symbols-rounded">open_in_new</span>
                                     </a>
-                                    <button type="button" id="fetchProxyIPs" class="scanner" title="Fetch proxy IPs from GitHub" onclick="openProxyIPModal()">
-                                        <span class="material-symbols-rounded">cloud_download</span>
-                                    </button>
                                 </label>
                                 <div>
                                     <textarea type="text" id="proxyIPs" name="proxyIPs" rows="1"></textarea>
@@ -232,8 +192,6 @@
                             </div>
                         </div>
                     </div>
-=======
->>>>>>> parent of c9e6403 (Merge pull request #1 from bia-pain-bache/main)
                 </div>
             </details>
             <details>
@@ -340,7 +298,7 @@
                 <div class="section">
                     <div class="container">
                         <div class="section">
-                            <h3><span class="material-symbols-rounded">tune</span> MahsaNG - Hiddify</h3>
+                            <h4><span class="material-symbols-rounded">tune</span> MahsaNG - Hiddify</h4>
                             <div class="form-control">
                                 <label for="hiddifyNoiseMode">😵‍💫 Hiddify Mode</label>
                                 <div>
@@ -387,7 +345,7 @@
                     </div>
                     <div class="container">
                         <div class="section">
-                            <h3><span class="material-symbols-rounded">tune</span> Clash - Amnezia</h3>
+                            <h4><span class="material-symbols-rounded">tune</span> Clash - Amnezia</h4>
                             <div class="form-control">
                                 <label for="amneziaNoiseCount">🎚️ Noise Count</label>
                                 <div>
@@ -409,7 +367,7 @@
                     </div>
                     <div id="udp-noise-container" class="container">
                         <div class="header-container">
-                            <h3><span class="material-symbols-rounded">tune</span> v2rayNG - v2rayN</h3>
+                            <h4><span class="material-symbols-rounded">tune</span> v2rayNG - v2rayN</h4>
                             <button type="button" class="add-noise" onclick="addUdpNoise(true)">
                                 <i class="fa fa-plus-circle fa-2x" aria-hidden="true"></i>
                             </button>
@@ -424,7 +382,7 @@
                 </summary>
                 <div class="section">
                     <div class="container">
-                        <h3><span class="material-symbols-rounded">tune</span> Preset Rules</h3>
+                        <h4><span class="material-symbols-rounded">tune</span> Preset Rules</h4>
                         <div class="form-control">
                             <label for="bypass-rules">🟩 Bypass rules</label>
                             <div>
@@ -469,7 +427,7 @@
                         </div>
                     </div>
                     <div class="container">
-                        <h3><span class="material-symbols-rounded">tune</span> Custom Rules</h3>
+                        <h4><span class="material-symbols-rounded">tune</span> Custom Rules</h4>
                         <div class="form-control">
                             <label for="customBypassRules">🟩 Bypass IPs / Domains</label>
                             <div>
@@ -485,7 +443,7 @@
                         </div>
                     </div>
                     <div class="container">
-                        <h3><span class="material-symbols-rounded">tune</span> Sanction Rules</h3>
+                        <h4><span class="material-symbols-rounded">tune</span> Sanction Rules</h4>
                         <div class="form-control">
                             <label for="antiSanctionDNS">🌏 Anti Sanction DNS</label>
                             <div>
@@ -1154,37 +1112,9 @@
             <div class="modal-content" class="modal-content">
                 <div class="modal-header">
                     <span id="closeQR" class="close" onclick="closeQR()">&times;</span>
-                    <span id="qrcode极速" class="qr-title"></span>
+                    <span id="qrcodeTitle" class="qr-title"></span>
                 </div>
                 <div id="qrcode-container"></div>
-            </div>
-        </div>
-        
-        <!-- Proxy IP Selection Modal -->
-        <div id="proxyIPModal" class="modal">
-            <div class="modal-content" style="max-width: 800px;">
-                <div class="modal-header">
-                    <span class="close" onclick="closeProxyIPModal()">&times;</span>
-                    <h3>Select Proxy IPs</h3>
-                </div>
-                <div class="modal-body">
-                    <div class="header-container">
-                        <button type="button" class="button" onclick="fetchProxyIPsFromGitHub()" title="Refresh IP list">
-                            <i class="fa fa-refresh"></i> Refresh
-                        </button>
-                        <button type="button" class="button" onclick="selectAllIPs()" title="Select all IPs">
-                            <i class="fa fa-check-square-o"></i> Select All
-                        </button>
-                        <button type="button" class="button" onclick="clearAllIPs()" title="Clear all selections">
-                            <i class="fa fa-square-o"></i> Clear All
-                        </button>
-                    </div>
-                    <div id="proxyIPList" class="ip-selection-list" style="max-height: 400px; overflow-y: auto; margin: 10px 0;"></div>
-                    <div class="modal-footer">
-                        <button type="button" class="button" onclick="applySelectedIPs()">Apply Selected</button>
-                        <button type="button" class="button reverse" onclick="closeProxyIPModal()">Cancel</button>
-                    </div>
-                </div>
             </div>
         </div>
         <div class="header-container">

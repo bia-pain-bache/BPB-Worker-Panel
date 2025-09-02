@@ -4,29 +4,33 @@ export function isDomain(address) {
     return domainPattern.test(address);
 }
 
-export async function resolveDNS(domain) {
-    const dohURLv4 = `${globalThis.dohURL}?name=${encodeURIComponent(domain)}&type=A`;
-    const dohURLv6 = `${globalThis.dohURL}?name=${encodeURIComponent(domain)}&type=AAAA`;
+export async function resolveDNS(domain, onlyIPv4 = false) {
+    const dohBaseURL = `${globalThis.dohURL}?name=${encodeURIComponent(domain)}`;
+    const dohURLs = {
+        ipv4: `${dohBaseURL}&type=A`,
+        ipv6: `${dohBaseURL}&type=AAAA`,
+    };
 
     try {
-        const [ipv4Response, ipv6Response] = await Promise.all([
-            fetch(dohURLv4, { headers: { accept: 'application/dns-json' } }),
-            fetch(dohURLv6, { headers: { accept: 'application/dns-json' } })
-        ]);
-
-        const ipv4Addresses = await ipv4Response.json();
-        const ipv6Addresses = await ipv6Response.json();
-
-        const ipv4 = ipv4Addresses.Answer
-            ? ipv4Addresses.Answer.map((record) => record.data)
-            : [];
-        const ipv6 = ipv6Addresses.Answer
-            ? ipv6Addresses.Answer.map((record) => record.data)
-            : [];
-
+        const ipv4 = await fetchDNSRecords(dohURLs.ipv4, 1);
+        const ipv6 = onlyIPv4 ? [] : await fetchDNSRecords(dohURLs.ipv4, 28);
         return { ipv4, ipv6 };
     } catch (error) {
-        throw new Error(`Error resolving DNS: ${error}`);
+        throw new Error(`Error resolving DNS for ${domain}: ${error.message}`);
+    }
+}
+
+async function fetchDNSRecords(url, recordType) {
+    try {
+        const response = await fetch(url, { headers: { accept: 'application/dns-json' } });
+        const data = await response.json();
+
+        if (!data.Answer) return [];
+        return data.Answer
+            .filter(record => record.type === recordType)
+            .map(record => record.data);
+    } catch (error) {
+        throw new Error(`Failed to fetch DNS records from ${url}: ${error.message}`);
     }
 }
 
@@ -75,14 +79,28 @@ export function randomUpperCase(str) {
     return result;
 }
 
-export function getRandomPath(length) {
+export function getRandomString(lengthMin, lengthMax) {
     let result = '';
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     const charactersLength = characters.length;
+    const length = Math.floor(Math.random() * (lengthMax - lengthMin + 1)) + lengthMin;
     for (let i = 0; i < length; i++) {
         result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
     return result;
+}
+
+export function generateWsPath(protocol) {
+    const settings = globalThis.settings;
+    const config = {
+        junk: getRandomString(8, 16),
+        protocol: protocol,
+        mode: settings.proxyIPMode,
+        panelIPs: settings.proxyIPMode === 'proxyip' ? settings.proxyIPs : settings.nat64Prefixes
+    };
+
+    const encodedConfig = btoa(JSON.stringify(config));
+    return `/${encodedConfig}`;
 }
 
 export function base64ToDecimal(base64) {

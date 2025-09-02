@@ -1,4 +1,5 @@
 import { connect } from 'cloudflare:sockets';
+import { isIPv4, resolveDNS } from '../cores-configs/helpers';
 
 export const WS_READY_STATE_OPEN = 1;
 const WS_READY_STATE_CLOSING = 2;
@@ -13,11 +14,12 @@ export async function handleTCPOutBound(
     log
 ) {
     async function connectAndWrite(address, port) {
-        if (/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(address)) address = `${atob('d3d3Lg==')}${address}${atob('LnNzbGlwLmlv')}`;
+        // if (/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(address)) address = `${atob('d3d3Lg==')}${address}${atob('LnNzbGlwLmlv')}`;
         const tcpSocket = connect({
             hostname: address,
             port: port,
         });
+
         remoteSocket.value = tcpSocket;
         log(`connected to ${address}:${port}`);
         const writer = tcpSocket.writable.getWriter();
@@ -26,39 +28,63 @@ export async function handleTCPOutBound(
         return tcpSocket;
     }
 
-    // if the cf connect tcp socket have no incoming data, we retry to redirect ip
     async function retry() {
-        let proxyIP, proxyIpPort;
-        const encodedPanelProxyIPs = globalThis.pathName.split('/')[2] || '';
-        const decodedProxyIPs = encodedPanelProxyIPs ? atob(encodedPanelProxyIPs) : globalThis.proxyIPs;
-        const proxyIpList = decodedProxyIPs.split(',').map(ip => ip.trim());
-        const selectedProxyIP = proxyIpList[Math.floor(Math.random() * proxyIpList.length)];
-        if (selectedProxyIP.includes(']:')) {
-            const match = selectedProxyIP.match(/^(\[.*?\]):(\d+)$/);
-            proxyIP = match[1];
-            proxyIpPort = match[2];
-        } else {
-            [proxyIP, proxyIpPort] = selectedProxyIP.split(':');
+        let tcpSocket;
+        const mode = globalThis.proxyMode;
+        const parseIPs = value => value ? value.split(',').map(val => val.trim()).filter(Boolean) : null;
+
+        if (mode === 'proxyip') {
+            log(`direct connection failed, trying to use Proxy IP for ${addressRemote}`);
+            try {
+                const { panelIPs, proxyIPs } = globalThis;
+                const finalProxyIPs = panelIPs.length ? panelIPs : parseIPs(proxyIPs);
+                const selectedProxyIP = finalProxyIPs[Math.floor(Math.random() * finalProxyIPs.length)];
+                let proxyIP, proxyIpPort;
+
+                if (selectedProxyIP.includes(']:')) {
+                    const match = selectedProxyIP.match(/^(\[.*?\]):(\d+)$/);
+                    proxyIP = match[1];
+                    proxyIpPort = match[2];
+                } else {
+                    [proxyIP, proxyIpPort] = selectedProxyIP.split(':');
+                }
+
+                tcpSocket = await connectAndWrite(proxyIP || addressRemote, +proxyIpPort || portRemote);
+            } catch (error) {
+                console.error('Proxy IP connection failed:', error);
+                webSocket.close(1011, 'Proxy IP connection failed: ' + error.message);
+            }
+
+        } else if (mode === 'nat64') {
+            log(`direct connection failed, trying to generate dynamic NAT64 IP for ${addressRemote}`);
+            try {
+                const { panelIPs, nat64Prefixes } = globalThis;
+                const prefixes = panelIPs.length ? panelIPs : parseIPs(nat64Prefixes);
+                const selectedPrefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+                const dynamicProxyIP = await getDynamicProxyIP(addressRemote, selectedPrefix);
+                tcpSocket = await connectAndWrite(dynamicProxyIP, portRemote);
+            } catch (error) {
+                console.error('NAT64 connection failed:', error);
+                webSocket.close(1011, 'NAT64 connection failed: ' + error.message);
+            }
         }
 
-        const tcpSocket = await connectAndWrite(proxyIP || addressRemote, +proxyIpPort || portRemote);
-        // no matter retry success or not, close websocket
-        tcpSocket.closed
-            .catch((error) => {
-                console.log("retry tcpSocket closed error", error);
-            })
-            .finally(() => {
-                safeCloseWebSocket(webSocket);
-            });
+        tcpSocket.closed.catch(error => {
+            console.log('retry tcpSocket closed error', error);
+        }).finally(() => {
+            safeCloseWebSocket(webSocket);
+        });
 
         remoteSocketToWS(tcpSocket, webSocket, VLResponseHeader, null, log);
     }
 
-    const tcpSocket = await connectAndWrite(addressRemote, portRemote);
-
-    // when remoteSocket is ready, pass to websocket
-    // remote--> ws
-    remoteSocketToWS(tcpSocket, webSocket, VLResponseHeader, retry, log);
+    try {
+        const tcpSocket = await connectAndWrite(addressRemote, portRemote);
+        remoteSocketToWS(tcpSocket, webSocket, VLResponseHeader, retry, log);
+    } catch (error) {
+        console.error('Connection failed:', err);
+        webSocket.close(1011, 'Connection failed');
+    }
 }
 
 async function remoteSocketToWS(remoteSocket, webSocket, VLResponseHeader, retry, log) {
@@ -190,3 +216,38 @@ export function safeCloseWebSocket(socket) {
         console.error('safeCloseWebSocket error', error);
     }
 }
+
+async function getDynamicProxyIP(address, nat64Prefix) {
+    let finalAddress = address;
+    if (!isIPv4(address)) {
+        const { ipv4 } = await resolveDNS(address, true);
+        if (ipv4.length) {
+            finalAddress = ipv4[0];
+        } else {
+            throw new Error('Unable to find IPv4 in DNS records');
+        }
+    }
+
+    return convertToNAT64IPv6(finalAddress, nat64Prefix);
+}
+
+function convertToNAT64IPv6(ipv4Address, nat64Prefix) {
+    const parts = ipv4Address.split('.');
+    if (parts.length !== 4) {
+        throw new Error('Invalid IPv4 address');
+    }
+
+    const hex = parts.map(part => {
+        const num = parseInt(part, 10);
+        if (num < 0 || num > 255) {
+            throw new Error('Invalid IPv4 address');
+        }
+        return num.toString(16).padStart(2, '0');
+    });
+
+    const match = nat64Prefix.match(/^\[([0-9A-Fa-f:]+)\]$/);
+    if (match) {
+        return `[${match[1]}${hex[0]}${hex[1]}:${hex[2]}${hex[3]}]`;
+    }
+}
+

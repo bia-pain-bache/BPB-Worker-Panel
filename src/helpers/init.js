@@ -1,14 +1,29 @@
 import { isValidUUID } from "./helpers";
 
-export function init(request, env) {
+export function init(request, env, upgradeHeader) {
     const url = new URL(request.url);
     const searchParams = new URLSearchParams(url.search);
+
+    if (upgradeHeader === 'websocket') {
+        const encodedPathConfig = url.pathname.replace("/", "") || '';
+        try {
+            const { protocol, mode, panelIPs } = JSON.parse(atob(encodedPathConfig));
+            globalThis.wsProtocol = protocol;
+            globalThis.proxyMode = mode;
+            globalThis.panelIPs = panelIPs;
+        } catch (error) {
+            return new Response('Failed to parse WebSocket path config', { status: 400 });
+        }
+
+        globalThis.proxyIPs = env.PROXY_IP || atob('YnBiLnlvdXNlZi5pc2VnYXJvLmNvbQ==');
+        globalThis.nat64Prefixes = env.NAT64_PREFIX || '[2a02:898:146:64::],[2602:fc59:b0:64::],[2602:fc59:11:64::]';
+    }
+
     globalThis.panelVersion = __VERSION__;
     globalThis.defaultHttpPorts = [80, 8080, 2052, 2082, 2086, 2095, 8880];
     globalThis.defaultHttpsPorts = [443, 8443, 2053, 2083, 2087, 2096];
     globalThis.userID = env.UUID;
     globalThis.TRPassword = env.TR_PASS;
-    globalThis.proxyIPs = env.PROXY_IP || atob('YnBiLnlvdXNlZi5pc2VnYXJvLmNvbQ==');
     globalThis.hostName = request.headers.get('Host');
     globalThis.pathName = url.pathname;
     globalThis.client = searchParams.get('app');

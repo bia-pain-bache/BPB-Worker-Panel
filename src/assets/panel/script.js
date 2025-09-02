@@ -18,6 +18,9 @@ const [
 
 const defaultHttpsPorts = [443, 8443, 2053, 2083, 2087, 2096];
 const defaultHttpPorts = [80, 8080, 8880, 2052, 2082, 2086, 2095];
+const ipv6Regex = /^\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}|:(?::[a-fA-F0-9]{1,4}){1,7})\](?:\/(?:12[0-8]|1[01]?\d|[0-9]?\d))?/;
+const ipv4Regex = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)(?:\/(?:\d|[12]\d|3[0-2]))?/;
+const domainRegex = /^(?=.{1,253}$)(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)\.)+[a-zA-Z]{2,63}/;
 
 fetch('/panel/settings')
     .then(async response => response.json())
@@ -403,6 +406,7 @@ function validateSettings() {
     const validations = [
         validateMultipleHostNames(elementsToCheck),
         validateProxyIPs(),
+        validateNAT64Prefixes(),
         validateWarpEndpoints(),
         validateMinMax(),
         validateChainProxy(),
@@ -450,7 +454,9 @@ function updateSettings(event, data) {
     event.preventDefault();
     event.stopPropagation();
 
-    const form = data ? data : validateSettings();
+    const validatedForm = validateSettings();
+    if (!validatedForm) return false;
+    const form = data ? data : validatedForm;
     const applyButton = document.getElementById('applyButton');
     document.body.style.cursor = 'wait';
     const applyButtonVal = applyButton.value;
@@ -503,9 +509,6 @@ function validateSanctionDns() {
 }
 
 function isValidHostName(value, isHost) {
-    const ipv6Regex = /^\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}|:(?::[a-fA-F0-9]{1,4}){1,7})\](?:\/(?:12[0-8]|1[01]?\d|[0-9]?\d))?/;
-    const ipv4Regex = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)(?:\/(?:\d|[12]\d|3[0-2]))?/;
-    const domainRegex = /^(?=.{1,253}$)(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)\.)+[a-zA-Z]{2,63}/;
     const portRegex = /:(?:6553[0-5]|655[0-2]\d|65[0-4]\d{2}|6[0-4]\d{3}|[1-5]?\d{1,4})$/;
     const append = isHost ? portRegex.source : '$';
     const ipv6Reg = new RegExp(ipv6Regex.source + append, 'gm');
@@ -535,6 +538,19 @@ function validateProxyIPs() {
 
     if (invalidValues.length) {
         alert('⛔ Invalid proxy IPs.\n👉 Please enter each IP/domain in a new line.\n\n' + invalidValues.map(ip => '⚠️ ' + ip).join('\n'));
+        return false;
+    }
+
+    return true;
+}
+
+function validateNAT64Prefixes() {
+    const ipv6Reg = new RegExp('^' + ipv6Regex.source + '$');
+    const nat64Prefixes = document.getElementById('nat64Prefixes').value?.split('\n').filter(Boolean).map(ip => ip.trim());
+    const invalidValues = nat64Prefixes?.filter(value => !ipv6Reg.test(value));
+
+    if (invalidValues.length) {
+        alert('⛔ Invalid NAT64 prefix.\n👉 Please enter each prefix in a new line using [].\n\n' + invalidValues.map(ip => '⚠️ ' + ip).join('\n'));
         return false;
     }
 
@@ -905,141 +921,5 @@ function renderUdpNoiseBlock(xrayUdpNoises) {
     xrayUdpNoises.forEach((noise, index) => {
         addUdpNoise(false, index, noise);
     });
-    globalThis.xrayNoiseCount = xrayUdp极速s.length;
-}
-
-// Proxy IP selection modal functions
-function openProxyIPModal() {
-    const modal = document.getElementById('proxyIPModal');
-    modal.style.display = "block";
-    document.body.style.overflow = "hidden";
-    fetchProxyIPsFromGitHub();
-}
-
-function closeProxyIPModal() {
-    const modal = document.getElementById('proxyIPModal');
-    modal.style.display = "none";
-    document.body.style.overflow = "";
-}
-
-async function fetchProxyIPsFromGitHub() {
-    const refreshBtn = document.getElementById('fetchProxyIPs');
-    const loadingIcon = refreshBtn.querySelector('span');
-    const ipList = document.getElementById('proxyIPList');
-    
-    loadingIcon.classList.add('fa-spin');
-    ipList.innerHTML = '<div class="loading">Loading IP addresses...</div>';
-
-    try {
-        const response = await fetch('https://raw.githubusercontent.com/happymy/Pip_Json_DEMO2/refs/heads/main/output.json?nocache=' + Date.now(), { 
-            cache: "no-store" 
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        // Group IPs by country
-        const groupedByCountry = {};
-        data.forEach(item => {
-            const country = item.location.split(', ').pop(); // Get the country from location
-            if (!groupedByCountry[country]) {
-                groupedByCountry[country] = [];
-            }
-            groupedByCountry[country].push(item);
-        });
-
-        // Sort countries alphabetically
-        const sortedCountries = Object.keys(groupedByCountry).sort();
-        
-        let html = '';
-        sortedCountries.forEach(country => {
-            html += `
-                <div class="country-group">
-                    <h4>${country}</h4>
-                    <div class="ip-list">
-            `;
-            
-            groupedByCountry[country].forEach(ip => {
-                html += `
-                    <div class="ip-item">
-                        <input type="checkbox" id="ip-${ip.ip}" value="${ip.ip}" 
-                               onchange="toggleIPSelection('${ip.ip}', '${ip.location}')">
-                        <label for="ip-${ip.ip}">
-                            <span class="ip-address">${ip.ip}</span>
-                            <span class="ip-location">${ip.location}</span>
-                        </label>
-                    </div>
-                `;
-            });
-            
-            html += `
-                    </div>
-                </div>
-            `;
-        });
-
-        ipList.innerHTML = html;
-        
-    } catch (error) {
-        console.error("Fetching proxy IPs error:", error.message || error);
-        ipList.innerHTML = `<div class="error">Error loading IP addresses: ${error.message}</div>`;
-    } finally {
-        loadingIcon.classList.remove('fa-spin');
-    }
-}
-
-function toggleIPSelection(ip, location) {
-    const checkbox = document.getElementById(`ip-${ip}`);
-    const proxyIPsTextarea = document.getElementById('proxyIPs');
-    const currentIPs = proxyIPsTextarea.value.split('\n').filter(Boolean);
-    
-    if (checkbox.checked) {
-        // Add IP if not already present
-        if (!currentIPs.includes(ip)) {
-            currentIPs.push(ip);
-        }
-    } else {
-        // Remove IP
-        const index = currentIPs.indexOf(ip);
-        if (index > -1) {
-            currentIPs.splice(index, 1);
-        }
-    }
-    
-    proxyIPsTextarea.value = currentIPs.join('\n');
-    proxyIPsTextarea.dispatchEvent(new Event('input')); // Trigger form change detection
-}
-
-function selectAllIPs() {
-    const checkboxes = document.querySelectorAll('#proxyIPList input[type="checkbox"]');
-    const proxyIPsTextarea = document.getElementById('proxyIPs');
-    const selectedIPs = [];
-    
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = true;
-        selectedIPs.push(checkbox.value);
-    });
-    
-    proxyIPsTextarea.value = selectedIPs.join('\n');
-    proxyIPsTextarea.dispatchEvent(new Event('input'));
-}
-
-function clearAllIPs() {
-    const checkboxes = document.querySelectorAll('#proxyIPList input[type="checkbox"]');
-    const proxyIPsTextarea = document.getElementById('proxyIPs');
-    
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = false;
-    });
-    
-    proxyIPsTextarea.value = '';
-    proxyIPsTextarea.dispatchEvent(new Event('input'));
-}
-
-function applySelectedIPs() {
-    closeProxyIPModal();
-    enableApplyButton();
+    globalThis.xrayNoiseCount = xrayUdpNoises.length;
 }
