@@ -145,13 +145,19 @@
                                 <label for="proxyIPs">
                                     📍 Proxy IPs / Domains
                                     <a class="scanner"
-                                        href="https://www.nslookup.io/domains/bpb.yousef.isegaro.com/dns-records/"
-                                        title="Proxy IPs" target="_blank" rel="noopener noreferrer">
+                                        href="https://raw.githubusercontent.com/happymy/Pip_Json_DEMO2/refs/heads/main/output.json"
+                                        title="Proxy IPs Source" target="_blank" rel="noopener noreferrer">
                                         <span class="material-symbols-rounded">open_in_new</span>
                                     </a>
+                                    <button type="button" id="refreshProxyIPs" class="scanner" title="Refresh Proxy IPs" onclick="loadProxyIPs()" style="background: none; border: none; cursor: pointer; padding: 0; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center;">
+                                        <span class="material-symbols-rounded" style="font-size: 20px;">autorenew</span>
+                                    </button>
                                 </label>
                                 <div>
-                                    <textarea type="text" id="proxyIPs" name="proxyIPs" rows="1"></textarea>
+                                    <select id="proxyIPsSelect" name="proxyIPsSelect" style="display: none; width: 100%; height: 40px; margin-bottom: 8px; padding: 6px 12px; border-radius: 4px; border: 1px solid #ccc; box-sizing: border-box; font-family: inherit; font-size: 14px;">
+                                        <option value="">-- Select Proxy IPs --</option>
+                                    </select>
+                                    <textarea type="text" id="proxyIPs" name="proxyIPs" rows="1" placeholder="Enter Proxy IPs/Domains, one per line"></textarea>
                                 </div>
                             </div>
                             <div class="form-control">

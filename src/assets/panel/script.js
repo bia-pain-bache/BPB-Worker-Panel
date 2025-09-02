@@ -22,6 +22,112 @@ const ipv6Regex = /^\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]
 const ipv4Regex = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)(?:\/(?:\d|[12]\d|3[0-2]))?/;
 const domainRegex = /^(?=.{1,253}$)(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)\.)+[a-zA-Z]{2,63}/;
 
+// 存储从远程获取的Proxy IPs数据
+let proxyIPsData = [];
+
+async function loadProxyIPs() {
+    const proxyIPsSelect = document.getElementById('proxyIPsSelect');
+    const refreshBtn = document.getElementById('refreshProxyIPs');
+    
+    try {
+        // 添加加载状态
+        refreshBtn.classList.add('fa-spin');
+        
+        const response = await fetch('https://raw.githubusercontent.com/happymy/Pip_Json_DEMO2/refs/heads/main/output.json');
+        const data = await response.json();
+        
+        // 保存数据供后续使用
+        proxyIPsData = data;
+        
+        // 按国家排序
+        const sortedData = data.sort((a, b) => {
+            const countryA = a.location.split(', ').pop();
+            const countryB = b.location.split(', ').pop();
+            return countryA.localeCompare(countryB);
+        });
+        
+        // 清空现有选项（保留默认选项）
+        proxyIPsSelect.innerHTML = '<option value="">-- Select Proxy IPs --</option>';
+        
+        // 按国家分组
+        const groupedIPs = {};
+        sortedData.forEach(item => {
+            const parts = item.location.split(', ');
+            const country = parts[parts.length - 1];
+            
+            if (!groupedIPs[country]) {
+                groupedIPs[country] = [];
+            }
+            groupedIPs[country].push(item);
+        });
+        
+        // 添加分组选项
+        Object.keys(groupedIPs)
+            .sort()
+            .forEach(country => {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = country;
+                
+                groupedIPs[country]
+                    .forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item.ip;
+                        option.textContent = `${item.ip} (${item.location})`;
+                        optgroup.appendChild(option);
+                    });
+                
+                proxyIPsSelect.appendChild(optgroup);
+            });
+        
+        // 显示下拉框
+        proxyIPsSelect.style.display = 'block';
+        
+    } catch (error) {
+        console.error('Failed to load proxy IPs:', error);
+        proxyIPsSelect.innerHTML = '<option value="">-- Failed to load data --</option>';
+        alert('Failed to load proxy IPs. Please try again.');
+    } finally {
+        // 移除加载状态
+        refreshBtn.classList.remove('fa-spin');
+    }
+}
+
+// 当用户从下拉框选择Proxy IP时的处理函数
+function handleProxyIPSelection() {
+    const proxyIPsSelect = document.getElementById('proxyIPsSelect');
+    const proxyIPsTextarea = document.getElementById('proxyIPs');
+    const selectedValue = proxyIPsSelect.value;
+    
+    if (selectedValue) {
+        const currentIPs = proxyIPsTextarea.value.split('\n').filter(ip => ip.trim() !== '');
+        
+        // 如果IP尚未添加，则添加它
+        if (!currentIPs.includes(selectedValue)) {
+            currentIPs.push(selectedValue);
+            proxyIPsTextarea.value = currentIPs.join('\n');
+            // 自动调整高度
+            proxyIPsTextarea.style.height = 'auto';
+            proxyIPsTextarea.style.height = `${proxyIPsTextarea.scrollHeight}px`;
+            // 触发input事件以启用应用按钮
+            proxyIPsTextarea.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        
+        // 重置选择框
+        proxyIPsSelect.value = '';
+    }
+}
+
+// 在页面加载完成后初始化Proxy IPs功能
+document.addEventListener('DOMContentLoaded', function() {
+    const proxyIPsSelect = document.getElementById('proxyIPsSelect');
+    if (proxyIPsSelect) {
+        proxyIPsSelect.addEventListener('change', handleProxyIPSelection);
+    }
+});
+
+// 在页面加载时初始化Proxy IPs功能
+loadProxyIPs();
+
 fetch('/panel/settings')
     .then(async response => response.json())
     .then(data => {
