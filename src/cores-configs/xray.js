@@ -52,7 +52,7 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
         finalRemoteDNS = `https://${customDns}/dns-query`;
         dnsObject.hosts[customDns] = customDnsHosts;
         skipFallback = false;
-        dnsObject.disableFallback = true;
+        dnsObject.disableFallbackIfMatch = true;
     }
 
     const remoteDnsServer = buildDnsServer(finalRemoteDNS, null, null, null, "remote-dns");

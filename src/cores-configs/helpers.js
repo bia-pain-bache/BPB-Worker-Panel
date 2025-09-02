@@ -134,3 +134,16 @@ export function getDomain(url) {
 export function base64EncodeUnicode(str) {
     return btoa(String.fromCharCode(...new TextEncoder().encode(str)));
 }
+
+export function parseHostPort(input) {
+    const regex = /^(?:\[(?<ipv6>.+?)\]|(?<host>[^:]+))(:(?<port>\d+))?$/;
+    const match = input.match(regex);
+
+    if (!match) return null;
+
+    const host = match.groups.ipv6 || match.groups.host;
+    const port = match.groups.port ? parseInt(match.groups.port, 10) : null;
+
+    return { host, port };
+}
+

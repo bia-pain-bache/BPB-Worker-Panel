@@ -1,4 +1,4 @@
-import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, isIPv6, isIPv4, isDomain, getDomain, generateWsPath } from './helpers';
+import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, isIPv6, isIPv4, isDomain, getDomain, generateWsPath, parseHostPort } from './helpers';
 import { getDataset } from '../kv/handlers';
 
 async function buildClashDNS(isChain, isWarp) {
@@ -240,10 +240,7 @@ function buildClashTROutbound(remark, address, port, host, sni, allowInsecure) {
 
 function buildClashWarpOutbound(warpConfigs, remark, endpoint, chain, isPro) {
     const settings = globalThis.settings;
-    const ipv6Regex = /\[(.*?)\]/;
-    const portRegex = /[^:]*$/;
-    const endpointServer = endpoint.includes('[') ? endpoint.match(ipv6Regex)[1] : endpoint.split(':')[0];
-    const endpointPort = endpoint.includes('[') ? +endpoint.match(portRegex)[0] : +endpoint.split(':')[1];
+    const { host, port } = parseHostPort(endpoint);
     const ipVersion = settings.warpEnableIPv6 ? "dual" : "ipv4";
 
     const {
@@ -260,8 +257,8 @@ function buildClashWarpOutbound(warpConfigs, remark, endpoint, chain, isPro) {
         "ipv6": warpIPv6,
         "ip-version": ipVersion,
         "private-key": privateKey,
-        "server": chain ? "162.159.192.1" : endpointServer,
-        "port": chain ? 2408 : endpointPort,
+        "server": chain ? "162.159.192.1" : host,
+        "port": chain ? 2408 : port,
         "public-key": publicKey,
         "allowed-ips": ["0.0.0.0/0", "::/0"],
         "reserved": reserved,

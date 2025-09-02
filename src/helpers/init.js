@@ -6,17 +6,34 @@ export function init(request, env, upgradeHeader) {
 
     if (upgradeHeader === 'websocket') {
         const encodedPathConfig = url.pathname.replace("/", "") || '';
+        const parseIPs = value => value ? value.split(',').map(val => val.trim()).filter(Boolean) : undefined;
+
         try {
             const { protocol, mode, panelIPs } = JSON.parse(atob(encodedPathConfig));
             globalThis.wsProtocol = protocol;
             globalThis.proxyMode = mode;
             globalThis.panelIPs = panelIPs;
+            const proxyIPs = parseIPs(env.PROXY_IP) || [atob('YnBiLnlvdXNlZi5pc2VnYXJvLmNvbQ==')];
+            const nat64Prefixes = parseIPs(env.NAT64_PREFIX) || [
+                '[2a02:898:146:64::]',
+                '[2602:fc59:b0:64::]',
+                '[2602:fc59:11:64::]'
+            ];
+            
+            let ips = [];
+
+            if (mode === 'proxyip') {
+                ips = panelIPs.length ? panelIPs : proxyIPs;
+            } else if (mode === 'nat64') {
+                ips = panelIPs.length ? panelIPs : nat64Prefixes;
+            } else {
+                return new Response('Not found', { status: 404 });
+            }
+
+            globalThis.proxyIP = ips[Math.floor(Math.random() * ips.length)];
         } catch (error) {
             return new Response('Failed to parse WebSocket path config', { status: 400 });
         }
-
-        globalThis.proxyIPs = env.PROXY_IP || atob('YnBiLnlvdXNlZi5pc2VnYXJvLmNvbQ==');
-        globalThis.nat64Prefixes = env.NAT64_PREFIX || '[2a02:898:146:64::],[2602:fc59:b0:64::],[2602:fc59:11:64::]';
     }
 
     globalThis.panelVersion = __VERSION__;
