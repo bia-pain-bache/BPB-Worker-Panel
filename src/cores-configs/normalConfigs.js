@@ -1,4 +1,4 @@
-import { getConfigAddresses, generateRemark, randomUpperCase, base64EncodeUnicode, generateWsPath } from './helpers';
+import { getConfigAddresses, generateRemark, randomUpperCase, getRandomPath, base64EncodeUnicode } from './helpers';
 
 export async function getNormalConfigs(isFragment) {
     const settings = globalThis.settings;
@@ -9,19 +9,18 @@ export async function getNormalConfigs(isFragment) {
     const buildConfig = (protocol, addr, port, host, sni, remark) => {
         const isTLS = globalThis.defaultHttpsPorts.includes(port);
         const security = isTLS ? 'tls' : 'none';
-        
+        const path = `${getRandomPath(16)}${settings.proxyIPs.length ? `/${btoa(settings.proxyIPs.join(','))}` : ''}`;
         const config = new URL(`${protocol}://config`);
-        let pathProtocol = 'vl';
+        let pathPrefix = '';
 
         if (protocol === atob('dmxlc3M=')) {
             config.username = globalThis.userID;
             config.searchParams.append('encryption', 'none');
         } else {
             config.username = globalThis.TRPassword;
-            pathProtocol = 'tr';
+            pathPrefix = 'tr';
         }
 
-        const path = generateWsPath(pathProtocol);
         config.hostname = addr;
         config.port = port;
         config.searchParams.append('host', host);
@@ -32,9 +31,9 @@ export async function getNormalConfigs(isFragment) {
         if (globalThis.client === 'singbox') {
             config.searchParams.append('eh', 'Sec-WebSocket-Protocol');
             config.searchParams.append('ed', '2560');
-            config.searchParams.append('path', path);
+            config.searchParams.append('path', `/${pathPrefix}${path}`);
         } else {
-            config.searchParams.append('path', `${path}?ed=2560`);
+            config.searchParams.append('path', `/${pathPrefix}${path}?ed=2560`);
         }
 
         if (isTLS) {
@@ -89,8 +88,8 @@ export async function getNormalConfigs(isFragment) {
     }
 
     const configs = btoa(VLConfs + TRConfs + chainProxy);
-    const hiddifyHash = base64EncodeUnicode(isFragment ? `💦 ${atob('QlBC')} Fragment` : `💦 ${atob('QlBC')} Normal`);
-
+    const hiddifyHash = base64EncodeUnicode( isFragment ? `💦 ${atob('QlBC')} Fragment` : `💦 ${atob('QlBC')} Normal`);
+    
     return new Response(configs, {
         status: 200,
         headers: {

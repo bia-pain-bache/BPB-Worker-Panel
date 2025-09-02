@@ -75,10 +75,6 @@ h1 {
     gap: var(--container-gap);
 }
 
-.container > .section{
-    margin: 0;
-}
-
 .inner-container {
     display: flex;
     flex-direction: column;
@@ -337,10 +333,6 @@ h3 {
     color: var(--hr-text-color);
     justify-content: center;
     align-items: center;
-}
-
-h4 {
-    margin: 0;
 }
 
 hr {
