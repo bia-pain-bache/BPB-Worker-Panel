@@ -49,8 +49,8 @@ export function init(request, env, upgradeHeader) {
     globalThis.fallbackDomain = env.FALLBACK || 'speed.cloudflare.com';
     globalThis.subPath = env.SUB_PATH || globalThis.userID;
     if (!['/secrets', '/favicon.ico'].includes(globalThis.pathName)) {
-        if (typeof env.kv !== 'object') throw new Error('KV Dataset is not properly set! Please refer to tutorials.', { cause: "init" });
         if (!globalThis.userID || !globalThis.TRPassword) throw new Error(`Please set UUID and ${atob('VHJvamFu')} password first. Please visit <a href="${globalThis.urlOrigin}/secrets" target="_blank">here</a> to generate them.`, { cause: "init" });
         if (!isValidUUID(globalThis.userID)) throw new Error(`Invalid UUID: ${globalThis.userID}`, { cause: "init" });
+        if (typeof env.kv !== 'object') throw new Error('KV Dataset is not properly set! Please refer to tutorials.', { cause: "init" });
     }
 }
