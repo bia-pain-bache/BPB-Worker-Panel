@@ -36,13 +36,12 @@ async function fetchDNSRecords(url, recordType) {
 
 export async function getConfigAddresses(isFragment) {
     const { settings, hostName } = globalThis;
-    const resolved = await resolveDNS(hostName);
-    const defaultIPv6 = settings.VLTRenableIPv6 ? resolved.ipv6.map((ip) => `[${ip}]`) : [];
+    const resolved = await resolveDNS(hostName, !settings.VLTRenableIPv6);
     const addrs = [
         hostName,
         'www.speedtest.net',
         ...resolved.ipv4,
-        ...defaultIPv6,
+        ...resolved.ipv6.map((ip) => `[${ip}]`),
         ...settings.cleanIPs
     ];
 
