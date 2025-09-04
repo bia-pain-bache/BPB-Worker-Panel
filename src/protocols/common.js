@@ -31,11 +31,14 @@ export async function handleTCPOutBound(
     async function retry() {
         let tcpSocket;
         const mode = globalThis.proxyMode;
+        const getRandomValue = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
         if (mode === 'proxyip') {
             log(`direct connection failed, trying to use Proxy IP for ${addressRemote}`);
             try {
-                const { host, port } = parseHostPort(globalThis.proxyIP);
+                const ips = globalThis.panelIPs.length ? globalThis.panelIPs : globalThis.proxyIPs;
+                const proxyIP = getRandomValue(ips);
+                const { host, port } = parseHostPort(proxyIP);
                 tcpSocket = await connectAndWrite(host || addressRemote, port || portRemote);
             } catch (error) {
                 console.error('Proxy IP connection failed:', error);
@@ -45,7 +48,9 @@ export async function handleTCPOutBound(
         } else if (mode === 'nat64') {
             log(`direct connection failed, trying to generate dynamic NAT64 IP for ${addressRemote}`);
             try {
-                const dynamicProxyIP = await getDynamicProxyIP(addressRemote, globalThis.proxyIP);
+                const ips = globalThis.panelIPs.length ? globalThis.panelIPs : globalThis.nat64Prefixes;
+                const nat64Prefix = getRandomValue(ips);
+                const dynamicProxyIP = await getDynamicProxyIP(addressRemote, nat64Prefix);
                 tcpSocket = await connectAndWrite(dynamicProxyIP, portRemote);
             } catch (error) {
                 console.error('NAT64 connection failed:', error);
