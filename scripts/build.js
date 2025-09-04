@@ -9,6 +9,7 @@ import JSZip from "jszip";
 import obfs from 'javascript-obfuscator';
 import pkg from '../package.json' with { type: 'json' };
 
+
 const env = process.env.NODE_ENV || 'mangle';
 const mangleMode = env === 'mangle';
 
