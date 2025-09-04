@@ -46,6 +46,12 @@ jobs:
           r="${r//$'\n'/'%0A'}"                             
           r="${r//$'\r'/'%0D'}"                             
           echo "RELEASE_BODY=$r" >> $GITHUB_OUTPUT          
+          # Set branch name variable, empty if main branch.
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+            echo "BRANCH_SUFFIX=" >> $GITHUB_OUTPUT
+          else
+            echo "BRANCH_SUFFIX= ($GITHUB_REF_NAME)" >> $GITHUB_OUTPUT
+          fi
 
       - name: Upload Release Assets
         uses: svenstaro/upload-release-action@v2
@@ -53,7 +59,7 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: dist/*
           tag: v${{ env.RELEASE_VERSION }}
-          release_name: Release v${{ env.RELEASE_VERSION }}
+          release_name: Release v${{ env.RELEASE_VERSION }}${{ steps.read_release.outputs.BRANCH_SUFFIX }}
           overwrite: true
           file_glob: true
           prerelease: ${{ github.ref != 'refs/heads/main' }}
