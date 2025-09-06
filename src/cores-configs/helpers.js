@@ -95,7 +95,7 @@ export function generateWsPath(protocol) {
         junk: getRandomString(8, 16),
         protocol: protocol,
         mode: settings.proxyIPMode,
-        panelIPs: settings.proxyIPMode === 'proxyip' ? settings.proxyIPs : settings.nat64Prefixes
+        panelIPs: settings.proxyIPMode === 'proxyip' ? settings.proxyIPs : settings.prefixes
     };
 
     const encodedConfig = btoa(JSON.stringify(config));

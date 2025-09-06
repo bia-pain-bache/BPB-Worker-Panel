@@ -556,8 +556,8 @@ function validateProxyIPs() {
 }
 
 function validateNAT64Prefixes() {
-    const nat64Prefixes = document.getElementById('nat64Prefixes').value?.split('\n').filter(Boolean).map(prefix => prefix.trim());
-    const invalidValues = nat64Prefixes?.filter(value => !ipv6Regex.test(value));
+    const prefixes = document.getElementById('prefixes').value?.split('\n').filter(Boolean).map(prefix => prefix.trim());
+    const invalidValues = prefixes?.filter(value => !ipv6Regex.test(value));
 
     if (invalidValues.length) {
         alert('⛔ Invalid NAT64 prefix.\n👉 Please enter each prefix in a new line using [].\n\n' + invalidValues.map(ip => `⚠️ ${ip}`).join('\n'));

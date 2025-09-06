@@ -14,10 +14,10 @@ export function init(request, env, upgradeHeader) {
             globalThis.proxyMode = mode;
             globalThis.panelIPs = panelIPs;
             globalThis.proxyIPs = parseIPs(env.PROXY_IP) || [atob('YnBiLnlvdXNlZi5pc2VnYXJvLmNvbQ==')];
-            globalThis.nat64Prefixes = parseIPs(env.NAT64_PREFIX) || [
-                '[2a02:898:146:64::]',
-                '[2602:fc59:b0:64::]',
-                '[2602:fc59:11:64::]'
+            globalThis.prefixes = parseIPs(env.PREFIX) || [
+                atob('WzJhMDI6ODk4OjE0Njo2NDo6XQ=='),
+                atob('WzI2MDI6ZmM1OTpiMDo2NDo6XQ=='),
+                atob('WzI2MDI6ZmM1OToxMTo2NDo6XQ==')
             ];
         } catch (error) {
             return new Response('Failed to parse WebSocket path config', { status: 400 });

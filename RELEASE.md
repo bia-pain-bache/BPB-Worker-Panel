@@ -1,5 +1,4 @@
 # ⚙️ Bug fixes and Improvements
 
-- Fixed missing IPv6 configs #1000
-- Fixed WorkerLess malfunctioning with Fake DNS enabled
 - Refactored
+- Try to fix 1101 #987

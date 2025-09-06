@@ -39,9 +39,7 @@ export async function handlePanel(request, env) {
 
 export async function handleError(error) {
     const encodedHtml = __ERROR_HTML_CONTENT__;
-    const html = new TextDecoder('utf-8')
-        .decode(Uint8Array.from(atob(encodedHtml), c => c.charCodeAt(0)))
-        .replace('__ERROR_MESSAGE__', error.message);
+    const html = hexToString(encodedHtml).replace('__ERROR_MESSAGE__', error.message);
 
     return new Response(html, {
         status: 200,
@@ -255,7 +253,7 @@ async function renderPanel(request, env) {
     }
 
     const encodedHtml = __PANEL_HTML_CONTENT__;
-    const html = new TextDecoder('utf-8').decode(Uint8Array.from(atob(encodedHtml), c => c.charCodeAt(0)));
+    const html = hexToString(encodedHtml);
     return new Response(html, {
         headers: { 'Content-Type': 'text/html' }
     });
@@ -266,7 +264,7 @@ async function renderLogin(request, env) {
     if (auth) return Response.redirect(`${urlOrigin}/panel`, 302);
 
     const encodedHtml = __LOGIN_HTML_CONTENT__;
-    const html = new TextDecoder('utf-8').decode(Uint8Array.from(atob(encodedHtml), c => c.charCodeAt(0)));
+    const html = hexToString(encodedHtml);
     return new Response(html, {
         headers: { 'Content-Type': 'text/html' }
     });
@@ -274,7 +272,7 @@ async function renderLogin(request, env) {
 
 export async function renderSecrets() {
     const encodedHtml = __SECRETS_HTML_CONTENT__;
-    const html = new TextDecoder('utf-8').decode(Uint8Array.from(atob(encodedHtml), c => c.charCodeAt(0)));
+    const html = hexToString(encodedHtml);
     return new Response(html, {
         headers: { 'Content-Type': 'text/html' },
     });
@@ -307,4 +305,10 @@ export async function respond(success, status, message, body, customHeaders) {
             'Content-Type': message ? 'text/plain' : 'application/json'
         }
     });
+}
+
+function hexToString(hex) {
+    const bytes = new Uint8Array(hex.match(/.{1,2}/g).map(b => parseInt(b, 16)));
+    const decoder = new TextDecoder();
+    return decoder.decode(bytes);
 }
