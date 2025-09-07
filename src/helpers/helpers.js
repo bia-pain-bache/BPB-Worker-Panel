@@ -38,8 +38,7 @@ export async function handlePanel(request, env) {
 }
 
 export async function handleError(error) {
-    const encodedHtml = __ERROR_HTML_CONTENT__;
-    const html = hexToString(encodedHtml).replace('__ERROR_MESSAGE__', error.message);
+    const html = hexToString(__ERROR_HTML_CONTENT__).replace('__ERROR_MESSAGE__', error.message);
 
     return new Response(html, {
         status: 200,
@@ -252,8 +251,7 @@ async function renderPanel(request, env) {
         if (!auth) return Response.redirect(`${globalThis.urlOrigin}/login`, 302);
     }
 
-    const encodedHtml = __PANEL_HTML_CONTENT__;
-    const html = hexToString(encodedHtml);
+    const html = hexToString(__PANEL_HTML_CONTENT__);
     return new Response(html, {
         headers: { 'Content-Type': 'text/html' }
     });
@@ -263,16 +261,14 @@ async function renderLogin(request, env) {
     const auth = await Authenticate(request, env);
     if (auth) return Response.redirect(`${urlOrigin}/panel`, 302);
 
-    const encodedHtml = __LOGIN_HTML_CONTENT__;
-    const html = hexToString(encodedHtml);
+    const html = hexToString(__LOGIN_HTML_CONTENT__);
     return new Response(html, {
         headers: { 'Content-Type': 'text/html' }
     });
 }
 
 export async function renderSecrets() {
-    const encodedHtml = __SECRETS_HTML_CONTENT__;
-    const html = hexToString(encodedHtml);
+    const html = hexToString(__SECRETS_HTML_CONTENT__);
     return new Response(html, {
         headers: { 'Content-Type': 'text/html' },
     });
