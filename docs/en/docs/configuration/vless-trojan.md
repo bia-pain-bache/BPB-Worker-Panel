@@ -160,7 +160,7 @@ You can change the Proxy IP mode and fill in NAT64 Prefixes via the panel by app
 Select a NAT64 Prefixes from the following link, which lists IPs by region and ISP:
 
 ```text
-https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/src/protocols/NAT64Prefixes.md
+https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/NAT64Prefixes.md
 ```
 
 !!! info

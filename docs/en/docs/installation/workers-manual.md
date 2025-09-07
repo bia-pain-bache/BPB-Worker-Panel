@@ -97,7 +97,7 @@ By default, the code uses multiple NAT64 prefixes randomly, assigning a new rand
 In the project’s `Settings` section, open `Variables and Secrets`, click `Add` and enter `NAT64_PREFIX` (in capital letters) in the first box. Obtain IPs from the following link, which lists IPs from various regions and ISPs:
 
 ```text
-https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/src/protocols/NAT64Prefixes.md
+https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/NAT64Prefixes.md
 ```
 
 !!! info

@@ -70,15 +70,15 @@ This project is aimed to provide a user panel to access FREE, SECURE and PRIVATE
 
 ## Environment variables
 
-|     Variable     |               Usage                |
-| :--------------: | :--------------------------------: |
-|     **UUID**     |             VLESS UUID             |
-|   **TR_PASS**    |          Trojan Password           |
-|   **PROXY_IP**   | Proxy IP or domain (VLESS, Trojan) |
-| **NAT64_PREFIX** |   NAT64 Prefixes (VLESS, Trojan)   |
-|   **SUB_PATH**   |         Subscriptions' URI         |
-|   **FALLBACK**   |  Fallback domain (VLESS, Trojan)   |
-|   **DOH_URL**    |              Core DOH              |
+|   Variable   |               Usage                |
+| :----------: | :--------------------------------: |
+|   **UUID**   |             VLESS UUID             |
+| **TR_PASS**  |          Trojan Password           |
+| **PROXY_IP** | Proxy IP or domain (VLESS, Trojan) |
+|  **PREFIX**  |   NAT64 Prefixes (VLESS, Trojan)   |
+| **SUB_PATH** |         Subscriptions' URI         |
+| **FALLBACK** |  Fallback domain (VLESS, Trojan)   |
+| **DOH_URL**  |              Core DOH              |
 
 ---
 

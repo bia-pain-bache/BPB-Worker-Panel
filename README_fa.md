@@ -178,7 +178,7 @@
       <td>Proxy IP برای VLESS و Trojan</td>
     </tr>
     <tr>
-      <td><b>NAT64_PREFIX</b></td>
+      <td><b>PREFIX</b></td>
       <td>NAT64 Prefix برای VLESS و Trojan</td>
     </tr>
     <tr>

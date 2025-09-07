@@ -160,7 +160,7 @@ https://www.nslookup.io/domains/bpb.yousef.isegaro.com/dns-records/
 یه NAT64 Prefix از لینک زیر انتخاب کنید که IPها رو بر اساس منطقه و ISP لیست کرده:
 
 ```text
-https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/src/protocols/NAT64Prefixes.md
+https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/NAT64Prefixes.md
 ```
 
 !!! info "راهنمایی"
