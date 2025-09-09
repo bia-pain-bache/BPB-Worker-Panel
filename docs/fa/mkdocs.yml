@@ -4,7 +4,7 @@ repo_url: https://github.com/Starry-Sky-World/BPB-Chinese
 copyright: Copyright &copy; BPB
 
 use_directory_urls: true
-site_dir: ../../site
+site_dir: ../../site/fa
 extra_css:
   - stylesheet/extra.css
 
