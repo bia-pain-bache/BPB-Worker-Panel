@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BPB Panel v__VERSION__</title>
+    <title data-i18n="title">BPB Panel v__VERSION__</title>
     <link rel="icon" href="/favicon.ico" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet"
@@ -13,28 +13,37 @@
 </head>
 
 <body>
-    <h1>
-        <img class="icon" src="/favicon.ico" alt="BPB Logo"> BPB Panel <span id="panel-version"
-            style="font-size: smaller;">
-            v__VERSION__
-        </span>
-    </h1>
+    <div class="header-container">
+        <h1>
+            <img class="icon" src="/favicon.ico" alt="BPB Logo">
+            <span data-i18n="pageTitle">BPB Panel</span>
+            <span id="panel-version" style="font-size: smaller;">
+                v__VERSION__
+            </span>
+        </h1>
+        <div class="language-selector">
+            <select id="language-selector" onchange="changeLanguage(this.value)">
+                <option value="en">English</option>
+                <option value="zh-CN">简体中文</option>
+            </select>
+        </div>
+    </div>
     <div class="form-container container">
-        <h2><span class="material-symbols-rounded">settings</span> Settings</h2>
+        <h2><span class="material-symbols-rounded">settings</span> <span data-i18n="settings">Settings</span></h2>
         <form id="configForm" class="configForm" onsubmit="updateSettings(event)">
             <details class="details">
                 <summary>
-                    <h3>VLESS - Trojan</h3>
+                    <h3 data-i18n="vlessTrojan">VLESS - Trojan</h3>
                 </summary>
                 <div class="section">
                     <div class="form-control">
-                        <label for="remoteDNS">🌏 Remote DNS</label>
+                        <label for="remoteDNS" data-i18n="remoteDNS">🌏 Remote DNS</label>
                         <div>
                             <input type="url" id="remoteDNS" name="remoteDNS" required>
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="localDNS">🏚️ Local DNS</label>
+                        <label for="localDNS" data-i18n="localDNS">🏚️ Local DNS</label>
                         <div>
                             <input type="text" id="localDNS" name="localDNS"
                                 pattern="^(localhost|(?:\d{1,3}\.){3}\d{1,3})$"
@@ -42,23 +51,23 @@
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="VLTRFakeDNS">🧢 Fake DNS</label>
+                        <label for="VLTRFakeDNS" data-i18n="fakeDNS">🧢 Fake DNS</label>
                         <div>
                             <select id="VLTRFakeDNS" name="VLTRFakeDNS">
-                                <option value="true">Enabled</option>
-                                <option value="false">Disabled</option>
+                                <option value="true" data-i18n="enabled">Enabled</option>
+                                <option value="false" data-i18n="disabled">Disabled</option>
                             </select>
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="outProxy">✈️ Chain Proxy</label>
+                        <label for="outProxy" data-i18n="chainProxy">✈️ Chain Proxy</label>
                         <div>
                             <input type="text" id="outProxy" name="outProxy">
                         </div>
                     </div>
                     <div class="form-control">
                         <label for="cleanIPs">
-                            ✨ Clean IPs / Domains
+                            <span data-i18n="cleanIPs">✨ Clean IPs / Domains</span>
                             <a class="scanner" href="https://github.com/bia-pain-bache/Cloudflare-Clean-IP-Scanner"
                                 title="Scanner" target="_blank" rel="noopener noreferrer">
                                 <span class="material-symbols-rounded">open_in_new</span>
@@ -69,45 +78,45 @@
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="VLTRenableIPv6">🔛 IPv6</label>
+                        <label for="VLTRenableIPv6" data-i18n="ipv6">🔛 IPv6</label>
                         <div>
                             <select id="VLTRenableIPv6" name="VLTRenableIPv6">
-                                <option value="true">Enabled</option>
-                                <option value="false">Disabled</option>
+                                <option value="true" data-i18n="enabled">Enabled</option>
+                                <option value="false" data-i18n="disabled">Disabled</option>
                             </select>
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="VLConfigs">⚙️ Protocols</label>
+                        <label for="VLConfigs" data-i18n="protocols">⚙️ Protocols</label>
                         <div>
                             <div class="protocols inner-container">
                                 <div class="proto">
                                     <input type="checkbox" id="VLConfigs" name="VLConfigs" value="true"
                                         onchange="handleProtocolChange(event)">
-                                    <label for="VLConfigs">VLESS</label>
+                                    <label for="VLConfigs" data-i18n="vless">VLESS</label>
                                 </div>
                                 <div class="proto">
                                     <input type="checkbox" id="TRConfigs" name="TRConfigs" value="true"
                                         onchange="handleProtocolChange(event)">
-                                    <label for="TRConfigs">Trojan</label>
+                                    <label for="TRConfigs" data-i18n="trojan">Trojan</label>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="tls-ports">🔒 TLS Ports</label>
+                        <label for="tls-ports" data-i18n="tlsPorts">🔒 TLS Ports</label>
                         <div>
                             <div id="tls-ports" class="rules inner-container"></div>
                         </div>
                     </div>
                     <div id="none-tls" class="form-control" style="display: none;">
-                        <label for="non-tls-ports">🔓 None TLS Ports</label>
+                        <label for="non-tls-ports" data-i18n="noneTlsPorts">🔓 None TLS Ports</label>
                         <div>
                             <div id="non-tls-ports" class="rules inner-container"></div>
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="fingerprint">👆 Fingerprint</label>
+                        <label for="fingerprint" data-i18n="fingerprint">👆 Fingerprint</label>
                         <div>
                             <select id="fingerprint" name="fingerprint">
                                 <option value="chrome">chrome</option>
@@ -124,26 +133,26 @@
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="bestVLTRInterval">🔄 Best Interval</label>
+                        <label for="bestVLTRInterval" data-i18n="bestInterval">🔄 Best Interval</label>
                         <div>
                             <input type="number" id="bestVLTRInterval" name="bestVLTRInterval" min="10" max="90">
                         </div>
                     </div>
                     <div class="container">
                         <div class="section">
-                            <h4><span class="material-symbols-rounded">tune</span> Proxy IP</h4>
+                            <h4><span class="material-symbols-rounded">tune</span> <span data-i18n="proxyIP">Proxy IP</span></h4>
                             <div class="form-control">
-                                <label for="proxyIPMode">🎚️ Mode</label>
+                                <label for="proxyIPMode" data-i18n="mode">🎚️ Mode</label>
                                 <div>
                                     <select id="proxyIPMode" name="proxyIPMode">
-                                        <option value="proxyip">Proxy IP</option>
-                                        <option value="prefix">NAT64</option>
+                                        <option value="proxyip" data-i18n="proxyIPMode">Proxy IP</option>
+                                        <option value="prefix" data-i18n="nat64">NAT64</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="form-control">
                                 <label for="proxyIPs">
-                                    📍 Proxy IPs / Domains
+                                    <span data-i18n="proxyIPs">📍 Proxy IPs / Domains</span>
                                     <a class="scanner"
                                         href="https://www.nslookup.io/domains/bpb.yousef.isegaro.com/dns-records/"
                                         title="Proxy IPs" target="_blank" rel="noopener noreferrer">
@@ -156,7 +165,7 @@
                             </div>
                             <div class="form-control">
                                 <label for="prefixes">
-                                    📍 NAT64 Prefixes
+                                    <span data-i18n="nat64Prefixes">📍 NAT64 Prefixes</span>
                                     <a class="scanner"
                                         href="https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/NAT64Prefixes.md"
                                         title="NAT64 prefixes" target="_blank" rel="noopener noreferrer">
@@ -171,21 +180,21 @@
                     </div>
                     <div class="container">
                         <div class="section">
-                            <h4><span class="material-symbols-rounded">tune</span> Custom CDN</h4>
+                            <h4><span class="material-symbols-rounded">tune</span> <span data-i18n="customCDN">Custom CDN</span></h4>
                             <div class="form-control">
-                                <label for="customCdnAddrs">💀 Addresses</label>
+                                <label for="customCdnAddrs" data-i18n="cdnAddresses">💀 Addresses</label>
                                 <div>
                                     <textarea type="text" id="customCdnAddrs" name="customCdnAddrs" rows="1"></textarea>
                                 </div>
                             </div>
                             <div class="form-control">
-                                <label for="customCdnHost">💀 Host</label>
+                                <label for="customCdnHost" data-i18n="cdnHost">💀 Host</label>
                                 <div>
                                     <input type="text" id="customCdnHost" name="customCdnHost">
                                 </div>
                             </div>
                             <div class="form-control">
-                                <label for="customCdnSni">💀 SNI</label>
+                                <label for="customCdnSni" data-i18n="cdnSNI">💀 SNI</label>
                                 <div>
                                     <input type="text" id="customCdnSni" name="customCdnSni">
                                 </div>
@@ -196,11 +205,11 @@
             </details>
             <details>
                 <summary>
-                    <h3>Fragment</h3>
+                    <h3 data-i18n="fragment">Fragment</h3>
                 </summary>
                 <div class="section">
                     <div class="form-control">
-                        <label for="fragmentLengthMin">📐 Length</label>
+                        <label for="fragmentLengthMin" data-i18n="fragmentLength">📐 Length</label>
                         <div class="min-max">
                             <input type="number" id="fragmentLengthMin" name="fragmentLengthMin" min="10" required>
                             <span>-</span>
@@ -208,7 +217,7 @@
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="fragmentIntervalMin">🕞 Interval</label>
+                        <label for="fragmentIntervalMin" data-i18n="fragmentInterval">🕞 Interval</label>
                         <div class="min-max">
                             <input type="number" id="fragmentIntervalMin" name="fragmentIntervalMin" min="1" max="30"
                                 required>
@@ -218,7 +227,7 @@
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="fragmentPackets">📦 Packets</label>
+                        <label for="fragmentPackets" data-i18n="fragmentPackets">📦 Packets</label>
                         <div>
                             <select id="fragmentPackets" name="fragmentPackets">
                                 <option value="tlshello">tlshello</option>
@@ -233,12 +242,12 @@
             </details>
             <details>
                 <summary>
-                    <h3>Warp General</h3>
+                    <h3 data-i18n="warpGeneral">Warp General</h3>
                 </summary>
                 <div class="section">
                     <div class="form-control">
                         <label for="warpEndpoints">
-                            ✨ Endpoints
+                            <span data-i18n="warpEndpoints">✨ Endpoints</span>
                             <a class="scanner" href="https://github.com/bia-pain-bache/BPB-Warp-Scanner" title="Scanner"
                                 target="_blank" rel="noopener noreferrer">
                                 <span class="material-symbols-rounded">open_in_new</span>
@@ -258,34 +267,34 @@
                         </div>
                     </div> -->
                     <div class="form-control">
-                        <label for="warpFakeDNS">🧢 Fake DNS</label>
+                        <label for="warpFakeDNS" data-i18n="warpFakeDNS">🧢 Fake DNS</label>
                         <div>
                             <select id="warpFakeDNS" name="warpFakeDNS">
-                                <option value="true">Enabled</option>
-                                <option value="false">Disabled</option>
+                                <option value="true" data-i18n="enabled">Enabled</option>
+                                <option value="false" data-i18n="disabled">Disabled</option>
                             </select>
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="warpEnableIPv6">🔛 IPv6</label>
+                        <label for="warpEnableIPv6" data-i18n="warpIPv6">🔛 IPv6</label>
                         <div>
                             <select id="warpEnableIPv6" name="warpEnableIPv6">
-                                <option value="true">Enabled</option>
-                                <option value="false">Disabled</option>
+                                <option value="true" data-i18n="enabled">Enabled</option>
+                                <option value="false" data-i18n="disabled">Disabled</option>
                             </select>
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="bestWarpInterval">🔄 Best Interval</label>
+                        <label for="bestWarpInterval" data-i18n="warpBestInterval">🔄 Best Interval</label>
                         <div>
                             <input type="number" id="bestWarpInterval" name="bestWarpInterval" min="10" max="90">
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="refreshBtn">♻️ Warp Accounts</label>
+                        <label for="refreshBtn" data-i18n="warpAccounts">♻️ Warp Accounts</label>
                         <div>
                             <button type="button" class="button reverse" onclick="updateWarpConfigs()">
-                                Update<span id="warp-update" class="material-symbols-rounded">autorenew</span>
+                                <span data-i18n="update">Update</span><span id="warp-update" class="material-symbols-rounded">autorenew</span>
                             </button>
                         </div>
                     </div>
@@ -293,14 +302,14 @@
             </details>
             <details>
                 <summary>
-                    <h3>Warp PRO</h3>
+                    <h3 data-i18n="warpPRO">Warp PRO</h3>
                 </summary>
                 <div class="section">
                     <div class="container">
                         <div class="section">
-                            <h4><span class="material-symbols-rounded">tune</span> MahsaNG - Hiddify</h4>
+                            <h4><span class="material-symbols-rounded">tune</span> <span data-i18n="mahsaNGHiddify">MahsaNG - Hiddify</span></h4>
                             <div class="form-control">
-                                <label for="hiddifyNoiseMode">😵‍💫 Hiddify Mode</label>
+                                <label for="hiddifyNoiseMode" data-i18n="hiddifyMode">😵‍💫 Hiddify Mode</label>
                                 <div>
                                     <input type="text" id="hiddifyNoiseMode" name="hiddifyNoiseMode"
                                         pattern="^(m[1-6]|h_[0-9A-Fa-f]{2}|g_([0-9A-Fa-f]{2}_){2}[0-9A-Fa-f]{2})$"
@@ -309,7 +318,7 @@
                                 </div>
                             </div>
                             <div class="form-control">
-                                <label for="knockerNoiseMode">😵‍💫 MahsaNG Mode</label>
+                                <label for="knockerNoiseMode" data-i18n="mahsaNGMode">😵‍💫 MahsaNG Mode</label>
                                 <div>
                                     <input type="text" id="knockerNoiseMode" name="knockerNoiseMode"
                                         pattern="^(none|quic|random|[0-9A-Fa-f]+)$"
@@ -318,7 +327,7 @@
                                 </div>
                             </div>
                             <div class="form-control">
-                                <label for="noiseCountMin">🎚️ Noise Count</label>
+                                <label for="noiseCountMin" data-i18n="noiseCount">🎚️ Noise Count</label>
                                 <div class="min-max">
                                     <input type="number" id="noiseCountMin" name="noiseCountMin" min="1" required>
                                     <span>-</span>
@@ -326,7 +335,7 @@
                                 </div>
                             </div>
                             <div class="form-control">
-                                <label for="noiseSizeMin">📏 Noise Size</label>
+                                <label for="noiseSizeMin" data-i18n="noiseSize">📏 Noise Size</label>
                                 <div class="min-max">
                                     <input type="number" id="noiseSizeMin" name="noiseSizeMin" min="1" required>
                                     <span>-</span>
@@ -334,7 +343,7 @@
                                 </div>
                             </div>
                             <div class="form-control">
-                                <label for="noiseDelayMin">🕞 Noise Delay</label>
+                                <label for="noiseDelayMin" data-i18n="noiseDelay">🕞 Noise Delay</label>
                                 <div class="min-max">
                                     <input type="number" id="noiseDelayMin" name="noiseDelayMin" min="1" required>
                                     <span>-</span>
@@ -345,16 +354,16 @@
                     </div>
                     <div class="container">
                         <div class="section">
-                            <h4><span class="material-symbols-rounded">tune</span> Clash - Amnezia</h4>
+                            <h4><span class="material-symbols-rounded">tune</span> <span data-i18n="clashAmnezia">Clash - Amnezia</span></h4>
                             <div class="form-control">
-                                <label for="amneziaNoiseCount">🎚️ Noise Count</label>
+                                <label for="amneziaNoiseCount" data-i18n="noiseCount">🎚️ Noise Count</label>
                                 <div>
                                     <input type="number" id="amneziaNoiseCount" name="amneziaNoiseCount" min="1"
                                         required>
                                 </div>
                             </div>
                             <div class="form-control">
-                                <label for="amneziaNoiseSizeMin">📏 Noise Size</label>
+                                <label for="amneziaNoiseSizeMin" data-i18n="noiseSize">📏 Noise Size</label>
                                 <div class="min-max">
                                     <input type="number" id="amneziaNoiseSizeMin" name="amneziaNoiseSizeMin" min="1"
                                         required>
@@ -367,7 +376,7 @@
                     </div>
                     <div id="udp-noise-container" class="container">
                         <div class="header-container">
-                            <h4><span class="material-symbols-rounded">tune</span> v2rayNG - v2rayN</h4>
+                            <h4><span class="material-symbols-rounded">tune</span> <span data-i18n="v2rayNGv2rayN">v2rayNG - v2rayN</span></h4>
                             <button type="button" class="add-noise" onclick="addUdpNoise(true)">
                                 <i class="fa fa-plus-circle fa-2x" aria-hidden="true"></i>
                             </button>
@@ -378,135 +387,135 @@
             </details>
             <details>
                 <summary>
-                    <h3>Routing Rules</h3>
+                    <h3 data-i18n="routingRules">Routing Rules</h3>
                 </summary>
                 <div class="section">
                     <div class="container">
-                        <h4><span class="material-symbols-rounded">tune</span> Preset Rules</h4>
+                        <h4><span class="material-symbols-rounded">tune</span> <span data-i18n="presetRules">Preset Rules</span></h4>
                         <div class="form-control">
-                            <label for="bypass-rules">🟩 Bypass rules</label>
+                            <label for="bypass-rules" data-i18n="bypassRules">🟩 Bypass rules</label>
                             <div>
                                 <div id="bypass-rules" class="rules inner-container">
                                     <div class="routing">
                                         <input type="checkbox" id="bypassLAN" name="bypassLAN" value="true">
-                                        <label for="bypassLAN">LAN</label>
+                                        <label for="bypassLAN" data-i18n="lan">LAN</label>
                                     </div>
                                     <div class="routing">
                                         <input type="checkbox" id="bypassIran" name="bypassIran" value="true">
-                                        <label for="bypassIran">Iran</label>
+                                        <label for="bypassIran" data-i18n="iran">Iran</label>
                                     </div>
                                     <div class="routing">
                                         <input type="checkbox" id="bypassChina" name="bypassChina" value="true">
-                                        <label for="bypassChina">China</label>
+                                        <label for="bypassChina" data-i18n="china">China</label>
                                     </div>
                                     <div class="routing">
                                         <input type="checkbox" id="bypassRussia" name="bypassRussia" value="true">
-                                        <label for="bypassRussia">Russia</label>
+                                        <label for="bypassRussia" data-i18n="russia">Russia</label>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="form-control">
-                            <label for="block-rules">🟥 Block rules</label>
+                            <label for="block-rules" data-i18n="blockRules">🟥 Block rules</label>
                             <div>
                                 <div id="block-rules" class="rules inner-container">
                                     <div class="routing">
                                         <input type="checkbox" id="blockAds" name="blockAds" value="true">
-                                        <label for="blockAds">Ads.</label>
+                                        <label for="blockAds" data-i18n="ads">Ads.</label>
                                     </div>
                                     <div class="routing">
                                         <input type="checkbox" id="blockPorn" name="blockPorn" value="true">
-                                        <label for="blockPorn">Porn</label>
+                                        <label for="blockPorn" data-i18n="porn">Porn</label>
                                     </div>
                                     <div class="routing">
                                         <input type="checkbox" id="blockUDP443" name="blockUDP443" value="true">
-                                        <label for="blockUDP443">QUIC</label>
+                                        <label for="blockUDP443" data-i18n="quic">QUIC</label>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="container">
-                        <h4><span class="material-symbols-rounded">tune</span> Custom Rules</h4>
+                        <h4><span class="material-symbols-rounded">tune</span> <span data-i18n="customRules">Custom Rules</span></h4>
                         <div class="form-control">
-                            <label for="customBypassRules">🟩 Bypass IPs / Domains</label>
+                            <label for="customBypassRules" data-i18n="customBypassRules">🟩 Bypass IPs / Domains</label>
                             <div>
                                 <textarea type="text" id="customBypassRules" name="customBypassRules"
                                     rows="1"></textarea>
                             </div>
                         </div>
                         <div class="form-control">
-                            <label for="customBlockRules">🟥 Block IPs / Domains</label>
+                            <label for="customBlockRules" data-i18n="customBlockRules">🟥 Block IPs / Domains</label>
                             <div>
                                 <textarea type="text" id="customBlockRules" name="customBlockRules" rows="1"></textarea>
                             </div>
                         </div>
                     </div>
                     <div class="container">
-                        <h4><span class="material-symbols-rounded">tune</span> Sanction Rules</h4>
+                        <h4><span class="material-symbols-rounded">tune</span> <span data-i18n="sanctionRules">Sanction Rules</span></h4>
                         <div class="form-control">
-                            <label for="antiSanctionDNS">🌏 Anti Sanction DNS</label>
+                            <label for="antiSanctionDNS" data-i18n="antiSanctionDNS">🌏 Anti Sanction DNS</label>
                             <div>
                                 <input type="text" id="antiSanctionDNS" name="antiSanctionDNS" required>
                             </div>
                         </div>
                         <div class="form-control">
-                            <label for="bypass-sanction-rules">🟩 Bypass rules</label>
+                            <label for="bypass-sanction-rules" data-i18n="bypassSanctionRules">🟩 Bypass rules</label>
                             <div>
                                 <div id="bypass-sanction-rules" class="rules inner-container">
                                     <div class="routing">
                                         <input type="checkbox" id="bypassOpenAi" name="bypassOpenAi" value="true">
-                                        <label for="bypassOpenAi">ChatGPT</label>
+                                        <label for="bypassOpenAi" data-i18n="chatGPT">ChatGPT</label>
                                     </div>
                                     <div class="routing">
                                         <input type="checkbox" id="bypassMicrosoft" name="bypassMicrosoft" value="true">
-                                        <label for="bypassMicrosoft">Microsoft</label>
+                                        <label for="bypassMicrosoft" data-i18n="microsoft">Microsoft</label>
                                     </div>
                                     <div class="routing">
                                         <input type="checkbox" id="bypassOracle" name="bypassOracle" value="true">
-                                        <label for="bypassOracle">Oracle</label>
+                                        <label for="bypassOracle" data-i18n="oracle">Oracle</label>
                                     </div>
                                     <div class="routing">
                                         <input type="checkbox" id="bypassDocker" name="bypassDocker" value="true">
-                                        <label for="bypassDocker">Docker</label>
+                                        <label for="bypassDocker" data-i18n="docker">Docker</label>
                                     </div>
                                     <div class="routing">
                                         <input type="checkbox" id="bypassAdobe" name="bypassAdobe" value="true">
-                                        <label for="bypassAdobe">Adobe</label>
+                                        <label for="bypassAdobe" data-i18n="adobe">Adobe</label>
                                     </div>
                                     <div class="routing">
                                         <input type="checkbox" id="bypassEpicGames" name="bypassEpicGames" value="true">
-                                        <label for="bypassEpicGames">Epic Games</label>
+                                        <label for="bypassEpicGames" data-i18n="epicGames">Epic Games</label>
                                     </div>
                                     <div class="routing">
                                         <input type="checkbox" id="bypassIntel" name="bypassIntel" value="true">
-                                        <label for="bypassIntel">Intel</label>
+                                        <label for="bypassIntel" data-i18n="intel">Intel</label>
                                     </div>
                                     <div class="routing">
                                         <input type="checkbox" id="bypassAmd" name="bypassAmd" value="true">
-                                        <label for="bypassAmd">AMD</label>
+                                        <label for="bypassAmd" data-i18n="amd">AMD</label>
                                     </div>
                                     <div class="routing">
                                         <input type="checkbox" id="bypassNvidia" name="bypassNvidia" value="true">
-                                        <label for="bypassNvidia">Nvidia</label>
+                                        <label for="bypassNvidia" data-i18n="nvidia">Nvidia</label>
                                     </div>
                                     <div class="routing">
                                         <input type="checkbox" id="bypassAsus" name="bypassAsus" value="true">
-                                        <label for="bypassAsus">Asus</label>
+                                        <label for="bypassAsus" data-i18n="asus">Asus</label>
                                     </div>
                                     <div class="routing">
                                         <input type="checkbox" id="bypassHp" name="bypassHp" value="true">
-                                        <label for="bypassHp">HP</label>
+                                        <label for="bypassHp" data-i18n="hp">HP</label>
                                     </div>
                                     <div class="routing">
                                         <input type="checkbox" id="bypassLenovo" name="bypassLenovo" value="true">
-                                        <label for="bypassLenovo">Lenovo</label>
+                                        <label for="bypassLenovo" data-i18n="lenovo">Lenovo</label>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="form-control">
-                            <label for="customBypassSanctionRules">🟩 Bypass Domains</label>
+                            <label for="customBypassSanctionRules" data-i18n="customBypassSanctionRules">🟩 Bypass Domains</label>
                             <div>
                                 <textarea type="text" id="customBypassSanctionRules" name="customBypassSanctionRules"
                                     rows="1"></textarea>
@@ -516,17 +525,17 @@
                 </div>
             </details>
             <div id="apply" class="form-control apply">
-                <button type="submit" id="applyButton" class="button disabled apply-settings" form="configForm">
+                <button type="submit" id="applyButton" class="button disabled apply-settings" form="configForm" data-i18n="applySettings">
                     Apply Settings 💥
                 </button>
-                <button type="button" class="panel-settings" title="Reset panel settings to default"
+                <button type="button" class="panel-settings" title="Reset panel settings to default" data-i18n-title="resetPanelSettings"
                     onclick="resetSettings()">
                     <i id="refresh-btn" class="fa fa-refresh fa-2x" aria-hidden="true"></i>
                 </button>
-                <button type="button" class="panel-settings" title="Export panel settings" onclick="exportSettings()">
+                <button type="button" class="panel-settings" title="Export panel settings" data-i18n-title="exportPanelSettings" onclick="exportSettings()">
                     <i class="fa fa-cloud-download fa-2x" aria-hidden="true"></i>
                 </button>
-                <button type="button" class="panel-settings" title="Import panel settings" onclick="importSettings()">
+                <button type="button" class="panel-settings" title="Import panel settings" data-i18n-title="importPanelSettings" onclick="importSettings()">
                     <i class="fa fa-cloud-upload fa-2x" aria-hidden="true"></i>
                     <input type="file" id="fileInput" accept=".dat" style="display: none;"
                         onchange="uploadSettings(event)" />
@@ -535,16 +544,16 @@
         </form>
     </div>
     <div class="form-container container">
-        <h2><span class="material-symbols-rounded">share</span> Subscriptions - Configs</h2>
+        <h2><span class="material-symbols-rounded">share</span> <span data-i18n="subscriptionsConfigs">Subscriptions - Configs</span></h2>
         <details class="details">
             <summary>
-                <h3>Normal</h3>
+                <h3 data-i18n="normal">Normal</h3>
             </summary>
             <div class="table-container">
                 <table id="normal-configs-table">
                     <tr>
-                        <th>Application</th>
-                        <th>Subscription</th>
+                        <th data-i18n="application">Application</th>
+                        <th data-i18n="subscription">Subscription</th>
                     </tr>
                     <tr>
                         <td>
@@ -578,11 +587,11 @@
                             </div>
                         </td>
                         <td>
-                            <button title="Display QR code"
+                            <button title="Display QR code" data-i18n-title="displayQRCode"
                                 onclick="openQR('normal', '', 'Normal', 'Normal Subscription')">
                                 <span class="material-symbols-rounded">qr_code</span>
                             </button>
-                            <button title="Copy subscription URL" onclick="subURL('normal', '', 'Normal')">
+                            <button title="Copy subscription URL" data-i18n-title="copySubscriptionURL" onclick="subURL('normal', '', 'Normal')">
                                 <span class="material-symbols-rounded">content_copy</span>
                             </button>
                         </td>
@@ -607,11 +616,11 @@
                             </div>
                         </td>
                         <td>
-                            <button title="Display QR code"
+                            <button title="Display QR code" data-i18n-title="displayQRCode"
                                 onclick="openQR('normal', 'singbox', 'Normal', 'Normal Subscription', true)">
                                 <span class="material-symbols-rounded">qr_code</span>
                             </button>
-                            <button title="Copy subscription URL" onclick="subURL('normal', 'singbox', 'Normal')">
+                            <button title="Copy subscription URL" data-i18n-title="copySubscriptionURL" onclick="subURL('normal', 'singbox', 'Normal')">
                                 <span class="material-symbols-rounded">content_copy</span>
                             </button>
                         </td>
@@ -621,13 +630,13 @@
         </details>
         <details>
             <summary>
-                <h3>Full Normal</h3>
+                <h3 data-i18n="fullNormal">Full Normal</h3>
             </summary>
             <div class="table-container">
                 <table id="full-normal-configs-table">
                     <tr>
-                        <th>Application</th>
-                        <th>Subscription</th>
+                        <th data-i18n="application">Application</th>
+                        <th data-i18n="subscription">Subscription</th>
                     </tr>
                     <tr>
                         <td>
@@ -653,11 +662,11 @@
                             </div>
                         </td>
                         <td>
-                            <button title="Display QR code"
+                            <button title="Display QR code" data-i18n-title="displayQRCode"
                                 onclick="openQR('full-normal', 'xray', 'Full Normal', 'Full normal Subscription')">
                                 <span class="material-symbols-rounded">qr_code</span>
                             </button>
-                            <button title="Copy subscription URL"
+                            <button title="Copy subscription URL" data-i18n-title="copySubscriptionURL"
                                 onclick="subURL('full-normal', 'xray', 'Full Normal')">
                                 <span class="material-symbols-rounded">content_copy</span>
                             </button>
@@ -675,14 +684,14 @@
                             </div>
                         </td>
                         <td>
-                            <button title="Display QR code"
+                            <button title="Display QR code" data-i18n-title="displayQRCode"
                                 onclick="openQR('full-normal', 'sfa', 'Full Normal', 'Full normal Subscription', true)">
                                 <span class="material-symbols-rounded">qr_code</span>
                             </button>
-                            <button title="Copy subscription URL" onclick="subURL('full-normal', 'sfa', 'Full Normal')">
+                            <button title="Copy subscription URL" data-i18n-title="copySubscriptionURL" onclick="subURL('full-normal', 'sfa', 'Full Normal')">
                                 <span class="material-symbols-rounded">content_copy</span>
                             </button>
-                            <button title="Download config" onclick="dlURL('full-normal', 'sfa')">
+                            <button title="Download config" data-i18n-title="downloadConfig" onclick="dlURL('full-normal', 'sfa')">
                                 <span class="material-symbols-rounded">download</span>
                             </button>
                         </td>
@@ -711,15 +720,15 @@
                             </div>
                         </td>
                         <td>
-                            <button title="Display QR code"
+                            <button title="Display QR code" data-i18n-title="displayQRCode"
                                 onclick="openQR('full-normal', 'clash', 'Full Normal', 'Full normal Subscription')">
                                 <span class="material-symbols-rounded">qr_code</span>
                             </button>
-                            <button title="Copy subscription URL"
+                            <button title="Copy subscription URL" data-i18n-title="copySubscriptionURL"
                                 onclick="subURL('full-normal', 'clash', 'Full Normal')">
                                 <span class="material-symbols-rounded">content_copy</span>
                             </button>
-                            <button title="Download config" onclick="dlURL('full-normal', 'clash')">
+                            <button title="Download config" data-i18n-title="downloadConfig" onclick="dlURL('full-normal', 'clash')">
                                 <span class="material-symbols-rounded">download</span>
                             </button>
                         </td>
@@ -729,13 +738,13 @@
         </details>
         <details>
             <summary>
-                <h3>Fragment</h3>
+                <h3 data-i18n="fragment">Fragment</h3>
             </summary>
             <div class="table-container">
                 <table id="frag-sub-table">
                     <thead>
-                        <th>Application</th>
-                        <th>Subscription</th>
+                        <th data-i18n="application">Application</th>
+                        <th data-i18n="subscription">Subscription</th>
                     </thead>
                     <tr>
                         <td>
@@ -761,11 +770,11 @@
                             </div>
                         </td>
                         <td>
-                            <button title="Display QR code"
+                            <button title="Display QR code" data-i18n-title="displayQRCode"
                                 onclick="openQR('fragment', '', 'Fragment', 'Fragment Subscription')">
                                 <span class="material-symbols-rounded">qr_code</span>
                             </button>
-                            <button title="Copy subscription URL" onclick="subURL('fragment', '', 'Fragment')">
+                            <button title="Copy subscription URL" data-i18n-title="copySubscriptionURL" onclick="subURL('fragment', '', 'Fragment')">
                                 <span class="material-symbols-rounded">content_copy</span>
                             </button>
                         </td>
@@ -782,14 +791,14 @@
                             </div>
                         </td>
                         <td>
-                            <button title="Display QR code"
+                            <button title="Display QR code" data-i18n-title="displayQRCode"
                                 onclick="openQR('fragment', 'sfa', 'Fragment', 'Fragment Subscription', true, false)">
                                 <span class="material-symbols-rounded">qr_code</span>
                             </button>
-                            <button title="Copy subscription URL" onclick="subURL('fragment', 'sfa', 'Fragment')">
+                            <button title="Copy subscription URL" data-i18n-title="copySubscriptionURL" onclick="subURL('fragment', 'sfa', 'Fragment')">
                                 <span class="material-symbols-rounded">content_copy</span>
                             </button>
-                            <button title="Download config" onclick="dlURL('fragment', 'sfa')">
+                            <button title="Download config" data-i18n-title="downloadConfig" onclick="dlURL('fragment', 'sfa')">
                                 <span class="material-symbols-rounded">download</span>
                             </button>
                         </td>
@@ -802,11 +811,11 @@
                             </div>
                         </td>
                         <td>
-                            <button title="Display QR code"
+                            <button title="Display QR code" data-i18n-title="displayQRCode"
                                 onclick="openQR('fragment', 'hiddify-frag', 'Fragment', 'Fragment Subscription', false, true)">
                                 <span class="material-symbols-rounded">qr_code</span>
                             </button>
-                            <button title="Copy subscription URL"
+                            <button title="Copy subscription URL" data-i18n-title="copySubscriptionURL"
                                 onclick="subURL('fragment', 'hiddify-frag', 'Fragment', true)">
                                 <span class="material-symbols-rounded">content_copy</span>
                             </button>
@@ -817,13 +826,13 @@
         </details>
         <details>
             <summary>
-                <h3>Warp</h3>
+                <h3 data-i18n="warp">Warp</h3>
             </summary>
             <div class="table-container">
                 <table id="warp-configs-table">
                     <tr>
-                        <th>Application</th>
-                        <th>Subscription</th>
+                        <th data-i18n="application">Application</th>
+                        <th data-i18n="subscription">Subscription</th>
                     </tr>
                     <tr>
                         <td>
@@ -841,11 +850,11 @@
                             </div>
                         </td>
                         <td>
-                            <button title="Display QR code"
+                            <button title="Display QR code" data-i18n-title="displayQRCode"
                                 onclick="openQR('warp', 'xray', 'Warp', 'Warp Subscription')">
                                 <span class="material-symbols-rounded">qr_code</span>
                             </button>
-                            <button title="Copy subscription URL" onclick="subURL('warp', 'xray', 'Warp')">
+                            <button title="Copy subscription URL" data-i18n-title="copySubscriptionURL" onclick="subURL('warp', 'xray', 'Warp')">
                                 <span class="material-symbols-rounded">content_copy</span>
                             </button>
                         </td>
@@ -862,14 +871,14 @@
                             </div>
                         </td>
                         <td>
-                            <button title="Display QR code"
+                            <button title="Display QR code" data-i18n-title="displayQRCode"
                                 onclick="openQR('warp', 'singbox', 'Warp', 'Warp Subscription', true)">
                                 <span class="material-symbols-rounded">qr_code</span>
                             </button>
-                            <button title="Copy subscription URL" onclick="subURL('warp', 'singbox', 'Warp')">
+                            <button title="Copy subscription URL" data-i18n-title="copySubscriptionURL" onclick="subURL('warp', 'singbox', 'Warp')">
                                 <span class="material-symbols-rounded">content_copy</span>
                             </button>
-                            <button title="Download config" onclick="dlURL('warp', 'singbox')">
+                            <button title="Download config" data-i18n-title="downloadConfig" onclick="dlURL('warp', 'singbox')">
                                 <span class="material-symbols-rounded">download</span>
                             </button>
                         </td>
@@ -882,11 +891,11 @@
                             </div>
                         </td>
                         <td>
-                            <button title="Display QR code"
+                            <button title="Display QR code" data-i18n-title="displayQRCode"
                                 onclick="openQR('warp', 'hiddify', 'Warp', 'Warp Subscription', false, true)">
                                 <span class="material-symbols-rounded">qr_code</span>
                             </button>
-                            <button title="Copy subscription URL" onclick="subURL('warp', 'hiddify', 'Warp', true)">
+                            <button title="Copy subscription URL" data-i18n-title="copySubscriptionURL" onclick="subURL('warp', 'hiddify', 'Warp', true)">
                                 <span class="material-symbols-rounded">content_copy</span>
                             </button>
                         </td>
@@ -915,14 +924,14 @@
                             </div>
                         </td>
                         <td>
-                            <button title="Display QR code"
+                            <button title="Display QR code" data-i18n-title="displayQRCode"
                                 onclick="openQR('warp', 'clash', 'Warp', 'Warp Subscription')">
                                 <span class="material-symbols-rounded">qr_code</span>
                             </button>
-                            <button title="Copy subscription URL" onclick="subURL('warp', 'clash', 'Warp')">
+                            <button title="Copy subscription URL" data-i18n-title="copySubscriptionURL" onclick="subURL('warp', 'clash', 'Warp')">
                                 <span class="material-symbols-rounded">content_copy</span>
                             </button>
-                            <button title="Download config" onclick="dlURL('warp', 'clash')">
+                            <button title="Download config" data-i18n-title="downloadConfig" onclick="dlURL('warp', 'clash')">
                                 <span class="material-symbols-rounded">download</span>
                             </button>
                         </td>
@@ -935,7 +944,7 @@
                             </div>
                         </td>
                         <td>
-                            <button title="Download configs zip" id="dlConfigsBtn" type="button"
+                            <button title="Download configs zip" data-i18n-title="downloadConfig" id="dlConfigsBtn" type="button"
                                 onclick="downloadWarpConfigs(false)">
                                 <span class="material-symbols-rounded">download</span>
                             </button>
@@ -946,13 +955,13 @@
         </details>
         <details>
             <summary>
-                <h3>Warp PRO</h3>
+                <h3 data-i18n="warpPRO">Warp PRO</h3>
             </summary>
             <div class="table-container">
                 <table id="warp-pro-configs-table">
                     <tr>
-                        <th>Application</th>
-                        <th>Subscription</th>
+                        <th data-i18n="application">Application</th>
+                        <th data-i18n="subscription">Subscription</th>
                     </tr>
                     <tr>
                         <td>
@@ -970,11 +979,11 @@
                             </div>
                         </td>
                         <td>
-                            <button title="Display QR code"
+                            <button title="Display QR code" data-i18n-title="displayQRCode"
                                 onclick="openQR('warp-pro', 'xray-pro', 'Warp Pro', 'Warp Pro Subscription')">
                                 <span class="material-symbols-rounded">qr_code</span>
                             </button>
-                            <button title="Copy subscription URL" onclick="subURL('warp-pro', 'xray-pro', 'Warp Pro')">
+                            <button title="Copy subscription URL" data-i18n-title="copySubscriptionURL" onclick="subURL('warp-pro', 'xray-pro', 'Warp Pro')">
                                 <span class="material-symbols-rounded">content_copy</span>
                             </button>
                         </td>
@@ -991,11 +1000,11 @@
                             </div>
                         </td>
                         <td>
-                            <button title="Display QR code"
+                            <button title="Display QR code" data-i18n-title="displayQRCode"
                                 onclick="openQR('warp-pro', 'xray-knocker', 'Warp Pro', 'Warp Pro Subscription')">
                                 <span class="material-symbols-rounded">qr_code</span>
                             </button>
-                            <button title="Copy subscription URL"
+                            <button title="Copy subscription URL" data-i18n-title="copySubscriptionURL"
                                 onclick="subURL('warp-pro', 'xray-knocker', 'Warp Pro')">
                                 <span class="material-symbols-rounded">content_copy</span>
                             </button>
@@ -1025,14 +1034,14 @@
                             </div>
                         </td>
                         <td>
-                            <button title="Display QR code"
+                            <button title="Display QR code" data-i18n-title="displayQRCode"
                                 onclick="openQR('warp-pro', 'clash-pro', 'Warp Pro', 'Warp Pro Subscription')">
                                 <span class="material-symbols-rounded">qr_code</span>
                             </button>
-                            <button title="Copy subscription URL" onclick="subURL('warp-pro', 'clash-pro', 'Warp Pro')">
+                            <button title="Copy subscription URL" data-i18n-title="copySubscriptionURL" onclick="subURL('warp-pro', 'clash-pro', 'Warp Pro')">
                                 <span class="material-symbols-rounded">content_copy</span>
                             </button>
-                            <button title="Download config" onclick="dlURL('warp-pro', 'clash-pro')">
+                            <button title="Download config" data-i18n-title="downloadConfig" onclick="dlURL('warp-pro', 'clash-pro')">
                                 <span class="material-symbols-rounded">download</span>
                             </button>
                         </td>
@@ -1045,11 +1054,11 @@
                             </div>
                         </td>
                         <td>
-                            <button title="Display QR code"
+                            <button title="Display QR code" data-i18n-title="displayQRCode"
                                 onclick="openQR('warp-pro', 'hiddify-pro', 'Warp Pro', 'Warp Pro Subscription', false, true)">
                                 <span class="material-symbols-rounded">qr_code</span>
                             </button>
-                            <button title="Copy subscription URL"
+                            <button title="Copy subscription URL" data-i18n-title="copySubscriptionURL"
                                 onclick="subURL('warp-pro', 'hiddify-pro', 'Warp Pro', true)">
                                 <span class="material-symbols-rounded">content_copy</span>
                             </button>
@@ -1067,7 +1076,7 @@
                             </div>
                         </td>
                         <td>
-                            <button title="Download configs zip" id="dlAmneziaConfigsBtn" type="button"
+                            <button title="Download configs zip" data-i18n-title="downloadConfig" id="dlAmneziaConfigsBtn" type="button"
                                 onclick="downloadWarpConfigs(true)">
                                 <span class="material-symbols-rounded">download</span>
                             </button>
@@ -1082,10 +1091,10 @@
             <div class="modal-content">
                 <span class="close" id="closeResetPass" onclick="closeResetPass()">&times;</span>
                 <form id="passwordChangeForm" onsubmit="resetPassword(event)">
-                    <h2>Change Password</h2>
+                    <h2 data-i18n="changePassword">Change Password</h2>
                     <div class="section">
                         <div class="form-control">
-                            <label for="newPassword">New Password</label>
+                            <label for="newPassword" data-i18n="newPassword">New Password</label>
                             <div class="password-wrapper">
                                 <input type="password" id="newPassword" name="newPassword" required>
                                 <span class="material-symbols-rounded toggle-password">
@@ -1094,7 +1103,7 @@
                             </div>
                         </div>
                         <div class="form-control">
-                            <label for="confirmPassword">Confirm Password</label>
+                            <label for="confirmPassword" data-i18n="confirmPassword">Confirm Password</label>
                             <div class="password-wrapper">
                                 <input type="password" id="confirmPassword" name="confirmPassword" required>
                                 <span class="material-symbols-rounded toggle-password">
@@ -1104,7 +1113,7 @@
                         </div>
                     </div>
                     <div id="passwordError" class="password-error"></div>
-                    <button id="changePasswordBtn" type="submit" class="button">Change Password</button>
+                    <button id="changePasswordBtn" type="submit" class="button" data-i18n="changePassword">Change Password</button>
                 </form>
             </div>
         </div>
@@ -1118,7 +1127,7 @@
             </div>
         </div>
         <div class="header-container">
-            <h2><span class="material-symbols-rounded">fingerprint</span> My IP</h2>
+            <h2><span class="material-symbols-rounded">fingerprint</span> <span data-i18n="myIP">My IP</span></h2>
             <button type="button" id="refresh-geo-location" class="refresh-geo-location" onclick="fetchIPInfo()">
                 <i class="fa fa-refresh fa-2x refresh-my-ip" aria-hidden="true"></i>
             </button>
@@ -1126,28 +1135,28 @@
         <div class="my-ip">
             <table id="ips" class="my-ip">
                 <thead>
-                    <th>Information</th>
-                    <th>Cloudflare targets</th>
-                    <th>Other targets</th>
+                    <th data-i18n="information">Information</th>
+                    <th data-i18n="cloudflareTargets">Cloudflare targets</th>
+                    <th data-i18n="otherTargets">Other targets</th>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>IP</td>
+                        <td data-i18n="ip">IP</td>
                         <td id="cf-ip"></td>
                         <td id="ip"></td>
                     </tr>
                     <tr>
-                        <td>Country</td>
+                        <td data-i18n="country">Country</td>
                         <td id="cf-country"></td>
                         <td id="country"></td>
                     </tr>
                     <tr>
-                        <td>City</td>
+                        <td data-i18n="city">City</td>
                         <td id="cf-city"></td>
                         <td id="city"></td>
                     </tr>
                     <tr>
-                        <td>ISP</td>
+                        <td data-i18n="isp">ISP</td>
                         <td id="cf-isp"></td>
                         <td id="isp"></td>
                     </tr>
@@ -1162,9 +1171,9 @@
                 <a class="link" id="github-link" href="https://github.com/bia-pain-bache/BPB-Worker-Panel"
                     target="_blank">Github</a>
             </div>
-            <button id="openResetPass" class="button" onclick="openResetPass()">Change Password <span
+            <button id="openResetPass" class="button" onclick="openResetPass()"><span data-i18n="changePassword">Change Password</span> <span
                     class="material-symbols-rounded">key_vertical</span></button>
-            <button type="button" id="logout" class="logout" title="Log out" onclick="logout(event)">
+            <button type="button" id="logout" class="logout" title="Log out" data-i18n-title="logout" onclick="logout(event)">
                 <i class="fa fa-power-off fa-2x" aria-hidden="true"></i>
             </button>
         </div>

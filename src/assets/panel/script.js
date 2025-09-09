@@ -1,3 +1,54 @@
+const translations = {};
+
+async function loadTranslations(lang) {
+    try {
+        const response = await fetch(`/assets/locales/${lang}.json`);
+        if (!response.ok) {
+            console.error(`Could not load ${lang}.json.`);
+            return;
+        }
+        translations[lang] = await response.json();
+        translatePage(lang);
+    } catch (error) {
+        console.error(`Failed to load translations for ${lang}:`, error);
+    }
+}
+
+function translatePage(lang) {
+    document.querySelectorAll('[data-i18n]').forEach(element => {
+        const key = element.getAttribute('data-i18n');
+        if (translations[lang] && translations[lang][key]) {
+            element.textContent = translations[lang][key].replace('__VERSION__', document.getElementById('panel-version').textContent.trim());
+        }
+    });
+    document.querySelectorAll('[data-i18n-title]').forEach(element => {
+        const key = element.getAttribute('data-i18n-title');
+        if (translations[lang] && translations[lang][key]) {
+            element.title = translations[lang][key];
+        }
+    });
+}
+
+function changeLanguage(lang) {
+    localStorage.setItem('language', lang);
+    if (translations[lang]) {
+        translatePage(lang);
+    } else {
+        loadTranslations(lang);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const savedLang = localStorage.getItem('language') || (navigator.language.startsWith('zh') ? 'zh-CN' : 'en');
+    document.getElementById('language-selector').value = savedLang;
+    loadTranslations(savedLang);
+});
+
+function getTranslation(key) {
+    const lang = localStorage.getItem('language') || 'en';
+    return translations[lang] && translations[lang][key] ? translations[lang][key] : key;
+}
+
 localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
 
 const form = document.getElementById("configForm");
@@ -289,12 +340,12 @@ function openQR(path, app, tag, title, singboxType, hiddifyType) {
 
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text)
-        .then(() => alert('✅ Copied to clipboard:\n\n' + text))
+        .then(() => alert(getTranslation('copiedToClipboard') + '\n\n' + text))
         .catch(error => console.error('Failed to copy:', error));
 }
 
 async function updateWarpConfigs() {
-    const confirmReset = confirm('⚠️ Are you sure?');
+    const confirmReset = confirm(getTranslation('areYouSure'));
     if (!confirmReset) return;
     const refreshBtn = document.getElementById('warp-update');
     document.body.style.cursor = 'wait';
@@ -306,11 +357,11 @@ async function updateWarpConfigs() {
         document.body.style.cursor = 'default';
         refreshBtn.classList.remove('fa-spin');
         if (!success) {
-            alert(`⚠️ An error occured, Please try again!\n⛔ ${message}`);
+            alert(`${getTranslation('errorOccurred')}\n⛔ ${message}`);
             throw new Error(`status ${status} - ${message}`);
         }
 
-        alert('✅ Warp configs updated successfully!');
+        alert(getTranslation('warpConfigsUpdated'));
     } catch (error) {
         console.error("Updating Warp configs error:", error.message || error)
     }
@@ -326,7 +377,7 @@ function handleProtocolChange(event) {
     if (globalThis.activeProtocols === 0) {
         event.preventDefault();
         event.target.checked = !event.target.checked;
-        alert("⛔ At least one Protocol should be selected!");
+        alert(getTranslation('selectOneProtocol'));
         globalThis.activeProtocols++;
         return false;
     }
@@ -343,14 +394,14 @@ function handlePortChange(event) {
     if (globalThis.activeTlsPorts.length === 0) {
         event.preventDefault();
         event.target.checked = !event.target.checked;
-        alert("⛔ At least one TLS port should be selected!");
+        alert(getTranslation('selectOneTlsPort'));
         globalThis.activeTlsPorts.push(portField);
         return false;
     }
 }
 
 function resetSettings() {
-    const confirmReset = confirm('⚠️ This will reset all panel settings.\n\n❓ Are you sure?');
+    const confirmReset = confirm(getTranslation('resetSettingsWarning'));
     if (!confirmReset) return;
     const resetBtn = document.getElementById("refresh-btn");
     resetBtn.classList.add('fa-spin');
@@ -370,7 +421,7 @@ function resetSettings() {
             resetBtn.classList.remove('fa-spin');
             if (!success) throw new Error(`status ${status} - ${message}`);
             initiatePanel(body);
-            alert('✅ Panel settings reset to default successfully!');
+            alert(getTranslation('settingsReset'));
         })
         .catch(error => console.error("Reseting settings error:", error.message || error));
 }
@@ -472,13 +523,13 @@ function updateSettings(event, data) {
 
             const { success, status, message } = data;
             if (status === 401) {
-                alert('⚠️ Session expired! Please login again.');
+                alert(getTranslation('sessionExpired'));
                 window.location.href = '/login';
             }
 
             if (!success) throw new Error(`status ${status} - ${message}`);
             initiateForm();
-            alert('✅ Settings applied successfully!');
+            alert(getTranslation('settingsApplied'));
         })
         .catch(error => console.error("Update settings error:", error.message || error))
         .finally(() => {
@@ -500,7 +551,7 @@ function validateSanctionDns() {
 
     const isValid = isValidHostName(host, false);
     if (!isValid) {
-        alert('⛔ Invalid IPs or Domains.\n👉' + host);
+        alert(getTranslation('invalidIpOrDomain') + '\n👉' + host);
         return false;
     }
 
@@ -536,7 +587,7 @@ function validateMultipleHostNames(elements) {
     const invalidIPs = ips?.filter(value => !isValidHostName(value));
 
     if (invalidIPs.length) {
-        alert('⛔ Invalid IPs or Domains.\n👉 Please enter each IP/domain in a new line.\n\n' + invalidIPs.map(ip => `⚠️ ${ip}`).join('\n'));
+        alert(getTranslation('invalidIpOrDomain') + '\n' + getTranslation('enterEachIpInNewLine') + '\n\n' + invalidIPs.map(ip => `⚠️ ${ip}`).join('\n'));
         return false;
     }
 
@@ -548,7 +599,7 @@ function validateProxyIPs() {
     const invalidValues = proxyIPs?.filter(value => !isValidHostName(value));
 
     if (invalidValues.length) {
-        alert('⛔ Invalid proxy IPs.\n👉 Please enter each IP/domain in a new line.\n\n' + invalidValues.map(ip => `⚠️ ${ip}`).join('\n'));
+        alert(getTranslation('invalidProxyIPs') + '\n' + getTranslation('enterEachIpInNewLine') + '\n\n' + invalidValues.map(ip => `⚠️ ${ip}`).join('\n'));
         return false;
     }
 
@@ -560,7 +611,7 @@ function validateNAT64Prefixes() {
     const invalidValues = prefixes?.filter(value => !ipv6Regex.test(value));
 
     if (invalidValues.length) {
-        alert('⛔ Invalid NAT64 prefix.\n👉 Please enter each prefix in a new line using [].\n\n' + invalidValues.map(ip => `⚠️ ${ip}`).join('\n'));
+        alert(getTranslation('invalidNat64Prefix') + '\n' + getTranslation('enterEachPrefixInNewLine') + '\n\n' + invalidValues.map(ip => `⚠️ ${ip}`).join('\n'));
         return false;
     }
 
@@ -572,7 +623,7 @@ function validateWarpEndpoints() {
     const invalidEndpoints = warpEndpoints?.filter(value => !isValidHostName(value, true));
 
     if (invalidEndpoints.length) {
-        alert('⛔ Invalid endpoint.\n\n' + invalidEndpoints.map(endpoint => `⚠️ ${endpoint}`).join('\n'));
+        alert(getTranslation('invalidEndpoint') + '\n\n' + invalidEndpoints.map(endpoint => `⚠️ ${endpoint}`).join('\n'));
         return false;
     }
 
@@ -602,7 +653,7 @@ function validateMinMax() {
         noiseSizeMin > noiseSizeMax ||
         noiseDelayMin > noiseDelayMax
     ) {
-        alert('⛔ Minimum should be smaller or equal to Maximum!');
+        alert(getTranslation('minShouldBeLessThanMax'));
         return false;
     }
 
@@ -619,7 +670,7 @@ function validateChainProxy() {
     const validTransmission = /type=(tcp|grpc|ws)/.test(chainProxy);
 
     if (!(isVless && (hasSecurity && validSecurityType || !hasSecurity) && validTransmission) && !isSocksHttp && chainProxy) {
-        alert('⛔ Invalid Config!\n - The chain proxy should be VLESS, Socks or Http!\n - VLESS transmission should be GRPC,WS or TCP\n - VLESS security should be TLS,Reality or None\n - socks or http should be like:\n + (socks or http)://user:pass@host:port\n + (socks or http)://host:port');
+        alert(getTranslation('invalidChainProxy'));
         return false;
     }
 
@@ -629,7 +680,7 @@ function validateChainProxy() {
     const vlessPort = match?.[1] || null;
 
     if (isVless && securityType === 'tls' && vlessPort !== '443') {
-        alert('⛔ VLESS TLS port can be only 443 to be used as a proxy chain!');
+        alert(getTranslation('vlessTlsPortError'));
         return false;
     }
 
@@ -643,7 +694,7 @@ function validateCustomCdn() {
 
     const isCustomCdn = customCdnAddrs.length || customCdnHost !== '' || customCdnSni !== '';
     if (isCustomCdn && !(customCdnAddrs.length && customCdnHost && customCdnSni)) {
-        alert('⛔ All "Custom" fields should be filled or deleted together!');
+        alert(getTranslation('fillAllCustomCdn'));
         return false;
     }
 
@@ -657,7 +708,7 @@ function validateXrayNoises(fields) {
 
     modes.forEach((mode, index) => {
         if (delaysMin[index] > delaysMax[index]) {
-            alert('⛔ The minimum noise delay should be smaller or equal to maximum!');
+            alert(getTranslation('minNoiseDelayError'));
             submisionError = true;
             return;
         }
@@ -666,7 +717,7 @@ function validateXrayNoises(fields) {
 
             case 'base64': {
                 if (!base64Regex.test(packets[index])) {
-                    alert('⛔ The Base64 noise packet is not a valid base64 value!');
+                    alert(getTranslation('invalidBase64Packet'));
                     submisionError = true;
                 }
 
@@ -674,13 +725,13 @@ function validateXrayNoises(fields) {
             }
             case 'rand': {
                 if (!(/^\d+-\d+$/.test(packets[index]))) {
-                    alert('⛔ The Random noise packet should be a range like 0-10 or 10-30!');
+                    alert(getTranslation('invalidRandomPacket'));
                     submisionError = true;
                 }
 
                 const [min, max] = packets[index].split("-").map(Number);
                 if (min > max) {
-                    alert('⛔ The minimum Random noise packet should be smaller or equal to maximum!');
+                    alert(getTranslation('minRandomPacketError'));
                     submisionError = true;
                 }
 
@@ -688,7 +739,7 @@ function validateXrayNoises(fields) {
             }
             case 'hex': {
                 if (!(/^(?=(?:[0-9A-Fa-f]{2})*$)[0-9A-Fa-f]+$/.test(packets[index]))) {
-                    alert('⛔ The Hex noise packet is not a valid hex value! It should have even length and consisted of 0-9, a-f and A-F.');
+                    alert(getTranslation('invalidHexPacket'));
                     submisionError = true;
                 }
 
@@ -762,7 +813,7 @@ function resetPassword(event) {
                 throw new Error(`status ${status} - ${message}`);
             }
 
-            alert("✅ Password changed successfully! 👍");
+            alert(getTranslation('passwordChanged'));
             window.location.href = '/login';
 
         })
@@ -914,11 +965,11 @@ function generateUdpNoise(event) {
 
 function deleteUdpNoise(event) {
     if (globalThis.xrayNoiseCount === 1) {
-        alert('⛔ You cannot delete all noises!');
+        alert(getTranslation('cannotDeleteAllNoises'));
         return;
     }
 
-    const confirmReset = confirm('⚠️ This will delete the noise.\n\n❓ Are you sure?');
+    const confirmReset = confirm(getTranslation('deleteNoiseWarning'));
     if (!confirmReset) return;
     event.target.closest(".inner-container").remove();
     enableApplyButton();
