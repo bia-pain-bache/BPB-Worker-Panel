@@ -88,6 +88,10 @@ async function buildWorker() {
     const htmls = await processHtmlPages();
     const faviconBuffer = readFileSync('./src/assets/favicon.ico');
     const faviconBase64 = faviconBuffer.toString('base64');
+    const enJsonContent = readFileSync(join(ASSET_PATH, 'locales', 'en.json'), 'utf8');
+    const zhCnJsonContent = readFileSync(join(ASSET_PATH, 'locales', 'zh-CN.json'), 'utf8');
+    const enJsonHex = stringToHex(enJsonContent);
+    const zhCnJsonHex = stringToHex(zhCnJsonContent);
 
     const code = await build({
         entryPoints: [join(__dirname, '../src/worker.js')],
@@ -103,7 +107,9 @@ async function buildWorker() {
             __ERROR_HTML_CONTENT__: htmls['error'] ?? '""',
             __SECRETS_HTML_CONTENT__: htmls['secrets'] ?? '""',
             __ICON__: JSON.stringify(faviconBase64),
-            __VERSION__: JSON.stringify(version)
+            __VERSION__: JSON.stringify(version),
+            __EN_JSON_CONTENT__: JSON.stringify(enJsonHex),
+            __ZH_CN_JSON_CONTENT__: JSON.stringify(zhCnJsonHex),
         }
     });
 

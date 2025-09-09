@@ -1,7 +1,7 @@
 import { init } from './helpers/init';
 import { VlOverWSHandler } from './protocols/vless';
 import { TrOverWSHandler } from './protocols/trojan';
-import { fallback, serveIcon, renderSecrets, handlePanel, handleSubscriptions, handleLogin, handleError } from './helpers/helpers';
+import { fallback, serveIcon, renderSecrets, handlePanel, handleSubscriptions, handleLogin, handleError, handleAssets } from './helpers/helpers';
 import { logout } from './authentication/auth';
 
 export default {
@@ -15,6 +15,7 @@ export default {
 				if (globalThis.wsProtocol === 'vl') return await VlOverWSHandler(request);
 				if (globalThis.wsProtocol === 'tr') return await TrOverWSHandler(request);
 			} else {
+				if (path.startsWith('/assets')) return await handleAssets();
 				if (path.startsWith('/panel')) return await handlePanel(request, env);
 				if (path.startsWith('/sub')) return await handleSubscriptions(request, env);
 				if (path.startsWith('/login')) return await handleLogin(request, env);

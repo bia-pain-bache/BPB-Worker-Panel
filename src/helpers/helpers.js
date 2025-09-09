@@ -37,6 +37,28 @@ export async function handlePanel(request, env) {
     }
 }
 
+export async function handleAssets() {
+    const { pathName } = globalThis;
+    let content, contentType;
+
+    switch (pathName) {
+        case '/assets/locales/en.json':
+            content = __EN_JSON_CONTENT__;
+            contentType = 'application/json';
+            break;
+        case '/assets/locales/zh-CN.json':
+            content = __ZH_CN_JSON_CONTENT__;
+            contentType = 'application/json';
+            break;
+        default:
+            return new Response('Not found', { status: 404 });
+    }
+
+    return new Response(hexToString(content), {
+        headers: { 'Content-Type': contentType }
+    });
+}
+
 export async function handleError(error) {
     const html = hexToString(__ERROR_HTML_CONTENT__).replace('__ERROR_MESSAGE__', error.message);
 
