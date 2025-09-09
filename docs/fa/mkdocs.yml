@@ -64,6 +64,12 @@ extra:
     - name: English
       lang: en
       link: /BPB-Worker-Panel/
+    - name: Farsi
+      lang: fa
+      link: /BPB-Worker-Panel/fa/
+    - name: Chinese
+      lang: zh
+      link: /BPB-Worker-Panel/zh/
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/bia-pain-bache/BPB-Worker-Panel
