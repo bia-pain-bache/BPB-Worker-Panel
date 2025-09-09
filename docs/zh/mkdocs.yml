@@ -1,0 +1,100 @@
+site_name: BPB 控制面板
+site_url: https://bia-pain-bache.github.io
+repo_url: https://github.com/bia-pain-bache/BPB-Worker-Panel
+copyright: Copyright &copy; BPB
+
+use_directory_urls: true
+site_dir: ../../site
+extra_css:
+  - stylesheet/extra.css
+
+theme:
+  name: material
+  custom_dir: ../assets
+  logo: favicon.ico
+  favicon: favicon.ico
+  direction: ltr
+  language: zh
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default 
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.instant
+    - navigation.indexes
+    - navigation.top
+    - content.code.copy
+    - toc.integrate
+    - navigation.tracking
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - attr_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - md_in_html
+
+extra:
+  alternate:
+    - name: English
+      lang: en
+      link: /BPB-Worker-Panel/
+    - name: Farsi
+      lang: fa
+      link: /BPB-Worker-Panel/fa/
+    - name: Chinese
+      lang: zh
+      link: /BPB-Worker-Panel/zh/
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/bia-pain-bache/BPB-Worker-Panel
+      name: Source code
+
+plugins:
+  - search
+
+nav:
+  - 主页: index.md
+  - 安装:
+    - 向导: installation/wizard.md
+    - 手动 - Pages: installation/pages-manual.md
+    - 手动 - Workers: installation/workers-manual.md
+  - 配置:
+    - configuration/index.md
+    - VLESS - Trojan: configuration/vless-trojan.md
+    - Fragment: configuration/fragment.md
+    - Warp 普通版: configuration/warp.md
+    - Warp PRO: configuration/warp-pro.md
+    - 路由规则: configuration/routing-rules.md
+  - 使用:
+    - usage/index.md
+    - 普通: usage/normal.md
+    - 完整普通: usage/full-normal.md
+    - Fragment: usage/fragment.md
+    - Warp: usage/warp.md
+    - Warp PRO: usage/warp-pro.md
+    - 我的 IP: usage/my-ip.md
+  - 常见问题: faq.md

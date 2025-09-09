@@ -1,6 +1,6 @@
 <h1 align="center">BPB Panel 💦</h1>
 
-### 🌏 Readme in [Farsi](README_fa.md)
+### 🌏 Readme in [Farsi](README_fa.md) | [简体中文](README_zh.md)
 
 <p align="center">
   <img src="docs/assets/images/panel-overview.jpg">
