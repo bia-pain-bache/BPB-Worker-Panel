@@ -30,6 +30,9 @@ jobs:
       - name: Build Farsi site
         run: mkdocs build -f docs/fa/mkdocs.yml
 
+      - name: Build Chinese site
+        run: mkdocs build -f docs/zh/mkdocs.yml
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
