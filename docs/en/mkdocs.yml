@@ -1,6 +1,6 @@
 site_name: BPB Panel
-site_url: https://bia-pain-bache.github.io
-repo_url: https://github.com/bia-pain-bache/BPB-Worker-Panel
+site_url: https://bpb.amethyst.ltd
+repo_url: https://github.com/Starry-Sky-World/BPB-Chinese
 copyright: Copyright &copy; BPB
 
 use_directory_urls: true
@@ -14,9 +14,7 @@ theme:
   logo: favicon.ico
   favicon: favicon.ico
   direction: ltr
-  language: en
-  font:
-    text: Vazirmatn
+  language: zh
   palette:
     - media: "(prefers-color-scheme)"
       toggle:
@@ -63,16 +61,16 @@ extra:
   alternate:
     - name: English
       lang: en
-      link: /BPB-Worker-Panel/
+      link: /
     - name: Farsi
       lang: fa
-      link: /BPB-Worker-Panel/fa/
+      link: /fa/
     - name: Chinese
       lang: zh
-      link: /BPB-Worker-Panel/zh/
+      link: /zh/
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/bia-pain-bache/BPB-Worker-Panel
+      link: https://github.com/Starry-Sky-World/BPB-Chinese
       name: Source code
 
 plugins:
