@@ -575,7 +575,7 @@ const clashConfigTemp = {
         "enable": true,
         "force-dns-mapping": true,
         "parse-pure-ip": true,
-        "override-destination": false,
+        "override-destination": true,
         "sniff": {
             "HTTP": {
                 "ports": [80, 8080, 8880, 2052, 2082, 2086, 2095]

@@ -521,6 +521,7 @@ async function buildSingBoxConfig(selectorTags, urlTestTags, secondUrlTestTags, 
         tag: isWarp ? `💦 Warp - Best Ping 🚀` : '💦 Best Ping 💥',
         outbounds: urlTestTags,
         url: "https://www.gstatic.com/generate_204",
+        interrupt_exist_connections: false,
         interval: isWarp ? `${settings.bestWarpInterval}s` : `${settings.bestVLTRInterval}s`
     };
 
