@@ -1,4 +1,5 @@
 import { getDomain, resolveDNS } from '../cores-configs/helpers';
+import { httpConfig } from '../helpers/init';
 import { fetchWarpConfigs } from '../protocols/warp';
 
 export async function getDataset(request, env) {
@@ -18,7 +19,7 @@ export async function getDataset(request, env) {
         warpConfigs = configs;
     }
 
-    if (globalThis.panelVersion !== proxySettings.panelVersion) proxySettings = await updateDataset(request, env);
+    if (httpConfig.panelVersion !== proxySettings.panelVersion) proxySettings = await updateDataset(request, env);
     return { proxySettings, warpConfigs }
 }
 
@@ -130,7 +131,7 @@ export async function updateDataset(request, env) {
         amneziaNoiseCount: populateField('amneziaNoiseCount', 5),
         amneziaNoiseSizeMin: populateField('amneziaNoiseSizeMin', 50),
         amneziaNoiseSizeMax: populateField('amneziaNoiseSizeMax', 100),
-        panelVersion: globalThis.panelVersion
+        panelVersion: httpConfig.panelVersion
     };
 
     try {

@@ -1,7 +1,6 @@
-/* eslint-disable no-undef */
-/* eslint-disable no-unused-vars */
 import { sha224 } from 'js-sha256';
 import { handleTCPOutBound, makeReadableWebSocketStream } from './common';
+import { globalConfig } from '../helpers/init';
 
 export async function TrOverWSHandler(request) {
     const webSocketPair = new WebSocketPair();
@@ -96,7 +95,7 @@ function parseTRHeader(buffer) {
     }
 
     const password = new TextDecoder().decode(buffer.slice(0, crLfIndex));
-    if (password !== sha224(globalThis.TRPassword)) {
+    if (password !== sha224(globalConfig.TrPass)) {
         return {
             hasError: true,
             message: "invalid password",

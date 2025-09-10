@@ -7,15 +7,38 @@ import { getXrayCustomConfigs, getXrayWarpConfigs } from "../cores-configs/xray"
 import { getDataset, updateDataset } from "../kv/handlers";
 import JSZip from "jszip";
 import { fetchWarpConfigs } from "../protocols/warp";
+import { globalConfig, httpConfig, wsConfig } from "./init";
+import { VlOverWSHandler } from "../protocols/vless";
+import { TrOverWSHandler } from "../protocols/trojan";
 
-export function isValidUUID(uuid) {
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    return uuidRegex.test(uuid);
+export async function handleWebsocket(request) {
+    const encodedPathConfig = globalConfig.pathName.replace("/", "") || '';
+
+    try {
+        const { protocol, mode, panelIPs } = JSON.parse(atob(encodedPathConfig));
+        Object.assign(wsConfig, {
+            wsProtocol: protocol,
+            proxyMode: mode,
+            panelIPs: panelIPs
+        });
+
+        switch (protocol) {
+            case 'vl':
+                return await VlOverWSHandler(request);
+            case 'tr':
+                return await TrOverWSHandler(request);
+            default:
+                return await fallback(request);
+        }
+
+    } catch (error) {
+        return new Response('Failed to parse WebSocket path config', { status: 400 });
+    }
 }
 
 export async function handlePanel(request, env) {
 
-    switch (globalThis.pathName) {
+    switch (globalConfig.pathName) {
         case '/panel':
             return await renderPanel(request, env);
         case '/panel/settings':
@@ -47,17 +70,17 @@ export async function handleError(error) {
 }
 
 export async function handleLogin(request, env) {
-    if (globalThis.pathName === '/login') return await renderLogin(request, env);
-    if (globalThis.pathName === '/login/authenticate') return await generateJWTToken(request, env);
+    if (globalConfig.pathName === '/login') return await renderLogin(request, env);
+    if (globalConfig.pathName === '/login/authenticate') return await generateJWTToken(request, env);
     return await fallback(request);
 }
 
 export async function handleSubscriptions(request, env) {
-    const { proxySettings: settings } = await getDataset(request, env);
-    globalThis.settings = settings;
-    const { pathName, client, subPath } = globalThis;
+    const { proxySettings } = await getDataset(request, env);
+    globalThis.settings = proxySettings;
+    const { client, subPath } = httpConfig;
 
-    switch (decodeURIComponent(pathName)) {
+    switch (decodeURIComponent(globalConfig.pathName)) {
         case `/sub/normal/${subPath}`:
             return await getNormalConfigs(false);
 
@@ -146,7 +169,7 @@ async function getSettings(request, env) {
         const settings = {
             proxySettings,
             isPassSet,
-            subPath: globalThis.subPath
+            subPath: httpConfig.subPath
         };
 
         return await respond(true, 200, null, settings);
@@ -157,7 +180,7 @@ async function getSettings(request, env) {
 
 export async function fallback(request) {
     const url = new URL(request.url);
-    url.hostname = globalThis.fallbackDomain;
+    url.hostname = globalConfig.fallbackDomain;
     url.protocol = 'https:';
     const newRequest = new Request(url.toString(), {
         method: request.method,
@@ -182,7 +205,7 @@ async function getMyIP(request) {
 }
 
 async function getWarpConfigs(request, env) {
-    const isPro = globalThis.client === 'amnezia';
+    const isPro = httpConfig.client === 'amnezia';
     const auth = await Authenticate(request, env);
     if (!auth) return new Response('Unauthorized or expired session.', { status: 401 });
     const { warpConfigs, proxySettings } = await getDataset(request, env);
@@ -248,7 +271,7 @@ async function renderPanel(request, env) {
     const pwd = await env.kv.get('pwd');
     if (pwd) {
         const auth = await Authenticate(request, env);
-        if (!auth) return Response.redirect(`${globalThis.urlOrigin}/login`, 302);
+        if (!auth) return Response.redirect(`${httpConfig.urlOrigin}/login`, 302);
     }
 
     const html = hexToString(__PANEL_HTML_CONTENT__);
@@ -259,7 +282,7 @@ async function renderPanel(request, env) {
 
 async function renderLogin(request, env) {
     const auth = await Authenticate(request, env);
-    if (auth) return Response.redirect(`${urlOrigin}/panel`, 302);
+    if (auth) return Response.redirect(`${httpConfig.urlOrigin}/panel`, 302);
 
     const html = hexToString(__LOGIN_HTML_CONTENT__);
     return new Response(html, {
@@ -307,4 +330,9 @@ function hexToString(hex) {
     const bytes = new Uint8Array(hex.match(/.{1,2}/g).map(b => parseInt(b, 16)));
     const decoder = new TextDecoder();
     return decoder.decode(bytes);
+}
+
+export function isValidUUID(uuid) {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(uuid);
 }

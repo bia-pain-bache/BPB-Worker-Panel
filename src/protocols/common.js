@@ -1,5 +1,6 @@
 import { connect } from 'cloudflare:sockets';
 import { isIPv4, parseHostPort, resolveDNS } from '../cores-configs/helpers';
+import { wsConfig } from '../helpers/init';
 
 export const WS_READY_STATE_OPEN = 1;
 const WS_READY_STATE_CLOSING = 2;
@@ -30,13 +31,15 @@ export async function handleTCPOutBound(
 
     async function retry() {
         let tcpSocket;
-        const mode = globalThis.proxyMode;
+        const { proxyMode, panelIPs } = wsConfig;
         const getRandomValue = (arr) => arr[Math.floor(Math.random() * arr.length)];
+        const parseIPs = (value) => value ? value.split(',').map(val => val.trim()).filter(Boolean) : undefined;
 
-        if (mode === 'proxyip') {
+        if (proxyMode === 'proxyip') {
             log(`direct connection failed, trying to use Proxy IP for ${addressRemote}`);
             try {
-                const ips = globalThis.panelIPs.length ? globalThis.panelIPs : globalThis.proxyIPs;
+                const proxyIPs = parseIPs(wsConfig.envProxyIPs) ||  wsConfig.defaultProxyIPs;
+                const ips = panelIPs.length ? panelIPs : proxyIPs;
                 const proxyIP = getRandomValue(ips);
                 const { host, port } = parseHostPort(proxyIP);
                 tcpSocket = await connectAndWrite(host || addressRemote, port || portRemote);
@@ -45,10 +48,11 @@ export async function handleTCPOutBound(
                 webSocket.close(1011, 'Proxy IP connection failed: ' + error.message);
             }
 
-        } else if (mode === 'prefix') {
+        } else if (proxyMode === 'prefix') {
             log(`direct connection failed, trying to generate dynamic prefix for ${addressRemote}`);
             try {
-                const ips = globalThis.panelIPs.length ? globalThis.panelIPs : globalThis.prefixes;
+                const prefixes = parseIPs(wsConfig.envPrefixes) || wsConfig.defaultPrefixes;
+                const ips = panelIPs.length ? panelIPs : prefixes;
                 const prefix = getRandomValue(ips);
                 const dynamicProxyIP = await getDynamicProxyIP(addressRemote, prefix);
                 tcpSocket = await connectAndWrite(dynamicProxyIP, portRemote);

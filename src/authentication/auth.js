@@ -1,5 +1,6 @@
 import { SignJWT, jwtVerify } from 'jose';
 import { respond } from '../helpers/helpers';
+import { globalConfig } from '../helpers/init';
 
 export async function generateJWTToken(request, env) {
     if (request.method !== 'POST') return await respond(false, 405, 'Method not allowed.');
@@ -7,12 +8,14 @@ export async function generateJWTToken(request, env) {
     const savedPass = await env.kv.get('pwd');
     if (password !== savedPass) return await respond(false, 401, 'Wrong password.');
     let secretKey = await env.kv.get('secretKey');
+
     if (!secretKey) {
         secretKey = generateSecretKey();
         await env.kv.put('secretKey', secretKey);
     }
+    
     const secret = new TextEncoder().encode(secretKey);
-    const jwtToken = await new SignJWT({ userID: globalThis.userID })
+    const jwtToken = await new SignJWT({ userID: globalConfig.userID })
         .setProtectedHeader({ alg: 'HS256' })
         .setIssuedAt()
         .setExpirationTime('24h')
