@@ -1,6 +1,7 @@
 <h1 align="center">BPB 面板 💦</h1>
 
 <h3>🌏 阅读其他语言版本 [波斯语](README_fa.md) | [English](README.md)</h3>
+<h3>🌍 View Document in [CN](https://bpb.amethyst.ltd) or [Edgeone Pages](https://org-bpb.amethyst.ltd)</h3>
 
 <p align="center">
   <img src="docs/assets/images/panel-overview.jpg">
