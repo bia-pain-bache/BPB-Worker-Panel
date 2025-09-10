@@ -47,6 +47,11 @@ window.copyToClipboard = function (elementId) {
         : `UUID=${uuid}\nTR_PASS=${password}\nSUB_PATH=${uriPath}`;
 
     navigator.clipboard.writeText(textToCopy)
-        .then(() => alert('✅ Copied to clipboard!'))
+        .then(() => Swal.fire({
+            title: '✅ Copied to clipboard!',
+            icon: 'success',
+            showConfirmButton: false,
+            timer: 1500
+        }))
         .catch(err => console.error('Failed to copy text:', err));
 }

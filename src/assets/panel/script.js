@@ -359,13 +359,27 @@ function openQR(path, app, tag, title, singboxType, hiddifyType) {
 
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text)
-        .then(() => alert(getTranslation('copiedToClipboard') + '\n\n' + text))
+        .then(() => Swal.fire({
+            title: getTranslation('copiedToClipboard'),
+            text: text,
+            icon: 'success',
+            showConfirmButton: false,
+            timer: 1500
+        }))
         .catch(error => console.error('Failed to copy:', error));
 }
 
 async function updateWarpConfigs() {
-    const confirmReset = confirm(getTranslation('areYouSure'));
-    if (!confirmReset) return;
+    const result = await Swal.fire({
+        title: getTranslation('areYouSure'),
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: getTranslation('yes'),
+        cancelButtonText: getTranslation('no')
+    });
+
+    if (!result.isConfirmed) return;
+
     const refreshBtn = document.getElementById('warp-update');
     document.body.style.cursor = 'wait';
     refreshBtn.classList.add('fa-spin');
@@ -376,11 +390,20 @@ async function updateWarpConfigs() {
         document.body.style.cursor = 'default';
         refreshBtn.classList.remove('fa-spin');
         if (!success) {
-            alert(`${getTranslation('errorOccurred')}\n⛔ ${message}`);
+            Swal.fire({
+                title: getTranslation('errorOccurred'),
+                text: `⛔ ${message}`,
+                icon: 'error'
+            });
             throw new Error(`status ${status} - ${message}`);
         }
 
-        alert(getTranslation('warpConfigsUpdated'));
+        Swal.fire({
+            title: getTranslation('warpConfigsUpdated'),
+            icon: 'success',
+            showConfirmButton: false,
+            timer: 1500
+        });
     } catch (error) {
         console.error("Updating Warp configs error:", error.message || error)
     }
@@ -396,7 +419,10 @@ function handleProtocolChange(event) {
     if (globalThis.activeProtocols === 0) {
         event.preventDefault();
         event.target.checked = !event.target.checked;
-        alert(getTranslation('selectOneProtocol'));
+        Swal.fire({
+            title: getTranslation('selectOneProtocol'),
+            icon: 'warning'
+        });
         globalThis.activeProtocols++;
         return false;
     }
@@ -413,15 +439,26 @@ function handlePortChange(event) {
     if (globalThis.activeTlsPorts.length === 0) {
         event.preventDefault();
         event.target.checked = !event.target.checked;
-        alert(getTranslation('selectOneTlsPort'));
+        Swal.fire({
+            title: getTranslation('selectOneTlsPort'),
+            icon: 'warning'
+        });
         globalThis.activeTlsPorts.push(portField);
         return false;
     }
 }
 
-function resetSettings() {
-    const confirmReset = confirm(getTranslation('resetSettingsWarning'));
-    if (!confirmReset) return;
+async function resetSettings() {
+    const result = await Swal.fire({
+        title: getTranslation('resetSettingsWarning'),
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: getTranslation('yes'),
+        cancelButtonText: getTranslation('no')
+    });
+
+    if (!result.isConfirmed) return;
+
     const resetBtn = document.getElementById("refresh-btn");
     resetBtn.classList.add('fa-spin');
     const body = { resetSettings: true };
@@ -440,7 +477,12 @@ function resetSettings() {
             resetBtn.classList.remove('fa-spin');
             if (!success) throw new Error(`status ${status} - ${message}`);
             initiatePanel(body);
-            alert(getTranslation('settingsReset'));
+            Swal.fire({
+                title: getTranslation('settingsReset'),
+                icon: 'success',
+                showConfirmButton: false,
+                timer: 1500
+            });
         })
         .catch(error => console.error("Reseting settings error:", error.message || error));
 }
@@ -542,13 +584,22 @@ function updateSettings(event, data) {
 
             const { success, status, message } = data;
             if (status === 401) {
-                alert(getTranslation('sessionExpired'));
-                window.location.href = '/login';
+                Swal.fire({
+                    title: getTranslation('sessionExpired'),
+                    icon: 'error'
+                }).then(() => {
+                    window.location.href = '/login';
+                });
             }
 
             if (!success) throw new Error(`status ${status} - ${message}`);
             initiateForm();
-            alert(getTranslation('settingsApplied'));
+            Swal.fire({
+                title: getTranslation('settingsApplied'),
+                icon: 'success',
+                showConfirmButton: false,
+                timer: 1500
+            });
         })
         .catch(error => console.error("Update settings error:", error.message || error))
         .finally(() => {
@@ -570,7 +621,11 @@ function validateSanctionDns() {
 
     const isValid = isValidHostName(host, false);
     if (!isValid) {
-        alert(getTranslation('invalidIpOrDomain') + '\n👉' + host);
+        Swal.fire({
+            title: getTranslation('invalidIpOrDomain'),
+            text: `👉 ${host}`,
+            icon: 'error'
+        });
         return false;
     }
 
@@ -606,7 +661,11 @@ function validateMultipleHostNames(elements) {
     const invalidIPs = ips?.filter(value => !isValidHostName(value));
 
     if (invalidIPs.length) {
-        alert(getTranslation('invalidIpOrDomain') + '\n' + getTranslation('enterEachIpInNewLine') + '\n\n' + invalidIPs.map(ip => `⚠️ ${ip}`).join('\n'));
+        Swal.fire({
+            title: getTranslation('invalidIpOrDomain'),
+            html: `${getTranslation('enterEachIpInNewLine')}<br><br>${invalidIPs.map(ip => `⚠️ ${ip}`).join('<br>')}`,
+            icon: 'error'
+        });
         return false;
     }
 
@@ -618,7 +677,11 @@ function validateProxyIPs() {
     const invalidValues = proxyIPs?.filter(value => !isValidHostName(value));
 
     if (invalidValues.length) {
-        alert(getTranslation('invalidProxyIPs') + '\n' + getTranslation('enterEachIpInNewLine') + '\n\n' + invalidValues.map(ip => `⚠️ ${ip}`).join('\n'));
+        Swal.fire({
+            title: getTranslation('invalidProxyIPs'),
+            html: `${getTranslation('enterEachIpInNewLine')}<br><br>${invalidValues.map(ip => `⚠️ ${ip}`).join('<br>')}`,
+            icon: 'error'
+        });
         return false;
     }
 
@@ -630,7 +693,11 @@ function validateNAT64Prefixes() {
     const invalidValues = prefixes?.filter(value => !ipv6Regex.test(value));
 
     if (invalidValues.length) {
-        alert(getTranslation('invalidNat64Prefix') + '\n' + getTranslation('enterEachPrefixInNewLine') + '\n\n' + invalidValues.map(ip => `⚠️ ${ip}`).join('\n'));
+        Swal.fire({
+            title: getTranslation('invalidNat64Prefix'),
+            html: `${getTranslation('enterEachPrefixInNewLine')}<br><br>${invalidValues.map(ip => `⚠️ ${ip}`).join('<br>')}`,
+            icon: 'error'
+        });
         return false;
     }
 
@@ -642,7 +709,11 @@ function validateWarpEndpoints() {
     const invalidEndpoints = warpEndpoints?.filter(value => !isValidHostName(value, true));
 
     if (invalidEndpoints.length) {
-        alert(getTranslation('invalidEndpoint') + '\n\n' + invalidEndpoints.map(endpoint => `⚠️ ${endpoint}`).join('\n'));
+        Swal.fire({
+            title: getTranslation('invalidEndpoint'),
+            html: `<br><br>${invalidEndpoints.map(endpoint => `⚠️ ${endpoint}`).join('<br>')}`,
+            icon: 'error'
+        });
         return false;
     }
 
@@ -672,7 +743,10 @@ function validateMinMax() {
         noiseSizeMin > noiseSizeMax ||
         noiseDelayMin > noiseDelayMax
     ) {
-        alert(getTranslation('minShouldBeLessThanMax'));
+        Swal.fire({
+            title: getTranslation('minShouldBeLessThanMax'),
+            icon: 'error'
+        });
         return false;
     }
 
@@ -689,7 +763,10 @@ function validateChainProxy() {
     const validTransmission = /type=(tcp|grpc|ws)/.test(chainProxy);
 
     if (!(isVless && (hasSecurity && validSecurityType || !hasSecurity) && validTransmission) && !isSocksHttp && chainProxy) {
-        alert(getTranslation('invalidChainProxy'));
+        Swal.fire({
+            title: getTranslation('invalidChainProxy'),
+            icon: 'error'
+        });
         return false;
     }
 
@@ -699,7 +776,10 @@ function validateChainProxy() {
     const vlessPort = match?.[1] || null;
 
     if (isVless && securityType === 'tls' && vlessPort !== '443') {
-        alert(getTranslation('vlessTlsPortError'));
+        Swal.fire({
+            title: getTranslation('vlessTlsPortError'),
+            icon: 'error'
+        });
         return false;
     }
 
@@ -713,7 +793,10 @@ function validateCustomCdn() {
 
     const isCustomCdn = customCdnAddrs.length || customCdnHost !== '' || customCdnSni !== '';
     if (isCustomCdn && !(customCdnAddrs.length && customCdnHost && customCdnSni)) {
-        alert(getTranslation('fillAllCustomCdn'));
+        Swal.fire({
+            title: getTranslation('fillAllCustomCdn'),
+            icon: 'error'
+        });
         return false;
     }
 
@@ -727,7 +810,10 @@ function validateXrayNoises(fields) {
 
     modes.forEach((mode, index) => {
         if (delaysMin[index] > delaysMax[index]) {
-            alert(getTranslation('minNoiseDelayError'));
+            Swal.fire({
+                title: getTranslation('minNoiseDelayError'),
+                icon: 'error'
+            });
             submisionError = true;
             return;
         }
@@ -736,7 +822,10 @@ function validateXrayNoises(fields) {
 
             case 'base64': {
                 if (!base64Regex.test(packets[index])) {
-                    alert(getTranslation('invalidBase64Packet'));
+                    Swal.fire({
+                        title: getTranslation('invalidBase64Packet'),
+                        icon: 'error'
+                    });
                     submisionError = true;
                 }
 
@@ -744,13 +833,19 @@ function validateXrayNoises(fields) {
             }
             case 'rand': {
                 if (!(/^\d+-\d+$/.test(packets[index]))) {
-                    alert(getTranslation('invalidRandomPacket'));
+                    Swal.fire({
+                        title: getTranslation('invalidRandomPacket'),
+                        icon: 'error'
+                    });
                     submisionError = true;
                 }
 
                 const [min, max] = packets[index].split("-").map(Number);
                 if (min > max) {
-                    alert(getTranslation('minRandomPacketError'));
+                    Swal.fire({
+                        title: getTranslation('minRandomPacketError'),
+                        icon: 'error'
+                    });
                     submisionError = true;
                 }
 
@@ -758,7 +853,10 @@ function validateXrayNoises(fields) {
             }
             case 'hex': {
                 if (!(/^(?=(?:[0-9A-Fa-f]{2})*$)[0-9A-Fa-f]+$/.test(packets[index]))) {
-                    alert(getTranslation('invalidHexPacket'));
+                    Swal.fire({
+                        title: getTranslation('invalidHexPacket'),
+                        icon: 'error'
+                    });
                     submisionError = true;
                 }
 
@@ -832,8 +930,14 @@ function resetPassword(event) {
                 throw new Error(`status ${status} - ${message}`);
             }
 
-            alert(getTranslation('passwordChanged'));
-            window.location.href = '/login';
+            Swal.fire({
+                title: getTranslation('passwordChanged'),
+                icon: 'success',
+                showConfirmButton: false,
+                timer: 1500
+            }).then(() => {
+                window.location.href = '/login';
+            });
 
         })
         .catch(error => console.error("Reset password error:", error.message || error))
@@ -982,14 +1086,24 @@ function generateUdpNoise(event) {
     }
 }
 
-function deleteUdpNoise(event) {
+async function deleteUdpNoise(event) {
     if (globalThis.xrayNoiseCount === 1) {
-        alert(getTranslation('cannotDeleteAllNoises'));
+        Swal.fire({
+            title: getTranslation('cannotDeleteAllNoises'),
+            icon: 'error'
+        });
         return;
     }
 
-    const confirmReset = confirm(getTranslation('deleteNoiseWarning'));
-    if (!confirmReset) return;
+    const result = await Swal.fire({
+        title: getTranslation('deleteNoiseWarning'),
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: getTranslation('yes'),
+        cancelButtonText: getTranslation('no')
+    });
+
+    if (!result.isConfirmed) return;
     event.target.closest(".inner-container").remove();
     enableApplyButton();
     globalThis.xrayNoiseCount--;
