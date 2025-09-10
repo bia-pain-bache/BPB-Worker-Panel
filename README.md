@@ -5,6 +5,7 @@
 
 <p align="center">
   <img src="docs/assets/images/panel-overview.jpg">
+  <img width="2560" height="1506" alt="en-US" src="https://github.com/user-attachments/assets/3229c3e0-b552-4877-857d-736c99be8fe8" />
 </p>
 <br>
 
