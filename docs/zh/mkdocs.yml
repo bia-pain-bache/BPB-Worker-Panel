@@ -82,6 +82,7 @@ nav:
     - 向导: installation/wizard.md
     - 手动 - Pages: installation/pages-manual.md
     - 手动 - Workers: installation/workers-manual.md
+    - 半自动 - Pages: installation/pages-from-repo.md
   - 配置:
     - configuration/index.md
     - VLESS - Trojan: configuration/vless-trojan.md
