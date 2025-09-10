@@ -1,7 +1,7 @@
 <h1 align="center">BPB 面板 💦</h1>
 
-<h3>🌏 阅读其他语言版本 [波斯语](README_fa.md) | [English](README.md)</h3>
-<h3>🌍 View Document in [CN](https://bpb.amethyst.ltd) or [Edgeone Pages](https://org-bpb.amethyst.ltd)</h3>
+## 🌏 阅读其他语言版本 [波斯语](README_fa.md) | [English](README.md)</h3>
+## 🌍 View Document in [CN](https://bpb.amethyst.ltd) or [Edgeone](https://org-bpb.amethyst.ltd)</h3>
 
 <p align="center">
   <img src="docs/assets/images/panel-overview.jpg">
@@ -14,14 +14,6 @@
 
 - **Workers** 部署
 - **Pages** 部署
-
-🌟 如果您觉得 **BPB 面板** 有价值，您的捐赠将产生巨大影响 🌟
-
-### USDT (BEP20)
-
-```text
-0xbdf15d41C56f861f25b2b11C835bd45dfD5b792F
-```
 
 ## 功能
 

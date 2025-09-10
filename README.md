@@ -1,7 +1,7 @@
 <h1 align="center">BPB Panel 💦</h1>
 
 ### 🌏 Readme in [Farsi](README_fa.md) | [简体中文](README_zh.md)
-### 🌍 View Document in [CN](https://bpb.amethyst.ltd) or [Edgeone Pages](https://org-bpb.amethyst.ltd)
+### 🌍 View Document in [CN](https://bpb.amethyst.ltd) or [Edgeone](https://org-bpb.amethyst.ltd)
 
 <p align="center">
   <img src="docs/assets/images/panel-overview.jpg">
@@ -15,13 +15,6 @@ This project is aimed to provide a user panel to access FREE, SECURE and PRIVATE
 - **Workers** deployment
 - **Pages** deployment
 
-🌟 If you found **BPB Panel** valuable, Your donations make all the difference 🌟
-
-### USDT (BEP20)
-
-```text
-0xbdf15d41C56f861f25b2b11C835bd45dfD5b792F
-```
 
 ## Features
 

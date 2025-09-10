@@ -1,6 +1,7 @@
 <h1 align="center">💦 پنل BPB</h1> 
 
 #### 🌏 [English](README.md)
+#### 🌍 View Document in [CN](https://bpb.amethyst.ltd) or [Edgeone](https://org-bpb.amethyst.ltd)
 
 <p align="center">
   <img src="docs/assets/images/panel-overview.jpg">
@@ -14,13 +15,6 @@
 * با **Cloudflare Workers**
 * با **Cloudflare Pages**
 
-🌟 اگه **پنل BPB** براتون مفید بوده، با حمایتتون بهم دلگرمی می‌دید 🌟
-
-### USDT (BEP20)
-
-```text
-0xbdf15d41C56f861f25b2b11C835bd45dfD5b792F
-```
 
 ## ویژگی‌ها
 
