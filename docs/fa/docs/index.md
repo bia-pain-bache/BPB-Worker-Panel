@@ -66,3 +66,12 @@
 ## تعداد ستاره‌ها به مرور زمان
 
 [![تعداد ستاره‌ها به مرور زمان](https://starchart.cc/Starry-Sky-World/BPB-i18n.svg?variant=adaptive)](https://starchart.cc/Starry-Sky-World/BPB-i18n)
+
+---
+
+### تشکر ویژه
+
+- نویسنده پروتکل‌های VLESS و Trojan &lt;a href="https://github.com/yonggekkk/Cloudflare-workers-pages-vless"&gt;پروکسی Cloudflare-workers/pages&lt;/a&gt;
+- نویسنده کد CF-vless &lt;a href="https://github.com/3Kmfi6HP/EDtunnel"&gt;3Kmfi6HP&lt;/a&gt;
+- نویسنده برنامه IP ترجیحی CF &lt;a href="https://github.com/badafans/Cloudflare-IP-SpeedTest"&gt;badafans&lt;/a&gt;، &lt;a href="https://github.com/XIU2/CloudflareSpeedTest"&gt;XIU2&lt;/a&gt;
+- نویسنده کد BPB-Panel-Worker &lt;a href="https://github.com/bia-pain-bache/BPB-Worker-Panel"&gt;bia-pain-bache&lt;/a&gt;، این مخزن بر اساس کار ایشان است.

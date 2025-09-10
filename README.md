@@ -87,3 +87,4 @@ This project is aimed to provide a user panel to access FREE, SECURE and PRIVATE
 - VLESS, Trojan [Cloudflare-workers/pages proxy script](https://github.com/yonggekkk/Cloudflare-workers-pages-vless) created by [yonggekkk](https://github.com/yonggekkk)
 - CF-vless code author [3Kmfi6HP](https://github.com/3Kmfi6HP/EDtunnel)
 - CF preferred IP program author [badafans](https://github.com/badafans/Cloudflare-IP-SpeedTest), [XIU2](https://github.com/XIU2/CloudflareSpeedTest)
+- BPB-Panel-Worker code author [bia-pain-bache](https://github.com/bia-pain-bache/BPB-Worker-Panel), this repository is based on his work.

@@ -86,3 +86,4 @@
 - VLESS, Trojan [Cloudflare-workers/pages 代理脚本](https://github.com/yonggekkk/Cloudflare-workers-pages-vless) 由 [yonggekkk](https://github.com/yonggekkk) 创建
 - CF-vless 代码作者 [3Kmfi6HP](https://github.com/3Kmfi6HP/EDtunnel)
 - CF 首选 IP 程序作者 [badafans](https://github.com/badafans/Cloudflare-IP-SpeedTest), [XIU2](https://github.com/XIU2/CloudflareSpeedTest)
+- BPB-Panel-Worker 代码作者 [bia-pain-bache](https://github.com/bia-pain-bache/BPB-Worker-Panel)，本仓库基于他的工作。
