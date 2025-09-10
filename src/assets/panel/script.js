@@ -140,17 +140,27 @@ function initiatePanel(proxySettings) {
 }
 
 function populatePanel(proxySettings) {
-    selectElements.forEach(elm => elm.value = proxySettings[elm.id]);
-    checkboxElements.forEach(elm => elm.checked = proxySettings[elm.id]);
-    inputElements.forEach(elm => elm.value = proxySettings[elm.id]);
+    selectElements.forEach(elm => {
+        if (proxySettings[elm.id] !== undefined) elm.value = proxySettings[elm.id];
+    });
+    checkboxElements.forEach(elm => {
+        if (proxySettings[elm.id] !== undefined) elm.checked = proxySettings[elm.id];
+    });
+    inputElements.forEach(elm => {
+        if (proxySettings[elm.id] !== undefined) elm.value = proxySettings[elm.id];
+    });
     textareaElements.forEach(elm => {
         const key = elm.id;
         const element = document.getElementById(key);
-        const value = proxySettings[key]?.join('\r\n');
-        const rowsCount = proxySettings[key].length;
-        element.style.height = 'auto';
-        if (rowsCount) element.rows = rowsCount;
-        element.value = value;
+        const valueFromServer = proxySettings[key];
+
+        if (valueFromServer !== undefined) {
+            const value = valueFromServer.join('\r\n');
+            const rowsCount = valueFromServer.length;
+            element.style.height = 'auto';
+            if (rowsCount) element.rows = rowsCount;
+            element.value = value;
+        }
     });
 }
 
@@ -1119,7 +1129,11 @@ function renderUdpNoiseBlock(xrayUdpNoises) {
 
 function setBackgroundFromUrl(url) {
     if (url && url.trim() !== '') {
-        document.body.style.backgroundImage = `url('${url}')`;
+        let secureUrl = url.trim();
+        if (secureUrl.startsWith('http://')) {
+            secureUrl = secureUrl.replace('http://', 'https://');
+        }
+        document.body.style.backgroundImage = `url('${secureUrl}')`;
         document.body.style.backgroundSize = 'cover';
         document.body.style.backgroundPosition = 'center';
         document.body.style.backgroundAttachment = 'fixed';
