@@ -15,3 +15,5 @@
 !docs
 !docs/**
 !README_zh.md
+.DS_Store
+# 这个DS_Store太tm恶心了

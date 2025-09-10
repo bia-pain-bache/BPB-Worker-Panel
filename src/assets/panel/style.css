@@ -485,6 +485,7 @@ table button:focus {
     gap: 10px;
     display: flex;
     justify-content: center;
+    align-items: center;
 }
 
 .header-container h3 {
