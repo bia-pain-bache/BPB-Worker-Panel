@@ -42,6 +42,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedLang = localStorage.getItem('language') || (navigator.language.startsWith('zh') ? 'zh-CN' : 'en');
     document.getElementById('language-selector').value = savedLang;
     loadTranslations(savedLang);
+
+    const backgroundUrlInput = document.getElementById('backgroundUrl');
+    if (backgroundUrlInput) {
+        const savedBgUrl = localStorage.getItem('backgroundUrl');
+        if (savedBgUrl) {
+            backgroundUrlInput.value = savedBgUrl;
+            setBackgroundFromUrl(savedBgUrl);
+        }
+
+        backgroundUrlInput.addEventListener('input', () => {
+            const url = backgroundUrlInput.value;
+            setBackgroundFromUrl(url);
+            if (url) {
+                localStorage.setItem('backgroundUrl', url);
+            } else {
+                localStorage.removeItem('backgroundUrl');
+            }
+        });
+    }
 });
 
 function getTranslation(key) {
@@ -982,4 +1001,15 @@ function renderUdpNoiseBlock(xrayUdpNoises) {
         addUdpNoise(false, index, noise);
     });
     globalThis.xrayNoiseCount = xrayUdpNoises.length;
+}
+
+function setBackgroundFromUrl(url) {
+    if (url && url.trim() !== '') {
+        document.body.style.backgroundImage = `url('${url}')`;
+        document.body.style.backgroundSize = 'cover';
+        document.body.style.backgroundPosition = 'center';
+        document.body.style.backgroundAttachment = 'fixed';
+    } else {
+        document.body.style.backgroundImage = 'none';
+    }
 }

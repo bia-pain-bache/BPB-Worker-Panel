@@ -31,6 +31,19 @@
     <div class="form-container container">
         <h2><span class="material-symbols-rounded">settings</span> <span data-i18n="settings">Settings</span></h2>
         <form id="configForm" class="configForm" onsubmit="updateSettings(event)">
+            <details>
+                <summary>
+                    <h3 data-i18n="appearance">Appearance</h3>
+                </summary>
+                <div class="section">
+                    <div class="form-control">
+                        <label for="backgroundUrl" data-i18n="backgroundUrl">🎨 Background URL</label>
+                        <div>
+                            <input type="url" id="backgroundUrl" name="backgroundUrl" placeholder="Enter image URL">
+                        </div>
+                    </div>
+                </div>
+            </details>
             <details class="details">
                 <summary>
                     <h3 data-i18n="vlessTrojan">VLESS - Trojan</h3>

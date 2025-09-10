@@ -27,6 +27,10 @@ body {
     background-color: var(--background-color);
     color: var(--color);
     text-align: center;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
 }
 
 *,
@@ -94,6 +98,7 @@ h1 {
     margin: 0 auto;
     background: var(--form-background-color);
     margin-bottom: 30px;
+    background-color: rgba(249, 249, 249, 0.8);
 }
 
 .configForm {

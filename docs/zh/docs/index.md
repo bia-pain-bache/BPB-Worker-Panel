@@ -1,5 +1,7 @@
 # 💦 BPB 控制面板
 
+> 我们很高兴的宣布，BPB面板的i18n工作已完成，您可以在中文与英文之间切换，目前只支持中文和英文
+
 ![Pages Application](images/panel-overview.jpg)
 
 ## 简介
@@ -9,11 +11,6 @@
 - **Workers** 部署
 - **Pages** 部署
 
-🌟 如果您觉得 **BPB 控制面板** 有价值，您的捐赠将使一切变得不同 🌟
-
-```title="USDT (BEP20)"
-0xbdf15d41C56f861f25b2b11C835bd45dfD5b792F
-```
 
 ## 功能
 
