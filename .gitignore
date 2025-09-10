@@ -5,6 +5,7 @@
 !src/**
 !scripts/
 !scripts/build.js
+!scripts/cloudflare_autobuild.sh
 !.github/
 !.github/**
 !README_fa.md
