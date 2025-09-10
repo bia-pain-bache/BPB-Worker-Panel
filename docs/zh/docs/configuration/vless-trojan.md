@@ -160,7 +160,7 @@ https://www.nslookup.io/domains/bpb.yousef.isegaro.com/dns-records/
 从以下链接中选择一个 NAT64 前缀，该链接按地区和 ISP 列出了 IP：
 
 ```text
-https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/NAT64Prefixes.md
+https://github.com/Starry-Sky-World/BPB-i18n/blob/main/NAT64Prefixes.md
 ```
 
 !!! info

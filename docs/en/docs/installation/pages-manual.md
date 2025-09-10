@@ -8,7 +8,7 @@ If you don’t have a Cloudflare account, create one [here](https://dash.cloudfl
 
 ### 2. Create Pages Project
 
-Download the Worker zip file [from here](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/worker.zip).
+Download the Worker zip file [from here](https://github.com/Starry-Sky-World/BPB-i18n/releases/latest/download/worker.zip).
 
 In your Cloudflare account, navigate to the `Developer Platform` section, click `Create application`, select `Pages` tab and then `Use direct upload` > `Get started`.
 
@@ -97,7 +97,7 @@ By default, the code uses multiple NAT64 prefixes randomly, assigning a new rand
 In the project’s `Settings` section, open `Variables and Secrets`, click `Add` and enter `NAT64_PREFIX` (in capital letters) in the first box. Obtain IPs from the following link, which lists IPs from various regions and ISPs:
 
 ```text
-https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/NAT64Prefixes.md
+https://github.com/Starry-Sky-World/BPB-i18n/blob/main/NAT64Prefixes.md
 ```
 
 !!! info
@@ -124,4 +124,4 @@ In your domain zone, add a CNAME DNS Record for `xyz.bpb.com` pointing to your P
 
 ## Updating the Panel
 
-To update your panel, download the new zip file [from here](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/worker.zip). In your Cloudflare account, go to `Compute (Workers)` > `Workers & Pages`, select your Pages project, click `Create deployment`, and upload the new zip file.
+To update your panel, download the new zip file [from here](https://github.com/Starry-Sky-World/BPB-i18n/releases/latest/download/worker.zip). In your Cloudflare account, go to `Compute (Workers)` > `Workers & Pages`, select your Pages project, click `Create deployment`, and upload the new zip file.

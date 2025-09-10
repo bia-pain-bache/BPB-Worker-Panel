@@ -8,7 +8,7 @@
 
 ### ۲. ساخت Worker
 
-اول، کد Worker رو از [اینجا](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/worker.js) دانلود کنید.
+اول، کد Worker رو از [اینجا](https://github.com/Starry-Sky-World/BPB-i18n/releases/latest/download/worker.js) دانلود کنید.
 
 توی اکانت  Cloudflare به بخش  `Developer Platform` برید، روی `Create application` کلیک کنید، تب`Workers` رو انتخاب کنید `Start with Hello World!` رو پیدا کنید و `Get started` رو بزنید.
 
@@ -95,7 +95,7 @@ IPها رو توی قسمت `Value` وارد کنید و `Deploy` کنید.
 توی بخش `Settings` پروژه، قسمت `Variables and Secrets` رو باز کنید، روی `Add` کلیک کنید و توی خونه اول `PREFIX` (با حروف بزرگ) رو وارد کنید. IPها رو می‌تونید از لینک زیر بگیرید که IPهای مناطق و ISPهای مختلف رو نشون می‌ده:
 
 ```text
-https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/NAT64Prefixes.md
+https://github.com/Starry-Sky-World/BPB-i18n/blob/main/NAT64Prefixes.md
 ```
 
 !!! info "راهنمایی"
@@ -135,4 +135,4 @@ Cloudflare Worker رو به دامنه‌تون متصل می‌کنه (ممکن
 
 ## به‌روزرسانی پنل
 
-برای به‌روزرسانی پنل، فایل worker.js جدید رو از [اینجا](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/worker.js) دانلود کنید. توی اکانت Cloudflare، به `Compute (Workers)` > `Workers & Pages` برید، پروژه Worker رو انتخاب کنید، ویرایش کنید، فایل قدیمی رو حذف کنید، فایل جدید رو آپلود کنید و Deploy کنید.
+برای به‌روزرسانی پنل، فایل worker.js جدید رو از [اینجا](https://github.com/Starry-Sky-World/BPB-i18n/releases/latest/download/worker.js) دانلود کنید. توی اکانت Cloudflare، به `Compute (Workers)` > `Workers & Pages` برید، پروژه Worker رو انتخاب کنید، ویرایش کنید، فایل قدیمی رو حذف کنید، فایل جدید رو آپلود کنید و Deploy کنید.

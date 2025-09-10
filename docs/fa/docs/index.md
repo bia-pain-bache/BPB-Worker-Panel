@@ -65,4 +65,4 @@
 
 ## تعداد ستاره‌ها به مرور زمان
 
-[![تعداد ستاره‌ها به مرور زمان](https://starchart.cc/bia-pain-bache/BPB-Worker-Panel.svg?variant=adaptive)](https://starchart.cc/bia-pain-bache/BPB-Worker-Panel)
+[![تعداد ستاره‌ها به مرور زمان](https://starchart.cc/Starry-Sky-World/BPB-i18n.svg?variant=adaptive)](https://starchart.cc/Starry-Sky-World/BPB-i18n)

@@ -8,7 +8,7 @@
 
 ### 2. 创建 worker
 
-首先，从[此处](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/worker.js)下载 Worker 代码。
+首先，从[此处](https://github.com/Starry-Sky-World/BPB-i18n/releases/latest/download/worker.js)下载 Worker 代码。
 
 在您的 Cloudflare 帐户中，导航到 `Developer Platform` 选项卡并单击 `Create application`，从 `Workers` 选项卡中找到 `Start with Hello World!` 并 `Get started`。
 
@@ -97,7 +97,7 @@ https://www.nslookup.io/domains/bpb.yousef.isegaro.com/dns-records/
 在项目的 `Settings` 部分，打开 `Variables and Secrets`，单击 `Add` 并在第一个框中输入 `NAT64_PREFIX`（大写）。从以下链接获取 IP，该链接按地区和 ISP 列出了 IP：
 
 ```text
-https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/NAT64Prefixes.md
+https://github.com/Starry-Sky-World/BPB-i18n/blob/main/NAT64Prefixes.md
 ```
 
 !!! info
@@ -140,4 +140,4 @@ Cloudflare 会将 Worker 连接到您的域（这可能需要一些时间——�
 
 ## 更新面板
 
-要更新您的面板，请从[此处](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/worker.js)下载新的 worker.js 文件。在您的 Cloudflare 帐户中，转到 `Compute (Workers)` > `Workers & Pages`，选择您的 Worker 项目，编辑它，删除旧的 worker，上传新的并部署。
+要更新您的面板，请从[此处](https://github.com/Starry-Sky-World/BPB-i18n/releases/latest/download/worker.js)下载新的 worker.js 文件。在您的 Cloudflare 帐户中，转到 `Compute (Workers)` > `Workers & Pages`，选择您的 Worker 项目，编辑它，删除旧的 worker，上传新的并部署。

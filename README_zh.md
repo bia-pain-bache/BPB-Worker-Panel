@@ -77,7 +77,7 @@
 
 ## Star 数量变化趋势
 
-[![Stargazers Over Time](https://starchart.cc/bia-pain-bache/BPB-Worker-Panel.svg?variant=adaptive)](https://starchart.cc/bia-pain-bache/BPB-Worker-Panel)
+[![Stargazers Over Time](https://starchart.cc/Starry-Sky-World/BPB-i18n.svg?variant=adaptive)](https://starchart.cc/Starry-Sky-World/BPB-i18n)
 
 ---
 

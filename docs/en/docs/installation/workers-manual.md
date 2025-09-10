@@ -8,7 +8,7 @@ If you don’t have a Cloudflare account, create one [here](https://dash.cloudfl
 
 ### 2. Create worker
 
-First, download the Worker code from [here](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/worker.js).
+First, download the Worker code from [here](https://github.com/Starry-Sky-World/BPB-i18n/releases/latest/download/worker.js).
 
 In your Cloudflare account, navigate to the `Developer Platform` tab and click `Create application`, from `Workers` tab find `Start with Hello World!` and `Get started`.
 
@@ -97,7 +97,7 @@ By default, the code uses multiple NAT64 prefixes randomly, assigning a new rand
 In the project’s `Settings` section, open `Variables and Secrets`, click `Add` and enter `NAT64_PREFIX` (in capital letters) in the first box. Obtain IPs from the following link, which lists IPs from various regions and ISPs:
 
 ```text
-https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/NAT64Prefixes.md
+https://github.com/Starry-Sky-World/BPB-i18n/blob/main/NAT64Prefixes.md
 ```
 
 !!! info
@@ -140,4 +140,4 @@ You can then access your panel via `https://xyz.bpb.com/panel` and retrieve new 
 
 ## Updating the Panel
 
-To update your panel, download the new worker.js file [from here](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/worker.js). In your Cloudflare account, go to `Compute (Workers)` > `Workers & Pages`, select your Worker project, edit it, delete old worker, upload new one and Deploy.
+To update your panel, download the new worker.js file [from here](https://github.com/Starry-Sky-World/BPB-i18n/releases/latest/download/worker.js). In your Cloudflare account, go to `Compute (Workers)` > `Workers & Pages`, select your Worker project, edit it, delete old worker, upload new one and Deploy.

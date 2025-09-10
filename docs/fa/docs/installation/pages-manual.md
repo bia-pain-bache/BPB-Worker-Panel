@@ -8,7 +8,7 @@
 
 ### ۲. ساخت پروژه Pages
 
-فایل زیپ Worker رو از [اینجا](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/worker.zip) دانلود کنید.
+فایل زیپ Worker رو از [اینجا](https://github.com/Starry-Sky-World/BPB-i18n/releases/latest/download/worker.zip) دانلود کنید.
 
 توی اکانت Cloudflare به بخش  `Developer Platform` برید، روی `Create application` کلیک کنید، تب `Pages` رو انتخاب کنید و بعد `Use direct upload` > `Get started` رو بزنید.
 
@@ -95,7 +95,7 @@ IPها رو توی قسمت `Value` وارد کنید و `Save` کنید. از �
 توی بخش `Settings` پروژه، قسمت `Variables and Secrets` رو باز کنید، روی `Add` کلیک کنید و توی خونه اول `PREFIX` (با حروف بزرگ) رو وارد کنید. IPها رو می‌تونید از لینک زیر بگیرید که IPهای مناطق و ISPهای مختلف رو نشون می‌ده:
 
 ```text
-https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/NAT64Prefixes.md
+https://github.com/Starry-Sky-World/BPB-i18n/blob/main/NAT64Prefixes.md
 ```
 
 !!! info "راهنمایی"
@@ -120,4 +120,4 @@ IPها رو توی قسمت `Value` وارد کنید و `Save` کنید. از �
 
 ## به‌روزرسانی پنل
 
-برای به‌روزرسانی پنل، فایل زیپ جدید رو از [اینجا](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/worker.zip) دانلود کنید. توی اکانت Cloudflare، به `Compute (Workers)` > `Workers & Pages` برید، پروژه Pages رو انتخاب کنید، روی `Create deployment` کلیک کنید و فایل زیپ جدید رو آپلود کنید.
+برای به‌روزرسانی پنل، فایل زیپ جدید رو از [اینجا](https://github.com/Starry-Sky-World/BPB-i18n/releases/latest/download/worker.zip) دانلود کنید. توی اکانت Cloudflare، به `Compute (Workers)` > `Workers & Pages` برید، پروژه Pages رو انتخاب کنید، روی `Create deployment` کلیک کنید و فایل زیپ جدید رو آپلود کنید.
