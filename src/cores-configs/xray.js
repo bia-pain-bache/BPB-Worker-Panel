@@ -229,7 +229,9 @@ function buildXrayVLOutbound(tag, address, port, host, sni, isFragment, allowIns
         streamSettings: {
             network: "ws",
             security: "none",
-            sockopt: {},
+            sockopt: {
+                tcpFastOpen: true
+            },
             wsSettings: {
                 host: host,
                 path,
@@ -277,7 +279,9 @@ function buildXrayTROutbound(tag, address, port, host, sni, isFragment, allowIns
         streamSettings: {
             network: "ws",
             security: "none",
-            sockopt: {},
+            sockopt: {
+                tcpFastOpen: true
+            },
             wsSettings: {
                 host: host,
                 path
