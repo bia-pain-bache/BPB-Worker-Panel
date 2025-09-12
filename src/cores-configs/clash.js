@@ -16,7 +16,7 @@ async function buildClashDNS(isChain, isWarp) {
         "proxy-server-nameserver": [finalLocalDNS],
         "nameserver-policy": {
             "raw.githubusercontent.com": finalLocalDNS,
-            "time.apple.com": finalLocalDNS
+            "time.cloudflare.com": finalLocalDNS
         }
     };
 
@@ -43,7 +43,7 @@ async function buildClashDNS(isChain, isWarp) {
 
     settings.customBlockRules.filter(isDomain).forEach(domain => {
         if (!dnsObject["hosts"]) dnsObject["hosts"] = {};
-        dnsObject["hosts"][`+.${domain}`] = "127.0.0.1";
+        dnsObject["hosts"][`+.${domain}`] = "rcode://refused";
     });
 
     settings.customBypassRules.filter(isDomain).forEach(domain => {
@@ -61,7 +61,7 @@ async function buildClashDNS(isChain, isWarp) {
                 dnsObject["nameserver-policy"][`rule-set:${ruleProvider.geosite}`] = dns;
             } else {
                 if (!dnsObject["hosts"]) dnsObject["hosts"] = {};
-                dnsObject["hosts"][`rule-set:${ruleProvider.geosite}`] = "127.0.0.1";
+                dnsObject["hosts"][`rule-set:${ruleProvider.geosite}`] = "rcode://refused";
             }
         });
 
