@@ -41,7 +41,7 @@ export async function handleTCPOutBound(
                 const proxyIPs = parseIPs(wsConfig.envProxyIPs) ||  wsConfig.defaultProxyIPs;
                 const ips = panelIPs.length ? panelIPs : proxyIPs;
                 const proxyIP = getRandomValue(ips);
-                const { host, port } = parseHostPort(proxyIP);
+                const { host, port } = parseHostPort(proxyIP, true);
                 tcpSocket = await connectAndWrite(host || addressRemote, port || portRemote);
             } catch (error) {
                 console.error('Proxy IP connection failed:', error);
