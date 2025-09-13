@@ -1,6 +1,6 @@
 # :material-cloud-question-outline:{ .lg .middle } Frequently Asked Questions
 
-??? question "Why doesn't the Fragment config connect?"
+??? question "Why don't configs connect?"
     If you enabled `Routing rules` and the VPN doesn't connect, the only reason is that the Geo assets are not updated. In the v2rayN(G) client menu, go to the `Asset files` section and tap the cloud or download icon to update. If the update fails, it won't connect. If you tried everything and it still doesn't update, download the two files below from the links and instead of updating, tap the add button and import these two files:
     ```title="GeoIP"
     https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat
