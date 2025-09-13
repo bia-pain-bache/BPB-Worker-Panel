@@ -1,9 +1,9 @@
-import { getConfigAddresses, extractWireguardParams, base64ToDecimal, generateRemark, randomUpperCase, resolveDNS, isDomain, getDomain, generateWsPath } from './helpers';
-import { getDataset } from '../kv/handlers';
-import { globalConfig, httpConfig } from '../helpers/init';
+import { getConfigAddresses, extractWireguardParams, base64ToDecimal, generateRemark, randomUpperCase, resolveDNS, isDomain, getDomain, generateWsPath } from '#configs/utils';
+import { getDataset } from '#kv';
+import { globalConfig, httpConfig } from '#common/init';
+import { settings } from '#common/handlers'
 
 async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWarp, customDns, customDnsHosts) {
-    const settings = globalThis.settings;
     function buildDnsServer(address, domains, expectIPs, skipFallback, tag) {
         return {
             address,
@@ -110,7 +110,6 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
 }
 
 function buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
-    const settings = globalThis.settings;
     const rules = [
         {
             inboundTag: [
@@ -206,7 +205,6 @@ function buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
 }
 
 function buildXrayVLOutbound(tag, address, port, host, sni, isFragment, allowInsecure) {
-    const settings = globalThis.settings;
     const path = `${generateWsPath("vl")}?ed=2560`;
 
     const outbound = {
@@ -261,7 +259,6 @@ function buildXrayVLOutbound(tag, address, port, host, sni, isFragment, allowIns
 }
 
 function buildXrayTROutbound(tag, address, port, host, sni, isFragment, allowInsecure) {
-    const settings = globalThis.settings;
     const path = `${generateWsPath("tr")}?ed=2560`;
 
     const outbound = {
@@ -311,7 +308,6 @@ function buildXrayTROutbound(tag, address, port, host, sni, isFragment, allowIns
 }
 
 function buildXrayWarpOutbound(warpConfigs, endpoint, isWoW) {
-    const settings = globalThis.settings;
     const {
         warpIPv6,
         reserved,
@@ -342,7 +338,7 @@ function buildXrayWarpOutbound(warpConfigs, endpoint, isWoW) {
 
     let chain = '';
     if (isWoW) chain = "proxy";
-    if (!isWoW && httpConfig.client === 'xray-pro') chain = "udp-noise";
+    if (!isWoW && httpConfig.client === 'xray') chain = "udp-noise";
 
     if (chain) outbound.streamSettings = {
         sockopt: {
@@ -370,7 +366,7 @@ function buildXrayWarpOutbound(warpConfigs, endpoint, isWoW) {
 }
 
 function buildXrayChainOutbound() {
-    const { outProxyParams, VLTRenableIPv6 } = globalThis.settings;
+    const { outProxyParams, VLTRenableIPv6 } = settings;
     const { protocol } = outProxyParams;
 
     if (['socks', 'http'].includes(protocol)) {
@@ -517,7 +513,6 @@ function buildXrayChainOutbound() {
 }
 
 function buildFreedomOutbound(isFragment, isUdpNoises, tag, length, interval) {
-    const settings = globalThis.settings;
     const outbound = {
         tag: tag,
         protocol: "freedom",
@@ -561,7 +556,6 @@ async function buildXrayConfig(
     customDns,
     customDnsHosts
 ) {
-    const settings = globalThis.settings;
     const config = structuredClone(xrayConfigTemp);
     config.remarks = remark;
 
@@ -574,7 +568,7 @@ async function buildXrayConfig(
         config.outbounds.unshift(fragmentOutbound);
     }
 
-    if (isWarp && httpConfig.client === 'xray-pro') {
+    if (isWarp && httpConfig.client === 'xray') {
         const udpNoiseOutbound = buildFreedomOutbound(false, true, 'udp-noise');
         config.outbounds.unshift(udpNoiseOutbound);
     }
@@ -618,7 +612,6 @@ async function buildXrayBestPingConfig(totalAddresses, chainProxy, outbounds, is
 }
 
 async function buildXrayBestFragmentConfig(chainProxy, outbound) {
-    const settings = globalThis.settings;
     const bestFragValues = ['10-20', '20-30', '30-40', '40-50', '50-60', '60-70',
         '70-80', '80-90', '90-100', '10-30', '20-40', '30-50',
         '40-60', '50-70', '60-80', '70-90', '80-100', '100-200'];
@@ -654,7 +647,6 @@ async function buildXrayWorkerLessConfig() {
 }
 
 export async function getXrayCustomConfigs(env, isFragment) {
-    const settings = globalThis.settings;
     let chainProxy;
     if (settings.outProxy) {
         try {
@@ -740,7 +732,6 @@ export async function getXrayCustomConfigs(env, isFragment) {
 }
 
 export async function getXrayWarpConfigs(request, env, isPro) {
-    const settings = globalThis.settings;
     const { warpConfigs } = await getDataset(request, env);
     const proIndicator = isPro ? ' Pro ' : ' ';
     const xrayWarpConfigs = [];
@@ -873,7 +864,6 @@ const xrayConfigTemp = {
 };
 
 function getRoutingRules() {
-    const settings = globalThis.settings;
     return [
         { rule: settings.blockAds, type: 'block', domain: "geosite:category-ads-all" },
         { rule: settings.blockAds, type: 'block', domain: "geosite:category-ads-ir" },

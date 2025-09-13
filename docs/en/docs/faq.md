@@ -9,30 +9,6 @@
     https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat
     ```
 
-??? question "Why don't normal sub configs connect?"  
-    To use these configs, disable `Mux` in the settings of whichever app you’re using. Also set remote DNS to DOH:
-    ```title="DoH"
-    https://8.8.8.8/dns-query
-    ```
-    ```title="DoT"
-    tls://8.8.8.8  
-    ```
-    ```title="TCP"
-    tcp://8.8.8.8  
-    ```  
-
-??? question "Why don't clients like Nekobox, husi or Hiddify Next open any websites?"
-    In the app settings, set the `remote DNS` like this:  
-    ```title="DoH"
-    https://8.8.8.8/dns-query
-    ```
-    ```title="DoT"
-    tls://8.8.8.8  
-    ```
-    ```title="TCP"
-    tcp://8.8.8.8  
-    ```  
-
 ??? question "Why Fragment configs speed is slow on my ISP?"
     Each operator has its own prefered Fragment settings. Most are fine with the panel defaults, but these values may work better on your operator; you need to test:  
     ```title="Length"
@@ -55,8 +31,8 @@
     Follow the installation guide or use **Wizard**; KV, UUID or Trojan password are not properly configured.  
 
 ??? question "I deployed it but Cloudflare returns error 1101!"
-    If it's a Worker, create it using the Pages method. If that also errors, your Cloudflare account has likely been flagged. Create a new Cloudflare account with an official email like Gmail and preferably use the Pages method. Also, make sure the project name doesn't include the word "bpb".  
-    It is recommended use **Wizard** (pages mode) or [manual pages](installation/pages-manual.md) installation.  
+    Your Cloudflare account has likely been flagged. Create a new Cloudflare account with an official email like Gmail and. Also, make sure the project name doesn't include the word "bpb".  
+    It is recommended to use **Wizard** for installation.  
 
 ??? question "Can I use this for trading?"
     If your Cloudflare IP is located in Germany (which it usually is), using a single Germany proxy IP should be fine. But preferably use the Chain Proxy method to stabilize the IP.  
@@ -68,21 +44,7 @@
     Turn off `Prefer IPv6` in settings.  
 
 ??? question "Why don't Telegram calls or Clubhouse work?"
-    Cloudflare can't properly handle the UDP protocol. There is currently no effective solution. Use Warp configs instead.  
-
-??? question "Why doesn't the normal Trojan config connect?"
-    If you want to connect using the normal subscription, make sure the Remote DNS in whatever app you're using matches the panel. Formats like `udp://1.1.1.1` or `1.1.1.1` don’t work with Trojan. These formats are fine:
-    ```title="DoH"
-    https://8.8.8.8/dns-query
-    ```
-    ```title="DoT"
-    tls://8.8.8.8  
-    ```
-    ```title="TCP"
-    tcp://8.8.8.8  
-    ```
-  
-    I recommend using the Full Normal or Fragment subscriptions which already include all the correct settings.  
+    Cloudflare can't properly handle the UDP traffic. There is currently no effective solution. Use Warp configs instead.  
 
 ??? question "Why won't ChatGPT open?"
     Because the panel's default proxy IPs are public and many might appear suspicious to ChatGPT. Use the link below to search and test an appropriate IP for yourself:  

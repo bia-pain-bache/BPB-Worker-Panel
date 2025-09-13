@@ -1,6 +1,6 @@
 import { sha224 } from 'js-sha256';
-import { handleTCPOutBound, makeReadableWebSocketStream } from './common';
-import { globalConfig } from '../helpers/init';
+import { handleTCPOutBound, makeReadableWebSocketStream } from '#protocols/websocket/common';
+import { globalConfig } from '#common/init';
 
 export async function TrOverWSHandler(request) {
     const webSocketPair = new WebSocketPair();

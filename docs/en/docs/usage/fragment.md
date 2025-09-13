@@ -8,7 +8,7 @@
 
 ## Fragment for Xray
 
-This applies to clients using the Xray core, such as v2rayNG, MansaNG, and v2rayN PRO. Imported configs are marked with an `F` flag in their names. This subscription provides the same number of configs as the **Full Normal** subscription, enhanced with fragment settings adjustable in the panel, plus **Best Fragment** and **Workerless** configs. Any panel setting changes are applied to all configs upon subscription update.
+This applies to clients using the Xray core, such as v2rayNG, MansaNG, and v2rayN PRO. Imported configs are marked with an `F` flag in their names. This subscription provides the same number of configs as the **Normal** subscription, enhanced with fragment settings adjustable in the panel, plus **Best Fragment** and **Workerless** configs. Any panel setting changes are applied to all configs upon subscription update.
 
 ???+ question "What is the Workerless config?"
     The Workerless config unblocks many restricted websites and applications (e.g., YouTube, Twitter, Google Play...) without using a Worker. Note that this config does not change your local IP, so avoid using it for activities requiring security or anonymity. Fragment setting changes apply to this config, except for Chain Proxy.

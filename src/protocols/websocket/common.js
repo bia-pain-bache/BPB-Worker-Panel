@@ -1,6 +1,6 @@
 import { connect } from 'cloudflare:sockets';
-import { isIPv4, parseHostPort, resolveDNS } from '../cores-configs/helpers';
-import { wsConfig } from '../helpers/init';
+import { isIPv4, parseHostPort, resolveDNS } from '#configs/utils';
+import { wsConfig } from '#common/init';
 
 export const WS_READY_STATE_OPEN = 1;
 const WS_READY_STATE_CLOSING = 2;

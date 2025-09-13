@@ -1,6 +1,6 @@
-import { globalConfig, init, initHttp, initWs } from './helpers/init';
-import { fallback, serveIcon, renderSecrets, handlePanel, handleSubscriptions, handleLogin, handleError, handleWebsocket } from './helpers/helpers';
-import { logout } from './authentication/auth';
+import { globalConfig, init, initHttp, initWs } from './common/init';
+import { fallback, serveIcon, renderSecrets, handlePanel, handleSubscriptions, handleLogin, handleError, handleWebsocket } from './common/handlers';
+import { logout } from './auth';
 
 export default {
 	async fetch(request, env) {

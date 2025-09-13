@@ -1,7 +1,5 @@
 # :material-cog-outline:{ .md .middle } VLESS and Trojan settings
 
-These settings apply only to **Fragment** and **Full Normal** subscriptions.  
-
 ![VLESS and Trojan settings](../images/vless-trojan-settings.jpg)
 
 ## Remote DNS
@@ -81,9 +79,7 @@ As noted, a Proxy IP fixes the IP for Cloudflare target addresses, but node IPs 
     - http://`address`:`port`
     - http://`user`:`pass`@`address`:`port`
 
-This setting applies to all subscriptions except **Normal** and **Warp**. After applying, update the subscription.
-
-However, **Normal** subscriptions import the Chain Proxy individually. In clients like Nekobox or Husi, edit the subscription in the Group section and set the Chain Proxy as the **Landing Proxy** to chain it. Since version 1.9.1, v2rayNG supports this feature: copy the config name, edit the subscription in the Subscription group settings, and paste it into the `Next proxy remarks` field.
+This setting applies to all subscriptions except **Warp**. After applying, update the subscription.
 
 !!! warning
     - VLESS TLS configs for chaining must use port 443.
@@ -92,7 +88,7 @@ However, **Normal** subscriptions import the Chain Proxy individually. In client
 
 ## Clean IP/Domains
 
-For non-**Fragment** subscriptions, you may want to use clean IPs. The panel includes a scanner, downloadable as a zip file for your operating system. Run the CloudflareScanner, and results will be saved in `result.csv`, allowing you to select IPs based on delay and download speed. Windows is recommended for this process, and ensure your VPN is disconnected during the test. For advanced scanning, refer to [this guide](https://github.com/bia-pain-bache/Cloudflare-Clean-IP-Scanner/blob/master/README.md).
+For non-**Normal** subscription, you may want to use clean IPs. The panel includes a scanner, downloadable as a zip file for your operating system. Run the CloudflareScanner, and results will be saved in `result.csv`, allowing you to select IPs based on delay and download speed. Windows is recommended for this process, and ensure your VPN is disconnected during the test. For advanced scanning, refer to [this guide](https://github.com/bia-pain-bache/Cloudflare-Clean-IP-Scanner/blob/master/README.md).
 
 !!! tip "Tip for Iranian Users"
     On ISPs supporting IPv6 (e.g., Rightel, Irancell, Asiatech), enable IPv6 on your SIM card, activate the **Prefer IPv6** option in client settings, and use the last two or first default configs. IPv6 IPs generally perform better.
@@ -118,7 +114,7 @@ Select the required ports. TLS ports offer more secure configs, but during TLS d
     Non-TLS configs require the panel to be deployed using the Workers method. HTTP ports will not appear in the panel if the Pages method is used or you set a custom domain.
 
 !!! info
-    Non-TLS configs are only added to **Normal** and **Full Normal** subscriptions.
+    Non-TLS configs are only added to **Normal** subscription.
 
 ## Fingerprint
 
@@ -182,10 +178,7 @@ The host defined in the CDN that points to your Worker, such as a fake domain in
 
 A fake domain or a site on the same CDN, e.g., `speedtest.net` (without `www`) for Fastly.
 
-After configuring these fields, related configs will be added to **Normal** and **Full Normal** subscriptions, tagged with a `C` flag to distinguish them.
+After configuring these fields, related configs will be added to **Normal** subscription, tagged with a `C` flag to distinguish them.
 
 !!! info
     Only ports 443 and 80 are supported for these configs.
-
-!!! warning
-    For **Normal** subscriptions, manually enable **Allow Insecure** in the config settings. **Full Normal** subscription applies this automatically.

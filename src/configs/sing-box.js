@@ -1,9 +1,9 @@
-import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, isIPv6, isDomain, base64ToDecimal, getDomain, generateWsPath, parseHostPort } from './helpers';
-import { getDataset } from '../kv/handlers';
-import { globalConfig, httpConfig } from '../helpers/init';
+import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, isIPv6, isDomain, base64ToDecimal, getDomain, generateWsPath, parseHostPort } from '#configs/utils';
+import { getDataset } from '#kv';
+import { globalConfig, httpConfig } from '#common/init';
+import { settings } from '#common/handlers'
 
 async function buildSingBoxDNS(isWarp) {
-    const settings = globalThis.settings;
     const url = new URL(settings.remoteDNS);
     const dnsProtocol = url.protocol.replace(':', '');
 
@@ -173,7 +173,6 @@ async function buildSingBoxDNS(isWarp) {
 }
 
 function buildSingBoxRoutingRules(isWarp) {
-    const settings = globalThis.settings;
     const rules = [
         {
             ip_cidr: "172.18.0.2",
@@ -297,7 +296,6 @@ function buildSingBoxRoutingRules(isWarp) {
 }
 
 function buildSingBoxVLOutbound(remark, address, port, host, sni, allowInsecure, isFragment) {
-    const settings = globalThis.settings;
     const tls = httpConfig.defaultHttpsPorts.includes(port) ? true : false;
 
     const outbound = {
@@ -336,7 +334,6 @@ function buildSingBoxVLOutbound(remark, address, port, host, sni, allowInsecure,
 }
 
 function buildSingBoxTROutbound(remark, address, port, host, sni, allowInsecure, isFragment) {
-    const settings = globalThis.settings;
     const tls = httpConfig.defaultHttpsPorts.includes(port) ? true : false;
 
     const outbound = {
@@ -374,7 +371,6 @@ function buildSingBoxTROutbound(remark, address, port, host, sni, allowInsecure,
 }
 
 function buildSingBoxWarpOutbound(warpConfigs, remark, endpoint, chain) {
-    const settings = globalThis.settings;
     const { host, port } = parseHostPort(endpoint);
     const server = chain ? "162.159.192.1" : host;
     const finalPort = chain ? 2408 : port;
@@ -420,7 +416,7 @@ function buildSingBoxWarpOutbound(warpConfigs, remark, endpoint, chain) {
 }
 
 function buildSingBoxChainOutbound() {
-    const { outProxyParams } = globalThis.settings;
+    const { outProxyParams } = settings;
     const { protocol } = outProxyParams;
     if (["socks", "http"].includes(protocol)) {
         const { server, port, user, pass } = outProxyParams;
@@ -509,7 +505,6 @@ function buildSingBoxChainOutbound() {
 }
 
 async function buildSingBoxConfig(selectorTags, urlTestTags, secondUrlTestTags, isWarp, isIPv6) {
-    const settings = globalThis.settings;
     const config = structuredClone(singboxConfigTemp);
     config.dns = await buildSingBoxDNS(isWarp);
     config.route = buildSingBoxRoutingRules(isWarp);
@@ -539,7 +534,6 @@ async function buildSingBoxConfig(selectorTags, urlTestTags, secondUrlTestTags, 
 }
 
 export async function getSingBoxWarpConfig(request, env) {
-    const settings = globalThis.settings;
     const { warpConfigs } = await getDataset(request, env);
     const warpTags = [], wowTags = [];
     const endpoints = {
@@ -576,7 +570,6 @@ export async function getSingBoxWarpConfig(request, env) {
 }
 
 export async function getSingBoxCustomConfig(env, isFragment) {
-    const settings = globalThis.settings;
     let chainProxy;
 
     if (settings.outProxy) {
@@ -744,7 +737,6 @@ const singboxConfigTemp = {
 };
 
 function getRoutingRules() {
-    const settings = globalThis.settings;
     return [
         {
             rule: true,

@@ -164,7 +164,7 @@
                                     </a>
                                 </label>
                                 <div>
-                                    <textarea type="text" id="prefixes" name="prefixes"  rows="1"></textarea>
+                                    <textarea type="text" id="prefixes" name="prefixes" rows="1"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -248,15 +248,6 @@
                             <textarea type="text" id="warpEndpoints" name="warpEndpoints" rows="1" required></textarea>
                         </div>
                     </div>
-                    <!-- <div class="form-control">
-                        <label for="endpointScanner">
-                            🔎 Scan Endpoint
-                        </label>
-                        <div>
-                            <button type="button" id="endpointScanner" class="button reverse">
-                                </button>
-                        </div>
-                    </div> -->
                     <div class="form-control">
                         <label for="warpFakeDNS">🧢 Fake DNS</label>
                         <div>
@@ -536,92 +527,9 @@
     </div>
     <div class="form-container container">
         <h2><span class="material-symbols-rounded">share</span> Subscriptions - Configs</h2>
-        <details class="details">
-            <summary>
-                <h3>Normal</h3>
-            </summary>
-            <div class="table-container">
-                <table id="normal-configs-table">
-                    <tr>
-                        <th>Application</th>
-                        <th>Subscription</th>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>v2rayNG</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>MahsaNG</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>v2rayN</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>v2rayN-PRO</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Shadowrocket</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Streisand</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Hiddify</span>
-                            </div>
-                        </td>
-                        <td>
-                            <button title="Display QR code"
-                                onclick="openQR('normal', '', 'Normal', 'Normal Subscription')">
-                                <span class="material-symbols-rounded">qr_code</span>
-                            </button>
-                            <button title="Copy subscription URL" onclick="subURL('normal', '', 'Normal')">
-                                <span class="material-symbols-rounded">content_copy</span>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>husi</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Nekobox</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Nekoray</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Karing</span>
-                            </div>
-                        </td>
-                        <td>
-                            <button title="Display QR code"
-                                onclick="openQR('normal', 'singbox', 'Normal', 'Normal Subscription', true)">
-                                <span class="material-symbols-rounded">qr_code</span>
-                            </button>
-                            <button title="Copy subscription URL" onclick="subURL('normal', 'singbox', 'Normal')">
-                                <span class="material-symbols-rounded">content_copy</span>
-                            </button>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-        </details>
         <details>
             <summary>
-                <h3>Full Normal</h3>
+                <h3>Normal</h3>
             </summary>
             <div class="table-container">
                 <table id="full-normal-configs-table">
@@ -654,11 +562,10 @@
                         </td>
                         <td>
                             <button title="Display QR code"
-                                onclick="openQR('full-normal', 'xray', 'Full Normal', 'Full normal Subscription')">
+                                onclick="openQR('normal', 'xray', 'Normal', 'Normal Subscription')">
                                 <span class="material-symbols-rounded">qr_code</span>
                             </button>
-                            <button title="Copy subscription URL"
-                                onclick="subURL('full-normal', 'xray', 'Full Normal')">
+                            <button title="Copy subscription URL" onclick="subURL('normal', 'xray', 'Normal')">
                                 <span class="material-symbols-rounded">content_copy</span>
                             </button>
                         </td>
@@ -676,13 +583,13 @@
                         </td>
                         <td>
                             <button title="Display QR code"
-                                onclick="openQR('full-normal', 'sfa', 'Full Normal', 'Full normal Subscription', true)">
+                                onclick="openQR('normal', 'sing-box', 'Normal', 'Normal Subscription', true)">
                                 <span class="material-symbols-rounded">qr_code</span>
                             </button>
-                            <button title="Copy subscription URL" onclick="subURL('full-normal', 'sfa', 'Full Normal')">
+                            <button title="Copy subscription URL" onclick="subURL('normal', 'sing-box', 'Normal')">
                                 <span class="material-symbols-rounded">content_copy</span>
                             </button>
-                            <button title="Download config" onclick="dlURL('full-normal', 'sfa')">
+                            <button title="Download config" onclick="dlURL('normal', 'sing-box')">
                                 <span class="material-symbols-rounded">download</span>
                             </button>
                         </td>
@@ -712,14 +619,13 @@
                         </td>
                         <td>
                             <button title="Display QR code"
-                                onclick="openQR('full-normal', 'clash', 'Full Normal', 'Full normal Subscription')">
+                                onclick="openQR('normal', 'clash', 'Normal', 'Normal Subscription')">
                                 <span class="material-symbols-rounded">qr_code</span>
                             </button>
-                            <button title="Copy subscription URL"
-                                onclick="subURL('full-normal', 'clash', 'Full Normal')">
+                            <button title="Copy subscription URL" onclick="subURL('normal', 'clash', 'Normal')">
                                 <span class="material-symbols-rounded">content_copy</span>
                             </button>
-                            <button title="Download config" onclick="dlURL('full-normal', 'clash')">
+                            <button title="Download config" onclick="dlURL('normal', 'clash')">
                                 <span class="material-symbols-rounded">download</span>
                             </button>
                         </td>
@@ -762,10 +668,10 @@
                         </td>
                         <td>
                             <button title="Display QR code"
-                                onclick="openQR('fragment', '', 'Fragment', 'Fragment Subscription')">
+                                onclick="openQR('fragment', 'xray', 'Fragment', 'Fragment Subscription')">
                                 <span class="material-symbols-rounded">qr_code</span>
                             </button>
-                            <button title="Copy subscription URL" onclick="subURL('fragment', '', 'Fragment')">
+                            <button title="Copy subscription URL" onclick="subURL('fragment', 'xray', 'Fragment')">
                                 <span class="material-symbols-rounded">content_copy</span>
                             </button>
                         </td>
@@ -783,32 +689,14 @@
                         </td>
                         <td>
                             <button title="Display QR code"
-                                onclick="openQR('fragment', 'sfa', 'Fragment', 'Fragment Subscription', true, false)">
+                                onclick="openQR('fragment', 'sing-box', 'Fragment', 'Fragment Subscription', true, false)">
                                 <span class="material-symbols-rounded">qr_code</span>
                             </button>
-                            <button title="Copy subscription URL" onclick="subURL('fragment', 'sfa', 'Fragment')">
+                            <button title="Copy subscription URL" onclick="subURL('fragment', 'sing-box', 'Fragment')">
                                 <span class="material-symbols-rounded">content_copy</span>
                             </button>
-                            <button title="Download config" onclick="dlURL('fragment', 'sfa')">
+                            <button title="Download config" onclick="dlURL('fragment', 'sing-box')">
                                 <span class="material-symbols-rounded">download</span>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Hiddify</span>
-                            </div>
-                        </td>
-                        <td>
-                            <button title="Display QR code"
-                                onclick="openQR('fragment', 'hiddify-frag', 'Fragment', 'Fragment Subscription', false, true)">
-                                <span class="material-symbols-rounded">qr_code</span>
-                            </button>
-                            <button title="Copy subscription URL"
-                                onclick="subURL('fragment', 'hiddify-frag', 'Fragment', true)">
-                                <span class="material-symbols-rounded">content_copy</span>
                             </button>
                         </td>
                     </tr>
@@ -863,31 +751,14 @@
                         </td>
                         <td>
                             <button title="Display QR code"
-                                onclick="openQR('warp', 'singbox', 'Warp', 'Warp Subscription', true)">
+                                onclick="openQR('warp', 'sing-box', 'Warp', 'Warp Subscription', true)">
                                 <span class="material-symbols-rounded">qr_code</span>
                             </button>
-                            <button title="Copy subscription URL" onclick="subURL('warp', 'singbox', 'Warp')">
+                            <button title="Copy subscription URL" onclick="subURL('warp', 'sing-box', 'Warp')">
                                 <span class="material-symbols-rounded">content_copy</span>
                             </button>
-                            <button title="Download config" onclick="dlURL('warp', 'singbox')">
+                            <button title="Download config" onclick="dlURL('warp', 'sing-box')">
                                 <span class="material-symbols-rounded">download</span>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Hiddify</span>
-                            </div>
-                        </td>
-                        <td>
-                            <button title="Display QR code"
-                                onclick="openQR('warp', 'hiddify', 'Warp', 'Warp Subscription', false, true)">
-                                <span class="material-symbols-rounded">qr_code</span>
-                            </button>
-                            <button title="Copy subscription URL" onclick="subURL('warp', 'hiddify', 'Warp', true)">
-                                <span class="material-symbols-rounded">content_copy</span>
                             </button>
                         </td>
                     </tr>
@@ -971,10 +842,10 @@
                         </td>
                         <td>
                             <button title="Display QR code"
-                                onclick="openQR('warp-pro', 'xray-pro', 'Warp Pro', 'Warp Pro Subscription')">
+                                onclick="openQR('warp-pro', 'xray', 'Warp Pro', 'Warp Pro Subscription')">
                                 <span class="material-symbols-rounded">qr_code</span>
                             </button>
-                            <button title="Copy subscription URL" onclick="subURL('warp-pro', 'xray-pro', 'Warp Pro')">
+                            <button title="Copy subscription URL" onclick="subURL('warp-pro', 'xray', 'Warp Pro')">
                                 <span class="material-symbols-rounded">content_copy</span>
                             </button>
                         </td>
@@ -1026,32 +897,14 @@
                         </td>
                         <td>
                             <button title="Display QR code"
-                                onclick="openQR('warp-pro', 'clash-pro', 'Warp Pro', 'Warp Pro Subscription')">
+                                onclick="openQR('warp-pro', 'clash', 'Warp Pro', 'Warp Pro Subscription')">
                                 <span class="material-symbols-rounded">qr_code</span>
                             </button>
-                            <button title="Copy subscription URL" onclick="subURL('warp-pro', 'clash-pro', 'Warp Pro')">
+                            <button title="Copy subscription URL" onclick="subURL('warp-pro', 'clash', 'Warp Pro')">
                                 <span class="material-symbols-rounded">content_copy</span>
                             </button>
-                            <button title="Download config" onclick="dlURL('warp-pro', 'clash-pro')">
+                            <button title="Download config" onclick="dlURL('warp-pro', 'clash')">
                                 <span class="material-symbols-rounded">download</span>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Hiddify</span>
-                            </div>
-                        </td>
-                        <td>
-                            <button title="Display QR code"
-                                onclick="openQR('warp-pro', 'hiddify-pro', 'Warp Pro', 'Warp Pro Subscription', false, true)">
-                                <span class="material-symbols-rounded">qr_code</span>
-                            </button>
-                            <button title="Copy subscription URL"
-                                onclick="subURL('warp-pro', 'hiddify-pro', 'Warp Pro', true)">
-                                <span class="material-symbols-rounded">content_copy</span>
                             </button>
                         </td>
                     </tr>

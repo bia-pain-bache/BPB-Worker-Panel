@@ -1,4 +1,4 @@
-import { isValidUUID } from "./helpers";
+import { isValidUUID } from "#common/handlers";
 export const globalConfig = {};
 export const httpConfig = {};
 export const wsConfig = {};

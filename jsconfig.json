@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "baseUrl": "src",
+        "paths": {
+            "#configs/*": ["configs/*"],
+            "#protocols/*": ["protocols/*"],
+            "#common/*": ["common/*"],
+            "#auth": ["auth.js"],
+            "#kv": ["kv.js"]
+        }
+    },
+    "include": ["src"]
+}
