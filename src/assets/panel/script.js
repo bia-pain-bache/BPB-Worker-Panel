@@ -17,8 +17,10 @@ const [
 
 const defaultHttpsPorts = [443, 8443, 2053, 2083, 2087, 2096];
 const defaultHttpPorts = [80, 8080, 8880, 2052, 2082, 2086, 2095];
-const ipv6Regex = /^\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}|:(?::[a-fA-F0-9]{1,4}){1,7})\](?:\/(?:12[0-8]|1[01]?\d|[0-9]?\d))?$/;
-const ipv4Regex = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)(?:\/(?:\d|[12]\d|3[0-2]))?$/;
+const ipv4Regex = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/;
+const ipv6Regex = /^\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}|:(?::[a-fA-F0-9]{1,4}){1,7})\]$/;
+const ipv4CidrRegex = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)(?:\/(?:[0-9]|[1-2][0-9]|3[0-2]))?$/;
+const ipv6CidrRegex = /^(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}|:(?::[a-fA-F0-9]{1,4}){1,7}|::)(?:\/(?:12[0-8]|1[01]?[0-9]|[0-9]?[0-9]))?$/;
 const domainRegex = /^(?=.{1,253}$)(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)\.)+[a-zA-Z]{2,63}$/;
 
 fetch('/panel/settings')
@@ -377,9 +379,12 @@ function resetSettings() {
 
 function validateSettings() {
     const elementsToCheck = [
-        'cleanIPs', 'customCdnAddrs', 'customCdnSni', 'customCdnHost',
-        'customBypassRules', 'customBlockRules', 'customBypassSanctionRules'
+        'cleanIPs',
+        'customCdnAddrs',
+        'customCdnSni',
+        'customCdnHost'
     ];
+
     const configForm = document.getElementById('configForm');
     const formData = new FormData(configForm);
 
@@ -411,7 +416,8 @@ function validateSettings() {
         validateChainProxy(),
         validateCustomCdn(),
         validateXrayNoises(fields),
-        validateSanctionDns()
+        validateSanctionDns(),
+        validateCustomRules()
     ];
 
     if (!validations.every(Boolean)) return false;
@@ -507,10 +513,14 @@ function validateSanctionDns() {
     return true;
 }
 
+function parseElmValues(id) {
+    return document.getElementById(id).value?.split('\n') || [];
+}
+
 function parseHostPort(input) {
     const regex = /^(?<host>\[.*?\]|[^:]+)(?::(?<port>\d+))?$/;
     const match = input.match(regex);
-    
+
     if (!match) return null;
 
     return {
@@ -528,15 +538,30 @@ function isValidHostName(value, isHost) {
     return ipv6Regex.test(host) || ipv4Regex.test(host) || domainRegex.test(host);
 }
 
+function validateCustomRules() {
+    const invalidValues = [
+        'customBypassRules',
+        'customBlockRules',
+        'customBypassSanctionRules'
+    ].flatMap(parseElmValues)
+        .map(value => value.trim())
+        .filter(value => value && !ipv4CidrRegex.test(value) && !ipv6CidrRegex.test(value) && !domainRegex.test(value));
+
+    if (invalidValues.length) {
+        alert('⛔ Invalid IPs, Domains or IP ranges.\n\n' + invalidValues.map(ip => `⚠️ ${ip}`).join('\n'));
+        return false;
+    }
+
+    return true;
+}
+
 function validateMultipleHostNames(elements) {
-    const getValue = (id) => document.getElementById(id).value?.split('\n').filter(Boolean);
+    const invalidValues = elements.flatMap(parseElmValues)
+        .map(value => value.trim())
+        .filter(value => value && !isValidHostName(value));
 
-    const ips = [];
-    elements.forEach(id => ips.push(...getValue(id)));
-    const invalidIPs = ips?.filter(value => !isValidHostName(value));
-
-    if (invalidIPs.length) {
-        alert('⛔ Invalid IPs or Domains.\n👉 Please enter each IP/domain in a new line.\n\n' + invalidIPs.map(ip => `⚠️ ${ip}`).join('\n'));
+    if (invalidValues.length) {
+        alert('⛔ Invalid IPs or Domains.\n👉 Please enter each IP or Domain in a new line.\n\n' + invalidValues.map(ip => `⚠️ ${ip}`).join('\n'));
         return false;
     }
 
@@ -544,8 +569,9 @@ function validateMultipleHostNames(elements) {
 }
 
 function validateProxyIPs() {
-    const proxyIPs = document.getElementById('proxyIPs').value?.split('\n').filter(Boolean);
-    const invalidValues = proxyIPs?.filter(value => !isValidHostName(value));
+    const invalidValues = parseElmValues('proxyIPs')
+        .map(value => value.trim())
+        .filter(value => value && !isValidHostName(value));
 
     if (invalidValues.length) {
         alert('⛔ Invalid proxy IPs.\n👉 Please enter each IP/domain in a new line.\n\n' + invalidValues.map(ip => `⚠️ ${ip}`).join('\n'));
@@ -556,8 +582,9 @@ function validateProxyIPs() {
 }
 
 function validateNAT64Prefixes() {
-    const prefixes = document.getElementById('prefixes').value?.split('\n').filter(Boolean).map(prefix => prefix.trim());
-    const invalidValues = prefixes?.filter(value => !ipv6Regex.test(value));
+    const invalidValues = parseElmValues('prefixes')
+        .map(prefix => prefix.trim())
+        .filter(value => value && !ipv6Regex.test(value));
 
     if (invalidValues.length) {
         alert('⛔ Invalid NAT64 prefix.\n👉 Please enter each prefix in a new line using [].\n\n' + invalidValues.map(ip => `⚠️ ${ip}`).join('\n'));
@@ -568,8 +595,9 @@ function validateNAT64Prefixes() {
 }
 
 function validateWarpEndpoints() {
-    const warpEndpoints = document.getElementById('warpEndpoints').value?.split('\n').filter(Boolean);
-    const invalidEndpoints = warpEndpoints?.filter(value => !isValidHostName(value, true));
+    const invalidEndpoints = parseElmValues('warpEndpoints')
+        .map(prefix => prefix.trim())
+        .filter(value => value && !isValidHostName(value, true));
 
     if (invalidEndpoints.length) {
         alert('⛔ Invalid endpoint.\n\n' + invalidEndpoints.map(endpoint => `⚠️ ${endpoint}`).join('\n'));

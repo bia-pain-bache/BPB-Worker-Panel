@@ -63,4 +63,7 @@
     Cloudflare takes about 4–5 minutes to register Pages domains. Give it time, refresh, and it should work.  
 
 ??? question "Why doesn’t the panel show the Block Ads checkbox?"
-    Extensions like `uBlock`, `AdGuard` or even some browsers with built-in ad-block settings, can hide it. Disable them for the panel.  
+    Extensions like `uBlock`, `AdGuard` or even some browsers with built-in ad-block settings, can hide it. Disable them for the panel.
+
+??? question "Why wizard is detected as Virus in windows?"
+    The wizard app lacks `Code signing certificate` and has to download worker.js on you PC, customize it and deploy to Cloudflare which is a suspicious behaviour to Anti Viruses, known as Trojan/Downloader. So you have to temporarily disable Windows defender or any other Anti Virus program.
