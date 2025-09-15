@@ -65,15 +65,21 @@ async function buildSingBoxDNS(isWarp) {
 
     if (settings.dohHost.isDomain && !isWarp) {
         const { ipv4, ipv6, host } = settings.dohHost;
-        const answers = [
-            ...ipv4.map(ip => `${host}. IN A ${ip}`),
-            ...(settings.VLTRenableIPv6 ? ipv6.map(ip => `${host}. IN AAAA ${ip}`) : [])
-        ];
+
+        servers.push({
+            type: "hosts",
+            tag: "hosts",
+            predefined: {
+                [host]: [
+                    ...ipv4,
+                    ...(settings.VLTRenableIPv6 ? ipv6 : [])
+                ]
+            }
+        });
 
         rules.unshift({
-            domain: host,
-            action: "predefined",
-            answer: answers
+            ip_accept_any: true,
+            server: "hosts"
         });
     }
 
