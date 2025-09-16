@@ -1,7 +1,7 @@
 # :material-cloud-question-outline:{ .lg .middle } Frequently Asked Questions
 
 ??? question "Why don't configs connect?"
-    If you enabled `Routing rules` and the VPN doesn't connect, the only reason is that the Geo assets are not updated. In the v2rayN(G) client menu, go to the `Asset files` section and tap the cloud or download icon to update. If the update fails, it won't connect. If you tried everything and it still doesn't update, download the two files below from the links and instead of updating, tap the add button and import these two files:
+    If you enabled `Routing rules` and the VPN doesn't connect, the only reason is that the Geo assets are not updated. In the v2rayN(G) client menu, go to the `Asset files` section and tap the cloud or download icon to update. Note that it takes a while to update, you have to wait to see `success` for all files. If the update fails, it won't connect. If you tried everything and it still doesn't update, download the two files below from the links and instead of updating, tap the add button and import these two files:
     ```title="GeoIP"
     https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat
     ```
@@ -17,9 +17,6 @@
     ```title="Interval"
     10-20  
     ```
-
-??? question "Why is my Ping test so high?"
-    Never use `https://1.1.1.1/dns-query` or any Cloudflare related DNS for remote DNS, as it increases ping.  
 
 ??? question "I extracted and used a Proxy IP regarding tutorials, why some sites or applications like X still won't work!"  
     There are many public IPs and some of them might be unstable. You need to test to find a good one.  
@@ -67,3 +64,6 @@
 
 ??? question "Why wizard is detected as Virus in windows?"
     The wizard app lacks `Code signing certificate` and has to download worker.js on you PC, customize it and deploy to Cloudflare which is a suspicious behaviour to Anti Viruses, known as Trojan/Downloader. So you have to temporarily disable Windows defender or any other Anti Virus program.
+
+??? question "Why v2rayN cannot ping test configs?"
+    Right now v2rayN is experiencing some issues with custom configs and BPB panel configs are all custom. No worries, just enable config and use it. You also have Best Ping config in all subscriptions which connects to best IP automatically, so you don't need to test all configs everytime.

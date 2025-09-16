@@ -408,6 +408,7 @@ function validateSettings() {
     });
 
     const validations = [
+        validateRemoteDNS(),
         validateMultipleHostNames(elementsToCheck),
         validateProxyIPs(),
         validateNAT64Prefixes(),
@@ -493,6 +494,49 @@ function updateSettings(event, data) {
         });
 }
 
+function validateRemoteDNS() {
+    let url;
+    const dns = document.getElementById("remoteDNS").value.trim();
+    try {
+        url = new URL(dns);
+    } catch (error) {
+        alert("⛔ Invalid DNS, Please enter a URL.");
+        return false;
+    }
+
+    const cloudflareDNS = [
+        '1.1.1.1',
+        '1.0.0.1',
+        '1.1.1.2',
+        '1.0.0.2',
+        '1.1.1.3',
+        '1.0.0.3',
+        '2606:4700:4700::1111',
+        '2606:4700:4700::1001',
+        '2606:4700:4700::1112',
+        '2606:4700:4700::1002',
+        '2606:4700:4700::1113',
+        '2606:4700:4700::1003',
+        'cloudflare-dns.com',
+        'security.cloudflare-dns.com',
+        'family.cloudflare-dns.com',
+        'one.one.one.one',
+        '1dot1dot1dot1'
+    ];
+
+    if (!["tcp:", "https:", "tls:"].includes(url.protocol)) {
+        alert("⛔ Please enter TCP, DoH or DoT servers.");
+        return false;
+    }
+
+    if (cloudflareDNS.includes(url.hostname)) {
+        alert("⛔ Cloudflare DNS is not allowed for workers.\n💡 Please use other public DNS servers like Google, Adguard...");
+        return false;
+    }
+
+    return true;
+}
+
 function validateSanctionDns() {
     const value = document.getElementById("antiSanctionDNS").value.trim();
 
@@ -506,7 +550,7 @@ function validateSanctionDns() {
 
     const isValid = isValidHostName(host, false);
     if (!isValid) {
-        alert('⛔ Invalid IPs or Domains.\n👉' + host);
+        alert(`⛔ Invalid IPs or Domains.\n⚠️ ${host}`);
         return false;
     }
 
@@ -548,7 +592,7 @@ function validateCustomRules() {
         .filter(value => value && !ipv4CidrRegex.test(value) && !ipv6CidrRegex.test(value) && !domainRegex.test(value));
 
     if (invalidValues.length) {
-        alert('⛔ Invalid IPs, Domains or IP ranges.\n\n' + invalidValues.map(ip => `⚠️ ${ip}`).join('\n'));
+        alert('⛔ Invalid IPs, Domains or IP ranges.\n💡 Please enter each value in a new line.\n\n' + invalidValues.map(ip => `⚠️ ${ip}`).join('\n'));
         return false;
     }
 
@@ -561,7 +605,7 @@ function validateMultipleHostNames(elements) {
         .filter(value => value && !isValidHostName(value));
 
     if (invalidValues.length) {
-        alert('⛔ Invalid IPs or Domains.\n👉 Please enter each IP or Domain in a new line.\n\n' + invalidValues.map(ip => `⚠️ ${ip}`).join('\n'));
+        alert('⛔ Invalid IPs or Domains.\n💡 Please enter each value in a new line.\n\n' + invalidValues.map(ip => `⚠️ ${ip}`).join('\n'));
         return false;
     }
 
@@ -574,7 +618,7 @@ function validateProxyIPs() {
         .filter(value => value && !isValidHostName(value));
 
     if (invalidValues.length) {
-        alert('⛔ Invalid proxy IPs.\n👉 Please enter each IP/domain in a new line.\n\n' + invalidValues.map(ip => `⚠️ ${ip}`).join('\n'));
+        alert('⛔ Invalid proxy IPs.\n💡 Please enter each value in a new line.\n\n' + invalidValues.map(ip => `⚠️ ${ip}`).join('\n'));
         return false;
     }
 
@@ -587,7 +631,7 @@ function validateNAT64Prefixes() {
         .filter(value => value && !ipv6Regex.test(value));
 
     if (invalidValues.length) {
-        alert('⛔ Invalid NAT64 prefix.\n👉 Please enter each prefix in a new line using [].\n\n' + invalidValues.map(ip => `⚠️ ${ip}`).join('\n'));
+        alert('⛔ Invalid NAT64 prefix.\n💡 Please enter each prefix in a new line using [].\n\n' + invalidValues.map(ip => `⚠️ ${ip}`).join('\n'));
         return false;
     }
 

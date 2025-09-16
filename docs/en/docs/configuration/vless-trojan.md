@@ -10,9 +10,6 @@ By default, the remote DNS is Google DNS over HTTPS (DoH).
 https://8.8.8.8/dns-query
 ```
 
-!!! warning
-    Avoid using `https://1.1.1.1/dns-query`, `https://cloudflare-dns.com/dns-query`, or any Cloudflare-related DNS for remote DNS, as they significantly increase ping and destabilize the connection with workers.
-
 !!! tip
     From version 2.5.5 onward, you can use some well known DoH or DoT servers:
     ```

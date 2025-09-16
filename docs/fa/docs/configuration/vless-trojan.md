@@ -10,9 +10,6 @@
 https://8.8.8.8/dns-query
 ```
 
-!!! warning "هشدار"
-    از استفاده از `https://1.1.1.1/dns-query`، `https://cloudflare-dns.com/dns-query` یا هر DNS مرتبط با Cloudflare برای Remote DNS خودداری کنید، چون پینگ رو به شدت بالا می‌برن و اتصال با Workerها رو ناپایدار می‌کنن.
-
 !!! tip "نکته"
     از نسخه 2.5.5 به بعد، می‌تونید از سرورهای معروف DoH یا DoT استفاده کنید، مثل:
     ```
