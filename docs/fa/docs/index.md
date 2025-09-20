@@ -50,7 +50,7 @@
 |   **v2rayN-PRO**    |  1.9 یا بالاتر   | :material-check: | :material-check: |
 |    **Sing-box**     | 1.11.2 یا بالاتر | :material-close: | :material-close: |
 |    **Streisand**    | 1.6.48 یا بالاتر | :material-check: | :material-check: |
-|      **Happ**       | 1.6.48 یا بالاتر | :material-check: | :material-check: |
+|      **Happ**       |                  | :material-check: | :material-check: |
 |      **V2Box**      |                  | :material-close: | :material-close: |
 |   **Clash Meta**    |                  | :material-close: | :material-close: |
 | **Clash Verge Rev** |                  | :material-close: | :material-close: |
