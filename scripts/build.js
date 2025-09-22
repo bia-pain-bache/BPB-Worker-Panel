@@ -56,6 +56,7 @@ async function processHtmlPages() {
         // const encodedHtml = Buffer.from(minifiedHtml, 'utf8').toString('base64');
         const encodedHtml = stringToHex(minifiedHtml);
         result[dir] = JSON.stringify(finalHtml);
+
     }
 
     console.log(`${success} Assets bundled successfuly!`);
@@ -176,3 +177,4 @@ function stringToHex(str) {
     const bytes = encoder.encode(str);
     return Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("");
 }
+
