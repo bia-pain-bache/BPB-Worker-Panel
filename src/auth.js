@@ -1,6 +1,6 @@
 import { SignJWT, jwtVerify } from 'jose';
-import { respond } from '../helpers/helpers';
-import { globalConfig } from '../helpers/init';
+import { respond } from '#common/handlers';
+import { globalConfig } from '#common/init';
 
 export async function generateJWTToken(request, env) {
     if (request.method !== 'POST') return await respond(false, 405, 'Method not allowed.');

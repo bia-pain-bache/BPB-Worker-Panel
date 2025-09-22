@@ -1,7 +1,5 @@
 # :material-lan-connect:{ .md .middle } How to use
 
-For beginners, I recommend using **Full Normal** or **Fragment** subscriptions, as they have all required settings for a successfull connection. These subscriptions provide **VLESS** and **Trojan** configs.
-
 !!! info
     Please don't use **Normal** subscription unless you read all related documentation and configured your client beforehand.
 
@@ -13,17 +11,9 @@ On the other hand, **Warp** and **Warp Pro** which provide **WireGuard** configs
 
     ---
 
-    Use normal **VLESS** and **Trojan** configs with manual configuration.
-
-    [:octicons-arrow-right-24: Getting started](normal.md)
-
-- :material-playlist-check:{ .lg .middle } **Full Normal**
-
-    ---
-
     Connect to **VLESS** and **Trojan** configs with fully bundled configurations, no need to configure manually.
 
-    [:octicons-arrow-right-24: Getting started](full-normal.md)
+    [:octicons-arrow-right-24: Getting started](normal.md)
 
 - :material-playlist-check:{ .lg .middle } **Fragment**
 

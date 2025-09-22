@@ -4,7 +4,7 @@
 
 ## Predefined rules
 
-Using predefined routing rules, you can apply these settings to configs (except the **Normal** subscription):
+Using predefined routing rules, you can apply these settings to configs:
 
 * Direct access to LAN. For example, connections to 127.0.0.1 or 192.168.1.1 are handled directly.
 * Connect directly to Iranian addresses without a proxy (no need to disconnect for visiting some websites, especially payment gateways).

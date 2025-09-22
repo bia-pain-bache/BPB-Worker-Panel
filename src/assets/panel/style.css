@@ -310,6 +310,10 @@ button.panel-settings {
         'opsz' 24
 }
 
+a .material-symbols-rounded {
+    color: var(--secondary-color);
+}
+
 details:not(:last-of-type) {
     border-bottom: 1px solid var(--border-color);
 }

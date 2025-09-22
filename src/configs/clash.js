@@ -1,9 +1,9 @@
-import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, isIPv6, isIPv4, isDomain, getDomain, generateWsPath, parseHostPort } from './helpers';
-import { getDataset } from '../kv/handlers';
-import { globalConfig, httpConfig } from '../helpers/init';
+import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, isIPv6, isIPv4, isDomain, getDomain, generateWsPath, parseHostPort } from '#configs/utils';
+import { getDataset } from '#kv';
+import { globalConfig, httpConfig } from '#common/init';
+import { settings } from '#common/handlers'
 
 async function buildClashDNS(isChain, isWarp) {
-    const settings = globalThis.settings;
     const finalLocalDNS = settings.localDNS === 'localhost' ? 'system' : `${settings.localDNS}#DIRECT`;
     const isIPv6 = (settings.VLTRenableIPv6 && !isWarp) || (settings.warpEnableIPv6 && isWarp);
     const dnsObject = {
@@ -16,7 +16,7 @@ async function buildClashDNS(isChain, isWarp) {
         "proxy-server-nameserver": [finalLocalDNS],
         "nameserver-policy": {
             "raw.githubusercontent.com": finalLocalDNS,
-            "time.apple.com": finalLocalDNS
+            "time.cloudflare.com": finalLocalDNS
         }
     };
 
@@ -43,7 +43,7 @@ async function buildClashDNS(isChain, isWarp) {
 
     settings.customBlockRules.filter(isDomain).forEach(domain => {
         if (!dnsObject["hosts"]) dnsObject["hosts"] = {};
-        dnsObject["hosts"][`+.${domain}`] = "127.0.0.1";
+        dnsObject["hosts"][`+.${domain}`] = "rcode://refused";
     });
 
     settings.customBypassRules.filter(isDomain).forEach(domain => {
@@ -61,7 +61,7 @@ async function buildClashDNS(isChain, isWarp) {
                 dnsObject["nameserver-policy"][`rule-set:${ruleProvider.geosite}`] = dns;
             } else {
                 if (!dnsObject["hosts"]) dnsObject["hosts"] = {};
-                dnsObject["hosts"][`rule-set:${ruleProvider.geosite}`] = "127.0.0.1";
+                dnsObject["hosts"][`rule-set:${ruleProvider.geosite}`] = "rcode://refused";
             }
         });
 
@@ -76,7 +76,6 @@ async function buildClashDNS(isChain, isWarp) {
 }
 
 function buildClashRoutingRules(isWarp) {
-    const settings = globalThis.settings;
     const routingRules = getRoutingRules();
 
     settings.customBlockRules.forEach(value => {
@@ -171,7 +170,6 @@ function buildClashRoutingRules(isWarp) {
 }
 
 function buildClashVLOutbound(remark, address, port, host, sni, allowInsecure) {
-    const settings = globalThis.settings;
     const tls = httpConfig.defaultHttpsPorts.includes(port) ? true : false;
     const addr = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
     const ipVersion = settings.VLTRenableIPv6 ? "dual" : "ipv4";
@@ -210,7 +208,6 @@ function buildClashVLOutbound(remark, address, port, host, sni, allowInsecure) {
 }
 
 function buildClashTROutbound(remark, address, port, host, sni, allowInsecure) {
-    const settings = globalThis.settings;
     const addr = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
     const ipVersion = settings.VLTRenableIPv6 ? "dual" : "ipv4";
     const fingerprint = settings.fingerprint === "randomized" ? "random" : settings.fingerprint;
@@ -240,7 +237,6 @@ function buildClashTROutbound(remark, address, port, host, sni, allowInsecure) {
 }
 
 function buildClashWarpOutbound(warpConfigs, remark, endpoint, chain, isPro) {
-    const settings = globalThis.settings;
     const { host, port } = parseHostPort(endpoint);
     const ipVersion = settings.warpEnableIPv6 ? "dual" : "ipv4";
 
@@ -277,7 +273,7 @@ function buildClashWarpOutbound(warpConfigs, remark, endpoint, chain, isPro) {
 }
 
 function buildClashChainOutbound() {
-    const { outProxyParams } = globalThis.settings;
+    const { outProxyParams } = settings;
     const { protocol } = outProxyParams;
 
     if (["socks", "http"].includes(protocol)) {
@@ -360,7 +356,6 @@ function buildClashChainOutbound() {
 }
 
 async function buildClashConfig(selectorTags, urlTestTags, secondUrlTestTags, isChain, isWarp, isPro) {
-    const settings = globalThis.settings;
     const config = structuredClone(clashConfigTemp);
     config['dns'] = await buildClashDNS(isChain, isWarp);
 
@@ -397,7 +392,6 @@ async function buildClashConfig(selectorTags, urlTestTags, secondUrlTestTags, is
 
 export async function getClashWarpConfig(request, env, isPro) {
     const { warpConfigs } = await getDataset(request, env);
-    const settings = globalThis.settings;
     const warpTags = [], wowTags = [];
     const outbounds = {
         proxies: [],
@@ -440,9 +434,8 @@ export async function getClashWarpConfig(request, env, isPro) {
 }
 
 export async function getClashNormalConfig(env) {
-    const settings = globalThis.settings;
     let chainProxy;
-    
+
     if (settings.outProxy) {
         try {
             chainProxy = buildClashChainOutbound();
@@ -599,7 +592,6 @@ const clashConfigTemp = {
 };
 
 function getRoutingRules() {
-    const settings = globalThis.settings;
     const finalLocalDNS = settings.localDNS === 'localhost' ? 'system' : `${settings.localDNS}#DIRECT`;
     return [
         {

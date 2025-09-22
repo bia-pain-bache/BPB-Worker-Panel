@@ -1,7 +1,5 @@
 # :material-lan-connect:{ .md .middle } نحوه استفاده
 
-برای مبتدی‌ها، پیشنهاد می‌کنم از اشتراک‌های **Full Normal** یا **Fragment** استفاده کنید، چون همه تنظیمات لازم برای یه اتصال موفق رو دارن. این اشتراک‌ها کانفیگ‌های **VLESS** و **Trojan** ارائه می‌دن.
-
 !!! info "راهنمایی"
     لطفاً از اشتراک **Normal** استفاده نکنید، مگر اینکه همه مستندات مربوط رو خونده باشید و برنامه‌تون رو از قبل تنظیم کرده باشید.
 
@@ -13,17 +11,9 @@
 
     ---
 
-    استفاده از کانفیگ‌های **VLESS** و **Trojan** با تنظیمات دستی.
-
-    [:octicons-arrow-right-24: شروع](normal.md)
-
-- :material-playlist-check:{ .lg .middle } **اشتراک Full Normal**
-
-    ---
-
     اتصال به کانفیگ‌های **VLESS** و **Trojan** با تنظیمات کامل، بدون نیاز به تنظیم دستی.
 
-    [:octicons-arrow-right-24: شروع](full-normal.md)
+    [:octicons-arrow-right-24: شروع](normal.md)
 
 - :material-playlist-check:{ .lg .middle } **اشتراک Fragment**
 

@@ -1,4 +1,5 @@
-import { globalConfig, httpConfig } from "../helpers/init";
+import { globalConfig, httpConfig } from "#common/init";
+import { settings } from '#common/handlers'
 
 export function isDomain(address) {
     if (!address) return false;
@@ -37,7 +38,6 @@ async function fetchDNSRecords(url, recordType) {
 }
 
 export async function getConfigAddresses(isFragment) {
-    const settings = globalThis.settings;
     const resolved = await resolveDNS(httpConfig.hostName, !settings.VLTRenableIPv6);
     const addrs = [
         httpConfig.hostName,
@@ -92,7 +92,6 @@ export function getRandomString(lengthMin, lengthMax) {
 }
 
 export function generateWsPath(protocol) {
-    const settings = globalThis.settings;
     const config = {
         junk: getRandomString(8, 16),
         protocol: protocol,
@@ -136,13 +135,18 @@ export function base64EncodeUnicode(str) {
     return btoa(String.fromCharCode(...new TextEncoder().encode(str)));
 }
 
-export function parseHostPort(input) {
+export function parseHostPort(input, brackets) {
     const regex = /^(?:\[(?<ipv6>.+?)\]|(?<host>[^:]+))(:(?<port>\d+))?$/;
     const match = input.match(regex);
 
     if (!match) return null;
 
-    const host = match.groups.ipv6 || match.groups.host;
+    let ipv6 = match.groups.ipv6;
+    if (brackets && ipv6) {
+        ipv6 = `[${ipv6}]`;
+    }
+
+    const host = ipv6 || match.groups.host;
     const port = match.groups.port ? parseInt(match.groups.port, 10) : null;
 
     return { host, port };

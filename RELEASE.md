@@ -1,5 +1,6 @@
 # ⚙️ Bug fixes and Improvements
 
-- Refactored, much less worker Error rate
-- Fixed Clash NAT64 #1016
-- Added Xray TFO
+- Revised sing-box DNS syntax due to recent changes
+- Validate panel remote DNS entry
+- Updated docs
+- Bug fix, NPM package removed #1045

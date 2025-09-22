@@ -1,26 +1,29 @@
-import { getDomain, resolveDNS } from '../cores-configs/helpers';
-import { httpConfig } from '../helpers/init';
-import { fetchWarpConfigs } from '../protocols/warp';
+import { getDomain, resolveDNS } from '#configs/utils';
+import { httpConfig } from '#common/init';
+import { fetchWarpConfigs } from '#protocols/warp';
 
 export async function getDataset(request, env) {
-    let proxySettings, warpConfigs;
+    let settings, warpConfigs;
 
     try {
-        proxySettings = await env.kv.get("proxySettings", { type: 'json' });
+        settings = await env.kv.get("proxySettings", { type: 'json' });
         warpConfigs = await env.kv.get('warpConfigs', { type: 'json' });
+
+        if (!settings) {
+            settings = await updateDataset(request, env);
+            const configs = await fetchWarpConfigs(env);
+            warpConfigs = configs;
+        }
+
+        if (httpConfig.panelVersion !== settings.panelVersion) {
+            settings = await updateDataset(request, env);
+        }
+
+        return { settings, warpConfigs }
     } catch (error) {
         console.log(error);
-        throw new Error(`An error occurred while getting KV - ${error}`);
+        throw new Error(`An error occurred while getting KV - ${error.message}`);
     }
-
-    if (!proxySettings) {
-        proxySettings = await updateDataset(request, env);
-        const configs = await fetchWarpConfigs(env);
-        warpConfigs = configs;
-    }
-
-    if (httpConfig.panelVersion !== proxySettings.panelVersion) proxySettings = await updateDataset(request, env);
-    return { proxySettings, warpConfigs }
 }
 
 export async function updateDataset(request, env) {
@@ -35,7 +38,7 @@ export async function updateDataset(request, env) {
             throw new Error(`An error occurred while getting current KV settings - ${error}`);
         }
     }
-    
+
     const populateField = (field, defaultValue, callback) => {
         if (isReset) return defaultValue;
         if (!newSettings) return currentSettings?.[field] ?? defaultValue;
@@ -62,7 +65,7 @@ export async function updateDataset(request, env) {
 
     const settings = {
         remoteDNS,
-        dohHost: await initDoh(), 
+        dohHost: await initDoh(),
         localDNS: populateField('localDNS', '8.8.8.8'),
         antiSanctionDNS: populateField('antiSanctionDNS', '78.157.42.100'),
         VLTRFakeDNS: populateField('VLTRFakeDNS', false),

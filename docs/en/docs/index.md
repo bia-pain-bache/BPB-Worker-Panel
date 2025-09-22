@@ -45,16 +45,13 @@ This project is aimed to provide a user panel to access FREE, SECURE and PRIVATE
 |       Client        |     Version      | Fragment support | Warp Pro support |
 | :-----------------: | :--------------: | :--------------: | :--------------: |
 |     **v2rayNG**     | 1.10.2 or higher | :material-check: | :material-check: |
+|     **MahsaNG**     |   13 or higher   | :material-check: | :material-check: |
 |     **v2rayN**      | 7.12.5 or higher | :material-check: | :material-check: |
 |   **v2rayN-PRO**    |  1.9 or higher   | :material-check: | :material-check: |
-|      **Husi**       |                  | :material-close: | :material-close: |
 |    **Sing-box**     | 1.12.0 or higher | :material-check: | :material-close: |
 |    **Streisand**    | 1.6.48 or higher | :material-check: | :material-check: |
+|      **Happ**       |                  | :material-check: | :material-check: |
 |      **V2Box**      |                  | :material-close: | :material-close: |
-|  **Shadowrocket**   |                  | :material-close: | :material-close: |
-|     **Nekoray**     |                  | :material-check: | :material-close: |
-|     **Hiddify**     | 2.5.7 or higher  | :material-check: | :material-check: |
-|     **MahsaNG**     |                  | :material-check: | :material-check: |
 |   **Clash Meta**    |                  | :material-close: | :material-close: |
 | **Clash Verge Rev** |                  | :material-close: | :material-close: |
 |     **FLClash**     |                  | :material-close: | :material-close: |

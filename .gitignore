@@ -1,6 +1,7 @@
 *
 !.gitignore
 !package.json
+!jsconfig.json
 !src/
 !src/**
 !scripts/
