@@ -895,12 +895,12 @@ function addUdpNoise(isManual, noiseIndex, udpNoise) {
         <div class="header-container">
             <h4>Noise ${index + 1}</h4>
             <button type="button" class="delete-noise">
-                <i class="fa fa-minus-circle fa-2x" aria-hidden="true"></i>
+                <span class="material-symbols-rounded">delete</span>
             </button>      
         </div>
         <div class="section">
             <div class="form-control">
-                <label>😵‍💫 v2ray Mode</label>
+                <label>😵‍💫 Mode</label>
                 <div>
                     <select name="udpXrayNoiseMode">
                         <option value="base64" ${noise.type === 'base64' ? 'selected' : ''}>Base64</option>
@@ -911,25 +911,25 @@ function addUdpNoise(isManual, noiseIndex, udpNoise) {
                 </div>
             </div>
             <div class="form-control">
-                <label>📥 Noise Packet</label>
+                <label>📥 Packet</label>
                 <div>
                     <input type="text" name="udpXrayNoisePacket" value="${noise.packet}">
                 </div>
             </div>
             <div class="form-control">
-                <label>🕞 Noise Delay</label>
+                <label>🎚️ Count</label>
+                <div>
+                    <input type="number" name="udpXrayNoiseCount" value="${noise.count}" min="1" required>
+                </div>
+            </div>
+            <div class="form-control">
+                <label>🕞 Delay</label>
                 <div class="min-max">
                     <input type="number" name="udpXrayNoiseDelayMin"
                         value="${noise.delay.split('-')[0]}" min="1" required>
                     <span> - </span>
                     <input type="number" name="udpXrayNoiseDelayMax"
                         value="${noise.delay.split('-')[1]}" min="1" required>
-                </div>
-            </div>
-            <div class="form-control">
-                <label>🎚️ Noise Count</label>
-                <div>
-                    <input type="number" name="udpXrayNoiseCount" value="${noise.count}" min="1" required>
                 </div>
             </div>
         </div>`;

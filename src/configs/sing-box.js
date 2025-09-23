@@ -711,10 +711,6 @@ const singboxConfigTemp = {
         },
         {
             type: "direct",
-            // domain_resolver: {
-            //     server: "dns-direct",
-            //     strategy: "ipv4_only"
-            // },
             tag: "direct"
         }
     ],

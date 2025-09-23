@@ -123,7 +123,6 @@ export async function updateDataset(request, env) {
                 count: 5
             }
         ]),
-        hiddifyNoiseMode: populateField('hiddifyNoiseMode', 'm4'),
         knockerNoiseMode: populateField('knockerNoiseMode', 'quic'),
         noiseCountMin: populateField('noiseCountMin', 10),
         noiseCountMax: populateField('noiseCountMax', 15),

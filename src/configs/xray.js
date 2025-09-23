@@ -113,7 +113,7 @@ function buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
     const rules = [
         {
             inboundTag: [
-                "socks-in"
+                "mixed-in"
             ],
             port: 53,
             outboundTag: "dns-out",
@@ -796,7 +796,7 @@ const xrayConfigTemp = {
     inbounds: [
         {
             port: 10808,
-            protocol: "socks",
+            protocol: "mixed",
             settings: {
                 auth: "noauth",
                 udp: true,
@@ -807,7 +807,7 @@ const xrayConfigTemp = {
                 enabled: true,
                 routeOnly: true
             },
-            tag: "socks-in",
+            tag: "mixed-in",
         },
         {
             port: 10853,

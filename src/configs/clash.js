@@ -643,18 +643,6 @@ function getRoutingRules() {
                 geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/nsfw.txt",
             }
         },
-        // {
-        //     rule: bypassLAN,
-        //     type: 'DIRECT',
-        //     noResolve: true,
-        //     ruleProvider: {
-        //         format: "yaml",
-        //         geosite: "private",
-        //         geoip: "private-cidr",
-        //         geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/private.yaml",
-        //         geoipURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/private.yaml"
-        //     }
-        // },
         {
             rule: settings.bypassIran,
             type: 'DIRECT',
