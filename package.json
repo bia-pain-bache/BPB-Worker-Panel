@@ -6,8 +6,9 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"build": "node scripts/build.js"
-	},
+    	"build": "node scripts/build.js",
+    	"deploy-worker": "wrangler deploy --env workers",
+    	"deploy-pages": "wrangler pages deploy dist/pages --env pages"	},
 	"devDependencies": {
 		"@eslint/css": "^0.8.1",
 		"@eslint/js": "^9.28.0",

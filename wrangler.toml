@@ -1,0 +1,13 @@
+compatibility_date = "2025-9-221"
+
+[build]
+command = "npm run build"
+watch_dir = "src"
+
+[env.workers]
+name = "test"
+main = "dist/worker.js"
+
+[env.pages]
+name = "test"
+pages_build_output_dir = "dist/pages"
