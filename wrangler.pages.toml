@@ -1,7 +1,0 @@
-name = "bpb-pages-panel"
-pages_build_output_dir = "dist/pages"
-compatibility_date = "2025-09-22"
-
-[build]
-command = "npm run build"
-watch_dir = "src"
