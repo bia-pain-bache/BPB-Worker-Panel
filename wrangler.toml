@@ -10,5 +10,5 @@ main = "dist/worker.js"
 
 [env.pages]
 name = "test"
-
 pages_build_output_dir = "dist/pages"
+
