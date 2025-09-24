@@ -1,8 +1,0 @@
-name = "tese"
-main = "dist/worker.js"
-compatibility_date = "2025-09-22"
-
-[build]
-command = "npm run build"
-watch_dir = "src"
-
