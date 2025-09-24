@@ -1,4 +1,4 @@
-compatibility_date = "2025-9-221"
+compatibility_date = "2025-9-22"
 
 [build]
 command = "npm run build"
@@ -10,4 +10,5 @@ main = "dist/worker.js"
 
 [env.pages]
 name = "test"
+
 pages_build_output_dir = "dist/pages"
