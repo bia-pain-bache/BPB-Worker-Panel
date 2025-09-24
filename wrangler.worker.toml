@@ -1,6 +1,0 @@
-name = "test"
-main = "dist/worker.js"
-compatibility_date = "2025-09-21"
-
-[build]
-command = "npm run build"
