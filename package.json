@@ -7,8 +7,8 @@
 	"type": "module",
 	"scripts": {
 		"build": "node scripts/build.js",
-    	"deploy-worker": "wrangler deploy --config wrangler.worker.toml",
-		"deploy-pages": "wrangler pages deploy dist/pages --config wrangler.pages.toml"
+		"deploy-worker": "wrangler deploy --env workers",
+		"deploy-pages": "wrangler pages deploy dist/pages --env pages"
   },
 	"devDependencies": {
 		"@eslint/css": "^0.8.1",
