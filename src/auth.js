@@ -3,10 +3,17 @@ import { respond } from '#common/handlers';
 import { globalConfig } from '#common/init';
 
 export async function generateJWTToken(request, env) {
-    if (request.method !== 'POST') return await respond(false, 405, 'Method not allowed.');
+    if (request.method !== 'POST') {
+        return await respond(false, 405, 'Method not allowed.');
+    }
+
     const password = await request.text();
     const savedPass = await env.kv.get('pwd');
-    if (password !== savedPass) return await respond(false, 401, 'Wrong password.');
+    
+    if (password !== savedPass) {
+        return await respond(false, 401, 'Wrong password.');
+    }
+
     let secretKey = await env.kv.get('secretKey');
 
     if (!secretKey) {
@@ -30,6 +37,7 @@ export async function generateJWTToken(request, env) {
 function generateSecretKey() {
     const array = new Uint8Array(32);
     crypto.getRandomValues(array);
+    
     return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
@@ -64,10 +72,18 @@ export async function logout() {
 export async function resetPassword(request, env) {
     let auth = await Authenticate(request, env);
     const oldPwd = await env.kv.get('pwd');
-    if (oldPwd && !auth) return await respond(false, 401, 'Unauthorized.');
+    
+    if (oldPwd && !auth) {
+        return await respond(false, 401, 'Unauthorized.');
+    }
+
     const newPwd = await request.text();
-    if (newPwd === oldPwd) return await respond(false, 400, 'Please enter a new Password.');
+    if (newPwd === oldPwd) {
+        return await respond(false, 400, 'Please enter a new Password.');
+    }
+
     await env.kv.put('pwd', newPwd);
+    
     return await respond(true, 200, 'Successfully logged in!', null, {
         'Set-Cookie': 'jwtToken=; Path=/; Secure; SameSite=None; Expires=Thu, 01 Jan 1970 00:00:00 GMT',
         'Content-Type': 'text/plain',
