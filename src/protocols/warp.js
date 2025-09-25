@@ -1,7 +1,11 @@
 export async function fetchWarpConfigs(env) {
     const warpConfigs = [];
     const apiBaseUrl = 'https://api.cloudflareclient.com/v0a4005/reg';
-    const warpKeys = [await generateKeyPair(), await generateKeyPair()];
+    const warpKeys = [
+        await generateKeyPair(), 
+        await generateKeyPair()
+    ];
+
     const commonPayload = {
         install_id: "",
         fcm_token: "",
@@ -22,6 +26,7 @@ export async function fetchWarpConfigs(env) {
                 },
                 body: JSON.stringify({ ...commonPayload, key: key.publicKey })
             });
+            
             return await response.json();
         } catch (error) {
             throw new Error("Failed to get warp configs.", error);
@@ -38,6 +43,7 @@ export async function fetchWarpConfigs(env) {
 
     const configs = JSON.stringify(warpConfigs)
     await env.kv.put('warpConfigs', configs);
+    
     return configs;
 }
 

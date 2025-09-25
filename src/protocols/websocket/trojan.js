@@ -199,10 +199,13 @@ function sha224(string) {
 
     const utf8Encode = (str) => {
         const utf8 = [];
+
         for (let i = 0; i < str.length; i++) {
             let charcode = str.charCodeAt(i);
-            if (charcode < 0x80) utf8.push(charcode);
-            else if (charcode < 0x800) {
+
+            if (charcode < 0x80) {
+                utf8.push(charcode);
+            } else if (charcode < 0x800) {
                 utf8.push(0xc0 | (charcode >> 6), 0x80 | (charcode & 0x3f));
             } else if (charcode < 0xd800 || charcode >= 0xe000) {
                 utf8.push(
@@ -212,9 +215,7 @@ function sha224(string) {
                 );
             } else {
                 i++;
-                charcode =
-                    0x10000 +
-                    (((charcode & 0x3ff) << 10) | (str.charCodeAt(i) & 0x3ff));
+                charcode = 0x10000 + (((charcode & 0x3ff) << 10) | (str.charCodeAt(i) & 0x3ff));
                 utf8.push(
                     0xf0 | (charcode >> 18),
                     0x80 | ((charcode >> 12) & 0x3f),
@@ -223,6 +224,7 @@ function sha224(string) {
                 );
             }
         }
+
         return utf8;
     };
 
@@ -230,21 +232,25 @@ function sha224(string) {
     const bitLength = bytes.length * 8;
 
     bytes.push(0x80);
+
     while ((bytes.length % 64) !== 56) {
         bytes.push(0);
     }
 
     const lengthHi = Math.floor(bitLength / 0x100000000);
     const lengthLo = bitLength & 0xffffffff;
+
     for (let i = 3; i >= 0; i--) {
         bytes.push((lengthHi >> (i * 8)) & 0xff);
     }
+
     for (let i = 3; i >= 0; i--) {
         bytes.push((lengthLo >> (i * 8)) & 0xff);
     }
 
     for (let offset = 0; offset < bytes.length; offset += 64) {
         const w = new Array(64).fill(0);
+
         for (let i = 0; i < 16; i++) {
             w[i] =
                 (bytes[offset + 4 * i] << 24) |
@@ -252,19 +258,15 @@ function sha224(string) {
                 (bytes[offset + 4 * i + 2] << 8) |
                 bytes[offset + 4 * i + 3];
         }
+
         for (let i = 16; i < 64; i++) {
-            const s0 =
-                rightRotate(w[i - 15], 7) ^
-                rightRotate(w[i - 15], 18) ^
-                (w[i - 15] >>> 3);
-            const s1 =
-                rightRotate(w[i - 2], 17) ^
-                rightRotate(w[i - 2], 19) ^
-                (w[i - 2] >>> 10);
+            const s0 = rightRotate(w[i - 15], 7) ^ rightRotate(w[i - 15], 18) ^ (w[i - 15] >>> 3);
+            const s1 = rightRotate(w[i - 2], 17) ^ rightRotate(w[i - 2], 19) ^ (w[i - 2] >>> 10);
             w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0;
         }
 
         let [a, b, c, d, e, f, g, h8] = h;
+
         for (let i = 0; i < 64; i++) {
             const S1 = rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25);
             const ch = (e & f) ^ (~e & g);
