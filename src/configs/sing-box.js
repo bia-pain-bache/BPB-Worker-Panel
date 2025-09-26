@@ -55,6 +55,7 @@ async function buildSingBoxDNS(isWarp) {
 
     if (settings.outProxy) {
         const { server } = settings.outProxyParams;
+        
         if (isDomain(server)) {
             rules.unshift({
                 domain: server,
@@ -86,11 +87,13 @@ async function buildSingBoxDNS(isWarp) {
     function addDnsRule(geosite, geoip, domain, dns) {
         let type, mode;
         const ruleSets = [];
+        
         if (geoip) {
             mode = 'and';
             type = 'logical';
             ruleSets.push({ rule_set: geosite }, { rule_set: geoip });
         }
+
         const action = dns === 'reject' ? 'reject' : 'route';
         const server = dns === 'reject' ? null : dns;
 
@@ -137,6 +140,7 @@ async function buildSingBoxDNS(isWarp) {
 
     for (const { rule, geosite, geoip, domain, type, dns } of routingRules) {
         if (!rule) continue;
+        
         if (geosite && geoip && type === 'direct') {
             addDnsRule(geosite, geoip, null, dns);
         } else {
@@ -157,6 +161,7 @@ async function buildSingBoxDNS(isWarp) {
 
     if (isSanctionRule) {
         const dnsHost = getDomain(settings.antiSanctionDNS);
+        
         if (dnsHost.isHostDomain) {
             addDnsServer("https", dnsHost.host, 443, null, "dns-anti-sanction", "dns-direct");
         } else {
@@ -174,9 +179,12 @@ async function buildSingBoxDNS(isWarp) {
         };
 
         const isIPv6 = (settings.VLTRenableIPv6 && !isWarp) || (settings.warpEnableIPv6 && isWarp);
-        if (isIPv6) fakeip.inet6_range = "fc00::/18";
-        servers.push(fakeip);
+        
+        if (isIPv6) {
+            fakeip.inet6_range = "fc00::/18";
+        }
 
+        servers.push(fakeip);
         rules.push({
             disable_cache: true,
             inbound: "tun-in",
@@ -227,6 +235,7 @@ function buildSingBoxRoutingRules(isWarp) {
     function addRoutingRule(domain, ip, geosite, geoip, network, protocol, port, type) {
         const action = type === 'reject' ? 'reject' : 'route';
         const outbound = type === 'direct' ? 'direct' : null;
+        
         rules.push({
             ...(geosite && { rule_set: geosite }),
             ...(geoip && { rule_set: geoip }),
@@ -244,7 +253,9 @@ function buildSingBoxRoutingRules(isWarp) {
         addRoutingRule(null, null, null, null, "udp", "quic", 443, 'reject');
     }
 
-    if (!isWarp) addRoutingRule(null, null, null, null, "udp", null, null, 'reject');
+    if (!isWarp) {
+        addRoutingRule(null, null, null, null, "udp", null, null, 'reject');
+    }
 
     const routingRules = getRoutingRules();
 
@@ -258,10 +269,14 @@ function buildSingBoxRoutingRules(isWarp) {
         });
     });
 
-    const bypassRules = [...settings.customBypassRules, ...settings.customBypassSanctionRules];
+    const bypassRules = [
+        ...settings.customBypassRules, 
+        ...settings.customBypassSanctionRules
+    ];
 
     bypassRules.forEach(value => {
         const isDomainValue = isDomain(value);
+        
         routingRules.push({
             rule: true,
             type: 'direct',
@@ -443,7 +458,9 @@ function buildSingBoxWarpOutbound(warpConfigs, remark, endpoint, chain) {
         }
     };
 
-    if (chain) outbound.detour = chain;
+    if (chain) {
+        outbound.detour = chain;
+    }
 
     return outbound;
 }
@@ -603,7 +620,10 @@ export async function getSingBoxWarpConfig(request, env) {
     ];
 
     const config = await buildSingBoxConfig(selectorTags, warpTags, wowTags, true, settings.warpEnableIPv6);
-    config.endpoints = [...endpoints.chains, ...endpoints.proxies];
+    config.endpoints = [
+        ...endpoints.chains, 
+        ...endpoints.proxies
+    ];
 
     return new Response(JSON.stringify(config, null, 4), {
         status: 200,
@@ -706,7 +726,10 @@ export async function getSingBoxCustomConfig(env, isFragment) {
 
     const selectorTags = ['💦 Best Ping 💥', ...tags];
     const config = await buildSingBoxConfig(selectorTags, tags, null, false, settings.VLTRenableIPv6);
-    config.outbounds.push(...outbounds.chains, ...outbounds.proxies);
+    config.outbounds.push(
+        ...outbounds.chains, 
+        ...outbounds.proxies
+    );
 
     return new Response(JSON.stringify(config, null, 4), {
         status: 200,

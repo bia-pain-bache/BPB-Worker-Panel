@@ -35,6 +35,7 @@ async function buildClashDNS(isChain, isWarp) {
 
     if (isChain && !isWarp) {
         const chainOutboundServer = settings.outProxyParams.server;
+        
         if (isDomain(chainOutboundServer)) {
             dnsObject["nameserver-policy"][chainOutboundServer] = `${settings.remoteDNS}#proxy-1`;
         }
@@ -68,7 +69,10 @@ async function buildClashDNS(isChain, isWarp) {
         if (type === 'DIRECT') {
             dnsObject["nameserver-policy"][`rule-set:${geosite}`] = dns;
         } else {
-            if (!dnsObject["hosts"]) dnsObject["hosts"] = {};
+            if (!dnsObject["hosts"]) {
+                dnsObject["hosts"] = {};
+            }
+
             dnsObject["hosts"][`rule-set:${geosite}`] = "rcode://refused";
         }
     }
@@ -478,6 +482,7 @@ export async function getClashNormalConfig(env) {
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
             chainProxy = undefined;
+            
             const proxySettings = await env.kv.get("proxySettings", { type: 'json' });
             await env.kv.put("proxySettings", JSON.stringify({
                 ...proxySettings,

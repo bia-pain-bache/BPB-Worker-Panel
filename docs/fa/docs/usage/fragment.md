@@ -19,30 +19,3 @@
 ## Fragment برای sing-box
 
 از نسخه 1.12.0 به بعد شما میتونید از این ساب استفاده کنید، روی تمامی برنامه‌هایی که از هسته sing-box استفاده میکنن هم قابل استفاده هست مثل husi یا v2rayN که هسته sing-box هم داره.
-
-## Fragment برای Hiddify
-
-خیلی از تنظیمات پنل توی این اشتراک اعمال نمی‌شن، چون Hiddify بیشتر تنظیمات رو خودش کنترل می‌کنه. موارد زیر باید به‌صورت دستی توی Hiddify تنظیم بشن:
-
-1. Remote DNS
-2. Local DNS
-3. Routing
-
-!!! warning "هشدار"
-    تنظیمات Fragment پنل، فقط اگه حالت Fragment رو توی Hiddify غیرفعال کنید، اعمال می‌شن.
-
-!!! danger "خطر"
-    مطمئن بشید Remote DNS توی Hiddify روی یه سرور DNS از نوع DoH، DoT یا TCP تنظیم شده. چند مثال:
-    ```title="DoH"
-    https://8.8.8.8/dns-query
-    ```
-    ```title="DoT"
-    tls://8.8.8.8  
-    ```
-    ```title="TCP"
-    tcp://8.8.8.8  
-    ```
-
-یا می‌تونید اشتراک **Normal** رو توی Hiddify وارد کنید و Fragment رو به‌صورت دستی فعال کنید، همون‌طور که توی تصویر زیر نشون داده شده:
-
-![Fragment subscription for Hiddify](../images/hiddify-fragment.jpg)
