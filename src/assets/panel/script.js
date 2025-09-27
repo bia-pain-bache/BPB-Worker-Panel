@@ -18,6 +18,8 @@ const [
 const defaultHttpsPorts = [443, 8443, 2053, 2083, 2087, 2096];
 const defaultHttpPorts = [80, 8080, 8880, 2052, 2082, 2086, 2095];
 const domainRegex = /^(?=.{1,253}$)(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)\.)+[a-zA-Z]{2,63}$/;
+const ipv4Regex = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/;
+const ipv6Regex = /^\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}|:(?::[a-fA-F0-9]{1,4}){1,7})\]$/;
 
 fetch('/panel/settings')
     .then(async response => response.json())
@@ -106,9 +108,10 @@ function initiateForm() {
 }
 
 function hasFormDataChanged() {
-    const configForm = document.getElementById('configForm');
     const formDataToObject = (formData) => Object.fromEntries(formData.entries());
+    const configForm = document.getElementById('configForm');
     const currentFormData = new FormData(configForm);
+
     const initialFormDataObj = formDataToObject(globalThis.initialFormData);
     const currentFormDataObj = formDataToObject(currentFormData);
 
@@ -167,16 +170,16 @@ async function fetchIPInfo() {
     refreshIcon.classList.add('fa-spin');
     const updateUI = (ip = '-', country = '-', countryCode = '-', city = '-', isp = '-', cfIP) => {
         const flag = countryCode !== '-' ? String.fromCodePoint(...[...countryCode].map(c => 0x1F1E6 + c.charCodeAt(0) - 65)) : '';
-        document.getElementById(cfIP ? 'cf-ip' : 'ip').textContent = ip;
-        document.getElementById(cfIP ? 'cf-country' : 'country').textContent = country + ' ' + flag;
-        document.getElementById(cfIP ? 'cf-city' : 'city').textContent = city;
-        document.getElementById(cfIP ? 'cf-isp' : 'isp').textContent = isp;
+        const updateContent = (id, content) => document.getElementById(id).textContent = content;
+        updateContent(cfIP ? 'cf-ip' : 'ip', ip);
+        updateContent(cfIP ? 'cf-country' : 'country', `${country} ${flag}`);
+        updateContent(cfIP ? 'cf-city' : 'city', city);
+        updateContent(cfIP ? 'cf-isp' : 'isp', isp);
     };
 
     try {
         const response = await fetch('https://ipwho.is/' + '?nocache=' + Date.now(), { cache: "no-store" });
-        const data = await response.json();
-        const { success, ip, message } = data;
+        const { success, ip, message } = await response.json();
 
         if (!success) {
             throw new Error(`Fetch Other targets IP failed at ${response.url} - ${message}`);
@@ -391,8 +394,7 @@ function resetSettings() {
         headers: { 'Content-Type': 'application/json' }
     })
         .then(response => response.json())
-        .then(data => {
-            const { success, status, message, body } = data;
+        .then(({ success, status, message, body }) => {
             document.body.style.cursor = 'default';
             resetBtn.classList.remove('fa-spin');
 
@@ -407,13 +409,6 @@ function resetSettings() {
 }
 
 function validateSettings() {
-    const elementsToCheck = [
-        'cleanIPs',
-        'customCdnAddrs',
-        'customCdnSni',
-        'customCdnHost'
-    ];
-
     const configForm = document.getElementById('configForm');
     const formData = new FormData(configForm);
 
@@ -426,6 +421,24 @@ function validateSettings() {
         'udpXrayNoiseCount'
     ].map(field => formData.getAll(field));
 
+    const validations = [
+        validateRemoteDNS(),
+        validateSanctionDns(),
+        validateLocalDNS(),
+        validateMultipleHostNames(),
+        validateProxyIPs(),
+        validateNAT64Prefixes(),
+        validateWarpEndpoints(),
+        validateMinMax(),
+        validateChainProxy(),
+        validateCustomCdn(),
+        validateXrayNoises(fields),
+        validateCustomRules()
+    ];
+
+    if (!validations.every(Boolean)) return false;
+    const form = Object.fromEntries(formData.entries());
+
     const [modes, packets, delaysMin, delaysMax, counts] = fields;
     modes.forEach((mode, index) => {
         xrayUdpNoises.push({
@@ -436,25 +449,11 @@ function validateSettings() {
         });
     });
 
-    const validations = [
-        validateRemoteDNS(),
-        validateMultipleHostNames(elementsToCheck),
-        validateProxyIPs(),
-        validateNAT64Prefixes(),
-        validateWarpEndpoints(),
-        validateMinMax(),
-        validateChainProxy(),
-        validateCustomCdn(),
-        validateXrayNoises(fields),
-        validateSanctionDns(),
-        validateCustomRules()
-    ];
-
-    if (!validations.every(Boolean)) return false;
-
-    const form = Object.fromEntries(formData.entries());
     form.xrayUdpNoises = xrayUdpNoises;
-    const ports = [...defaultHttpPorts, ...defaultHttpsPorts];
+    const ports = [
+        ...defaultHttpPorts,
+        ...defaultHttpsPorts
+    ];
 
     form.ports = ports.reduce((acc, port) => {
         formData.has(port.toString()) && acc.push(port);
@@ -472,14 +471,20 @@ function validateSettings() {
         form[elm.id] = value;
     });
 
+    inputElements.forEach(elm => {
+        if (typeof form[elm.id] === 'string') {
+            form[elm.id] = form[elm.id].trim();
+        }
+    });
+
     numInputElements.forEach(elm => {
-        form[elm.id] = Number(form[elm.id]);
+        form[elm.id] = Number(form[elm.id].trim());
     });
 
     textareaElements.forEach(elm => {
         const key = elm.id;
         const value = form[key];
-        form[key] = value === '' ? [] : value.split('\n').map(val => val.trim()).filter(Boolean);
+        form[key] = value?.split('\n').map(val => val.trim()).filter(Boolean) || [];
     });
 
     return form;
@@ -516,7 +521,7 @@ function updateSettings(event, data) {
                 throw new Error(`status ${status} - ${message}`);
             }
 
-            initiateForm();
+            initiatePanel(form);
             alert('✅ Settings applied successfully!');
         })
         .catch(error => console.error("Update settings error:", error.message || error))
@@ -528,7 +533,7 @@ function updateSettings(event, data) {
 
 function validateRemoteDNS() {
     let url;
-    const dns = document.getElementById("remoteDNS").value.trim();
+    const dns = getElmValue("remoteDNS");
 
     try {
         url = new URL(dns);
@@ -571,14 +576,14 @@ function validateRemoteDNS() {
 }
 
 function validateSanctionDns() {
-    const value = document.getElementById("antiSanctionDNS").value.trim();
+    const dns = getElmValue("antiSanctionDNS");
     let host;
 
     try {
-        const url = new URL(value);
+        const url = new URL(dns);
         host = url.hostname;
     } catch {
-        host = value;
+        host = dns;
     }
 
     const isValid = isValidHostName(host, false);
@@ -591,8 +596,26 @@ function validateSanctionDns() {
     return true;
 }
 
+function validateLocalDNS() {
+    const dns = getElmValue("localDNS");
+    const isValid = ipv4Regex.test(dns) || dns === 'localhost';
+
+    if (!isValid) {
+        alert(`⛔ Invalid local DNS.\n💡 Please fill in an IPv4 address or "localhost".\n\n⚠️ ${dns}`);
+        return false;
+    }
+
+    return true;
+}
+
 function parseElmValues(id) {
-    return document.getElementById(id).value?.split('\n') || [];
+    return document.getElementById(id).value?.split('\n')
+        .map(value => value.trim())
+        .filter(Boolean) || [];
+}
+
+function getElmValue(id) {
+    return document.getElementById(id).value?.trim();
 }
 
 function parseHostPort(input) {
@@ -608,8 +631,6 @@ function parseHostPort(input) {
 }
 
 function isValidHostName(value, isHost) {
-    const ipv4Regex = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/;
-    const ipv6Regex = /^\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}|:(?::[a-fA-F0-9]{1,4}){1,7})\]$/;
     const hostPort = parseHostPort(value.trim());
     if (!hostPort) return false;
     const { host, port } = hostPort;
@@ -627,8 +648,7 @@ function validateCustomRules() {
         'customBlockRules',
         'customBypassSanctionRules'
     ].flatMap(parseElmValues)
-        .map(value => value.trim())
-        .filter(value => value && !ipv4CidrRegex.test(value) && !ipv6CidrRegex.test(value) && !domainRegex.test(value));
+        .filter(value => !ipv4CidrRegex.test(value) && !ipv6CidrRegex.test(value) && !domainRegex.test(value));
 
     if (invalidValues.length) {
         alert('⛔ Invalid IPs, Domains or IP ranges.\n💡 Please enter each value in a new line.\n\n' + invalidValues.map(ip => `⚠️ ${ip}`).join('\n'));
@@ -638,10 +658,14 @@ function validateCustomRules() {
     return true;
 }
 
-function validateMultipleHostNames(elements) {
-    const invalidValues = elements.flatMap(parseElmValues)
-        .map(value => value.trim())
-        .filter(value => value && !isValidHostName(value));
+function validateMultipleHostNames() {
+    const invalidValues = [
+        'cleanIPs',
+        'customCdnAddrs',
+        'customCdnSni',
+        'customCdnHost'
+    ].flatMap(parseElmValues)
+        .filter(value => !isValidHostName(value));
 
     if (invalidValues.length) {
         alert('⛔ Invalid IPs or Domains.\n💡 Please enter each value in a new line.\n\n' + invalidValues.map(ip => `⚠️ ${ip}`).join('\n'));
@@ -653,8 +677,7 @@ function validateMultipleHostNames(elements) {
 
 function validateProxyIPs() {
     const invalidValues = parseElmValues('proxyIPs')
-        .map(value => value.trim())
-        .filter(value => value && !isValidHostName(value));
+        .filter(value => !isValidHostName(value));
 
     if (invalidValues.length) {
         alert('⛔ Invalid proxy IPs.\n💡 Please enter each value in a new line.\n\n' + invalidValues.map(ip => `⚠️ ${ip}`).join('\n'));
@@ -666,8 +689,7 @@ function validateProxyIPs() {
 
 function validateNAT64Prefixes() {
     const invalidValues = parseElmValues('prefixes')
-        .map(prefix => prefix.trim())
-        .filter(value => value && !ipv6Regex.test(value));
+        .filter(value => !ipv6Regex.test(value));
 
     if (invalidValues.length) {
         alert('⛔ Invalid NAT64 prefix.\n💡 Please enter each prefix in a new line using [].\n\n' + invalidValues.map(ip => `⚠️ ${ip}`).join('\n'));
@@ -679,8 +701,7 @@ function validateNAT64Prefixes() {
 
 function validateWarpEndpoints() {
     const invalidEndpoints = parseElmValues('warpEndpoints')
-        .map(prefix => prefix.trim())
-        .filter(value => value && !isValidHostName(value, true));
+        .filter(value => !isValidHostName(value, true));
 
     if (invalidEndpoints.length) {
         alert('⛔ Invalid endpoint.\n\n' + invalidEndpoints.map(endpoint => `⚠️ ${endpoint}`).join('\n'));
@@ -691,7 +712,7 @@ function validateWarpEndpoints() {
 }
 
 function validateMinMax() {
-    const getValue = (id) => parseInt(document.getElementById(id).value, 10);
+    const getValue = (id) => parseInt(getElmValue(id), 10);
     const [
         fragmentLengthMin, fragmentLengthMax,
         fragmentIntervalMin, fragmentIntervalMax,
@@ -721,7 +742,7 @@ function validateMinMax() {
 }
 
 function validateChainProxy() {
-    const chainProxy = document.getElementById('outProxy').value?.trim();
+    const chainProxy = getElmValue('outProxy');
     const isVless = /vless:\/\/[^\s@]+@[^\s:]+:[^\s]+/.test(chainProxy);
     const hasSecurity = /security=/.test(chainProxy);
     const isSocksHttp = /^(http|socks):\/\/(?:([^:@]+):([^:@]+)@)?([^:@]+):(\d+)$/.test(chainProxy);
@@ -748,9 +769,9 @@ function validateChainProxy() {
 }
 
 function validateCustomCdn() {
-    const customCdnHost = document.getElementById('customCdnHost').value;
-    const customCdnSni = document.getElementById('customCdnSni').value;
-    const customCdnAddrs = document.getElementById('customCdnAddrs').value?.split('\n').filter(Boolean);
+    const customCdnHost = getElmValue('customCdnHost');
+    const customCdnSni = getElmValue('customCdnSni');
+    const customCdnAddrs = parseElmValues('customCdnAddrs');
     const isCustomCdn = customCdnAddrs.length || customCdnHost !== '' || customCdnSni !== '';
 
     if (isCustomCdn && !(customCdnAddrs.length && customCdnHost && customCdnSni)) {

@@ -42,6 +42,7 @@ export async function updateDataset(request, env) {
 
     const populateField = (field, defaultValue, callback) => {
         if (isReset) return defaultValue;
+        
         if (!newSettings) {
             return currentSettings?.[field] ?? defaultValue;
         }

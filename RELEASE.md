@@ -6,3 +6,4 @@
 - Pruned some legacy clients from code
 - UI improvements
 - Refactored, code readability
+- Panel bug fixes
