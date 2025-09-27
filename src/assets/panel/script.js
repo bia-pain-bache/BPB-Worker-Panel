@@ -432,14 +432,18 @@ function validateSettings() {
         validateMinMax(),
         validateChainProxy(),
         validateCustomCdn(),
+        validateKnockerNoise(),
         validateXrayNoises(fields),
         validateCustomRules()
     ];
 
-    if (!validations.every(Boolean)) return false;
-    const form = Object.fromEntries(formData.entries());
+    if (!validations.every(Boolean)) {
+        return false;
+    }
 
+    const form = Object.fromEntries(formData.entries());
     const [modes, packets, delaysMin, delaysMax, counts] = fields;
+    
     modes.forEach((mode, index) => {
         xrayUdpNoises.push({
             type: mode,
@@ -776,6 +780,18 @@ function validateCustomCdn() {
 
     if (isCustomCdn && !(customCdnAddrs.length && customCdnHost && customCdnSni)) {
         alert('⛔ All "Custom" fields should be filled or deleted together!');
+        return false;
+    }
+
+    return true;
+}
+
+function validateKnockerNoise() {
+    const regex = /^(none|quic|random|[0-9A-Fa-f]+)$/;
+    const knockerNoise = getElmValue("knockerNoiseMode");
+
+    if (!regex.test(knockerNoise)) {
+        alert('⛔ Invalid noise  mode.\n💡 Please use "none", "quic", "random" or a valid hex value.');
         return false;
     }
 
