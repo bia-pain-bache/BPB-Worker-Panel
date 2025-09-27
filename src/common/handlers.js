@@ -1,6 +1,6 @@
 import { Authenticate, generateJWTToken, resetPassword } from "#auth";
 import { getClashNormalConfig, getClashWarpConfig } from "#configs/clash";
-import { extractWireguardParams } from "#configs/utils";
+import { extractWireguardParams, getConfigAddresses, generateWsPath, isDomain } from "#configs/utils";
 import { getSingBoxCustomConfig, getSingBoxWarpConfig } from "#configs/sing-box";
 import { getXrayCustomConfigs, getXrayWarpConfigs } from "#configs/xray";
 import { getDataset, updateDataset } from "#kv";
@@ -134,9 +134,84 @@ export async function handleSubscriptions(request, env) {
                     break;
             }
 
+        case `/sub/legacy/${subPath}`:
+            // 处理旧客户订阅链接，将trojan://和vless://节点换行符合并
+            return await getLegacySubscription(env);
+
         default:
             return await fallback(request);
     }
+}
+
+async function getLegacySubscription(env) {
+    // 获取配置数据
+    const dataset = await getDataset(null, env);
+    settings = dataset.settings;
+    
+    try {
+        // 生成vless和trojan节点
+        const vlessNodes = settings.VLConfigs ? await generateVlessNodes(env) : [];
+        const trojanNodes = settings.TRConfigs ? await generateTrojanNodes(env) : [];
+        
+        // 合并节点并使用换行符分隔
+        const allNodes = [...vlessNodes, ...trojanNodes].join('\n');
+        
+        // 对合并后的内容进行base64编码
+        const encodedContent = btoa(unescape(encodeURIComponent(allNodes)));
+        
+        return new Response(encodedContent, {
+            headers: {
+                'Content-Type': 'text/plain',
+                'Content-Disposition': 'attachment; filename="legacy-sub.txt"',
+                'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            }
+        });
+    } catch (error) {
+        console.error('Error generating legacy subscription:', error);
+        return await respond(false, 500, `Error generating legacy subscription: ${error.message}`);
+    }
+}
+
+async function generateVlessNodes(env) {
+    const addresses = await getConfigAddresses(false);
+    const nodes = [];
+    
+    addresses.forEach((address, index) => {
+        const ports = settings.ports || [443];
+        ports.forEach(port => {
+            const host = isDomain(address) ? address : httpConfig.hostName;
+            const sni = settings.customCdnSni || host;
+            const wsPath = generateWsPath('vl');
+            
+            // 构建vless链接
+            const vlessUrl = `vless://${globalConfig.userID}@${address.replace(/\[|\]/g, '')}:${port}?encryption=none&security=tls&sni=${sni}&type=ws&host=${host}&path=${encodeURIComponent(wsPath)}#BPB-Vless-${index + 1}`;
+            nodes.push(vlessUrl);
+        });
+    });
+    
+    return nodes;
+}
+
+async function generateTrojanNodes(env) {
+    const addresses = await getConfigAddresses(false);
+    const nodes = [];
+    
+    addresses.forEach((address, index) => {
+        const ports = settings.ports || [443];
+        ports.forEach(port => {
+            const host = isDomain(address) ? address : httpConfig.hostName;
+            const sni = settings.customCdnSni || host;
+            const wsPath = generateWsPath('tr');
+            
+            // 构建trojan链接
+            const trojanUrl = `trojan://${globalConfig.TrPass}@${address.replace(/\[|\]/g, '')}:${port}?security=tls&sni=${sni}&type=ws&host=${host}&path=${encodeURIComponent(wsPath)}#BPB-Trojan-${index + 1}`;
+            nodes.push(trojanUrl);
+        });
+    });
+    
+    return nodes;
 }
 
 async function updateSettings(request, env) {
