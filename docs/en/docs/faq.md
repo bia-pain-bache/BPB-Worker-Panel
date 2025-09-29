@@ -67,3 +67,6 @@
 
 ??? question "Why v2rayN cannot ping test configs?"
     Right now v2rayN is experiencing some issues with custom configs and BPB panel configs are all custom. No worries, just enable config and use it. You also have Best Ping config in all subscriptions which connects to best IP automatically, so you don't need to test all configs everytime.
+
+??? question "Why sing-box throws error while importing subscription?"
+    BPB only supports sing-box 1.12.0 or higher

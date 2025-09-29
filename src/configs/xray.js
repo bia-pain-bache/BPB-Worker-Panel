@@ -355,7 +355,7 @@ function buildXrayTROutbound(tag, address, port, host, sni, isFragment, allowIns
     return outbound;
 }
 
-function buildXrayWarpOutbound(warpConfigs, endpoint, isWoW) {
+function buildXrayWarpOutbound(warpConfigs, endpoint, isWoW, isPro) {
     const {
         warpIPv6,
         reserved,
@@ -386,7 +386,7 @@ function buildXrayWarpOutbound(warpConfigs, endpoint, isWoW) {
 
     let chain = '';
     if (isWoW) chain = "proxy";
-    if (!isWoW && httpConfig.client === 'xray') chain = "udp-noise";
+    if (!isWoW && isPro && httpConfig.client === 'xray') chain = "udp-noise";
 
     if (chain) outbound.streamSettings = {
         sockopt: {
@@ -395,7 +395,6 @@ function buildXrayWarpOutbound(warpConfigs, endpoint, isWoW) {
     };
 
     if (httpConfig.client === 'xray-knocker' && !isWoW) {
-        delete outbound.streamSettings;
         const {
             knockerNoiseMode,
             noiseCountMin,
@@ -645,11 +644,6 @@ async function buildXrayConfig(
         config.inbounds[0].sniffing.destOverride.push("fakedns");
     }
 
-    if (isWarp && httpConfig.client === 'xray') {
-        const udpNoiseOutbound = buildFreedomOutbound(false, true, 'udp-noise');
-        config.outbounds.unshift(udpNoiseOutbound);
-    }
-
     config.routing.rules = buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp);
 
     if (isBalancer) {
@@ -737,7 +731,7 @@ async function buildXrayBestFragmentConfig(chainProxy, outbound) {
 async function buildXrayWorkerLessConfig() {
     const cfDnsConfig = await buildXrayConfig(`💦 ${atob('QlBC')} F - WorkerLess - 1 ⭐`, false, false, false, false, true, [], false, "cloudflare-dns.com", ["cloudflare.com"]);
     const googleDnsConfig = await buildXrayConfig(`💦 ${atob('QlBC')} F - WorkerLess - 2 ⭐`, false, false, false, false, true, [], false, "dns.google", ["8.8.8.8", "8.8.4.4"]);
-    
+
     const fragmentOutbound = buildFreedomOutbound(true, true, 'proxy');
     cfDnsConfig.outbounds.unshift(fragmentOutbound);
     googleDnsConfig.outbounds.unshift(fragmentOutbound);
@@ -754,7 +748,7 @@ export async function getXrayCustomConfigs(env, isFragment) {
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
             chainProxy = undefined;
-            
+
             const proxySettings = await env.kv.get("proxySettings", { type: 'json' });
             await env.kv.put("proxySettings", JSON.stringify({
                 ...proxySettings,
@@ -841,15 +835,20 @@ export async function getXrayCustomConfigs(env, isFragment) {
     });
 }
 
-export async function getXrayWarpConfigs(request, env, isPro) {
+export async function getXrayWarpConfigs(request, env, isPro, isKnocker) {
     const { warpConfigs } = await getDataset(request, env);
     const proIndicator = isPro ? ' Pro ' : ' ';
     const xrayWarpConfigs = [];
     const xrayWoWConfigs = [];
+    let udpNoiseOutbound = {};
     const outbounds = {
         proxies: [],
         chains: []
     };
+
+    if (isPro && !isKnocker) {
+        udpNoiseOutbound = buildFreedomOutbound(false, true, 'udp-noise');
+    }
 
     for (const [index, endpoint] of settings.warpEndpoints.entries()) {
         const endpointHost = endpoint.split(':')[0];
@@ -857,8 +856,13 @@ export async function getXrayWarpConfigs(request, env, isPro) {
         const warpConfig = await buildXrayConfig(`💦 ${index + 1} - Warp${proIndicator}🇮🇷`, false, false, false, true, false, [endpointHost], null);
         const WoWConfig = await buildXrayConfig(`💦 ${index + 1} - WoW${proIndicator}🌍`, false, true, false, true, false, [endpointHost], null);
 
-        const warpOutbound = buildXrayWarpOutbound(warpConfigs, endpoint, false);
-        const WoWOutbound = buildXrayWarpOutbound(warpConfigs, endpoint, true);
+        if (isPro && !isKnocker) {
+            warpConfig.outbounds.push(udpNoiseOutbound);
+            WoWConfig.outbounds.push(udpNoiseOutbound);
+        }
+
+        const warpOutbound = buildXrayWarpOutbound(warpConfigs, endpoint, false, isPro);
+        const WoWOutbound = buildXrayWarpOutbound(warpConfigs, endpoint, true, isPro);
 
         warpConfig.outbounds.unshift(structuredClone(warpOutbound));
         WoWConfig.outbounds.unshift(structuredClone(WoWOutbound), structuredClone(warpOutbound));
@@ -880,12 +884,22 @@ export async function getXrayWarpConfigs(request, env, isPro) {
     const outboundDomains = settings.warpEndpoints.map(endpoint => endpoint.split(':')[0]).filter(address => isDomain(address));
 
     const xrayWarpBestPing = await buildXrayConfig(`💦 Warp${proIndicator}- Best Ping 🚀`, true, false, false, true, false, outboundDomains, null);
-    xrayWarpBestPing.outbounds.unshift(...outbounds.proxies);
-
     const xrayWoWBestPing = await buildXrayConfig(`💦 WoW${proIndicator}- Best Ping 🚀`, true, true, false, true, false, outboundDomains, null);
+
+    if (isPro && !isKnocker) {
+        xrayWarpBestPing.outbounds.push(udpNoiseOutbound);
+        xrayWoWBestPing.outbounds.push(udpNoiseOutbound);
+    }
+
+    xrayWarpBestPing.outbounds.unshift(...outbounds.proxies);
     xrayWoWBestPing.outbounds.unshift(...totalOutbounds);
 
-    const configs = [...xrayWarpConfigs, ...xrayWoWConfigs, xrayWarpBestPing, xrayWoWBestPing];
+    const configs = [
+        ...xrayWarpConfigs,
+        ...xrayWoWConfigs,
+        xrayWarpBestPing,
+        xrayWoWBestPing
+    ];
 
     return new Response(JSON.stringify(configs, null, 4), {
         status: 200,

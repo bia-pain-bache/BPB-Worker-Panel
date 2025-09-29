@@ -526,7 +526,7 @@ function updateSettings(event, data) {
             }
 
             initiatePanel(form);
-            alert('✅ Settings applied successfully!');
+            alert('✅ Settings applied successfully!\n💡 Please update your subscriptions.');
         })
         .catch(error => console.error("Update settings error:", error.message || error))
         .finally(() => {

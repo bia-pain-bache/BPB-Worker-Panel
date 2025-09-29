@@ -91,45 +91,46 @@ export async function handleSubscriptions(request, env) {
     switch (path) {
         case `/sub/normal/${subPath}`:
             switch (client) {
+                case 'xray':
+                    return await getXrayCustomConfigs(env, false);
                 case 'sing-box':
                     return await getSingBoxCustomConfig(env, false);
                 case 'clash':
                     return await getClashNormalConfig(env);
-                case 'xray':
-                    return await getXrayCustomConfigs(env, false);
                 default:
                     break;
             }
 
         case `/sub/fragment/${subPath}`:
             switch (client) {
-                case 'sing-box':
-                    return await getSingBoxCustomConfig(env, true);
                 case 'xray':
                     return await getXrayCustomConfigs(env, true);
+                case 'sing-box':
+                    return await getSingBoxCustomConfig(env, true);
                 default:
                     break;
             }
 
         case `/sub/warp/${subPath}`:
             switch (client) {
-                case 'clash':
-                    return await getClashWarpConfig(request, env, false);
+                case 'xray':
+                    return await getXrayWarpConfigs(request, env, false, false);
                 case 'sing-box':
                     return await getSingBoxWarpConfig(request, env);
-                case 'xray':
-                    return await getXrayWarpConfigs(request, env, false);
+                case 'clash':
+                    return await getClashWarpConfig(request, env, false);
                 default:
                     break;
             }
 
         case `/sub/warp-pro/${subPath}`:
             switch (client) {
+                case 'xray':
+                    return await getXrayWarpConfigs(request, env, true, false);
+                case 'xray-knocker':
+                    return await getXrayWarpConfigs(request, env, true, true);
                 case 'clash':
                     return await getClashWarpConfig(request, env, true);
-                case 'xray-knocker':
-                case 'xray':
-                    return await getXrayWarpConfigs(request, env, true);
                 default:
                     break;
             }
@@ -288,17 +289,17 @@ export async function serveIcon() {
 
 async function renderPanel(request, env) {
     const pwd = await env.kv.get('pwd');
-    
+
     if (pwd) {
         const auth = await Authenticate(request, env);
-        
+
         if (!auth) {
             return Response.redirect(`${httpConfig.urlOrigin}/login`, 302);
         }
     }
 
     const html = hexToString(__PANEL_HTML_CONTENT__);
-    
+
     return new Response(html, {
         headers: { 'Content-Type': 'text/html' }
     });
@@ -311,7 +312,7 @@ async function renderLogin(request, env) {
     }
 
     const html = hexToString(__LOGIN_HTML_CONTENT__);
-    
+
     return new Response(html, {
         headers: { 'Content-Type': 'text/html' }
     });
@@ -319,7 +320,7 @@ async function renderLogin(request, env) {
 
 export async function renderSecrets() {
     const html = hexToString(__SECRETS_HTML_CONTENT__);
-    
+
     return new Response(html, {
         headers: { 'Content-Type': 'text/html' },
     });
@@ -328,7 +329,7 @@ export async function renderSecrets() {
 async function updateWarpConfigs(request, env) {
     if (request.method === 'POST') {
         const auth = await Authenticate(request, env);
-        
+
         if (!auth) {
             return await respond(false, 401, 'Unauthorized.');
         }
@@ -361,7 +362,7 @@ export async function respond(success, status, message, body, customHeaders) {
 function hexToString(hex) {
     const bytes = new Uint8Array(hex.match(/.{1,2}/g).map(b => parseInt(b, 16)));
     const decoder = new TextDecoder();
-    
+
     return decoder.decode(bytes);
 }
 
