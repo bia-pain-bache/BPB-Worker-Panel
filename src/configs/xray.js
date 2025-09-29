@@ -162,12 +162,13 @@ function buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
         }
     ];
 
-    const addRoutingRule = (inboundTag, domain, ip, port, network, outboundTag, isBalancer) => rules.push({
+    const addRoutingRule = (inboundTag, domain, ip, port, network, protocol, outboundTag, isBalancer) => rules.push({
         ...(inboundTag && { inboundTag }),
         ...(domain && { domain }),
         ...(ip && { ip }),
         ...(port && { port }),
         ...(network && { network }),
+        ...(protocol && { protocol: [protocol] }),
         ...(isBalancer
             ? { balancerTag: outboundTag }
             : { outboundTag }),
@@ -177,16 +178,16 @@ function buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
     const finallOutboundTag = isChain ? "chain" : "proxy";
     const outTag = isBalancer ? "all" : finallOutboundTag;
 
-    addRoutingRule(["remote-dns"], null, null, null, null, outTag, isBalancer);
-    addRoutingRule(["dns"], null, null, null, null, "direct");
+    addRoutingRule(["remote-dns"], null, null, null, null, null, outTag, isBalancer);
+    addRoutingRule(["dns"], null, null, null, null, null, "direct");
 
     if (settings.bypassLAN) {
-        addRoutingRule(null, ["geosite:private"], null, null, null, "direct");
-        addRoutingRule(null, null, ["geoip:private"], null, null, "direct");
+        addRoutingRule(null, ["geosite:private"], null, null, null, null, "direct");
+        addRoutingRule(null, null, ["geoip:private"], null, null, null, "direct");
     }
 
     if (isWarp && settings.blockUDP443) {
-        addRoutingRule(null, null, null, 443, "udp", "block");
+        addRoutingRule(null, null, null, 443, "udp", null, "block");
     }
 
     const routingRules = getRoutingRules();
@@ -226,16 +227,23 @@ function buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
 
     for (const [type, rule] of groupedRules) {
         const { domain, ip } = rule;
-        if (domain.length) addRoutingRule(null, domain, null, null, null, type, null);
-        if (ip.length) addRoutingRule(null, null, ip, null, null, type, null);
+        if (domain.length) addRoutingRule(null, domain, null, null, null, null, type, null);
+        if (ip.length) addRoutingRule(null, null, ip, null, null, null, type, null);
+    }
+
+    if (isWorkerLess) {
+        addRoutingRule(null, null, null, null, "tcp", "tls", "proxy");
+        addRoutingRule(null, null, null, null, "tcp", "http", "http-fragment");
+        addRoutingRule(null, null, null, null, "udp", "quic", "udp-noise");
+        addRoutingRule(null, null, null, "443,2053,2083,2087,2096,8443", "udp", null, "udp-noise");
     }
 
     if (!isWarp && !isWorkerLess) {
-        addRoutingRule(null, null, null, null, "udp", "block", null);
+        addRoutingRule(null, null, null, null, "udp", null, "block", null);
     }
 
     const network = isWarp || isWorkerLess ? "tcp,udp" : "tcp";
-    addRoutingRule(null, null, null, null, network, outTag, isBalancer);
+    addRoutingRule(null, null, null, null, network, null, outTag, isBalancer);
 
     return rules;
 }
@@ -638,13 +646,16 @@ async function buildXrayConfig(
     config.remarks = remark;
 
     config.dns = await buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWarp, customDns, customDnsHosts);
-    const isFakeDNS = (settings.VLTRFakeDNS && !isWarp) || (settings.warpFakeDNS && isWarp);
+    config.routing.rules = buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp);
+    const destOverride =  config.inbounds[0].sniffing.destOverride;
 
-    if (isFakeDNS) {
-        config.inbounds[0].sniffing.destOverride.push("fakedns");
+    if ((settings.VLTRFakeDNS && !isWarp) || (settings.warpFakeDNS && isWarp)) {
+        destOverride.push("fakedns");
     }
 
-    config.routing.rules = buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp);
+    if (isWorkerLess) {
+        destOverride.push("quic");
+    }
 
     if (isBalancer) {
         config.routing.balancers = [
@@ -732,9 +743,18 @@ async function buildXrayWorkerLessConfig() {
     const cfDnsConfig = await buildXrayConfig(`💦 ${atob('QlBC')} F - WorkerLess - 1 ⭐`, false, false, false, false, true, [], false, "cloudflare-dns.com", ["cloudflare.com"]);
     const googleDnsConfig = await buildXrayConfig(`💦 ${atob('QlBC')} F - WorkerLess - 2 ⭐`, false, false, false, false, true, [], false, "dns.google", ["8.8.8.8", "8.8.4.4"]);
 
-    const fragmentOutbound = buildFreedomOutbound(true, true, 'proxy');
-    cfDnsConfig.outbounds.unshift(fragmentOutbound);
-    googleDnsConfig.outbounds.unshift(fragmentOutbound);
+    const tlsFragment = buildFreedomOutbound(true, false, 'proxy');
+    const udpNoise = buildFreedomOutbound(false, true, 'udp-noise');
+    const httpFragment = buildFreedomOutbound(true, false, 'http-fragment');
+    httpFragment.settings.fragment.packets = "1-1";   
+    const outbounds = [
+        tlsFragment, 
+        httpFragment, 
+        udpNoise
+    ];
+
+    cfDnsConfig.outbounds.unshift(...outbounds);
+    googleDnsConfig.outbounds.unshift(...outbounds);
 
     return [cfDnsConfig, googleDnsConfig];
 }
