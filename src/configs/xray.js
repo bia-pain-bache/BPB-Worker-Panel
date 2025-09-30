@@ -46,7 +46,7 @@ async function buildXrayDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWa
     const dnsObject = {
         ...hosts,
         servers: [],
-        queryStrategy: isIPv6 ? "UseIP" : "UseIPv4",
+        queryStrategy: !isWarp || isIPv6 ? "UseIP" : "UseIPv4",
         tag: "dns",
     };
 
