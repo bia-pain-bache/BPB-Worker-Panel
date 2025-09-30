@@ -175,7 +175,7 @@ function buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
         type: "field"
     });
 
-    const finallOutboundTag = isChain ? "chain" : "proxy";
+    const finallOutboundTag = isChain ? "chain" : isWorkerLess ? "direct" : "proxy";
     const outTag = isBalancer ? "all" : finallOutboundTag;
 
     addRoutingRule(["remote-dns"], null, null, null, null, null, outTag, isBalancer);
