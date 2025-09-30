@@ -1,6 +1,6 @@
 # :material-cog-outline:{ .md .middle } Fragment settings
 
-Fragment solution almost solves Clean IP issue for Cloudflare CDN by hiding SNI from MitM, however, settings should be obtained based on ISP.
+Fragment solution almost solves Clean IP issue for Cloudflare CDN by hiding SNI from MitM, however, settings should be obtained based on ISP. Also please note that Fragment can be enabled for sing-box, however sing-box does not use fragment settings and has its own default settings.
 
 ![Fragment settings](../images/fragment-settings.jpg)
 

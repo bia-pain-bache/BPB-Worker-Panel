@@ -403,7 +403,7 @@ function resetSettings() {
             }
 
             initiatePanel(body);
-            alert('✅ Panel settings reset to default successfully!');
+            alert('✅ Panel settings reset to default successfully!\n💡 Please update your subscriptions.');
         })
         .catch(error => console.error("Reseting settings error:", error.message || error));
 }

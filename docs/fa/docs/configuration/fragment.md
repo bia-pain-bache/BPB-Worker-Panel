@@ -1,6 +1,6 @@
 # :material-cog-outline:{ .md .middle } تنظیمات Fragment
 
-راه‌حل Fragment تقریباً مشکل IP تمیز رو برای CDN Cloudflare با مخفی کردن SNI حل می‌کنه، ولی تنظیمات باید بر اساس اپراتور شما تعیین بشن.
+راه‌حل Fragment تقریباً مشکل IP تمیز رو برای CDN Cloudflare با مخفی کردن SNI حل می‌کنه، ولی تنظیمات باید بر اساس اپراتور شما تعیین بشن. لطفا دقت کنید sing-box از فرگمنت پشتیبانی میکنه، اگرچه تنظیمات فرگمنت روش اعمال نمیشه و تنظیمات پیشفرض خودش رو داره.
 
 ![Fragment settings](../images/fragment-settings.jpg)
 
