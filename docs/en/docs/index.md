@@ -31,7 +31,7 @@ This project is aimed to provide a user panel to access FREE, SECURE and PRIVATE
 ## Limitations
 
 1. **UDP transport**: VLESS and Trojan protocols on workers do not handle **UDP** properly, so it is disabled by default (affecting features like Telegram video calls), UDP DNS is also unsupported. DoH is enabled by default for enhanced security.
-2. **Request limit**: each worker supports 100K requests per day for VLESS and Trojan, suitable for 2-3 users. You can use custom personal domains to bypass limitation on VLESS/Trojan (Workers deployment) or opt for limitless Warp configurations.
+2. **Request limit**: each worker supports 100K requests per day for VLESS and Trojan, suitable for 2-3 users. You can use limitless Warp configs.
 
 ## Getting started
 
@@ -42,21 +42,21 @@ This project is aimed to provide a user panel to access FREE, SECURE and PRIVATE
 
 ## Supported Clients
 
-|       Client        |     Version      | Fragment support | Warp Pro support |
-| :-----------------: | :--------------: | :--------------: | :--------------: |
-|     **v2rayNG**     | 1.10.2 or higher | :material-check: | :material-check: |
-|     **MahsaNG**     |   13 or higher   | :material-check: | :material-check: |
-|     **v2rayN**      | 7.12.5 or higher | :material-check: | :material-check: |
-|   **v2rayN-PRO**    |  1.9 or higher   | :material-check: | :material-check: |
-|    **Sing-box**     | 1.12.0 or higher | :material-check: | :material-close: |
-|    **Streisand**    | 1.6.48 or higher | :material-check: | :material-check: |
-|      **Happ**       |                  | :material-check: | :material-check: |
-|      **V2Box**      |                  | :material-close: | :material-close: |
-|   **Clash Meta**    |                  | :material-close: | :material-close: |
-| **Clash Verge Rev** |                  | :material-close: | :material-close: |
-|     **FLClash**     |                  | :material-close: | :material-close: |
-|   **AmneziaVPN**    |                  | :material-close: | :material-check: |
-|    **WG Tunnel**    |                  | :material-close: | :material-check: |
+|       Client        |      Version      | Fragment support | Warp Pro support |
+| :-----------------: | :---------------: | :--------------: | :--------------: |
+|     **v2rayNG**     | 1.10.11 or higher | :material-check: | :material-check: |
+|     **MahsaNG**     |   14 or higher    | :material-check: | :material-check: |
+|     **v2rayN**      | 7.14.6 or higher  | :material-check: | :material-check: |
+|   **v2rayN-PRO**    |   1.9 or higher   | :material-check: | :material-check: |
+|    **Sing-box**     | 1.12.0 or higher  | :material-check: | :material-close: |
+|    **Streisand**    | 1.6.60 or higher  | :material-check: | :material-check: |
+|      **Happ**       |                   | :material-check: | :material-check: |
+|      **V2Box**      |                   | :material-close: | :material-close: |
+|   **Clash Meta**    |                   | :material-close: | :material-close: |
+| **Clash Verge Rev** |                   | :material-close: | :material-close: |
+|     **FLClash**     |                   | :material-close: | :material-close: |
+|   **AmneziaVPN**    |                   | :material-close: | :material-check: |
+|    **WG Tunnel**    |                   | :material-close: | :material-check: |
 
 ---
 

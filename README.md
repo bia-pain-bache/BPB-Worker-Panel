@@ -38,7 +38,7 @@ This project is aimed to provide a user panel to access FREE, SECURE and PRIVATE
 ## Limitations
 
 1. **UDP transport**: VLESS and Trojan protocols on workers do not handle **UDP** properly, so it is disabled by default (affecting features like Telegram video calls), UDP DNS is also unsupported. DoH is enabled by default for enhanced security.
-2. **Request limit**: each worker supports 100K requests per day for VLESS and Trojan, suitable for 2-3 users. You can use custom personal domains to bypass limitation on VLESS/Trojan (Workers deployment) or opt for limitless Warp configurations.
+2. **Request limit**: each worker supports 100K requests per day for VLESS and Trojan, suitable for 2-3 users. You can use custom limitless Warp configurations.
 
 ## Getting started
 
@@ -49,20 +49,20 @@ This project is aimed to provide a user panel to access FREE, SECURE and PRIVATE
 
 ## Supported Clients
 
-|       Client        |     Version      |      Fragment      |      Warp Pro      |
-| :-----------------: | :--------------: | :----------------: | :----------------: |
-|     **v2rayNG**     | 1.10.2 or higher | :heavy_check_mark: | :heavy_check_mark: |
-|     **MahsaNG**     |   13 or higher   | :heavy_check_mark: | :heavy_check_mark: |
-|     **v2rayN**      | 7.12.5 or higher | :heavy_check_mark: | :heavy_check_mark: |
-|   **v2rayN-PRO**    |  1.9 or higher   | :heavy_check_mark: | :heavy_check_mark: |
-|    **Sing-box**     | 1.12.0 or higher | :heavy_check_mark: |        :x:         |
-|    **Streisand**    | 1.6.48 or higher | :heavy_check_mark: | :heavy_check_mark: |
-|      **Happ**       |                  | :heavy_check_mark: | :heavy_check_mark: |
-|   **Clash Meta**    |                  |        :x:         |        :x:         |
-| **Clash Verge Rev** |                  |        :x:         |        :x:         |
-|     **FLClash**     |                  |        :x:         |        :x:         |
-|   **AmneziaVPN**    |                  |        :x:         | :heavy_check_mark: |
-|    **WG Tunnel**    |                  |        :x:         | :heavy_check_mark: |
+|       Client        |      Version      |      Fragment      |      Warp Pro      |
+| :-----------------: | :---------------: | :----------------: | :----------------: |
+|     **v2rayNG**     | 1.10.11 or higher | :heavy_check_mark: | :heavy_check_mark: |
+|     **MahsaNG**     |   14 or higher    | :heavy_check_mark: | :heavy_check_mark: |
+|     **v2rayN**      | 7.14.6 or higher  | :heavy_check_mark: | :heavy_check_mark: |
+|   **v2rayN-PRO**    |   1.9 or higher   | :heavy_check_mark: | :heavy_check_mark: |
+|    **Sing-box**     | 1.12.0 or higher  | :heavy_check_mark: |        :x:         |
+|    **Streisand**    | 1.6.60 or higher  | :heavy_check_mark: | :heavy_check_mark: |
+|      **Happ**       |                   | :heavy_check_mark: | :heavy_check_mark: |
+|   **Clash Meta**    |                   |        :x:         |        :x:         |
+| **Clash Verge Rev** |                   |        :x:         |        :x:         |
+|     **FLClash**     |                   |        :x:         |        :x:         |
+|   **AmneziaVPN**    |                   |        :x:         | :heavy_check_mark: |
+|    **WG Tunnel**    |                   |        :x:         | :heavy_check_mark: |
 
 ## Environment variables
 
