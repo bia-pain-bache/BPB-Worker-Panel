@@ -199,7 +199,7 @@
             </details>
             <details>
                 <summary>
-                    <h3>Fragment
+                    <h3>Xray Fragment
                         <a href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/fragment/"
                             target="_blank" title="Help">
                             <span class="material-symbols-rounded">info</span>
@@ -207,6 +207,17 @@
                     </h3>
                 </summary>
                 <div class="section">
+                    <div class="form-control">
+                        <label for="fragmentMode">🎚️ Mode</label>
+                        <div>
+                            <select id="fragmentMode" name="fragmentMode" onchange="handleFragmentMode()">
+                                <option value="custom">Custom</option>
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                    </div>
                     <div class="form-control">
                         <label for="fragmentLengthMin">📐 Length</label>
                         <div class="min-max">

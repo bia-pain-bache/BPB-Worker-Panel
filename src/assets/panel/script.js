@@ -87,6 +87,8 @@ function populatePanel(proxySettings) {
         if (rowsCount) element.rows = rowsCount;
         element.value = value;
     });
+
+    handleFragmentMode();
 }
 
 function initiateForm() {
@@ -378,6 +380,32 @@ function handlePortChange(event) {
     }
 }
 
+function handleFragmentMode() {
+    const fragmentMode = document.getElementById("fragmentMode").value;
+    const inputs = [
+        "fragmentLengthMin",
+        "fragmentLengthMax",
+        "fragmentIntervalMin",
+        "fragmentIntervalMax"
+    ].map(id => document.getElementById(id));
+
+    inputs.forEach(elm => {
+        fragmentMode !== "custom"
+            ? elm.setAttribute('readonly', 'true')
+            : elm.removeAttribute('readonly');
+    });
+
+    const configs = {
+        low: [100, 200, 1, 1],
+        medium: [50, 100, 1, 5],
+        high: [10, 20, 10, 20]
+    };
+
+    if (configs[fragmentMode]) {
+        inputs.forEach((input, i) => input.value = configs[fragmentMode][i]);
+    }
+}
+
 function resetSettings() {
     const confirmReset = confirm('⚠️ This will reset all panel settings.\n\n❓ Are you sure?');
     if (!confirmReset) return;
@@ -443,7 +471,7 @@ function validateSettings() {
 
     const form = Object.fromEntries(formData.entries());
     const [modes, packets, delaysMin, delaysMax, counts] = fields;
-    
+
     modes.forEach((mode, index) => {
         xrayUdpNoises.push({
             type: mode,

@@ -4,18 +4,19 @@ Fragment solution almost solves Clean IP issue for Cloudflare CDN by hiding SNI 
 
 ![Fragment settings](../images/fragment-settings.jpg)
 
-By default, settings are:
+By default settings are:
 
 - **Length**: 100-200
 - **Interval**: 1-1
 - **Packets**: tlshello
+
+You can also switch Fragment modes and test based on network situation. Usually default or `Low` mode should be ok. Please note that by switching to `Medium` or `High` profiles, handshake ping goes higher but it can result in better and more stable connection in high situations. The `Best Fragment` config is always the best and smart solution, just connect and wait for at least 30 seconds.
 
 You can set the parameters based on your ISP's situation.
 
 !!! info
 
     * Packets have multiple modes. However, `tlshello` only applies to **TLS configurations**; ports like 80, 8080, etc., are not affected.
-    * Mode `1-1` works on **MahsaNG** clients on **non-TLS** ports.
 
 !!! tip "Tip for Iranians"
     Currently, fragment performance is significantly more efficient on clients using the **Xray Knocker core**, specifically **MahsaNG** and **v2rayN PRO** clients. This core was developed and customized for conditions in Iran.

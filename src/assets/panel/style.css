@@ -163,6 +163,14 @@ select:focus {
     outline: none;
 }
 
+input[type="text"]:read-only,
+input[type="number"]:read-only,
+input[type="url"]:read-only,
+textarea:read-only {
+    color: gray;
+    background-color: var(--form-background-color);
+}
+
 .form-control input[type="password"] {
     text-align: center;
     width: 50%;
