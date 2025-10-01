@@ -42,7 +42,7 @@ export async function updateDataset(request, env) {
 
     const populateField = (field, defaultValue, callback) => {
         if (isReset) return defaultValue;
-        
+
         if (!newSettings) {
             return currentSettings?.[field] ?? defaultValue;
         }
@@ -154,32 +154,49 @@ export async function updateDataset(request, env) {
 }
 
 function extractChainProxyParams(chainProxy) {
-    let configParams = {};
     if (!chainProxy) return {};
-
     const url = new URL(chainProxy);
     const protocol = url.protocol.slice(0, -1);
+    let configParams = {
+        protocol,
+        server: url.hostname,
+        port: +url.port
+    };
 
-    if (protocol === atob('dmxlc3M=')) {
+    const parseParams = () => {
         const params = new URLSearchParams(url.search);
-        configParams = {
-            protocol: protocol,
-            uuid: url.username,
-            server: url.hostname,
-            port: url.port
-        };
-
-        params.forEach((value, key) => {
+        for (const [key, value] of params.entries()) {
             configParams[key] = value;
-        });
-    } else {
-        configParams = {
-            protocol: protocol,
-            user: url.username,
-            pass: url.password,
-            server: url.host,
-            port: url.port
-        };
+        }
+    }
+
+    switch (protocol) {
+        case atob('dmxlc3M='):
+            configParams.uuid = url.username;
+            parseParams();
+            break;
+
+        case atob('dHJvamFu'):
+            configParams.password = url.username;
+            parseParams();
+            break;
+
+        case 'ss':
+            const auth = new TextDecoder().decode(Uint8Array.from(atob(url.username), c => c.charCodeAt(0)));
+            const [first, ...rest] = auth.split(':');
+            configParams.method = first;
+            configParams.password = rest.join(':');
+            parseParams();
+            break;
+
+        case 'socks':
+        case 'http':
+            configParams.user = url.username;
+            configParams.pass = url.password;
+            break;
+
+        default:
+            return {};
     }
 
     return configParams;

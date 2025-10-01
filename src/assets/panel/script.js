@@ -775,14 +775,16 @@ function validateMinMax() {
 function validateChainProxy() {
     const chainProxy = getElmValue('outProxy');
     const isVless = /vless:\/\/[^\s@]+@[^\s:]+:[^\s]+/.test(chainProxy);
-    const hasSecurity = /security=/.test(chainProxy);
+    const isTrojan = /trojan:\/\/[^\s@]+@[^\s:]+:[^\s]+/.test(chainProxy);
+    const isShadowsocks = /ss:\/\/[^\s@]+@[^\s:]+:[^\s]+/.test(chainProxy);
     const isSocksHttp = /^(http|socks):\/\/(?:([^:@]+):([^:@]+)@)?([^:@]+):(\d+)$/.test(chainProxy);
+    const hasSecurity = /security=/.test(chainProxy);
     const securityRegex = /security=(tls|none|reality)/;
     const validSecurityType = securityRegex.test(chainProxy);
     const validTransmission = /type=(tcp|grpc|ws)/.test(chainProxy);
 
-    if (!(isVless && (hasSecurity && validSecurityType || !hasSecurity) && validTransmission) && !isSocksHttp && chainProxy) {
-        alert('⛔ Invalid Config!\n - The chain proxy should be VLESS, Socks or Http!\n - VLESS transmission should be GRPC,WS or TCP\n - VLESS security should be TLS,Reality or None\n - socks or http should be like:\n + (socks or http)://user:pass@host:port\n + (socks or http)://host:port');
+    if (!((isVless || isTrojan || isShadowsocks) && (hasSecurity && validSecurityType || !hasSecurity) && validTransmission) && !isSocksHttp && chainProxy) {
+        alert('⛔ Invalid Config!\n💡 The chain proxy should be VLESS, Trojan, Shadowsocks, Socks or Http!\n💡 VLESS, Trojan and Shadowsocks transmission should be GRPC,WS or TCP\n💡 VLESS, Trojan and Shadowsocks security should be TLS, Reality or None\n - socks or http should be like:\n + (socks or http)://user:pass@host:port\n + (socks or http)://host:port');
         return false;
     }
 
@@ -791,7 +793,7 @@ function validateChainProxy() {
     match = chainProxy.match(/:(\d+)\?/);
     const vlessPort = match?.[1] || null;
 
-    if (isVless && securityType === 'tls' && vlessPort !== '443') {
+    if ((isVless || isTrojan || isShadowsocks) && securityType === 'tls' && vlessPort !== '443') {
         alert('⛔ VLESS TLS port can be only 443 to be used as a proxy chain!');
         return false;
     }

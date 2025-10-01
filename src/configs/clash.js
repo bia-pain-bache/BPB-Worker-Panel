@@ -35,7 +35,7 @@ async function buildClashDNS(isChain, isWarp) {
 
     if (isChain && !isWarp) {
         const chainOutboundServer = settings.outProxyParams.server;
-        
+
         if (isDomain(chainOutboundServer)) {
             dnsObject["nameserver-policy"][chainOutboundServer] = `${settings.remoteDNS}#proxy-1`;
         }
@@ -310,39 +310,49 @@ function buildClashWarpOutbound(warpConfigs, remark, endpoint, chain, isPro) {
 
 function buildClashChainOutbound() {
     const { outProxyParams } = settings;
-    const { protocol } = outProxyParams;
+    const { protocol, server, port } = outProxyParams;
+    const outbound = {
+        "name": "",
+        "type": protocol === 'socks' ? 'socks5' : protocol,
+        "server": server,
+        "port": port,
+        "dialer-proxy": ""
+    };
 
     if (["socks", "http"].includes(protocol)) {
-        const { protocol, server, port, user, pass } = outProxyParams;
-        const proxyType = protocol === 'socks' ? 'socks5' : protocol;
+        const { user, pass } = outProxyParams;
+        outbound["username"] = user;
+        outbound["password"] = pass;
 
-        return {
-            "name": "",
-            "type": proxyType,
-            "server": server,
-            "port": +port,
-            "dialer-proxy": "",
-            "username": user,
-            "password": pass
-        };
+        return outbound;
+    }
+    
+    const { 
+        security, type, sni, fp, alpn, pbk, 
+        sid, headerType, host, path, serviceName 
+    } = outProxyParams;
+    
+    if (protocol === atob('dmxlc3M=')) {
+        const { uuid, flow } = outProxyParams;
+        outbound["uuid"] = uuid;
+        outbound["flow"] = flow;
+        outbound["network"] = type;
     }
 
-    const { server, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = outProxyParams;
-    const chainOutbound = {
-        "name": "💦 Chain Best Ping 💥",
-        "type": atob('dmxlc3M='),
-        "server": server,
-        "port": +port,
-        "udp": true,
-        "uuid": uuid,
-        "flow": flow,
-        "network": type,
-        "dialer-proxy": "💦 Best Ping 💥"
-    };
+    if (protocol === atob('dHJvamFu')) {
+        const { password } = outProxyParams;
+        outbound["password"] = password;
+    }
+
+    if (protocol === 'ss') {
+        const { password, method } = outProxyParams;
+        outbound["cipher"] = method;
+        outbound["password"] = password;
+    }
 
     if (security === 'tls') {
         const tlsAlpns = alpn ? alpn?.split(',') : [];
-        Object.assign(chainOutbound, {
+        Object.assign(outbound, {
             "tls": true,
             "servername": sni,
             "alpn": tlsAlpns,
@@ -350,7 +360,7 @@ function buildClashChainOutbound() {
         });
     }
 
-    if (security === 'reality') Object.assign(chainOutbound, {
+    if (security === 'reality') Object.assign(outbound, {
         "tls": true,
         "servername": sni,
         "client-fingerprint": fp,
@@ -362,7 +372,7 @@ function buildClashChainOutbound() {
 
     if (headerType === 'http') {
         const httpPaths = path?.split(',');
-        chainOutbound["http-opts"] = {
+        outbound["http-opts"] = {
             "method": "GET",
             "path": httpPaths,
             "headers": {
@@ -372,10 +382,10 @@ function buildClashChainOutbound() {
         };
     }
 
-    if (type === 'ws') {
+    if (type === 'ws' || type === 'httpupgrade') {
         const wsPath = path?.split('?ed=')[0];
         const earlyData = +path?.split('?ed=')[1];
-        chainOutbound["ws-opts"] = {
+        outbound["ws-opts"] = {
             "path": wsPath,
             "headers": {
                 "Host": host
@@ -383,13 +393,17 @@ function buildClashChainOutbound() {
             "max-early-data": earlyData,
             "early-data-header-name": "Sec-WebSocket-Protocol"
         };
+
+        if (type === 'httpupgrade') {
+            outbound["ws-opts"]["v2ray-http-upgrade"] = true;
+        }
     }
 
-    if (type === 'grpc') chainOutbound["grpc-opts"] = {
+    if (type === 'grpc') outbound["grpc-opts"] = {
         "grpc-service-name": serviceName
     };
 
-    return chainOutbound;
+    return outbound;
 }
 
 async function buildClashConfig(selectorTags, urlTestTags, secondUrlTestTags, isChain, isWarp, isPro) {
@@ -482,7 +496,7 @@ export async function getClashNormalConfig(env) {
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
             chainProxy = undefined;
-            
+
             const proxySettings = await env.kv.get("proxySettings", { type: 'json' });
             await env.kv.put("proxySettings", JSON.stringify({
                 ...proxySettings,

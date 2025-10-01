@@ -55,7 +55,7 @@ async function buildSingBoxDNS(isWarp) {
 
     if (settings.outProxy) {
         const { server } = settings.outProxyParams;
-        
+
         if (isDomain(server)) {
             rules.unshift({
                 domain: server,
@@ -87,7 +87,7 @@ async function buildSingBoxDNS(isWarp) {
     function addDnsRule(geosite, geoip, domain, dns) {
         let type, mode;
         const ruleSets = [];
-        
+
         if (geoip) {
             mode = 'and';
             type = 'logical';
@@ -140,7 +140,7 @@ async function buildSingBoxDNS(isWarp) {
 
     for (const { rule, geosite, geoip, domain, type, dns } of routingRules) {
         if (!rule) continue;
-        
+
         if (geosite && geoip && type === 'direct') {
             addDnsRule(geosite, geoip, null, dns);
         } else {
@@ -161,7 +161,7 @@ async function buildSingBoxDNS(isWarp) {
 
     if (isSanctionRule) {
         const dnsHost = getDomain(settings.antiSanctionDNS);
-        
+
         if (dnsHost.isHostDomain) {
             addDnsServer("https", dnsHost.host, 443, null, "dns-anti-sanction", "dns-direct");
         } else {
@@ -179,7 +179,7 @@ async function buildSingBoxDNS(isWarp) {
         };
 
         const isIPv6 = (settings.VLTRenableIPv6 && !isWarp) || (settings.warpEnableIPv6 && isWarp);
-        
+
         if (isIPv6) {
             fakeip.inet6_range = "fc00::/18";
         }
@@ -235,7 +235,7 @@ function buildSingBoxRoutingRules(isWarp) {
     function addRoutingRule(domain, ip, geosite, geoip, network, protocol, port, type) {
         const action = type === 'reject' ? 'reject' : 'route';
         const outbound = type === 'direct' ? 'direct' : null;
-        
+
         rules.push({
             ...(geosite && { rule_set: geosite }),
             ...(geoip && { rule_set: geoip }),
@@ -270,13 +270,13 @@ function buildSingBoxRoutingRules(isWarp) {
     });
 
     const bypassRules = [
-        ...settings.customBypassRules, 
+        ...settings.customBypassRules,
         ...settings.customBypassSanctionRules
     ];
 
     bypassRules.forEach(value => {
         const isDomainValue = isDomain(value);
-        
+
         routingRules.push({
             rule: true,
             type: 'direct',
@@ -467,42 +467,52 @@ function buildSingBoxWarpOutbound(warpConfigs, remark, endpoint, chain) {
 
 function buildSingBoxChainOutbound() {
     const { outProxyParams } = settings;
-    const { protocol } = outProxyParams;
-
-    if (["socks", "http"].includes(protocol)) {
-        const { server, port, user, pass } = outProxyParams;
-
-        const chainOutbound = {
-            type: protocol,
-            tag: "",
-            server: server,
-            server_port: +port,
-            username: user,
-            password: pass,
-            detour: ""
-        };
-
-        if (protocol === 'socks') {
-            chainOutbound.version = "5";
-        }
-
-        return chainOutbound;
-    }
-
-    const { server, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = outProxyParams;
-    const chainOutbound = {
-        type: atob('dmxlc3M='),
+    const { protocol, server, port } = outProxyParams;
+    const outbound = {
+        type: protocol,
         tag: "",
-        server: server,
-        server_port: +port,
-        uuid: uuid,
-        flow: flow,
+        server,
+        server_port: port,
         detour: ""
     };
 
+    if (["socks", "http"].includes(protocol)) {
+        const { user, pass } = outProxyParams;
+        outbound.username = user;
+        outbound.password = pass;
+
+        if (protocol === 'socks') {
+            outbound.version = "5";
+        }
+
+        return outbound;
+    }
+
+    if (protocol === atob('dmxlc3M=')) {
+        const { uuid, flow } = outProxyParams;
+        outbound.uuid = uuid;
+        outbound.flow = flow;
+    }
+
+    if (protocol === atob('dHJvamFu')) {
+        const { password } = outProxyParams;
+        outbound.password = password;
+    }
+
+    if (protocol === 'ss') {
+        const { password, method } = outProxyParams;
+        outbound.method = method;
+        outbound.password = password;
+    }
+
+    const {
+        security, type, sni, fp, alpn, pbk, sid, 
+        headerType, host, path, serviceName 
+    } = outProxyParams;
+
     if (security === 'tls' || security === 'reality') {
         const tlsAlpns = alpn ? alpn?.split(',').filter(value => value !== 'h2') : [];
-        chainOutbound.tls = {
+        outbound.tls = {
             enabled: true,
             server_name: sni,
             insecure: false,
@@ -514,19 +524,19 @@ function buildSingBoxChainOutbound() {
         };
 
         if (security === 'reality') {
-            chainOutbound.tls.reality = {
+            outbound.tls.reality = {
                 enabled: true,
                 public_key: pbk,
                 short_id: sid
             };
 
-            delete chainOutbound.tls.alpn;
+            delete outbound.tls.alpn;
         }
     }
 
     if (headerType === 'http') {
         const httpHosts = host?.split(',');
-        chainOutbound.transport = {
+        outbound.transport = {
             type: "http",
             host: httpHosts,
             path: path,
@@ -538,24 +548,24 @@ function buildSingBoxChainOutbound() {
         };
     }
 
-    if (type === 'ws') {
-        const wsPath = path?.split('?ed=')[0];
+    if (type === 'ws' || type === 'httpupgrade') {
+        const configPath = path?.split('?ed=')[0];
         const earlyData = +path?.split('?ed=')[1] || 0;
-        chainOutbound.transport = {
-            type: "ws",
-            path: wsPath,
+        outbound.transport = {
+            type: type,
+            path: configPath,
             headers: { Host: host },
             max_early_data: earlyData,
             early_data_header_name: "Sec-WebSocket-Protocol"
         };
     }
 
-    if (type === 'grpc') chainOutbound.transport = {
+    if (type === 'grpc') outbound.transport = {
         type: "grpc",
         service_name: serviceName
     };
 
-    return chainOutbound;
+    return outbound;
 }
 
 async function buildSingBoxConfig(selectorTags, urlTestTags, secondUrlTestTags, isWarp, isIPv6) {
@@ -621,7 +631,7 @@ export async function getSingBoxWarpConfig(request, env) {
 
     const config = await buildSingBoxConfig(selectorTags, warpTags, wowTags, true, settings.warpEnableIPv6);
     config.endpoints = [
-        ...endpoints.chains, 
+        ...endpoints.chains,
         ...endpoints.proxies
     ];
 
@@ -727,7 +737,7 @@ export async function getSingBoxCustomConfig(env, isFragment) {
     const selectorTags = ['💦 Best Ping 💥', ...tags];
     const config = await buildSingBoxConfig(selectorTags, tags, null, false, settings.VLTRenableIPv6);
     config.outbounds.push(
-        ...outbounds.chains, 
+        ...outbounds.chains,
         ...outbounds.proxies
     );
 
