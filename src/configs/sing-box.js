@@ -488,6 +488,14 @@ function buildSingBoxChainOutbound() {
         return outbound;
     }
 
+    if (protocol === atob('c2hhZG93c29ja3M=')) {
+        const { password, method } = outProxyParams;
+        outbound.method = method;
+        outbound.password = password;
+
+        return outbound;
+    }
+
     if (protocol === atob('dmxlc3M=')) {
         const { uuid, flow } = outProxyParams;
         outbound.uuid = uuid;
@@ -496,12 +504,6 @@ function buildSingBoxChainOutbound() {
 
     if (protocol === atob('dHJvamFu')) {
         const { password } = outProxyParams;
-        outbound.password = password;
-    }
-
-    if (protocol === 'ss') {
-        const { password, method } = outProxyParams;
-        outbound.method = method;
         outbound.password = password;
     }
 

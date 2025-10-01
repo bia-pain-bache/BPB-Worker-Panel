@@ -311,9 +311,10 @@ function buildClashWarpOutbound(warpConfigs, remark, endpoint, chain, isPro) {
 function buildClashChainOutbound() {
     const { outProxyParams } = settings;
     const { protocol, server, port } = outProxyParams;
+
     const outbound = {
         "name": "",
-        "type": protocol === 'socks' ? 'socks5' : protocol,
+        "type": protocol,
         "server": server,
         "port": port,
         "dialer-proxy": ""
@@ -323,6 +324,19 @@ function buildClashChainOutbound() {
         const { user, pass } = outProxyParams;
         outbound["username"] = user;
         outbound["password"] = pass;
+
+        if (protocol === 'socks') {
+            outbound["type"] = "socks5";
+        }
+
+        return outbound;
+    }
+
+    if (protocol === atob('c2hhZG93c29ja3M=')) {
+        const { password, method } = outProxyParams;
+        outbound["cipher"] = method;
+        outbound["password"] = password;
+        outbound["type"] = "ss";
 
         return outbound;
     }
@@ -341,12 +355,6 @@ function buildClashChainOutbound() {
 
     if (protocol === atob('dHJvamFu')) {
         const { password } = outProxyParams;
-        outbound["password"] = password;
-    }
-
-    if (protocol === 'ss') {
-        const { password, method } = outProxyParams;
-        outbound["cipher"] = method;
         outbound["password"] = password;
     }
 

@@ -158,7 +158,7 @@ function extractChainProxyParams(chainProxy) {
     const url = new URL(chainProxy);
     const protocol = url.protocol.slice(0, -1);
     let configParams = {
-        protocol,
+        protocol: protocol === 'ss' ? 'shadowsocks' : protocol,
         server: url.hostname,
         port: +url.port
     };
@@ -186,7 +186,6 @@ function extractChainProxyParams(chainProxy) {
             const [first, ...rest] = auth.split(':');
             configParams.method = first;
             configParams.password = rest.join(':');
-            parseParams();
             break;
 
         case 'socks':

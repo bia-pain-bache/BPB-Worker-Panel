@@ -57,7 +57,6 @@ This project is aimed to provide a user panel to access FREE, SECURE and PRIVATE
 |   **v2rayN-PRO**    |   1.9 or higher   | :heavy_check_mark: | :heavy_check_mark: |
 |    **Sing-box**     | 1.12.0 or higher  | :heavy_check_mark: |        :x:         |
 |    **Streisand**    | 1.6.60 or higher  | :heavy_check_mark: | :heavy_check_mark: |
-|      **Happ**       |                   | :heavy_check_mark: | :heavy_check_mark: |
 |   **Clash Meta**    |                   |        :x:         |        :x:         |
 | **Clash Verge Rev** |                   |        :x:         |        :x:         |
 |     **FLClash**     |                   |        :x:         |        :x:         |

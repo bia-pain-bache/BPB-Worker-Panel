@@ -95,12 +95,6 @@
       <td>✔️</td>
     </tr>
     <tr>
-      <td><b>Happ</b></td>
-      <td></td>
-      <td>✔️</td>
-      <td>✔️</td>
-    </tr>
-    <tr>
       <td><b>Clash Meta</b></td>
       <td></td>
       <td>❌</td>

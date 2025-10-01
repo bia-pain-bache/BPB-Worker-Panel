@@ -177,8 +177,9 @@ function buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
 
     const finallOutboundTag = isChain ? "chain" : isWorkerLess ? "direct" : "proxy";
     const outTag = isBalancer ? "all" : finallOutboundTag;
+    const remoteDnsProxy = isBalancer ? "all" : isChain ? "chain" : "proxy";
 
-    addRoutingRule(["remote-dns"], null, null, null, null, null, outTag, isBalancer);
+    addRoutingRule(["remote-dns"], null, null, null, null, null, remoteDnsProxy, isBalancer);
     addRoutingRule(["dns"], null, null, null, null, null, "direct");
 
     if (settings.bypassLAN) {
@@ -473,6 +474,22 @@ function buildXrayChainOutbound() {
         return outbound;
     }
 
+    if (protocol === atob('c2hhZG93c29ja3M=')) {
+        const { password, method } = outProxyParams;
+        outbound.settings.servers = [
+            {
+                address: server,
+                method,
+                ota: false,
+                password,
+                port,
+                level: 8
+            }
+        ];
+
+        return outbound;
+    }
+
     if (protocol === atob('dmxlc3M=')) {
         const { uuid, flow } = outProxyParams;
         outbound.settings.vnext = [
@@ -488,20 +505,6 @@ function buildXrayChainOutbound() {
                         security: "auto"
                     }
                 ]
-            }
-        ];
-    }
-
-    if (protocol === 'ss') {
-        const { password, method } = outProxyParams;
-        outbound.settings.servers = [
-            {
-                address: server,
-                method,
-                ota: false,
-                password,
-                port,
-                level: 8
             }
         ];
     }
