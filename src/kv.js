@@ -158,7 +158,7 @@ function extractChainProxyParams(chainProxy) {
     const url = new URL(chainProxy);
     const protocol = url.protocol.slice(0, -1);
     let configParams = {
-        protocol: protocol === 'ss' ? 'shadowsocks' : protocol,
+        protocol: protocol === 'ss' ? atob('c2hhZG93c29ja3M=') : protocol,
         server: url.hostname,
         port: +url.port
     };

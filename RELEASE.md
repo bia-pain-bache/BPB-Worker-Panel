@@ -9,4 +9,7 @@
 > Shadowsocks cannot have any transport like websocket, grpc... and cannot have TLS.
 
 > [!CAUTION]
+> Avoid using manual installation and update, otherwise you will face Cloudflare 1101 error.
+
+> [!CAUTION]
 > sing-box client version should be 1.12.0 or higher
