@@ -12,6 +12,9 @@
 - Other bug fixes
 
 > [!CAUTION]
+> If you already have a Chain Proxy set in panel, after updating to this version you have to clear it, apply and then set it again.
+
+> [!CAUTION]
 > sing-box client version should be 1.12.0 or higher
 
 > [!IMPORTANT]
