@@ -1,9 +1,15 @@
 # ⚙️ Bug fixes and Improvements
 
-- Improved WorkerLess config, separated fragment modes for TLS, HTTP and UDP
-- Added Fragment predefined profiles as `Custom`, `Normal`, `Medium` and `High` for different situations
+- Added `Shadowsocks` and `Trojan` chain proxy support due to growing resources of free configs.
+
+> [!TIP]
+> Shadowsocks cannot have any transport like websocket, grpc... and cannot have TLS.
+
+- Added `Httpupgrade` transmission support to chain proxies.
+- Fixed WorkerLess bug.
+- Removed `Happ` from supported apps due to various bugs.
 - Updated docs
-- Bug fixes
+- Other bug fixes
 
 > [!CAUTION]
 > sing-box client version should be 1.12.0 or higher

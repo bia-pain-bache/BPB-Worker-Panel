@@ -467,42 +467,54 @@ function buildSingBoxWarpOutbound(warpConfigs, remark, endpoint, chain) {
 
 function buildSingBoxChainOutbound() {
     const { outProxyParams } = settings;
-    const { protocol } = outProxyParams;
-
-    if (["socks", "http"].includes(protocol)) {
-        const { server, port, user, pass } = outProxyParams;
-
-        const chainOutbound = {
-            type: protocol,
-            tag: "",
-            server: server,
-            server_port: +port,
-            username: user,
-            password: pass,
-            detour: ""
-        };
-
-        if (protocol === 'socks') {
-            chainOutbound.version = "5";
-        }
-
-        return chainOutbound;
-    }
-
-    const { server, port, uuid, flow, security, type, sni, fp, alpn, pbk, sid, headerType, host, path, serviceName } = outProxyParams;
-    const chainOutbound = {
-        type: atob('dmxlc3M='),
+    const { protocol, server, port } = outProxyParams;
+    const outbound = {
+        type: protocol,
         tag: "",
-        server: server,
-        server_port: +port,
-        uuid: uuid,
-        flow: flow,
+        server,
+        server_port: port,
         detour: ""
     };
 
+    if ([atob('c29ja3M='), "http"].includes(protocol)) {
+        const { user, pass } = outProxyParams;
+        outbound.username = user;
+        outbound.password = pass;
+
+        if (protocol === atob('c29ja3M=')) {
+            outbound.version = "5";
+        }
+
+        return outbound;
+    }
+
+    if (protocol === atob('c2hhZG93c29ja3M=')) {
+        const { password, method } = outProxyParams;
+        outbound.method = method;
+        outbound.password = password;
+
+        return outbound;
+    }
+
+    if (protocol === atob('dmxlc3M=')) {
+        const { uuid, flow } = outProxyParams;
+        outbound.uuid = uuid;
+        outbound.flow = flow;
+    }
+
+    if (protocol === atob('dHJvamFu')) {
+        const { password } = outProxyParams;
+        outbound.password = password;
+    }
+
+    const {
+        security, type, sni, fp, alpn, pbk, sid, 
+        headerType, host, path, serviceName 
+    } = outProxyParams;
+
     if (security === 'tls' || security === 'reality') {
         const tlsAlpns = alpn ? alpn?.split(',').filter(value => value !== 'h2') : [];
-        chainOutbound.tls = {
+        outbound.tls = {
             enabled: true,
             server_name: sni,
             insecure: false,
@@ -514,19 +526,19 @@ function buildSingBoxChainOutbound() {
         };
 
         if (security === 'reality') {
-            chainOutbound.tls.reality = {
+            outbound.tls.reality = {
                 enabled: true,
                 public_key: pbk,
                 short_id: sid
             };
 
-            delete chainOutbound.tls.alpn;
+            delete outbound.tls.alpn;
         }
     }
 
     if (headerType === 'http') {
         const httpHosts = host?.split(',');
-        chainOutbound.transport = {
+        outbound.transport = {
             type: "http",
             host: httpHosts,
             path: path,
@@ -538,24 +550,24 @@ function buildSingBoxChainOutbound() {
         };
     }
 
-    if (type === 'ws') {
-        const wsPath = path?.split('?ed=')[0];
+    if (type === 'ws' || type === 'httpupgrade') {
+        const configPath = path?.split('?ed=')[0];
         const earlyData = +path?.split('?ed=')[1] || 0;
-        chainOutbound.transport = {
-            type: "ws",
-            path: wsPath,
+        outbound.transport = {
+            type: type,
+            path: configPath,
             headers: { Host: host },
             max_early_data: earlyData,
             early_data_header_name: "Sec-WebSocket-Protocol"
         };
     }
 
-    if (type === 'grpc') chainOutbound.transport = {
+    if (type === 'grpc') outbound.transport = {
         type: "grpc",
         service_name: serviceName
     };
 
-    return chainOutbound;
+    return outbound;
 }
 
 async function buildSingBoxConfig(selectorTags, urlTestTags, secondUrlTestTags, isWarp, isIPv6) {

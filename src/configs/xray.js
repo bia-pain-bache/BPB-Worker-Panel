@@ -177,8 +177,9 @@ function buildXrayRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
 
     const finallOutboundTag = isChain ? "chain" : isWorkerLess ? "direct" : "proxy";
     const outTag = isBalancer ? "all" : finallOutboundTag;
+    const remoteDnsProxy = isBalancer ? "all" : isChain ? "chain" : "proxy";
 
-    addRoutingRule(["remote-dns"], null, null, null, null, null, outTag, isBalancer);
+    addRoutingRule(["remote-dns"], null, null, null, null, null, remoteDnsProxy, isBalancer);
     addRoutingRule(["dns"], null, null, null, null, null, "direct");
 
     if (settings.bypassLAN) {
@@ -432,77 +433,20 @@ function buildXrayWarpOutbound(warpConfigs, endpoint, isWoW, isPro) {
 
 function buildXrayChainOutbound() {
     const { outProxyParams, VLTRenableIPv6 } = settings;
-    const { protocol } = outProxyParams;
+    const { protocol, security, type, server, port } = outProxyParams;
 
-    if (['socks', 'http'].includes(protocol)) {
-        const { server, port, user, pass } = outProxyParams;
-        return {
-            protocol: protocol,
-            settings: {
-                servers: [
-                    {
-                        address: server,
-                        port: +port,
-                        users: [
-                            {
-                                user: user,
-                                pass: pass,
-                                level: 8
-                            }
-                        ]
-                    }
-                ]
-            },
-            streamSettings: {
-                network: "tcp",
-                sockopt: {
-                    dialerProxy: "proxy",
-                    domainStrategy: VLTRenableIPv6 ? "UseIPv4v6" : "UseIPv4"
-                }
-            },
-            mux: {
-                enabled: true,
-                concurrency: 8,
-                xudpConcurrency: 16,
-                xudpProxyUDP443: "reject"
-            },
-            tag: "chain"
-        };
-    }
-
-    const {
-        server, port, uuid, flow, security, type, sni, fp, alpn, pbk,
-        sid, spx, headerType, host, path, authority, serviceName, mode
-    } = outProxyParams;
-
-    const proxyOutbound = {
+    const outbound = {
+        protocol: protocol,
         mux: {
-            concurrency: 8,
             enabled: true,
+            concurrency: 8,
             xudpConcurrency: 16,
             xudpProxyUDP443: "reject"
         },
-        protocol: atob('dmxlc3M='),
-        settings: {
-            vnext: [
-                {
-                    address: server,
-                    port: +port,
-                    users: [
-                        {
-                            encryption: "none",
-                            flow: flow,
-                            id: uuid,
-                            level: 8,
-                            security: "auto"
-                        }
-                    ]
-                }
-            ]
-        },
+        settings: {},
         streamSettings: {
-            network: type,
-            security: security,
+            network: type || "raw",
+            security,
             sockopt: {
                 dialerProxy: "proxy",
                 domainStrategy: VLTRenableIPv6 ? "UseIPv4v6" : "UseIPv4"
@@ -511,9 +455,80 @@ function buildXrayChainOutbound() {
         tag: "chain"
     };
 
+    if ([atob('c29ja3M='), 'http'].includes(protocol)) {
+        const { user, pass } = outProxyParams;
+        outbound.settings.servers = [
+            {
+                address: server,
+                port,
+                users: [
+                    {
+                        user: user,
+                        pass: pass,
+                        level: 8
+                    }
+                ]
+            }
+        ];
+
+        return outbound;
+    }
+
+    if (protocol === atob('c2hhZG93c29ja3M=')) {
+        const { password, method } = outProxyParams;
+        outbound.settings.servers = [
+            {
+                address: server,
+                method,
+                ota: false,
+                password,
+                port,
+                level: 8
+            }
+        ];
+
+        return outbound;
+    }
+
+    if (protocol === atob('dmxlc3M=')) {
+        const { uuid, flow } = outProxyParams;
+        outbound.settings.vnext = [
+            {
+                address: server,
+                port,
+                users: [
+                    {
+                        encryption: "none",
+                        flow: flow,
+                        id: uuid,
+                        level: 8,
+                        security: "auto"
+                    }
+                ]
+            }
+        ];
+    }
+
+    if (protocol === atob('dHJvamFu')) {
+        const { password } = outProxyParams;
+        outbound.settings.servers = [
+            {
+                address: server,
+                port,
+                password,
+                level: 8
+            }
+        ];
+    }
+
+    const {
+        sni, fp, alpn, pbk, sid, spx, headerType, 
+        host, path, authority, serviceName, mode
+    } = outProxyParams;
+
     if (security === 'tls') {
         const tlsAlpns = alpn ? alpn?.split(',') : [];
-        proxyOutbound.streamSettings.tlsSettings = {
+        outbound.streamSettings.tlsSettings = {
             allowInsecure: false,
             fingerprint: fp,
             alpn: tlsAlpns,
@@ -522,8 +537,8 @@ function buildXrayChainOutbound() {
     }
 
     if (security === 'reality') {
-        delete proxyOutbound.mux;
-        proxyOutbound.streamSettings.realitySettings = {
+        delete outbound.mux;
+        outbound.streamSettings.realitySettings = {
             fingerprint: fp,
             publicKey: pbk,
             serverName: sni,
@@ -535,7 +550,7 @@ function buildXrayChainOutbound() {
     if (headerType === 'http') {
         const httpPaths = path?.split(',');
         const httpHosts = host?.split(',');
-        proxyOutbound.streamSettings.tcpSettings = {
+        outbound.streamSettings.tcpSettings = {
             header: {
                 request: {
                     headers: { Host: httpHosts },
@@ -554,27 +569,32 @@ function buildXrayChainOutbound() {
         };
     }
 
-    if (type === 'tcp' && security !== 'reality' && !headerType) proxyOutbound.streamSettings.tcpSettings = {
+    if (['tcp', 'raw'].includes(type) && security !== 'reality' && !headerType) outbound.streamSettings.tcpSettings = {
         header: {
             type: "none"
         }
     };
 
-    if (type === 'ws') proxyOutbound.streamSettings.wsSettings = {
+    if (type === 'ws') outbound.streamSettings.wsSettings = {
+        host: host,
+        path: path
+    };
+    
+    if (type === 'httpupgrade') outbound.streamSettings.httpupgradeSettings = {
         host: host,
         path: path
     };
 
     if (type === 'grpc') {
-        delete proxyOutbound.mux;
-        proxyOutbound.streamSettings.grpcSettings = {
+        delete outbound.mux;
+        outbound.streamSettings.grpcSettings = {
             authority: authority,
             multiMode: mode === 'multi',
             serviceName: serviceName
         };
     }
 
-    return proxyOutbound;
+    return outbound;
 }
 
 function buildFreedomOutbound(isFragment, isUdpNoises, tag, length, interval) {

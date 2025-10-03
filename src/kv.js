@@ -42,7 +42,7 @@ export async function updateDataset(request, env) {
 
     const populateField = (field, defaultValue, callback) => {
         if (isReset) return defaultValue;
-        
+
         if (!newSettings) {
             return currentSettings?.[field] ?? defaultValue;
         }
@@ -154,32 +154,57 @@ export async function updateDataset(request, env) {
 }
 
 function extractChainProxyParams(chainProxy) {
-    let configParams = {};
     if (!chainProxy) return {};
+    const {
+        hostname,
+        port,
+        username,
+        password,
+        search,
+        protocol
+    } = new URL(chainProxy);
 
-    const url = new URL(chainProxy);
-    const protocol = url.protocol.slice(0, -1);
+    const proto = protocol.slice(0, -1);
+    let configParams = {
+        protocol: proto,
+        server: hostname,
+        port: +port
+    };
 
-    if (protocol === atob('dmxlc3M=')) {
-        const params = new URLSearchParams(url.search);
-        configParams = {
-            protocol: protocol,
-            uuid: url.username,
-            server: url.hostname,
-            port: url.port
-        };
-
-        params.forEach((value, key) => {
+    const parseParams = () => {
+        const params = new URLSearchParams(search);
+        for (const [key, value] of params) {
             configParams[key] = value;
-        });
-    } else {
-        configParams = {
-            protocol: protocol,
-            user: url.username,
-            pass: url.password,
-            server: url.host,
-            port: url.port
-        };
+        }
+    }
+
+    switch (proto) {
+        case atob('dmxlc3M='):
+            configParams.uuid = username;
+            parseParams();
+            break;
+
+        case atob('dHJvamFu'):
+            configParams.password = username;
+            parseParams();
+            break;
+
+        case atob('c3M='):
+            const auth = new TextDecoder().decode(Uint8Array.from(atob(username), c => c.charCodeAt(0)));
+            const [first, ...rest] = auth.split(':');
+            configParams.method = first;
+            configParams.password = rest.join(':');
+            parseParams();
+            break;
+
+        case atob('c29ja3M='):
+        case 'http':
+            configParams.user = username;
+            configParams.pass = password;
+            break;
+
+        default:
+            return {};
     }
 
     return configParams;
