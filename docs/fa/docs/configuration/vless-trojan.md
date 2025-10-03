@@ -53,8 +53,9 @@ https://8.8.8.8/dns-query
     انواع کانفیگ‌های VLESS و Trojan پشتیبانی‌شده شامل موارد زیره:
 
     * WS
-    * Reality WS
     * WS TLS
+    * Httpupgrade
+    * Httpupgrade TLS
     * GRPC
     * Reality GRPC
     * GRPC TLS

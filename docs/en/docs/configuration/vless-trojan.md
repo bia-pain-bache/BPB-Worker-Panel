@@ -53,8 +53,9 @@ As noted, a Proxy IP fixes the IP for Cloudflare target addresses, but node IPs 
     VLESS and Trojan configs support:  
 
     - WS
-    - Reality WS
     - WS TLS
+    - Httpupgrade
+    - Httpupgrade TLS
     - GRPC
     - Reality GRPC
     - GRPC TLS
