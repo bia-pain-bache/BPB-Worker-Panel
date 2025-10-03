@@ -960,7 +960,7 @@ const xrayConfigTemp = {
     inbounds: [
         {
             port: 10808,
-            protocol: "mixed",
+            protocol: "socks",
             settings: {
                 auth: "noauth",
                 udp: true,

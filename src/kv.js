@@ -166,7 +166,7 @@ function extractChainProxyParams(chainProxy) {
 
     const proto = protocol.slice(0, -1);
     let configParams = {
-        protocol: proto,
+        protocol: proto === 'ss' ? atob('c2hhZG93c29ja3M=') : proto,
         server: hostname,
         port: +port
     };
