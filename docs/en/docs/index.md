@@ -50,9 +50,9 @@ This project is aimed to provide a user panel to access FREE, SECURE and PRIVATE
 |   **v2rayN-PRO**    |   1.9 or higher   | :material-check: | :material-check: |
 |    **Sing-box**     | 1.12.0 or higher  | :material-check: | :material-close: |
 |    **Streisand**    | 1.6.60 or higher  | :material-check: | :material-check: |
-|   **Clash Meta**    |                   | :material-close: | :material-close: |
-| **Clash Verge Rev** |                   | :material-close: | :material-close: |
-|     **FLClash**     |                   | :material-close: | :material-close: |
+|   **Clash Meta**    |                   | :material-close: | :material-check: |
+| **Clash Verge Rev** |                   | :material-close: | :material-check: |
+|     **FLClash**     |                   | :material-close: | :material-check: |
 |   **AmneziaVPN**    |                   | :material-close: | :material-check: |
 |    **WG Tunnel**    |                   | :material-close: | :material-check: |
 

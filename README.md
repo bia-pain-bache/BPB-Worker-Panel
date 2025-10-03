@@ -57,9 +57,9 @@ This project is aimed to provide a user panel to access FREE, SECURE and PRIVATE
 |   **v2rayN-PRO**    |   1.9 or higher   | :heavy_check_mark: | :heavy_check_mark: |
 |    **Sing-box**     | 1.12.0 or higher  | :heavy_check_mark: |        :x:         |
 |    **Streisand**    | 1.6.60 or higher  | :heavy_check_mark: | :heavy_check_mark: |
-|   **Clash Meta**    |                   |        :x:         |        :x:         |
-| **Clash Verge Rev** |                   |        :x:         |        :x:         |
-|     **FLClash**     |                   |        :x:         |        :x:         |
+|   **Clash Meta**    |                   |        :x:         | :heavy_check_mark: |
+| **Clash Verge Rev** |                   |        :x:         | :heavy_check_mark: |
+|     **FLClash**     |                   |        :x:         | :heavy_check_mark: |
 |   **AmneziaVPN**    |                   |        :x:         | :heavy_check_mark: |
 |    **WG Tunnel**    |                   |        :x:         | :heavy_check_mark: |
 
