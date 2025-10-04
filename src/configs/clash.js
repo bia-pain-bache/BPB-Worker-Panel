@@ -3,7 +3,7 @@ import { getDataset } from '#kv';
 import { globalConfig, httpConfig } from '#common/init';
 import { settings } from '#common/handlers'
 
-async function buildClashDNS(isChain, isWarp, isPro) {
+async function buildDNS(isChain, isWarp, isPro) {
     const finalLocalDNS = settings.localDNS === 'localhost' ? 'system' : `${settings.localDNS}#DIRECT`;
     const isIPv6 = (settings.VLTRenableIPv6 && !isWarp) || (settings.warpEnableIPv6 && isWarp);
     const remoteDnsDetour = isWarp
@@ -45,7 +45,7 @@ async function buildClashDNS(isChain, isWarp, isPro) {
         }
     }
 
-    const routingRules = getRoutingRules();
+    const routingRules = getRuleProviders();
 
     settings.customBlockRules.forEach(value => {
         if (isDomain(value)) {
@@ -92,8 +92,8 @@ async function buildClashDNS(isChain, isWarp, isPro) {
     return dnsObject;
 }
 
-function buildClashRoutingRules(isWarp) {
-    const routingRules = getRoutingRules();
+function buildRoutingRules(isWarp) {
+    const routingRules = getRuleProviders();
 
     settings.customBlockRules.forEach(value => {
         const isDomainValue = isDomain(value);
@@ -205,7 +205,7 @@ function buildClashRoutingRules(isWarp) {
     return { rules, ruleProviders };
 }
 
-function buildClashVLOutbound(remark, address, port, host, sni, allowInsecure) {
+function buildVLOutbound(remark, address, port, host, sni, allowInsecure) {
     const tls = httpConfig.defaultHttpsPorts.includes(port) ? true : false;
     const addr = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
     const ipVersion = settings.VLTRenableIPv6 ? "dual" : "ipv4";
@@ -243,7 +243,7 @@ function buildClashVLOutbound(remark, address, port, host, sni, allowInsecure) {
     return outbound;
 }
 
-function buildClashTROutbound(remark, address, port, host, sni, allowInsecure) {
+function buildTROutbound(remark, address, port, host, sni, allowInsecure) {
     const addr = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
     const ipVersion = settings.VLTRenableIPv6 ? "dual" : "ipv4";
     const fingerprint = settings.fingerprint === "randomized" ? "random" : settings.fingerprint;
@@ -272,7 +272,7 @@ function buildClashTROutbound(remark, address, port, host, sni, allowInsecure) {
     };
 }
 
-function buildClashWarpOutbound(warpConfigs, remark, endpoint, chain, isPro) {
+function buildWarpOutbound(warpConfigs, remark, endpoint, chain, isPro) {
     const { host, port } = parseHostPort(endpoint);
     const ipVersion = settings.warpEnableIPv6 ? "dual" : "ipv4";
 
@@ -312,7 +312,7 @@ function buildClashWarpOutbound(warpConfigs, remark, endpoint, chain, isPro) {
     return outbound;
 }
 
-function buildClashChainOutbound() {
+function buildChainOutbound() {
     const { outProxyParams } = settings;
     const { protocol, server, port } = outProxyParams;
     const outbound = {
@@ -423,11 +423,11 @@ function buildClashChainOutbound() {
     return outbound;
 }
 
-async function buildClashConfig(selectorTags, urlTestTags, secondUrlTestTags, isChain, isWarp, isPro) {
-    const config = structuredClone(clashConfigTemp);
-    config['dns'] = await buildClashDNS(isChain, isWarp, isPro);
+async function buildConfig(selectorTags, urlTestTags, secondUrlTestTags, isChain, isWarp, isPro) {
+    const config = structuredClone(configTemp);
+    config['dns'] = await buildDNS(isChain, isWarp, isPro);
 
-    const { rules, ruleProviders } = buildClashRoutingRules(isWarp);
+    const { rules, ruleProviders } = buildRoutingRules(isWarp);
     config['rules'] = rules;
     config['rule-providers'] = ruleProviders;
 
@@ -474,10 +474,10 @@ export async function getClashWarpConfig(request, env, isPro) {
         const wowTag = `💦 ${index + 1} - WoW ${isPro ? 'Pro ' : ''}🌍`;
         wowTags.push(wowTag);
 
-        const warpOutbound = buildClashWarpOutbound(warpConfigs, warpTag, endpoint, '', isPro);
+        const warpOutbound = buildWarpOutbound(warpConfigs, warpTag, endpoint, '', isPro);
         outbounds.proxies.push(warpOutbound);
 
-        const WoWOutbound = buildClashWarpOutbound(warpConfigs, wowTag, endpoint, warpTag);
+        const WoWOutbound = buildWarpOutbound(warpConfigs, wowTag, endpoint, warpTag);
         outbounds.chains.push(WoWOutbound);
 
     });
@@ -489,7 +489,7 @@ export async function getClashWarpConfig(request, env, isPro) {
         ...wowTags
     ];
 
-    const config = await buildClashConfig(selectorTags, warpTags, wowTags, false, true, isPro);
+    const config = await buildConfig(selectorTags, warpTags, wowTags, false, true, isPro);
     config['proxies'].push(
         ...outbounds.proxies,
         ...outbounds.chains
@@ -499,7 +499,7 @@ export async function getClashWarpConfig(request, env, isPro) {
         status: 200,
         headers: {
             'Content-Type': 'text/plain;charset=utf-8',
-            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'Cache-Control': 'no-store',
             'CDN-Cache-Control': 'no-store'
         }
     });
@@ -511,7 +511,7 @@ export async function getClashNormalConfig(env) {
 
     if (settings.outProxy) {
         try {
-            chainProxy = buildClashChainOutbound();
+            chainProxy = buildChainOutbound();
             selectorTags.push('💦 🔗 Best Ping 🚀');
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
@@ -550,7 +550,7 @@ export async function getClashNormalConfig(env) {
                 const tag = generateRemark(protocolIndex, port, addr, protocol, configType).replace(' : ', ' - ');
 
                 if (protocol === atob('VkxFU1M=')) {
-                    VLOutbound = buildClashVLOutbound(tag, addr, port, host, sni, isCustomAddr);
+                    VLOutbound = buildVLOutbound(tag, addr, port, host, sni, isCustomAddr);
                     outbounds.proxies.push(VLOutbound);
                     
                     tags.push(tag);
@@ -558,7 +558,7 @@ export async function getClashNormalConfig(env) {
                 }
 
                 if (protocol === atob('VHJvamFu') && httpConfig.defaultHttpsPorts.includes(port)) {
-                    TROutbound = buildClashTROutbound(tag, addr, port, host, sni, isCustomAddr);
+                    TROutbound = buildTROutbound(tag, addr, port, host, sni, isCustomAddr);
                     outbounds.proxies.push(TROutbound);
                     
                     tags.push(tag);
@@ -583,7 +583,7 @@ export async function getClashNormalConfig(env) {
         });
     });
 
-    const config = await buildClashConfig(selectorTags, tags, chainTags, chainProxy, false, false);
+    const config = await buildConfig(selectorTags, tags, chainTags, chainProxy, false, false);
     config['proxies'].push(
         ...outbounds.chains,
         ...outbounds.proxies
@@ -593,13 +593,13 @@ export async function getClashNormalConfig(env) {
         status: 200,
         headers: {
             'Content-Type': 'text/plain;charset=utf-8',
-            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'Cache-Control': 'no-store',
             'CDN-Cache-Control': 'no-store'
         }
     });
 }
 
-const clashConfigTemp = {
+const configTemp = {
     "mixed-port": 7890,
     "ipv6": true,
     "allow-lan": true,
@@ -661,7 +661,7 @@ const clashConfigTemp = {
     }
 };
 
-function getRoutingRules() {
+function getRuleProviders() {
     const finalLocalDNS = settings.localDNS === 'localhost'
         ? 'system'
         : `${settings.localDNS}#DIRECT`;

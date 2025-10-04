@@ -3,7 +3,7 @@ import { getDataset } from '#kv';
 import { globalConfig, httpConfig } from '#common/init';
 import { settings } from '#common/handlers'
 
-async function buildSingBoxDNS(isWarp, isChain) {
+async function buildDNS(isWarp, isChain) {
     const url = new URL(settings.remoteDNS);
     const dnsProtocol = url.protocol.replace(':', '');
 
@@ -108,7 +108,7 @@ async function buildSingBoxDNS(isWarp, isChain) {
         });
     }
 
-    const routingRules = getRoutingRules();
+    const routingRules = getRuleSets();
 
     settings.customBlockRules.forEach(value => {
         isDomain(value) && routingRules.unshift({
@@ -204,7 +204,7 @@ async function buildSingBoxDNS(isWarp, isChain) {
     }
 }
 
-function buildSingBoxRoutingRules(isWarp) {
+function buildRoutingRules(isWarp) {
     const rules = [
         {
             ip_cidr: "172.18.0.2",
@@ -257,7 +257,7 @@ function buildSingBoxRoutingRules(isWarp) {
         addRoutingRule(null, null, null, null, "udp", null, null, 'reject');
     }
 
-    const routingRules = getRoutingRules();
+    const routingRules = getRuleSets();
 
     settings.customBlockRules.forEach(value => {
         const isDomainValue = isDomain(value);
@@ -342,7 +342,7 @@ function buildSingBoxRoutingRules(isWarp) {
     }
 }
 
-function buildSingBoxVLOutbound(remark, address, port, host, sni, allowInsecure, isFragment) {
+function buildVLOutbound(remark, address, port, host, sni, allowInsecure, isFragment) {
     const tls = httpConfig.defaultHttpsPorts.includes(port) ? true : false;
 
     const outbound = {
@@ -380,7 +380,7 @@ function buildSingBoxVLOutbound(remark, address, port, host, sni, allowInsecure,
     return outbound;
 }
 
-function buildSingBoxTROutbound(remark, address, port, host, sni, allowInsecure, isFragment) {
+function buildTROutbound(remark, address, port, host, sni, allowInsecure, isFragment) {
     const tls = httpConfig.defaultHttpsPorts.includes(port) ? true : false;
 
     const outbound = {
@@ -417,7 +417,7 @@ function buildSingBoxTROutbound(remark, address, port, host, sni, allowInsecure,
     return outbound;
 }
 
-function buildSingBoxWarpOutbound(warpConfigs, remark, endpoint, chain) {
+function buildWarpOutbound(warpConfigs, remark, endpoint, chain) {
     const { host, port } = parseHostPort(endpoint);
     const server = chain ? "162.159.192.1" : host;
     const finalPort = chain ? 2408 : port;
@@ -465,7 +465,7 @@ function buildSingBoxWarpOutbound(warpConfigs, remark, endpoint, chain) {
     return outbound;
 }
 
-function buildSingBoxChainOutbound() {
+function buildChainOutbound() {
     const { outProxyParams } = settings;
     const { protocol, server, port } = outProxyParams;
     const outbound = {
@@ -578,10 +578,10 @@ function buildSingBoxChainOutbound() {
     return outbound;
 }
 
-async function buildSingBoxConfig(selectorTags, urlTestTags, secondUrlTestTags, isWarp, isIPv6, isChain) {
-    const config = structuredClone(singboxConfigTemp);
-    config.dns = await buildSingBoxDNS(isWarp, isChain);
-    config.route = buildSingBoxRoutingRules(isWarp);
+async function buildConfig(selectorTags, urlTestTags, secondUrlTestTags, isWarp, isIPv6, isChain) {
+    const config = structuredClone(configTemp);
+    config.dns = await buildDNS(isWarp, isChain);
+    config.route = buildRoutingRules(isWarp);
 
     if (isIPv6) {
         config.inbounds.find(({ type }) => type === 'tun').address.push("fdfe:dcba:9876::1/126");
@@ -626,10 +626,10 @@ export async function getSingBoxWarpConfig(request, env) {
         const wowTag = `💦 ${index + 1} - WoW 🌍`;
         wowTags.push(wowTag);
 
-        const warpOutbound = buildSingBoxWarpOutbound(warpConfigs, warpTag, endpoint, '');
+        const warpOutbound = buildWarpOutbound(warpConfigs, warpTag, endpoint, '');
         endpoints.proxies.push(warpOutbound);
 
-        const wowOutbound = buildSingBoxWarpOutbound(warpConfigs, wowTag, endpoint, warpTag);
+        const wowOutbound = buildWarpOutbound(warpConfigs, wowTag, endpoint, warpTag);
         endpoints.chains.push(wowOutbound);
     });
 
@@ -640,7 +640,7 @@ export async function getSingBoxWarpConfig(request, env) {
         ...wowTags
     ];
 
-    const config = await buildSingBoxConfig(selectorTags, warpTags, wowTags, true, settings.warpEnableIPv6);
+    const config = await buildConfig(selectorTags, warpTags, wowTags, true, settings.warpEnableIPv6);
     config.endpoints = [
         ...endpoints.chains,
         ...endpoints.proxies
@@ -650,7 +650,7 @@ export async function getSingBoxWarpConfig(request, env) {
         status: 200,
         headers: {
             'Content-Type': 'text/plain;charset=utf-8',
-            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'Cache-Control': 'no-store',
             'CDN-Cache-Control': 'no-store'
         }
     });
@@ -662,7 +662,7 @@ export async function getSingBoxCustomConfig(env, isFragment) {
 
     if (settings.outProxy) {
         try {
-            chainProxy = buildSingBoxChainOutbound(settings.outProxyParams);
+            chainProxy = buildChainOutbound(settings.outProxyParams);
             selectorTags.push('💦 🔗 Best Ping 🚀');
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
@@ -706,12 +706,12 @@ export async function getSingBoxCustomConfig(env, isFragment) {
                 const tag = generateRemark(protocolIndex, port, addr, protocol, configType);
 
                 if (protocol === atob('VkxFU1M=')) {
-                    VLOutbound = buildSingBoxVLOutbound(tag, addr, port, host, sni, isCustomAddr, isFragment);
+                    VLOutbound = buildVLOutbound(tag, addr, port, host, sni, isCustomAddr, isFragment);
                     outbounds.proxies.push(VLOutbound);
                 }
 
                 if (protocol === atob('VHJvamFu')) {
-                    TROutbound = buildSingBoxTROutbound(tag, addr, port, host, sni, isCustomAddr, isFragment);
+                    TROutbound = buildTROutbound(tag, addr, port, host, sni, isCustomAddr, isFragment);
                     outbounds.proxies.push(TROutbound);
                 }
 
@@ -735,7 +735,7 @@ export async function getSingBoxCustomConfig(env, isFragment) {
         });
     });
 
-    const config = await buildSingBoxConfig(selectorTags, tags, chainTags, false, settings.VLTRenableIPv6, chainProxy);
+    const config = await buildConfig(selectorTags, tags, chainTags, false, settings.VLTRenableIPv6, chainProxy);
     config.outbounds.push(
         ...outbounds.chains,
         ...outbounds.proxies
@@ -745,13 +745,13 @@ export async function getSingBoxCustomConfig(env, isFragment) {
         status: 200,
         headers: {
             'Content-Type': 'text/plain;charset=utf-8',
-            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'Cache-Control': 'no-store',
             'CDN-Cache-Control': 'no-store'
         }
     });
 }
 
-const singboxConfigTemp = {
+const configTemp = {
     log: {
         level: "warn",
         timestamp: true
@@ -813,7 +813,7 @@ const singboxConfigTemp = {
     }
 };
 
-function getRoutingRules() {
+function getRuleSets() {
     return [
         {
             rule: true,
