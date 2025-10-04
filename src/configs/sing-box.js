@@ -700,7 +700,7 @@ export async function getSingBoxCustomConfig(env, isFragment) {
             Addresses.forEach(addr => {
                 let VLOutbound, TROutbound;
                 const isCustomAddr = settings.customCdnAddrs.includes(addr);
-                const configType = isCustomAddr ? 'C' : '';
+                const configType = isFragment ? 'F' : isCustomAddr ? 'C' : '';
                 const sni = isCustomAddr ? settings.customCdnSni : randomUpperCase(httpConfig.hostName);
                 const host = isCustomAddr ? settings.customCdnHost : httpConfig.hostName;
                 const tag = generateRemark(protocolIndex, port, addr, protocol, configType);
