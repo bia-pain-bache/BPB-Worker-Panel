@@ -684,7 +684,7 @@ export async function getSingBoxCustomConfig(env, isFragment) {
     if (settings.VLConfigs) protocols.push(atob('VkxFU1M='));
     if (settings.TRConfigs) protocols.push(atob('VHJvamFu'));
 
-    const Addresses = await getConfigAddresses(false);
+    const Addresses = await getConfigAddresses(isFragment);
     const outbounds = {
         proxies: [],
         chains: []

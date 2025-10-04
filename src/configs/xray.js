@@ -805,7 +805,7 @@ export async function getXrayCustomConfigs(env, isFragment) {
         }
     }
 
-    const Addresses = await getConfigAddresses(settings.cleanIPs, settings.VLTRenableIPv6, settings.customCdnAddrs, isFragment);
+    const Addresses = await getConfigAddresses(isFragment);
     const totalPorts = settings.ports.filter(port => isFragment ? httpConfig.defaultHttpsPorts.includes(port) : true);
 
     let protocols = [];
@@ -828,10 +828,11 @@ export async function getXrayCustomConfigs(env, isFragment) {
             for (const addr of Addresses) {
                 const isCustomAddr = settings.customCdnAddrs.includes(addr) && !isFragment;
                 const configType = isCustomAddr ? 'C' : isFragment ? 'F' : '';
-                const sni = isCustomAddr ? settings.customCdnSni : randomUpperCase(httpConfig.hostName);
-                const host = isCustomAddr ? settings.customCdnHost : httpConfig.hostName;
                 const remark = generateRemark(protocolIndex, port, addr, protocol, configType, chainProxy);
                 const customConfig = await buildConfig(remark, false, chainProxy, false, false, false, [addr], null);
+                
+                const sni = isCustomAddr ? settings.customCdnSni : randomUpperCase(httpConfig.hostName);
+                const host = isCustomAddr ? settings.customCdnHost : httpConfig.hostName;
 
                 const outbound = protocol === atob('VkxFU1M=')
                     ? buildVLOutbound('proxy', addr, port, host, sni, isFragment, isCustomAddr)
