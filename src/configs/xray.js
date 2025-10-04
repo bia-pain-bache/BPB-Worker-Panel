@@ -1,4 +1,4 @@
-import { getConfigAddresses, extractWireguardParams, base64ToDecimal, generateRemark, randomUpperCase, resolveDNS, isDomain, getDomain, generateWsPath } from '#configs/utils';
+import { getConfigAddresses, extractWireguardParams, base64ToDecimal, generateRemark, randomUpperCase, resolveDNS, isDomain, getDomain, generateWsPath, isHttps } from '#configs/utils';
 import { getDataset } from '#kv';
 import { globalConfig, httpConfig } from '#common/init';
 import { settings } from '#common/handlers'
@@ -281,7 +281,7 @@ function buildVLOutbound(tag, address, port, host, sni, isFragment, allowInsecur
         tag: tag
     };
 
-    if (httpConfig.defaultHttpsPorts.includes(port)) {
+    if (isHttps(port)) {
         outbound.streamSettings.security = "tls";
         outbound.streamSettings.tlsSettings = {
             allowInsecure: allowInsecure,
@@ -336,7 +336,7 @@ function buildTROutbound(tag, address, port, host, sni, isFragment, allowInsecur
         tag: tag
     };
 
-    if (httpConfig.defaultHttpsPorts.includes(port)) {
+    if (isHttps(port)) {
         outbound.streamSettings.security = "tls";
         outbound.streamSettings.tlsSettings = {
             allowInsecure: allowInsecure,
@@ -806,7 +806,7 @@ export async function getXrayCustomConfigs(env, isFragment) {
     }
 
     const Addresses = await getConfigAddresses(isFragment);
-    const totalPorts = settings.ports.filter(port => isFragment ? httpConfig.defaultHttpsPorts.includes(port) : true);
+    const totalPorts = settings.ports.filter(port => isFragment ? isHttps(port) : true);
 
     let protocols = [];
     if (settings.VLConfigs) protocols.push(atob('VkxFU1M='));

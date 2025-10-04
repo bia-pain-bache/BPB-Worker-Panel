@@ -167,3 +167,7 @@ export function parseHostPort(input, brackets) {
     return { host, port };
 }
 
+export function isHttps(port) {
+    return httpConfig.defaultHttpsPorts.includes(port);
+}
+

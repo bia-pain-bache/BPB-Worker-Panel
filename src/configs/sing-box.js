@@ -1,4 +1,4 @@
-import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, isIPv6, isDomain, base64ToDecimal, getDomain, generateWsPath, parseHostPort } from '#configs/utils';
+import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, isIPv6, isDomain, base64ToDecimal, getDomain, generateWsPath, parseHostPort, isHttps } from '#configs/utils';
 import { getDataset } from '#kv';
 import { globalConfig, httpConfig } from '#common/init';
 import { settings } from '#common/handlers'
@@ -343,8 +343,6 @@ function buildRoutingRules(isWarp) {
 }
 
 function buildVLOutbound(remark, address, port, host, sni, allowInsecure, isFragment) {
-    const tls = httpConfig.defaultHttpsPorts.includes(port) ? true : false;
-
     const outbound = {
         tag: remark,
         type: atob('dmxlc3M='),
@@ -365,7 +363,7 @@ function buildVLOutbound(remark, address, port, host, sni, allowInsecure, isFrag
         }
     };
 
-    if (tls) outbound.tls = {
+    if (isHttps(port)) outbound.tls = {
         alpn: "http/1.1",
         enabled: true,
         insecure: allowInsecure,
@@ -381,8 +379,6 @@ function buildVLOutbound(remark, address, port, host, sni, allowInsecure, isFrag
 }
 
 function buildTROutbound(remark, address, port, host, sni, allowInsecure, isFragment) {
-    const tls = httpConfig.defaultHttpsPorts.includes(port) ? true : false;
-
     const outbound = {
         tag: remark,
         type: atob('dHJvamFu'),
@@ -402,7 +398,7 @@ function buildTROutbound(remark, address, port, host, sni, allowInsecure, isFrag
         }
     }
 
-    if (tls) outbound.tls = {
+    if (isHttps(port)) outbound.tls = {
         alpn: "http/1.1",
         enabled: true,
         insecure: allowInsecure,
@@ -691,7 +687,7 @@ export async function getSingBoxCustomConfig(env, isFragment) {
     }
 
     const ports = isFragment
-        ? settings.ports.filter(port => httpConfig.defaultHttpsPorts.includes(port))
+        ? settings.ports.filter(port => isHttps(port))
         : settings.ports;
 
     protocols.forEach(protocol => {

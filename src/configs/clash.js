@@ -1,4 +1,4 @@
-import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, isIPv6, isIPv4, isDomain, getDomain, generateWsPath, parseHostPort } from '#configs/utils';
+import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, isIPv6, isIPv4, isDomain, getDomain, generateWsPath, parseHostPort, isHttps } from '#configs/utils';
 import { getDataset } from '#kv';
 import { globalConfig, httpConfig } from '#common/init';
 import { settings } from '#common/handlers'
@@ -31,10 +31,10 @@ async function buildDNS(isChain, isWarp, isPro) {
         }
     }
 
-    const dnsHost = getDomain(settings.antiSanctionDNS);
+    const antiSanctionDnsHost = getDomain(settings.antiSanctionDNS);
 
-    if (dnsHost.isHostDomain) {
-        dnsObject["nameserver-policy"][dnsHost.host] = finalLocalDNS;
+    if (antiSanctionDnsHost.isHostDomain) {
+        dnsObject["nameserver-policy"][antiSanctionDnsHost.host] = finalLocalDNS;
     }
 
     if (isChain && !isWarp) {
@@ -169,6 +169,12 @@ function buildRoutingRules(isWarp) {
         rules.push(`GEOIP,lan,DIRECT,no-resolve`);
     }
 
+    if (!isWarp) {
+        rules.push("NETWORK,udp,REJECT");
+    } else if (settings.blockUDP443) {
+        rules.push("AND,((NETWORK,udp),(DST-PORT,443)),REJECT");
+    }
+
     function addRoutingRule(geosites, geoips, domains, ips, type) {
         if (domains) domains.forEach(domain => rules.push(`DOMAIN-SUFFIX,${domain},${type}`));
         if (geosites) geosites.forEach(geosite => rules.push(`RULE-SET,${geosite},${type}`));
@@ -181,14 +187,6 @@ function buildRoutingRules(isWarp) {
         });
 
         if (geoips) geoips.forEach(geoip => rules.push(`RULE-SET,${geoip},${type}`));
-    }
-
-    if (isWarp && settings.blockUDP443) {
-        rules.push("AND,((NETWORK,udp),(DST-PORT,443)),REJECT");
-    }
-
-    if (!isWarp) {
-        rules.push("NETWORK,udp,REJECT");
     }
 
     for (const [type, rule] of groupedRules) {
@@ -206,7 +204,7 @@ function buildRoutingRules(isWarp) {
 }
 
 function buildVLOutbound(remark, address, port, host, sni, allowInsecure) {
-    const tls = httpConfig.defaultHttpsPorts.includes(port) ? true : false;
+    const tls = isHttps(port);
     const addr = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
     const ipVersion = settings.VLTRenableIPv6 ? "dual" : "ipv4";
     const fingerprint = settings.fingerprint === "randomized" ? "random" : settings.fingerprint;
@@ -218,7 +216,7 @@ function buildVLOutbound(remark, address, port, host, sni, allowInsecure) {
         "port": port,
         "uuid": globalConfig.userID,
         "udp": false,
-        "packet-encoding": "packetaddr",
+        "packet-encoding": "",
         "ip-version": ipVersion,
         "tls": tls,
         "network": "ws",
@@ -557,7 +555,7 @@ export async function getClashNormalConfig(env) {
                     selectorTags.push(tag);
                 }
 
-                if (protocol === atob('VHJvamFu') && httpConfig.defaultHttpsPorts.includes(port)) {
+                if (protocol === atob('VHJvamFu') && isHttps(port)) {
                     TROutbound = buildTROutbound(tag, addr, port, host, sni, isCustomAddr);
                     outbounds.proxies.push(TROutbound);
                     
