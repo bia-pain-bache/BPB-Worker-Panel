@@ -63,15 +63,16 @@ export function extractWireguardParams(warpConfigs, isWoW) {
     };
 }
 
-export function generateRemark(index, port, address, cleanIPs, protocol, configType) {
+export function generateRemark(index, port, address, protocol, configType, isChain) {
     let addressType;
+    const chainSign = isChain ? '🔗 ' : '';
     const type = configType ? ` ${configType}` : '';
 
-    cleanIPs.includes(address)
+    settings.cleanIPs.includes(address)
         ? addressType = 'Clean IP'
         : addressType = isDomain(address) ? 'Domain' : isIPv4(address) ? 'IPv4' : isIPv6(address) ? 'IPv6' : '';
 
-    return `💦 ${index} - ${protocol}${type} - ${addressType} : ${port}`;
+    return `💦 ${index} - ${chainSign}${protocol}${type} - ${addressType} : ${port}`;
 }
 
 export function randomUpperCase(str) {

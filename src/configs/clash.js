@@ -3,16 +3,20 @@ import { getDataset } from '#kv';
 import { globalConfig, httpConfig } from '#common/init';
 import { settings } from '#common/handlers'
 
-async function buildClashDNS(isChain, isWarp) {
+async function buildClashDNS(isChain, isWarp, isPro) {
     const finalLocalDNS = settings.localDNS === 'localhost' ? 'system' : `${settings.localDNS}#DIRECT`;
     const isIPv6 = (settings.VLTRenableIPv6 && !isWarp) || (settings.warpEnableIPv6 && isWarp);
+    const remoteDnsDetour = isWarp
+        ? `💦 Warp ${isPro ? 'Pro ' : ''}- Best Ping 🚀`
+        : isChain ? '💦 Best Ping 🚀' : '✅ Selector';
+
     const dnsObject = {
         "enable": true,
         "listen": "0.0.0.0:1053",
         "ipv6": isIPv6,
         "respect-rules": true,
         "use-system-hosts": false,
-        "nameserver": [`${isWarp ? '1.1.1.1' : settings.remoteDNS}#✅ Selector`],
+        "nameserver": [`${isWarp ? '1.1.1.1' : settings.remoteDNS}#${remoteDnsDetour}`],
         "proxy-server-nameserver": [finalLocalDNS],
         "nameserver-policy": {
             "raw.githubusercontent.com": finalLocalDNS,
@@ -35,9 +39,9 @@ async function buildClashDNS(isChain, isWarp) {
 
     if (isChain && !isWarp) {
         const chainOutboundServer = settings.outProxyParams.server;
-        
+
         if (isDomain(chainOutboundServer)) {
-            dnsObject["nameserver-policy"][chainOutboundServer] = `${settings.remoteDNS}#proxy-1`;
+            dnsObject["nameserver-policy"][chainOutboundServer] = `${settings.remoteDNS}#${remoteDnsDetour}`;
         }
     }
 
@@ -339,17 +343,16 @@ function buildClashChainOutbound() {
 
         return outbound;
     }
-    
-    const { 
-        security, type, sni, fp, alpn, pbk, 
-        sid, headerType, host, path, serviceName 
+
+    const {
+        security, type, sni, fp, alpn, pbk,
+        sid, headerType, host, path, serviceName
     } = outProxyParams;
-    
+
     if (protocol === atob('dmxlc3M=')) {
         const { uuid, flow } = outProxyParams;
         outbound["uuid"] = uuid;
         outbound["flow"] = flow;
-        outbound["network"] = type;
     }
 
     if (protocol === atob('dHJvamFu')) {
@@ -378,6 +381,7 @@ function buildClashChainOutbound() {
     });
 
     if (headerType === 'http') {
+        outbound["network"] = "http";
         const httpPaths = path?.split(',');
         outbound["http-opts"] = {
             "method": "GET",
@@ -391,58 +395,65 @@ function buildClashChainOutbound() {
 
     if (type === 'ws' || type === 'httpupgrade') {
         const wsPath = path?.split('?ed=')[0];
-        const earlyData = +path?.split('?ed=')[1];
+        outbound["network"] = "ws";
         outbound["ws-opts"] = {
             "path": wsPath,
             "headers": {
                 "Host": host
-            },
-            "max-early-data": earlyData,
-            "early-data-header-name": "Sec-WebSocket-Protocol"
+            }
         };
 
         if (type === 'httpupgrade') {
             outbound["ws-opts"][`${atob('djJyYXk=')}-http-upgrade`] = true;
+            outbound["ws-opts"][`${atob('djJyYXk=')}-http-upgrade-fast-open`] = true;
+        } else {
+            const earlyData = +path?.split('?ed=')[1];
+            outbound["ws-opts"]["max-early-data"] = earlyData;
+            outbound["ws-opts"]["early-data-header-name"] = "Sec-WebSocket-Protocol";
         }
     }
 
-    if (type === 'grpc') outbound["grpc-opts"] = {
-        "grpc-service-name": serviceName
-    };
+    if (type === 'grpc') {
+        outbound["network"] = type;
+        outbound["grpc-opts"] = {
+            "grpc-service-name": serviceName
+        };
+    }
 
     return outbound;
 }
 
 async function buildClashConfig(selectorTags, urlTestTags, secondUrlTestTags, isChain, isWarp, isPro) {
     const config = structuredClone(clashConfigTemp);
-    config['dns'] = await buildClashDNS(isChain, isWarp);
+    config['dns'] = await buildClashDNS(isChain, isWarp, isPro);
 
     const { rules, ruleProviders } = buildClashRoutingRules(isWarp);
     config['rules'] = rules;
     config['rule-providers'] = ruleProviders;
 
-    const selector = {
+    config['proxy-groups'].push({
         "name": "✅ Selector",
         "type": "select",
         "proxies": selectorTags
-    };
+    });
 
-    const urlTest = {
-        "name": isWarp ? `💦 Warp ${isPro ? 'Pro ' : ''}- Best Ping 🚀` : '💦 Best Ping 💥',
+    const addUrlTest = (name, proxies) => config['proxy-groups'].push({
+        "name": name,
         "type": "url-test",
         "url": "https://www.gstatic.com/generate_204",
         "interval": isWarp ? settings.bestWarpInterval : settings.bestVLTRInterval,
         "tolerance": 50,
-        "proxies": urlTestTags
-    };
+        "proxies": proxies
+    });
 
-    config['proxy-groups'].push(selector, urlTest);
+    addUrlTest(isWarp ? `💦 Warp ${isPro ? 'Pro ' : ''}- Best Ping 🚀` : '💦 Best Ping 🚀', urlTestTags);
 
     if (isWarp) {
-        const secondUrlTest = structuredClone(urlTest);
-        secondUrlTest["name"] = `💦 WoW ${isPro ? 'Pro ' : ''}- Best Ping 🚀`;
-        secondUrlTest["proxies"] = secondUrlTestTags;
-        config['proxy-groups'].push(secondUrlTest);
+        addUrlTest(`💦 WoW ${isPro ? 'Pro ' : ''}- Best Ping 🚀`, secondUrlTestTags);
+    }
+
+    if (isChain) {
+        addUrlTest('💦 🔗 Best Ping 🚀', secondUrlTestTags);
     }
 
     return config;
@@ -478,7 +489,7 @@ export async function getClashWarpConfig(request, env, isPro) {
         ...wowTags
     ];
 
-    const config = await buildClashConfig(selectorTags, warpTags, wowTags, true, true, isPro);
+    const config = await buildClashConfig(selectorTags, warpTags, wowTags, false, true, isPro);
     config['proxies'].push(
         ...outbounds.proxies,
         ...outbounds.chains
@@ -496,14 +507,16 @@ export async function getClashWarpConfig(request, env, isPro) {
 
 export async function getClashNormalConfig(env) {
     let chainProxy;
+    const selectorTags = [`💦 Best Ping 🚀`];
 
     if (settings.outProxy) {
         try {
             chainProxy = buildClashChainOutbound();
+            selectorTags.push('💦 🔗 Best Ping 🚀');
         } catch (error) {
             console.log('An error occured while parsing chain proxy: ', error);
             chainProxy = undefined;
-            
+
             const proxySettings = await env.kv.get("proxySettings", { type: 'json' });
             await env.kv.put("proxySettings", JSON.stringify({
                 ...proxySettings,
@@ -519,6 +532,7 @@ export async function getClashNormalConfig(env) {
     if (settings.TRConfigs) protocols.push(atob('VHJvamFu'));
     const Addresses = await getConfigAddresses(false);
     const tags = [];
+    const chainTags = [];
     const outbounds = {
         proxies: [],
         chains: []
@@ -533,42 +547,34 @@ export async function getClashNormalConfig(env) {
                 const configType = isCustomAddr ? 'C' : '';
                 const sni = isCustomAddr ? settings.customCdnSni : randomUpperCase(httpConfig.hostName);
                 const host = isCustomAddr ? settings.customCdnHost : httpConfig.hostName;
-                const tag = generateRemark(protocolIndex, port, addr, settings.cleanIPs, protocol, configType).replace(' : ', ' - ');
+                const tag = generateRemark(protocolIndex, port, addr, protocol, configType).replace(' : ', ' - ');
 
                 if (protocol === atob('VkxFU1M=')) {
-                    VLOutbound = buildClashVLOutbound(
-                        chainProxy ? `proxy-${proxyIndex}` : tag,
-                        addr,
-                        port,
-                        host,
-                        sni,
-                        isCustomAddr
-                    );
-
+                    VLOutbound = buildClashVLOutbound(tag, addr, port, host, sni, isCustomAddr);
                     outbounds.proxies.push(VLOutbound);
+                    
                     tags.push(tag);
+                    selectorTags.push(tag);
                 }
 
                 if (protocol === atob('VHJvamFu') && httpConfig.defaultHttpsPorts.includes(port)) {
-                    TROutbound = buildClashTROutbound(
-                        chainProxy ? `proxy-${proxyIndex}` : tag,
-                        addr,
-                        port,
-                        host,
-                        sni,
-                        isCustomAddr
-                    );
-
+                    TROutbound = buildClashTROutbound(tag, addr, port, host, sni, isCustomAddr);
                     outbounds.proxies.push(TROutbound);
+                    
                     tags.push(tag);
+                    selectorTags.push(tag);
                 }
 
 
                 if (chainProxy) {
+                    const chainTag = generateRemark(protocolIndex, port, addr, protocol, configType, true);
                     let chain = structuredClone(chainProxy);
-                    chain['name'] = tag;
-                    chain['dialer-proxy'] = `proxy-${proxyIndex}`;
+                    chain['name'] = chainTag;
+                    chain['dialer-proxy'] = tag;
                     outbounds.chains.push(chain);
+                    
+                    chainTags.push(chainTag);
+                    selectorTags.push(chainTag);
                 }
 
                 proxyIndex++;
@@ -577,8 +583,7 @@ export async function getClashNormalConfig(env) {
         });
     });
 
-    const selectorTags = ['💦 Best Ping 💥', ...tags];
-    const config = await buildClashConfig(selectorTags, tags, null, chainProxy, false, false);
+    const config = await buildClashConfig(selectorTags, tags, chainTags, chainProxy, false, false);
     config['proxies'].push(
         ...outbounds.chains,
         ...outbounds.proxies
