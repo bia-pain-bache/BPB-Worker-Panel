@@ -20,7 +20,7 @@ async function buildDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWarp, 
         dnsHost[host] = settings.VLTRenableIPv6 ? [...ipv4, ...ipv6] : ipv4;
     }
 
-    const routingRules = getRoutingRules();
+    const routingRules = getGeoRules();
     const blockRules = routingRules.filter(({ type }) => type === 'block');
 
     settings.customBlockRules.forEach(value => {
@@ -191,7 +191,7 @@ function buildRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
         addRoutingRule(null, null, null, 443, "udp", null, "block");
     }
 
-    const routingRules = getRoutingRules();
+    const routingRules = getGeoRules();
     const bypassRules = [
         ...settings.customBypassRules,
         ...settings.customBypassSanctionRules
@@ -1057,7 +1057,7 @@ const configTemp = {
     stats: {}
 };
 
-function getRoutingRules() {
+function getGeoRules() {
     return [
         { rule: settings.blockAds, type: 'block', domain: "geosite:category-ads-all" },
         { rule: settings.blockAds, type: 'block', domain: "geosite:category-ads-ir" },
