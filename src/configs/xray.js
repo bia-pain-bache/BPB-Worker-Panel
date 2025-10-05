@@ -189,6 +189,10 @@ function buildRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
         addRoutingRule(null, null, null, 443, "udp", null, "block");
     }
 
+    if (!isWarp && !isWorkerLess) {
+        addRoutingRule(null, null, null, null, "udp", null, "block", null);
+    }
+
     const routingRules = getGeoRules();
     const bypassRules = [
         ...settings.customBypassRules,
@@ -235,10 +239,6 @@ function buildRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
         addRoutingRule(null, null, null, null, "tcp", "http", "http-fragment");
         addRoutingRule(null, null, null, null, "udp", "quic", "udp-noise");
         addRoutingRule(null, null, null, "443,2053,2083,2087,2096,8443", "udp", null, "udp-noise");
-    }
-
-    if (!isWarp && !isWorkerLess) {
-        addRoutingRule(null, null, null, null, "udp", null, "block", null);
     }
 
     const network = isWarp || isWorkerLess ? "tcp,udp" : "tcp";
