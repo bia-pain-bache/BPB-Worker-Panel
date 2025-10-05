@@ -182,10 +182,8 @@ function buildRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
     addRoutingRule(["remote-dns"], null, null, null, null, null, remoteDnsProxy, isBalancer);
     addRoutingRule(["dns"], null, null, null, null, null, "direct");
 
-    if (settings.bypassLAN) {
-        addRoutingRule(null, ["geosite:private"], null, null, null, null, "direct");
-        addRoutingRule(null, null, ["geoip:private"], null, null, null, "direct");
-    }
+    addRoutingRule(null, ["geosite:private"], null, null, null, null, "direct");
+    addRoutingRule(null, null, ["geoip:private"], null, null, null, "direct");
 
     if (isWarp && settings.blockUDP443) {
         addRoutingRule(null, null, null, 443, "udp", null, "block");
@@ -692,7 +690,7 @@ async function buildConfig(
 
         if (isChain) {
             const chainBalancer = createBalancer("all-chains", "chain", false)
-            config.routing.balancers.push(chainBalancer); 
+            config.routing.balancers.push(chainBalancer);
         }
 
         config.observatory = {
@@ -830,7 +828,7 @@ export async function getXrayCustomConfigs(env, isFragment) {
                 const configType = isCustomAddr ? 'C' : isFragment ? 'F' : '';
                 const remark = generateRemark(protocolIndex, port, addr, protocol, configType, chainProxy);
                 const customConfig = await buildConfig(remark, false, chainProxy, false, false, false, [addr], null);
-                
+
                 const sni = isCustomAddr ? settings.customCdnSni : randomUpperCase(httpConfig.hostName);
                 const host = isCustomAddr ? settings.customCdnHost : httpConfig.hostName;
 

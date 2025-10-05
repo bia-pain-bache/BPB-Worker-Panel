@@ -96,7 +96,6 @@ export async function updateDataset(request, env) {
         fragmentIntervalMin: populateField('fragmentIntervalMin', 1),
         fragmentIntervalMax: populateField('fragmentIntervalMax', 1),
         fragmentPackets: populateField('fragmentPackets', 'tlshello'),
-        bypassLAN: populateField('bypassLAN', false),
         bypassIran: populateField('bypassIran', false),
         bypassChina: populateField('bypassChina', false),
         bypassRussia: populateField('bypassRussia', false),

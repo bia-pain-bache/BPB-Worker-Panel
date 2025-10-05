@@ -163,11 +163,7 @@ function buildRoutingRules(isWarp) {
         if (geosite || geoip) addRuleProvider(ruleProvider);
     });
 
-    let rules = [];
-
-    if (settings.bypassLAN) {
-        rules.push(`GEOIP,lan,DIRECT,no-resolve`);
-    }
+    let rules = [`GEOIP,lan,DIRECT,no-resolve`];
 
     if (!isWarp) {
         rules.push("NETWORK,udp,REJECT");
@@ -448,6 +444,7 @@ async function buildConfig(selectorTags, urlTestTags, secondUrlTestTags, isChain
 
     if (isWarp) {
         addUrlTest(`💦 WoW ${isPro ? 'Pro ' : ''}- Best Ping 🚀`, secondUrlTestTags);
+        delete config["tcp-concurrent"];
     }
 
     if (isChain) {
@@ -606,6 +603,7 @@ const configTemp = {
     "disable-keep-alive": false,
     "keep-alive-idle": 10,
     "keep-alive-interval": 15,
+    "tcp-concurrent": true,
     "unified-delay": false,
     "geo-auto-update": true,
     "geo-update-interval": 168,

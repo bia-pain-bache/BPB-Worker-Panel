@@ -224,13 +224,12 @@ function buildRoutingRules(isWarp) {
         {
             protocol: "dns",
             action: "hijack-dns"
+        },
+        {
+            ip_is_private: true,
+            outbound: "direct"
         }
     ];
-
-    if (settings.bypassLAN) rules.push({
-        ip_is_private: true,
-        outbound: "direct"
-    });
 
     function addRoutingRule(domain, ip, geosite, geoip, network, protocol, port, type) {
         const action = type === 'reject' ? 'reject' : 'route';
@@ -248,13 +247,11 @@ function buildRoutingRules(isWarp) {
             ...(outbound && { outbound })
         });
     }
-
-    if (isWarp && settings.blockUDP443) {
-        addRoutingRule(null, null, null, null, "udp", "quic", 443, 'reject');
-    }
-
+    
     if (!isWarp) {
         addRoutingRule(null, null, null, null, "udp", null, null, 'reject');
+    } else if(settings.blockUDP443) {
+        addRoutingRule(null, null, null, null, "udp", "quic", 443, 'reject');
     }
 
     const routingRules = getRuleSets();
