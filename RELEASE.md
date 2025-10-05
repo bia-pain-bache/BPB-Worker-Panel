@@ -5,7 +5,7 @@
 - Enabled `HappyEyeBalls` for Clash
 - Removed **Bypass Lan** option and made it mandatory to decrease worker error rate
 
-> [!INFO]
+> [!TIP]
 > v2ray Users should update Geo assets if proxy is not connecting.
 
 - Fixed chain proxy `Httpupgrade` transmission bug for sing-box and Clash
