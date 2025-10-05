@@ -1,6 +1,6 @@
 # ⚙️ Bug fixes and Improvements
 
-- Added chained configs beside raw configs. This way, when **Chain Proxy** stops working, you still have access to non-chained configs #1074
+- Added chained configs alongside raw configs. This way, when **Chain Proxy** stops working, you still have access to non-chained configs #1074
 - Improved **Chain Proxy** and **Warp** DNS resolution
 - Enabled `HappyEyeBalls` for Clash
 - Removed **Bypass Lan** option and made it mandatory to decrease worker error rate
