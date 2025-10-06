@@ -1,9 +1,22 @@
 # :material-lan-connect:{ .md .middle } How to use
 
-!!! info
-    Please don't use **Normal** subscription unless you read all related documentation and configured your client beforehand.
+First, update your client to the latest version or refer to the table below. These are the tested and verified clients officially supported by the BPB project. You may use other clients at your own risk.
 
-On the other hand, **Warp** and **Warp Pro** which provide **WireGuard** configs, need scanning some endpoints first. You can refer to [this guide](../configuration/warp.md) to learn how to scan some endpoints.
+|       Client        |      Version      | Fragment support | Warp Pro support |
+| :-----------------: | :---------------: | :--------------: | :--------------: |
+|     **v2rayNG**     | 1.10.11 or higher | :material-check: | :material-check: |
+|     **MahsaNG**     |   14 or higher    | :material-check: | :material-check: |
+|     **v2rayN**      | 7.14.6 or higher  | :material-check: | :material-check: |
+|   **v2rayN-PRO**    |   1.9 or higher   | :material-check: | :material-check: |
+|    **Sing-box**     | 1.12.0 or higher  | :material-check: | :material-close: |
+|    **Streisand**    | 1.6.60 or higher  | :material-check: | :material-check: |
+|   **Clash Meta**    |                   | :material-close: | :material-check: |
+| **Clash Verge Rev** |                   | :material-close: | :material-check: |
+|     **FLClash**     |                   | :material-close: | :material-check: |
+|   **AmneziaVPN**    |                   | :material-close: | :material-check: |
+|    **WG Tunnel**    |                   | :material-close: | :material-check: |
+
+**Warp** and **Warp Pro** subscriptions which provide **WireGuard** configs, need scanning some endpoints first. You can refer to [this guide](../configuration/warp.md) to learn how to scan some endpoints.
 
 <div class="grid cards" markdown>
 

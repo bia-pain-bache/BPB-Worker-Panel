@@ -1,4 +1,4 @@
-# 💦 BPB Panel
+# BPB Panel
 
 ![Pages Application](images/panel-overview.jpg)
 

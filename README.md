@@ -49,7 +49,7 @@ This project is aimed to provide a user panel to access FREE, SECURE and PRIVATE
 
 ## Supported Clients
 
-|       Client        |      Version      |      Fragment      |      Warp Pro      |
+|       Client        |      Version      |  Fragment support  |  Warp Pro support  |
 | :-----------------: | :---------------: | :----------------: | :----------------: |
 |     **v2rayNG**     | 1.10.11 or higher | :heavy_check_mark: | :heavy_check_mark: |
 |     **MahsaNG**     |   14 or higher    | :heavy_check_mark: | :heavy_check_mark: |

@@ -1,4 +1,4 @@
-# 💦 پنل BPB
+# پنل BPB
 
 ![پنل BPB](images/panel-overview.jpg)
 
@@ -42,19 +42,19 @@
 
 ## برنامه‌های پشتیبانی‌شده
 
-|       Client        |      Version      | Fragment support | Warp Pro support |
-| :-----------------: | :---------------: | :--------------: | :--------------: |
-|     **v2rayNG**     | 1.10.11 یا بالاتر | :material-check: | :material-check: |
-|     **MahsaNG**     |   14 یا بالاتر    | :material-check: | :material-check: |
-|     **v2rayN**      | 7.14.6 یا بالاتر  | :material-check: | :material-check: |
-|   **v2rayN-PRO**    |   1.9 یا بالاتر   | :material-check: | :material-check: |
-|    **Sing-box**     | 1.11.2 یا بالاتر  | :material-close: | :material-close: |
-|    **Streisand**    | 1.6.60 یا بالاتر  | :material-check: | :material-check: |
-|   **Clash Meta**    |                   | :material-close: | :material-check: |
-| **Clash Verge Rev** |                   | :material-close: | :material-check: |
-|     **FLClash**     |                   | :material-close: | :material-check: |
-|   **AmneziaVPN**    |                   | :material-close: | :material-check: |
-|    **WG Tunnel**    |                   | :material-close: | :material-check: |
+|       Client        |      Version      | پشتیبانی از Fragment | پشتیبانی از Warp Pro |
+| :-----------------: | :---------------: | :------------------: | :------------------: |
+|     **v2rayNG**     | 1.10.11 یا بالاتر |   :material-check:   |   :material-check:   |
+|     **MahsaNG**     |   14 یا بالاتر    |   :material-check:   |   :material-check:   |
+|     **v2rayN**      | 7.14.6 یا بالاتر  |   :material-check:   |   :material-check:   |
+|   **v2rayN-PRO**    |   1.9 یا بالاتر   |   :material-check:   |   :material-check:   |
+|    **Sing-box**     | 1.11.2 یا بالاتر  |   :material-close:   |   :material-close:   |
+|    **Streisand**    | 1.6.60 یا بالاتر  |   :material-check:   |   :material-check:   |
+|   **Clash Meta**    |                   |   :material-close:   |   :material-check:   |
+| **Clash Verge Rev** |                   |   :material-close:   |   :material-check:   |
+|     **FLClash**     |                   |   :material-close:   |   :material-check:   |
+|   **AmneziaVPN**    |                   |   :material-close:   |   :material-check:   |
+|    **WG Tunnel**    |                   |   :material-close:   |   :material-check:   |
 
 ---
 
