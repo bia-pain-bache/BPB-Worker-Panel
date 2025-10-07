@@ -1,7 +1,20 @@
-import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, isIPv6, isDomain, base64ToDecimal, getDomain, generateWsPath, parseHostPort, isHttps } from '#configs/utils';
 import { getDataset } from '#kv';
 import { globalConfig, httpConfig } from '#common/init';
 import { settings } from '#common/handlers'
+import {
+    getConfigAddresses,
+    extractWireguardParams,
+    generateRemark,
+    randomUpperCase,
+    isIPv6,
+    isDomain,
+    isHttps,
+    base64ToDecimal,
+    getDomain,
+    generateWsPath,
+    parseHostPort,
+    parseChainProxy
+} from '#configs/utils';
 
 async function buildDNS(isWarp, isChain) {
     const url = new URL(settings.remoteDNS);
@@ -247,10 +260,10 @@ function buildRoutingRules(isWarp) {
             ...(outbound && { outbound })
         });
     }
-    
+
     if (!isWarp) {
         addRoutingRule(null, null, null, null, "udp", null, null, 'reject');
-    } else if(settings.blockUDP443) {
+    } else if (settings.blockUDP443) {
         addRoutingRule(null, null, null, null, "udp", "quic", 443, 'reject');
     }
 
@@ -572,15 +585,68 @@ function buildChainOutbound() {
 }
 
 async function buildConfig(selectorTags, urlTestTags, secondUrlTestTags, isWarp, isIPv6, isChain) {
-    const config = structuredClone(configTemp);
-    config.dns = await buildDNS(isWarp, isChain);
-    config.route = buildRoutingRules(isWarp);
-
-    if (isIPv6) {
-        config.inbounds.find(({ type }) => type === 'tun').address.push("fdfe:dcba:9876::1/126");
-    }
-
-    config.outbounds.find(({ type }) => type === 'selector').outbounds = selectorTags;
+    const config = {
+        log: {
+            level: "warn",
+            timestamp: true
+        },
+        dns: await buildDNS(isWarp, isChain),
+        inbounds: [
+            {
+                type: "tun",
+                tag: "tun-in",
+                address: [
+                    "172.18.0.1/30",
+                    ...(isIPv6 ? ["fdfe:dcba:9876::1/126"] : [])
+                ],
+                mtu: 9000,
+                auto_route: true,
+                strict_route: true,
+                endpoint_independent_nat: true,
+                stack: "mixed"
+            },
+            {
+                type: "mixed",
+                tag: "mixed-in",
+                listen: "0.0.0.0",
+                listen_port: 2080
+            }
+        ],
+        outbounds: [
+            {
+                type: "selector",
+                tag: "✅ Selector",
+                outbounds: selectorTags,
+                interrupt_exist_connections: false
+            },
+            {
+                type: "direct",
+                tag: "direct"
+            }
+        ],
+        route: buildRoutingRules(isWarp),
+        ntp: {
+            enabled: true,
+            server: "time.cloudflare.com",
+            server_port: 123,
+            domain_resolver: "dns-direct",
+            interval: "30m",
+            write_to_system: false
+        },
+        experimental: {
+            cache_file: {
+                enabled: true,
+                store_fakeip: true
+            },
+            clash_api: {
+                external_controller: "127.0.0.1:9090",
+                external_ui: "ui",
+                external_ui_download_url: "https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip",
+                external_ui_download_detour: "direct",
+                default_mode: "Rule"
+            }
+        }
+    };
 
     const addUrlTest = (tag, outbounds) => config.outbounds.push({
         type: "urltest",
@@ -654,19 +720,11 @@ export async function getSingBoxCustomConfig(env, isFragment) {
     const selectorTags = ['💦 Best Ping 🚀'];
 
     if (settings.outProxy) {
-        try {
-            chainProxy = buildChainOutbound(settings.outProxyParams);
-            selectorTags.push('💦 🔗 Best Ping 🚀');
-        } catch (error) {
-            console.log('An error occured while parsing chain proxy: ', error);
-            chainProxy = undefined;
-            const proxySettings = await env.kv.get("proxySettings", { type: 'json' });
-            await env.kv.put("proxySettings", JSON.stringify({
-                ...proxySettings,
-                outProxy: '',
-                outProxyParams: {}
-            }));
-        }
+        chainProxy = await parseChainProxy(env, buildChainOutbound);
+    }
+
+    if (chainProxy) {
+        selectorTags.push('💦 🔗 Best Ping 🚀');
     }
 
     let proxyIndex = 1;
@@ -717,7 +775,7 @@ export async function getSingBoxCustomConfig(env, isFragment) {
                     chain.tag = chainTag;
                     chain.detour = tag;
                     outbounds.chains.push(chain);
-                    
+
                     chainTags.push(chainTag);
                     selectorTags.push(chainTag);
                 }
@@ -743,68 +801,6 @@ export async function getSingBoxCustomConfig(env, isFragment) {
         }
     });
 }
-
-const configTemp = {
-    log: {
-        level: "warn",
-        timestamp: true
-    },
-    dns: {},
-    inbounds: [
-        {
-            type: "tun",
-            tag: "tun-in",
-            address: [
-                "172.18.0.1/30"
-            ],
-            mtu: 9000,
-            auto_route: true,
-            strict_route: true,
-            endpoint_independent_nat: true,
-            stack: "mixed"
-        },
-        {
-            type: "mixed",
-            tag: "mixed-in",
-            listen: "0.0.0.0",
-            listen_port: 2080
-        }
-    ],
-    outbounds: [
-        {
-            type: "selector",
-            tag: "✅ Selector",
-            outbounds: [],
-            interrupt_exist_connections: false
-        },
-        {
-            type: "direct",
-            tag: "direct"
-        }
-    ],
-    route: {},
-    ntp: {
-        enabled: true,
-        server: "time.cloudflare.com",
-        server_port: 123,
-        domain_resolver: "dns-direct",
-        interval: "30m",
-        write_to_system: false
-    },
-    experimental: {
-        cache_file: {
-            enabled: true,
-            store_fakeip: true
-        },
-        clash_api: {
-            external_controller: "127.0.0.1:9090",
-            external_ui: "ui",
-            external_ui_download_url: "https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip",
-            external_ui_download_detour: "direct",
-            default_mode: "Rule"
-        }
-    }
-};
 
 function getRuleSets() {
     return [

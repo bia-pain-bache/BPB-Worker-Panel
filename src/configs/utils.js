@@ -171,3 +171,19 @@ export function isHttps(port) {
     return httpConfig.defaultHttpsPorts.includes(port);
 }
 
+export async function parseChainProxy(env, buildOutbound) {
+    try {
+        return buildOutbound();
+    } catch (error) {
+        console.log('An error occured while parsing chain proxy: ', error);
+        const settings = await env.kv.get("proxySettings", { type: 'json' });
+        await env.kv.put("proxySettings", JSON.stringify({
+            ...settings,
+            outProxy: '',
+            outProxyParams: {}
+        }));
+
+        return undefined;
+    }
+}
+

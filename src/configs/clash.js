@@ -1,7 +1,20 @@
-import { getConfigAddresses, extractWireguardParams, generateRemark, randomUpperCase, isIPv6, isIPv4, isDomain, getDomain, generateWsPath, parseHostPort, isHttps } from '#configs/utils';
 import { getDataset } from '#kv';
 import { globalConfig, httpConfig } from '#common/init';
 import { settings } from '#common/handlers'
+import {
+    getConfigAddresses,
+    extractWireguardParams,
+    generateRemark,
+    randomUpperCase,
+    isIPv6,
+    isIPv4,
+    isDomain,
+    isHttps,
+    getDomain,
+    generateWsPath,
+    parseHostPort,
+    parseChainProxy
+} from '#configs/utils';
 
 async function buildDNS(isChain, isWarp, isPro) {
     const finalLocalDNS = settings.localDNS === 'localhost' ? 'system' : `${settings.localDNS}#DIRECT`;
@@ -418,18 +431,75 @@ function buildChainOutbound() {
 }
 
 async function buildConfig(selectorTags, urlTestTags, secondUrlTestTags, isChain, isWarp, isPro) {
-    const config = structuredClone(configTemp);
-    config['dns'] = await buildDNS(isChain, isWarp, isPro);
-
     const { rules, ruleProviders } = buildRoutingRules(isWarp);
-    config['rules'] = rules;
-    config['rule-providers'] = ruleProviders;
-
-    config['proxy-groups'].push({
-        "name": "✅ Selector",
-        "type": "select",
-        "proxies": selectorTags
-    });
+    const config = {
+        "mixed-port": 7890,
+        "ipv6": true,
+        "allow-lan": true,
+        "mode": "rule",
+        "log-level": "warning",
+        "disable-keep-alive": false,
+        "keep-alive-idle": 10,
+        "keep-alive-interval": 15,
+        ...(!isWarp && {"tcp-concurrent": true}),
+        "unified-delay": false,
+        "geo-auto-update": true,
+        "geo-update-interval": 168,
+        "external-controller": "127.0.0.1:9090",
+        "external-ui-url": "https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip",
+        "external-ui": "ui",
+        "external-controller-cors": {
+            "allow-origins": ["*"],
+            "allow-private-network": true
+        },
+        "profile": {
+            "store-selected": true,
+            "store-fake-ip": true
+        },
+        "dns": await buildDNS(isChain, isWarp, isPro),
+        "tun": {
+            "enable": true,
+            "stack": "mixed",
+            "auto-route": true,
+            "strict-route": true,
+            "auto-detect-interface": true,
+            "dns-hijack": [
+                "any:53",
+                "tcp://any:53"
+            ],
+            "mtu": 9000
+        },
+        "sniffer": {
+            "enable": true,
+            "force-dns-mapping": true,
+            "parse-pure-ip": true,
+            "override-destination": true,
+            "sniff": {
+                "HTTP": {
+                    "ports": [80, 8080, 8880, 2052, 2082, 2086, 2095]
+                },
+                "TLS": {
+                    "ports": [443, 8443, 2053, 2083, 2087, 2096]
+                }
+            }
+        },
+        "proxies": [],
+        "proxy-groups": [
+            {
+                "name": "✅ Selector",
+                "type": "select",
+                "proxies": selectorTags
+            }
+        ],
+        "rule-providers": ruleProviders,
+        "rules": rules,
+        "ntp": {
+            "enable": true,
+            "server": "time.cloudflare.com",
+            "port": 123,
+            "interval": 30
+        }
+    };
 
     const addUrlTest = (name, proxies) => config['proxy-groups'].push({
         "name": name,
@@ -444,7 +514,6 @@ async function buildConfig(selectorTags, urlTestTags, secondUrlTestTags, isChain
 
     if (isWarp) {
         addUrlTest(`💦 WoW ${isPro ? 'Pro ' : ''}- Best Ping 🚀`, secondUrlTestTags);
-        delete config["tcp-concurrent"];
     }
 
     if (isChain) {
@@ -452,6 +521,90 @@ async function buildConfig(selectorTags, urlTestTags, secondUrlTestTags, isChain
     }
 
     return config;
+}
+
+export async function getClashNormalConfig(env) {
+    let chainProxy;
+    const selectorTags = [`💦 Best Ping 🚀`];
+
+    if (settings.outProxy) {
+        chainProxy = await parseChainProxy(env, buildChainOutbound);
+    }
+
+    if (chainProxy) {
+        selectorTags.push('💦 🔗 Best Ping 🚀');
+    }
+
+    let proxyIndex = 1;
+    const protocols = [];
+    if (settings.VLConfigs) protocols.push(atob('VkxFU1M='));
+    if (settings.TRConfigs) protocols.push(atob('VHJvamFu'));
+    const Addresses = await getConfigAddresses(false);
+    const tags = [];
+    const chainTags = [];
+    const outbounds = {
+        proxies: [],
+        chains: []
+    };
+
+    protocols.forEach(protocol => {
+        let protocolIndex = 1;
+        settings.ports.forEach(port => {
+            Addresses.forEach(addr => {
+                let VLOutbound, TROutbound;
+                const isCustomAddr = settings.customCdnAddrs.includes(addr);
+                const configType = isCustomAddr ? 'C' : '';
+                const sni = isCustomAddr ? settings.customCdnSni : randomUpperCase(httpConfig.hostName);
+                const host = isCustomAddr ? settings.customCdnHost : httpConfig.hostName;
+                const tag = generateRemark(protocolIndex, port, addr, protocol, configType).replace(' : ', ' - ');
+
+                if (protocol === atob('VkxFU1M=')) {
+                    VLOutbound = buildVLOutbound(tag, addr, port, host, sni, isCustomAddr);
+                    outbounds.proxies.push(VLOutbound);
+
+                    tags.push(tag);
+                    selectorTags.push(tag);
+                }
+
+                if (protocol === atob('VHJvamFu') && isHttps(port)) {
+                    TROutbound = buildTROutbound(tag, addr, port, host, sni, isCustomAddr);
+                    outbounds.proxies.push(TROutbound);
+
+                    tags.push(tag);
+                    selectorTags.push(tag);
+                }
+
+                if (chainProxy) {
+                    const chainTag = generateRemark(protocolIndex, port, addr, protocol, configType, true);
+                    let chain = structuredClone(chainProxy);
+                    chain['name'] = chainTag;
+                    chain['dialer-proxy'] = tag;
+                    outbounds.chains.push(chain);
+
+                    chainTags.push(chainTag);
+                    selectorTags.push(chainTag);
+                }
+
+                proxyIndex++;
+                protocolIndex++;
+            });
+        });
+    });
+
+    const config = await buildConfig(selectorTags, tags, chainTags, chainProxy, false, false);
+    config['proxies'].push(
+        ...outbounds.chains,
+        ...outbounds.proxies
+    );
+
+    return new Response(JSON.stringify(config, null, 4), {
+        status: 200,
+        headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+            'Cache-Control': 'no-store',
+            'CDN-Cache-Control': 'no-store'
+        }
+    });
 }
 
 export async function getClashWarpConfig(request, env, isPro) {
@@ -499,163 +652,6 @@ export async function getClashWarpConfig(request, env, isPro) {
         }
     });
 }
-
-export async function getClashNormalConfig(env) {
-    let chainProxy;
-    const selectorTags = [`💦 Best Ping 🚀`];
-
-    if (settings.outProxy) {
-        try {
-            chainProxy = buildChainOutbound();
-            selectorTags.push('💦 🔗 Best Ping 🚀');
-        } catch (error) {
-            console.log('An error occured while parsing chain proxy: ', error);
-            chainProxy = undefined;
-
-            const proxySettings = await env.kv.get("proxySettings", { type: 'json' });
-            await env.kv.put("proxySettings", JSON.stringify({
-                ...proxySettings,
-                outProxy: '',
-                outProxyParams: {}
-            }));
-        }
-    }
-
-    let proxyIndex = 1;
-    const protocols = [];
-    if (settings.VLConfigs) protocols.push(atob('VkxFU1M='));
-    if (settings.TRConfigs) protocols.push(atob('VHJvamFu'));
-    const Addresses = await getConfigAddresses(false);
-    const tags = [];
-    const chainTags = [];
-    const outbounds = {
-        proxies: [],
-        chains: []
-    };
-
-    protocols.forEach(protocol => {
-        let protocolIndex = 1;
-        settings.ports.forEach(port => {
-            Addresses.forEach(addr => {
-                let VLOutbound, TROutbound;
-                const isCustomAddr = settings.customCdnAddrs.includes(addr);
-                const configType = isCustomAddr ? 'C' : '';
-                const sni = isCustomAddr ? settings.customCdnSni : randomUpperCase(httpConfig.hostName);
-                const host = isCustomAddr ? settings.customCdnHost : httpConfig.hostName;
-                const tag = generateRemark(protocolIndex, port, addr, protocol, configType).replace(' : ', ' - ');
-
-                if (protocol === atob('VkxFU1M=')) {
-                    VLOutbound = buildVLOutbound(tag, addr, port, host, sni, isCustomAddr);
-                    outbounds.proxies.push(VLOutbound);
-                    
-                    tags.push(tag);
-                    selectorTags.push(tag);
-                }
-
-                if (protocol === atob('VHJvamFu') && isHttps(port)) {
-                    TROutbound = buildTROutbound(tag, addr, port, host, sni, isCustomAddr);
-                    outbounds.proxies.push(TROutbound);
-                    
-                    tags.push(tag);
-                    selectorTags.push(tag);
-                }
-
-
-                if (chainProxy) {
-                    const chainTag = generateRemark(protocolIndex, port, addr, protocol, configType, true);
-                    let chain = structuredClone(chainProxy);
-                    chain['name'] = chainTag;
-                    chain['dialer-proxy'] = tag;
-                    outbounds.chains.push(chain);
-                    
-                    chainTags.push(chainTag);
-                    selectorTags.push(chainTag);
-                }
-
-                proxyIndex++;
-                protocolIndex++;
-            });
-        });
-    });
-
-    const config = await buildConfig(selectorTags, tags, chainTags, chainProxy, false, false);
-    config['proxies'].push(
-        ...outbounds.chains,
-        ...outbounds.proxies
-    );
-
-    return new Response(JSON.stringify(config, null, 4), {
-        status: 200,
-        headers: {
-            'Content-Type': 'text/plain;charset=utf-8',
-            'Cache-Control': 'no-store',
-            'CDN-Cache-Control': 'no-store'
-        }
-    });
-}
-
-const configTemp = {
-    "mixed-port": 7890,
-    "ipv6": true,
-    "allow-lan": true,
-    "mode": "rule",
-    "log-level": "warning",
-    "disable-keep-alive": false,
-    "keep-alive-idle": 10,
-    "keep-alive-interval": 15,
-    "tcp-concurrent": true,
-    "unified-delay": false,
-    "geo-auto-update": true,
-    "geo-update-interval": 168,
-    "external-controller": "127.0.0.1:9090",
-    "external-ui-url": "https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip",
-    "external-ui": "ui",
-    "external-controller-cors": {
-        "allow-origins": ["*"],
-        "allow-private-network": true
-    },
-    "profile": {
-        "store-selected": true,
-        "store-fake-ip": true
-    },
-    "dns": {},
-    "tun": {
-        "enable": true,
-        "stack": "mixed",
-        "auto-route": true,
-        "strict-route": true,
-        "auto-detect-interface": true,
-        "dns-hijack": [
-            "any:53",
-            "tcp://any:53"
-        ],
-        "mtu": 9000
-    },
-    "sniffer": {
-        "enable": true,
-        "force-dns-mapping": true,
-        "parse-pure-ip": true,
-        "override-destination": true,
-        "sniff": {
-            "HTTP": {
-                "ports": [80, 8080, 8880, 2052, 2082, 2086, 2095]
-            },
-            "TLS": {
-                "ports": [443, 8443, 2053, 2083, 2087, 2096]
-            }
-        }
-    },
-    "proxies": [],
-    "proxy-groups": [],
-    "rule-providers": {},
-    "rules": [],
-    "ntp": {
-        "enable": true,
-        "server": "time.cloudflare.com",
-        "port": 123,
-        "interval": 30
-    }
-};
 
 function getRuleProviders() {
     const finalLocalDNS = settings.localDNS === 'localhost'
