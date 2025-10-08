@@ -456,12 +456,7 @@ function buildWarpOutbound(warpConfigs, remark, endpoint, chain) {
                 persistent_keepalive_interval: 5
             }
         ],
-        private_key: privateKey,
-        domain_resolver: {
-            server: chain ? "dns-remote" : "dns-direct",
-            strategy: settings.warpEnableIPv6 ? "prefer_ipv4" : "ipv4_only",
-            rewrite_ttl: 60
-        }
+        private_key: privateKey
     };
 
     if (chain) {
@@ -584,7 +579,7 @@ function buildChainOutbound() {
     return outbound;
 }
 
-async function buildConfig(selectorTags, urlTestTags, secondUrlTestTags, isWarp, isIPv6, isChain) {
+async function buildConfig(outbounds, endpoints, selectorTags, urlTestTags, secondUrlTestTags, isWarp, isIPv6, isChain) {
     const config = {
         log: {
             level: "warn",
@@ -613,6 +608,7 @@ async function buildConfig(selectorTags, urlTestTags, secondUrlTestTags, isWarp,
             }
         ],
         outbounds: [
+            ...outbounds,
             {
                 type: "selector",
                 tag: "✅ Selector",
@@ -648,6 +644,10 @@ async function buildConfig(selectorTags, urlTestTags, secondUrlTestTags, isWarp,
         }
     };
 
+    if(endpoints.length) {
+        config.endpoints = endpoints;
+    }
+
     const addUrlTest = (tag, outbounds) => config.outbounds.push({
         type: "urltest",
         tag,
@@ -670,80 +670,31 @@ async function buildConfig(selectorTags, urlTestTags, secondUrlTestTags, isWarp,
     return config;
 }
 
-export async function getSingBoxWarpConfig(request, env) {
-    const { warpConfigs } = await getDataset(request, env);
-    const warpTags = [], wowTags = [];
-    const endpoints = {
-        proxies: [],
-        chains: []
-    }
-
-    settings.warpEndpoints.forEach((endpoint, index) => {
-        const warpTag = `💦 ${index + 1} - Warp 🇮🇷`;
-        warpTags.push(warpTag);
-
-        const wowTag = `💦 ${index + 1} - WoW 🌍`;
-        wowTags.push(wowTag);
-
-        const warpOutbound = buildWarpOutbound(warpConfigs, warpTag, endpoint, '');
-        endpoints.proxies.push(warpOutbound);
-
-        const wowOutbound = buildWarpOutbound(warpConfigs, wowTag, endpoint, warpTag);
-        endpoints.chains.push(wowOutbound);
-    });
-
-    const selectorTags = [
-        '💦 Warp - Best Ping 🚀',
-        '💦 WoW - Best Ping 🚀',
-        ...warpTags,
-        ...wowTags
-    ];
-
-    const config = await buildConfig(selectorTags, warpTags, wowTags, true, settings.warpEnableIPv6);
-    config.endpoints = [
-        ...endpoints.chains,
-        ...endpoints.proxies
-    ];
-
-    return new Response(JSON.stringify(config, null, 4), {
-        status: 200,
-        headers: {
-            'Content-Type': 'text/plain;charset=utf-8',
-            'Cache-Control': 'no-store',
-            'CDN-Cache-Control': 'no-store'
-        }
-    });
-}
-
-export async function getSingBoxCustomConfig(env, isFragment) {
+export async function getSbCustomConfig(env, isFragment) {
     let chainProxy;
-    const selectorTags = ['💦 Best Ping 🚀'];
 
     if (settings.outProxy) {
         chainProxy = await parseChainProxy(env, buildChainOutbound);
     }
 
-    if (chainProxy) {
-        selectorTags.push('💦 🔗 Best Ping 🚀');
-    }
-
     let proxyIndex = 1;
-    const protocols = [];
-    const tags = [];
+    const proxyTags = [];
     const chainTags = [];
-
-    if (settings.VLConfigs) protocols.push(atob('VkxFU1M='));
-    if (settings.TRConfigs) protocols.push(atob('VHJvamFu'));
+    const outbounds = [];
+    const protocols = [
+        ...(settings.VLConfigs ? [atob('VkxFU1M=')] : []),
+        ...(settings.TRConfigs ? [atob('VHJvamFu')] : [])
+    ];
 
     const Addresses = await getConfigAddresses(isFragment);
-    const outbounds = {
-        proxies: [],
-        chains: []
-    }
-
     const ports = isFragment
         ? settings.ports.filter(port => isHttps(port))
         : settings.ports;
+
+    const selectorTags = [
+        '💦 Best Ping 🚀',
+        ...(chainProxy ? ['💦 🔗 Best Ping 🚀'] : [])
+    ];
 
     protocols.forEach(protocol => {
         let protocolIndex = 1;
@@ -758,15 +709,15 @@ export async function getSingBoxCustomConfig(env, isFragment) {
 
                 if (protocol === atob('VkxFU1M=')) {
                     VLOutbound = buildVLOutbound(tag, addr, port, host, sni, isCustomAddr, isFragment);
-                    outbounds.proxies.push(VLOutbound);
+                    outbounds.push(VLOutbound);
                 }
 
                 if (protocol === atob('VHJvamFu')) {
                     TROutbound = buildTROutbound(tag, addr, port, host, sni, isCustomAddr, isFragment);
-                    outbounds.proxies.push(TROutbound);
+                    outbounds.push(TROutbound);
                 }
 
-                tags.push(tag);
+                proxyTags.push(tag);
                 selectorTags.push(tag);
 
                 if (chainProxy) {
@@ -774,8 +725,7 @@ export async function getSingBoxCustomConfig(env, isFragment) {
                     const chain = structuredClone(chainProxy);
                     chain.tag = chainTag;
                     chain.detour = tag;
-                    outbounds.chains.push(chain);
-
+                    outbounds.push(chain);
                     chainTags.push(chainTag);
                     selectorTags.push(chainTag);
                 }
@@ -786,11 +736,43 @@ export async function getSingBoxCustomConfig(env, isFragment) {
         });
     });
 
-    const config = await buildConfig(selectorTags, tags, chainTags, false, settings.VLTRenableIPv6, chainProxy);
-    config.outbounds.push(
-        ...outbounds.chains,
-        ...outbounds.proxies
-    );
+    const config = await buildConfig(outbounds, [], selectorTags, proxyTags, chainTags, false, settings.VLTRenableIPv6, chainProxy);
+
+    return new Response(JSON.stringify(config, null, 4), {
+        status: 200,
+        headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+            'Cache-Control': 'no-store',
+            'CDN-Cache-Control': 'no-store'
+        }
+    });
+}
+
+export async function getSbWarpConfig(request, env) {
+    const { warpConfigs } = await getDataset(request, env);
+    const proxyTags = [], chainTags = [];
+    const outbounds = [];
+
+    settings.warpEndpoints.forEach((endpoint, index) => {
+        const warpTag = `💦 ${index + 1} - Warp 🇮🇷`;
+        proxyTags.push(warpTag);
+
+        const wowTag = `💦 ${index + 1} - WoW 🌍`;
+        chainTags.push(wowTag);
+
+        const warpOutbound = buildWarpOutbound(warpConfigs, warpTag, endpoint, '');
+        const wowOutbound = buildWarpOutbound(warpConfigs, wowTag, endpoint, warpTag);
+        outbounds.push(warpOutbound, wowOutbound);
+    });
+
+    const selectorTags = [
+        '💦 Warp - Best Ping 🚀',
+        '💦 WoW - Best Ping 🚀',
+        ...proxyTags,
+        ...chainTags
+    ];
+
+    const config = await buildConfig([], outbounds, selectorTags, proxyTags, chainTags, true, settings.warpEnableIPv6);
 
     return new Response(JSON.stringify(config, null, 4), {
         status: 200,

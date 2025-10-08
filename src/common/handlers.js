@@ -1,14 +1,14 @@
 import { Authenticate, generateJWTToken, resetPassword } from "#auth";
-import { getClashNormalConfig, getClashWarpConfig } from "#configs/clash";
+import { getClNormalConfig, getClWarpConfig } from "#configs/clash";
+import { getSbCustomConfig, getSbWarpConfig } from "#configs/sing-box";
+import { getXrCustomConfigs, getXrWarpConfigs } from "#configs/xray";
 import { extractWireguardParams } from "#configs/utils";
-import { getSingBoxCustomConfig, getSingBoxWarpConfig } from "#configs/sing-box";
-import { getXrayCustomConfigs, getXrayWarpConfigs } from "#configs/xray";
 import { getDataset, updateDataset } from "#kv";
-import JSZip from "jszip";
 import { fetchWarpConfigs } from "#protocols/warp";
 import { globalConfig, httpConfig, wsConfig } from "#common/init";
 import { VlOverWSHandler } from "#protocols/websocket/vless";
 import { TrOverWSHandler } from "#protocols/websocket/trojan";
+import JSZip from "jszip";
 export let settings = {}
 
 export async function handleWebsocket(request) {
@@ -92,11 +92,11 @@ export async function handleSubscriptions(request, env) {
         case `/sub/normal/${subPath}`:
             switch (client) {
                 case 'xray':
-                    return await getXrayCustomConfigs(env, false);
+                    return await getXrCustomConfigs(env, false);
                 case 'sing-box':
-                    return await getSingBoxCustomConfig(env, false);
+                    return await getSbCustomConfig(env, false);
                 case 'clash':
-                    return await getClashNormalConfig(env);
+                    return await getClNormalConfig(env);
                 default:
                     break;
             }
@@ -104,9 +104,9 @@ export async function handleSubscriptions(request, env) {
         case `/sub/fragment/${subPath}`:
             switch (client) {
                 case 'xray':
-                    return await getXrayCustomConfigs(env, true);
+                    return await getXrCustomConfigs(env, true);
                 case 'sing-box':
-                    return await getSingBoxCustomConfig(env, true);
+                    return await getSbCustomConfig(env, true);
                 default:
                     break;
             }
@@ -114,11 +114,11 @@ export async function handleSubscriptions(request, env) {
         case `/sub/warp/${subPath}`:
             switch (client) {
                 case 'xray':
-                    return await getXrayWarpConfigs(request, env, false, false);
+                    return await getXrWarpConfigs(request, env, false, false);
                 case 'sing-box':
-                    return await getSingBoxWarpConfig(request, env);
+                    return await getSbWarpConfig(request, env);
                 case 'clash':
-                    return await getClashWarpConfig(request, env, false);
+                    return await getClWarpConfig(request, env, false);
                 default:
                     break;
             }
@@ -126,11 +126,11 @@ export async function handleSubscriptions(request, env) {
         case `/sub/warp-pro/${subPath}`:
             switch (client) {
                 case 'xray':
-                    return await getXrayWarpConfigs(request, env, true, false);
+                    return await getXrWarpConfigs(request, env, true, false);
                 case 'xray-knocker':
-                    return await getXrayWarpConfigs(request, env, true, true);
+                    return await getXrWarpConfigs(request, env, true, true);
                 case 'clash':
-                    return await getClashWarpConfig(request, env, true);
+                    return await getClWarpConfig(request, env, true);
                 default:
                     break;
             }

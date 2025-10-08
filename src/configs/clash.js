@@ -430,7 +430,7 @@ function buildChainOutbound() {
     return outbound;
 }
 
-async function buildConfig(selectorTags, urlTestTags, secondUrlTestTags, isChain, isWarp, isPro) {
+async function buildConfig(outbounds, selectorTags, proxyTags, chainTags, isChain, isWarp, isPro) {
     const { rules, ruleProviders } = buildRoutingRules(isWarp);
     const config = {
         "mixed-port": 7890,
@@ -441,7 +441,7 @@ async function buildConfig(selectorTags, urlTestTags, secondUrlTestTags, isChain
         "disable-keep-alive": false,
         "keep-alive-idle": 10,
         "keep-alive-interval": 15,
-        ...(!isWarp && {"tcp-concurrent": true}),
+        ...(!isWarp && { "tcp-concurrent": true }),
         "unified-delay": false,
         "geo-auto-update": true,
         "geo-update-interval": 168,
@@ -483,7 +483,7 @@ async function buildConfig(selectorTags, urlTestTags, secondUrlTestTags, isChain
                 }
             }
         },
-        "proxies": [],
+        "proxies": outbounds,
         "proxy-groups": [
             {
                 "name": "✅ Selector",
@@ -510,42 +510,40 @@ async function buildConfig(selectorTags, urlTestTags, secondUrlTestTags, isChain
         "proxies": proxies
     });
 
-    addUrlTest(isWarp ? `💦 Warp ${isPro ? 'Pro ' : ''}- Best Ping 🚀` : '💦 Best Ping 🚀', urlTestTags);
+    addUrlTest(isWarp ? `💦 Warp ${isPro ? 'Pro ' : ''}- Best Ping 🚀` : '💦 Best Ping 🚀', proxyTags);
 
     if (isWarp) {
-        addUrlTest(`💦 WoW ${isPro ? 'Pro ' : ''}- Best Ping 🚀`, secondUrlTestTags);
+        addUrlTest(`💦 WoW ${isPro ? 'Pro ' : ''}- Best Ping 🚀`, chainTags);
     }
 
     if (isChain) {
-        addUrlTest('💦 🔗 Best Ping 🚀', secondUrlTestTags);
+        addUrlTest('💦 🔗 Best Ping 🚀', chainTags);
     }
 
     return config;
 }
 
-export async function getClashNormalConfig(env) {
+export async function getClNormalConfig(env) {
     let chainProxy;
-    const selectorTags = [`💦 Best Ping 🚀`];
 
     if (settings.outProxy) {
         chainProxy = await parseChainProxy(env, buildChainOutbound);
     }
 
-    if (chainProxy) {
-        selectorTags.push('💦 🔗 Best Ping 🚀');
-    }
-
     let proxyIndex = 1;
-    const protocols = [];
-    if (settings.VLConfigs) protocols.push(atob('VkxFU1M='));
-    if (settings.TRConfigs) protocols.push(atob('VHJvamFu'));
     const Addresses = await getConfigAddresses(false);
-    const tags = [];
+    const proxyTags = [];
     const chainTags = [];
-    const outbounds = {
-        proxies: [],
-        chains: []
-    };
+    const outbounds = [];
+    const protocols = [
+        ...(settings.VLConfigs ? [atob('VkxFU1M=')] : []),
+        ...(settings.TRConfigs ? [atob('VHJvamFu')] : [])
+    ];
+
+    const selectorTags = [
+        '💦 Best Ping 🚀',
+        ...(chainProxy ? ['💦 🔗 Best Ping 🚀'] : [])
+    ];
 
     protocols.forEach(protocol => {
         let protocolIndex = 1;
@@ -560,17 +558,16 @@ export async function getClashNormalConfig(env) {
 
                 if (protocol === atob('VkxFU1M=')) {
                     VLOutbound = buildVLOutbound(tag, addr, port, host, sni, isCustomAddr);
-                    outbounds.proxies.push(VLOutbound);
-
-                    tags.push(tag);
-                    selectorTags.push(tag);
+                    outbounds.push(VLOutbound);
                 }
 
                 if (protocol === atob('VHJvamFu') && isHttps(port)) {
                     TROutbound = buildTROutbound(tag, addr, port, host, sni, isCustomAddr);
-                    outbounds.proxies.push(TROutbound);
+                    outbounds.push(TROutbound);
+                }
 
-                    tags.push(tag);
+                if (VLOutbound || TROutbound) {
+                    proxyTags.push(tag);
                     selectorTags.push(tag);
                 }
 
@@ -579,8 +576,7 @@ export async function getClashNormalConfig(env) {
                     let chain = structuredClone(chainProxy);
                     chain['name'] = chainTag;
                     chain['dialer-proxy'] = tag;
-                    outbounds.chains.push(chain);
-
+                    outbounds.push(chain);
                     chainTags.push(chainTag);
                     selectorTags.push(chainTag);
                 }
@@ -591,11 +587,7 @@ export async function getClashNormalConfig(env) {
         });
     });
 
-    const config = await buildConfig(selectorTags, tags, chainTags, chainProxy, false, false);
-    config['proxies'].push(
-        ...outbounds.chains,
-        ...outbounds.proxies
-    );
+    const config = await buildConfig(outbounds, selectorTags, proxyTags, chainTags, chainProxy, false, false);
 
     return new Response(JSON.stringify(config, null, 4), {
         status: 200,
@@ -607,41 +599,34 @@ export async function getClashNormalConfig(env) {
     });
 }
 
-export async function getClashWarpConfig(request, env, isPro) {
+export async function getClWarpConfig(request, env, isPro) {
     const { warpConfigs } = await getDataset(request, env);
-    const warpTags = [], wowTags = [];
-    const outbounds = {
-        proxies: [],
-        chains: []
-    }
+    const proxyTags = [], chainTags = [];
+    const outbounds = [];
 
     settings.warpEndpoints.forEach((endpoint, index) => {
         const warpTag = `💦 ${index + 1} - Warp ${isPro ? 'Pro ' : ''}🇮🇷`;
-        warpTags.push(warpTag);
+        proxyTags.push(warpTag);
 
         const wowTag = `💦 ${index + 1} - WoW ${isPro ? 'Pro ' : ''}🌍`;
-        wowTags.push(wowTag);
+        chainTags.push(wowTag);
 
         const warpOutbound = buildWarpOutbound(warpConfigs, warpTag, endpoint, '', isPro);
-        outbounds.proxies.push(warpOutbound);
+        outbounds.push(warpOutbound);
 
-        const WoWOutbound = buildWarpOutbound(warpConfigs, wowTag, endpoint, warpTag);
-        outbounds.chains.push(WoWOutbound);
+        const wowOutbound = buildWarpOutbound(warpConfigs, wowTag, endpoint, warpTag);
+        outbounds.push(wowOutbound);
 
     });
 
     const selectorTags = [
         `💦 Warp ${isPro ? 'Pro ' : ''}- Best Ping 🚀`,
         `💦 WoW ${isPro ? 'Pro ' : ''}- Best Ping 🚀`,
-        ...warpTags,
-        ...wowTags
+        ...proxyTags,
+        ...chainTags
     ];
 
-    const config = await buildConfig(selectorTags, warpTags, wowTags, false, true, isPro);
-    config['proxies'].push(
-        ...outbounds.proxies,
-        ...outbounds.chains
-    );
+    const config = await buildConfig(outbounds, selectorTags, proxyTags, chainTags, false, true, isPro);
 
     return new Response(JSON.stringify(config, null, 4), {
         status: 200,
