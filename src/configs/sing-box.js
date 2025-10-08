@@ -677,7 +677,6 @@ export async function getSbCustomConfig(env, isFragment) {
         chainProxy = await parseChainProxy(env, buildChainOutbound);
     }
 
-    let proxyIndex = 1;
     const proxyTags = [];
     const chainTags = [];
     const outbounds = [];
@@ -700,23 +699,17 @@ export async function getSbCustomConfig(env, isFragment) {
         let protocolIndex = 1;
         ports.forEach(port => {
             Addresses.forEach(addr => {
-                let VLOutbound, TROutbound;
                 const isCustomAddr = settings.customCdnAddrs.includes(addr);
                 const configType = isFragment ? 'F' : isCustomAddr ? 'C' : '';
                 const sni = isCustomAddr ? settings.customCdnSni : randomUpperCase(httpConfig.hostName);
                 const host = isCustomAddr ? settings.customCdnHost : httpConfig.hostName;
                 const tag = generateRemark(protocolIndex, port, addr, protocol, configType);
 
-                if (protocol === atob('VkxFU1M=')) {
-                    VLOutbound = buildVLOutbound(tag, addr, port, host, sni, isCustomAddr, isFragment);
-                    outbounds.push(VLOutbound);
-                }
-
-                if (protocol === atob('VHJvamFu')) {
-                    TROutbound = buildTROutbound(tag, addr, port, host, sni, isCustomAddr, isFragment);
-                    outbounds.push(TROutbound);
-                }
-
+                const outbound = protocol === atob('VkxFU1M=')
+                    ? buildVLOutbound(tag, addr, port, host, sni, isCustomAddr, isFragment)
+                    : buildTROutbound(tag, addr, port, host, sni, isCustomAddr, isFragment);
+                
+                outbounds.push(outbound);
                 proxyTags.push(tag);
                 selectorTags.push(tag);
 
@@ -726,11 +719,11 @@ export async function getSbCustomConfig(env, isFragment) {
                     chain.tag = chainTag;
                     chain.detour = tag;
                     outbounds.push(chain);
+                    
                     chainTags.push(chainTag);
                     selectorTags.push(chainTag);
                 }
 
-                proxyIndex++;
                 protocolIndex++;
             });
         });
@@ -752,6 +745,10 @@ export async function getSbWarpConfig(request, env) {
     const { warpConfigs } = await getDataset(request, env);
     const proxyTags = [], chainTags = [];
     const outbounds = [];
+    const selectorTags = [
+        '💦 Warp - Best Ping 🚀',
+        '💦 WoW - Best Ping 🚀'
+    ];
 
     settings.warpEndpoints.forEach((endpoint, index) => {
         const warpTag = `💦 ${index + 1} - Warp 🇮🇷`;
@@ -760,17 +757,11 @@ export async function getSbWarpConfig(request, env) {
         const wowTag = `💦 ${index + 1} - WoW 🌍`;
         chainTags.push(wowTag);
 
+        selectorTags.push(warpTag, wowTag);
         const warpOutbound = buildWarpOutbound(warpConfigs, warpTag, endpoint, '');
         const wowOutbound = buildWarpOutbound(warpConfigs, wowTag, endpoint, warpTag);
         outbounds.push(warpOutbound, wowOutbound);
     });
-
-    const selectorTags = [
-        '💦 Warp - Best Ping 🚀',
-        '💦 WoW - Best Ping 🚀',
-        ...proxyTags,
-        ...chainTags
-    ];
 
     const config = await buildConfig([], outbounds, selectorTags, proxyTags, chainTags, true, settings.warpEnableIPv6);
 

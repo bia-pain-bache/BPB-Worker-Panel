@@ -956,10 +956,9 @@ export async function getXrCustomConfigs(env, isFragment) {
 }
 
 export async function getXrWarpConfigs(request, env, isPro, isKnocker) {
-    const { warpConfigs: warpAccounts } = await getDataset(request, env);
+    const { warpConfigs } = await getDataset(request, env);
     const proIndicator = isPro ? ' Pro ' : ' ';
-    const warpConfigs = [];
-    const wowConfigs = [];
+    const configs = [];
     const proxies = [], chains = []
     const udpNoise = isPro && !isKnocker
         ? [buildFreedomOutbound(false, true, 'udp-noise')]
@@ -970,17 +969,17 @@ export async function getXrWarpConfigs(request, env, isPro, isKnocker) {
         const wowOutbounds = [...udpNoise];
         const endpointHost = endpoint.split(':')[0];
 
-        const warpOutbound = buildWarpOutbound(warpAccounts, endpoint, false, isPro);
-        const wowOutbound = buildWarpOutbound(warpAccounts, endpoint, true, isPro);
+        const warpOutbound = buildWarpOutbound(warpConfigs, endpoint, false, isPro);
+        const wowOutbound = buildWarpOutbound(warpConfigs, endpoint, true, isPro);
 
         warpOutbounds.unshift(warpOutbound);
         wowOutbounds.unshift(wowOutbound, warpOutbound);
 
         const warpConfig = await buildConfig(`💦 ${index + 1} - Warp${proIndicator}🇮🇷`, warpOutbounds, false, false, false, true, false, [endpointHost], null);
-        warpConfigs.push(warpConfig);
+        configs.push(warpConfig);
         
         const wowConfig = await buildConfig(`💦 ${index + 1} - WoW${proIndicator}🌍`, wowOutbounds, false, true, false, true, false, [endpointHost], null);
-        wowConfigs.push(wowConfig);
+        configs.push(wowConfig);
 
         const proxy = structuredClone(warpOutbound);
         proxy.tag = `proxy-${index + 1}`;
@@ -997,12 +996,10 @@ export async function getXrWarpConfigs(request, env, isPro, isKnocker) {
     const wowBestPingOutbounds = [...chains, ...proxies, ...udpNoise];
 
     const warpBestPing = await buildConfig(`💦 Warp${proIndicator}- Best Ping 🚀`, warpBestPingOutbounds, true, false, false, true, false, outboundDomains, null);
-    warpConfigs.push(warpBestPing);
-    
     const wowBestPing = await buildConfig(`💦 WoW${proIndicator}- Best Ping 🚀`, wowBestPingOutbounds, true, true, false, true, false, outboundDomains, null);
-    wowConfigs.push(wowBestPing);
+    configs.push(warpBestPing, wowBestPing);
 
-    return new Response(JSON.stringify([...warpConfigs, ...wowConfigs], null, 4), {
+    return new Response(JSON.stringify(configs, null, 4), {
         status: 200,
         headers: {
             'Content-Type': 'text/plain;charset=utf-8',
