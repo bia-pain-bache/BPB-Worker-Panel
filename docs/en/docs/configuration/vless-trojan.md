@@ -82,8 +82,7 @@ As noted, a Proxy IP fixes the IP for Cloudflare target addresses, but node IPs 
 
 !!! warning
     - TLS configs for chaining must use port 443.
-    - VLESS and Trojan configs with randomized ALPN values are incompatible with Clash due to lack of Fingerprint support.
-    - VLESS and Trojan WS configs may not work for chaining on Sing-box due to a bug.
+    - VLESS and Trojan configs with randomized ALPN values are incompatible with Clash due to lack of Fingerprint
 
 This setting applies to **Normal** and **Fragment** subscriptions. After applying, update the subscription. The chained configs will be added alongside original configs using 🔗 icon. This way, when Chain Proxy stops working, you still have access to original configs.
 
