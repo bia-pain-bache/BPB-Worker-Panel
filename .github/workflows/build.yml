@@ -58,4 +58,5 @@ jobs:
           file_glob: true
           prerelease: ${{ github.ref != 'refs/heads/main' }}
           promote: ${{ github.ref == 'refs/heads/main' }}
+          make_latest: ${{ github.ref == 'refs/heads/main' }}
           body: ${{ steps.read_release.outputs.RELEASE_BODY }}
