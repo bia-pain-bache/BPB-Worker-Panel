@@ -46,9 +46,6 @@ As noted, a Proxy IP fixes the IP for Cloudflare target addresses, but node IPs 
 !!! note
     The Chain Proxy config must not be a worker itself, or the final IP will still change.
 
-!!! tip
-    Free configs are available from sources like [racevpn.com](https://racevpn.com). Their free plan configs expire after three days but are stable and region-specific.
-
 !!! note
     VLESS and Trojan configs support:  
 

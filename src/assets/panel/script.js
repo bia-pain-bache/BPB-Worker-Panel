@@ -781,10 +781,10 @@ function validateChainProxy() {
     const isSocksHttp = /^(http|socks):\/\/(?:([^:@]+):([^:@]+)@)?([^:@]+):(\d+)$/.test(chainProxy);
     const securityRegex = /security=(tls|none|reality)/;
     const validSecurityType = securityRegex.test(chainProxy);
-    const validTransmission = /type=(tcp|grpc|ws)/.test(chainProxy);
+    const validTransmission = /type=(tcp|grpc|ws|httpupgrade)/.test(chainProxy);
 
     if (!((isVless || isTrojan) && (hasSecurity && validSecurityType || !hasSecurity) && validTransmission) && !isShadowsocks && !isSocksHttp && chainProxy) {
-        alert('⛔ Invalid Config!\n💡 The chain proxy should be VLESS, Trojan, Shadowsocks, Socks or Http!\n💡 VLESS, Trojan and Shadowsocks transmission should be GRPC,WS or TCP\n💡 VLESS, Trojan and Shadowsocks security should be TLS, Reality or None\n💡 Socks or http should be like:\n + (socks or http)://user:pass@host:port\n + (socks or http)://host:port');
+        alert('⛔ Invalid Config!\n💡 The chain proxy should be VLESS, Trojan, Shadowsocks, Socks or Http!\n💡 VLESS, Trojan transmission should be GRPC,WS or TCP\n💡 VLESS, Trojan and Shadowsocks security should be TLS, Reality or None\n💡 Socks or http should be like:\n + (socks or http)://user:pass@host:port\n + (socks or http)://host:port');
         return false;
     }
 
