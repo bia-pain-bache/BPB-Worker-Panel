@@ -32,23 +32,21 @@ async function buildDNS(isWarp, isChain) {
     function addDnsServer(type, server, server_port, detour, tag, domain_resolver) {
         servers.push({
             type,
-            ...(server && { server }),
-            ...(server_port && { server_port }),
-            ...(detour && { detour }),
-            ...(domain_resolver && {
-                domain_resolver: {
-                    server: domain_resolver,
-                    strategy: "ipv4_only"
-                }
-            }),
+            server,
+            server_port,
+            detour,
+            domain_resolver: domain_resolver ? {
+                server: domain_resolver,
+                strategy: "ipv4_only"
+            } : undefined,
             tag
         });
     }
 
     if (settings.localDNS === 'localhost') {
-        addDnsServer("local", null, null, null, "dns-direct");
+        addDnsServer("local", undefined, undefined, undefined, "dns-direct");
     } else {
-        addDnsServer("udp", settings.localDNS, 53, null, "dns-direct");
+        addDnsServer("udp", settings.localDNS, 53, undefined, "dns-direct");
     }
 
     const rules = [
@@ -107,17 +105,14 @@ async function buildDNS(isWarp, isChain) {
             ruleSets.push({ rule_set: geosite }, { rule_set: geoip });
         }
 
-        const action = dns === 'reject' ? 'reject' : 'route';
-        const server = dns === 'reject' ? null : dns;
-
         rules.push({
-            ...(type && { type }),
-            ...(mode && { mode }),
-            ...(ruleSets.length && { rules: ruleSets }),
-            ...(geosite && !geoip && { rule_set: geosite }),
-            ...(domain && { domain_suffix: domain }),
-            action,
-            ...(server && { server })
+            type,
+            mode,
+            rules: ruleSets.length ? ruleSets : undefined,
+            rule_set: geosite && !geoip ? geosite : undefined,
+            domain_suffix: domain,
+            action: dns === 'reject' ? 'reject' : 'route',
+            server: dns === 'reject' ? undefined : dns
         });
     }
 
@@ -155,7 +150,7 @@ async function buildDNS(isWarp, isChain) {
         if (!rule) continue;
 
         if (geosite && geoip && type === 'direct') {
-            addDnsRule(geosite, geoip, null, dns);
+            addDnsRule(geosite, geoip, undefined, dns);
         } else {
             const dnsType = dns || type;
             if (!groupedRules.has(dnsType)) groupedRules.set(dnsType, { geosite: [], domain: [] });
@@ -166,8 +161,8 @@ async function buildDNS(isWarp, isChain) {
 
     for (const [dnsType, rule] of groupedRules) {
         const { geosite, domain } = rule;
-        if (domain.length) addDnsRule(null, null, domain, dnsType);
-        if (geosite.length) addDnsRule(geosite, null, null, dnsType);
+        if (domain.length) addDnsRule(undefined, undefined, domain, dnsType);
+        if (geosite.length) addDnsRule(geosite, undefined, undefined, dnsType);
     }
 
     const isSanctionRule = groupedRules.has("dns-anti-sanction");
@@ -176,9 +171,9 @@ async function buildDNS(isWarp, isChain) {
         const dnsHost = getDomain(settings.antiSanctionDNS);
 
         if (dnsHost.isHostDomain) {
-            addDnsServer("https", dnsHost.host, 443, null, "dns-anti-sanction", "dns-direct");
+            addDnsServer("https", dnsHost.host, 443, undefined, "dns-anti-sanction", "dns-direct");
         } else {
-            addDnsServer("udp", settings.antiSanctionDNS, 53, null, "dns-anti-sanction", null);
+            addDnsServer("udp", settings.antiSanctionDNS, 53, undefined, "dns-anti-sanction", undefined);
         }
     }
 
@@ -245,26 +240,22 @@ function buildRoutingRules(isWarp) {
     ];
 
     function addRoutingRule(domain, ip, geosite, geoip, network, protocol, port, type) {
-        const action = type === 'reject' ? 'reject' : 'route';
-        const outbound = type === 'direct' ? 'direct' : null;
-
         rules.push({
-            ...(geosite && { rule_set: geosite }),
-            ...(geoip && { rule_set: geoip }),
-            ...(domain && { domain_suffix: domain }),
-            ...(ip && { ip_cidr: ip }),
-            ...(network && { network }),
-            ...(protocol && { protocol }),
-            ...(port && { port }),
-            action,
-            ...(outbound && { outbound })
+            rule_set: geosite || geoip,
+            domain_suffix: domain,
+            ip_cidr: ip,
+            network,
+            protocol,
+            port,
+            action: type === 'reject' ? 'reject' : 'route',
+            outbound: type === 'direct' ? 'direct' : undefined
         });
     }
 
     if (!isWarp) {
-        addRoutingRule(null, null, null, null, "udp", null, null, 'reject');
+        addRoutingRule(undefined, undefined, undefined, undefined, "udp", undefined, undefined, 'reject');
     } else if (settings.blockUDP443) {
-        addRoutingRule(null, null, null, null, "udp", "quic", 443, 'reject');
+        addRoutingRule(undefined, undefined, undefined, undefined, "udp", "quic", 443, 'reject');
     }
 
     const routingRules = getRuleSets();
@@ -333,10 +324,10 @@ function buildRoutingRules(isWarp) {
     for (const [type, rule] of groupedRules) {
         const { domain, ip, geosite, geoip } = rule;
 
-        if (domain.length) addRoutingRule(domain, null, null, null, null, null, null, type);
-        if (geosite.length) addRoutingRule(null, null, geosite, null, null, null, null, type);
-        if (ip.length) addRoutingRule(null, ip, null, null, null, null, null, type);
-        if (geoip.length) addRoutingRule(null, null, null, geoip, null, null, null, type);
+        if (domain.length) addRoutingRule(domain, undefined, undefined, undefined, undefined, undefined, undefined, type);
+        if (geosite.length) addRoutingRule(undefined, undefined, geosite, undefined, undefined, undefined, undefined, type);
+        if (ip.length) addRoutingRule(undefined, ip, undefined, undefined, undefined, undefined, undefined, type);
+        if (geoip.length) addRoutingRule(undefined, undefined, undefined, geoip, undefined, undefined, undefined, type);
     }
 
     return {
@@ -352,82 +343,57 @@ function buildRoutingRules(isWarp) {
     }
 }
 
-function buildVLOutbound(remark, address, port, host, sni, allowInsecure, isFragment) {
+function buildWebsocketOutbound(protocol, remark, address, port, host, sni, allowInsecure, isFragment) {
     const outbound = {
         tag: remark,
-        type: atob('dmxlc3M='),
+        type: "",
         server: address,
         server_port: port,
-        uuid: globalConfig.userID,
+        uuid: undefined,
+        password: undefined,
         network: "tcp",
         tcp_fast_open: true,
-        packet_encoding: "",
+        packet_encoding: undefined,
+        tls: undefined,
         transport: {
             early_data_header_name: "Sec-WebSocket-Protocol",
             max_early_data: 2560,
             headers: {
                 Host: host
             },
-            path: generateWsPath("vl"),
+            path: generateWsPath(protocol),
             type: "ws"
         }
     };
 
-    if (isHttps(port)) outbound.tls = {
-        alpn: "http/1.1",
-        enabled: true,
-        insecure: allowInsecure,
-        server_name: sni,
-        record_fragment: isFragment,
-        utls: {
-            enabled: true,
-            fingerprint: settings.fingerprint
-        }
-    };
-
-    return outbound;
-}
-
-function buildTROutbound(remark, address, port, host, sni, allowInsecure, isFragment) {
-    const outbound = {
-        tag: remark,
-        type: atob('dHJvamFu'),
-        password: globalConfig.TrPass,
-        server: address,
-        server_port: port,
-        network: "tcp",
-        tcp_fast_open: true,
-        transport: {
-            early_data_header_name: "Sec-WebSocket-Protocol",
-            max_early_data: 2560,
-            headers: {
-                Host: host
-            },
-            path: generateWsPath("tr"),
-            type: "ws"
-        }
+    if (protocol === "vl") {
+        outbound.type = atob('dmxlc3M=');
+        outbound.uuid = globalConfig.userID;
+        outbound.packet_encoding = "";
+    } else {
+        outbound.type = atob('dHJvamFu');
+        outbound.password = globalConfig.TrPass;
     }
 
-    if (isHttps(port)) outbound.tls = {
-        alpn: "http/1.1",
-        enabled: true,
-        insecure: allowInsecure,
-        server_name: sni,
-        record_fragment: isFragment,
-        utls: {
+    if (isHttps(port)) {
+        outbound.tls = {
             enabled: true,
-            fingerprint: settings.fingerprint
-        }
-    };
+            alpn: "http/1.1",
+            insecure: allowInsecure,
+            server_name: sni,
+            record_fragment: isFragment,
+            utls: {
+                enabled: true,
+                fingerprint: settings.fingerprint
+            }
+        };
+    }
 
     return outbound;
 }
 
 function buildWarpOutbound(warpConfigs, remark, endpoint, chain) {
     const { host, port } = parseHostPort(endpoint);
-    const server = chain ? "162.159.192.1" : host;
-    const finalPort = chain ? 2408 : port;
-
     const {
         warpIPv6,
         reserved,
@@ -437,6 +403,7 @@ function buildWarpOutbound(warpConfigs, remark, endpoint, chain) {
 
     const outbound = {
         tag: remark,
+        detour: chain || undefined,
         type: "wireguard",
         address: [
             "172.16.0.2/32",
@@ -445,8 +412,8 @@ function buildWarpOutbound(warpConfigs, remark, endpoint, chain) {
         mtu: 1280,
         peers: [
             {
-                address: server,
-                port: finalPort,
+                address: chain ? "162.159.192.1" : host,
+                port: chain ? 2408 : port,
                 public_key: publicKey,
                 reserved: base64ToDecimal(reserved),
                 allowed_ips: [
@@ -458,10 +425,6 @@ function buildWarpOutbound(warpConfigs, remark, endpoint, chain) {
         ],
         private_key: privateKey
     };
-
-    if (chain) {
-        outbound.detour = chain;
-    }
 
     return outbound;
 }
@@ -620,6 +583,7 @@ async function buildConfig(outbounds, endpoints, selectorTags, urlTestTags, seco
                 tag: "direct"
             }
         ],
+        endpoints: endpoints.length ? endpoints : undefined,
         route: buildRoutingRules(isWarp),
         ntp: {
             enabled: true,
@@ -643,10 +607,6 @@ async function buildConfig(outbounds, endpoints, selectorTags, urlTestTags, seco
             }
         }
     };
-
-    if(endpoints.length) {
-        config.endpoints = endpoints;
-    }
 
     const addUrlTest = (tag, outbounds) => config.outbounds.push({
         type: "urltest",
@@ -681,8 +641,8 @@ export async function getSbCustomConfig(env, isFragment) {
     const chainTags = [];
     const outbounds = [];
     const protocols = [
-        ...(settings.VLConfigs ? [atob('VkxFU1M=')] : []),
-        ...(settings.TRConfigs ? [atob('VHJvamFu')] : [])
+        ...(settings.VLConfigs ? ['vl'] : []),
+        ...(settings.TRConfigs ? ['tr'] : [])
     ];
 
     const Addresses = await getConfigAddresses(isFragment);
@@ -705,10 +665,7 @@ export async function getSbCustomConfig(env, isFragment) {
                 const host = isCustomAddr ? settings.customCdnHost : httpConfig.hostName;
                 const tag = generateRemark(protocolIndex, port, addr, protocol, configType);
 
-                const outbound = protocol === atob('VkxFU1M=')
-                    ? buildVLOutbound(tag, addr, port, host, sni, isCustomAddr, isFragment)
-                    : buildTROutbound(tag, addr, port, host, sni, isCustomAddr, isFragment);
-                
+                const outbound = buildWebsocketOutbound(protocol, tag, addr, port, host, sni, isCustomAddr, isFragment);
                 outbounds.push(outbound);
                 proxyTags.push(tag);
                 selectorTags.push(tag);
@@ -719,7 +676,7 @@ export async function getSbCustomConfig(env, isFragment) {
                     chain.tag = chainTag;
                     chain.detour = tag;
                     outbounds.push(chain);
-                    
+
                     chainTags.push(chainTag);
                     selectorTags.push(chainTag);
                 }

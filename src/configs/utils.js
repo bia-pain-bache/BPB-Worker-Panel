@@ -67,12 +67,13 @@ export function generateRemark(index, port, address, protocol, configType, isCha
     let addressType;
     const chainSign = isChain ? '🔗 ' : '';
     const type = configType ? ` ${configType}` : '';
+    const protoSign = protocol === 'vl' ? atob('VkxFU1M=') : atob('VHJvamFu');
 
     settings.cleanIPs.includes(address)
         ? addressType = 'Clean IP'
         : addressType = isDomain(address) ? 'Domain' : isIPv4(address) ? 'IPv4' : isIPv6(address) ? 'IPv6' : '';
 
-    return `💦 ${index} - ${chainSign}${protocol}${type} - ${addressType} : ${port}`;
+    return `💦 ${index} - ${chainSign}${protoSign}${type} - ${addressType} : ${port}`;
 }
 
 export function randomUpperCase(str) {
@@ -101,7 +102,7 @@ export function getRandomString(lengthMin, lengthMax) {
 export function generateWsPath(protocol) {
     const config = {
         junk: getRandomString(8, 16),
-        protocol: protocol,
+        protocol,
         mode: settings.proxyIPMode,
         panelIPs: settings.proxyIPMode === 'proxyip' ? settings.proxyIPs : settings.prefixes
     };

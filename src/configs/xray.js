@@ -19,10 +19,10 @@ async function buildDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWarp, 
     function buildDnsServer(address, domains, expectIPs, skipFallback, tag) {
         return {
             address,
-            ...(domains && { domains }),
-            ...(expectIPs && { expectIPs }),
-            ...(skipFallback && { skipFallback }),
-            ...(tag && { tag })
+            domains,
+            expectIPs,
+            skipFallback,
+            tag
         };
     }
 
@@ -76,7 +76,7 @@ async function buildDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWarp, 
         dnsObject.disableFallbackIfMatch = true;
     }
 
-    const remoteDnsServer = buildDnsServer(finalRemoteDNS, null, null, null, "remote-dns");
+    const remoteDnsServer = buildDnsServer(finalRemoteDNS, undefined, undefined, undefined, "remote-dns");
     dnsObject.servers.push(remoteDnsServer);
 
     const bypassRules = routingRules.filter(({ type }) => type === 'direct');
@@ -126,7 +126,7 @@ async function buildDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWarp, 
         if (!rule) continue;
 
         if (ip) {
-            const server = buildDnsServer(dns, [domain], [ip], skipFallback);
+            const server = buildDnsServer(dns, [domain], [ip], skipFallback, undefined);
             dnsObject.servers.push(server);
         } else {
             if (!groupedDomainRules.has(dns)) groupedDomainRules.set(dns, []);
@@ -138,7 +138,7 @@ async function buildDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWarp, 
 
     for (const [dns, domain] of groupedDomainRules) {
         if (domain.length) {
-            const server = buildDnsServer(dns, domain, null, skipFallback);
+            const server = buildDnsServer(dns, domain, undefined, skipFallback, undefined);
             dnsObject.servers.push(server);
         }
     }
@@ -147,7 +147,7 @@ async function buildDNS(outboundAddrs, domainToStaticIPs, isWorkerLess, isWarp, 
 
     if (isFakeDNS) {
         const fakeDNSServer = totalDomainRules.length
-            ? buildDnsServer("fakedns", totalDomainRules, null, false)
+            ? buildDnsServer("fakedns", totalDomainRules, undefined, false, undefined)
             : "fakedns";
         dnsObject.servers.unshift(fakeDNSServer);
     }
@@ -175,12 +175,12 @@ function buildRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
     ];
 
     const addRoutingRule = (inboundTag, domain, ip, port, network, protocol, outboundTag, isBalancer) => rules.push({
-        ...(inboundTag && { inboundTag }),
-        ...(domain && { domain }),
-        ...(ip && { ip }),
-        ...(port && { port }),
-        ...(network && { network }),
-        ...(protocol && { protocol: [protocol] }),
+        inboundTag,
+        domain,
+        ip,
+        port,
+        network,
+        protocol,
         ...(isBalancer
             ? { balancerTag: outboundTag }
             : { outboundTag }),
@@ -191,18 +191,18 @@ function buildRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
     const outTag = isBalancer ? isChain ? "all-chains" : "all" : finallOutboundTag;
     const remoteDnsProxy = isBalancer ? "all" : "proxy";
 
-    addRoutingRule(["remote-dns"], null, null, null, null, null, remoteDnsProxy, isBalancer);
-    addRoutingRule(["dns"], null, null, null, null, null, "direct");
+    addRoutingRule(["remote-dns"], undefined, undefined, undefined, undefined, undefined, remoteDnsProxy, isBalancer);
+    addRoutingRule(["dns"], undefined, undefined, undefined, undefined, undefined, "direct");
 
-    addRoutingRule(null, ["geosite:private"], null, null, null, null, "direct");
-    addRoutingRule(null, null, ["geoip:private"], null, null, null, "direct");
+    addRoutingRule(undefined, ["geosite:private"], undefined, undefined, undefined, undefined, "direct");
+    addRoutingRule(undefined, undefined, ["geoip:private"], undefined, undefined, undefined, "direct");
 
     if (isWarp && settings.blockUDP443) {
-        addRoutingRule(null, null, null, 443, "udp", null, "block");
+        addRoutingRule(undefined, undefined, undefined, 443, "udp", undefined, "block");
     }
 
     if (!isWarp && !isWorkerLess) {
-        addRoutingRule(null, null, null, null, "udp", null, "block", null);
+        addRoutingRule(undefined, undefined, undefined, undefined, "udp", undefined, "block", false);
     }
 
     const routingRules = getGeoRules();
@@ -242,29 +242,43 @@ function buildRoutingRules(isChain, isBalancer, isWorkerLess, isWarp) {
 
     for (const [type, rule] of groupedRules) {
         const { domain, ip } = rule;
-        if (domain.length) addRoutingRule(null, domain, null, null, null, null, type, null);
-        if (ip.length) addRoutingRule(null, null, ip, null, null, null, type, null);
+        if (domain.length) addRoutingRule(undefined, domain, undefined, undefined, undefined, undefined, type, undefined);
+        if (ip.length) addRoutingRule(undefined, undefined, ip, undefined, undefined, undefined, type, undefined);
     }
 
     if (isWorkerLess) {
-        addRoutingRule(null, null, null, null, "tcp", "tls", "proxy");
-        addRoutingRule(null, null, null, null, "tcp", "http", "http-fragment");
-        addRoutingRule(null, null, null, null, "udp", "quic", "udp-noise");
-        addRoutingRule(null, null, null, "443,2053,2083,2087,2096,8443", "udp", null, "udp-noise");
+        addRoutingRule(undefined, undefined, undefined, undefined, "tcp", ["tls"], "proxy");
+        addRoutingRule(undefined, undefined, undefined, undefined, "tcp", ["http"], "http-fragment");
+        addRoutingRule(undefined, undefined, undefined, undefined, "udp", ["quic"], "udp-noise");
+        addRoutingRule(undefined, undefined, undefined, "443,2053,2083,2087,2096,8443", "udp", undefined, "udp-noise");
     }
 
     const network = isWarp || isWorkerLess ? "tcp,udp" : "tcp";
-    addRoutingRule(null, null, null, null, network, null, outTag, isBalancer);
+    addRoutingRule(undefined, undefined, undefined, undefined, network, undefined, outTag, isBalancer);
 
     return rules;
 }
 
-function buildVLOutbound(tag, address, port, host, sni, isFragment, allowInsecure) {
-    const path = `${generateWsPath("vl")}?ed=2560`;
-
+function buildWebsocketOutbound(protocol, tag, address, port, host, sni, isFragment, allowInsecure) {
     const outbound = {
-        protocol: atob('dmxlc3M='),
-        settings: {
+        protocol: "",
+        settings: {},
+        streamSettings: {
+            network: "ws",
+            security: "none",
+            tlsSettings: undefined,
+            sockopt: {},
+            wsSettings: {
+                host: host,
+                path: `${generateWsPath(protocol)}?ed=2560`,
+            }
+        },
+        tag: tag
+    };
+
+    if (protocol === "vl") {
+        outbound.protocol = atob('dmxlc3M=');
+        outbound.settings = {
             vnext: [
                 {
                     address: address,
@@ -278,53 +292,10 @@ function buildVLOutbound(tag, address, port, host, sni, isFragment, allowInsecur
                     ]
                 }
             ]
-        },
-        streamSettings: {
-            network: "ws",
-            security: "none",
-            sockopt: {},
-            wsSettings: {
-                host: host,
-                path,
-            }
-        },
-        tag: tag
-    };
-
-    if (isHttps(port)) {
-        outbound.streamSettings.security = "tls";
-        outbound.streamSettings.tlsSettings = {
-            allowInsecure: allowInsecure,
-            fingerprint: settings.fingerprint,
-            alpn: ["http/1.1"],
-            serverName: sni
         };
-    }
-
-    const sockopt = outbound.streamSettings.sockopt;
-
-    if (isFragment) {
-        sockopt.dialerProxy = "fragment";
     } else {
-        sockopt.domainStrategy = "UseIP";
-        sockopt.tcpFastOpen = true;
-        sockopt.happyEyeballs = {
-            tryDelayMs: 250,
-            prioritizeIPv6: false,
-            interleave: 2,
-            maxConcurrentTry: 4
-        };
-    }
-
-    return outbound;
-}
-
-function buildTROutbound(tag, address, port, host, sni, isFragment, allowInsecure) {
-    const path = `${generateWsPath("tr")}?ed=2560`;
-
-    const outbound = {
-        protocol: atob('dHJvamFu'),
-        settings: {
+        outbound.protocol = atob('dHJvamFu');
+        outbound.settings = {
             servers: [
                 {
                     address: address,
@@ -333,18 +304,8 @@ function buildTROutbound(tag, address, port, host, sni, isFragment, allowInsecur
                     level: 8
                 }
             ]
-        },
-        streamSettings: {
-            network: "ws",
-            security: "none",
-            sockopt: {},
-            wsSettings: {
-                host: host,
-                path
-            }
-        },
-        tag: tag
-    };
+        };
+    }
 
     if (isHttps(port)) {
         outbound.streamSettings.security = "tls";
@@ -400,6 +361,7 @@ function buildWarpOutbound(warpConfigs, endpoint, isWoW, isPro) {
             reserved: base64ToDecimal(reserved),
             secretKey: privateKey
         },
+        streamSettings: undefined,
         tag: isWoW ? "chain" : "proxy"
     };
 
@@ -536,7 +498,7 @@ function buildChainOutbound() {
     } = outProxyParams;
 
     if (security === 'tls') {
-        const tlsAlpns = alpn ? alpn?.split(',') : [];
+        const tlsAlpns = alpn ? alpn.split(',') : undefined;
         outbound.streamSettings.tlsSettings = {
             allowInsecure: false,
             fingerprint: fp,
@@ -611,6 +573,7 @@ function buildFreedomOutbound(isFragment, isUdpNoises, tag, length, interval) {
         tag: tag,
         protocol: "freedom",
         settings: {},
+        streamSettings: undefined
     };
 
     if (isFragment) {
@@ -751,7 +714,9 @@ async function buildConfig(
         routing: {
             domainStrategy: "IPIfNonMatch",
             rules: buildRoutingRules(isChain, isBalancer, isWorkerLess, isWarp),
+            balancers: undefined
         },
+        observatory: undefined,
         stats: {}
     };
 
@@ -883,8 +848,8 @@ export async function getXrCustomConfigs(env, isFragment) {
     const Addresses = await getConfigAddresses(isFragment);
     const totalPorts = settings.ports.filter(port => isFragment ? isHttps(port) : true);
     const protocols = [
-        ...(settings.VLConfigs ? [atob('VkxFU1M=')] : []),
-        ...(settings.TRConfigs ? [atob('VHJvamFu')] : [])
+        ...(settings.VLConfigs ? ['vl'] : []),
+        ...(settings.TRConfigs ? ['tr'] : [])
     ];
 
     const configs = [];
@@ -904,10 +869,7 @@ export async function getXrCustomConfigs(env, isFragment) {
                 const host = isCustomAddr ? settings.customCdnHost : httpConfig.hostName;
                 const configType = isCustomAddr ? 'C' : isFragment ? 'F' : '';
 
-                const outbound = protocol === atob('VkxFU1M=')
-                    ? buildVLOutbound('proxy', addr, port, host, sni, isFragment, isCustomAddr)
-                    : buildTROutbound('proxy', addr, port, host, sni, isFragment, isCustomAddr);
-
+                const outbound = buildWebsocketOutbound(protocol, 'proxy', addr, port, host, sni, isFragment, isCustomAddr);
                 const outbounds = [
                     outbound,
                     ...fragment
@@ -977,7 +939,7 @@ export async function getXrWarpConfigs(request, env, isPro, isKnocker) {
 
         const warpConfig = await buildConfig(`💦 ${index + 1} - Warp${proIndicator}🇮🇷`, warpOutbounds, false, false, false, true, false, [endpointHost], null);
         configs.push(warpConfig);
-        
+
         const wowConfig = await buildConfig(`💦 ${index + 1} - WoW${proIndicator}🌍`, wowOutbounds, false, true, false, true, false, [endpointHost], null);
         configs.push(wowConfig);
 

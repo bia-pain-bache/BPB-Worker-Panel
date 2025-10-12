@@ -34,7 +34,8 @@ async function buildDNS(isChain, isWarp, isPro) {
         "nameserver-policy": {
             "raw.githubusercontent.com": finalLocalDNS,
             "time.cloudflare.com": finalLocalDNS
-        }
+        },
+        "hosts": undefined
     };
 
     if (settings.dohHost.isDomain && !isWarp) {
@@ -62,7 +63,7 @@ async function buildDNS(isChain, isWarp, isPro) {
 
     settings.customBlockRules.forEach(value => {
         if (isDomain(value)) {
-            if (!dnsObject["hosts"]) dnsObject["hosts"] = {};
+            dnsObject["hosts"] ??= {};
             dnsObject["hosts"][`+.${value}`] = "rcode://refused";
         }
     });
@@ -86,10 +87,7 @@ async function buildDNS(isChain, isWarp, isPro) {
         if (type === 'DIRECT') {
             dnsObject["nameserver-policy"][`rule-set:${geosite}`] = dns;
         } else {
-            if (!dnsObject["hosts"]) {
-                dnsObject["hosts"] = {};
-            }
-
+            dnsObject["hosts"] ??= {};
             dnsObject["hosts"][`rule-set:${geosite}`] = "rcode://refused";
         }
     }
@@ -212,35 +210,46 @@ function buildRoutingRules(isWarp) {
     return { rules, ruleProviders };
 }
 
-function buildVLOutbound(remark, address, port, host, sni, allowInsecure) {
+function buildWebsocketOutbound(protocol, remark, address, port, host, sni, allowInsecure) {
     const tls = isHttps(port);
+    if (protocol === 'tr' && !tls) return null;
     const addr = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
     const ipVersion = settings.VLTRenableIPv6 ? "dual" : "ipv4";
     const fingerprint = settings.fingerprint === "randomized" ? "random" : settings.fingerprint;
 
     const outbound = {
         "name": remark,
-        "type": atob('dmxlc3M='),
+        "type": "",
         "server": addr,
         "port": port,
-        "uuid": globalConfig.userID,
+        "uuid": undefined,
+        "password": undefined,
         "udp": false,
-        "packet-encoding": "",
+        "packet-encoding": undefined,
         "ip-version": ipVersion,
         "tls": tls,
-        "network": "ws",
         "tfo": true,
+        "network": "ws",
         "ws-opts": {
-            "path": generateWsPath("vl"),
+            "path": generateWsPath(protocol),
             "headers": { "Host": host },
             "max-early-data": 2560,
             "early-data-header-name": "Sec-WebSocket-Protocol"
         }
     };
 
+    if (protocol === "vl") {
+        outbound["type"] = atob('dmxlc3M=');
+        outbound["uuid"] = globalConfig.userID;
+        outbound["packet-encoding"] = "";
+    } else {
+        outbound["type"] = atob('dHJvamFu');
+        outbound["password"] = globalConfig.TrPass;
+    }
+
     if (tls) {
         Object.assign(outbound, {
-            "servername": sni,
+            [protocol === "vl" ? "servername" : "sni"]: sni,
             "alpn": ["http/1.1"],
             "client-fingerprint": fingerprint,
             "skip-cert-verify": allowInsecure
@@ -248,35 +257,6 @@ function buildVLOutbound(remark, address, port, host, sni, allowInsecure) {
     }
 
     return outbound;
-}
-
-function buildTROutbound(remark, address, port, host, sni, allowInsecure) {
-    const addr = isIPv6(address) ? address.replace(/\[|\]/g, '') : address;
-    const ipVersion = settings.VLTRenableIPv6 ? "dual" : "ipv4";
-    const fingerprint = settings.fingerprint === "randomized" ? "random" : settings.fingerprint;
-
-    return {
-        "name": remark,
-        "type": atob('dHJvamFu'),
-        "server": addr,
-        "port": port,
-        "password": globalConfig.TrPass,
-        "udp": false,
-        "ip-version": ipVersion,
-        "tls": true,
-        "network": "ws",
-        "tfo": true,
-        "ws-opts": {
-            "path": generateWsPath("tr"),
-            "headers": { "Host": host },
-            "max-early-data": 2560,
-            "early-data-header-name": "Sec-WebSocket-Protocol"
-        },
-        "sni": sni,
-        "alpn": ["http/1.1"],
-        "client-fingerprint": fingerprint,
-        "skip-cert-verify": allowInsecure
-    };
 }
 
 function buildWarpOutbound(warpConfigs, remark, endpoint, chain, isPro) {
@@ -303,12 +283,9 @@ function buildWarpOutbound(warpConfigs, remark, endpoint, chain, isPro) {
         "allowed-ips": ["0.0.0.0/0", "::/0"],
         "reserved": reserved,
         "udp": true,
-        "mtu": 1280
+        "mtu": 1280,
+        "dialer-proxy": chain || undefined
     };
-
-    if (chain) {
-        outbound["dialer-proxy"] = chain;
-    }
 
     if (isPro) outbound["amnezia-wg-option"] = {
         "jc": String(settings.amneziaNoiseCount),
@@ -441,7 +418,7 @@ async function buildConfig(outbounds, selectorTags, proxyTags, chainTags, isChai
         "disable-keep-alive": false,
         "keep-alive-idle": 10,
         "keep-alive-interval": 15,
-        ...(!isWarp && { "tcp-concurrent": true }),
+        "tcp-concurrent": isWarp ? undefined : true,
         "unified-delay": false,
         "geo-auto-update": true,
         "geo-update-interval": 168,
@@ -535,8 +512,8 @@ export async function getClNormalConfig(env) {
     const chainTags = [];
     const outbounds = [];
     const protocols = [
-        ...(settings.VLConfigs ? [atob('VkxFU1M=')] : []),
-        ...(settings.TRConfigs ? [atob('VHJvamFu')] : [])
+        ...(settings.VLConfigs ? ['vl'] : []),
+        ...(settings.TRConfigs ? ['tr'] : [])
     ];
 
     const selectorTags = [
@@ -548,37 +525,29 @@ export async function getClNormalConfig(env) {
         let protocolIndex = 1;
         settings.ports.forEach(port => {
             Addresses.forEach(addr => {
-                let outbound;
                 const isCustomAddr = settings.customCdnAddrs.includes(addr);
                 const configType = isCustomAddr ? 'C' : '';
                 const sni = isCustomAddr ? settings.customCdnSni : randomUpperCase(httpConfig.hostName);
                 const host = isCustomAddr ? settings.customCdnHost : httpConfig.hostName;
                 const tag = generateRemark(protocolIndex, port, addr, protocol, configType).replace(' : ', ' - ');
+                const outbound = buildWebsocketOutbound(protocol, tag, addr, port, host, sni, isCustomAddr);
 
-                if (protocol === atob('VkxFU1M=')) {
-                    outbound = buildVLOutbound(tag, addr, port, host, sni, isCustomAddr);
-                }
-
-                if (protocol === atob('VHJvamFu') && isHttps(port)) {
-                    outbound = buildTROutbound(tag, addr, port, host, sni, isCustomAddr);
-                }
-                
                 if (outbound) {
                     proxyTags.push(tag);
                     selectorTags.push(tag);
                     outbounds.push(outbound);
-                    
+
                     if (chainProxy) {
                         const chainTag = generateRemark(protocolIndex, port, addr, protocol, configType, true);
                         let chain = structuredClone(chainProxy);
                         chain['name'] = chainTag;
                         chain['dialer-proxy'] = tag;
                         outbounds.push(chain);
-                        
+
                         chainTags.push(chainTag);
                         selectorTags.push(chainTag);
                     }
-                    
+
                     protocolIndex++;
                 }
             });
