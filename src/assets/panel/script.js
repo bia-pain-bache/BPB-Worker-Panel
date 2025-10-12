@@ -774,28 +774,41 @@ function validateMinMax() {
 
 function validateChainProxy() {
     const chainProxy = getElmValue('outProxy');
-    const isVless = /vless:\/\/[^\s@]+@[^\s:]+:[^\s]+/.test(chainProxy);
-    const isTrojan = /trojan:\/\/[^\s@]+@[^\s:]+:[^\s]+/.test(chainProxy);
-    const isShadowsocks = /ss:\/\/[^\s@]+@[^\s:]+:[^\s]+/.test(chainProxy);
-    const hasSecurity = /security=/.test(chainProxy);
-    const isSocksHttp = /^(http|socks):\/\/(?:([^:@]+):([^:@]+)@)?([^:@]+):(\d+)$/.test(chainProxy);
-    const securityRegex = /security=(tls|none|reality)/;
-    const validSecurityType = securityRegex.test(chainProxy);
-    const validTransmission = /type=(tcp|grpc|ws|httpupgrade)/.test(chainProxy);
+    if (!chainProxy) return true;
+    const isSocksHttp = /(http|socks):\/\/(?:([^:@]+):([^:@]+)@)?([^:@]+):(\d+)$/.test(chainProxy);
+    const isOthers = /(vless|trojan|ss):\/\/[^\s@]+@[^\s:]+:[^\s]+/.test(chainProxy);
 
-    if (!((isVless || isTrojan) && (hasSecurity && validSecurityType || !hasSecurity) && validTransmission) && !isShadowsocks && !isSocksHttp && chainProxy) {
-        alert('⛔ Invalid Config!\n💡 The chain proxy should be VLESS, Trojan, Shadowsocks, Socks or Http!\n💡 VLESS, Trojan transmission should be GRPC,WS or TCP\n💡 VLESS, Trojan and Shadowsocks security should be TLS, Reality or None\n💡 Socks or http should be like:\n + (socks or http)://user:pass@host:port\n + (socks or http)://host:port');
+    if (!isSocksHttp && !isOthers) {
+        alert('⛔ Invalid Config!\n💡 Standard formats are:\n + (socks or http)://user:pass@host:port\n + (socks or http)://host:port\n + vless://uuid@server:port...\n + trojan://password@server:port...\n + ss://password@server:port...');
         return false;
     }
 
-    let match = chainProxy.match(securityRegex);
-    const securityType = match?.[1] || null;
-    match = chainProxy.match(/:(\d+)\?/);
-    const vlessPort = match?.[1] || null;
+    const config = new URL(chainProxy);
+    const { protocol, username, port } = config;
 
-    if ((isVless || isTrojan) && securityType === 'tls' && vlessPort !== '443') {
-        alert('⛔ VLESS TLS port can be only 443 to be used as a proxy chain!');
-        return false;
+    if (['vless:', 'trojan:'].includes(protocol)) {
+        const security = config.searchParams.get('security');
+        const type = config.searchParams.get('type');
+
+        if (!username) {
+            alert('⛔ Invalid Config!\n💡 Config URL should contain UUID or Password.');
+            return false;
+        }
+
+        if (security && !['tls', 'none', 'reality'].includes(security)) {
+            alert('⛔ Invalid Config!\n💡 VLESS or Trojan security can be TLS, Reality or None.');
+            return false;
+        }
+
+        if (!['tcp', 'raw', 'ws', 'grpc', 'httpupgrade'].includes(type)) {
+            alert('⛔ Invalid Config!\n💡 VLESS or Trojan transmission can be tcp, ws, grpc or httpupgrade.');
+            return false;
+        }
+
+        if (security === 'tls' && port !== '443') {
+            alert('⛔ Invalid Config!\n💡 VLESS or Trojan TLS port can be only 443.');
+            return false;
+        }
     }
 
     return true;
