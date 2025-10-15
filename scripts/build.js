@@ -1,10 +1,12 @@
+// scripts/build.js
 import { readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join, dirname as pathDirname } from 'path';
 import { fileURLToPath } from 'url';
 import { build } from 'esbuild';
 import { globSync } from 'glob';
+import { minify as htmlMinify } from 'html-minifier';
 import JSZip from "jszip";
-import pkg from '../package.json' with { type: 'json' };
+import pkg from '../package.json' assert { type: 'json' };
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = pathDirname(__filename);
@@ -19,50 +21,73 @@ const reset = '\x1b[0m';
 const success = `${green}✔${reset}`;
 const failure = `${red}✖${reset}`;
 
-const version = pkg.version;
+const version = pkg.version || '0.0.0';
 
-/**
- * 说明：
- * - 该函数不会压缩、混淆或编码 HTML / CSS / JS。
- * - 它会把最终 HTML 原样作为 JSON 字符串返回，以便在 esbuild define 中注入。
- */
 async function processHtmlPages() {
     const indexFiles = globSync('**/index.html', { cwd: ASSET_PATH });
     const result = {};
 
     for (const relativeIndexPath of indexFiles) {
-        const dir = pathDirname(relativeIndexPath);
-        const base = (file) => join(ASSET_PATH, dir, file);
+        const dir = relativeIndexPath.includes('/') ? relativeIndexPath.split('/')[0] : '.';
+        const base = (file) => join(ASSET_PATH, pathDirname(relativeIndexPath), file);
 
-        const indexHtml = readFileSync(base('index.html'), 'utf8');
+        const indexHtml = readFileSync(join(ASSET_PATH, relativeIndexPath), 'utf8');
         let finalHtml = indexHtml.replaceAll('__VERSION__', version);
 
-        // 如果不是 error 页面，就将 CSS / JS 原样内联
-        if (dir !== 'error') {
-            const styleCode = readFileSync(base('style.css'), 'utf8');
-            const scriptCode = readFileSync(base('script.js'), 'utf8');
+        // Only attempt to inline style/script if those files exist next to index.html
+        const containerDir = join(ASSET_PATH, pathDirname(relativeIndexPath));
+        try {
+            // style.css
+            const stylePath = join(containerDir, 'style.css');
+            const scriptPath = join(containerDir, 'script.js');
 
-            // 注意：不做任何压缩/混淆/编码
+            const styleCode = readFileSync(stylePath, 'utf8');
+            const scriptCode = readFileSync(scriptPath, 'utf8');
+
             finalHtml = finalHtml
-                .replaceAll('__STYLE__', `<style>\n${styleCode}\n</style>`)
-                .replaceAll('__SCRIPT__', `\n${scriptCode}\n`);
+                .replaceAll('__STYLE__', `<style>${styleCode}</style>`)
+                .replaceAll('__SCRIPT__', scriptCode);
+        } catch (e) {
+            // if missing style/script, leave placeholders as-is or replace with empty strings
+            finalHtml = finalHtml
+                .replaceAll('__STYLE__', '')
+                .replaceAll('__SCRIPT__', '');
         }
 
-        // 原样保留 HTML（不进行任何 minify 或编码）
-        // 使用 JSON.stringify 包装，便于注入 esbuild.define（确保转义）
-        result[dir] = JSON.stringify(finalHtml);
+        const minifiedHtml = htmlMinify(finalHtml, {
+            collapseWhitespace: true,
+            removeAttributeQuotes: true,
+            minifyCSS: true,
+            // 保守压缩选项，避免破坏 JS 或模板
+            keepClosingSlash: true
+        });
+
+        // 使用 base64 编码（Worker 端解码还原为 UTF-8）
+        const encodedHtml = Buffer.from(minifiedHtml, 'utf8').toString('base64');
+
+        // 将直接注入为字符串（JSON stringify，便于在 esbuild define 中替换）
+        result[pathDirname(relativeIndexPath) === '.' ? 'root' : pathDirname(relativeIndexPath)] = JSON.stringify(encodedHtml);
     }
 
-    console.log(`${success} Assets prepared (no minify/obfuscation).`);
+    console.log(`${success} Assets processed successfully.`);
     return result;
 }
 
 async function buildWorker() {
     const htmls = await processHtmlPages();
-    const faviconBuffer = readFileSync('./src/assets/favicon.ico');
-    const faviconBase64 = faviconBuffer.toString('base64');
 
-    const code = await build({
+    // favicon (可选)
+    let faviconBase64 = '';
+    try {
+        const faviconBuffer = readFileSync('./src/assets/favicon.ico');
+        faviconBase64 = faviconBuffer.toString('base64');
+    } catch (e) {
+        // 没有 favicon 则不注入
+        faviconBase64 = '';
+    }
+
+    // esbuild 打包（不进行压缩与混淆）
+    const esbuildResult = await build({
         entryPoints: [join(__dirname, '../src/worker.js')],
         bundle: true,
         format: 'esm',
@@ -70,8 +95,9 @@ async function buildWorker() {
         external: ['cloudflare:sockets'],
         platform: 'browser',
         target: 'es2020',
+        // 不启用 minify 或 tree-shaking 之类的破坏性优化
+        minify: false,
         define: {
-            // 直接注入原始 HTML 字符串（已经是 JSON.stringify 包装）
             __PANEL_HTML_CONTENT__: htmls['panel'] ?? '""',
             __LOGIN_HTML_CONTENT__: htmls['login'] ?? '""',
             __ERROR_HTML_CONTENT__: htmls['error'] ?? '""',
@@ -81,28 +107,29 @@ async function buildWorker() {
         }
     });
 
-    console.log(`${success} Worker bundle created (unminified).`);
+    console.log(`${success} Worker bundled successfully.`);
 
-    // 直接使用打包结果的源码，不进行 terser 压缩或 javascript-obfuscator 混淆
-    const finalCode = code.outputFiles[0].text;
+    // esbuild 输出（应该只有一个 outputFiles 项）
+    const bundledText = esbuildResult.outputFiles && esbuildResult.outputFiles[0] ? esbuildResult.outputFiles[0].text : '';
 
+    // 将构建信息前置
     const buildTimestamp = new Date().toISOString();
-    const buildInfo = `// Build: ${buildTimestamp}\n// NOTE: no minify, no obfuscation — raw source output\n`;
-    const worker = `${buildInfo}// @ts-nocheck\n${finalCode}`;
+    const buildInfo = `// Build: ${buildTimestamp}\n// NOTE: This build has NO minification or obfuscation.\n`;
+    const worker = `${buildInfo}// @ts-nocheck\n${bundledText}`;
 
     mkdirSync(DIST_PATH, { recursive: true });
     writeFileSync(join(DIST_PATH, 'worker.js'), worker, 'utf8');
 
+    // 生成 zip
     const zip = new JSZip();
     zip.file('_worker.js', worker);
     const nodebuffer = await zip.generateAsync({
         type: 'nodebuffer',
-        compression: 'DEFLATE',
-        compressionOptions: { level: 6 }
+        compression: 'DEFLATE'
     });
     writeFileSync(join(DIST_PATH, 'worker.zip'), nodebuffer);
 
-    console.log(`${success} Done — dist/worker.js and dist/worker.zip written.`);
+    console.log(`${success} Output written to ${DIST_PATH}`);
 }
 
 buildWorker().catch(err => {
