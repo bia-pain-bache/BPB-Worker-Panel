@@ -41,24 +41,41 @@ async function processHtmlPages() {
         if (dir !== 'error') {
             const styleCode = readFileSync(base('style.css'), 'utf8');
             const scriptCode = readFileSync(base('script.js'), 'utf8');
-            const finalScriptCode = await jsMinify(scriptCode);
+            const finalScriptCode = await jsMinify(scriptCode, {
+                module: true,
+                output: {
+                    comments: false
+                },
+                compress: {
+                    dead_code: false,
+                    unused: false
+                }
+            });
+            // 转义 JavaScript 代码中的 </script> 以防止提前终止脚本标签
+            const escapedScriptCode = finalScriptCode.code.replace(/<\/script>/g, '<\\/script>');
             finalHtml = finalHtml
                 .replaceAll('__STYLE__', `<style>${styleCode}</style>`)
-                .replaceAll('__SCRIPT__', finalScriptCode.code);
+                .replaceAll('__SCRIPT__', `<script>${escapedScriptCode}</script>`);
         }
 
         const minifiedHtml = htmlMinify(finalHtml, {
             collapseWhitespace: true,
             removeAttributeQuotes: true,
-            minifyCSS: false
+            minifyCSS: false,
+            removeComments: true,
+            collapseBooleanAttributes: true,
+            removeEmptyAttributes: true,
+            // 保留关闭斜杠以防止 HTML 解析问题
+            keepClosingSlash: true,
+            preserveLineBreaks: false
         });
 
-        // const encodedHtml = Buffer.from(minifiedHtml, 'utf8').toString('base64');
+        // 转换为十六进制并存储为 JSON
         const encodedHtml = stringToHex(minifiedHtml);
         result[dir] = JSON.stringify(minifiedHtml);
     }
 
-    console.log(`${success} Assets bundled successfuly!`);
+    console.log(`${success} 资源打包成功！`);
     return result;
 }
 
@@ -107,7 +124,7 @@ async function buildWorker() {
         }
     });
 
-    console.log(`${success} Worker built successfuly!`);
+    console.log(`${success} Worker 构建成功！`);
 
     const minifyCode = async (code) => {
         const minified = await jsMinify(code, {
@@ -121,7 +138,7 @@ async function buildWorker() {
             }
         });
 
-        console.log(`${success} Worker minified successfuly!`);
+        console.log(`${success} Worker 压缩成功！`);
         return minified;
     }
 
@@ -146,7 +163,7 @@ async function buildWorker() {
             target: "browser"
         });
 
-        console.log(`${success} Worker obfuscated successfuly!`);
+        console.log(`${success} Worker 混淆成功！`);
         finalCode = obfuscationResult.getObfuscatedCode();
     }
 
@@ -163,11 +180,11 @@ async function buildWorker() {
         compression: 'DEFLATE'
     }).then(nodebuffer => writeFileSync('./dist/worker.zip', nodebuffer));
 
-    console.log(`${success} Done!`);
+    console.log(`${success} 完成！`);
 }
 
 buildWorker().catch(err => {
-    console.error(`${failure} Build failed:`, err);
+    console.error(`${failure} 构建失败：`, err);
     process.exit(1);
 });
 
@@ -176,3 +193,9 @@ function stringToHex(str) {
     const bytes = encoder.encode(str);
     return Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("");
 }
+
+// 注意：为确保服务文件时使用正确的 Content-Type 头部：
+// - 服务 'worker.js' 时使用 Content-Type: application/javascript
+// - 服务 HTML 文件时使用 Content-Type: text/html
+// - 服务 'worker.zip' 时使用 Content-Type: application/zip
+// 请检查您的服务器配置（例如 Cloudflare Workers、Node.js 服务器）以正确设置这些头部。
