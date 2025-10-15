@@ -55,7 +55,7 @@ async function processHtmlPages() {
 
         // const encodedHtml = Buffer.from(minifiedHtml, 'utf8').toString('base64');
         const encodedHtml = stringToHex(minifiedHtml);
-        result[dir] = JSON.stringify(minifiedHtml);
+        result[dir] = JSON.stringify(encodedHtml);
     }
 
     console.log(`${success} Assets bundled successfuly!`);
