@@ -50,12 +50,12 @@ async function processHtmlPages() {
         const minifiedHtml = htmlMinify(finalHtml, {
             collapseWhitespace: true,
             removeAttributeQuotes: true,
-            minifyCSS: true
+            minifyCSS: false
         });
 
         // const encodedHtml = Buffer.from(minifiedHtml, 'utf8').toString('base64');
         const encodedHtml = stringToHex(minifiedHtml);
-        result[dir] = JSON.stringify(encodedHtml);
+        result[dir] = JSON.stringify(minifiedHtml);
     }
 
     console.log(`${success} Assets bundled successfuly!`);
