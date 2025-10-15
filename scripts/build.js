@@ -55,7 +55,7 @@ async function processHtmlPages() {
 
         // const encodedHtml = Buffer.from(minifiedHtml, 'utf8').toString('base64');
         const encodedHtml = stringToHex(minifiedHtml);
-        result[dir] = JSON.stringify(encodedHtml);
+        result[dir] = JSON.stringify(minifiedHtml);
     }
 
     console.log(`${success} Assets bundled successfuly!`);
@@ -80,7 +80,7 @@ function generateJunkCode() {
         return `function ${funcName}() { return ${Math.floor(Math.random() * 1000)}; }`;
     }).join('\n');
 
-    return `${junkVars}\n${junkFuncs}\n`;
+    return ``;
 }
 
 async function buildWorker() {
@@ -152,7 +152,7 @@ async function buildWorker() {
 
     const buildTimestamp = new Date().toISOString();
     const buildInfo = `// Build: ${buildTimestamp}\n`;
-    const worker = `${buildInfo}// @ts-nocheck\n${finalCode}`;
+    const worker = code.outputFiles[0].text;
     mkdirSync(DIST_PATH, { recursive: true });
     writeFileSync('./dist/worker.js', worker, 'utf8');
 
