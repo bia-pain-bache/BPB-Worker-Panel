@@ -6,7 +6,6 @@
 
 Using predefined routing rules, you can apply these settings to configs:
 
-* Direct access to LAN. For example, connections to 127.0.0.1 or 192.168.1.1 are handled directly.
 * Connect directly to Iranian addresses without a proxy (no need to disconnect for visiting some websites, especially payment gateways).
 * Have direct access to Chinese websites.
 * Have direct access to Russian websites.
@@ -14,7 +13,7 @@ Using predefined routing rules, you can apply these settings to configs:
 * Block Porn content websites.
 * Block QUIC connections (due to network instability).
 
-Normally, this section is disabled because you must first ensure your client's Geo assets are updated.
+Direct access to local addresses like 127.0.0.1 is set by default on configs and there's no need to manually add them.
 
 !!! warning
     If you enable routing rules and the client does not connect, the primary reason is that the Geo asset is not updated. Go to the Geo assets settings in the v2rayNG menu and click the cloud or download icon to update them. If the update process is unsuccessful, you will not be able to connect. If you have tried everything and it still does not update, download the two files from the links below, and instead of clicking the update button, click the add button and import these two files:

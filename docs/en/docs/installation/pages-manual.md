@@ -1,4 +1,6 @@
-# :material-new-box:{ .md .middle } Pages Setup - Direct Upload Method
+# :material-new-box:{ .md .middle } Pages manual installation (Direct Upload)
+
+It is highly recommended to use [Wizard installation](./wizard.md) to avoid Cloudflare 1101 error, user errors and also save time to setup panel.
 
 ## Steps
 

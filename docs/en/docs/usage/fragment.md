@@ -19,30 +19,3 @@ This applies to clients using the Xray core, such as v2rayNG, MansaNG, and v2ray
 ## Fragment for sing-box
 
 Starting from version 1.12.0 sing-box core and related clients support fragment, you can use this sub by official sing-box client like husi or v2rayN which has sing-box core embeded.
-
-## Fragment for Hiddify
-
-Many panel settings are not applied to this subscription, as Hiddify overrides most settings. The following must be configured manually in Hiddify:
-
-1. Remote DNS
-2. Local DNS
-3. Routing
-
-!!! warning
-    Fragment settings from the panel are applied only if you disable fragment mode in Hiddify.
-
-!!! danger
-    Ensure the Remote DNS in Hiddify is set to a DoH, DoT, or TCP DNS server. Examples:
-    ```title="DoH"
-    https://8.8.8.8/dns-query
-    ```
-    ```title="DoT"
-    tls://8.8.8.8  
-    ```
-    ```title="TCP"
-    tcp://8.8.8.8  
-    ```
-
-Alternatively, you can import the **Normal** subscription into Hiddify and manually enable fragment, as shown below:
-
-![Fragment subscription for Hiddify](../images/hiddify-fragment.jpg)

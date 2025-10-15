@@ -1,4 +1,4 @@
-# :material-new-box:{ .md .middle } راه‌اندازی Workers و Pages - Wizard
+# :material-new-box:{ .md .middle } راه‌اندازی خودکار Workers و Pages
 
 برای ساده‌تر کردن فرآیند راه‌اندازی و جلوگیری از اشتباهات کاربرها، پروژه [BPB Wizard](https://github.com/bia-pain-bache/BPB-Wizard) راه‌اندازی شده. این ابزار از هر دو روش Workers و Pages پشتیبانی می‌کنه و استفاده ازش خیلی توصیه می‌شه.
 

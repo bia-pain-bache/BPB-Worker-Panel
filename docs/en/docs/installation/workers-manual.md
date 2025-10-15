@@ -1,4 +1,6 @@
-# :material-new-box:{ .md .middle } Installation via Cloudflare Workers
+# :material-new-box:{ .md .middle } Workers manual installation
+
+It is highly recommended to use [Wizard installation](./wizard.md) to avoid Cloudflare 1101 error, user errors and also save time to setup panel.
 
 ## Installation
 

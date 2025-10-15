@@ -8,7 +8,7 @@
     <link rel="icon" href="/favicon.ico" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=autorenew,check_circle,content_copy,download,fingerprint,info,key_vertical,open_in_new,qr_code,settings,share,terminal,tune,verified,visibility,visibility_off&display=block" />
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add_circle,autorenew,check_circle,content_copy,delete,download,fingerprint,info,key_vertical,open_in_new,qr_code,settings,share,terminal,tune,verified,visibility,visibility_off&display=block" />
     __STYLE__
 </head>
 
@@ -41,9 +41,7 @@
                     <div class="form-control">
                         <label for="localDNS">🏚️ Local DNS</label>
                         <div>
-                            <input type="text" id="localDNS" name="localDNS"
-                                pattern="^(localhost|(?:\d{1,3}\.){3}\d{1,3})$"
-                                title="Please enter a valid DNS IP Address!" required>
+                            <input type="text" id="localDNS" name="localDNS" required>
                         </div>
                     </div>
                     <div class="form-control">
@@ -201,7 +199,7 @@
             </details>
             <details>
                 <summary>
-                    <h3>Fragment
+                    <h3>Xray Fragment
                         <a href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/fragment/"
                             target="_blank" title="Help">
                             <span class="material-symbols-rounded">info</span>
@@ -209,6 +207,17 @@
                     </h3>
                 </summary>
                 <div class="section">
+                    <div class="form-control">
+                        <label for="fragmentMode">🎚️ Mode</label>
+                        <div>
+                            <select id="fragmentMode" name="fragmentMode" onchange="handleFragmentMode()">
+                                <option value="custom">Custom</option>
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                    </div>
                     <div class="form-control">
                         <label for="fragmentLengthMin">📐 Length</label>
                         <div class="min-max">
@@ -309,27 +318,17 @@
                 <div class="section">
                     <div class="container">
                         <div class="section">
-                            <h4><span class="material-symbols-rounded">tune</span> MahsaNG - Hiddify</h4>
+                            <h4><span class="material-symbols-rounded">tune</span> MahsaNG Noise</h4>
                             <div class="form-control">
-                                <label for="hiddifyNoiseMode">😵‍💫 Hiddify Mode</label>
-                                <div>
-                                    <input type="text" id="hiddifyNoiseMode" name="hiddifyNoiseMode"
-                                        pattern="^(m[1-6]|h_[0-9A-Fa-f]{2}|g_([0-9A-Fa-f]{2}_){2}[0-9A-Fa-f]{2})$"
-                                        title="Enter 'm1-m6', 'h_HEX', 'g_HEX_HEX_HEX' which HEX can be between 00 to ff"
-                                        required>
-                                </div>
-                            </div>
-                            <div class="form-control">
-                                <label for="knockerNoiseMode">😵‍💫 MahsaNG Mode</label>
+                                <label for="knockerNoiseMode">😵‍💫 Mode</label>
                                 <div>
                                     <input type="text" id="knockerNoiseMode" name="knockerNoiseMode"
-                                        pattern="^(none|quic|random|[0-9A-Fa-f]+)$"
-                                        title="Enter 'none', 'quic', 'random', or any HEX string like 'ee0000000108aaaa'"
+                                        title="Fill in 'none', 'quic', 'random', or any HEX string like 'ee0000000108aaaa'"
                                         required>
                                 </div>
                             </div>
                             <div class="form-control">
-                                <label for="noiseCountMin">🎚️ Noise Count</label>
+                                <label for="noiseCountMin">🎚️ Count</label>
                                 <div class="min-max">
                                     <input type="number" id="noiseCountMin" name="noiseCountMin" min="1" required>
                                     <span>-</span>
@@ -337,7 +336,7 @@
                                 </div>
                             </div>
                             <div class="form-control">
-                                <label for="noiseSizeMin">📏 Noise Size</label>
+                                <label for="noiseSizeMin">📏 Size</label>
                                 <div class="min-max">
                                     <input type="number" id="noiseSizeMin" name="noiseSizeMin" min="1" required>
                                     <span>-</span>
@@ -345,7 +344,7 @@
                                 </div>
                             </div>
                             <div class="form-control">
-                                <label for="noiseDelayMin">🕞 Noise Delay</label>
+                                <label for="noiseDelayMin">🕞 Delay</label>
                                 <div class="min-max">
                                     <input type="number" id="noiseDelayMin" name="noiseDelayMin" min="1" required>
                                     <span>-</span>
@@ -356,16 +355,16 @@
                     </div>
                     <div class="container">
                         <div class="section">
-                            <h4><span class="material-symbols-rounded">tune</span> Clash - Amnezia</h4>
+                            <h4><span class="material-symbols-rounded">tune</span> Clash - Amnezia Noise</h4>
                             <div class="form-control">
-                                <label for="amneziaNoiseCount">🎚️ Noise Count</label>
+                                <label for="amneziaNoiseCount">🎚️ Count</label>
                                 <div>
                                     <input type="number" id="amneziaNoiseCount" name="amneziaNoiseCount" min="1"
                                         required>
                                 </div>
                             </div>
                             <div class="form-control">
-                                <label for="amneziaNoiseSizeMin">📏 Noise Size</label>
+                                <label for="amneziaNoiseSizeMin">📏 Size</label>
                                 <div class="min-max">
                                     <input type="number" id="amneziaNoiseSizeMin" name="amneziaNoiseSizeMin" min="1"
                                         required>
@@ -378,9 +377,9 @@
                     </div>
                     <div id="udp-noise-container" class="container">
                         <div class="header-container">
-                            <h4><span class="material-symbols-rounded">tune</span> v2rayNG - v2rayN</h4>
+                            <h4><span class="material-symbols-rounded">tune</span> v2rayNG - v2rayN Noise</h4>
                             <button type="button" class="add-noise" onclick="addUdpNoise(true)">
-                                <i class="fa fa-plus-circle fa-2x" aria-hidden="true"></i>
+                                <span class="material-symbols-rounded">add_circle</span>
                             </button>
                         </div>
                         <div id="noises" class="section"></div>
@@ -403,10 +402,6 @@
                             <label for="bypass-rules">🟩 Bypass rules</label>
                             <div>
                                 <div id="bypass-rules" class="rules inner-container">
-                                    <div class="routing">
-                                        <input type="checkbox" id="bypassLAN" name="bypassLAN" value="true">
-                                        <label for="bypassLAN">LAN</label>
-                                    </div>
                                     <div class="routing">
                                         <input type="checkbox" id="bypassIran" name="bypassIran" value="true">
                                         <label for="bypassIran">Iran</label>
@@ -551,7 +546,7 @@
         </form>
     </div>
     <div class="form-container container">
-        <h2><span class="material-symbols-rounded">share</span> Subscriptions - Configs</h2>
+        <h2><span class="material-symbols-rounded">share</span> Subscriptions</h2>
         <details>
             <summary>
                 <h3>Normal
@@ -563,10 +558,6 @@
             </summary>
             <div class="table-container">
                 <table id="full-normal-configs-table">
-                    <tr>
-                        <th>Application</th>
-                        <th>Subscription</th>
-                    </tr>
                     <tr>
                         <td>
                             <div>
@@ -589,10 +580,6 @@
                                 <span class="material-symbols-rounded">verified</span>
                                 <span>Streisand</span>
                             </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Happ</span>
-                            </div>
                         </td>
                         <td>
                             <button title="Display QR code"
@@ -601,6 +588,9 @@
                             </button>
                             <button title="Copy subscription URL" onclick="subURL('normal', 'xray', 'Normal')">
                                 <span class="material-symbols-rounded">content_copy</span>
+                            </button>
+                            <button title="Download config" onclick="dlURL('normal', 'xray')">
+                                <span class="material-symbols-rounded">download</span>
                             </button>
                         </td>
                     </tr>
@@ -678,10 +668,6 @@
             </summary>
             <div class="table-container">
                 <table id="frag-sub-table">
-                    <thead>
-                        <th>Application</th>
-                        <th>Subscription</th>
-                    </thead>
                     <tr>
                         <td>
                             <div>
@@ -704,10 +690,6 @@
                                 <span class="material-symbols-rounded">verified</span>
                                 <span>Streisand</span>
                             </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Happ</span>
-                            </div>
                         </td>
                         <td>
                             <button title="Display QR code"
@@ -716,6 +698,9 @@
                             </button>
                             <button title="Copy subscription URL" onclick="subURL('fragment', 'xray', 'Fragment')">
                                 <span class="material-symbols-rounded">content_copy</span>
+                            </button>
+                            <button title="Download config" onclick="dlURL('fragment', 'xray')">
+                                <span class="material-symbols-rounded">download</span>
                             </button>
                         </td>
                     </tr>
@@ -732,7 +717,7 @@
                         </td>
                         <td>
                             <button title="Display QR code"
-                                onclick="openQR('fragment', 'sing-box', 'Fragment', 'Fragment Subscription', true, false)">
+                                onclick="openQR('fragment', 'sing-box', 'Fragment', 'Fragment Subscription', true)">
                                 <span class="material-symbols-rounded">qr_code</span>
                             </button>
                             <button title="Copy subscription URL" onclick="subURL('fragment', 'sing-box', 'Fragment')">
@@ -758,10 +743,6 @@
             <div class="table-container">
                 <table id="warp-configs-table">
                     <tr>
-                        <th>Application</th>
-                        <th>Subscription</th>
-                    </tr>
-                    <tr>
                         <td>
                             <div>
                                 <span class="material-symbols-rounded">verified</span>
@@ -775,10 +756,6 @@
                                 <span class="material-symbols-rounded">verified</span>
                                 <span>Streisand</span>
                             </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Happ</span>
-                            </div>
                         </td>
                         <td>
                             <button title="Display QR code"
@@ -787,6 +764,9 @@
                             </button>
                             <button title="Copy subscription URL" onclick="subURL('warp', 'xray', 'Warp')">
                                 <span class="material-symbols-rounded">content_copy</span>
+                            </button>
+                            <button title="Download config" onclick="dlURL('warp', 'xray')">
+                                <span class="material-symbols-rounded">download</span>
                             </button>
                         </td>
                     </tr>
@@ -879,10 +859,6 @@
             <div class="table-container">
                 <table id="warp-pro-configs-table">
                     <tr>
-                        <th>Application</th>
-                        <th>Subscription</th>
-                    </tr>
-                    <tr>
                         <td>
                             <div>
                                 <span class="material-symbols-rounded">verified</span>
@@ -896,10 +872,6 @@
                                 <span class="material-symbols-rounded">verified</span>
                                 <span>Streisand</span>
                             </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Happ</span>
-                            </div>
                         </td>
                         <td>
                             <button title="Display QR code"
@@ -908,6 +880,9 @@
                             </button>
                             <button title="Copy subscription URL" onclick="subURL('warp-pro', 'xray', 'Warp Pro')">
                                 <span class="material-symbols-rounded">content_copy</span>
+                            </button>
+                            <button title="Download config" onclick="dlURL('warp-pro', 'xray')">
+                                <span class="material-symbols-rounded">download</span>
                             </button>
                         </td>
                     </tr>
@@ -930,6 +905,9 @@
                             <button title="Copy subscription URL"
                                 onclick="subURL('warp-pro', 'xray-knocker', 'Warp Pro')">
                                 <span class="material-symbols-rounded">content_copy</span>
+                            </button>
+                            <button title="Download config" onclick="dlURL('warp-pro', 'xray-knocker')">
+                                <span class="material-symbols-rounded">download</span>
                             </button>
                         </td>
                     </tr>

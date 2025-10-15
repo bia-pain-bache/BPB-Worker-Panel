@@ -30,6 +30,7 @@ export async function updateDataset(request, env) {
     let newSettings = request.method === 'POST' ? await request.json() : null;
     const isReset = newSettings?.resetSettings;
     let currentSettings;
+
     if (!isReset) {
         try {
             currentSettings = await env.kv.get("proxySettings", { type: 'json' });
@@ -41,8 +42,13 @@ export async function updateDataset(request, env) {
 
     const populateField = (field, defaultValue, callback) => {
         if (isReset) return defaultValue;
-        if (!newSettings) return currentSettings?.[field] ?? defaultValue;
+
+        if (!newSettings) {
+            return currentSettings?.[field] ?? defaultValue;
+        }
+
         const value = newSettings[field];
+
         return typeof callback === 'function' ? callback(value) : value;
     }
 
@@ -84,12 +90,12 @@ export async function updateDataset(request, env) {
         TRConfigs: populateField('TRConfigs', true),
         ports: populateField('ports', [443]),
         fingerprint: populateField('fingerprint', 'chrome'),
+        fragmentMode: populateField('fragmentMode', 'custom'),
         fragmentLengthMin: populateField('fragmentLengthMin', 100),
         fragmentLengthMax: populateField('fragmentLengthMax', 200),
         fragmentIntervalMin: populateField('fragmentIntervalMin', 1),
         fragmentIntervalMax: populateField('fragmentIntervalMax', 1),
         fragmentPackets: populateField('fragmentPackets', 'tlshello'),
-        bypassLAN: populateField('bypassLAN', false),
         bypassIran: populateField('bypassIran', false),
         bypassChina: populateField('bypassChina', false),
         bypassRussia: populateField('bypassRussia', false),
@@ -123,7 +129,6 @@ export async function updateDataset(request, env) {
                 count: 5
             }
         ]),
-        hiddifyNoiseMode: populateField('hiddifyNoiseMode', 'm4'),
         knockerNoiseMode: populateField('knockerNoiseMode', 'quic'),
         noiseCountMin: populateField('noiseCountMin', 10),
         noiseCountMax: populateField('noiseCountMax', 15),
@@ -148,30 +153,57 @@ export async function updateDataset(request, env) {
 }
 
 function extractChainProxyParams(chainProxy) {
-    let configParams = {};
     if (!chainProxy) return {};
-    const url = new URL(chainProxy);
-    const protocol = url.protocol.slice(0, -1);
-    if (protocol === atob('dmxlc3M=')) {
-        const params = new URLSearchParams(url.search);
-        configParams = {
-            protocol: protocol,
-            uuid: url.username,
-            server: url.hostname,
-            port: url.port
-        };
+    const {
+        hostname,
+        port,
+        username,
+        password,
+        search,
+        protocol
+    } = new URL(chainProxy);
 
-        params.forEach((value, key) => {
+    const proto = protocol.slice(0, -1);
+    let configParams = {
+        protocol: proto === 'ss' ? atob('c2hhZG93c29ja3M=') : proto,
+        server: hostname,
+        port: +port
+    };
+
+    const parseParams = () => {
+        const params = new URLSearchParams(search);
+        for (const [key, value] of params) {
             configParams[key] = value;
-        });
-    } else {
-        configParams = {
-            protocol: protocol,
-            user: url.username,
-            pass: url.password,
-            server: url.host,
-            port: url.port
-        };
+        }
+    }
+
+    switch (proto) {
+        case atob('dmxlc3M='):
+            configParams.uuid = username;
+            parseParams();
+            break;
+
+        case atob('dHJvamFu'):
+            configParams.password = username;
+            parseParams();
+            break;
+
+        case atob('c3M='):
+            const auth = new TextDecoder().decode(Uint8Array.from(atob(username), c => c.charCodeAt(0)));
+            const [first, ...rest] = auth.split(':');
+            configParams.method = first;
+            configParams.password = rest.join(':');
+            parseParams();
+            break;
+
+        case atob('c29ja3M='):
+        case 'http':
+            configParams.user = username;
+            configParams.pass = password;
+            break;
+
+        default:
+            return {};
     }
 
     return configParams;

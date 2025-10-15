@@ -41,20 +41,18 @@ You may enable Fake DNS to reduce DNS query latency, but use caution—it may be
 
 ## Chain Proxy
 
-As noted, a Proxy IP fixes the IP for Cloudflare target addresses, but node IPs may differ for other targets. A **Chain Proxy** ensures a consistent IP for all targets. You can use a free VLESS, Socks, or HTTP config here, even if it’s blocked by your ISP, to permanently fix your IP to the Chain Proxy IP.
+As noted, a Proxy IP fixes the IP for Cloudflare target addresses, but node IPs may differ for other targets. A **Chain Proxy** ensures a consistent IP for all targets. You can use a free **VLESS**, **Trojan**, **Shadowsocks**, **Socks**, or **HTTP** config here, even if it’s blocked by your ISP, to permanently fix your IP to the Chain Proxy IP.
 
 !!! note
     The Chain Proxy config must not be a worker itself, or the final IP will still change.
 
-!!! tip
-    Free configs are available from sources like [racevpn.com](https://racevpn.com). Their free plan configs expire after three days but are stable and region-specific.
-
 !!! note
-    Supported VLESS config types include:  
+    VLESS and Trojan configs support:  
 
     - WS
-    - Reality WS
     - WS TLS
+    - Httpupgrade
+    - Httpupgrade TLS
     - GRPC
     - Reality GRPC
     - GRPC TLS
@@ -64,24 +62,26 @@ As noted, a Proxy IP fixes the IP for Cloudflare target addresses, but node IPs 
     - Reality TCP Header
     - TCP TLS
 
-!!! note
+!!! info
     Socks configs can be in these formats:
 
     - socks://`address`:`port`
     - socks://`user`:`pass`@`address`:`port`
 
-!!! note
+!!! info
     HTTP configs can be in these formats:  
 
     - http://`address`:`port`
     - http://`user`:`pass`@`address`:`port`
 
-This setting applies to all subscriptions except **Warp**. After applying, update the subscription.
+!!! info
+    Shadowsocks cannot have any transport like websocket, grpc... and cannot have TLS.
 
 !!! warning
-    - VLESS TLS configs for chaining must use port 443.
-    - VLESS configs with randomized ALPN values are incompatible with Clash due to lack of Fingerprint support.
-    - VLESS WS configs are unsuitable for chaining on Sing-box due to a bug.
+    - TLS configs for chaining must use port 443.
+    - VLESS and Trojan configs with randomized ALPN values are incompatible with Clash due to lack of Fingerprint
+
+This setting applies to **Normal** and **Fragment** subscriptions. After applying, update the subscription. The chained configs will be added alongside original configs using 🔗 icon. This way, when Chain Proxy stops working, you still have access to original configs.
 
 ## Clean IP/Domains
 

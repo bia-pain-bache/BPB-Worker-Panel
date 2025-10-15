@@ -29,6 +29,7 @@ async function fetchDNSRecords(url, recordType) {
         const data = await response.json();
 
         if (!data.Answer) return [];
+
         return data.Answer
             .filter(record => record.type === recordType)
             .map(record => record.data);
@@ -53,6 +54,7 @@ export async function getConfigAddresses(isFragment) {
 export function extractWireguardParams(warpConfigs, isWoW) {
     const index = isWoW ? 1 : 0;
     const warpConfig = warpConfigs[index].account.config;
+
     return {
         warpIPv6: `${warpConfig.interface.addresses.v6}/128`,
         reserved: warpConfig.client_id,
@@ -61,22 +63,25 @@ export function extractWireguardParams(warpConfigs, isWoW) {
     };
 }
 
-export function generateRemark(index, port, address, cleanIPs, protocol, configType) {
+export function generateRemark(index, port, address, protocol, configType, isChain) {
     let addressType;
+    const chainSign = isChain ? '🔗 ' : '';
     const type = configType ? ` ${configType}` : '';
 
-    cleanIPs.includes(address)
+    settings.cleanIPs.includes(address)
         ? addressType = 'Clean IP'
         : addressType = isDomain(address) ? 'Domain' : isIPv4(address) ? 'IPv4' : isIPv6(address) ? 'IPv6' : '';
 
-    return `💦 ${index} - ${protocol}${type} - ${addressType} : ${port}`;
+    return `💦 ${index} - ${chainSign}${protocol}${type} - ${addressType} : ${port}`;
 }
 
 export function randomUpperCase(str) {
     let result = '';
+
     for (let i = 0; i < str.length; i++) {
         result += Math.random() < 0.5 ? str[i].toUpperCase() : str[i];
     }
+
     return result;
 }
 
@@ -85,9 +90,11 @@ export function getRandomString(lengthMin, lengthMax) {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     const charactersLength = characters.length;
     const length = Math.floor(Math.random() * (lengthMax - lengthMin + 1)) + lengthMin;
+
     for (let i = 0; i < length; i++) {
         result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
+
     return result;
 }
 
@@ -99,14 +106,14 @@ export function generateWsPath(protocol) {
         panelIPs: settings.proxyIPMode === 'proxyip' ? settings.proxyIPs : settings.prefixes
     };
 
-    const encodedConfig = btoa(JSON.stringify(config));
-    return `/${encodedConfig}`;
+    return `/${btoa(JSON.stringify(config))}`;
 }
 
 export function base64ToDecimal(base64) {
     const binaryString = atob(base64);
     const hexString = Array.from(binaryString).map(char => char.charCodeAt(0).toString(16).padStart(2, '0')).join('');
     const decimalArray = hexString.match(/.{2}/g).map(hex => parseInt(hex, 16));
+
     return decimalArray;
 }
 
@@ -125,9 +132,16 @@ export function getDomain(url) {
         const newUrl = new URL(url);
         const host = newUrl.hostname;
         const isHostDomain = isDomain(host);
-        return { host, isHostDomain };
+
+        return {
+            host,
+            isHostDomain
+        };
     } catch {
-        return { host: null, isHostDomain: false };
+        return {
+            host: null,
+            isHostDomain: false
+        };
     }
 }
 
@@ -142,6 +156,7 @@ export function parseHostPort(input, brackets) {
     if (!match) return null;
 
     let ipv6 = match.groups.ipv6;
+
     if (brackets && ipv6) {
         ipv6 = `[${ipv6}]`;
     }
@@ -150,5 +165,25 @@ export function parseHostPort(input, brackets) {
     const port = match.groups.port ? parseInt(match.groups.port, 10) : null;
 
     return { host, port };
+}
+
+export function isHttps(port) {
+    return httpConfig.defaultHttpsPorts.includes(port);
+}
+
+export async function parseChainProxy(env, buildOutbound) {
+    try {
+        return buildOutbound();
+    } catch (error) {
+        console.log('An error occured while parsing chain proxy: ', error);
+        const settings = await env.kv.get("proxySettings", { type: 'json' });
+        await env.kv.put("proxySettings", JSON.stringify({
+            ...settings,
+            outProxy: '',
+            outProxyParams: {}
+        }));
+
+        return undefined;
+    }
 }
 

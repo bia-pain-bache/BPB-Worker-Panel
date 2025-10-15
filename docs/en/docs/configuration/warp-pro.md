@@ -6,7 +6,7 @@ This section applies exclusively to the **Warp Pro** subscription, as detailed [
 
 ## Definitions
 
-Several common terms are used across all implementations of Warp noise (fake packets). Most cores, including **Xray**, **Hiddify**, **Xray Knocker**, and **Amnezia**, share at least two parameters:
+Several common terms are used across all implementations of Warp noise (fake packets). Most cores, including **Xray**, **Xray Knocker**, and **Amnezia**, share at least two parameters:
 
 ### Mode
 
@@ -24,13 +24,7 @@ The size of each noise packet, measured in bytes.
 
 The interval between sending noise packets.
 
-## MahsaNG and Hiddify
-
-### Hiddify Modes
-
-- Modes `m1` to `m6`
-- Mode `h_HEX`, where HEX is a value between `00` and `FF` (e.g., `h_0a`, `h_f9`, `h_9c`)
-- Mode `g_HEX_HEX_HEX`, where HEX follows the same format (e.g., `g_0a_ff_9c`)
+## MahsaNG
 
 ### MahsaNG Mode
 

@@ -1,14 +1,14 @@
 import { Authenticate, generateJWTToken, resetPassword } from "#auth";
-import { getClashNormalConfig, getClashWarpConfig } from "#configs/clash";
+import { getClNormalConfig, getClWarpConfig } from "#configs/clash";
+import { getSbCustomConfig, getSbWarpConfig } from "#configs/sing-box";
+import { getXrCustomConfigs, getXrWarpConfigs } from "#configs/xray";
 import { extractWireguardParams } from "#configs/utils";
-import { getSingBoxCustomConfig, getSingBoxWarpConfig } from "#configs/sing-box";
-import { getXrayCustomConfigs, getXrayWarpConfigs } from "#configs/xray";
 import { getDataset, updateDataset } from "#kv";
-import JSZip from "jszip";
 import { fetchWarpConfigs } from "#protocols/warp";
 import { globalConfig, httpConfig, wsConfig } from "#common/init";
 import { VlOverWSHandler } from "#protocols/websocket/vless";
 import { TrOverWSHandler } from "#protocols/websocket/trojan";
+import JSZip from "jszip";
 export let settings = {}
 
 export async function handleWebsocket(request) {
@@ -16,6 +16,7 @@ export async function handleWebsocket(request) {
 
     try {
         const { protocol, mode, panelIPs } = JSON.parse(atob(encodedPathConfig));
+
         Object.assign(wsConfig, {
             wsProtocol: protocol,
             proxyMode: mode,
@@ -37,6 +38,7 @@ export async function handleWebsocket(request) {
 }
 
 export async function handlePanel(request, env) {
+
     switch (globalConfig.pathName) {
         case '/panel':
             return await renderPanel(request, env);
@@ -69,8 +71,14 @@ export async function handleError(error) {
 }
 
 export async function handleLogin(request, env) {
-    if (globalConfig.pathName === '/login') return await renderLogin(request, env);
-    if (globalConfig.pathName === '/login/authenticate') return await generateJWTToken(request, env);
+    if (globalConfig.pathName === '/login') {
+        return await renderLogin(request, env);
+    }
+
+    if (globalConfig.pathName === '/login/authenticate') {
+        return await generateJWTToken(request, env);
+    }
+
     return await fallback(request);
 }
 
@@ -83,45 +91,46 @@ export async function handleSubscriptions(request, env) {
     switch (path) {
         case `/sub/normal/${subPath}`:
             switch (client) {
-                case 'sing-box':
-                    return await getSingBoxCustomConfig(env, false);
-                case 'clash':
-                    return await getClashNormalConfig(env);
                 case 'xray':
-                    return await getXrayCustomConfigs(env, false);
+                    return await getXrCustomConfigs(env, false);
+                case 'sing-box':
+                    return await getSbCustomConfig(env, false);
+                case 'clash':
+                    return await getClNormalConfig(env);
                 default:
                     break;
             }
 
         case `/sub/fragment/${subPath}`:
             switch (client) {
-                case 'sing-box':
-                    return await getSingBoxCustomConfig(env, true);
                 case 'xray':
-                    return await getXrayCustomConfigs(env, true);
+                    return await getXrCustomConfigs(env, true);
+                case 'sing-box':
+                    return await getSbCustomConfig(env, true);
                 default:
                     break;
             }
 
         case `/sub/warp/${subPath}`:
             switch (client) {
-                case 'clash':
-                    return await getClashWarpConfig(request, env, false);
-                case 'sing-box':
-                    return await getSingBoxWarpConfig(request, env);
                 case 'xray':
-                    return await getXrayWarpConfigs(request, env, false);
+                    return await getXrWarpConfigs(request, env, false, false);
+                case 'sing-box':
+                    return await getSbWarpConfig(request, env);
+                case 'clash':
+                    return await getClWarpConfig(request, env, false);
                 default:
                     break;
             }
 
         case `/sub/warp-pro/${subPath}`:
             switch (client) {
-                case 'clash':
-                    return await getClashWarpConfig(request, env, true);
-                case 'xray-knocker':
                 case 'xray':
-                    return await getXrayWarpConfigs(request, env, true);
+                    return await getXrWarpConfigs(request, env, true, false);
+                case 'xray-knocker':
+                    return await getXrWarpConfigs(request, env, true, true);
+                case 'clash':
+                    return await getClWarpConfig(request, env, true);
                 default:
                     break;
             }
@@ -134,7 +143,11 @@ export async function handleSubscriptions(request, env) {
 async function updateSettings(request, env) {
     if (request.method === 'POST') {
         const auth = await Authenticate(request, env);
-        if (!auth) return await respond(false, 401, 'Unauthorized or expired session.');
+
+        if (!auth) {
+            return await respond(false, 401, 'Unauthorized or expired session.');
+        }
+
         const proxySettings = await updateDataset(request, env);
         return await respond(true, 200, null, proxySettings);
     }
@@ -145,7 +158,11 @@ async function updateSettings(request, env) {
 async function resetSettings(request, env) {
     if (request.method === 'POST') {
         const auth = await Authenticate(request, env);
-        if (!auth) return await respond(false, 401, 'Unauthorized or expired session.');
+
+        if (!auth) {
+            return await respond(false, 401, 'Unauthorized or expired session.');
+        }
+
         const proxySettings = await updateDataset(request, env);
         return await respond(true, 200, null, proxySettings);
     }
@@ -156,7 +173,11 @@ async function resetSettings(request, env) {
 async function getSettings(request, env) {
     const isPassSet = await env.kv.get('pwd') ? true : false;
     const auth = await Authenticate(request, env);
-    if (!auth) return await respond(false, 401, 'Unauthorized or expired session.', { isPassSet });
+
+    if (!auth) {
+        return await respond(false, 401, 'Unauthorized or expired session.', { isPassSet });
+    }
+
     const dataset = await getDataset(request, env);
     const data = {
         proxySettings: dataset.settings,
@@ -168,13 +189,14 @@ async function getSettings(request, env) {
 }
 
 export async function fallback(request) {
-    const url = new URL(request.url);
-    url.hostname = globalConfig.fallbackDomain;
-    url.protocol = 'https:';
-    const newRequest = new Request(url.toString(), {
-        method: request.method,
-        headers: request.headers,
-        body: request.body,
+    const { url, method, headers, body } = request;
+    const newURL = new URL(url);
+    newURL.hostname = globalConfig.fallbackDomain;
+    newURL.protocol = 'https:';
+    const newRequest = new Request(newURL.toString(), {
+        method,
+        headers,
+        body,
         redirect: 'manual'
     });
 
@@ -183,9 +205,11 @@ export async function fallback(request) {
 
 async function getMyIP(request) {
     const ip = await request.text();
+
     try {
         const response = await fetch(`http://ip-api.com/json/${ip}?nocache=${Date.now()}`);
         const geoLocation = await response.json();
+
         return await respond(true, 200, null, geoLocation);
     } catch (error) {
         console.error('Error fetching IP address:', error);
@@ -196,7 +220,11 @@ async function getMyIP(request) {
 async function getWarpConfigs(request, env) {
     const isPro = httpConfig.client === 'amnezia';
     const auth = await Authenticate(request, env);
-    if (!auth) return new Response('Unauthorized or expired session.', { status: 401 });
+
+    if (!auth) {
+        return new Response('Unauthorized or expired session.', { status: 401 });
+    }
+
     const { warpConfigs, settings } = await getDataset(request, env);
     const warpConfig = extractWireguardParams(warpConfigs, false);
     const { warpIPv6, publicKey, privateKey } = warpConfig;
@@ -235,6 +263,7 @@ async function getWarpConfigs(request, env) {
 
         const zipBlob = await zip.generateAsync({ type: "blob" });
         const arrayBuffer = await zipBlob.arrayBuffer();
+
         return new Response(arrayBuffer, {
             headers: {
                 "Content-Type": "application/zip",
@@ -248,7 +277,9 @@ async function getWarpConfigs(request, env) {
 
 export async function serveIcon() {
     const faviconBase64 = __ICON__;
-    return new Response(Uint8Array.from(atob(faviconBase64), c => c.charCodeAt(0)), {
+    const body = Uint8Array.from(atob(faviconBase64), c => c.charCodeAt(0));
+
+    return new Response(body, {
         headers: {
             'Content-Type': 'image/x-icon',
             'Cache-Control': 'public, max-age=86400',
@@ -258,12 +289,17 @@ export async function serveIcon() {
 
 async function renderPanel(request, env) {
     const pwd = await env.kv.get('pwd');
+
     if (pwd) {
         const auth = await Authenticate(request, env);
-        if (!auth) return Response.redirect(`${httpConfig.urlOrigin}/login`, 302);
+
+        if (!auth) {
+            return Response.redirect(`${httpConfig.urlOrigin}/login`, 302);
+        }
     }
 
     const html = hexToString(__PANEL_HTML_CONTENT__);
+
     return new Response(html, {
         headers: { 'Content-Type': 'text/html' }
     });
@@ -271,9 +307,12 @@ async function renderPanel(request, env) {
 
 async function renderLogin(request, env) {
     const auth = await Authenticate(request, env);
-    if (auth) return Response.redirect(`${httpConfig.urlOrigin}/panel`, 302);
+    if (auth) {
+        return Response.redirect(`${httpConfig.urlOrigin}/panel`, 302);
+    }
 
     const html = hexToString(__LOGIN_HTML_CONTENT__);
+
     return new Response(html, {
         headers: { 'Content-Type': 'text/html' }
     });
@@ -281,6 +320,7 @@ async function renderLogin(request, env) {
 
 export async function renderSecrets() {
     const html = hexToString(__SECRETS_HTML_CONTENT__);
+
     return new Response(html, {
         headers: { 'Content-Type': 'text/html' },
     });
@@ -289,7 +329,11 @@ export async function renderSecrets() {
 async function updateWarpConfigs(request, env) {
     if (request.method === 'POST') {
         const auth = await Authenticate(request, env);
-        if (!auth) return await respond(false, 401, 'Unauthorized.');
+
+        if (!auth) {
+            return await respond(false, 401, 'Unauthorized.');
+        }
+
         try {
             await fetchWarpConfigs(env);
             return await respond(true, 200, 'Warp configs updated successfully!');
@@ -318,6 +362,7 @@ export async function respond(success, status, message, body, customHeaders) {
 function hexToString(hex) {
     const bytes = new Uint8Array(hex.match(/.{1,2}/g).map(b => parseInt(b, 16)));
     const decoder = new TextDecoder();
+
     return decoder.decode(bytes);
 }
 

@@ -75,7 +75,7 @@ h1 {
     gap: var(--container-gap);
 }
 
-.container > .section{
+.container>.section {
     margin: 0;
 }
 
@@ -161,6 +161,14 @@ textarea:focus,
 select:focus {
     border-color: var(--secondary-color);
     outline: none;
+}
+
+input[type="text"]:read-only,
+input[type="number"]:read-only,
+input[type="url"]:read-only,
+textarea:read-only {
+    color: gray;
+    background-color: var(--form-background-color);
 }
 
 .form-control input[type="password"] {
@@ -444,6 +452,11 @@ table button {
 table button span.material-symbols-rounded {
     font-size: 28px;
     margin: 0;
+    color: var(--button-color)
+}
+
+table td div span.material-symbols-rounded {
+    color: #3fb950;
 }
 
 .button {
@@ -513,11 +526,7 @@ table button:active {
     margin: 0;
     border: none;
     cursor: pointer;
-}
-
-.add-noise i,
-.delete-noise i {
-    color: var(--button-color);
+    color: green;
 }
 
 .delete-noise {
@@ -525,6 +534,7 @@ table button:active {
     margin: 0;
     border: none;
     cursor: pointer;
+    color: darkred;
 }
 
 .table-container table {
@@ -598,14 +608,6 @@ table button:active {
 .table-container td div {
     display: flex;
     align-items: center;
-}
-
-.table-container th {
-    background-color: var(--secondary-color);
-    color: white;
-    font-weight: bold;
-    font-size: 1.1rem;
-    width: 50%;
 }
 
 .table-container tr:hover {
