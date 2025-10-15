@@ -6,7 +6,13 @@ import { build } from 'esbuild';
 import { globSync } from 'glob';
 import { minify as htmlMinify } from 'html-minifier';
 import JSZip from "jszip";
-import pkg from '../package.json' assert { type: 'json' };
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = pathDirname(__filename);
+
+// 兼容读取 package.json，不用 import assert
+const pkg = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf8'));
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = pathDirname(__filename);
