@@ -130,7 +130,7 @@ async function buildWorker() {
     if (true) {
         const junkCode = generateJunkCode();
         const minifiedCode = await minifyCode(code.outputFiles[0].text);
-        finalCode = minifiedCode.code;
+        finalCode = code.outputFiles[0].text;
     } else {
         const minifiedCode = await minifyCode(code.outputFiles[0].text);
         const obfuscationResult = obfs.obfuscate(minifiedCode.code, {
