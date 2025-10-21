@@ -528,11 +528,11 @@ async function buildConfig(outbounds, selectorTags, proxyTags, chainTags, isChai
             "type": "select",
             "proxies": chainTags.slice(2)
         },
-        config['proxy-groups'].push({
+        {
             "name": '💦 🔗 B D 🚀',
             "type": "select",
             "proxies": chainTags.slice(0, 2)
-        };
+        });
     }
 
     return config;
