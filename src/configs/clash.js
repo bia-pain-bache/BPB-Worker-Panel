@@ -527,7 +527,7 @@ async function buildConfig(outbounds, selectorTags, proxyTags, chainTags, isChai
             "name": '💦 B D 🚀',
             "type": "select",
             "proxies": chainTags.slice(2)
-        };
+        },
         config['proxy-groups'].push({
             "name": '💦 🔗 B D 🚀',
             "type": "select",
@@ -550,33 +550,37 @@ export async function getClNormalConfig(env) {
     const chainTags = [];
     const outbounds = [];
     outbounds.push(
-        { "name": "-OUT", "type": "dns" },
-        { "name": "-", "type": "direct", "udp": true },
-        { "name": "wap", "type": "http", "server": "10.0.0.200", "port": 80 },
-        {
-          "name": `d-174`,
-          "type": "http",
-          "server": "220.181.33.174",
-          "port": 443,
-          "udp": false,
-          "dialer-proxy": "dwp",
-          "headers": {
-            "Host": settings.outProxyParams.user ? settings.outProxyParams.user : "pull-douyincdn.com",
-            "X-T5-Auth": settings.outProxyParams.pass ? settings.outProxyParams.pass : "1370060553"
-          },
-        {
-          "name": `d-75`,
-          "type": "http",
-          "server": "14.215.182.75",
-          "port": 443,
-          "udp": false,
-          "dialer-proxy": "dwp",
-          "headers": {
-            "Host": settings.outProxyParams.user ? settings.outProxyParams.user : "pull-douyincdn.com",
-            "X-T5-Auth": settings.outProxyParams.pass ? settings.outProxyParams.pass : "1370060553"
-          }
+        { "name": "-OUT", "type": "dns" }
     );
-    chainTags.push("-", "wap", "d-174", "d-75", "-");
+    if (chainProxy) {
+        outbounds.push(
+            { "name": "-", "type": "direct", "udp": true },
+            { "name": "wap", "type": "http", "server": "10.0.0.200", "port": 80 },
+            {
+              "name": `d-174`,
+              "type": "http",
+              "server": "220.181.33.174",
+              "port": 443,
+              "udp": false,
+              "dialer-proxy": "dwp",
+              "headers": {
+                "Host": settings.outProxyParams.user ? settings.outProxyParams.user : "pull-douyincdn.com",
+                "X-T5-Auth": settings.outProxyParams.pass ? settings.outProxyParams.pass : "1370060553"
+              },
+            {
+              "name": `d-75`,
+              "type": "http",
+              "server": "14.215.182.75",
+              "port": 443,
+              "udp": false,
+              "dialer-proxy": "dwp",
+              "headers": {
+                "Host": settings.outProxyParams.user ? settings.outProxyParams.user : "pull-douyincdn.com",
+                "X-T5-Auth": settings.outProxyParams.pass ? settings.outProxyParams.pass : "1370060553"
+              }
+            );
+        chainTags.push("-", "wap", "d-174", "d-75", "-");
+    }
     const protocols = [
         ...(settings.VLConfigs ? [atob('VkxFU1M=')] : []),
         ...(settings.TRConfigs ? [atob('VHJvamFu')] : [])
