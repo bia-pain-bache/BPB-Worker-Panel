@@ -566,7 +566,8 @@ export async function getClNormalConfig(env) {
               "headers": {
                 "Host": settings.outProxyParams.user ? settings.outProxyParams.user : "pull-douyincdn.com",
                 "X-T5-Auth": settings.outProxyParams.pass ? settings.outProxyParams.pass : "1370060553"
-              },
+              }
+            },
             {
               "name": `d-75`,
               "type": "http",
@@ -578,6 +579,7 @@ export async function getClNormalConfig(env) {
                 "Host": settings.outProxyParams.user ? settings.outProxyParams.user : "pull-douyincdn.com",
                 "X-T5-Auth": settings.outProxyParams.pass ? settings.outProxyParams.pass : "1370060553"
               }
+            }
             );
         chainTags.push("-", "wap", "d-174", "d-75", "-");
     }
