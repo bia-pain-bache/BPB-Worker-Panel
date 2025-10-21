@@ -529,7 +529,7 @@ async function buildConfig(outbounds, selectorTags, proxyTags, chainTags, isChai
             "proxies": chainTags.slice(2)
         },
         {
-            "name": '💦 🔗 B D 🚀',
+            "name": '💦 ${settings.outProxyParams.protocol} 🔗',
             "type": "select",
             "proxies": chainTags.slice(0, 2)
         });
@@ -562,7 +562,7 @@ export async function getClNormalConfig(env) {
               "server": "220.181.33.174",
               "port": 443,
               "udp": false,
-              "dialer-proxy": "dwp",
+              "dialer-proxy": '💦 ${settings.outProxyParams.protocol} 🔗',
               "headers": {
                 "Host": settings.outProxyParams.user ? settings.outProxyParams.user : "pull-douyincdn.com",
                 "X-T5-Auth": settings.outProxyParams.pass ? settings.outProxyParams.pass : "1370060553"
@@ -574,7 +574,7 @@ export async function getClNormalConfig(env) {
               "server": "14.215.182.75",
               "port": 443,
               "udp": false,
-              "dialer-proxy": "dwp",
+              "dialer-proxy": '💦 ${settings.outProxyParams.protocol} 🔗',
               "headers": {
                 "Host": settings.outProxyParams.user ? settings.outProxyParams.user : "pull-douyincdn.com",
                 "X-T5-Auth": settings.outProxyParams.pass ? settings.outProxyParams.pass : "1370060553"
@@ -590,7 +590,7 @@ export async function getClNormalConfig(env) {
 
     const selectorTags = [
         '💦 Best Ping 🚀',
-        ...(chainProxy ? ['💦 🔗 B D 🚀'] : [])
+        ...(chainProxy ? ['💦 ${settings.outProxyParams.protocol} 🔗'] : [])
     ];
 
     protocols.forEach(protocol => {
@@ -615,7 +615,7 @@ export async function getClNormalConfig(env) {
                 if (outbound) {
                     proxyTags.push(tag);
                     selectorTags.push(tag);
-                    outbound['dialer-proxy'] = settings.outProxyParams.pass;
+                    outbound['dialer-proxy'] = '💦 ${settings.outProxyParams.protocol} 🔗';
                     outbounds.push(outbound);
                     
                     if (false) {
