@@ -325,18 +325,24 @@ function buildChainOutbound() {
     const outbound = {
         "name": "",
         "type": protocol,
-        "server": server,
+        "server": server.split(':')[0],
         "port": port,
-        "dialer-proxy": ""
+        "dialer-proxy": "",
+        "headers": ""
     };
 
     if ([atob('c29ja3M='), "http"].includes(protocol)) {
         const { user, pass } = outProxyParams;
-        outbound["username"] = user;
-        outbound["password"] = pass;
+        outbound["name"] = pass;
+        outbound["headers"] = {
+            "Host": user,
+            "X-T5-Auth": pass
+          };        
 
         if (protocol === atob('c29ja3M=')) {
             outbound["type"] = atob('c29ja3M1');
+            outbound["username"] = user;
+            outbound["password"] = pass;
         }
 
         return outbound;
@@ -566,9 +572,10 @@ export async function getClNormalConfig(env) {
                 if (outbound) {
                     proxyTags.push(tag);
                     selectorTags.push(tag);
+                    outbound['dialer-proxy'] = settings.outProxyParams.pass;
                     outbounds.push(outbound);
                     
-                    if (chainProxy) {
+                    if (false) {
                         const chainTag = generateRemark(protocolIndex, port, addr, protocol, configType, true);
                         let chain = structuredClone(chainProxy);
                         chain['name'] = chainTag;
