@@ -1,83 +1,81 @@
 import { handleTCPOutBound, makeReadableWebSocketStream } from '#protocols/websocket/common';
-import { globalConfig } from '#common/init';
 
-export async function TrOverWSHandler(request) {
+export async function TrOverWSHandler(request: Request): Promise<Response> {
     const webSocketPair = new WebSocketPair();
     const [client, webSocket] = Object.values(webSocketPair);
     webSocket.accept();
+
     let address = "";
     let portWithRandomLog = "";
-    const log = (info, event) => {
+
+    const log = (info: string, event?: string) => {
         console.log(`[${address}:${portWithRandomLog}] ${info}`, event || "");
     };
+
     const earlyDataHeader = request.headers.get("sec-websocket-protocol") || "";
     const readableWebSocketStream = makeReadableWebSocketStream(webSocket, earlyDataHeader, log);
-    let remoteSocketWapper = {
-        value: null,
-    };
-    let udpStreamWrite = null;
 
-    readableWebSocketStream
-        .pipeTo(
-            new WritableStream({
-                async write(chunk, controller) {
-                    if (udpStreamWrite) {
-                        return udpStreamWrite(chunk);
-                    }
+    let remoteSocketWapper: { value: any } = { value: null };
+    let udpStreamWrite: any = null;
 
-                    if (remoteSocketWapper.value) {
-                        const writer = remoteSocketWapper.value.writable.getWriter();
-                        await writer.write(chunk);
-                        writer.releaseLock();
-                        return;
-                    }
+    readableWebSocketStream.pipeTo(
+        new WritableStream({
+            async write(chunk, controller) {
+                if (udpStreamWrite) {
+                    return udpStreamWrite(chunk);
+                }
 
-                    const {
-                        hasError,
-                        message,
-                        portRemote = 443,
-                        addressRemote = "",
-                        rawClientData,
-                    } = parseTRHeader(chunk);
+                if (remoteSocketWapper.value) {
+                    const writer = remoteSocketWapper.value.writable.getWriter();
+                    await writer.write(chunk);
+                    writer.releaseLock();
+                    return;
+                }
 
-                    address = addressRemote;
-                    portWithRandomLog = `${portRemote}--${Math.random()} tcp`;
+                const {
+                    hasError,
+                    message,
+                    portRemote = 443,
+                    addressRemote = "",
+                    rawClientData,
+                } = parseTRHeader(chunk);
 
-                    if (hasError) {
-                        throw new Error(message);
-                        // return;
-                    }
+                address = addressRemote;
+                portWithRandomLog = `${portRemote}--${Math.random()} tcp`;
 
-                    handleTCPOutBound(
-                        remoteSocketWapper,
-                        addressRemote,
-                        portRemote,
-                        rawClientData,
-                        webSocket,
-                        null,
-                        log
-                    );
-                },
-                close() {
-                    log(`readableWebSocketStream is closed`);
-                },
-                abort(reason) {
-                    log(`readableWebSocketStream is aborted`, JSON.stringify(reason));
-                },
-            })
-        )
+                if (hasError) {
+                    throw new Error(message);
+                }
+
+                handleTCPOutBound(
+                    remoteSocketWapper,
+                    addressRemote,
+                    portRemote,
+                    rawClientData,
+                    webSocket,
+                    null,
+                    log
+                );
+            },
+            close() {
+                log(`readableWebSocketStream is closed`);
+            },
+            abort(reason) {
+                log(`readableWebSocketStream is aborted`, JSON.stringify(reason));
+            },
+        })
+    )
         .catch((err) => {
             log("readableWebSocketStream pipeTo error", err);
         });
 
     return new Response(null, {
         status: 101,
-        // @ts-ignore
         webSocket: client,
     });
 }
 
-function parseTRHeader(buffer) {
+function parseTRHeader(buffer: ArrayBuffer) {
     if (buffer.byteLength < 56) {
         return {
             hasError: true,
@@ -86,7 +84,10 @@ function parseTRHeader(buffer) {
     }
 
     let crLfIndex = 56;
-    if (new Uint8Array(buffer.slice(56, 57))[0] !== 0x0d || new Uint8Array(buffer.slice(57, 58))[0] !== 0x0a) {
+    const cr = new Uint8Array(buffer.slice(crLfIndex, crLfIndex + 1))[0];
+    const lf = new Uint8Array(buffer.slice(crLfIndex + 1, crLfIndex + 2))[0];
+
+    if (cr !== 0x0d || lf !== 0x0a) {
         return {
             hasError: true,
             message: "invalid header format (missing CR LF)",
@@ -94,7 +95,9 @@ function parseTRHeader(buffer) {
     }
 
     const password = new TextDecoder().decode(buffer.slice(0, crLfIndex));
-    if (password !== sha224(globalConfig.TrPass)) {
+    const { TrPass } = globalThis.globalConfig;
+
+    if (password !== sha224(TrPass!)) {
         return {
             hasError: true,
             message: "invalid password",
@@ -119,29 +122,31 @@ function parseTRHeader(buffer) {
     }
 
     const atype = view.getUint8(1);
-    // 0x01: IPv4 address
-    // 0x03: Domain name
-    // 0x04: IPv6 address
     let addressLength = 0;
     let addressIndex = 2;
     let address = "";
+
     switch (atype) {
         case 1:
             addressLength = 4;
             address = new Uint8Array(socks5DataBuffer.slice(addressIndex, addressIndex + addressLength)).join(".");
             break;
+
         case 3:
             addressLength = new Uint8Array(socks5DataBuffer.slice(addressIndex, addressIndex + 1))[0];
             addressIndex += 1;
             address = new TextDecoder().decode(socks5DataBuffer.slice(addressIndex, addressIndex + addressLength));
             break;
+
         case 4: {
             addressLength = 16;
             const dataView = new DataView(socks5DataBuffer.slice(addressIndex, addressIndex + addressLength));
             const ipv6 = [];
+
             for (let i = 0; i < 8; i++) {
                 ipv6.push(dataView.getUint16(i * 2).toString(16));
             }
+
             address = ipv6.join(":");
             break;
         }
@@ -162,6 +167,7 @@ function parseTRHeader(buffer) {
     const portIndex = addressIndex + addressLength;
     const portBuffer = socks5DataBuffer.slice(portIndex, portIndex + 2);
     const portRemote = new DataView(portBuffer).getUint16(0);
+
     return {
         hasError: false,
         addressRemote: address,
@@ -170,8 +176,8 @@ function parseTRHeader(buffer) {
     };
 }
 
-function sha224(string) {
-    const rightRotate = (value, amount) => (value >>> amount) | (value << (32 - amount));
+function sha224(string: string): string {
+    const rightRotate = (value: number, amount: number) => (value >>> amount) | (value << (32 - amount));
 
     const h = [
         0xc1059ed8, 0x367cd507, 0x3070dd17, 0xf70e5939,
@@ -197,7 +203,7 @@ function sha224(string) {
         0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
     ];
 
-    const utf8Encode = (str) => {
+    const utf8Encode = (str: string) => {
         const utf8 = [];
 
         for (let i = 0; i < str.length; i++) {

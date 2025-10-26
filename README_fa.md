@@ -71,15 +71,15 @@
 
 <div dir="rtl">
 
-|   Variable   |               Usage               |
-| :----------: | :-------------------------------: |
-|   **UUID**   |      UUID برای پروتکل VLESS       |
-| **TR_PASS**  |        پسورد پروتکل Trojan        |
-| **PROXY_IP** |   Proxy IP برای VLESS و Trojan    |
-|  **PREFIX**  | NAT64 Prefix برای VLESS و Trojan  |
-| **SUB_PATH** |     مسیر لینک‌های اشتراک شخصی     |
-| **FALLBACK** | دامنه‌ی پوششی برای VLESS و Trojan |
-| **DOH_URL**  |    DOH برای عملیات داخلی ورکر     |
+|  نام متغیر   |           مورد استفاده            |       اجباری       |
+| :----------: | :-------------------------------: | :----------------: |
+|   **UUID**   |      UUID برای پروتکل VLESS       | :heavy_check_mark: |
+| **TR_PASS**  |        پسورد پروتکل Trojan        | :heavy_check_mark: |
+| **PROXY_IP** |   Proxy IP برای VLESS و Trojan    |        :x:         |
+|  **PREFIX**  | NAT64 Prefix برای VLESS و Trojan  |        :x:         |
+| **SUB_PATH** |     مسیر لینک‌های اشتراک شخصی     |        :x:         |
+| **FALLBACK** | دامنه‌ی پوششی برای VLESS و Trojan |        :x:         |
+| **DOH_URL**  |    DOH برای عملیات داخلی ورکر     |        :x:         |
 
 </div>
 

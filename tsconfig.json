@@ -1,0 +1,23 @@
+{
+    "include": ["src"],
+    "compilerOptions": {
+        "target": "esnext",
+        "module": "esnext",
+        "types": ["@cloudflare/workers-types"],
+        "moduleResolution": "node",
+        "baseUrl": "src",
+        "strict": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "skipLibCheck": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "paths": {
+            "#configs/*": ["configs/*"],
+            "#protocols/*": ["protocols/*"],
+            "#common/*": ["common/*"],
+            "#auth": ["auth.ts"],
+            "#kv": ["kv.ts"]
+        }
+    }
+}

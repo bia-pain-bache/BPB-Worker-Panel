@@ -1,8 +1,13 @@
-export async function fetchWarpConfigs(env) {
-    const warpConfigs = [];
+interface WarpKeys {
+    publicKey: string;
+    privateKey: string;
+}
+
+export async function fetchWarpConfigs(env: Env): Promise<WarpAccount[]> {
+    const WarpAccounts: WarpAccount[] = [];
     const apiBaseUrl = 'https://api.cloudflareclient.com/v0a4005/reg';
     const warpKeys = [
-        await generateKeyPair(), 
+        await generateKeyPair(),
         await generateKeyPair()
     ];
 
@@ -16,7 +21,7 @@ export async function fetchWarpConfigs(env) {
         warp_enabled: true
     };
 
-    const fetchAccount = async (key) => {
+    const fetchAccount = async (key: WarpKeys) => {
         try {
             const response = await fetch(apiBaseUrl, {
                 method: 'POST',
@@ -26,28 +31,28 @@ export async function fetchWarpConfigs(env) {
                 },
                 body: JSON.stringify({ ...commonPayload, key: key.publicKey })
             });
-            
+
             return await response.json();
         } catch (error) {
-            throw new Error("Failed to get warp configs.", error);
+            throw new Error(`Failed to get warp configs: ${error}`);
         }
     };
 
     for (const key of warpKeys) {
         const accountData = await fetchAccount(key);
-        warpConfigs.push({
+        WarpAccounts.push({
             privateKey: key.privateKey,
             account: accountData
         });
     }
 
-    const configs = JSON.stringify(warpConfigs)
-    await env.kv.put('warpConfigs', configs);
-    
-    return configs;
+    // const configs = JSON.stringify(warpConfigs)
+    await env.kv.put('warpConfigs', JSON.stringify(WarpAccounts));
+
+    return WarpAccounts;
 }
 
-async function generateKeyPair() {
+async function generateKeyPair(): Promise<WarpKeys> {
     const keyPair = await crypto.subtle.generateKey(
         { name: "X25519", namedCurve: "X25519" },
         true,
@@ -61,10 +66,10 @@ async function generateKeyPair() {
         await crypto.subtle.exportKey("raw", keyPair.publicKey)
     );
 
-    const base64Encode = (arr) => btoa(String.fromCharCode(...arr));
+    const base64Encode = (arr: Uint8Array) => btoa(String.fromCharCode(...arr));
 
-    return { 
-        publicKey: base64Encode(publicKeyRaw), 
-        privateKey: base64Encode(privateKeyRaw) 
+    return {
+        publicKey: base64Encode(publicKeyRaw),
+        privateKey: base64Encode(privateKeyRaw)
     };
 }

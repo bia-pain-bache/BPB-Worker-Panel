@@ -1,0 +1,188 @@
+export type DnsHosts = Record<string, string[] | string>;
+export type Network = "tcp" | "http" | "ws" | "httpupgrade" | "grpc";
+export type Protocol = "http" | "socks5" | "ss" | "vless" | "trojan" | "vmess" | "wireguard";
+export type Fingerprint = "chrome" | "firefox" | "safari" | "ios" | "android" | "edge" | "360" | "qq" | "random" | "randomized";
+
+export interface Dns {
+    "enable": true;
+    "listen": string;
+    "ipv6": boolean;
+    "respect-rules": true;
+    "use-system-hosts": false;
+    "enhanced-mode"?: "redir-host" | "fake-ip";
+    "fake-ip-range"?: string;
+    "fake-ip-filter"?: string[];
+    "nameserver": string[];
+    "proxy-server-nameserver": string[];
+    "nameserver-policy": Record<string, string>
+    "hosts"?: DnsHosts
+}
+
+export interface WsOpts {
+    "path": string;
+    "headers": {
+        "Host"?: string;
+    };
+    "max-early-data"?: number;
+    "early-data-header-name"?: "Sec-WebSocket-Protocol";
+    "v2ray-http-upgrade"?: true;
+    "v2ray-http-upgrade-fast-open"?: true;
+}
+
+export interface GrpcOpts {
+    "grpc-service-name"?: string;
+}
+
+export interface HttpOpts {
+    "method": "GET";
+    "path": string[];
+    "headers": {
+        "Host": string[];
+        "Connection": ["keep-alive"],
+        "Content-Type": ["application/octet-stream"]
+    };
+}
+
+export interface BaseOutbound {
+    "name": string;
+    "type": Protocol;
+    "server": string;
+    "port": number;
+    "udp": boolean;
+    "ip-version": "ipv4" | "ipv4-prefer";
+    "tfo"?: true;
+    "dialer-proxy"?: string;
+}
+
+export interface RealityOpts {
+    "public-key": string;
+    "short-id": string;
+}
+
+export type TLS = {
+    "tls": boolean;
+    "sni"?: string;
+    "servername"?: string;
+    "alpn"?: string[];
+    "client-fingerprint"?: Fingerprint;
+    "skip-cert-verify": boolean;
+    "reality-opts"?: RealityOpts;
+}
+
+export type Transport = {
+    "network"?: Network;
+    "ws-opts"?: WsOpts;
+    "http-opts"?: HttpOpts;
+    "grpc-opts"?: GrpcOpts;
+}
+
+export interface HttpOutbound extends BaseOutbound {
+    "username"?: string;
+    "password"?: string;
+}
+
+export interface SocksOutbound extends BaseOutbound {
+    "username"?: string;
+    "password"?: string;
+}
+
+export interface SsOutbound extends BaseOutbound {
+    "password"?: string;
+    "cipher"?: string;
+}
+
+export type VlOutbound = BaseOutbound & {
+    "uuid": string;
+    "flow"?: "xtls-rprx-vision";
+    "servername"?: string;
+    "packet-encoding": "";
+} & Partial<TLS> & Transport;
+
+export type VmOutbound = BaseOutbound & {
+    "uuid": string;
+    "cipher": "auto";
+    "alterId": 0;
+    "packet-encoding": "";
+} & Partial<TLS> & Transport;
+
+export type TrOutbound = BaseOutbound & {
+    "password": string;
+} & TLS & Transport;
+
+export type AnyOutbound =
+    HttpOutbound |
+    SocksOutbound |
+    SsOutbound |
+    VlOutbound |
+    VmOutbound |
+    TrOutbound;
+
+export interface AmneziaOpts {
+    "jc": number;
+    "jmin": number;
+    "jmax": number;
+}
+
+export interface WgOutbound extends BaseOutbound {
+    "ip": string;
+    "ipv6": string;
+    "private-key": string;
+    "public-key": string;
+    "allowed-ips": string[]
+    "reserved": string;
+    "udp": true;
+    "mtu": 1280;
+    "amnezia-wg-option"?: AmneziaOpts;
+}
+
+export interface Selector {
+    "name": string;
+    "type": "select";
+    "proxies": string[];
+}
+
+export interface UrlTest {
+    "name": string;
+    "type": "url-test";
+    "proxies": string[];
+    "url"?: string;
+    "interval"?: number;
+    "tolerance"?: number;
+}
+
+export interface RuleProvider {
+    "type": "http";
+    "format": string;
+    "behavior": "domain" | "ipcidr";
+    "url": string;
+    "path": string;
+    "interval": number;
+}
+
+export interface Config {
+    "mixed-port": number;
+    "ipv6": boolean;
+    "allow-lan": boolean;
+    "mode": "rule";
+    "log-level": string;
+    "disable-keep-alive": false;
+    "keep-alive-idle": number;
+    "keep-alive-interval": number;
+    "tcp-concurrent"?: boolean;
+    "unified-delay": false;
+    "geo-auto-update": true;
+    "geo-update-interval": 168;
+    "external-controller": string;
+    "external-ui-url": string;
+    "external-ui": "ui";
+    "external-controller-cors": unknown;
+    "profile": unknown;
+    "dns": Dns;
+    "tun": unknown;
+    "sniffer": unknown;
+    "proxies": Array<AnyOutbound | WgOutbound>;
+    "proxy-groups": Array<Selector | UrlTest>;
+    "rule-providers": Record<string, RuleProvider>;
+    "rules": string[];
+    "ntp": unknown;
+}

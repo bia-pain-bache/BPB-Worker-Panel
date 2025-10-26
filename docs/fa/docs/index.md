@@ -56,6 +56,18 @@
 |   **AmneziaVPN**    |                   |   :material-close:   |   :material-check:   |
 |    **WG Tunnel**    |                   |   :material-close:   |   :material-check:   |
 
+## متغیرهای محیطی (داشبورد کلادفلر)
+
+|  نام متغیر   |           مورد استفاده            |       اجباری       |
+| :----------: | :-------------------------------: | :----------------: |
+|   **UUID**   |      UUID برای پروتکل VLESS       | :heavy_check_mark: |
+| **TR_PASS**  |        پسورد پروتکل Trojan        | :heavy_check_mark: |
+| **PROXY_IP** |   Proxy IP برای VLESS و Trojan    |        :x:         |
+|  **PREFIX**  | NAT64 Prefix برای VLESS و Trojan  |        :x:         |
+| **SUB_PATH** |     مسیر لینک‌های اشتراک شخصی     |        :x:         |
+| **FALLBACK** | دامنه‌ی پوششی برای VLESS و Trojan |        :x:         |
+| **DOH_URL**  |    DOH برای عملیات داخلی ورکر     |        :x:         |
+
 ---
 
 ## تعداد ستاره‌ها به مرور زمان

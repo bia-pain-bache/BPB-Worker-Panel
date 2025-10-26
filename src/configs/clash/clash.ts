@@ -1,0 +1,219 @@
+import { getDataset } from '#kv';
+import { buildDNS } from './dns';
+import { buildRoutingRules, buildRuleProviders } from './routing';
+import { AnyOutbound, WgOutbound, Config, UrlTest } from './types';
+import {
+    getConfigAddresses,
+    generateRemark,
+    randomUpperCase,
+    getProtocols
+} from '#configs/utils';
+
+import {
+    buildChainOutbound,
+    buildWarpOutbound,
+    buildWebsocketOutbound
+} from './outbounds';
+
+async function buildConfig(
+    outbounds: AnyOutbound[],
+    selectorTags: string[],
+    proxyTags: string[],
+    chainTags: string[],
+    isChain: boolean,
+    isWarp: boolean,
+    isPro: boolean
+): Promise<Config> {
+    const config: Config = {
+        "mixed-port": 7890,
+        "ipv6": true,
+        "allow-lan": true,
+        "mode": "rule",
+        "log-level": "warning",
+        "disable-keep-alive": false,
+        "keep-alive-idle": 10,
+        "keep-alive-interval": 15,
+        "tcp-concurrent": isWarp ? undefined : true,
+        "unified-delay": false,
+        "geo-auto-update": true,
+        "geo-update-interval": 168,
+        "external-controller": "127.0.0.1:9090",
+        "external-ui-url": "https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip",
+        "external-ui": "ui",
+        "external-controller-cors": {
+            "allow-origins": ["*"],
+            "allow-private-network": true
+        },
+        "profile": {
+            "store-selected": true,
+            "store-fake-ip": true
+        },
+        "dns": await buildDNS(isChain, isWarp, isPro),
+        "tun": {
+            "enable": true,
+            "stack": "mixed",
+            "auto-route": true,
+            "strict-route": true,
+            "auto-detect-interface": true,
+            "dns-hijack": [
+                "any:53",
+                "tcp://any:53"
+            ],
+            "mtu": 9000
+        },
+        "sniffer": {
+            "enable": true,
+            "force-dns-mapping": true,
+            "parse-pure-ip": true,
+            "override-destination": true,
+            "sniff": {
+                "HTTP": {
+                    "ports": [80, 8080, 8880, 2052, 2082, 2086, 2095]
+                },
+                "TLS": {
+                    "ports": [443, 8443, 2053, 2083, 2087, 2096]
+                }
+            }
+        },
+        "proxies": outbounds,
+        "proxy-groups": [
+            {
+                "name": "✅ Selector",
+                "type": "select",
+                "proxies": selectorTags
+            }
+        ],
+        "rule-providers": buildRuleProviders(),
+        "rules": buildRoutingRules(isWarp),
+        "ntp": {
+            "enable": true,
+            "server": "time.cloudflare.com",
+            "port": 123,
+            "interval": 30
+        }
+    };
+
+    const { bestWarpInterval, bestVLTRInterval } = globalThis.settings;
+    const addUrlTest = (name: string, proxies: string[]) => config['proxy-groups'].push({
+        "name": name,
+        "type": "url-test",
+        "proxies": proxies,
+        "url": "https://www.gstatic.com/generate_204",
+        "interval": isWarp ? bestWarpInterval : bestVLTRInterval,
+        "tolerance": 50
+    } satisfies UrlTest);
+
+    addUrlTest(isWarp ? `💦 Warp ${isPro ? 'Pro ' : ''}- Best Ping 🚀` : '💦 Best Ping 🚀', proxyTags);
+    if (isWarp) addUrlTest(`💦 WoW ${isPro ? 'Pro ' : ''}- Best Ping 🚀`, chainTags);
+    if (isChain) addUrlTest('💦 🔗 Best Ping 🚀', chainTags);
+
+    return config;
+}
+
+export async function getClNormalConfig(): Promise<Response> {
+    const {
+        httpConfig: { hostName },
+        settings: {
+            outProxy,
+            ports,
+            customCdnAddrs,
+            customCdnHost,
+            customCdnSni
+        }
+    } = globalThis;
+
+    const chainProxy = outProxy ? buildChainOutbound() : undefined;
+    const isChain = !!chainProxy;
+
+    const proxyTags: string[] = [];
+    const chainTags: string[] = [];
+    const outbounds: any[] = [];
+
+    const Addresses = await getConfigAddresses(false);
+    const protocols = getProtocols();
+    const selectorTags = [
+        '💦 Best Ping 🚀',
+        ...(isChain ? ['💦 🔗 Best Ping 🚀'] : [])
+    ];
+
+    protocols.forEach(protocol => {
+        let protocolIndex = 1;
+        ports.forEach(port => {
+            Addresses.forEach(addr => {
+                const isCustomAddr = customCdnAddrs.includes(addr);
+                const configType = isCustomAddr ? 'C' : '';
+                const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
+                const host = isCustomAddr ? customCdnHost : hostName;
+                const tag = generateRemark(protocolIndex, port, addr, protocol, configType, false).replace(' : ', ' - ');
+                const outbound = buildWebsocketOutbound(protocol, tag, addr, port, host!, sni, isCustomAddr);
+
+                if (outbound) {
+                    proxyTags.push(tag);
+                    selectorTags.push(tag);
+                    outbounds.push(outbound);
+
+                    if (isChain) {
+                        const chainTag = generateRemark(protocolIndex, port, addr, protocol, configType, true);
+                        let chain = structuredClone(chainProxy);
+                        chain['name'] = chainTag;
+                        chain['dialer-proxy'] = tag;
+                        outbounds.push(chain);
+
+                        chainTags.push(chainTag);
+                        selectorTags.push(chainTag);
+                    }
+
+                    protocolIndex++;
+                }
+            });
+        });
+    });
+
+    const config = await buildConfig(outbounds, selectorTags, proxyTags, chainTags, isChain, false, false);
+
+    return new Response(JSON.stringify(config, null, 4), {
+        status: 200,
+        headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+            'Cache-Control': 'no-store',
+            'CDN-Cache-Control': 'no-store'
+        }
+    });
+}
+
+export async function getClWarpConfig(request: Request, env: Env, isPro: boolean): Promise<Response> {
+    const { warpEndpoints } = globalThis.settings;
+    const { warpConfigs } = await getDataset(request, env);
+    
+    const proxyTags: string[] = [];
+    const chainTags: string[] = [];
+    const outbounds: WgOutbound[] = [];
+    const selectorTags = [
+        `💦 Warp ${isPro ? 'Pro ' : ''}- Best Ping 🚀`,
+        `💦 WoW ${isPro ? 'Pro ' : ''}- Best Ping 🚀`
+    ];
+
+    warpEndpoints.forEach((endpoint, index) => {
+        const warpTag = `💦 ${index + 1} - Warp ${isPro ? 'Pro ' : ''}🇮🇷`;
+        proxyTags.push(warpTag);
+
+        const wowTag = `💦 ${index + 1} - WoW ${isPro ? 'Pro ' : ''}🌍`;
+        chainTags.push(wowTag);
+
+        selectorTags.push(warpTag, wowTag);
+        const warpOutbound = buildWarpOutbound(warpConfigs, warpTag, endpoint, '', isPro);
+        const wowOutbound = buildWarpOutbound(warpConfigs, wowTag, endpoint, warpTag, false);
+        outbounds.push(warpOutbound, wowOutbound);
+    });
+
+    const config = await buildConfig(outbounds, selectorTags, proxyTags, chainTags, false, true, isPro);
+
+    return new Response(JSON.stringify(config, null, 4), {
+        status: 200,
+        headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+            'Cache-Control': 'no-store',
+            'CDN-Cache-Control': 'no-store'
+        }
+    });
+}

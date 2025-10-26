@@ -1,33 +1,35 @@
 import { Authenticate, generateJWTToken, resetPassword } from "#auth";
-import { getClNormalConfig, getClWarpConfig } from "#configs/clash";
-import { getSbCustomConfig, getSbWarpConfig } from "#configs/sing-box";
-import { getXrCustomConfigs, getXrWarpConfigs } from "#configs/xray";
+import { getClNormalConfig, getClWarpConfig } from "#configs/clash/clash";
+import { getSbCustomConfig, getSbWarpConfig } from "#configs/sing-box/sing-box";
+import { getXrCustomConfigs, getXrWarpConfigs } from "#configs/xray/xray";
 import { extractWireguardParams } from "#configs/utils";
 import { getDataset, updateDataset } from "#kv";
 import { fetchWarpConfigs } from "#protocols/warp";
-import { globalConfig, httpConfig, wsConfig } from "#common/init";
+import { setSettings } from "#common/init";
 import { VlOverWSHandler } from "#protocols/websocket/vless";
 import { TrOverWSHandler } from "#protocols/websocket/trojan";
 import JSZip from "jszip";
-export let settings = {}
 
-export async function handleWebsocket(request) {
-    const encodedPathConfig = globalConfig.pathName.replace("/", "") || '';
+export async function handleWebsocket(request: Request): Promise<Response> {
+    const { pathName } = globalThis.globalConfig;
+    const encodedPathConfig = pathName.replace("/", "");
 
     try {
         const { protocol, mode, panelIPs } = JSON.parse(atob(encodedPathConfig));
-
-        Object.assign(wsConfig, {
+        globalThis.wsConfig = {
+            ...globalThis.wsConfig,
             wsProtocol: protocol,
             proxyMode: mode,
             panelIPs: panelIPs
-        });
+        };
 
         switch (protocol) {
             case 'vl':
                 return await VlOverWSHandler(request);
+
             case 'tr':
                 return await TrOverWSHandler(request);
+
             default:
                 return await fallback(request);
         }
@@ -37,66 +39,84 @@ export async function handleWebsocket(request) {
     }
 }
 
-export async function handlePanel(request, env) {
+export async function handlePanel(request: Request, env: Env): Promise<Response> {
+    const { pathName } = globalThis.globalConfig;
 
-    switch (globalConfig.pathName) {
+    switch (pathName) {
         case '/panel':
             return await renderPanel(request, env);
+
         case '/panel/settings':
             return await getSettings(request, env);
+
         case '/panel/update-settings':
             return await updateSettings(request, env);
+
         case '/panel/reset-settings':
             return await resetSettings(request, env);
+
         case '/panel/reset-password':
             return await resetPassword(request, env);
+
         case '/panel/my-ip':
             return await getMyIP(request);
+
         case '/panel/update-warp':
             return await updateWarpConfigs(request, env);
+
         case '/panel/get-warp-configs':
             return await getWarpConfigs(request, env);
+
         default:
             return await fallback(request);
     }
 }
 
-export async function handleError(error) {
-    const html = hexToString(__ERROR_HTML_CONTENT__).replace('__ERROR_MESSAGE__', error.message);
+export async function handleError(error: any): Promise<Response> {
+    const str = __ERROR_HTML_CONTENT__.replace('__ERROR_MESSAGE__', error.message);
+    const stream = decompressHtml(str);
 
-    return new Response(html, {
+    return new Response(stream, {
         status: 200,
-        headers: { 'Content-Type': 'text/html' }
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
     });
 }
 
-export async function handleLogin(request, env) {
-    if (globalConfig.pathName === '/login') {
+export async function handleLogin(request: Request, env: Env): Promise<Response> {
+    const { pathName } = globalThis.globalConfig;
+
+    if (pathName === '/login') {
         return await renderLogin(request, env);
     }
 
-    if (globalConfig.pathName === '/login/authenticate') {
+    if (pathName === '/login/authenticate') {
         return await generateJWTToken(request, env);
     }
 
     return await fallback(request);
 }
 
-export async function handleSubscriptions(request, env) {
-    const dataset = await getDataset(request, env);
-    settings = dataset.settings;
-    const { client, subPath } = httpConfig;
-    const path = decodeURIComponent(globalConfig.pathName);
+export async function handleSubscriptions(request: Request, env: Env): Promise<Response> {
+    await setSettings(request, env);
+    const {
+        globalConfig: { pathName },
+        httpConfig: { client, subPath }
+    } = globalThis;
+
+    const path = decodeURIComponent(pathName);
 
     switch (path) {
         case `/sub/normal/${subPath}`:
             switch (client) {
                 case 'xray':
-                    return await getXrCustomConfigs(env, false);
+                    return await getXrCustomConfigs(false);
+
                 case 'sing-box':
-                    return await getSbCustomConfig(env, false);
+                    return await getSbCustomConfig(false);
+
                 case 'clash':
-                    return await getClNormalConfig(env);
+                    return await getClNormalConfig();
+
                 default:
                     break;
             }
@@ -104,9 +124,11 @@ export async function handleSubscriptions(request, env) {
         case `/sub/fragment/${subPath}`:
             switch (client) {
                 case 'xray':
-                    return await getXrCustomConfigs(env, true);
+                    return await getXrCustomConfigs(true);
+
                 case 'sing-box':
-                    return await getSbCustomConfig(env, true);
+                    return await getSbCustomConfig(true);
+
                 default:
                     break;
             }
@@ -115,10 +137,13 @@ export async function handleSubscriptions(request, env) {
             switch (client) {
                 case 'xray':
                     return await getXrWarpConfigs(request, env, false, false);
+
                 case 'sing-box':
                     return await getSbWarpConfig(request, env);
+
                 case 'clash':
                     return await getClWarpConfig(request, env, false);
+
                 default:
                     break;
             }
@@ -127,10 +152,13 @@ export async function handleSubscriptions(request, env) {
             switch (client) {
                 case 'xray':
                     return await getXrWarpConfigs(request, env, true, false);
+
                 case 'xray-knocker':
                     return await getXrWarpConfigs(request, env, true, true);
+
                 case 'clash':
                     return await getClWarpConfig(request, env, true);
+
                 default:
                     break;
             }
@@ -140,38 +168,44 @@ export async function handleSubscriptions(request, env) {
     }
 }
 
-async function updateSettings(request, env) {
-    if (request.method === 'POST') {
-        const auth = await Authenticate(request, env);
-
-        if (!auth) {
-            return await respond(false, 401, 'Unauthorized or expired session.');
-        }
-
-        const proxySettings = await updateDataset(request, env);
-        return await respond(true, 200, null, proxySettings);
+async function updateSettings(request: Request, env: Env): Promise<Response> {
+    if (request.method !== 'PUT') {
+        return await respond(false, 405, 'Method not allowed.');
     }
 
-    return await respond(false, 405, 'Method not allowed.');
-}
+    const auth = await Authenticate(request, env);
 
-async function resetSettings(request, env) {
-    if (request.method === 'POST') {
-        const auth = await Authenticate(request, env);
-
-        if (!auth) {
-            return await respond(false, 401, 'Unauthorized or expired session.');
-        }
-
-        const proxySettings = await updateDataset(request, env);
-        return await respond(true, 200, null, proxySettings);
+    if (!auth) {
+        return await respond(false, 401, 'Unauthorized or expired session.');
     }
 
-    return await respond(false, 405, 'Method not allowed!');
+    const proxySettings = await updateDataset(request, env);
+    return await respond(true, 200, '', proxySettings);
 }
 
-async function getSettings(request, env) {
-    const isPassSet = await env.kv.get('pwd') ? true : false;
+async function resetSettings(request: Request, env: Env): Promise<Response> {
+    if (request.method !== 'POST') {
+        return await respond(false, 405, 'Method not allowed!');
+    }
+
+    const auth = await Authenticate(request, env);
+
+    if (!auth) {
+        return await respond(false, 401, 'Unauthorized or expired session.');
+    }
+
+    try {
+        const { settings } = globalThis;
+        await env.kv.put("proxySettings", JSON.stringify(settings));
+        return await respond(true, 200, '', settings);
+    } catch (error) {
+        console.log(error);
+        throw new Error(`An error occurred while updating KV: ${error}`);
+    }
+}
+
+async function getSettings(request: Request, env: Env): Promise<Response> {
+    const isPassSet = Boolean(await env.kv.get('pwd'));
     const auth = await Authenticate(request, env);
 
     if (!auth) {
@@ -179,19 +213,23 @@ async function getSettings(request, env) {
     }
 
     const dataset = await getDataset(request, env);
+    const { subPath } = globalThis.httpConfig;
+
     const data = {
         proxySettings: dataset.settings,
         isPassSet,
-        subPath: httpConfig.subPath
+        subPath: subPath
     };
 
-    return await respond(true, 200, null, data);
+    return await respond(true, 200, '', data);
 }
 
-export async function fallback(request) {
+export async function fallback(request: Request): Promise<Response> {
+    const { fallbackDomain } = globalThis.globalConfig;
     const { url, method, headers, body } = request;
+
     const newURL = new URL(url);
-    newURL.hostname = globalConfig.fallbackDomain;
+    newURL.hostname = fallbackDomain;
     newURL.protocol = 'https:';
     const newRequest = new Request(newURL.toString(), {
         method,
@@ -203,22 +241,23 @@ export async function fallback(request) {
     return await fetch(newRequest);
 }
 
-async function getMyIP(request) {
+async function getMyIP(request: Request): Promise<Response> {
     const ip = await request.text();
 
     try {
         const response = await fetch(`http://ip-api.com/json/${ip}?nocache=${Date.now()}`);
         const geoLocation = await response.json();
 
-        return await respond(true, 200, null, geoLocation);
+        return await respond(true, 200, '', geoLocation);
     } catch (error) {
         console.error('Error fetching IP address:', error);
         return await respond(false, 500, `Error fetching IP address: ${error}`)
     }
 }
 
-async function getWarpConfigs(request, env) {
-    const isPro = httpConfig.client === 'amnezia';
+async function getWarpConfigs(request: Request, env: Env): Promise<Response> {
+    const { client } = globalThis.httpConfig;
+    const isPro = client === 'amnezia';
     const auth = await Authenticate(request, env);
 
     if (!auth) {
@@ -230,7 +269,7 @@ async function getWarpConfigs(request, env) {
     const { warpIPv6, publicKey, privateKey } = warpConfig;
     const { warpEndpoints, amneziaNoiseCount, amneziaNoiseSizeMin, amneziaNoiseSizeMax } = settings;
     const zip = new JSZip();
-    const trimLines = (string) => string.split("\n").map(line => line.trim()).join("\n");
+    const trimLines = (str: string) => str.split("\n").map(line => line.trim()).join("\n");
     const amneziaNoise = isPro
         ?
         `Jc = ${amneziaNoiseCount}
@@ -245,7 +284,7 @@ async function getWarpConfigs(request, env) {
         : '';
 
     try {
-        warpEndpoints.forEach((endpoint, index) => {
+        warpEndpoints?.forEach((endpoint: string, index: number) => {
             zip.file(`${atob('QlBC')}-Warp-${index + 1}.conf`, trimLines(
                 `[Interface]
                 PrivateKey = ${privateKey}
@@ -275,7 +314,7 @@ async function getWarpConfigs(request, env) {
     }
 }
 
-export async function serveIcon() {
+export async function serveIcon(): Promise<Response> {
     const faviconBase64 = __ICON__;
     const body = Uint8Array.from(atob(faviconBase64), c => c.charCodeAt(0));
 
@@ -287,46 +326,48 @@ export async function serveIcon() {
     });
 }
 
-async function renderPanel(request, env) {
+async function renderPanel(request: Request, env: Env): Promise<Response> {
     const pwd = await env.kv.get('pwd');
 
     if (pwd) {
         const auth = await Authenticate(request, env);
-
         if (!auth) {
-            return Response.redirect(`${httpConfig.urlOrigin}/login`, 302);
+            const { urlOrigin } = globalThis.httpConfig;
+            return Response.redirect(`${urlOrigin}/login`, 302);
         }
     }
 
-    const html = hexToString(__PANEL_HTML_CONTENT__);
-
-    return new Response(html, {
-        headers: { 'Content-Type': 'text/html' }
+    const stream = decompressHtml(__PANEL_HTML_CONTENT__);
+    return new Response(stream, {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
     });
 }
 
-async function renderLogin(request, env) {
+async function renderLogin(request: Request, env: Env): Promise<Response> {
     const auth = await Authenticate(request, env);
     if (auth) {
-        return Response.redirect(`${httpConfig.urlOrigin}/panel`, 302);
+        const { urlOrigin } = globalThis.httpConfig;
+        return Response.redirect(`${urlOrigin}/panel`, 302);
     }
 
-    const html = hexToString(__LOGIN_HTML_CONTENT__);
-
-    return new Response(html, {
-        headers: { 'Content-Type': 'text/html' }
+    const stream = decompressHtml(__LOGIN_HTML_CONTENT__);
+    return new Response(stream, {
+        headers: {
+            'Content-Type': 'text/html; charset=utf-8'
+        }
     });
 }
 
-export async function renderSecrets() {
-    const html = hexToString(__SECRETS_HTML_CONTENT__);
-
-    return new Response(html, {
-        headers: { 'Content-Type': 'text/html' },
+export async function renderSecrets(): Promise<Response> {
+    const stream = decompressHtml(__SECRETS_HTML_CONTENT__);
+    return new Response(stream, {
+        headers: {
+            'Content-Type': 'text/html; charset=utf-8'
+        }
     });
 }
 
-async function updateWarpConfigs(request, env) {
+async function updateWarpConfigs(request: Request, env: Env): Promise<Response> {
     if (request.method === 'POST') {
         const auth = await Authenticate(request, env);
 
@@ -346,7 +387,13 @@ async function updateWarpConfigs(request, env) {
     return await respond(false, 405, 'Method not allowd.');
 }
 
-export async function respond(success, status, message, body, customHeaders) {
+export async function respond(
+    success: boolean,
+    status: number,
+    message: string,
+    body?: any,
+    customHeaders?: any
+): Promise<Response> {
     return new Response(JSON.stringify({
         success,
         status,
@@ -359,14 +406,12 @@ export async function respond(success, status, message, body, customHeaders) {
     });
 }
 
-function hexToString(hex) {
-    const bytes = new Uint8Array(hex.match(/.{1,2}/g).map(b => parseInt(b, 16)));
-    const decoder = new TextDecoder();
-
-    return decoder.decode(bytes);
-}
-
-export function isValidUUID(uuid) {
+export function isValidUUID(uuid: string): boolean {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     return uuidRegex.test(uuid);
+}
+
+function decompressHtml(str: string): ReadableStream<Uint8Array> {
+    const bytes = Uint8Array.from(atob(str), c => c.charCodeAt(0));
+    return new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
 }

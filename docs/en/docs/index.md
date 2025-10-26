@@ -56,6 +56,18 @@ This project is aimed to provide a user panel to access FREE, SECURE and PRIVATE
 |   **AmneziaVPN**    |                   | :material-close: | :material-check: |
 |    **WG Tunnel**    |                   | :material-close: | :material-check: |
 
+## Environment variables
+
+|   Variable   |               Usage                |     Mandatory      |
+| :----------: | :--------------------------------: | :----------------: |
+|   **UUID**   |             VLESS UUID             | :heavy_check_mark: |
+| **TR_PASS**  |          Trojan Password           | :heavy_check_mark: |
+| **PROXY_IP** | Proxy IP or domain (VLESS, Trojan) |        :x:         |
+|  **PREFIX**  |   NAT64 Prefixes (VLESS, Trojan)   |        :x:         |
+| **SUB_PATH** |         Subscriptions' URI         |        :x:         |
+| **FALLBACK** |  Fallback domain (VLESS, Trojan)   |        :x:         |
+| **DOH_URL**  |              Core DOH              |        :x:         |
+
 ---
 
 ## Stargazers Over Time

@@ -8,6 +8,7 @@ import { minify as htmlMinify } from 'html-minifier';
 import JSZip from "jszip";
 import obfs from 'javascript-obfuscator';
 import pkg from '../package.json' with { type: 'json' };
+import { gzipSync } from 'zlib';
 
 const env = process.env.NODE_ENV || 'mangle';
 const mangleMode = env === 'mangle';
@@ -23,7 +24,7 @@ const red = '\x1b[31m';
 const reset = '\x1b[0m';
 
 const success = `${green}✔${reset}`;
-const failure = `${red}✔${reset}`;
+const failure = `${red}✗${reset}`;
 
 const version = pkg.version;
 
@@ -53,9 +54,9 @@ async function processHtmlPages() {
             minifyCSS: true
         });
 
-        // const encodedHtml = Buffer.from(minifiedHtml, 'utf8').toString('base64');
-        const encodedHtml = stringToHex(minifiedHtml);
-        result[dir] = JSON.stringify(encodedHtml);
+        const compressed = gzipSync(minifiedHtml);
+        const htmlBase64 = compressed.toString('base64');
+        result[dir] = JSON.stringify(htmlBase64);
     }
 
     console.log(`${success} Assets bundled successfuly!`);
@@ -90,13 +91,14 @@ async function buildWorker() {
     const faviconBase64 = faviconBuffer.toString('base64');
 
     const code = await build({
-        entryPoints: [join(__dirname, '../src/worker.js')],
+        entryPoints: [join(__dirname, '../src/worker.ts')],
         bundle: true,
         format: 'esm',
         write: false,
         external: ['cloudflare:sockets'],
         platform: 'browser',
-        target: 'es2020',
+        target: 'esnext',
+        loader: { '.ts': 'ts' },
         define: {
             __PANEL_HTML_CONTENT__: htmls['panel'] ?? '""',
             __LOGIN_HTML_CONTENT__: htmls['login'] ?? '""',

@@ -21,10 +21,10 @@ jobs:
 
       - name: Get release version
         id: get_version
-        run: echo "RELEASE_VERSION=$(jq -r .version package.json)" >> $GITHUB_ENV
+        run: echo "version=$(jq -r .version package.json)" >> $GITHUB_OUTPUT
 
       - name: Check release version
-        run: echo "Release version is $RELEASE_VERSION"
+        run: echo "Release version is ${{ steps.get_version.outputs.version }}"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -34,6 +34,9 @@ jobs:
       - name: Install dependencies
         run: npm install --production
 
+      - name: Type check
+        run: npm run check
+        
       - name: Build project
         run: npm run build
 
@@ -52,8 +55,8 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: dist/*
-          tag: v${{ env.RELEASE_VERSION }}
-          release_name: Release v${{ env.RELEASE_VERSION }}
+          tag: v${{ steps.get_version.outputs.version }}
+          release_name: Release v${{ steps.get_version.outputs.version }}
           overwrite: true
           file_glob: true
           prerelease: ${{ github.ref != 'refs/heads/main' }}

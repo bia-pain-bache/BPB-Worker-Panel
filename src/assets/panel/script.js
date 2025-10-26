@@ -535,7 +535,7 @@ function updateSettings(event, data) {
     applyButton.value = '⌛ Loading...';
 
     fetch('/panel/update-settings', {
-        method: 'POST',
+        method: 'PUT',
         body: JSON.stringify(form),
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' }
@@ -776,7 +776,7 @@ function validateChainProxy() {
     const chainProxy = getElmValue('outProxy');
     if (!chainProxy) return true;
     const isSocksHttp = /(http|socks):\/\/(?:([^:@]+):([^:@]+)@)?([^:@]+):(\d+)$/.test(chainProxy);
-    const isOthers = /(vless|trojan|ss):\/\/[^\s@]+@[^\s:]+:[^\s]+/.test(chainProxy);
+    const isOthers = /(vless|vmess|trojan|ss):\/\/[^\s@]+@[^\s:]+:[^\s]+/.test(chainProxy);
 
     if (!isSocksHttp && !isOthers) {
         alert('⛔ Invalid Config!\n💡 Standard formats are:\n + (socks or http)://user:pass@host:port\n + (socks or http)://host:port\n + vless://uuid@server:port...\n + trojan://password@server:port...\n + ss://password@server:port...');
@@ -796,17 +796,17 @@ function validateChainProxy() {
         }
 
         if (security && !['tls', 'none', 'reality'].includes(security)) {
-            alert('⛔ Invalid Config!\n💡 VLESS or Trojan security can be TLS, Reality or None.');
+            alert('⛔ Invalid Config!\n💡 VLESS, VMess or Trojan security can be TLS, Reality or None.');
             return false;
         }
 
         if (!['tcp', 'raw', 'ws', 'grpc', 'httpupgrade'].includes(type)) {
-            alert('⛔ Invalid Config!\n💡 VLESS or Trojan transmission can be tcp, ws, grpc or httpupgrade.');
+            alert('⛔ Invalid Config!\n💡 VLESS, VMess or Trojan transmission can be tcp, ws, grpc or httpupgrade.');
             return false;
         }
 
         if (security === 'tls' && port !== '443') {
-            alert('⛔ Invalid Config!\n💡 VLESS or Trojan TLS port can be only 443.');
+            alert('⛔ Invalid Config!\n💡 VLESS, VMess or Trojan TLS port can be only 443.');
             return false;
         }
     }

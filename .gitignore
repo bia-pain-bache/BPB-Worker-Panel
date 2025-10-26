@@ -2,6 +2,7 @@
 !.gitignore
 !package.json
 !jsconfig.json
+!tsconfig.json
 !src/
 !src/**
 !scripts/

@@ -1,22 +1,15 @@
 # ⚙️ Bug fixes and Improvements
 
-- Added chained configs alongside original configs. This way, when **Chain Proxy** stops working, you still have access to original configs #1074
-- Improved **Chain Proxy** and **Warp** DNS resolution
-- Enabled `HappyEyeBalls` for Clash
-- Added download option for Xray configs
-- Removed **Bypass Lan** option and made it mandatory to decrease worker error rate
+- Refactore the whole project using TypeScript
+- Added VMess support to Chain Proxies. All main protocols are now supported: **VLESS**, **VMess**, **Trojan**, **Shadowsocks**, **Socks** and **Http**
+- Improved Chain Proxy performance
+- Made **TCP Fast Open** optional due to some devices and ISPs compatibility. Please note that you have to enable TCP Fast Open on linux manually.
+- Revised build process to reduce worker.js size up to ~120 KB
+- Updated docs
+- And some other bug fixes and improvements
 
-> [!TIP]
-> v2ray Users should update Geo assets if the proxy is not connecting.
-
-- Fixed chain proxy `Httpupgrade` transmission bug for sing-box and Clash
-- Fixed Clash chain proxy bug
-- Refactored
-- Updated website
-- Many minor bug fixes and improvements
-
-> [!CAUTION]
-> If you already have a Chain Proxy set in panel, after updating to this version you have to clear it, apply and then set it again.
+> [!NOTE]
+> Xray configs are now base on new Xray v25.10.15 format, so v2rayNG will show configs like null:null. You have to wait for developer to adjust to new formats.
 
 > [!CAUTION]
 > sing-box client version should be 1.12.0 or higher.
