@@ -139,7 +139,7 @@ export function buildWebsocketOutbound(
         security: isTLS ? "tls" : "none",
         tlsSettings: isTLS ? buildTlsSettings(sni, fingerprint, "http/1.1", allowInsecure) : undefined,
         sockopt: isFragment
-            ? buildSockopt(false, enableTFO, undefined, "fragment")
+            ? buildSockopt(false, false, undefined, "fragment")
             : buildSockopt(true, enableTFO, "UseIP"),
     };
 
@@ -366,7 +366,7 @@ function buildSockopt(
     return {
         domainStrategy,
         dialerProxy,
-        tcpFastOpen,
+        tcpFastOpen: tcpFastOpen || undefined,
         happyEyeballs: enableHappyEyeballs ? {
             tryDelayMs: 250,
             prioritizeIPv6: false,

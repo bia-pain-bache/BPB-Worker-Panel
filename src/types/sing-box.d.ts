@@ -26,7 +26,6 @@ export interface DnsRule {
     domain?: string[];
     domain_suffix?: string[];
     ip_accept_any?: true;
-    disable_cache?: true;
     inbound?: string;
     query_type?: Array<"A" | "AAAA">;
     action?: "route" | "reject";

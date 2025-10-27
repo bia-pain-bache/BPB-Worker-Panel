@@ -76,11 +76,25 @@ export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<Dns> 
     ];
 
     if (blockDomains.length) {
-        addDnsRule(rules, 'reject', dnsRules.block.geosites, undefined, dnsRules.block.domains);
+        addDnsRule(
+            rules,
+            'reject',
+            undefined,
+            dnsRules.block.geosites,
+            undefined, 
+            dnsRules.block.domains
+        );
     }
 
     dnsRules.bypass.localDNS.geositeGeoips.forEach(({ geosite, geoip }) => {
-        addDnsRule(rules, 'dns-direct', geosite, geoip, undefined);
+        addDnsRule(
+            rules,
+            'dns-direct',
+            undefined,
+            geosite, 
+            geoip,
+            undefined
+        );
     });
 
     const bypassDomains = [
@@ -89,7 +103,14 @@ export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<Dns> 
     ];
 
     if (bypassDomains.length) {
-        addDnsRule(rules, 'dns-direct', dnsRules.bypass.localDNS.geosites, undefined, dnsRules.bypass.localDNS.domains);
+        addDnsRule(
+            rules,
+            'dns-direct',
+            undefined,
+            dnsRules.bypass.localDNS.geosites,
+            undefined,
+            dnsRules.bypass.localDNS.domains
+        );
     }
 
     const sanctionDomains = [
@@ -99,7 +120,14 @@ export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<Dns> 
 
     if (sanctionDomains.length) {
         const dnsHost = getDomain(antiSanctionDNS);
-        addDnsRule(rules, 'dns-anti-sanction', dnsRules.bypass.antiSanctionDNS.geosites, undefined, dnsRules.bypass.antiSanctionDNS.domains);
+        addDnsRule(
+            rules,
+            'dns-anti-sanction',
+            undefined,
+            dnsRules.bypass.antiSanctionDNS.geosites,
+            undefined,
+            dnsRules.bypass.antiSanctionDNS.domains
+        );
 
         if (dnsHost.isHostDomain) {
             addDnsServer(servers, "https", "dns-anti-sanction", dnsHost.host, undefined, "dns-direct");
@@ -109,32 +137,26 @@ export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<Dns> 
     }
 
     if (fakeDNS) {
-        const fakeip: DnsServer = {
-            type: "fakeip",
-            tag: "dns-fake",
-            inet4_range: "198.18.0.0/15"
-        };
+        addDnsServer(
+            servers,
+            "fakeip",
+            "dns-fake",
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            "198.18.0.0/15",
+            isIPv6 ? "fc00::/18" : undefined
+        );
 
-        if (isIPv6) {
-            fakeip.inet6_range = "fc00::/18";
-        }
-
-        servers.push(fakeip);
-        rules.push({
-            disable_cache: true,
-            inbound: "tun-in",
-            query_type: [
-                "A",
-                "AAAA"
-            ],
-            server: "dns-fake"
-        });
+        addDnsRule(rules, "dns-fake", "tun-in", undefined, undefined, undefined, ["A", "AAAA"]);
     }
 
     return {
         servers,
         rules,
-        strategy: "ipv4_only",
+        strategy: isIPv6 ? "prefer_ipv4" : "ipv4_only",
         independent_cache: true
     }
 }
@@ -147,7 +169,9 @@ function addDnsServer(
     detour?: string,
     domain_resolver?: string,
     host?: string,
-    predefined?: string[]
+    predefined?: string[],
+    inet4_range?: string,
+    inet6_range?: string
 ) {
     servers.push({
         type,
@@ -158,6 +182,8 @@ function addDnsServer(
             strategy: "ipv4_only"
         } : undefined,
         predefined: host ? { [host]: predefined } : undefined,
+        inet4_range,
+        inet6_range,
         tag
     });
 }
@@ -165,26 +191,23 @@ function addDnsServer(
 function addDnsRule(
     rules: DnsRule[],
     dns: string,
+    inbound?: string,
     geosite?: string[] | string,
     geoip?: string[] | string,
-    domain?: string[]
+    domain?: string[],
+    query_type?: Array<"A" | "AAAA">
 ) {
-    let type: 'logical' | undefined;
-    let mode: 'and' | undefined;
-    const ruleSets = [];
-
-    if (geosite && geoip) {
-        mode = 'and';
-        type = 'logical';
-        ruleSets.push({ rule_set: geosite }, { rule_set: geoip });
-    }
-
     rules.push({
-        type,
-        mode,
-        rules: ruleSets.length ? ruleSets : undefined,
+        inbound,
+        type: geosite && geoip ? 'logical' : undefined,
+        mode: geosite && geoip ? 'and' : undefined,
+        rules: geosite && geoip ? [
+            { rule_set: geosite }, 
+            { rule_set: geoip }
+        ] : undefined,
         rule_set: geosite && !geoip ? geosite : undefined,
         domain_suffix: domain?.length ? domain : undefined,
+        query_type,
         action: dns === 'reject' ? 'reject' : 'route',
         server: dns === 'reject' ? undefined : dns
     });

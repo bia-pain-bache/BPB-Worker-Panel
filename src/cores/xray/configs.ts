@@ -8,11 +8,11 @@ import {
     buildFreedomOutbound
 } from './outbounds';
 
-import type { 
-    Balancer, 
-    Config, 
-    Observatory, 
-    Outbound 
+import type {
+    Balancer,
+    Config,
+    Observatory,
+    Outbound
 } from 'types/xray';
 
 import {
@@ -37,12 +37,12 @@ async function buildConfig(
     customDns?: string,
     customDnsHosts?: string[]
 ): Promise<Config> {
-    const { 
-        fakeDNS, 
-        bestWarpInterval, 
-        bestVLTRInterval, 
-        logLevel, 
-        allowLANConnection 
+    const {
+        fakeDNS,
+        bestWarpInterval,
+        bestVLTRInterval,
+        logLevel,
+        allowLANConnection
     } = globalThis.settings;
 
     const config: Config = {
@@ -110,6 +110,12 @@ async function buildConfig(
                 tag: "block",
             },
         ],
+        routing: {
+            domainStrategy: "IPIfNonMatch",
+            rules: buildRoutingRules(isChain, isBalancer, isWorkerLess, isWarp),
+            balancers: undefined
+        },
+        observatory: undefined,
         policy: {
             levels: {
                 8: {
@@ -124,12 +130,6 @@ async function buildConfig(
                 statsOutboundDownlink: true,
             }
         },
-        routing: {
-            domainStrategy: "IPIfNonMatch",
-            rules: buildRoutingRules(isChain, isBalancer, isWorkerLess, isWarp),
-            balancers: undefined
-        },
-        observatory: undefined,
         stats: {}
     };
 

@@ -19,8 +19,10 @@ export async function buildDNS(
     const isIPv6 = isWarp ? warpEnableIPv6 : VLTRenableIPv6;
 
     const dns: Dns = {
+        hosts: undefined,
         servers: [],
         queryStrategy: !isWarp || isIPv6 ? "UseIP" : "UseIPv4",
+        disableFallbackIfMatch: undefined,
         tag: "dns",
     };
 
