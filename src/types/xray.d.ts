@@ -170,6 +170,7 @@ interface Fragment {
     packets: "tlshello" | "1-1" | "1-2" | "1-3" | "1-5";
     length: string;
     interval: string;
+    maxSplit?: string;
 }
 
 export interface Noise {

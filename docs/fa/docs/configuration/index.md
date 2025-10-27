@@ -8,6 +8,14 @@
 
 <div class="grid cards" markdown> 
 
+- :material-cog-outline:{ .lg .middle } __تنظیمات مشترک یا Common__
+
+    ---
+
+    شامل تنظیمات عمومی که برای همه پروتکل‌ها و لینکای اشتراک، مشترک هستن.
+
+    [:octicons-arrow-right-24: شروع](common.md)
+
 - :material-cog-outline:{ .lg .middle } __پروتکل‌های VLESS و Trojan__
 
     ---

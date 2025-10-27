@@ -30,12 +30,19 @@ async function buildConfig(
     isWarp: boolean,
     isPro: boolean
 ): Promise<Config> {
+    const { 
+        bestWarpInterval, 
+        bestVLTRInterval,
+        logLevel,
+        allowLANConnection
+    } = globalThis.settings;
+
     const config: Config = {
         "mixed-port": 7890,
         "ipv6": true,
-        "allow-lan": true,
+        "allow-lan": allowLANConnection,
         "mode": "rule",
-        "log-level": "warning",
+        "log-level": logLevel.replace("none", "silent"),
         "disable-keep-alive": false,
         "keep-alive-idle": 10,
         "keep-alive-interval": 15,
@@ -99,7 +106,6 @@ async function buildConfig(
         }
     };
 
-    const { bestWarpInterval, bestVLTRInterval } = globalThis.settings;
     const addUrlTest = (name: string, proxies: string[]) => config['proxy-groups'].push({
         "name": name,
         "type": "url-test",

@@ -11,14 +11,12 @@ export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<Dns> 
         dohHost,
         warpEnableIPv6,
         VLTRenableIPv6,
-        warpFakeDNS,
-        VLTRFakeDNS
+        fakeDNS
     } = globalThis.settings;
 
     const url = new URL(remoteDNS);
     const protocol = url.protocol.replace(':', '');
     const isIPv6 = isWarp ? warpEnableIPv6 : VLTRenableIPv6;
-    const isFakeDNS = isWarp ? warpFakeDNS : VLTRFakeDNS;
 
     const servers: DnsServer[] = [
         {
@@ -110,7 +108,7 @@ export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<Dns> 
         }
     }
 
-    if (isFakeDNS) {
+    if (fakeDNS) {
         const fakeip: DnsServer = {
             type: "fakeip",
             tag: "dns-fake",

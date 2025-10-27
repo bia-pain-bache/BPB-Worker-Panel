@@ -80,6 +80,7 @@ nav:
     - Manual - Workers: installation/workers-manual.md
   - Configuration:
     - configuration/index.md
+    - Common: configuration/common.md
     - VLESS - Trojan: configuration/vless-trojan.md 
     - Fragment: configuration/fragment.md
     - Warp General: configuration/warp.md

@@ -12,12 +12,11 @@ export async function buildDNS(
 ): Promise<Dns> {
     const {
         localDNS, remoteDNS, antiSanctionDNS, dohHost,
-        warpEnableIPv6, VLTRenableIPv6, warpFakeDNS, VLTRFakeDNS
+        warpEnableIPv6, VLTRenableIPv6, fakeDNS
     } = globalThis.settings;
 
     const hosts: DnsHosts = {};
     const isIPv6 = isWarp ? warpEnableIPv6 : VLTRenableIPv6;
-    const isFakeDNS = isWarp ? warpFakeDNS : VLTRFakeDNS;
 
     const dns: Dns = {
         servers: [],
@@ -97,7 +96,7 @@ export async function buildDNS(
         dns.servers.push(localDnsServer);
     }
 
-    if (isFakeDNS) {
+    if (fakeDNS) {
         const totalDomainRules = [
             ...dnsRules.bypass.localDNS.geositeGeoips.map(value => value.geosite),
             ...bypassDomains,

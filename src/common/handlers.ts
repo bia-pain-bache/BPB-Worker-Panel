@@ -72,7 +72,7 @@ export async function handlePanel(request: Request, env: Env): Promise<Response>
 }
 
 export async function handleError(error: any): Promise<Response> {
-    const html = await decompressHtml(__ERROR_HTML_CONTENT__);
+    const html = await decompressHtml(__ERROR_HTML_CONTENT__, true) as string;
     const errorPage = html.replace('__ERROR_MESSAGE__', error.message);
 
     return new Response(errorPage, {
@@ -337,7 +337,7 @@ async function renderPanel(request: Request, env: Env): Promise<Response> {
         }
     }
 
-    const html = await decompressHtml(__PANEL_HTML_CONTENT__);
+    const html = await decompressHtml(__PANEL_HTML_CONTENT__, false);
     return new Response(html, {
         headers: { 'Content-Type': 'text/html; charset=utf-8' }
     });
@@ -350,7 +350,7 @@ async function renderLogin(request: Request, env: Env): Promise<Response> {
         return Response.redirect(`${urlOrigin}/panel`, 302);
     }
 
-    const html = await decompressHtml(__LOGIN_HTML_CONTENT__);
+    const html = await decompressHtml(__LOGIN_HTML_CONTENT__, false);
     return new Response(html, {
         headers: {
             'Content-Type': 'text/html; charset=utf-8'
@@ -359,7 +359,7 @@ async function renderLogin(request: Request, env: Env): Promise<Response> {
 }
 
 export async function renderSecrets(): Promise<Response> {
-    const html = await decompressHtml(__SECRETS_HTML_CONTENT__);
+    const html = await decompressHtml(__SECRETS_HTML_CONTENT__, false);
     return new Response(html, {
         headers: {
             'Content-Type': 'text/html; charset=utf-8'
@@ -406,12 +406,15 @@ export async function respond(
     });
 }
 
-async function decompressHtml(str: string): Promise<string> {
-    const bytes = Uint8Array.from(atob(str), c => c.charCodeAt(0));
+async function decompressHtml(content: string, asString: boolean): Promise<string | ReadableStream<Uint8Array>> {
+    const bytes = Uint8Array.from(atob(content), c => c.charCodeAt(0));
     const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
     
-    const decompressedArrayBuffer = await new Response(stream).arrayBuffer();
-    const decodedString = new TextDecoder().decode(decompressedArrayBuffer);
+    if (asString) {
+        const decompressedArrayBuffer = await new Response(stream).arrayBuffer();
+        const decodedString = new TextDecoder().decode(decompressedArrayBuffer);
+        return decodedString;
+    }
 
-    return decodedString;
+    return stream;
 }

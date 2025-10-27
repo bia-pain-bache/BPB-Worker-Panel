@@ -69,6 +69,8 @@ export function buildFreedomOutbound(
         fragmentLengthMax,
         fragmentIntervalMin,
         fragmentIntervalMax,
+        fragmentMaxSplitMin,
+        fragmentMaxSplitMax,
         enableTFO,
         xrayUdpNoises,
         warpEnableIPv6
@@ -83,6 +85,7 @@ export function buildFreedomOutbound(
                 packets: packets || fragmentPackets,
                 length: length || `${fragmentLengthMin}-${fragmentLengthMax}`,
                 interval: interval || `${fragmentIntervalMin}-${fragmentIntervalMax}`,
+                maxSplit: fragmentMaxSplitMin ? `${fragmentMaxSplitMin}-${fragmentMaxSplitMax}` : undefined
             }
         };
 

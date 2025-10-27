@@ -37,17 +37,23 @@ async function buildConfig(
     customDns?: string,
     customDnsHosts?: string[]
 ): Promise<Config> {
-    const { warpFakeDNS, VLTRFakeDNS, bestWarpInterval, bestVLTRInterval } = globalThis.settings;
-    const isFakeDNS = isWarp ? warpFakeDNS : VLTRFakeDNS;
+    const { 
+        fakeDNS, 
+        bestWarpInterval, 
+        bestVLTRInterval, 
+        logLevel, 
+        allowLANConnection 
+    } = globalThis.settings;
 
     const config: Config = {
         remarks: remark,
         log: {
-            loglevel: "warning",
+            loglevel: logLevel,
         },
         dns: await buildDNS(outboundAddrs, isWorkerLess, isWarp, domainToStaticIPs, customDns, customDnsHosts),
         inbounds: [
             {
+                listen: allowLANConnection ? "0.0.0.0" : "127.0.0.1",
                 port: 10808,
                 protocol: "socks",
                 settings: {
@@ -60,7 +66,7 @@ async function buildConfig(
                         "http",
                         "tls",
                         ...(isWorkerLess ? ["quic"] : []),
-                        ...(isFakeDNS ? ["fakedns"] : [])
+                        ...(fakeDNS ? ["fakedns"] : [])
                     ],
                     enabled: true,
                     routeOnly: true

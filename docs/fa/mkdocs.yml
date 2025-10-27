@@ -80,6 +80,7 @@ nav:
     - Workers دستی: installation/workers-manual.md
   - راهنمای تنظیمات:
     - configuration/index.md
+    - تنظیمات مشترک یا Common: configuration/common.md 
     - پروتکل‌های VLESS و Trojan: configuration/vless-trojan.md 
     - تنظیمات Fragment: configuration/fragment.md
     - تنظیمات عمومی Warp: configuration/warp.md

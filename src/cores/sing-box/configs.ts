@@ -32,11 +32,17 @@ async function buildConfig(
     isIPv6: boolean,
     isChain: boolean
 ): Promise<Config> {
-    const { bestWarpInterval, bestVLTRInterval } = globalThis.settings;
+    const { 
+        bestWarpInterval, 
+        bestVLTRInterval,
+        logLevel,
+        allowLANConnection 
+    } = globalThis.settings;
 
     const config: Config = {
         log: {
-            level: "warn",
+            disabled: logLevel === "none",
+            level: logLevel.replace("warning", "warn"),
             timestamp: true
         },
         dns: await buildDNS(isWarp, isChain),
@@ -57,7 +63,7 @@ async function buildConfig(
             {
                 type: "mixed",
                 tag: "mixed-in",
-                listen: "0.0.0.0",
+                listen: allowLANConnection ? "0.0.0.0" : "127.0.0.1",
                 listen_port: 2080
             }
         ],

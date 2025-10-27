@@ -75,3 +75,7 @@ salamchetori123
 !!! tip
     - Convert text to Base64 using [this tool](https://onlinebase64tools.com/base64-encode).
     - Generate a Hex string with [this tool](https://onlinetools.com/random/generate-random-hexadecimal-numbers).
+
+### Applies To
+
+Specifies which type of IPs the noise apply to. The default is IP which applies to both IPv4 and v6.

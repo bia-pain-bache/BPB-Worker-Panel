@@ -76,3 +76,7 @@ salamchetori123
 
     * برای تبدیل متن به Base64 میتونید از [این ابزار](https://onlinebase64tools.com/base64-encode) استفاده کنید.
     * برای تولید رشته Hex میتونید از [این ابزار](https://onlinetools.com/random/generate-random-hexadecimal-numbers) استفاده کنید.
+
+### Applies To
+
+مشخص میکنه نویزی که تعریف کردید به کدوم نوع از IP اضافه بشه، بصورت پیشفرض روی IP هست که هم به IPv4 و هم به v6 اضافه میشه.

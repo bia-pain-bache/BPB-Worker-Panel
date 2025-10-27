@@ -13,6 +13,11 @@ globalThis.dict = {
 };
 
 globalThis.settings = {
+    localDNS: "8.8.8.8",
+    antiSanctionDNS: "78.157.42.100",
+    fakeDNS: false,
+    allowLANConnection: false,
+    logLevel: "warning",
     remoteDNS: "https://8.8.8.8/dns-query",
     dohHost: {
         host: "8.8.8.8",
@@ -20,9 +25,6 @@ globalThis.settings = {
         ipv4: [],
         ipv6: []
     },
-    localDNS: "8.8.8.8",
-    antiSanctionDNS: "78.157.42.100",
-    VLTRFakeDNS: false,
     proxyIPMode: "proxyip",
     proxyIPs: [],
     prefixes: [],
@@ -44,6 +46,8 @@ globalThis.settings = {
     fragmentLengthMax: 200,
     fragmentIntervalMin: 1,
     fragmentIntervalMax: 1,
+    fragmentMaxSplitMin: undefined,
+    fragmentMaxSplitMax: undefined,
     fragmentPackets: "tlshello",
     bypassIran: false,
     bypassChina: false,
@@ -67,7 +71,6 @@ globalThis.settings = {
     customBlockRules: [],
     customBypassSanctionRules: [],
     warpEndpoints: ["engage.cloudflareclient.com:2408"],
-    warpFakeDNS: false,
     warpEnableIPv6: true,
     bestWarpInterval: 30,
     xrayUdpNoises: [
@@ -75,6 +78,7 @@ globalThis.settings = {
             type: "rand",
             packet: "50-100",
             delay: "1-1",
+            applyTo: "ip",
             count: 5
         }
     ],
@@ -111,7 +115,7 @@ export function init(request: Request, env: Env) {
 
 export function initWs(env: any) {
     const { _public_proxy_ip_ } = globalThis.dict;
-    
+
     globalThis.wsConfig = {
         envProxyIPs: env.PROXY_IP,
         envPrefixes: env.PREFIX,

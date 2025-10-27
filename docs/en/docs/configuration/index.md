@@ -8,6 +8,14 @@
 
 <div class="grid cards" markdown>
 
+- :material-cog-outline:{ .lg .middle } __Common__
+
+    ---
+
+    Configure shared settings across all protocols and subscriptions.
+
+    [:octicons-arrow-right-24: Getting started](common.md)
+
 - :material-cog-outline:{ .lg .middle } __VLESS - Trojan__
 
     ---

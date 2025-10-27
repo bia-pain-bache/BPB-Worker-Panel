@@ -11,13 +11,11 @@ export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean
         dohHost,
         warpEnableIPv6,
         VLTRenableIPv6,
-        warpFakeDNS,
-        VLTRFakeDNS
+        fakeDNS
     } = globalThis.settings;
 
     const finalLocalDNS = localDNS === 'localhost' ? 'system' : `${localDNS}#DIRECT`;
     const isIPv6 = isWarp ? warpEnableIPv6 : VLTRenableIPv6;
-    const isFakeDNS = isWarp ? warpFakeDNS : VLTRFakeDNS;
     const remoteDnsDetour = isWarp
         ? `💦 Warp ${isPro ? 'Pro ' : ''}- Best Ping 🚀`
         : isChain ? '💦 Best Ping 🚀' : '✅ Selector';
@@ -82,7 +80,7 @@ export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean
 
     bypassDomains.forEach(value => dns["nameserver-policy"][value] = finalLocalDNS);
 
-    if (isFakeDNS) Object.assign(dns, {
+    if (fakeDNS) Object.assign(dns, {
         "enhanced-mode": "fake-ip",
         "fake-ip-range": "198.18.0.1/16",
         "fake-ip-filter": ["*", "+.lan", "+.local"]

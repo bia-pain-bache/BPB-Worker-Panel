@@ -60,15 +60,18 @@ declare global {
         type: "rand" | "str" | "base64" | "hex";
         packet: string;
         delay: string;
-        count: number
+        applyTo: "ip" | "ipv4" | "ipv6";
+        count: number;
     }
 
     interface Settings {
-        remoteDNS: string;
-        dohHost: DohHost;
         localDNS: string;
         antiSanctionDNS: string;
-        VLTRFakeDNS: boolean;
+        fakeDNS: boolean;
+        allowLANConnection: boolean;
+        logLevel: "none" | "warning" | "error" | "info" | "debug";
+        remoteDNS: string;
+        dohHost: DohHost;
         proxyIPMode: "proxyip" | "prefix";
         proxyIPs: string[];
         prefixes: string[];
@@ -91,6 +94,8 @@ declare global {
         fragmentIntervalMin: number;
         fragmentIntervalMax: number;
         fragmentPackets: "tlshello" | "1-1" | "1-2" | "1-3" | "1-5";
+        fragmentMaxSplitMin?: number;
+        fragmentMaxSplitMax?: number;
         bypassIran: boolean;
         bypassChina: boolean;
         bypassRussia: boolean;
@@ -113,7 +118,6 @@ declare global {
         customBlockRules: string[];
         customBypassSanctionRules: string[];
         warpEndpoints: string[];
-        warpFakeDNS: boolean;
         warpEnableIPv6: boolean;
         bestWarpInterval: number;
         xrayUdpNoises: XrUdpNoise[];

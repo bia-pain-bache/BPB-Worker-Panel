@@ -25,20 +25,6 @@ https://8.8.8.8/dns-query
     tls://dns.google
     ```
 
-## Local DNS
-
-By default, the local DNS server is Google DNS.
-
-```title="Default Local DNS"
-8.8.8.8
-```
-
-Many DNS servers are available to use as Local DNS in shape of IP, however you can use **localhost** which uses your ISP DNS server which is fine for routing purposes.
-
-## Fake DNS
-
-You may enable Fake DNS to reduce DNS query latency, but use caution—it may be incompatible with some applications or interfere with system DNS. If you're unsure about its functionality, avoid enabling it.
-
 ## Chain Proxy
 
 As noted, a Proxy IP fixes the IP for Cloudflare target addresses, but node IPs may differ for other targets. A **Chain Proxy** ensures a consistent IP for all targets. You can use a free **VLESS**, **VMess**, **Trojan**, **Shadowsocks**, **Socks**, or **HTTP** config here, even if it’s blocked by your ISP, to permanently fix your IP to the Chain Proxy IP.

@@ -59,10 +59,7 @@ There are cases which predefined rules cannot help. For example, if you have blo
 ## Sanction Rules
 
 In case you need some websites to just bypass sanctions and connect directly (without proxy), you can use this section.
-You can set your desired DNS server (which should be a transparent proxy also) and choose preset rules or fill in custom addresses. you can even use configs like `WorkerLess` which do not use any proxy and access sanctioned websites. The default DNS server is [Electro](https://electrotm.org/) (for iranian users).
-
-!!! info
-    DNS server can be in shape of an IP (UDP DNS) or DoH like `https://free.shecan.ir/dns-query`.
+You can set your desired DNS server [in common settings](./common.md) (which should be a transparent proxy also) and choose preset rules or fill in custom addresses. you can even use configs like `WorkerLess` which do not use any proxy and access sanctioned websites.
 
 !!! info
     Please be aware that if you enter `google.com` in custom rules, all of its subdomains will also be routed directly, such as `drive.google.com` or `mail.google.com`.

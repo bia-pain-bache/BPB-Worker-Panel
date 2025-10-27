@@ -22,6 +22,60 @@
     <div class="form-container container">
         <h2><span class="material-symbols-rounded">settings</span> Settings</h2>
         <form id="configForm" class="configForm" onsubmit="updateSettings(event)">
+            <details>
+                <summary>
+                    <h3>Common
+                        <a href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/fragment/"
+                            target="_blank" title="Help">
+                            <span class="material-symbols-rounded">info</span>
+                        </a>
+                    </h3>
+                </summary>
+                <div class="section">
+                    <div class="form-control">
+                        <label for="localDNS">🏚️ Local DNS</label>
+                        <div>
+                            <input type="text" id="localDNS" name="localDNS" required>
+                        </div>
+                    </div>
+                    <div class="form-control">
+                        <label for="antiSanctionDNS">🌏 Anti Sanction DNS</label>
+                        <div>
+                            <input type="text" id="antiSanctionDNS" name="antiSanctionDNS" required>
+                        </div>
+                    </div>
+                    <div class="form-control">
+                        <label for="fakeDNS">🧢 Fake DNS</label>
+                        <div>
+                            <select id="fakeDNS" name="fakeDNS">
+                                <option value="true">Enabled</option>
+                                <option value="false">Disabled</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-control">
+                        <label for="allowLANConnection">⛔ Allow connections from LAN</label>
+                        <div>
+                            <select id="allowLANConnection" name="allowLANConnection">
+                                <option value="true">Enabled</option>
+                                <option value="false">Disabled</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-control">
+                        <label for="logLevel">🎚️ Log Level</label>
+                        <div>
+                            <select id="logLevel" name="logLevel">
+                                <option value="none">none</option>
+                                <option value="warning">warning</option>
+                                <option value="error">error</option>
+                                <option value="info">info</option>
+                                <option value="debug">debug</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </details>
             <details class="details">
                 <summary>
                     <h3>VLESS - Trojan
@@ -36,21 +90,6 @@
                         <label for="remoteDNS">🌏 Remote DNS</label>
                         <div>
                             <input type="text" id="remoteDNS" name="remoteDNS" required>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="localDNS">🏚️ Local DNS</label>
-                        <div>
-                            <input type="text" id="localDNS" name="localDNS" required>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="VLTRFakeDNS">🧢 Fake DNS</label>
-                        <div>
-                            <select id="VLTRFakeDNS" name="VLTRFakeDNS">
-                                <option value="true">Enabled</option>
-                                <option value="false">Disabled</option>
-                            </select>
                         </div>
                     </div>
                     <div class="form-control">
@@ -243,6 +282,14 @@
                             <span>-</span>
                             <input type="number" id="fragmentIntervalMax" name="fragmentIntervalMax" min="1" max="30"
                                 required>
+                        </div>
+                    </div>
+                    <div class="form-control">
+                        <label for="fragmentMaxSplitMin">⛓️ Max Split</label>
+                        <div class="min-max">
+                            <input type="number" id="fragmentMaxSplitMin" name="fragmentMaxSplitMin" min="2">
+                            <span>-</span>
+                            <input type="number" id="fragmentMaxSplitMax" name="fragmentMaxSplitMax" min="2">
                         </div>
                     </div>
                     <div class="form-control">
@@ -464,12 +511,6 @@
                     </div>
                     <div class="container">
                         <h4><span class="material-symbols-rounded">tune</span> Sanction Rules</h4>
-                        <div class="form-control">
-                            <label for="antiSanctionDNS">🌏 Anti Sanction DNS</label>
-                            <div>
-                                <input type="text" id="antiSanctionDNS" name="antiSanctionDNS" required>
-                            </div>
-                        </div>
                         <div class="form-control">
                             <label for="bypass-sanction-rules">🟩 Bypass rules</label>
                             <div>
