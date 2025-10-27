@@ -63,18 +63,6 @@ export async function getConfigAddresses(isFragment: boolean): Promise<string[]>
     return isFragment ? addrs : [...addrs, ...customCdnAddrs!];
 }
 
-export function extractWireguardParams(warpConfigs: any[], isWoW: boolean) {
-    const index = isWoW ? 1 : 0;
-    const warpConfig = warpConfigs[index].account.config;
-
-    return {
-        warpIPv6: `${warpConfig.interface.addresses.v6}/128`,
-        reserved: warpConfig.client_id,
-        publicKey: warpConfig.peers[0].public_key,
-        privateKey: warpConfigs[index].privateKey,
-    };
-}
-
 export function generateRemark(
     index: number,
     port: number,

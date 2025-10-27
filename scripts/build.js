@@ -173,9 +173,3 @@ buildWorker().catch(err => {
     process.exit(1);
 });
 
-function stringToHex(str) {
-    const encoder = new TextEncoder();
-    const bytes = encoder.encode(str);
-    return Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("");
-}
-

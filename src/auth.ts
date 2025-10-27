@@ -1,5 +1,5 @@
 import { SignJWT, jwtVerify } from 'jose';
-import { respond } from '#common/handlers';
+import { respond } from '@handlers';
 
 export async function generateJWTToken(request: Request, env: Env): Promise<Response> {
     if (request.method !== 'POST') {

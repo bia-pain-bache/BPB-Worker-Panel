@@ -1,9 +1,8 @@
 import {
-    extractWireguardParams,
     isHttps,
     generateWsPath,
     parseHostPort
-} from '#configs/utils';
+} from '@utils';
 
 import {
     BaseOutbound,
@@ -23,7 +22,7 @@ import {
     AmneziaOpts,
     Network,
     Fingerprint,
-} from './types';
+} from 'types/clash';
 
 function buildOutbound<T>(
     name: string,
@@ -82,7 +81,7 @@ export function buildWebsocketOutbound(
 }
 
 export function buildWarpOutbound(
-    warpAccounts: WarpAccount[],
+    warpAccount: WarpAccount,
     remark: string,
     endpoint: string,
     chain: string,
@@ -102,7 +101,7 @@ export function buildWarpOutbound(
         reserved,
         publicKey,
         privateKey
-    } = extractWireguardParams(warpAccounts, !!chain);
+    } = warpAccount;
 
 
     return {

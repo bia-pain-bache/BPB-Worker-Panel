@@ -39,7 +39,9 @@ declare global {
 
     interface WarpAccount {
         privateKey: string;
-        account: unknown;
+        publicKey: string;
+        warpIPv6: string;
+        reserved: string;
     }
 
     interface DohHost {

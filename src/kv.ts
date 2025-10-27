@@ -1,19 +1,21 @@
-import { fetchWarpConfigs } from '#protocols/warp';
-import { getDomain, resolveDNS } from '#configs/utils';
+import { fetchWarpAccounts } from '@warp';
+import { getDomain, resolveDNS } from '@utils';
 
-export async function getDataset(request: Request, env: Env): Promise<{ settings: Settings, warpConfigs: WarpAccount[] }> {
+export async function getDataset(request: Request, env: Env): Promise<{ settings: Settings, warpAccounts: WarpAccount[] }> {
     const { httpConfig: { panelVersion }, settings } = globalThis;
-    let proxySettings: Settings | null, warpConfigs: WarpAccount[];
+    let proxySettings: Settings | null, warpAccounts: WarpAccount[] | null;
 
     try {
         proxySettings = await env.kv.get("proxySettings", { type: 'json' });
-        warpConfigs = await env.kv.get('warpConfigs', { type: 'json' }) || [];
+        warpAccounts = await env.kv.get('warpAccounts', { type: 'json' });
 
         if (!proxySettings) {
             await env.kv.put("proxySettings", JSON.stringify(settings));
-            const configs = await fetchWarpConfigs(env);
             proxySettings = settings;
-            warpConfigs = configs;
+        }
+
+        if (!warpAccounts) {
+            warpAccounts = await fetchWarpAccounts(env);
         }
 
         if (panelVersion !== proxySettings.panelVersion) {
@@ -22,7 +24,7 @@ export async function getDataset(request: Request, env: Env): Promise<{ settings
 
         return { 
             settings: proxySettings, 
-            warpConfigs 
+            warpAccounts 
         };
     } catch (error) {
         console.log(error);

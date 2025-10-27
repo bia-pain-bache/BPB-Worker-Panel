@@ -1,9 +1,8 @@
 import {
-    extractWireguardParams,
     base64ToDecimal,
     isHttps,
     generateWsPath
-} from '#configs/utils';
+} from '@utils';
 
 import {
     Outbound,
@@ -26,7 +25,7 @@ import {
     Fingerprint,
     TransportType,
     DomainStrategy,
-} from './types';
+} from 'types/xray';
 
 function buildOutbound<T>(
     protocol: string,
@@ -154,7 +153,7 @@ export function buildWebsocketOutbound(
 }
 
 export function buildWarpOutbound(
-    warpAccounts: WarpAccount[],
+    warpAccount: WarpAccount,
     endpoint: string,
     isWoW: boolean,
     isPro: boolean
@@ -164,7 +163,7 @@ export function buildWarpOutbound(
         reserved,
         publicKey,
         privateKey
-    } = extractWireguardParams(warpAccounts, isWoW);
+    } = warpAccount;
     const { client } = globalThis.httpConfig;
 
     let wgSettings: WgSettings = {

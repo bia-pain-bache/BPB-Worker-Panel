@@ -1,9 +1,9 @@
-import { isValidUUID } from '#common/handlers';
+import { isValidUUID } from '@init';
 import {
     handleTCPOutBound,
     makeReadableWebSocketStream,
     WS_READY_STATE_OPEN
-} from '#protocols/websocket/common';
+} from './common';
 
 export async function VlOverWSHandler(request: Request): Promise<Response> {
     const webSocketPair = new WebSocketPair();

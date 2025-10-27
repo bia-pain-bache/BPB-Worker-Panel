@@ -1,6 +1,6 @@
 import { getGeoAssets } from './geo-assets';
-import { Dns, DnsServer, DnsHosts } from './types';
-import { resolveDNS, isDomain, getDomain, accDnsRules } from '#configs/utils';
+import type { Dns, DnsServer, DnsHosts } from 'types/xray';
+import { resolveDNS, isDomain, getDomain, accDnsRules } from '@utils';
 
 export async function buildDNS(
     outboundAddrs: string[],
@@ -11,7 +11,7 @@ export async function buildDNS(
     customDnsHosts?: string[]
 ): Promise<Dns> {
     const {
-        localDNS, remoteDNS, antiSanctionDNS, dohHost, 
+        localDNS, remoteDNS, antiSanctionDNS, dohHost,
         warpEnableIPv6, VLTRenableIPv6, warpFakeDNS, VLTRFakeDNS
     } = globalThis.settings;
 

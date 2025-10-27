@@ -1,9 +1,9 @@
-# ⚙️ Bug fixes and Improvements
+# ⚙️ BPB Panel v4.0.0
 
 - Refactore the whole project using TypeScript
 - Added VMess support to Chain Proxies. All main protocols are now supported: **VLESS**, **VMess**, **Trojan**, **Shadowsocks**, **Socks** and **Http**
 - Improved Chain Proxy performance
-- Made **TCP Fast Open** optional due to some devices and ISPs compatibility. Please note that you have to enable TCP Fast Open on linux manually.
+- Made **TCP Fast Open** optional due to some devices and ISPs compatibility. Please note that you have to enable TCP Fast Open on linux manually #1097
 - Revised build process to reduce worker.js size up to ~120 KB
 - Updated docs
 - And some other bug fixes and improvements

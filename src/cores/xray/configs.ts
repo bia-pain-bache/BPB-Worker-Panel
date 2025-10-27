@@ -1,7 +1,20 @@
-import { getDataset } from '#kv';
+import { getDataset } from 'kv';
 import { buildDNS } from './dns';
 import { buildRoutingRules } from './routing';
-import { Balancer, Config, Observatory, Outbound } from './types';
+import {
+    buildChainOutbound,
+    buildWebsocketOutbound,
+    buildWarpOutbound,
+    buildFreedomOutbound
+} from './outbounds';
+
+import type { 
+    Balancer, 
+    Config, 
+    Observatory, 
+    Outbound 
+} from 'types/xray';
+
 import {
     getConfigAddresses,
     generateRemark,
@@ -9,14 +22,7 @@ import {
     isDomain,
     isHttps,
     getProtocols
-} from '#configs/utils';
-
-import {
-    buildChainOutbound,
-    buildWebsocketOutbound,
-    buildWarpOutbound,
-    buildFreedomOutbound
-} from './outbounds';
+} from '@utils';
 
 async function buildConfig(
     remark: string,
@@ -357,7 +363,7 @@ export async function getXrWarpConfigs(
     isKnocker: boolean
 ): Promise<Response> {
     const { warpEndpoints } = globalThis.settings;
-    const { warpConfigs } = await getDataset(request, env);
+    const { warpAccounts } = await getDataset(request, env);
 
     const proIndicator = isPro ? ' Pro ' : ' ';
     const configs: Config[] = [];
@@ -372,8 +378,8 @@ export async function getXrWarpConfigs(
         const wowOutbounds: Outbound[] = [...udpNoise];
         const endpointHost = endpoint.split(':')[0];
 
-        const warpOutbound = buildWarpOutbound(warpConfigs, endpoint, false, isPro);
-        const wowOutbound = buildWarpOutbound(warpConfigs, endpoint, true, isPro);
+        const warpOutbound = buildWarpOutbound(warpAccounts[0], endpoint, false, isPro);
+        const wowOutbound = buildWarpOutbound(warpAccounts[1], endpoint, true, isPro);
 
         warpOutbounds.unshift(warpOutbound);
         wowOutbounds.unshift(wowOutbound, warpOutbound);

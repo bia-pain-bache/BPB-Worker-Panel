@@ -1,13 +1,12 @@
-import { Authenticate, generateJWTToken, resetPassword } from "#auth";
-import { getClNormalConfig, getClWarpConfig } from "#configs/clash/clash";
-import { getSbCustomConfig, getSbWarpConfig } from "#configs/sing-box/sing-box";
-import { getXrCustomConfigs, getXrWarpConfigs } from "#configs/xray/xray";
-import { extractWireguardParams } from "#configs/utils";
-import { getDataset, updateDataset } from "#kv";
-import { fetchWarpConfigs } from "#protocols/warp";
-import { setSettings } from "#common/init";
-import { VlOverWSHandler } from "#protocols/websocket/vless";
-import { TrOverWSHandler } from "#protocols/websocket/trojan";
+import { Authenticate, generateJWTToken, resetPassword } from "auth";
+import { getDataset, updateDataset } from "kv";
+import { setSettings } from "@init";
+import { getClNormalConfig, getClWarpConfig } from "@clash/configs";
+import { getSbCustomConfig, getSbWarpConfig } from "@sing-box/configs";
+import { getXrCustomConfigs, getXrWarpConfigs } from "@xray/configs";
+import { fetchWarpAccounts } from "@warp";
+import { VlOverWSHandler } from "@vless";
+import { TrOverWSHandler } from "@trojan";
 import JSZip from "jszip";
 
 export async function handleWebsocket(request: Request): Promise<Response> {
@@ -73,10 +72,10 @@ export async function handlePanel(request: Request, env: Env): Promise<Response>
 }
 
 export async function handleError(error: any): Promise<Response> {
-    const str = __ERROR_HTML_CONTENT__.replace('__ERROR_MESSAGE__', error.message);
-    const stream = decompressHtml(str);
+    const html = await decompressHtml(__ERROR_HTML_CONTENT__);
+    const errorPage = html.replace('__ERROR_MESSAGE__', error.message);
 
-    return new Response(stream, {
+    return new Response(errorPage, {
         status: 200,
         headers: { 'Content-Type': 'text/html; charset=utf-8' }
     });
@@ -264,12 +263,13 @@ async function getWarpConfigs(request: Request, env: Env): Promise<Response> {
         return new Response('Unauthorized or expired session.', { status: 401 });
     }
 
-    const { warpConfigs, settings } = await getDataset(request, env);
-    const warpConfig = extractWireguardParams(warpConfigs, false);
-    const { warpIPv6, publicKey, privateKey } = warpConfig;
+    const { warpAccounts, settings } = await getDataset(request, env);
+    const { warpIPv6, publicKey, privateKey } = warpAccounts[0];
     const { warpEndpoints, amneziaNoiseCount, amneziaNoiseSizeMin, amneziaNoiseSizeMax } = settings;
+    
     const zip = new JSZip();
     const trimLines = (str: string) => str.split("\n").map(line => line.trim()).join("\n");
+    
     const amneziaNoise = isPro
         ?
         `Jc = ${amneziaNoiseCount}
@@ -337,8 +337,8 @@ async function renderPanel(request: Request, env: Env): Promise<Response> {
         }
     }
 
-    const stream = decompressHtml(__PANEL_HTML_CONTENT__);
-    return new Response(stream, {
+    const html = await decompressHtml(__PANEL_HTML_CONTENT__);
+    return new Response(html, {
         headers: { 'Content-Type': 'text/html; charset=utf-8' }
     });
 }
@@ -350,8 +350,8 @@ async function renderLogin(request: Request, env: Env): Promise<Response> {
         return Response.redirect(`${urlOrigin}/panel`, 302);
     }
 
-    const stream = decompressHtml(__LOGIN_HTML_CONTENT__);
-    return new Response(stream, {
+    const html = await decompressHtml(__LOGIN_HTML_CONTENT__);
+    return new Response(html, {
         headers: {
             'Content-Type': 'text/html; charset=utf-8'
         }
@@ -359,8 +359,8 @@ async function renderLogin(request: Request, env: Env): Promise<Response> {
 }
 
 export async function renderSecrets(): Promise<Response> {
-    const stream = decompressHtml(__SECRETS_HTML_CONTENT__);
-    return new Response(stream, {
+    const html = await decompressHtml(__SECRETS_HTML_CONTENT__);
+    return new Response(html, {
         headers: {
             'Content-Type': 'text/html; charset=utf-8'
         }
@@ -376,7 +376,7 @@ async function updateWarpConfigs(request: Request, env: Env): Promise<Response> 
         }
 
         try {
-            await fetchWarpConfigs(env);
+            await fetchWarpAccounts(env);
             return await respond(true, 200, 'Warp configs updated successfully!');
         } catch (error) {
             console.log(error);
@@ -406,12 +406,12 @@ export async function respond(
     });
 }
 
-export function isValidUUID(uuid: string): boolean {
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    return uuidRegex.test(uuid);
-}
-
-function decompressHtml(str: string): ReadableStream<Uint8Array> {
+async function decompressHtml(str: string): Promise<string> {
     const bytes = Uint8Array.from(atob(str), c => c.charCodeAt(0));
-    return new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+    
+    const decompressedArrayBuffer = await new Response(stream).arrayBuffer();
+    const decodedString = new TextDecoder().decode(decompressedArrayBuffer);
+
+    return decodedString;
 }

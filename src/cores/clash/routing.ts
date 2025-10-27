@@ -1,6 +1,6 @@
-import { RuleProvider } from './types';
+import { RuleProvider } from 'types/clash';
 import { getGeoAssets } from './geo-assets';
-import { isIPv6, isIPv4, accRoutingRules } from '#configs/utils';
+import { isIPv6, isIPv4, accRoutingRules } from '@utils';
 
 export function buildRoutingRules(isWarp: boolean) {
     const { blockUDP443 } = globalThis.settings;

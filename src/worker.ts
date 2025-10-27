@@ -1,5 +1,5 @@
-import { logout } from '#auth';
-import { init, initHttp, initWs } from '#common/init';
+import { logout } from 'auth';
+import { init, initHttp, initWs } from '@init';
 import {
 	fallback,
 	serveIcon,
@@ -9,7 +9,7 @@ import {
 	handleLogin,
 	handleError,
 	handleWebsocket
-} from '#common/handlers';
+} from '@handlers';
 
 export default {
 	async fetch(request: Request, env: Env) {

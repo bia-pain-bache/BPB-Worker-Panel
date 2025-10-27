@@ -1,6 +1,6 @@
-import { RoutingRule } from './types';
-import { accRoutingRules } from '#configs/utils';
 import { getGeoAssets } from './geo-assets';
+import { RoutingRule } from 'types/xray';
+import { accRoutingRules } from '@utils';
 
 export function buildRoutingRules(
     isChain: boolean,

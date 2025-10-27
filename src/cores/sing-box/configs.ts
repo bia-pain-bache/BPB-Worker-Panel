@@ -1,20 +1,26 @@
-import { getDataset } from '#kv';
+import { getDataset } from 'kv';
 import { buildDNS } from './dns';
 import { buildRoutingRules } from './routing';
-import { AnyOutbound, WgEndpoint, Config, URLTest } from './types';
+import {
+    buildChainOutbound,
+    buildWarpOutbound,
+    buildWebsocketOutbound
+} from './outbounds.js';
+
+import {
+    AnyOutbound,
+    WgEndpoint,
+    Config,
+    URLTest
+} from 'types/sing-box';
+
 import {
     getConfigAddresses,
     generateRemark,
     randomUpperCase,
     isHttps,
     getProtocols
-} from '#configs/utils';
-
-import {
-    buildChainOutbound,
-    buildWarpOutbound,
-    buildWebsocketOutbound
-} from './outbounds.js';
+} from '@utils';
 
 async function buildConfig(
     outbounds: AnyOutbound[],
@@ -185,7 +191,7 @@ export async function getSbCustomConfig(isFragment: boolean): Promise<Response> 
 
 export async function getSbWarpConfig(request: Request, env: Env): Promise<Response> {
     const { warpEndpoints, warpEnableIPv6 } = globalThis.settings;
-    const { warpConfigs } = await getDataset(request, env);
+    const { warpAccounts } = await getDataset(request, env);
 
     const proxyTags: string[] = [];
     const chainTags: string[] = [];
@@ -203,8 +209,8 @@ export async function getSbWarpConfig(request: Request, env: Env): Promise<Respo
         chainTags.push(wowTag);
 
         selectorTags.push(warpTag, wowTag);
-        const warpOutbound = buildWarpOutbound(warpConfigs, warpTag, endpoint);
-        const wowOutbound = buildWarpOutbound(warpConfigs, wowTag, endpoint, warpTag);
+        const warpOutbound = buildWarpOutbound(warpAccounts[0], warpTag, endpoint);
+        const wowOutbound = buildWarpOutbound(warpAccounts[1], wowTag, endpoint, warpTag);
         outbounds.push(warpOutbound, wowOutbound);
     });
 

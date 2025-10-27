@@ -3,7 +3,7 @@ interface WarpKeys {
     privateKey: string;
 }
 
-export async function fetchWarpConfigs(env: Env): Promise<WarpAccount[]> {
+export async function fetchWarpAccounts(env: Env): Promise<WarpAccount[]> {
     const WarpAccounts: WarpAccount[] = [];
     const apiBaseUrl = 'https://api.cloudflareclient.com/v0a4005/reg';
     const warpKeys = [
@@ -11,17 +11,7 @@ export async function fetchWarpConfigs(env: Env): Promise<WarpAccount[]> {
         await generateKeyPair()
     ];
 
-    const commonPayload = {
-        install_id: "",
-        fcm_token: "",
-        tos: new Date().toISOString(),
-        type: "Android",
-        model: 'PC',
-        locale: 'en_US',
-        warp_enabled: true
-    };
-
-    const fetchAccount = async (key: WarpKeys) => {
+    const fetchAccount = async (key: WarpKeys): Promise<any> => {
         try {
             const response = await fetch(apiBaseUrl, {
                 method: 'POST',
@@ -29,7 +19,16 @@ export async function fetchWarpConfigs(env: Env): Promise<WarpAccount[]> {
                     'User-Agent': 'insomnia/8.6.1',
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ ...commonPayload, key: key.publicKey })
+                body: JSON.stringify({
+                    install_id: "",
+                    fcm_token: "",
+                    tos: new Date().toISOString(),
+                    type: "Android",
+                    model: 'PC',
+                    locale: 'en_US',
+                    warp_enabled: true,
+                    key: key.publicKey
+                })
             });
 
             return await response.json();
@@ -39,16 +38,17 @@ export async function fetchWarpConfigs(env: Env): Promise<WarpAccount[]> {
     };
 
     for (const key of warpKeys) {
-        const accountData = await fetchAccount(key);
+        const { config } = await fetchAccount(key);
+
         WarpAccounts.push({
             privateKey: key.privateKey,
-            account: accountData
+            warpIPv6: `${config.interface.addresses.v6}/128`,
+            reserved: config.client_id,
+            publicKey: config.peers[0].public_key
         });
     }
 
-    // const configs = JSON.stringify(warpConfigs)
-    await env.kv.put('warpConfigs', JSON.stringify(WarpAccounts));
-
+    await env.kv.put('warpAccounts', JSON.stringify(WarpAccounts));
     return WarpAccounts;
 }
 

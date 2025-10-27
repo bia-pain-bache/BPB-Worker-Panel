@@ -1,6 +1,6 @@
 import { getGeoAssets } from './geo-assets';
-import { Dns, DnsRule, DnsServer } from './types';
-import { isDomain, getDomain, accDnsRules } from '#configs/utils';
+import { Dns, DnsRule, DnsServer } from 'types/sing-box';
+import { isDomain, getDomain, accDnsRules } from '@utils';
 
 export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<Dns> {
     const {

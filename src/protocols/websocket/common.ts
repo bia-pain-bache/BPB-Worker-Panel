@@ -1,5 +1,5 @@
 import { connect } from 'cloudflare:sockets';
-import { isIPv4, parseHostPort, resolveDNS } from '#configs/utils';
+import { isIPv4, parseHostPort, resolveDNS } from '@utils';
 
 export const WS_READY_STATE_OPEN = 1;
 const WS_READY_STATE_CLOSING = 2;

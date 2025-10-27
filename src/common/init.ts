@@ -1,5 +1,4 @@
-import { isValidUUID } from "#common/handlers";
-import { getDataset } from "#kv";
+import { getDataset } from "kv";
 
 globalThis.dict = {
     _VL_: atob('dmxlc3M='),
@@ -146,4 +145,9 @@ export function initHttp(request: Request, env: any) {
         urlOrigin: origin,
         subPath: SUB_PATH || UUID,
     };
+}
+
+export function isValidUUID(uuid: string): boolean {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(uuid);
 }

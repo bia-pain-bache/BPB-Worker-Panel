@@ -1,4 +1,4 @@
-import { handleTCPOutBound, makeReadableWebSocketStream } from '#protocols/websocket/common';
+import { handleTCPOutBound, makeReadableWebSocketStream } from './common';
 
 export async function TrOverWSHandler(request: Request): Promise<Response> {
     const webSocketPair = new WebSocketPair();

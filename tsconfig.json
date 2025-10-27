@@ -13,11 +13,15 @@
         "resolveJsonModule": true,
         "isolatedModules": true,
         "paths": {
-            "#configs/*": ["configs/*"],
-            "#protocols/*": ["protocols/*"],
-            "#common/*": ["common/*"],
-            "#auth": ["auth.ts"],
-            "#kv": ["kv.ts"]
+            "@xray/*": ["cores/xray/*"],
+            "@sing-box/*": ["cores/sing-box/*"],
+            "@clash/*": ["cores/clash/*"],
+            "@utils": ["cores/utils"],
+            "@handlers": ["common/handlers"],
+            "@init": ["common/init"],
+            "@vless": ["protocols/websocket/vless"],
+            "@trojan": ["protocols/websocket/trojan"],
+            "@warp": ["protocols/warp"]
         }
     }
 }

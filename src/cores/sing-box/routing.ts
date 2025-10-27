@@ -1,6 +1,6 @@
 import { getGeoAssets } from './geo-assets';
-import { accRoutingRules } from '#configs/utils';
-import { Route, RoutingRule, RuleSet } from './types';
+import { accRoutingRules } from '@utils';
+import { Route, RoutingRule, RuleSet } from 'types/sing-box';
 
 export function buildRoutingRules(isWarp: boolean, isChain: boolean): Route {
     const { blockUDP443, warpEnableIPv6, VLTRenableIPv6 } = globalThis.settings;
