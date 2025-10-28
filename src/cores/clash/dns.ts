@@ -22,24 +22,13 @@ export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean
 
     const finalRemoteDNS = `${isWarp ? '1.1.1.1' : remoteDNS}#${remoteDnsDetour}`;
     const hosts: DnsHosts = {};
+    let nameserverPolicy: Record<string, string> = {};
 
-    const dns: Dns = {
-        "enable": true,
-        "listen": "0.0.0.0:1053",
-        "ipv6": isIPv6,
-        "respect-rules": true,
-        "use-system-hosts": false,
-        "nameserver": [finalRemoteDNS],
-        "proxy-server-nameserver": [finalLocalDNS],
-        "nameserver-policy": {
-            "raw.githubusercontent.com": finalLocalDNS,
-            "time.cloudflare.com": finalLocalDNS
-        }
-    };
+
 
     if (isChain && !isWarp) {
         const { server } = outProxyParams;
-        if (isDomain(server)) dns["nameserver-policy"][server] = finalRemoteDNS;
+        if (isDomain(server)) nameserverPolicy[server] = finalRemoteDNS;
     }
 
     if (dohHost.isDomain && !isWarp) {
@@ -65,7 +54,7 @@ export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean
         ...dnsRules.bypass.antiSanctionDNS.domains.map(domain => `+.${domain}`)
     ];
 
-    sanctionDomains.forEach(value => dns["nameserver-policy"][value] = `${antiSanctionDNS}#DIRECT`);
+    sanctionDomains.forEach(value => nameserverPolicy[value] = `${antiSanctionDNS}#DIRECT`);
 
     const bypassDomains = [
         ...dnsRules.bypass.localDNS.geositeGeoips.map(({ geosite }) => `rule-set:${geosite}`),
@@ -78,17 +67,31 @@ export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean
         if (isHostDomain) bypassDomains.push(host);
     }
 
-    bypassDomains.forEach(value => dns["nameserver-policy"][value] = finalLocalDNS);
+    bypassDomains.forEach(value => nameserverPolicy[value] = finalLocalDNS);
+    let fakeDnsSettings = {};
 
-    if (fakeDNS) Object.assign(dns, {
+    if (fakeDNS) fakeDnsSettings = {
         "enhanced-mode": "fake-ip",
         "fake-ip-range": "198.18.0.1/16",
         "fake-ip-filter": ["*", "+.lan", "+.local"]
-    });
+    };
 
-    if (Object.keys(hosts).length) {
-        dns.hosts = hosts;
-    }
+    const dns: Dns = {
+        "enable": true,
+        "respect-rules": true,
+        "use-system-hosts": false,
+        "listen": "0.0.0.0:1053",
+        "ipv6": isIPv6,
+        ...fakeDnsSettings,
+        "hosts": Object.keys(hosts).length ? hosts : undefined,
+        "nameserver": [finalRemoteDNS],
+        "proxy-server-nameserver": [finalLocalDNS],
+        "nameserver-policy": {
+            "raw.githubusercontent.com": finalLocalDNS,
+            "time.cloudflare.com": finalLocalDNS,
+            ...nameserverPolicy
+        }
+    };
 
     return dns;
 }

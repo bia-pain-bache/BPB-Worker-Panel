@@ -71,12 +71,12 @@ export function buildWebsocketOutbound(
     const transport = buildTransport("ws", undefined, generateWsPath(protocol), host, undefined, 2560);
 
     if (protocol === _VL_) return buildOutbound<VlOutbound>(remark, protocol, address, port, VLTRenableIPv6, enableTFO, tls, transport, {
-        "uuid": userID!,
+        "uuid": userID,
         "packet-encoding": ""
     });
 
     return buildOutbound<TrOutbound>(remark, protocol, address, port, VLTRenableIPv6, enableTFO, tls, transport, {
-        "password": TrPass!
+        "password": TrPass
     });
 }
 
@@ -237,9 +237,10 @@ function buildTransport(
     serviceName?: string,
     earlyData?: number
 ): Partial<Transport> {
+
     switch (type) {
         case 'tcp':
-            if (headerType === 'http') return {
+            return headerType === 'http' ? {
                 "network": "http",
                 "http-opts": {
                     "method": "GET",
@@ -250,10 +251,8 @@ function buildTransport(
                         "Content-Type": ["application/octet-stream"]
                     }
                 } satisfies HttpOpts
-            };
-
-            return {
-                "network": "tcp"
+            } : { 
+                "network": "tcp" 
             } satisfies Transport;
 
         case 'ws':

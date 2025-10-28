@@ -8,6 +8,7 @@ export interface DnsServer {
     domains?: string[];
     expectIPs?: string[];
     skipFallback?: boolean;
+    finalQuery?: boolean;
     tag?: string;
 }
 
@@ -15,7 +16,6 @@ export interface Dns {
     hosts?: DnsHosts;
     servers: Array<"fakedns" | DnsServer>;
     queryStrategy: DomainStrategy;
-    disableFallbackIfMatch?: true;
     tag: "dns";
 }
 
@@ -111,6 +111,8 @@ export interface GrpcSettings {
     multiMode?: boolean;
     serviceName?: string;
 }
+
+export type Transport = RawSettings | WsSettings | HttpupgradeSettings | GrpcSettings;
 
 export interface HappyEyeballs {
     tryDelayMs: number;

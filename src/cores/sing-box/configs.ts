@@ -42,7 +42,7 @@ async function buildConfig(
     const config: Config = {
         log: {
             disabled: logLevel === "none",
-            level: logLevel.replace("warning", "warn"),
+            level: logLevel === "none" ? undefined : logLevel.replace("warning", "warn"),
             timestamp: true
         },
         dns: await buildDNS(isWarp, isChain),

@@ -25,6 +25,7 @@ import {
     Fingerprint,
     TransportType,
     DomainStrategy,
+    Transport,
 } from 'types/xray';
 
 function buildOutbound<T>(
@@ -136,6 +137,7 @@ export function buildWebsocketOutbound(
     const isTLS = isHttps(port);
     const streamSettings: StreamSettings = {
         network: "ws",
+        ...buildTransport("ws", "none", `${generateWsPath(protocol)}?ed=2560`, host),
         security: isTLS ? "tls" : "none",
         tlsSettings: isTLS ? buildTlsSettings(sni, fingerprint, "http/1.1", allowInsecure) : undefined,
         sockopt: isFragment
@@ -143,15 +145,14 @@ export function buildWebsocketOutbound(
             : buildSockopt(true, enableTFO, "UseIP"),
     };
 
-    addTransport(streamSettings, "ws", "none", `${generateWsPath(protocol)}?ed=2560`, host);
 
     if (protocol === _VL_) return buildOutbound<VlSettings>(protocol, "proxy", address, port, false, {
-        id: userID!,
+        id: userID,
         encryption: "none"
     }, streamSettings);
 
     return buildOutbound<TrSettings>(protocol, "proxy", address, port, false, {
-        password: TrPass!
+        password: TrPass
     }, streamSettings);
 }
 
@@ -246,13 +247,13 @@ export function buildChainOutbound(): Outbound | undefined {
 
     const streamSettings: StreamSettings = {
         network: type || "raw",
+        ...buildTransport(type, headerType, path, host, serviceName, mode, authority),
         security,
         tlsSettings: security === 'tls' ? buildTlsSettings(sni || server, fp, alpn, false) : undefined,
         realitySettings: security === "reality" ? buildRealitySettings(sni, fp, pbk, sid, spx) : undefined,
         sockopt: buildSockopt(false, false, VLTRenableIPv6 ? "UseIPv4v6" : "UseIPv4", "proxy")
     };
 
-    addTransport(streamSettings, type, headerType, path, host, serviceName, mode, authority);
     const enableMux = !(security === "reality" || type === "grpc");
 
     switch (protocol) {
@@ -293,8 +294,7 @@ export function buildChainOutbound(): Outbound | undefined {
     }
 }
 
-function addTransport(
-    streamSettings: StreamSettings,
+function buildTransport(
     type: TransportType,
     headerType?: "http" | "none",
     path?: string,
@@ -302,58 +302,59 @@ function addTransport(
     serviceName?: string,
     mode?: string,
     authority?: string
-) {
+): Record<string, Transport> {
+
     switch (type) {
         case 'tcp':
         case 'raw':
-            streamSettings.rawSettings = {
-                header: headerType === 'http'
-                    ? {
-                        type: "http",
-                        request: {
-                            headers: {
-                                "Host": host?.split(',') || [],
-                                "Accept-Encoding": ["gzip, deflate"],
-                                "Connection": ["keep-alive"],
-                                "Pragma": "no-cache"
-                            },
-                            path: path?.split(',') || ["/"],
-                            method: "GET",
-                            version: "1.1"
+            return {
+                rawSettings: {
+                    header: headerType === 'http'
+                        ? {
+                            type: "http",
+                            request: {
+                                headers: {
+                                    "Host": host?.split(',') || [],
+                                    "Accept-Encoding": ["gzip, deflate"],
+                                    "Connection": ["keep-alive"],
+                                    "Pragma": "no-cache"
+                                },
+                                path: path?.split(',') || ["/"],
+                                method: "GET",
+                                version: "1.1"
+                            }
                         }
-                    }
-                    : { type: "none" }
-            } satisfies RawSettings;
-
-            break;
+                        : { type: "none" }
+                } satisfies RawSettings
+            };
 
         case 'ws':
-            streamSettings.wsSettings = {
-                host: host,
-                path: path || "/"
-            } satisfies WsSettings;
-
-            break;
+            return {
+                wsSettings: {
+                    host: host,
+                    path: path || "/"
+                } satisfies WsSettings
+            };
 
         case 'httpupgrade':
-            streamSettings.httpupgradeSettings = {
-                host: host,
-                path: path || "/"
-            } satisfies HttpupgradeSettings;
-
-            break;
+            return {
+                httpupgradeSettings: {
+                    host: host,
+                    path: path || "/"
+                } satisfies HttpupgradeSettings
+            };
 
         case 'grpc':
-            streamSettings.grpcSettings = {
-                authority: authority,
-                multiMode: mode === 'multi',
-                serviceName: serviceName
-            } satisfies GrpcSettings;
-
-            break;
+            return {
+                grpcSettings: {
+                    authority: authority,
+                    multiMode: mode === 'multi',
+                    serviceName: serviceName
+                } satisfies GrpcSettings
+            };
 
         default:
-            break;
+            return {};
     };
 }
 

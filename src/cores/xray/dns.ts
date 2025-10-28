@@ -11,20 +11,19 @@ export async function buildDNS(
     customDnsHosts?: string[]
 ): Promise<Dns> {
     const {
-        localDNS, remoteDNS, antiSanctionDNS, dohHost,
-        warpEnableIPv6, VLTRenableIPv6, fakeDNS
+        localDNS,
+        remoteDNS,
+        antiSanctionDNS,
+        dohHost,
+        warpEnableIPv6,
+        VLTRenableIPv6,
+        fakeDNS
     } = globalThis.settings;
 
     const hosts: DnsHosts = {};
+    const servers: Array<DnsServer | "fakedns"> = [];
+    const fakeDnsDomains = [];
     const isIPv6 = isWarp ? warpEnableIPv6 : VLTRenableIPv6;
-
-    const dns: Dns = {
-        hosts: undefined,
-        servers: [],
-        queryStrategy: !isWarp || isIPv6 ? "UseIP" : "UseIPv4",
-        disableFallbackIfMatch: undefined,
-        tag: "dns",
-    };
 
     if (dohHost.isDomain && !isWorkerLess && !isWarp) {
         const { ipv4, ipv6, host } = dohHost;
@@ -35,25 +34,21 @@ export async function buildDNS(
     }
 
     if (domainToStaticIPs) {
-        const staticIPs = await resolveDNS(domainToStaticIPs, !VLTRenableIPv6);
-        hosts[domainToStaticIPs] = [
-            ...staticIPs.ipv4,
-            ...staticIPs.ipv6
-        ];
+        const { ipv4, ipv6 } = await resolveDNS(domainToStaticIPs, VLTRenableIPv6);
+        hosts[domainToStaticIPs] = [...ipv4, ...ipv6];
     }
 
-    let skipFallback: boolean | undefined = true;
+    let skipFallback = true;
     let finalRemoteDNS = isWarp ? "1.1.1.1" : remoteDNS;
 
     if (isWorkerLess) {
         finalRemoteDNS = `https://${customDns}/dns-query`;
         if (customDns && customDnsHosts) hosts[customDns] = customDnsHosts;
-        skipFallback = undefined;
-        dns.disableFallbackIfMatch = true;
+        skipFallback = false;
     }
 
-    const remoteDnsServer = buildDnsServer(finalRemoteDNS, undefined, undefined, undefined, "remote-dns");
-    dns.servers.push(remoteDnsServer);
+    const remoteDnsServer = buildDnsServer(finalRemoteDNS, undefined, undefined, undefined, undefined, "remote-dns");
+    servers.push(remoteDnsServer);
 
     const geoAssets = getGeoAssets();
     const dnsRules = accDnsRules(geoAssets);
@@ -67,7 +62,8 @@ export async function buildDNS(
 
     dnsRules.bypass.localDNS.geositeGeoips.forEach(({ geosite, geoip }) => {
         const localDnsServer = buildDnsServer(localDNS, [geosite], [geoip!], skipFallback);
-        dns.servers.push(localDnsServer);
+        servers.push(localDnsServer);
+        fakeDnsDomains.push(geosite);
     });
 
     const sanctionDomains = [
@@ -76,8 +72,8 @@ export async function buildDNS(
     ];
 
     if (sanctionDomains.length) {
-        const sanctionDnsServer = buildDnsServer(antiSanctionDNS, sanctionDomains, undefined, skipFallback);
-        dns.servers.push(sanctionDnsServer);
+        const sanctionDnsServer = buildDnsServer(antiSanctionDNS, sanctionDomains, undefined, skipFallback, true);
+        servers.push(sanctionDnsServer);
     }
 
     const bypassDomains = [
@@ -95,28 +91,24 @@ export async function buildDNS(
 
     if (bypassDomains.length) {
         const localDnsServer = buildDnsServer(localDNS, bypassDomains, undefined, skipFallback);
-        dns.servers.push(localDnsServer);
+        servers.push(localDnsServer);
+        fakeDnsDomains.push(...bypassDomains);
     }
 
     if (fakeDNS) {
-        const totalDomainRules = [
-            ...dnsRules.bypass.localDNS.geositeGeoips.map(value => value.geosite),
-            ...bypassDomains,
-            ...sanctionDomains
-        ];
-
-        const fakeDNSServer = totalDomainRules.length
-            ? buildDnsServer("fakedns", totalDomainRules, undefined, false, undefined)
+        const fakeDNSServer = fakeDnsDomains.length
+            ? buildDnsServer("fakedns", fakeDnsDomains, undefined, false, undefined)
             : "fakedns";
 
-        dns.servers.unshift(fakeDNSServer);
+        servers.unshift(fakeDNSServer);
     }
 
-    if (Object.keys(hosts).length) {
-        dns.hosts = hosts;
-    }
-
-    return dns;
+    return {
+        hosts: Object.keys(hosts).length ? hosts : undefined,
+        servers,
+        queryStrategy: !isWarp || isIPv6 ? "UseIP" : "UseIPv4",
+        tag: "dns"
+    };
 }
 
 function buildDnsServer(
@@ -124,6 +116,7 @@ function buildDnsServer(
     domains?: string[],
     expectIPs?: string[],
     skipFallback?: boolean,
+    finalQuery?: boolean,
     tag?: string
 ): DnsServer {
     return {
@@ -131,6 +124,7 @@ function buildDnsServer(
         domains,
         expectIPs,
         skipFallback,
+        finalQuery,
         tag
     };
 }

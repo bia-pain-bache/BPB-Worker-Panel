@@ -37,17 +37,21 @@ async function buildConfig(
         allowLANConnection
     } = globalThis.settings;
 
+    const tcpSettings = isWarp ? {} : {
+        "disable-keep-alive": false,
+        "keep-alive-idle": 10,
+        "keep-alive-interval": 15,
+        "tcp-concurrent": true
+    };
+
     const config: Config = {
         "mixed-port": 7890,
         "ipv6": true,
         "allow-lan": allowLANConnection,
-        "mode": "rule",
-        "log-level": logLevel.replace("none", "silent"),
-        "disable-keep-alive": false,
-        "keep-alive-idle": 10,
-        "keep-alive-interval": 15,
-        "tcp-concurrent": isWarp ? undefined : true,
         "unified-delay": false,
+        "log-level": logLevel.replace("none", "silent"),
+        "mode": "rule",
+        ...tcpSettings,
         "geo-auto-update": true,
         "geo-update-interval": 168,
         "external-controller": "127.0.0.1:9090",

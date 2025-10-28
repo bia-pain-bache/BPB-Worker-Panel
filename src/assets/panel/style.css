@@ -7,7 +7,6 @@
     --form-background-color: #f9f9f9;
     --table-active-color: #f2f2f2;
     --hr-text-color: #3b3b3b;
-    --lable-text-color: #333;
     --border-color: #ddd;
     --button-color: #09639f;
     --input-background-color: white;
@@ -44,7 +43,6 @@ body.dark-mode {
     --form-background-color: #121212;
     --table-active-color: #252525;
     --hr-text-color: #D5D5D5;
-    --lable-text-color: #DFDFDF;
     --border-color: #353535;
     --button-color: #3498DB;
     --input-background-color: #252525;
@@ -105,7 +103,7 @@ h1 {
     display: flex;
     flex-direction: column;
     gap: var(--container-gap);
-    margin-bottom: var(--container-gap);
+    margin: var(--container-gap) 0;
 }
 
 .form-control {
@@ -114,7 +112,7 @@ h1 {
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: 10px;
 }
 
 .form-control div {
@@ -125,10 +123,8 @@ h1 {
 
 .form-control label {
     flex: 1;
-    text-align: center;
+    text-align: left;
     width: 100%;
-    font-weight: bold;
-    color: var(--lable-text-color);
 }
 
 input[type="text"],
@@ -142,7 +138,7 @@ select {
     line-height: 1.5;
     border: 1px solid var(--border-color);
     border-radius: var(--element-border-radius);
-    color: var(--lable-text-color);
+    color: var(--color);
     background-color: var(--input-background-color);
     transition: border-color 0.3s ease;
 }
@@ -177,7 +173,7 @@ textarea:read-only {
     padding: 10px;
     border: 1px solid var(--border-color);
     border-radius: var(--element-border-radius);
-    color: var(--lable-text-color);
+    color: var(--color);
     background-color: var(--input-background-color);
     transition: border-color 0.3s ease;
 }
@@ -410,8 +406,6 @@ hr {
 
 label {
     display: block;
-    font-weight: 600;
-    color: var(--lable-text-color);
 }
 
 .button {
@@ -445,7 +439,6 @@ table button {
     border: none;
     background-color: unset;
     cursor: pointer;
-    color: var(--lable-text-color);
     padding: 0;
 }
 
@@ -558,13 +551,13 @@ table button:active {
 }
 
 .table-container tr td:first-child {
-    color: var(--lable-text-color);
     text-wrap: nowrap;
 }
 
 .table-container tr td:nth-child(2) {
     flex-direction: row;
     gap: 8px;
+    width: fit-content;
 }
 
 .my-ip {
@@ -599,7 +592,7 @@ table button:active {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 10px;
+    padding: var(--inner-container-padding);
     width: 100%;
     gap: 10px;
     border-bottom: 1px solid var(--border-color);
@@ -775,9 +768,5 @@ summary h3 {
 
     .form-control {
         flex-direction: row;
-    }
-
-    .form-control label {
-        text-align: left;
     }
 }

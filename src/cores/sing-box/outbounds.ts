@@ -69,13 +69,13 @@ export function buildWebsocketOutbound(
         : undefined;
 
     if (protocol === _VL_) return buildOutbound<VlOutbound>(remark, protocol, address, port, enableTFO, {
-        uuid: userID!,
+        uuid: userID,
         packet_encoding: "",
         network: "tcp"
     }, tls, transport);
 
     return buildOutbound<TrOutbound>(remark, protocol, address, port, enableTFO, {
-        password: TrPass!,
+        password: TrPass,
         network: "tcp"
     }, tls, transport);
 }

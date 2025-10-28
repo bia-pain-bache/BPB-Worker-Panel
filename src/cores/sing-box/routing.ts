@@ -3,7 +3,12 @@ import { accRoutingRules } from '@utils';
 import { Route, RoutingRule, RuleSet } from 'types/sing-box';
 
 export function buildRoutingRules(isWarp: boolean, isChain: boolean): Route {
-    const { blockUDP443, warpEnableIPv6, VLTRenableIPv6 } = globalThis.settings;
+    const { 
+        blockUDP443, 
+        warpEnableIPv6, 
+        VLTRenableIPv6 
+    } = globalThis.settings;
+    
     const rules: RoutingRule[] = [
         {
             ip_cidr: "172.18.0.2",
@@ -76,7 +81,7 @@ export function buildRoutingRules(isWarp: boolean, isChain: boolean): Route {
     }
 
     const ruleSets: RuleSet[] = [];
-    geoAssets.forEach(asset => addRuleSet(ruleSets, asset));
+    geoAssets.forEach(asset => addRuleSets(ruleSets, asset));
     const isIPv6 = isWarp ? warpEnableIPv6 : VLTRenableIPv6;
 
     return {
@@ -115,22 +120,17 @@ function addRoutingRule(
     });
 }
 
-function addRuleSet(ruleSets: RuleSet[], geoAsset: any) {
+function addRuleSets(ruleSets: RuleSet[], geoAsset: any) {
     const { geosite, geositeURL, geoip, geoipURL } = geoAsset;
 
-    if (geosite) ruleSets.push({
+    const addRuleSet = (geo: string, geoURL: string) => ruleSets.push({
         type: "remote",
-        tag: geosite,
+        tag: geo,
         format: "binary",
-        url: geositeURL,
+        url: geoURL,
         download_detour: "direct"
     });
 
-    if (geoip) ruleSets.push({
-        type: "remote",
-        tag: geoip,
-        format: "binary",
-        url: geoipURL,
-        download_detour: "direct"
-    });
+    if (geosite) addRuleSet(geosite, geositeURL);
+    if (geoip) addRuleSet(geoip, geoipURL);
 }

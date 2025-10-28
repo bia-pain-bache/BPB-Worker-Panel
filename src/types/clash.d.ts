@@ -165,9 +165,9 @@ export interface Config {
     "allow-lan": boolean;
     "mode": "rule";
     "log-level": string;
-    "disable-keep-alive": false;
-    "keep-alive-idle": number;
-    "keep-alive-interval": number;
+    "disable-keep-alive"?: boolean;
+    "keep-alive-idle"?: number;
+    "keep-alive-interval"?: number;
     "tcp-concurrent"?: boolean;
     "unified-delay": false;
     "geo-auto-update": true;

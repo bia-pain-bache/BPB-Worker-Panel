@@ -9,6 +9,7 @@
 - Revised build process to reduce worker.js size up to ~120 KB.
 - Added a `Common` section to settings in order to handle shared settings between **VLESS**, **Trojan** and **Warp** configs.
 - Added `Log Level` and `Allow connections from LAN` to Common section as new features.
+- Panel UI improvements.
 - Updated docs.
 - And some other bug fixes and improvements.
 

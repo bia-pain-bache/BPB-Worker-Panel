@@ -42,18 +42,18 @@ function addRuleProvider(
     const { geosite, geoip, geositeURL, geoipURL, format } = ruleProvider;
     const fileExtension = format === 'text' ? 'txt' : format;
 
-    const defineProvider = (type: string, behavior: 'domain' | 'ipcidr', url: string) => {
-        ruleProviders[type] = {
+    const defineProvider = (geo: string, behavior: 'domain' | 'ipcidr', url: string) => {
+        ruleProviders[geo] = {
             type: "http",
             format: format!,
             behavior,
-            path: `./ruleset/${type}.${fileExtension}`,
+            path: `./ruleset/${geo}.${fileExtension}`,
             interval: 86400,
             url
         };
     };
 
-    defineProvider(geosite, 'domain', geositeURL!);
+    if (geosite) defineProvider(geosite, 'domain', geositeURL!);
     if (geoip) defineProvider(geoip, 'ipcidr', geoipURL!);
 }
 

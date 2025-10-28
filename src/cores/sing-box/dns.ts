@@ -197,11 +197,12 @@ function addDnsRule(
     domain?: string[],
     query_type?: Array<"A" | "AAAA">
 ) {
+    const isPair = geosite && geoip;
     rules.push({
         inbound,
-        type: geosite && geoip ? 'logical' : undefined,
-        mode: geosite && geoip ? 'and' : undefined,
-        rules: geosite && geoip ? [
+        type: isPair ? 'logical' : undefined,
+        mode: isPair ? 'and' : undefined,
+        rules: isPair ? [
             { rule_set: geosite }, 
             { rule_set: geoip }
         ] : undefined,
