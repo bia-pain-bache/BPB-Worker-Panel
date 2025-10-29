@@ -164,47 +164,53 @@ function extractChainProxyParams(chainProxy: string) {
 
     let url = new URL(chainProxy);
     const protocol = url.protocol.slice(0, -1);
+    const stdProtocol = protocol === "ss" ? _SS_ : protocol;
 
-    if (protocol === _VM_) {
-        const config = base64DecodeUtf8(url.host);
-        url = new URL(`${_VM_}://${config}`);
+    if (stdProtocol === _VM_) {
+        const config = JSON.parse(base64DecodeUtf8(url.host));
+        return {
+            protocol: stdProtocol,
+            uuid: config.id,
+            server: config.add,
+            port: config.port,
+            type: config.net,
+            headerType: config.type,
+            serviceName: config.path,
+            authority: config.authority,
+            path: config.path,
+            host: config.host,
+            security: config.tls,
+            sni: config.sni,
+            fp: config.fp,
+            alpn: config.alpn
+        };
     }
 
-    const {
-        hostname,
-        port,
-        username,
-        password,
-        search
-    } = url;
-
-    let configParams: any = {
-        protocol: protocol.replace('ss', _SS_),
-        server: hostname,
-        port: +port
+    const configParams: Record<string, string | number> = {
+        protocol: stdProtocol,
+        server: url.hostname,
+        port: +url.port
     };
 
     const parseParams = () => {
-        const params = new URLSearchParams(search);
-        for (const [key, value] of params) {
+        for (const [key, value] of url.searchParams) {
             configParams[key] = value;
         }
     }
 
-    switch (protocol) {
+    switch (stdProtocol) {
         case _VL_:
-        case _VM_:
-            configParams.uuid = username;
+            configParams.uuid = url.username;
             parseParams();
             break;
 
         case _TR_:
-            configParams.password = username;
+            configParams.password = url.username;
             parseParams();
             break;
 
-        case 'ss':
-            const auth = base64DecodeUtf8(username);
+        case _SS_:
+            const auth = base64DecodeUtf8(url.username);
             const [first, ...rest] = auth.split(':');
             configParams.method = first;
             configParams.password = rest.join(':');
@@ -213,8 +219,8 @@ function extractChainProxyParams(chainProxy: string) {
 
         case 'socks':
         case 'http':
-            configParams.user = username;
-            configParams.pass = password;
+            configParams.user = url.username;
+            configParams.pass = url.password;
             break;
 
         default:

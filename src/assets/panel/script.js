@@ -327,7 +327,7 @@ async function updateWarpConfigs() {
     try {
         const response = await fetch('/panel/update-warp', { method: 'POST', credentials: 'include' });
         const { success, status, message } = await response.json();
-        
+
         document.body.style.cursor = 'default';
         refreshBtn.classList.remove('fa-spin');
 
@@ -776,23 +776,31 @@ function validateMinMax() {
 }
 
 function validateChainProxy() {
-    const chainProxy = getElmValue('outProxy');
+    let chainProxy = getElmValue('outProxy');
     if (!chainProxy) return true;
     const isSocksHttp = /(http|socks):\/\/(?:([^:@]+):([^:@]+)@)?([^:@]+):(\d+)$/.test(chainProxy);
-    const isOthers = /(vless|vmess|trojan|ss):\/\/[^\s@]+@[^\s:]+:[^\s]+/.test(chainProxy);
+    const isVMess = /vmess:\/\/.+$/.test(chainProxy);
+    const isOthers = /(vless|trojan|ss):\/\/[^\s@]+@[^\s:]+:[^\s]+/.test(chainProxy);
 
-    if (!isSocksHttp && !isOthers) {
-        alert('⛔ Invalid Config!\n💡 Standard formats are:\n + (socks or http)://user:pass@host:port\n + (socks or http)://host:port\n + vless://uuid@server:port...\n + trojan://password@server:port...\n + ss://password@server:port...');
+    if (!isSocksHttp && !isVMess && !isOthers) {
+        alert('⛔ Invalid Config!\n💡 Standard formats are:\n + (socks or http)://user:pass@server:port\n + (socks or http)://server:port\n + vless://uuid@server:port...\n + vmess://config...\n + trojan://password@server:port...\n + ss://password@server:port...');
         return false;
     }
 
     const config = new URL(chainProxy);
-    const { protocol, username, port } = config;
+    let { protocol, username, port } = config;
+    let security = config.searchParams.get('security');
+    let type = config.searchParams.get('type');
+    
+    if (isVMess) {
+        const vmConfig = JSON.parse(atob(config.host));
+        username = vmConfig.id;
+        port = vmConfig.port;
+        security = vmConfig.tls;
+        type = vmConfig.net;
+    }
 
-    if (['vless:', 'trojan:'].includes(protocol)) {
-        const security = config.searchParams.get('security');
-        const type = config.searchParams.get('type');
-
+    if (['vless:', 'trojan:', 'vmess:'].includes(protocol)) {
         if (!username) {
             alert('⛔ Invalid Config!\n💡 Config URL should contain UUID or Password.');
             return false;
@@ -808,7 +816,7 @@ function validateChainProxy() {
             return false;
         }
 
-        if (security === 'tls' && port !== '443') {
+        if (security === 'tls' && Number(port) !== 443) {
             alert('⛔ Invalid Config!\n💡 VLESS, VMess or Trojan TLS port can be only 443.');
             return false;
         }
