@@ -57,7 +57,6 @@ async function buildConfig(
                 mtu: 9000,
                 auto_route: true,
                 strict_route: true,
-                endpoint_independent_nat: true,
                 stack: "mixed"
             },
             {

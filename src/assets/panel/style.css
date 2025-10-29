@@ -761,12 +761,20 @@ summary h3 {
     align-items: center;
 }
 
-@media only screen and (min-width: 768px) {
-    .form-container {
-        max-width: 60%;
-    }
-
+@media only screen and (min-width: 600px) {
     .form-control {
         flex-direction: row;
+    }
+}
+
+@media only screen and (min-width: 768px) {
+    .form-container {
+        max-width: calc(768px * 0.9);
+    }
+}
+
+@media only screen and (min-width: 1024px) {
+    .form-container {
+        max-width: 768px;
     }
 }

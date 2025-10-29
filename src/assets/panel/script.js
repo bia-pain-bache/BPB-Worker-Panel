@@ -220,7 +220,7 @@ function generateSubUrl(path, app, tag, singboxType) {
     app && url.searchParams.append('app', app);
 
     if (tag) {
-        url.hash = `💦 ${atob('QlBC')} ${tag}`;
+        url.hash = `💦 BPB ${tag}`;
     }
 
     return singboxType
@@ -264,7 +264,7 @@ function exportSettings() {
     const form = validateSettings();
     const data = JSON.stringify(form, null, 4);
     const encodedData = btoa(data);
-    downloadJSON(encodedData, `${atob('QlBC')}-settings.dat`);
+    downloadJSON(encodedData, `BPB-settings.dat`);
 }
 
 function importSettings() {

@@ -49,8 +49,11 @@ export function getProtocols() {
 }
 
 export async function getConfigAddresses(isFragment: boolean): Promise<string[]> {
-    const { hostName } = globalThis.httpConfig;
-    const { VLTRenableIPv6, customCdnAddrs, cleanIPs } = globalThis.settings;
+    const {
+        httpConfig: { hostName },
+        settings: { VLTRenableIPv6, customCdnAddrs, cleanIPs }
+    } = globalThis;
+
     const resolved = await resolveDNS(hostName, !VLTRenableIPv6);
     const addrs = [
         hostName,
@@ -161,10 +164,6 @@ export function getDomain(url: string) {
             isHostDomain: false
         };
     }
-}
-
-export function base64EncodeUnicode(str: string): string {
-    return btoa(String.fromCharCode(...new TextEncoder().encode(str)));
 }
 
 export function parseHostPort(input: string, brackets: boolean) {

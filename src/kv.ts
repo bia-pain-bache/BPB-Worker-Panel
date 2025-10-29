@@ -22,9 +22,9 @@ export async function getDataset(request: Request, env: Env): Promise<{ settings
             proxySettings = await updateDataset(request, env);
         }
 
-        return { 
-            settings: proxySettings, 
-            warpAccounts 
+        return {
+            settings: proxySettings,
+            warpAccounts
         };
     } catch (error) {
         console.log(error);
@@ -159,18 +159,25 @@ export async function updateDataset(request: Request, env: Env): Promise<Setting
 function extractChainProxyParams(chainProxy: string) {
     if (!chainProxy) return {};
     const { _SS_, _TR_, _VL_, _VM_ } = globalThis.dict;
+
+    let url = new URL(chainProxy);
+    const protocol = url.protocol.slice(0, -1);
+
+    if (protocol === _VM_) {
+        const config = new TextDecoder().decode(Uint8Array.from(atob(url.host), c => c.charCodeAt(0)));
+        url = new URL(`${_VM_}://${config}`);
+    }
+
     const {
         hostname,
         port,
         username,
         password,
-        search,
-        protocol
-    } = new URL(chainProxy);
+        search
+    } = url;
 
-    const proto = protocol.slice(0, -1);
     let configParams: any = {
-        protocol: proto === 'ss' ? _SS_ : proto,
+        protocol: protocol.replace('ss', _SS_),
         server: hostname,
         port: +port
     };
@@ -182,7 +189,7 @@ function extractChainProxyParams(chainProxy: string) {
         }
     }
 
-    switch (proto) {
+    switch (protocol) {
         case _VL_:
         case _VM_:
             configParams.uuid = username;

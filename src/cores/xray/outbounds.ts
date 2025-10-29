@@ -84,9 +84,9 @@ export function buildFreedomOutbound(
         freedomSettings = {
             fragment: {
                 packets: packets || fragmentPackets,
-                length: length || `${fragmentLengthMin}-${fragmentLengthMax}`,
-                interval: interval || `${fragmentIntervalMin}-${fragmentIntervalMax}`,
-                maxSplit: fragmentMaxSplitMin ? `${fragmentMaxSplitMin}-${fragmentMaxSplitMax}` : undefined
+                length: length || toRange(fragmentLengthMin, fragmentLengthMax) as string,
+                interval: interval || toRange(fragmentIntervalMin, fragmentIntervalMax) as string,
+                maxSplit: toRange(fragmentMaxSplitMin, fragmentMaxSplitMax)
             }
         };
 
@@ -209,15 +209,9 @@ export function buildWarpOutbound(
         wgSettings = {
             ...wgSettings,
             wnoise: knockerNoiseMode,
-            wnoisecount: noiseCountMin === noiseCountMax
-                ? String(noiseCountMin)
-                : `${noiseCountMin} -${noiseCountMax} `,
-            wpayloadsize: noiseSizeMin === noiseSizeMax
-                ? String(noiseSizeMin)
-                : `${noiseSizeMin} -${noiseSizeMax} `,
-            wnoisedelay: noiseDelayMin === noiseDelayMax
-                ? String(noiseDelayMin)
-                : `${noiseDelayMin} -${noiseDelayMax} `
+            wnoisecount: toRange(noiseCountMin, noiseCountMax),
+            wpayloadsize: toRange(noiseSizeMin, noiseSizeMax),
+            wnoisedelay: toRange(noiseDelayMin, noiseDelayMax)
         };
     }
 
@@ -407,4 +401,10 @@ function buildRealitySettings(
         show: false,
         allowInsecure: false
     }
+}
+
+function toRange(min?: number, max?: number) {
+    if (min === undefined || max === undefined) return undefined;
+    if (min === max) return String(min);
+    return `${min}-${max}`;
 }

@@ -255,7 +255,11 @@ async function getMyIP(request: Request): Promise<Response> {
 }
 
 async function getWarpConfigs(request: Request, env: Env): Promise<Response> {
-    const { client } = globalThis.httpConfig;
+    const {
+        httpConfig: { client },
+        dict: { _project_ }
+    } = globalThis;
+
     const isPro = client === 'amnezia';
     const auth = await Authenticate(request, env);
 
@@ -266,10 +270,10 @@ async function getWarpConfigs(request: Request, env: Env): Promise<Response> {
     const { warpAccounts, settings } = await getDataset(request, env);
     const { warpIPv6, publicKey, privateKey } = warpAccounts[0];
     const { warpEndpoints, amneziaNoiseCount, amneziaNoiseSizeMin, amneziaNoiseSizeMax } = settings;
-    
+
     const zip = new JSZip();
     const trimLines = (str: string) => str.split("\n").map(line => line.trim()).join("\n");
-    
+
     const amneziaNoise = isPro
         ?
         `Jc = ${amneziaNoiseCount}
@@ -285,7 +289,7 @@ async function getWarpConfigs(request: Request, env: Env): Promise<Response> {
 
     try {
         warpEndpoints?.forEach((endpoint: string, index: number) => {
-            zip.file(`${atob('QlBC')}-Warp-${index + 1}.conf`, trimLines(
+            zip.file(`${_project_}-Warp-${index + 1}.conf`, trimLines(
                 `[Interface]
                 PrivateKey = ${privateKey}
                 Address = 172.16.0.2/32, ${warpIPv6}
@@ -306,7 +310,7 @@ async function getWarpConfigs(request: Request, env: Env): Promise<Response> {
         return new Response(arrayBuffer, {
             headers: {
                 "Content-Type": "application/zip",
-                "Content-Disposition": `attachment; filename="${atob('QlBC')}-Warp-${isPro ? "Pro-" : ""}configs.zip"`,
+                "Content-Disposition": `attachment; filename="${_project_}-Warp-${isPro ? "Pro-" : ""}configs.zip"`,
             },
         });
     } catch (error) {
@@ -409,7 +413,7 @@ export async function respond(
 async function decompressHtml(content: string, asString: boolean): Promise<string | ReadableStream<Uint8Array>> {
     const bytes = Uint8Array.from(atob(content), c => c.charCodeAt(0));
     const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
-    
+
     if (asString) {
         const decompressedArrayBuffer = await new Response(stream).arrayBuffer();
         const decodedString = new TextDecoder().decode(decompressedArrayBuffer);

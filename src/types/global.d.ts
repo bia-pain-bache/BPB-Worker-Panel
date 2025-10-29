@@ -157,6 +157,7 @@ declare global {
         _TR_CAP_: string;
         _SS_: string;
         _V2_: string;
+        _project_: string;
         _website_: string;
         _public_proxy_ip_: string;
     };
