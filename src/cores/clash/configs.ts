@@ -9,7 +9,7 @@ import {
 
 import type {
     AnyOutbound,
-    WgOutbound,
+    WireguardOutbound,
     Config,
     UrlTest
 } from 'types/clash';
@@ -203,7 +203,7 @@ export async function getClWarpConfig(request: Request, env: Env, isPro: boolean
 
     const proxyTags: string[] = [];
     const chainTags: string[] = [];
-    const outbounds: WgOutbound[] = [];
+    const outbounds: WireguardOutbound[] = [];
     const selectorTags = [
         `💦 Warp ${isPro ? 'Pro ' : ''}- Best Ping 🚀`,
         `💦 WoW ${isPro ? 'Pro ' : ''}- Best Ping 🚀`

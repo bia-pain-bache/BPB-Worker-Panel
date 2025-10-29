@@ -203,7 +203,7 @@ export interface HttpSocksSettings {
     level: 8
 }
 
-export interface SsSettings {
+export interface ShadowsocksSettings {
     address: string;
     port: number;
     method: string;
@@ -212,7 +212,7 @@ export interface SsSettings {
     level: 8
 }
 
-export interface VlSettings {
+export interface VlessSettings {
     address: string;
     port: number;
     id: string;
@@ -221,7 +221,7 @@ export interface VlSettings {
     level: 8
 }
 
-export interface VmSettings {
+export interface VmessSettings {
     address: string;
     port: number;
     id: string;
@@ -229,14 +229,14 @@ export interface VmSettings {
     level: 8
 }
 
-export interface TrSettings {
+export interface TrojanSettings {
     address: string;
     port: number;
     password: string;
     level: 8
 }
 
-export interface WgSettings {
+export interface WireguardSettings {
     address: string[];
     mtu: 1280;
     peers: [
@@ -259,15 +259,15 @@ export type AnyOutboundSettings =
     | BlockholeSettings 
     | FreedomSettings 
     | HttpSocksSettings 
-    | SsSettings 
-    | VlSettings 
-    | VmSettings 
-    | TrSettings;
+    | ShadowsocksSettings 
+    | VlessSettings 
+    | VmessSettings 
+    | TrojanSettings;
 
 export interface Outbound {
     protocol: Protocol;
     mux?: Mux;
-    settings: AnyOutboundSettings | WgSettings;
+    settings: AnyOutboundSettings | WireguardSettings;
     streamSettings?: StreamSettings;
     tag: string;
 }

@@ -8,15 +8,15 @@ import {
     BaseOutbound,
     HttpOutbound,
     SocksOutbound,
-    SsOutbound,
-    VlOutbound,
-    TrOutbound,
+    ShadowsocksOutbound,
+    VlessOutbound,
+    TrojanOutbound,
     AnyOutbound,
-    WgOutbound,
+    WireguardOutbound,
     WsOpts,
     GrpcOpts,
     HttpOpts,
-    VmOutbound,
+    VmessOutbound,
     TLS,
     Transport,
     AmneziaOpts,
@@ -57,7 +57,7 @@ export function buildWebsocketOutbound(
     host: string,
     sni: string,
     allowInsecure: boolean
-): VlOutbound | TrOutbound | null {
+): VlessOutbound | TrojanOutbound | null {
     const {
         dict: { _VL_, _TR_ },
         globalConfig: { userID, TrPass },
@@ -70,12 +70,12 @@ export function buildWebsocketOutbound(
     const tls = buildTLS(protocol, "tls", allowInsecure, undefined, sni, "http/1.1", fingerprint);
     const transport = buildTransport("ws", undefined, generateWsPath(protocol), host, undefined, 2560);
 
-    if (protocol === _VL_) return buildOutbound<VlOutbound>(remark, protocol, address, port, VLTRenableIPv6, enableTFO, tls, transport, {
+    if (protocol === _VL_) return buildOutbound<VlessOutbound>(remark, protocol, address, port, VLTRenableIPv6, enableTFO, tls, transport, {
         "uuid": userID,
         "packet-encoding": ""
     });
 
-    return buildOutbound<TrOutbound>(remark, protocol, address, port, VLTRenableIPv6, enableTFO, tls, transport, {
+    return buildOutbound<TrojanOutbound>(remark, protocol, address, port, VLTRenableIPv6, enableTFO, tls, transport, {
         "password": TrPass
     });
 }
@@ -86,7 +86,7 @@ export function buildWarpOutbound(
     endpoint: string,
     chain: string,
     isPro: boolean
-): WgOutbound {
+): WireguardOutbound {
     const { host, port } = parseHostPort(endpoint, false);
     const {
         amneziaNoiseCount,
@@ -163,20 +163,20 @@ export function buildChainOutbound(): AnyOutbound | null {
             });
 
         case _SS_:
-            return buildOutbound<SsOutbound>("", "ss", server, port, false, false, {}, {}, {
+            return buildOutbound<ShadowsocksOutbound>("", "ss", server, port, false, false, {}, {}, {
                 "cipher": method,
                 "password": password
             });
 
         case _VL_:
-            return buildOutbound<VlOutbound>("", _VL_, server, port, false, false, tls, transport, {
+            return buildOutbound<VlessOutbound>("", _VL_, server, port, false, false, tls, transport, {
                 "uuid": uuid,
                 "flow": flow,
                 "packet-encoding": ""
             });
 
         case _VM_:
-            return buildOutbound<VmOutbound>("", _VM_, server, port, false, false, tls, transport, {
+            return buildOutbound<VmessOutbound>("", _VM_, server, port, false, false, tls, transport, {
                 "uuid": uuid,
                 "cipher": "auto",
                 "alterId": 0,
@@ -185,7 +185,7 @@ export function buildChainOutbound(): AnyOutbound | null {
 
         case _TR_:
             if (security === "none") return null;
-            return buildOutbound<TrOutbound>("", _TR_, server, port, false, false, tls, transport, {
+            return buildOutbound<TrojanOutbound>("", _TR_, server, port, false, false, tls, transport, {
                 "password": password
             });
 

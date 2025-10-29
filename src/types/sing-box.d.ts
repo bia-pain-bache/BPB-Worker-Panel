@@ -118,7 +118,7 @@ export interface HttpTransport {
     headers: Record<string, string[]>
 }
 
-export interface WebsocketTransport {
+export interface WsTransport {
     type: "ws";
     path: string;
     headers?: {
@@ -141,7 +141,7 @@ export interface GrpcTransport {
 
 export type Transport = 
     | HttpTransport 
-    | WebsocketTransport 
+    | WsTransport 
     | HttpupgradeTransport 
     | GrpcTransport;
 
@@ -166,20 +166,20 @@ export interface HttpOutbound extends BaseOutbound {
     password?: string;
 }
 
-export interface SsOutbound extends BaseOutbound {
+export interface ShadowsocksOutbound extends BaseOutbound {
     password: string;
     method: string;
     network: "tcp";
 }
 
-export interface TrOutbound extends BaseOutbound {
+export interface TrojanOutbound extends BaseOutbound {
     password: string;
     network: "tcp";
     tls?: TLS;
     transport?: Transport
 };
 
-export interface VlOutbound extends BaseOutbound {
+export interface VlessOutbound extends BaseOutbound {
     uuid: string;
     flow?: "xtls-rprx-vision";
     packet_encoding: "";
@@ -188,7 +188,7 @@ export interface VlOutbound extends BaseOutbound {
     transport?: Transport
 };
 
-export interface VmOutbound extends BaseOutbound {
+export interface VmessOutbound extends BaseOutbound {
     uuid: string;
     security: "auto";
     packet_encoding: "";
@@ -200,12 +200,12 @@ export interface VmOutbound extends BaseOutbound {
 export type AnyOutbound = 
     | HttpOutbound 
     | SocksOutbound 
-    | SsOutbound 
-    | VlOutbound 
-    | VmOutbound 
-    | TrOutbound;
+    | ShadowsocksOutbound 
+    | VlessOutbound 
+    | VmessOutbound 
+    | TrojanOutbound;
 
-export interface WgEndpoint {
+export interface WireguardEndpoint {
     tag: string;
     type: string;
     address: string[];
@@ -236,7 +236,7 @@ export interface Config {
     dns: Dns;
     inbounds: unknown[];
     outbounds: Array<BaseOutbound | AnyOutbound | Selector | URLTest>;
-    endpoints?: WgEndpoint[];
+    endpoints?: WireguardEndpoint[];
     route: Route;
     ntp: unknown;
     experimental: unknown;

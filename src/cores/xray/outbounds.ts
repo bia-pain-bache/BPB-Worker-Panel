@@ -8,8 +8,8 @@ import {
     Outbound,
     StreamSettings,
     Sockopt,
-    VlSettings,
-    TrSettings,
+    VlessSettings,
+    TrojanSettings,
     TlsSettings,
     RealitySettings,
     RawSettings,
@@ -17,11 +17,11 @@ import {
     HttpupgradeSettings,
     GrpcSettings,
     HttpSocksSettings,
-    SsSettings,
-    VmSettings,
+    ShadowsocksSettings,
+    VmessSettings,
     Noise,
     FreedomSettings,
-    WgSettings,
+    WireguardSettings,
     Fingerprint,
     TransportType,
     DomainStrategy,
@@ -146,12 +146,12 @@ export function buildWebsocketOutbound(
     };
 
 
-    if (protocol === _VL_) return buildOutbound<VlSettings>(protocol, "proxy", address, port, false, {
+    if (protocol === _VL_) return buildOutbound<VlessSettings>(protocol, "proxy", address, port, false, {
         id: userID,
         encryption: "none"
     }, streamSettings);
 
-    return buildOutbound<TrSettings>(protocol, "proxy", address, port, false, {
+    return buildOutbound<TrojanSettings>(protocol, "proxy", address, port, false, {
         password: TrPass
     }, streamSettings);
 }
@@ -170,7 +170,7 @@ export function buildWarpOutbound(
     } = warpAccount;
     const { client } = globalThis.httpConfig;
 
-    let wgSettings: WgSettings = {
+    let wgSettings: WireguardSettings = {
         address: [
             "172.16.0.2/32",
             warpIPv6
@@ -259,27 +259,27 @@ export function buildChainOutbound(): Outbound | undefined {
             }, streamSettings);
 
         case _SS_:
-            return buildOutbound<SsSettings>(protocol, "chain", server, port, enableMux, {
+            return buildOutbound<ShadowsocksSettings>(protocol, "chain", server, port, enableMux, {
                 method,
                 password,
                 ota: false
             }, streamSettings);
 
         case _VL_:
-            return buildOutbound<VlSettings>(protocol, "chain", server, port, enableMux, {
+            return buildOutbound<VlessSettings>(protocol, "chain", server, port, enableMux, {
                 id: uuid,
                 flow: flow,
                 encryption: "none"
             }, streamSettings);
 
         case _VM_:
-            return buildOutbound<VmSettings>(protocol, "chain", server, port, enableMux, {
+            return buildOutbound<VmessSettings>(protocol, "chain", server, port, enableMux, {
                 id: uuid,
                 security: "auto"
             }, streamSettings);
 
         case _TR_:
-            return buildOutbound<TrSettings>(protocol, "chain", server, port, enableMux, {
+            return buildOutbound<TrojanSettings>(protocol, "chain", server, port, enableMux, {
                 password
             }, streamSettings);
 

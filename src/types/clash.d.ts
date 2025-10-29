@@ -104,36 +104,36 @@ export interface SocksOutbound extends BaseOutbound {
     "password"?: string;
 }
 
-export interface SsOutbound extends BaseOutbound {
+export interface ShadowsocksOutbound extends BaseOutbound {
     "password"?: string;
     "cipher"?: string;
 }
 
-export type VlOutbound = BaseOutbound & {
+export type VlessOutbound = BaseOutbound & {
     "uuid": string;
     "flow"?: "xtls-rprx-vision";
     "servername"?: string;
     "packet-encoding": "";
 } & Partial<TLS> & Transport;
 
-export type VmOutbound = BaseOutbound & {
+export type VmessOutbound = BaseOutbound & {
     "uuid": string;
     "cipher": "auto";
     "alterId": 0;
     "packet-encoding": "";
 } & Partial<TLS> & Transport;
 
-export type TrOutbound = BaseOutbound & {
+export type TrojanOutbound = BaseOutbound & {
     "password": string;
 } & TLS & Transport;
 
 export type AnyOutbound = 
     | HttpOutbound 
     | SocksOutbound 
-    | SsOutbound 
-    | VlOutbound 
-    | VmOutbound 
-    | TrOutbound;
+    | ShadowsocksOutbound 
+    | VlessOutbound 
+    | VmessOutbound 
+    | TrojanOutbound;
 
 export interface AmneziaOpts {
     "jc": number;
@@ -141,7 +141,7 @@ export interface AmneziaOpts {
     "jmax": number;
 }
 
-export interface WgOutbound extends BaseOutbound {
+export interface WireguardOutbound extends BaseOutbound {
     "ip": string;
     "ipv6": string;
     "private-key": string;
@@ -198,7 +198,7 @@ export interface Config {
     "dns": Dns;
     "tun": unknown;
     "sniffer": unknown;
-    "proxies": Array<AnyOutbound | WgOutbound>;
+    "proxies": Array<AnyOutbound | WireguardOutbound>;
     "proxy-groups": Array<Selector | UrlTest>;
     "rule-providers": Record<string, RuleProvider>;
     "rules": string[];

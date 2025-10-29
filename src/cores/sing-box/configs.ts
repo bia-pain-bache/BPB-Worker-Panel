@@ -9,7 +9,7 @@ import {
 
 import {
     AnyOutbound,
-    WgEndpoint,
+    WireguardEndpoint,
     Config,
     URLTest
 } from 'types/sing-box';
@@ -24,7 +24,7 @@ import {
 
 async function buildConfig(
     outbounds: AnyOutbound[],
-    endpoints: WgEndpoint[],
+    endpoints: WireguardEndpoint[],
     selectorTags: string[],
     urlTestTags: string[],
     secondUrlTestTags: string[],
@@ -200,7 +200,7 @@ export async function getSbWarpConfig(request: Request, env: Env): Promise<Respo
 
     const proxyTags: string[] = [];
     const chainTags: string[] = [];
-    const outbounds: WgEndpoint[] = [];
+    const outbounds: WireguardEndpoint[] = [];
     const selectorTags = [
         '💦 Warp - Best Ping 🚀',
         '💦 WoW - Best Ping 🚀'
