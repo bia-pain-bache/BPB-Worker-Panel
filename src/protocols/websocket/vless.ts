@@ -1,4 +1,4 @@
-import { isValidUUID } from '@init';
+import { isValidUUID } from '@common';
 import {
     handleTCPOutBound,
     makeReadableWebSocketStream,

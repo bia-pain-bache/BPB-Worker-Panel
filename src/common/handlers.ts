@@ -8,6 +8,7 @@ import { fetchWarpAccounts } from "@warp";
 import { VlOverWSHandler } from "@vless";
 import { TrOverWSHandler } from "@trojan";
 import JSZip from "jszip";
+import { HttpStatus, respond } from "@common";
 
 export async function handleWebsocket(request: Request): Promise<Response> {
     const { pathName } = globalThis.globalConfig;
@@ -71,7 +72,7 @@ export async function handlePanel(request: Request, env: Env): Promise<Response>
     }
 }
 
-export async function handleError(error: any): Promise<Response> {
+export async function renderError(error: any): Promise<Response> {
     const html = await decompressHtml(__ERROR_HTML_CONTENT__, true) as string;
     const errorPage = html.replace('__ERROR_MESSAGE__', error.message);
 
@@ -93,6 +94,13 @@ export async function handleLogin(request: Request, env: Env): Promise<Response>
     }
 
     return await fallback(request);
+}
+
+export function logout(): Response {
+    return respond(true, HttpStatus.OK, 'Successfully logged out!', null, {
+        'Set-Cookie': 'jwtToken=; Secure; SameSite=None; Expires=Thu, 01 Jan 1970 00:00:00 GMT',
+        'Content-Type': 'text/plain'
+    });
 }
 
 export async function handleSubscriptions(request: Request, env: Env): Promise<Response> {
@@ -169,34 +177,34 @@ export async function handleSubscriptions(request: Request, env: Env): Promise<R
 
 async function updateSettings(request: Request, env: Env): Promise<Response> {
     if (request.method !== 'PUT') {
-        return await respond(false, 405, 'Method not allowed.');
+        return respond(false, HttpStatus.METHOD_NOT_ALLOWED, 'Method not allowed.');
     }
 
     const auth = await Authenticate(request, env);
 
     if (!auth) {
-        return await respond(false, 401, 'Unauthorized or expired session.');
+        return respond(false, HttpStatus.UNAUTHORIZED, 'Unauthorized or expired session.');
     }
 
     const proxySettings = await updateDataset(request, env);
-    return await respond(true, 200, '', proxySettings);
+    return respond(true, HttpStatus.OK, '', proxySettings);
 }
 
 async function resetSettings(request: Request, env: Env): Promise<Response> {
     if (request.method !== 'POST') {
-        return await respond(false, 405, 'Method not allowed!');
+        return respond(false, HttpStatus.METHOD_NOT_ALLOWED, 'Method not allowed!');
     }
 
     const auth = await Authenticate(request, env);
 
     if (!auth) {
-        return await respond(false, 401, 'Unauthorized or expired session.');
+        return respond(false, HttpStatus.UNAUTHORIZED, 'Unauthorized or expired session.');
     }
 
     try {
         const { settings } = globalThis;
         await env.kv.put("proxySettings", JSON.stringify(settings));
-        return await respond(true, 200, '', settings);
+        return respond(true, HttpStatus.OK, '', settings);
     } catch (error) {
         console.log(error);
         throw new Error(`An error occurred while updating KV: ${error}`);
@@ -208,7 +216,7 @@ async function getSettings(request: Request, env: Env): Promise<Response> {
     const auth = await Authenticate(request, env);
 
     if (!auth) {
-        return await respond(false, 401, 'Unauthorized or expired session.', { isPassSet });
+        return respond(false, HttpStatus.UNAUTHORIZED, 'Unauthorized or expired session.', { isPassSet });
     }
 
     const dataset = await getDataset(request, env);
@@ -220,7 +228,7 @@ async function getSettings(request: Request, env: Env): Promise<Response> {
         subPath: subPath
     };
 
-    return await respond(true, 200, '', data);
+    return respond(true, HttpStatus.OK, undefined, data);
 }
 
 export async function fallback(request: Request): Promise<Response> {
@@ -247,10 +255,10 @@ async function getMyIP(request: Request): Promise<Response> {
         const response = await fetch(`http://ip-api.com/json/${ip}?nocache=${Date.now()}`);
         const geoLocation = await response.json();
 
-        return await respond(true, 200, '', geoLocation);
+        return respond(true, HttpStatus.OK, '', geoLocation);
     } catch (error) {
         console.error('Error fetching IP address:', error);
-        return await respond(false, 500, `Error fetching IP address: ${error}`)
+        return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `Error fetching IP address: ${error}`)
     }
 }
 
@@ -269,39 +277,43 @@ async function getWarpConfigs(request: Request, env: Env): Promise<Response> {
 
     const { warpAccounts, settings } = await getDataset(request, env);
     const { warpIPv6, publicKey, privateKey } = warpAccounts[0];
-    const { warpEndpoints, amneziaNoiseCount, amneziaNoiseSizeMin, amneziaNoiseSizeMax } = settings;
+    const {
+        warpEndpoints,
+        amneziaNoiseCount,
+        amneziaNoiseSizeMin,
+        amneziaNoiseSizeMax
+    } = settings;
 
     const zip = new JSZip();
     const trimLines = (str: string) => str.split("\n").map(line => line.trim()).join("\n");
 
-    const amneziaNoise = isPro
-        ?
-        `Jc = ${amneziaNoiseCount}
-        Jmin = ${amneziaNoiseSizeMin}
-        Jmax = ${amneziaNoiseSizeMax}
-        S1 = 0
-        S2 = 0
-        H1 = 0
-        H2 = 0
-        H3 = 0
-        H4 = 0`
-        : '';
-
     try {
         warpEndpoints?.forEach((endpoint: string, index: number) => {
-            zip.file(`${_project_}-Warp-${index + 1}.conf`, trimLines(
+            const config =
                 `[Interface]
                 PrivateKey = ${privateKey}
                 Address = 172.16.0.2/32, ${warpIPv6}
                 DNS = 1.1.1.1, 1.0.0.1
                 MTU = 1280
-                ${amneziaNoise}
+                ${isPro ?
+                    `Jc = ${amneziaNoiseCount}
+                    Jmin = ${amneziaNoiseSizeMin}
+                    Jmax = ${amneziaNoiseSizeMax}
+                    S1 = 0
+                    S2 = 0
+                    H1 = 0
+                    H2 = 0
+                    H3 = 0
+                    H4 = 0`
+                    : ''
+                },
                 [Peer]
                 PublicKey = ${publicKey}
                 AllowedIPs = 0.0.0.0/0, ::/0
                 Endpoint = ${endpoint}
-                PersistentKeepalive = 25`
-            ));
+                PersistentKeepalive = 25`;
+
+            zip.file(`${_project_}-Warp-${index + 1}.conf`, trimLines(config));
         });
 
         const zipBlob = await zip.generateAsync({ type: "blob" });
@@ -376,38 +388,19 @@ async function updateWarpConfigs(request: Request, env: Env): Promise<Response> 
         const auth = await Authenticate(request, env);
 
         if (!auth) {
-            return await respond(false, 401, 'Unauthorized.');
+            return respond(false, HttpStatus.UNAUTHORIZED, 'Unauthorized.');
         }
 
         try {
             await fetchWarpAccounts(env);
-            return await respond(true, 200, 'Warp configs updated successfully!');
+            return respond(true, HttpStatus.OK, 'Warp configs updated successfully!');
         } catch (error) {
             console.log(error);
-            return await respond(false, 500, `An error occurred while updating Warp configs: ${error}`);
+            return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `An error occurred while updating Warp configs: ${error}`);
         }
     }
 
-    return await respond(false, 405, 'Method not allowd.');
-}
-
-export async function respond(
-    success: boolean,
-    status: number,
-    message: string,
-    body?: any,
-    customHeaders?: any
-): Promise<Response> {
-    return new Response(JSON.stringify({
-        success,
-        status,
-        message: message || '',
-        body: body || ''
-    }), {
-        headers: customHeaders || {
-            'Content-Type': message ? 'text/plain' : 'application/json'
-        }
-    });
+    return respond(false, HttpStatus.METHOD_NOT_ALLOWED, 'Method not allowd.');
 }
 
 async function decompressHtml(content: string, asString: boolean): Promise<string | ReadableStream<Uint8Array>> {

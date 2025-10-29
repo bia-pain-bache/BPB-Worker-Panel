@@ -1,5 +1,6 @@
 import { fetchWarpAccounts } from '@warp';
 import { getDomain, resolveDNS } from '@utils';
+import { base64DecodeUtf8 } from '@common';
 
 export async function getDataset(request: Request, env: Env): Promise<{ settings: Settings, warpAccounts: WarpAccount[] }> {
     const { httpConfig: { panelVersion }, settings } = globalThis;
@@ -164,7 +165,7 @@ function extractChainProxyParams(chainProxy: string) {
     const protocol = url.protocol.slice(0, -1);
 
     if (protocol === _VM_) {
-        const config = new TextDecoder().decode(Uint8Array.from(atob(url.host), c => c.charCodeAt(0)));
+        const config = base64DecodeUtf8(url.host);
         url = new URL(`${_VM_}://${config}`);
     }
 
@@ -202,7 +203,7 @@ function extractChainProxyParams(chainProxy: string) {
             break;
 
         case 'ss':
-            const auth = new TextDecoder().decode(Uint8Array.from(atob(username), c => c.charCodeAt(0)));
+            const auth = base64DecodeUtf8(username);
             const [first, ...rest] = auth.split(':');
             configParams.method = first;
             configParams.password = rest.join(':');

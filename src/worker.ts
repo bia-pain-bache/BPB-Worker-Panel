@@ -1,4 +1,3 @@
-import { logout } from 'auth';
 import { init, initHttp, initWs } from '@init';
 import {
 	fallback,
@@ -7,7 +6,8 @@ import {
 	handlePanel,
 	handleSubscriptions,
 	handleLogin,
-	handleError,
+	logout,
+	renderError,
 	handleWebsocket
 } from '@handlers';
 
@@ -36,7 +36,7 @@ export default {
 						return await handleLogin(request, env);
 
 					case 'logout':
-						return await logout();
+						return logout();
 
 					case 'secrets':
 						return await renderSecrets();
@@ -49,7 +49,7 @@ export default {
 				}
 			}
 		} catch (error) {
-			return await handleError(error);
+			return await renderError(error);
 		}
 	}
 }

@@ -152,8 +152,7 @@ function darkModeToggle() {
 async function getIpDetails(ip) {
     try {
         const response = await fetch('/panel/my-ip', { method: 'POST', body: ip });
-        const data = await response.json();
-        const { success, status, message, body } = data;
+        const { success, status, message, body } = await response.json();
 
         if (!success) {
             throw new Error(`status ${status} - ${message}`);
@@ -328,6 +327,7 @@ async function updateWarpConfigs() {
     try {
         const response = await fetch('/panel/update-warp', { method: 'POST', credentials: 'include' });
         const { success, status, message } = await response.json();
+        
         document.body.style.cursor = 'default';
         refreshBtn.classList.remove('fa-spin');
 
