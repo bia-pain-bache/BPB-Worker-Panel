@@ -80,6 +80,14 @@ export function getGeoAssets(): GeoAsset[] {
             geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/openai.yaml"
         },
         {
+            rule: settings.bypassGoogleAi,
+            type: 'DIRECT',
+            dns: antiSanctionDNS,
+            format: "yaml",
+            geosite: "googleai",
+            geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/google-deepmind.yaml"
+        },
+        {
             rule: settings.bypassMicrosoft,
             type: 'DIRECT',
             dns: antiSanctionDNS,

@@ -113,6 +113,7 @@ export async function updateDataset(request: Request, env: Env): Promise<Setting
         bypassChina: populateField('bypassChina'),
         bypassRussia: populateField('bypassRussia'),
         bypassOpenAi: populateField('bypassOpenAi'),
+        bypassGoogleAi: populateField('bypassGoogleAi'),
         bypassMicrosoft: populateField('bypassMicrosoft'),
         bypassOracle: populateField('bypassOracle'),
         bypassDocker: populateField('bypassDocker'),

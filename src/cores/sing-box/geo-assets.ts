@@ -71,6 +71,13 @@ export function getGeoAssets(): GeoAsset[] {
             geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-openai.srs"
         },
         {
+            rule: settings.bypassGoogleAi,
+            type: 'direct',
+            dns: antiSanctionDNS,
+            geosite: "geosite-google-deepmind",
+            geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-google-deepmind.srs"
+        },
+        {
             rule: settings.bypassMicrosoft,
             type: 'direct',
             dns: antiSanctionDNS,

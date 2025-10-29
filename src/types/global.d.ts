@@ -100,6 +100,7 @@ declare global {
         bypassChina: boolean;
         bypassRussia: boolean;
         bypassOpenAi: boolean;
+        bypassGoogleAi: boolean;
         bypassMicrosoft: boolean;
         bypassOracle: boolean;
         bypassDocker: boolean;

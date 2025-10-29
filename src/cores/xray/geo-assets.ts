@@ -9,6 +9,7 @@ export function getGeoAssets(): GeoAsset[] {
         { rule: settings.bypassChina, type: 'direct', geosite: "geosite:cn", geoip: "geoip:cn", dns: localDNS },
         { rule: settings.bypassRussia, type: 'direct', geosite: "geosite:category-ru", geoip: "geoip:ru", dns: localDNS },
         { rule: settings.bypassOpenAi, type: 'direct', geosite: "geosite:openai", dns: antiSanctionDNS },
+        { rule: settings.bypassGoogleAi, type: 'direct', geosite: "geosite:google-deepmind", dns: antiSanctionDNS },
         { rule: settings.bypassMicrosoft, type: 'direct', geosite: "geosite:microsoft", dns: antiSanctionDNS },
         { rule: settings.bypassOracle, type: 'direct', geosite: "geosite:oracle", dns: antiSanctionDNS },
         { rule: settings.bypassDocker, type: 'direct', geosite: "geosite:docker", dns: antiSanctionDNS },

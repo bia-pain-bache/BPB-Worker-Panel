@@ -55,6 +55,7 @@ globalThis.settings = {
     bypassChina: false,
     bypassRussia: false,
     bypassOpenAi: false,
+    bypassGoogleAi: false,
     bypassMicrosoft: false,
     bypassOracle: false,
     bypassDocker: false,

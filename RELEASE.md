@@ -6,8 +6,9 @@
 - Made **TCP Fast Open** optional due to some devices and ISPs compatibility. Please note that you have to enable TCP Fast Open on linux manually #1097
 - Added `maxSplit` to Fragment settings, please use it only if you understand this feature.
 - Added `applyTo` to Xray UDP noises in Warp Pro settings.
-- Revised build process to reduce worker.js size up to ~120 KB.
+- Added `Google AIs` to anti sanction routing rules which includes **Gemini*, **NotebookLLM** and so on.
 - Added a `Common` section to settings in order to handle shared settings between **VLESS**, **Trojan** and **Warp** configs.
+- Revised build process to reduce worker.js size up to ~120 KB.
 - Added `Log Level` and `Allow connections from LAN` to Common section as new features.
 - Panel UI improvements.
 - Updated docs.
