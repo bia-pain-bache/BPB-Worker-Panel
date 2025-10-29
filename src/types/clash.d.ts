@@ -1,7 +1,25 @@
 export type DnsHosts = Record<string, string[] | string>;
 export type Network = "tcp" | "http" | "ws" | "httpupgrade" | "grpc";
-export type Protocol = "http" | "socks5" | "ss" | "vless" | "trojan" | "vmess" | "wireguard";
-export type Fingerprint = "chrome" | "firefox" | "safari" | "ios" | "android" | "edge" | "360" | "qq" | "random" | "randomized";
+export type Protocol = 
+    | "http" 
+    | "socks5" 
+    | "ss" 
+    | "vless" 
+    | "trojan" 
+    | "vmess" 
+    | "wireguard";
+
+export type Fingerprint = 
+    | "chrome" 
+    | "firefox" 
+    | "safari" 
+    | "ios" 
+    | "android" 
+    | "edge" 
+    | "360" 
+    | "qq" 
+    | "random" 
+    | "randomized";
 
 export interface Dns {
     "enable": true;
@@ -109,13 +127,13 @@ export type TrOutbound = BaseOutbound & {
     "password": string;
 } & TLS & Transport;
 
-export type AnyOutbound =
-    HttpOutbound |
-    SocksOutbound |
-    SsOutbound |
-    VlOutbound |
-    VmOutbound |
-    TrOutbound;
+export type AnyOutbound = 
+    | HttpOutbound 
+    | SocksOutbound 
+    | SsOutbound 
+    | VlOutbound 
+    | VmOutbound 
+    | TrOutbound;
 
 export interface AmneziaOpts {
     "jc": number;

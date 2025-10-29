@@ -1,7 +1,29 @@
 export type DnsHosts = Record<string, string[]>
 export type DomainStrategy = "UseIP" | "UseIPv4" | "UseIPv4v6";
 export type TransportType = "tcp" | "raw" | "ws" | "httpupgrade" | "grpc";
-export type Fingerprint = "chrome" | "firefox" | "safari" | "ios" | "android" | "edge" | "360" | "qq" | "random" | "randomized";
+export type Protocol = 
+    | "http" 
+    | "socks" 
+    | "shadowsocks" 
+    | "vless" 
+    | "trojan" 
+    | "vmess" 
+    | "wireguard" 
+    | "dns"
+    | "freedom"
+    | "blackhole";
+
+export type Fingerprint = 
+    | "chrome" 
+    | "firefox" 
+    | "safari" 
+    | "ios" 
+    | "android" 
+    | "edge" 
+    | "360" 
+    | "qq" 
+    | "random" 
+    | "randomized";
 
 export interface DnsServer {
     address: string;
@@ -112,7 +134,11 @@ export interface GrpcSettings {
     serviceName?: string;
 }
 
-export type Transport = RawSettings | WsSettings | HttpupgradeSettings | GrpcSettings;
+export type Transport = 
+    | RawSettings 
+    | WsSettings 
+    | HttpupgradeSettings 
+    | GrpcSettings;
 
 export interface HappyEyeballs {
     tryDelayMs: number;
@@ -138,24 +164,6 @@ export interface StreamSettings {
     httpupgradeSettings?: HttpupgradeSettings;
     grpcSettings?: GrpcSettings;
     sockopt: Sockopt;
-}
-
-export type AnyOutboundSettings =
-    DnsOutSettings |
-    BlockholeSettings |
-    FreedomSettings |
-    HttpSocksSettings |
-    SsSettings |
-    VlSettings |
-    VmSettings |
-    TrSettings;
-
-export interface Outbound {
-    protocol: string;
-    mux?: Mux;
-    settings: AnyOutboundSettings | WgSettings;
-    streamSettings?: StreamSettings;
-    tag: string;
 }
 
 interface BlockholeSettings {
@@ -244,6 +252,24 @@ export interface WgSettings {
     wnoisecount?: string;
     wpayloadsize?: string;
     wnoisedelay?: string;
+}
+
+export type AnyOutboundSettings = 
+    | DnsOutSettings 
+    | BlockholeSettings 
+    | FreedomSettings 
+    | HttpSocksSettings 
+    | SsSettings 
+    | VlSettings 
+    | VmSettings 
+    | TrSettings;
+
+export interface Outbound {
+    protocol: Protocol;
+    mux?: Mux;
+    settings: AnyOutboundSettings | WgSettings;
+    streamSettings?: StreamSettings;
+    tag: string;
 }
 
 export interface Config {

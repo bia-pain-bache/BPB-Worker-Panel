@@ -1,7 +1,28 @@
 export type TransportType = "tcp" | "ws" | "httpupgrade" | "grpc";
 export type ResolveStrategy = "ipv4_only" | "prefer_ipv4";
-export type Protocol = "http" | "socks" | "shadowsocks" | "vless" | "trojan" | "vmess" | "wireguard";
-export type Fingerprint = "chrome" | "firefox" | "safari" | "ios" | "android" | "edge" | "360" | "qq" | "random" | "randomized";
+export type Protocol = 
+    | "http" 
+    | "socks" 
+    | "shadowsocks" 
+    | "vless" 
+    | "trojan" 
+    | "vmess" 
+    | "wireguard" 
+    | "selector" 
+    | "urltest" 
+    | "direct";
+
+export type Fingerprint = 
+    | "chrome" 
+    | "firefox" 
+    | "safari" 
+    | "ios" 
+    | "android" 
+    | "edge" 
+    | "360" 
+    | "qq" 
+    | "random" 
+    | "randomized";
 
 export interface DnsServer {
     type: string;
@@ -118,11 +139,15 @@ export interface GrpcTransport {
     service_name?: string;
 }
 
-export type Transport = HttpTransport | WebsocketTransport | HttpupgradeTransport | GrpcTransport;
+export type Transport = 
+    | HttpTransport 
+    | WebsocketTransport 
+    | HttpupgradeTransport 
+    | GrpcTransport;
 
 export interface BaseOutbound {
     tag: string;
-    type: string;
+    type: Protocol;
     server?: string;
     server_port?: number;
     tcp_fast_open?: boolean;
@@ -172,13 +197,13 @@ export interface VmOutbound extends BaseOutbound {
     transport?: Transport
 };
 
-export type AnyOutbound =
-    HttpOutbound |
-    SocksOutbound |
-    SsOutbound |
-    VlOutbound |
-    VmOutbound |
-    TrOutbound;
+export type AnyOutbound = 
+    | HttpOutbound 
+    | SocksOutbound 
+    | SsOutbound 
+    | VlOutbound 
+    | VmOutbound 
+    | TrOutbound;
 
 export interface WgEndpoint {
     tag: string;

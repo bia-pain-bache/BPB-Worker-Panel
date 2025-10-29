@@ -44,6 +44,36 @@ async function buildConfig(
         logLevel,
         allowLANConnection
     } = globalThis.settings;
+    let balancers, observatory;
+
+    if (isBalancer) {
+        const createBalancer = (tag: string, selector: string, hasFallback: boolean): Balancer => {
+            return {
+                tag,
+                selector: [selector],
+                strategy: {
+                    type: "leastPing",
+                },
+                fallbackTag: hasFallback ? "proxy-2" : undefined
+            };
+        }
+
+        balancers = [createBalancer("all-proxies", "proxy", balancerFallback)];
+
+        if (isChain) {
+            const chainBalancer = createBalancer("all-chains", "chain", false)
+            balancers.push(chainBalancer);
+        }
+
+        observatory = {
+            subjectSelector: isChain ? ["chain", "proxy"] : ["proxy"],
+            probeUrl: "https://www.gstatic.com/generate_204",
+            probeInterval: `${isWarp
+                ? bestWarpInterval
+                : bestVLTRInterval}s`,
+            enableConcurrency: true
+        } satisfies Observatory;
+    }
 
     const config: Config = {
         remarks: remark,
@@ -98,7 +128,7 @@ async function buildConfig(
                 settings: {
                     domainStrategy: "UseIP"
                 },
-                tag: "direct",
+                tag: "direct"
             },
             {
                 protocol: "blackhole",
@@ -107,15 +137,15 @@ async function buildConfig(
                         type: "http",
                     }
                 },
-                tag: "block",
+                tag: "block"
             },
         ],
         routing: {
             domainStrategy: "IPIfNonMatch",
             rules: buildRoutingRules(isChain, isBalancer, isWorkerLess, isWarp),
-            balancers: undefined
+            balancers
         },
-        observatory: undefined,
+        observatory,
         policy: {
             levels: {
                 8: {
@@ -132,35 +162,6 @@ async function buildConfig(
         },
         stats: {}
     };
-
-    if (isBalancer) {
-        const createBalancer = (tag: string, selector: string, hasFallback: boolean): Balancer => {
-            return {
-                tag,
-                selector: [selector],
-                strategy: {
-                    type: "leastPing",
-                },
-                fallbackTag: hasFallback ? "proxy-2" : undefined
-            };
-        }
-
-        config.routing.balancers = [createBalancer("all-proxies", "proxy", balancerFallback)];
-
-        if (isChain) {
-            const chainBalancer = createBalancer("all-chains", "chain", false)
-            config.routing.balancers.push(chainBalancer);
-        }
-
-        config.observatory = {
-            subjectSelector: isChain ? ["chain", "proxy"] : ["proxy"],
-            probeUrl: "https://www.gstatic.com/generate_204",
-            probeInterval: `${isWarp
-                ? bestWarpInterval
-                : bestVLTRInterval}s`,
-            enableConcurrency: true
-        } satisfies Observatory;
-    }
 
     return config;
 }
