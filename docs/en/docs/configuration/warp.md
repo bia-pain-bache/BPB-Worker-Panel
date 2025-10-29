@@ -4,6 +4,13 @@ These settings apply to both **Warp** and **Warp Pro** subscriptions.
 
 ![Warp General settings](../images/warp-settings.jpg)
 
+## Remote DNS
+
+Warp remote DNS can be only of type IPv4 for performance and compatibility. The default DNS is Cloudflare public DNS which is a perfect candidate. It's highly recommended to use Cloudflare DNS servers if you insist on changing it, which have most compatibility and efficiency when used with Cloudflare Warp, like:
+
+- 1.1.1.2, 1.0.0.2 (Cloudflare security DNS)
+- 1.1.1.3, 1.0.0.3 (Cloudflare adult DNS)
+
 ## Endpoints - Scanner
 
 Endpoints for Warp function similarly to Clean IPs for VLESS and Trojan. The panel provides a scanner that you can run on Termux (Android), Windows, macOS or Linux and input the results here. Note that the results are not 100% reliable, so testing is necessary. Please note that you have to exit any proxy app before testing, if you use v2rayN, you should completely exit it from taskbar, clearing proxy is not enough.

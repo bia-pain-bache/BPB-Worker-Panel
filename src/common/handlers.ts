@@ -279,6 +279,7 @@ async function getWarpConfigs(request: Request, env: Env): Promise<Response> {
     const { warpIPv6, publicKey, privateKey } = warpAccounts[0];
     const {
         warpEndpoints,
+        warpRemoteDNS,
         amneziaNoiseCount,
         amneziaNoiseSizeMin,
         amneziaNoiseSizeMax
@@ -293,7 +294,7 @@ async function getWarpConfigs(request: Request, env: Env): Promise<Response> {
                 `[Interface]
                 PrivateKey = ${privateKey}
                 Address = 172.16.0.2/32, ${warpIPv6}
-                DNS = 1.1.1.1, 1.0.0.1
+                DNS = ${warpRemoteDNS}
                 MTU = 1280
                 ${isPro ?
                     `Jc = ${amneziaNoiseCount}

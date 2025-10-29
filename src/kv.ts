@@ -131,6 +131,7 @@ export async function updateDataset(request: Request, env: Env): Promise<Setting
         customBypassRules: populateField('customBypassRules'),
         customBlockRules: populateField('customBlockRules'),
         customBypassSanctionRules: populateField('customBypassSanctionRules'),
+        warpRemoteDNS: populateField('warpRemoteDNS'),
         warpEndpoints: populateField('warpEndpoints'),
         warpEnableIPv6: populateField('warpEnableIPv6'),
         bestWarpInterval: populateField('bestWarpInterval'),

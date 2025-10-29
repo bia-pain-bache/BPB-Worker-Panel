@@ -6,6 +6,7 @@ export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean
     const {
         localDNS,
         remoteDNS,
+        warpRemoteDNS,
         antiSanctionDNS,
         outProxyParams,
         dohHost,
@@ -20,7 +21,7 @@ export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean
         ? `💦 Warp ${isPro ? 'Pro ' : ''}- Best Ping 🚀`
         : isChain ? '💦 Best Ping 🚀' : '✅ Selector';
 
-    const finalRemoteDNS = `${isWarp ? '1.1.1.1' : remoteDNS}#${remoteDnsDetour}`;
+    const finalRemoteDNS = `${isWarp ? warpRemoteDNS : remoteDNS}#${remoteDnsDetour}`;
     const hosts: DnsHosts = {};
     let nameserverPolicy: Record<string, string> = {};
 

@@ -118,6 +118,7 @@ declare global {
         customBypassRules: string[];
         customBlockRules: string[];
         customBypassSanctionRules: string[];
+        warpRemoteDNS: string;
         warpEndpoints: string[];
         warpEnableIPv6: boolean;
         bestWarpInterval: number;

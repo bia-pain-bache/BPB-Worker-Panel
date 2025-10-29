@@ -13,6 +13,7 @@ export async function buildDNS(
     const {
         localDNS,
         remoteDNS,
+        warpRemoteDNS,
         antiSanctionDNS,
         dohHost,
         warpEnableIPv6,
@@ -39,7 +40,7 @@ export async function buildDNS(
     }
 
     let skipFallback = true;
-    let finalRemoteDNS = isWarp ? "1.1.1.1" : remoteDNS;
+    let finalRemoteDNS = isWarp ? warpRemoteDNS : remoteDNS;
 
     if (isWorkerLess) {
         finalRemoteDNS = `https://${customDns}/dns-query`;

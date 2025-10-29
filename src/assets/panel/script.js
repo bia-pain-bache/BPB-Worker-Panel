@@ -452,6 +452,7 @@ function validateSettings() {
         validateRemoteDNS(),
         validateSanctionDns(),
         validateLocalDNS(),
+        validateWarpDNS(),
         validateMultipleHostNames(),
         validateProxyIPs(),
         validateNAT64Prefixes(),
@@ -622,6 +623,18 @@ function validateSanctionDns() {
 
     if (!isValid) {
         alert(`⛔ Invalid IPs or Domains.\n⚠️ ${host}`);
+        return false;
+    }
+
+    return true;
+}
+
+function validateWarpDNS() {
+    const dns = getElmValue("warpRemoteDNS");
+    const isValid = ipv4Regex.test(dns);
+
+    if (!isValid) {
+        alert(`⛔ Invalid Warp DNS.\n💡 Please fill in an IPv4 address (UDP DNS).\n\n⚠️ ${dns}`);
         return false;
     }
 

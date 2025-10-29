@@ -6,6 +6,7 @@ export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<Dns> 
     const {
         localDNS,
         remoteDNS,
+        warpRemoteDNS,
         antiSanctionDNS,
         outProxyParams,
         dohHost,
@@ -21,7 +22,7 @@ export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<Dns> 
     const servers: DnsServer[] = [
         {
             type: isWarp ? "udp" : protocol,
-            server: isWarp ? "1.1.1.1" : dohHost.host,
+            server: isWarp ? warpRemoteDNS : dohHost.host,
             detour: isWarp ? "💦 Warp - Best Ping 🚀" : isChain ? "💦 Best Ping 🚀" : "✅ Selector",
             tag: "dns-remote"
         }

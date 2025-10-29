@@ -73,6 +73,7 @@ globalThis.settings = {
     customBypassRules: [],
     customBlockRules: [],
     customBypassSanctionRules: [],
+    warpRemoteDNS: "1.1.1.1",
     warpEndpoints: ["engage.cloudflareclient.com:2408"],
     warpEnableIPv6: true,
     bestWarpInterval: 30,
