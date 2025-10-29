@@ -20,10 +20,10 @@ You may enable Fake DNS to reduce DNS query latency, but use caution, it may be 
 
 ## Anti Sanction DNS
 
-This DNS server is used for **Sanction Rules** [explained here](./routing-rules.md). The default DNS server is [Electro](https://electrotm.org/) (for iranian users). You should check whether it supports your desired domains before setting routing rules.
+This DNS server is used for **Sanction Rules** [explained here](./routing-rules.md). The default DNS server is [Shecan](https://shecan.ir/) (for iranian users). You should check whether it supports your desired domains before setting routing rules.
 
 !!! info
-    DNS server can be in shape of an IP (UDP DNS), TCP DNS, DOT or DoH like `https://free.shecan.ir/dns-query`.
+    DNS server can be in shape of an IP (UDP DNS), TCP DNS, DOT or DoH.
 
 ## Allow connections from LAN
 

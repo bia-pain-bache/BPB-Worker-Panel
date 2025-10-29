@@ -16,7 +16,7 @@ globalThis.dict = {
 
 globalThis.settings = {
     localDNS: "8.8.8.8",
-    antiSanctionDNS: "78.157.42.100",
+    antiSanctionDNS: "178.22.122.100",
     fakeDNS: false,
     allowLANConnection: false,
     logLevel: "warning",
