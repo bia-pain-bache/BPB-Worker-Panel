@@ -33,7 +33,8 @@ export async function fetchWarpAccounts(env: Env): Promise<WarpAccount[]> {
 
             return await response.json();
         } catch (error) {
-            throw new Error(`Failed to get warp configs: ${error}`);
+            const message = error instanceof Error ? error.message : String(error);
+            throw new Error(`Failed to get warp configs: ${message}`);
         }
     };
 

@@ -73,8 +73,9 @@ export async function handlePanel(request: Request, env: Env): Promise<Response>
 }
 
 export async function renderError(error: any): Promise<Response> {
+    const message = error instanceof Error ? error.message : String(error);
     const html = await decompressHtml(__ERROR_HTML_CONTENT__, true) as string;
-    const errorPage = html.replace('__ERROR_MESSAGE__', error.message);
+    const errorPage = html.replace('__ERROR_MESSAGE__', message);
 
     return new Response(errorPage, {
         status: 200,
@@ -206,8 +207,9 @@ async function resetSettings(request: Request, env: Env): Promise<Response> {
         await env.kv.put("proxySettings", JSON.stringify(settings));
         return respond(true, HttpStatus.OK, '', settings);
     } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
         console.log(error);
-        throw new Error(`An error occurred while updating KV: ${error}`);
+        throw new Error(`An error occurred while updating KV: ${message}`);
     }
 }
 
@@ -257,8 +259,9 @@ async function getMyIP(request: Request): Promise<Response> {
 
         return respond(true, HttpStatus.OK, '', geoLocation);
     } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
         console.error('Error fetching IP address:', error);
-        return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `Error fetching IP address: ${error}`)
+        return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `Error fetching IP address: ${message}`)
     }
 }
 
@@ -327,7 +330,8 @@ async function getWarpConfigs(request: Request, env: Env): Promise<Response> {
             },
         });
     } catch (error) {
-        return new Response(`Error generating ZIP file: ${error}`, { status: 500 });
+        const message = error instanceof Error ? error.message : String(error);
+        return new Response(`Error generating ZIP file: ${message}`, { status: 500 });
     }
 }
 
@@ -396,8 +400,9 @@ async function updateWarpConfigs(request: Request, env: Env): Promise<Response> 
             await fetchWarpAccounts(env);
             return respond(true, HttpStatus.OK, 'Warp configs updated successfully!');
         } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
             console.log(error);
-            return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `An error occurred while updating Warp configs: ${error}`);
+            return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `An error occurred while updating Warp configs: ${message}`);
         }
     }
 

@@ -48,8 +48,9 @@ export async function updateDataset(request: Request, env: Env): Promise<Setting
     try {
         currentSettings = await env.kv.get("proxySettings", { type: 'json' });
     } catch (error) {
-        console.log(error);
-        throw new Error(`An error occurred while getting current KV settings: ${error}`);
+        const message = error instanceof Error ? error.message : String(error);
+        console.log(message);
+        throw new Error(`An error occurred while getting current KV settings: ${message}`);
     }
 
     const getParam = (field: keyof Settings, callback?: Function) => {
