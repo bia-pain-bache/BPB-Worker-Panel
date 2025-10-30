@@ -18,14 +18,12 @@ export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean
     const finalLocalDNS = localDNS === 'localhost' ? 'system' : `${localDNS}#DIRECT`;
     const isIPv6 = isWarp ? warpEnableIPv6 : VLTRenableIPv6;
     const remoteDnsDetour = isWarp
-        ? `💦 Warp ${isPro ? 'Pro ' : ''}- Best Ping 🚀`
-        : isChain ? '💦 Best Ping 🚀' : '✅ Selector';
+        ? `💦 Warp ${isPro ? "Pro " : ""}- Best Ping 🚀`
+        : isChain ? "💦 Best Ping 🚀" : "✅ Selector";
 
     const finalRemoteDNS = `${isWarp ? warpRemoteDNS : remoteDNS}#${remoteDnsDetour}`;
     const hosts: DnsHosts = {};
     let nameserverPolicy: Record<string, string> = {};
-
-
 
     if (isChain && !isWarp) {
         const { server } = outProxyParams;
@@ -34,10 +32,7 @@ export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean
 
     if (dohHost.isDomain && !isWarp) {
         const { ipv4, ipv6, host } = dohHost;
-        hosts[host] = [
-            ...ipv4,
-            ...(isIPv6 ? ipv6 : [])
-        ];
+        hosts[host] = ipv4.concatIf(isIPv6, ipv6);
     }
 
     const geoAssets = getGeoAssets();
@@ -55,27 +50,24 @@ export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean
         ...dnsRules.bypass.antiSanctionDNS.domains.map(domain => `+.${domain}`)
     ];
 
-    sanctionDomains.forEach(value => nameserverPolicy[value] = `${antiSanctionDNS}#DIRECT`);
-
     const bypassDomains = [
         ...dnsRules.bypass.localDNS.geositeGeoips.map(({ geosite }) => `rule-set:${geosite}`),
         ...dnsRules.bypass.localDNS.geosites.map(geosite => `rule-set:${geosite}`),
         ...dnsRules.bypass.localDNS.domains.map(domain => `+.${domain}`)
     ];
-
+    
     if (sanctionDomains.length) {
+        sanctionDomains.forEach(value => nameserverPolicy[value] = `${antiSanctionDNS}#DIRECT`);
         const { host, isHostDomain } = getDomain(antiSanctionDNS);
         if (isHostDomain) bypassDomains.push(host);
     }
 
     bypassDomains.forEach(value => nameserverPolicy[value] = finalLocalDNS);
-    let fakeDnsSettings = {};
-
-    if (fakeDNS) fakeDnsSettings = {
-        "enhanced-mode": "fake-ip",
+    const fakeDnsSettings = fakeDNS ? {
+        "enhanced-mode": "fake-ip" as const,
         "fake-ip-range": "198.18.0.1/16",
         "fake-ip-filter": ["*", "+.lan", "+.local"]
-    };
+    } : {};
 
     const dns: Dns = {
         "enable": true,

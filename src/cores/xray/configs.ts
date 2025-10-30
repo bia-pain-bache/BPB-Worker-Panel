@@ -21,7 +21,9 @@ import {
     randomUpperCase,
     isDomain,
     isHttps,
-    getProtocols
+    getProtocols,
+    parseHostPort,
+    toRange,
 } from '@utils';
 
 async function buildConfig(
@@ -75,6 +77,10 @@ async function buildConfig(
         } satisfies Observatory;
     }
 
+    const destOverride = ["http", "tls"]
+        .concatIf(isWorkerLess, "quic")
+        .concatIf(fakeDNS, "fakedns");
+
     const config: Config = {
         remarks: remark,
         log: {
@@ -92,12 +98,7 @@ async function buildConfig(
                     userLevel: 8,
                 },
                 sniffing: {
-                    destOverride: [
-                        "http",
-                        "tls",
-                        ...(isWorkerLess ? ["quic"] : []),
-                        ...(fakeDNS ? ["fakedns"] : [])
-                    ],
+                    destOverride,
                     enabled: true,
                     routeOnly: true
                 },
@@ -223,7 +224,7 @@ async function addBestFragmentConfigs(
         }
 
         const proxy = modifyOutbound(outbound, `proxy-${index + 1}`, `fragment-${index + 1}`);
-        const fragInterval = `${fragmentIntervalMin}-${fragmentIntervalMax}`;
+        const fragInterval = toRange(fragmentIntervalMin, fragmentIntervalMax);
         const fragment = buildFreedomOutbound(true, false, `fragment-${index + 1}`, fragLength, fragInterval);
         outbounds.push(proxy, fragment);
     });
@@ -303,11 +304,8 @@ export async function getXrCustomConfigs(isFragment: boolean): Promise<Response>
     const configs: Config[] = [];
     const proxies: Outbound[] = [];
     const chains: Outbound[] = [];
+    const fragment = isFragment ? [buildFreedomOutbound(true, false, 'fragment')] : [];
     let index = 1;
-
-    const fragment = isFragment
-        ? [buildFreedomOutbound(true, false, 'fragment')]
-        : [];
 
     for (const protocol of protocols) {
         let protocolIndex = 1;
@@ -318,11 +316,8 @@ export async function getXrCustomConfigs(isFragment: boolean): Promise<Response>
                 const host = isCustomAddr ? customCdnHost : hostName;
                 const configType = isCustomAddr ? 'C' : isFragment ? 'F' : '';
 
-                const outbound = buildWebsocketOutbound(protocol, addr, port, host, sni, isFragment, isCustomAddr)
-                const outbounds = [
-                    outbound,
-                    ...fragment
-                ];
+                const outbound = buildWebsocketOutbound(protocol, addr, port, host, sni, isFragment, isCustomAddr);
+                const outbounds = [outbound, ...fragment];
 
                 const proxy = modifyOutbound(outbound, `proxy-${index}`);
                 proxies.push(proxy);
@@ -376,14 +371,15 @@ export async function getXrWarpConfigs(
     const configs: Config[] = [];
     const proxies: Outbound[] = [];
     const chains: Outbound[] = [];
-    const udpNoise = isPro && !isKnocker
-        ? [buildFreedomOutbound(false, true, 'udp-noise')]
-        : [];
+    const outboundDomains: string[] = [];
+    const udpNoise: Outbound[] = isPro && !isKnocker ? [buildFreedomOutbound(false, true, 'udp-noise')] : [];
 
     for (const [index, endpoint] of warpEndpoints.entries()) {
         const warpOutbounds: Outbound[] = [...udpNoise];
         const wowOutbounds: Outbound[] = [...udpNoise];
-        const endpointHost = endpoint.split(':')[0];
+
+        const { host } = parseHostPort(endpoint);
+        if (isDomain(host)) outboundDomains.push(host);
 
         const warpOutbound = buildWarpOutbound(warpAccounts[0], endpoint, false, isPro);
         const wowOutbound = buildWarpOutbound(warpAccounts[1], endpoint, true, isPro);
@@ -399,7 +395,7 @@ export async function getXrWarpConfigs(
             false,
             true,
             false,
-            [endpointHost]
+            [host]
         );
 
         const wowConfig = await buildConfig(
@@ -410,7 +406,7 @@ export async function getXrWarpConfigs(
             false,
             true,
             false,
-            [endpointHost]
+            [host]
         );
 
         configs.push(warpConfig, wowConfig);
@@ -422,7 +418,6 @@ export async function getXrWarpConfigs(
         chains.push(chain);
     }
 
-    const outboundDomains = warpEndpoints.map(endpoint => endpoint.split(':')[0]).filter(address => isDomain(address));
     const warpBestPingOutbounds = [...proxies, ...udpNoise];
     const wowBestPingOutbounds = [...chains, ...proxies, ...udpNoise];
 
@@ -463,7 +458,10 @@ export async function getXrWarpConfigs(
 function modifyOutbound(outbound: Outbound, tag: string, dialerProxy?: string): Outbound {
     const newOutbound = structuredClone(outbound);
     newOutbound.tag = tag;
-    if (dialerProxy) newOutbound.streamSettings!.sockopt.dialerProxy = dialerProxy;
+
+    if (dialerProxy && newOutbound.streamSettings) {
+        newOutbound.streamSettings.sockopt.dialerProxy = dialerProxy;
+    }
 
     return newOutbound;
 }

@@ -46,28 +46,28 @@ export async function handleTCPOutBound(
             log(`direct connection failed, trying to use Proxy IP for ${addressRemote}`);
 
             try {
-                const proxyIPs = parseIPs(envProxyIPs!) || defaultProxyIPs;
-                const ips = panelIPs!.length ? panelIPs : proxyIPs;
-                const proxyIP = getRandomValue(ips!);
+                const proxyIPs = panelIPs?.length ? panelIPs : parseIPs(envProxyIPs) || defaultProxyIPs;
+                const proxyIP = getRandomValue(proxyIPs);
                 const { host, port } = parseHostPort(proxyIP, true);
                 tcpSocket = await connectAndWrite(host || addressRemote, port || portRemote);
             } catch (error) {
+                const message = error instanceof Error ? error.message : String(error);
                 console.error('Proxy IP connection failed:', error);
-                webSocket.close(1011, `Proxy IP connection failed: ${error}`);
+                webSocket.close(1011, `Proxy IP connection failed: ${message}`);
             }
 
         } else if (proxyMode === 'prefix') {
             log(`direct connection failed, trying to generate dynamic prefix for ${addressRemote}`);
 
             try {
-                const prefixes = parseIPs(envPrefixes!) || defaultPrefixes;
-                const ips = panelIPs!.length ? panelIPs : prefixes;
-                const prefix = getRandomValue(ips!);
+                const prefixes = panelIPs?.length ? panelIPs : parseIPs(envPrefixes) || defaultPrefixes;
+                const prefix = getRandomValue(prefixes);
                 const dynamicProxyIP = await getDynamicProxyIP(addressRemote, prefix);
                 tcpSocket = await connectAndWrite(dynamicProxyIP!, portRemote);
             } catch (error) {
+                const message = error instanceof Error ? error.message : String(error);
                 console.error('Prefix connection failed:', error);
-                webSocket.close(1011, `Prefix connection failed: ${error}`);
+                webSocket.close(1011, `Prefix connection failed: ${message}`);
             }
         }
 
@@ -84,8 +84,9 @@ export async function handleTCPOutBound(
         const tcpSocket = await connectAndWrite(addressRemote, portRemote);
         remoteSocketToWS(tcpSocket, webSocket, VLResponseHeader, retry, log);
     } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
         console.error(`Connection failed: ${error}`);
-        webSocket.close(1011, 'Connection failed');
+        webSocket.close(1011, `Connection failed: ${message}`);
     }
 }
 
@@ -124,8 +125,8 @@ async function remoteSocketToWS(
 
     try {
         await remoteSocket.readable.pipeTo(writableStream);
-    } catch (error: any) {
-        console.error(`VLRemoteSocketToWS has exception `, error.stack || error);
+    } catch (error) {
+        console.error('VLRemoteSocketToWS has exception.', error);
         safeCloseWebSocket(webSocket);
     }
 

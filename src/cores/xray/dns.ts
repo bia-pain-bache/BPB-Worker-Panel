@@ -28,10 +28,7 @@ export async function buildDNS(
 
     if (dohHost.isDomain && !isWorkerLess && !isWarp) {
         const { ipv4, ipv6, host } = dohHost;
-        hosts[host] = [
-            ...ipv4,
-            ...(isIPv6 ? ipv6 : [])
-        ];
+        hosts[host] = ipv4.concatIf(isIPv6, ipv6);
     }
 
     if (domainToStaticIPs) {
@@ -72,11 +69,6 @@ export async function buildDNS(
         ...dnsRules.bypass.antiSanctionDNS.domains.map(domain => `domain:${domain}`)
     ];
 
-    if (sanctionDomains.length) {
-        const sanctionDnsServer = buildDnsServer(antiSanctionDNS, sanctionDomains, undefined, skipFallback, true);
-        servers.push(sanctionDnsServer);
-    }
-
     const bypassDomains = [
         ...dnsRules.bypass.localDNS.geosites,
         ...dnsRules.bypass.localDNS.domains.map(domain => `domain:${domain}`),
@@ -84,11 +76,14 @@ export async function buildDNS(
     ];
 
     if (sanctionDomains.length) {
+        const sanctionDnsServer = buildDnsServer(antiSanctionDNS, sanctionDomains, undefined, skipFallback, true);
+        servers.push(sanctionDnsServer);
+        
         const { host, isHostDomain } = getDomain(antiSanctionDNS);
         if (isHostDomain) bypassDomains.push(`full:${host}`);
     }
 
-    customDnsHosts?.filter(isDomain).forEach(host => bypassDomains.push(host));
+    customDnsHosts?.filter(isDomain).forEach(host => bypassDomains.push(`full:${host}`));
 
     if (bypassDomains.length) {
         const localDnsServer = buildDnsServer(localDNS, bypassDomains, undefined, skipFallback);

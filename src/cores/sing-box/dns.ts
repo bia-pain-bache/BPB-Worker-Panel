@@ -47,7 +47,6 @@ export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<Dns> 
 
     if (isChain && !isWarp) {
         const { server } = outProxyParams;
-
         if (isDomain(server)) rules.push({
             domain: server,
             server: "dns-remote"
@@ -56,11 +55,7 @@ export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<Dns> 
 
     if (dohHost.isDomain && !isWarp) {
         const { ipv4, ipv6, host } = dohHost;
-        const predefined = [
-            ...ipv4,
-            ...(isIPv6 ? ipv6 : [])
-        ];
-
+        const predefined = ipv4.concatIf(isIPv6, ipv6);
         addDnsServer(servers, "hosts", "hosts", undefined, undefined, undefined, host, predefined);
         rules.unshift({
             ip_accept_any: true,

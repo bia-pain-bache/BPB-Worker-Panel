@@ -87,13 +87,13 @@ export function buildWarpOutbound(
     chain: string,
     isPro: boolean
 ): WireguardOutbound {
-    const { host, port } = parseHostPort(endpoint, false);
     const {
         amneziaNoiseCount,
         amneziaNoiseSizeMin,
         amneziaNoiseSizeMax,
         warpEnableIPv6
     } = globalThis.settings;
+    const { host, port } = parseHostPort(endpoint, false);
     const ipVersion = warpEnableIPv6 ? "ipv4-prefer" : "ipv4";
 
     const {

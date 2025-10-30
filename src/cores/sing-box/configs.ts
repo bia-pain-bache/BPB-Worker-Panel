@@ -50,10 +50,7 @@ async function buildConfig(
             {
                 type: "tun",
                 tag: "tun-in",
-                address: [
-                    "172.18.0.1/30",
-                    ...(isIPv6 ? ["fdfe:dcba:9876::1/126"] : [])
-                ],
+                address: ["172.18.0.1/30"].concatIf(isIPv6, "fdfe:dcba:9876::1/126"),
                 mtu: 9000,
                 auto_route: true,
                 strict_route: true,
@@ -113,9 +110,9 @@ async function buildConfig(
         interval: isWarp ? `${bestWarpInterval}s` : `${bestVLTRInterval}s`
     } satisfies URLTest);
 
-    addUrlTest(isWarp ? `💦 Warp - Best Ping 🚀` : '💦 Best Ping 🚀', urlTestTags);
-    if (isWarp) addUrlTest('💦 WoW - Best Ping 🚀', secondUrlTestTags);
-    if (isChain) addUrlTest('💦 🔗 Best Ping 🚀', secondUrlTestTags);
+    addUrlTest(isWarp ? `💦 Warp - Best Ping 🚀` : "💦 Best Ping 🚀", urlTestTags);
+    if (isWarp) addUrlTest("💦 WoW - Best Ping 🚀", secondUrlTestTags);
+    if (isChain) addUrlTest("💦 🔗 Best Ping 🚀", secondUrlTestTags);
 
     return config;
 }
@@ -146,10 +143,7 @@ export async function getSbCustomConfig(isFragment: boolean): Promise<Response> 
         ? ports.filter(port => isHttps(port))
         : ports;
 
-    const selectorTags = [
-        '💦 Best Ping 🚀',
-        ...(isChain ? ['💦 🔗 Best Ping 🚀'] : [])
-    ];
+    const selectorTags = ["💦 Best Ping 🚀"].concatIf(isChain, "💦 🔗 Best Ping 🚀");
 
     protocols.forEach(protocol => {
         let protocolIndex = 1;
@@ -182,7 +176,16 @@ export async function getSbCustomConfig(isFragment: boolean): Promise<Response> 
         });
     });
 
-    const config = await buildConfig(outbounds, [], selectorTags, proxyTags, chainTags, false, VLTRenableIPv6, isChain);
+    const config = await buildConfig(
+        outbounds, 
+        [], 
+        selectorTags, 
+        proxyTags, 
+        chainTags, 
+        false, 
+        VLTRenableIPv6, 
+        isChain
+    );
 
     return new Response(JSON.stringify(config, null, 4), {
         status: 200,
@@ -202,8 +205,8 @@ export async function getSbWarpConfig(request: Request, env: Env): Promise<Respo
     const chainTags: string[] = [];
     const outbounds: WireguardEndpoint[] = [];
     const selectorTags = [
-        '💦 Warp - Best Ping 🚀',
-        '💦 WoW - Best Ping 🚀'
+        "💦 Warp - Best Ping 🚀",
+        "💦 WoW - Best Ping 🚀"
     ];
 
     warpEndpoints.forEach((endpoint, index) => {
@@ -219,7 +222,16 @@ export async function getSbWarpConfig(request: Request, env: Env): Promise<Respo
         outbounds.push(warpOutbound, wowOutbound);
     });
 
-    const config = await buildConfig([], outbounds, selectorTags, proxyTags, chainTags, true, warpEnableIPv6, false);
+    const config = await buildConfig(
+        [], 
+        outbounds, 
+        selectorTags, 
+        proxyTags, 
+        chainTags, 
+        true, 
+        warpEnableIPv6, 
+        false
+    );
 
     return new Response(JSON.stringify(config, null, 4), {
         status: 200,

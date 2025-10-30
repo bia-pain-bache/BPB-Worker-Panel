@@ -1,7 +1,8 @@
 import {
     base64ToDecimal,
     isHttps,
-    generateWsPath
+    generateWsPath,
+    toRange
 } from '@utils';
 
 import {
@@ -401,10 +402,4 @@ function buildRealitySettings(
         show: false,
         allowInsecure: false
     }
-}
-
-function toRange(min?: number, max?: number) {
-    if (min === undefined || max === undefined) return undefined;
-    if (min === max) return String(min);
-    return `${min}-${max}`;
 }

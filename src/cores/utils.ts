@@ -1,7 +1,7 @@
 export function isDomain(address: string): boolean {
     if (!address) return false;
-    const domainPattern = /^(?!-)(?:[A-Za-z0-9-]{1,63}.)+[A-Za-z]{2,}$/;
-    return domainPattern.test(address);
+    const domainRegex = /^(?!-)(?:[A-Za-z0-9-]{1,63}.)+[A-Za-z]{2,}$/;
+    return domainRegex.test(address);
 }
 
 export async function resolveDNS(domain: string, onlyIPv4 = false): Promise<DnsResult> {
@@ -17,7 +17,8 @@ export async function resolveDNS(domain: string, onlyIPv4 = false): Promise<DnsR
         const ipv6 = onlyIPv4 ? [] : await fetchDNSRecords(dohURLs.ipv6, 28);
         return { ipv4, ipv6 };
     } catch (error) {
-        throw new Error(`Error resolving DNS for ${domain}: ${error}`);
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`Error resolving DNS for ${domain}: ${message}`);
     }
 }
 
@@ -31,8 +32,10 @@ async function fetchDNSRecords(url: string, recordType: number) {
         return data.Answer
             .filter((record: any) => record.type === recordType)
             .map((record: any) => record.data);
+
     } catch (error) {
-        throw new Error(`Failed to fetch DNS records from ${url}: ${error}`);
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`Failed to fetch DNS records from ${url}: ${message}`);
     }
 }
 
@@ -42,10 +45,7 @@ export function getProtocols() {
         dict: { _VL_, _TR_ }
     } = globalThis;
 
-    return [
-        ...(VLConfigs ? [_VL_] : []),
-        ...(TRConfigs ? [_TR_] : [])
-    ];
+    return [].concatIf(VLConfigs, _VL_).concatIf(TRConfigs, _TR_);
 }
 
 export async function getConfigAddresses(isFragment: boolean): Promise<string[]> {
@@ -54,16 +54,16 @@ export async function getConfigAddresses(isFragment: boolean): Promise<string[]>
         settings: { VLTRenableIPv6, customCdnAddrs, cleanIPs }
     } = globalThis;
 
-    const resolved = await resolveDNS(hostName, !VLTRenableIPv6);
+    const { ipv4, ipv6 } = await resolveDNS(hostName, !VLTRenableIPv6);
     const addrs = [
         hostName,
         'www.speedtest.net',
-        ...resolved.ipv4,
-        ...resolved.ipv6.map((ip: string) => `[${ip}]`),
+        ...ipv4,
+        ...ipv6.map((ip: string) => `[${ip}]`),
         ...cleanIPs
     ];
 
-    return isFragment ? addrs : [...addrs, ...customCdnAddrs!];
+    return addrs.concatIf(isFragment, customCdnAddrs);
 }
 
 export function generateRemark(
@@ -103,12 +103,11 @@ export function randomUpperCase(str: string): string {
 
 export function getRandomString(lengthMin: number, lengthMax: number): string {
     let result = '';
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const charactersLength = characters.length;
+    const charSet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     const length = Math.floor(Math.random() * (lengthMax - lengthMin + 1)) + lengthMin;
 
     for (let i = 0; i < length; i++) {
-        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        result += charSet.charAt(Math.floor(Math.random() * charSet.length));
     }
 
     return result;
@@ -132,8 +131,14 @@ export function generateWsPath(protocol: string): string {
 
 export function base64ToDecimal(base64: string): number[] {
     const binaryString = atob(base64);
-    const hexString = Array.from(binaryString).map(char => char.charCodeAt(0).toString(16).padStart(2, '0')).join('');
-    const decimalArray = hexString.match(/.{2}/g)!.map(hex => parseInt(hex, 16));
+    const hexString = Array
+        .from(binaryString)
+        .map(char => char.charCodeAt(0).toString(16).padStart(2, '0'))
+        .join('');
+
+    const decimalArray = hexString
+        .match(/.{2}/g)!
+        .map(hex => parseInt(hex, 16));
 
     return decimalArray;
 }
@@ -166,23 +171,16 @@ export function getDomain(url: string) {
     }
 }
 
-export function parseHostPort(input: string, brackets: boolean) {
+export function parseHostPort(input: string, brackets?: boolean): {host: string, port: number} {
     const regex = /^(?:\[(?<ipv6>.+?)\]|(?<host>[^:]+))(:(?<port>\d+))?$/;
     const match = input.match(regex);
 
-    if (!match) return {
-        host: "",
-        port: 0
-    };
+    if (!match || !match.groups) return { host: "", port: 0 };
+    const { ipv6, host: plainHost, port: portStr } = match.groups;
 
-    let ipv6 = match.groups!.ipv6;
-
-    if (brackets && ipv6) {
-        ipv6 = `[${ipv6}]`;
-    }
-
-    const host = ipv6 || match.groups!.host;
-    const port = match.groups!.port ? parseInt(match.groups!.port, 10) : 0;
+    let host = ipv6 ?? plainHost ?? "";
+    if (brackets && ipv6) host = `[${ipv6}]`;
+    const port = portStr ? Number(portStr) : 0;
 
     return { host, port };
 }
@@ -263,5 +261,17 @@ export function accDnsRules(geoAssets: GeoAsset[]) {
             domains: customBlockRules.filter(isDomain)
         }
     };
+}
+
+export function toRange(min?: number, max?: number) {
+    if (min === undefined || max === undefined) return undefined;
+    if (min === max) return String(min);
+    return `${min}-${max}`;
+}
+
+Array.prototype.concatIf = function <T>(condition: boolean, concat: T | T[]): T[] {
+    if (!condition) return this;
+    if (Array.isArray(concat)) return [...this, ...concat];
+    return [...this, concat]
 }
 

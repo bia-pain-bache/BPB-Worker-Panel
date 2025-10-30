@@ -40,7 +40,6 @@ export async function fetchWarpAccounts(env: Env): Promise<WarpAccount[]> {
 
     for (const key of warpKeys) {
         const { config } = await fetchAccount(key);
-
         WarpAccounts.push({
             privateKey: key.privateKey,
             warpIPv6: `${config.interface.addresses.v6}/128`,

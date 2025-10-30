@@ -143,14 +143,11 @@ export async function getClNormalConfig(): Promise<Response> {
 
     const proxyTags: string[] = [];
     const chainTags: string[] = [];
-    const outbounds: any[] = [];
+    const outbounds: AnyOutbound[] = [];
 
     const Addresses = await getConfigAddresses(false);
     const protocols = getProtocols();
-    const selectorTags = [
-        '💦 Best Ping 🚀',
-        ...(isChain ? ['💦 🔗 Best Ping 🚀'] : [])
-    ];
+    const selectorTags = ["💦 Best Ping 🚀"].concatIf(isChain, "💦 🔗 Best Ping 🚀");
 
     protocols.forEach(protocol => {
         let protocolIndex = 1;
@@ -160,7 +157,7 @@ export async function getClNormalConfig(): Promise<Response> {
                 const configType = isCustomAddr ? 'C' : '';
                 const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
                 const host = isCustomAddr ? customCdnHost : hostName;
-                const tag = generateRemark(protocolIndex, port, addr, protocol, configType, false).replace(' : ', ' - ');
+                const tag = generateRemark(protocolIndex, port, addr, protocol, configType, false);
                 const outbound = buildWebsocketOutbound(protocol, tag, addr, port, host!, sni, isCustomAddr);
 
                 if (outbound) {
@@ -185,7 +182,15 @@ export async function getClNormalConfig(): Promise<Response> {
         });
     });
 
-    const config = await buildConfig(outbounds, selectorTags, proxyTags, chainTags, isChain, false, false);
+    const config = await buildConfig(
+        outbounds, 
+        selectorTags, 
+        proxyTags, 
+        chainTags, 
+        isChain, 
+        false, 
+        false
+    );
 
     return new Response(JSON.stringify(config, null, 4), {
         status: 200,
@@ -204,16 +209,17 @@ export async function getClWarpConfig(request: Request, env: Env, isPro: boolean
     const proxyTags: string[] = [];
     const chainTags: string[] = [];
     const outbounds: WireguardOutbound[] = [];
+    const proSign = isPro ? "Pro " : "";
     const selectorTags = [
-        `💦 Warp ${isPro ? 'Pro ' : ''}- Best Ping 🚀`,
-        `💦 WoW ${isPro ? 'Pro ' : ''}- Best Ping 🚀`
+        `💦 Warp ${proSign}- Best Ping 🚀`,
+        `💦 WoW ${proSign}- Best Ping 🚀`
     ];
 
     warpEndpoints.forEach((endpoint, index) => {
-        const warpTag = `💦 ${index + 1} - Warp ${isPro ? 'Pro ' : ''}🇮🇷`;
+        const warpTag = `💦 ${index + 1} - Warp ${proSign}🇮🇷`;
         proxyTags.push(warpTag);
 
-        const wowTag = `💦 ${index + 1} - WoW ${isPro ? 'Pro ' : ''}🌍`;
+        const wowTag = `💦 ${index + 1} - WoW ${proSign}🌍`;
         chainTags.push(wowTag);
 
         selectorTags.push(warpTag, wowTag);
@@ -222,7 +228,15 @@ export async function getClWarpConfig(request: Request, env: Env, isPro: boolean
         outbounds.push(warpOutbound, wowOutbound);
     });
 
-    const config = await buildConfig(outbounds, selectorTags, proxyTags, chainTags, false, true, isPro);
+    const config = await buildConfig(
+        outbounds, 
+        selectorTags, 
+        proxyTags, 
+        chainTags, 
+        false, 
+        true, 
+        isPro
+    );
 
     return new Response(JSON.stringify(config, null, 4), {
         status: 200,

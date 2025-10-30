@@ -1,27 +1,27 @@
 declare global {
     interface GlobalConfig {
-        userID: string;
-        TrPass: string;
-        pathName: string;
-        fallbackDomain: string;
-        dohURL: string;
+        readonly userID: string;
+        readonly TrPass: string;
+        readonly pathName: string;
+        readonly fallbackDomain: string;
+        readonly dohURL: string;
     }
 
     interface HttpConfig {
         readonly panelVersion: string;
         readonly defaultHttpPorts: number[];
         readonly defaultHttpsPorts: number[];
-        hostName: string;
-        client: string;
-        urlOrigin: string;
-        subPath: string;
+        readonly hostName: string;
+        readonly client: string;
+        readonly urlOrigin: string;
+        readonly subPath: string;
     }
 
     interface WsConfig {
         readonly defaultProxyIPs: string[];
         readonly defaultPrefixes: string[];
-        envProxyIPs: string;
-        envPrefixes: string;
+        readonly envProxyIPs: string;
+        readonly envPrefixes: string;
         wsProtocol?: "vl" | "tr";
         proxyMode?: "proxyip" | "prefix";
         panelIPs?: string[];
@@ -136,6 +136,23 @@ declare global {
         panelVersion: string;
     }
 
+    var settings: Settings;
+    var globalConfig: GlobalConfig;
+    var httpConfig: HttpConfig;
+    var wsConfig: WsConfig;
+    var dict: {
+        readonly _VL_: string;
+        readonly _VL_CAP_: string;
+        readonly _VM_: string;
+        readonly _TR_: string;
+        readonly _TR_CAP_: string;
+        readonly _SS_: string;
+        readonly _V2_: string;
+        readonly _project_: string;
+        readonly _website_: string;
+        readonly _public_proxy_ip_: string;
+    };
+
     interface GeoAsset {
         rule: boolean;
         type: string;
@@ -147,30 +164,16 @@ declare global {
         format?: string;
     }
 
-    var settings: Settings;
-    var globalConfig: GlobalConfig;
-    var httpConfig: HttpConfig;
-    var wsConfig: WsConfig;
-    var dict: {
-        _VL_: string;
-        _VL_CAP_: string;
-        _VM_: string;
-        _TR_: string;
-        _TR_CAP_: string;
-        _SS_: string;
-        _V2_: string;
-        _project_: string;
-        _website_: string;
-        _public_proxy_ip_: string;
-    };
-
-
     const __VERSION__: string;
     const __ERROR_HTML_CONTENT__: string;
     const __ICON__: string;
     const __PANEL_HTML_CONTENT__: string;
     const __LOGIN_HTML_CONTENT__: string;
     const __SECRETS_HTML_CONTENT__: string;
+
+    interface Array<T> {
+        concatIf<T>(condition: boolean, concat: T | T[]): T[];
+    }
 }
 
 export { };
