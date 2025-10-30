@@ -21,7 +21,7 @@ globalThis.settings = {
     allowLANConnection: false,
     logLevel: "warning",
     remoteDNS: "https://8.8.8.8/dns-query",
-    dohHost: {
+    remoteDnsHost: {
         host: "8.8.8.8",
         isDomain: false,
         ipv4: [],

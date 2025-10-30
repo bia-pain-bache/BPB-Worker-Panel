@@ -9,7 +9,7 @@ export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean
         warpRemoteDNS,
         antiSanctionDNS,
         outProxyParams,
-        dohHost,
+        remoteDnsHost,
         warpEnableIPv6,
         VLTRenableIPv6,
         fakeDNS
@@ -30,8 +30,8 @@ export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean
         if (isDomain(server)) nameserverPolicy[server] = finalRemoteDNS;
     }
 
-    if (dohHost.isDomain && !isWarp) {
-        const { ipv4, ipv6, host } = dohHost;
+    if (remoteDnsHost.isDomain && !isWarp) {
+        const { ipv4, ipv6, host } = remoteDnsHost;
         hosts[host] = ipv4.concatIf(isIPv6, ipv6);
     }
 

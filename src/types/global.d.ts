@@ -44,7 +44,7 @@ declare global {
         reserved: string;
     }
 
-    interface DohHost {
+    interface DnsHost {
         host: string;
         isDomain: boolean;
         ipv4: string[];
@@ -71,7 +71,7 @@ declare global {
         allowLANConnection: boolean;
         logLevel: "none" | "warning" | "error" | "info" | "debug";
         remoteDNS: string;
-        dohHost: DohHost;
+        remoteDnsHost: DnsHost;
         proxyIPMode: "proxyip" | "prefix";
         proxyIPs: string[];
         prefixes: string[];

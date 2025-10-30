@@ -15,7 +15,7 @@ export async function buildDNS(
         remoteDNS,
         warpRemoteDNS,
         antiSanctionDNS,
-        dohHost,
+        remoteDnsHost,
         warpEnableIPv6,
         VLTRenableIPv6,
         fakeDNS
@@ -26,8 +26,8 @@ export async function buildDNS(
     const fakeDnsDomains = [];
     const isIPv6 = isWarp ? warpEnableIPv6 : VLTRenableIPv6;
 
-    if (dohHost.isDomain && !isWorkerLess && !isWarp) {
-        const { ipv4, ipv6, host } = dohHost;
+    if (remoteDnsHost.isDomain && !isWorkerLess && !isWarp) {
+        const { ipv4, ipv6, host } = remoteDnsHost;
         hosts[host] = ipv4.concatIf(isIPv6, ipv6);
     }
 

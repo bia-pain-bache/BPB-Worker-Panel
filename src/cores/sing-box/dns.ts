@@ -9,7 +9,7 @@ export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<Dns> 
         warpRemoteDNS,
         antiSanctionDNS,
         outProxyParams,
-        dohHost,
+        remoteDnsHost,
         warpEnableIPv6,
         VLTRenableIPv6,
         fakeDNS
@@ -22,7 +22,7 @@ export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<Dns> 
     const servers: DnsServer[] = [
         {
             type: isWarp ? "udp" : protocol,
-            server: isWarp ? warpRemoteDNS : dohHost.host,
+            server: isWarp ? warpRemoteDNS : remoteDnsHost.host,
             detour: isWarp ? "💦 Warp - Best Ping 🚀" : isChain ? "💦 Best Ping 🚀" : "✅ Selector",
             tag: "dns-remote"
         }
@@ -53,8 +53,8 @@ export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<Dns> 
         });
     }
 
-    if (dohHost.isDomain && !isWarp) {
-        const { ipv4, ipv6, host } = dohHost;
+    if (remoteDnsHost.isDomain && !isWarp) {
+        const { ipv4, ipv6, host } = remoteDnsHost;
         const predefined = ipv4.concatIf(isIPv6, ipv6);
         addDnsServer(servers, "hosts", "hosts", undefined, undefined, undefined, host, predefined);
         rules.unshift({

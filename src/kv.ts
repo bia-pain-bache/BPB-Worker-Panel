@@ -37,13 +37,13 @@ export async function getDataset(
 }
 
 export async function updateDataset(request: Request, env: Env): Promise<Settings> {
-    const { settings, httpConfig: { panelVersion } } = globalThis;
-    let newSettings: Settings;
+    const { 
+        settings, 
+        httpConfig: { panelVersion } 
+    } = globalThis;
+    
+    const newSettings: Settings | null = request.method === 'PUT' ? await request.json() : null;
     let currentSettings: Settings | null;
-
-    if (request.method === 'PUT') {
-        newSettings = await request.json();
-    }
 
     try {
         currentSettings = await env.kv.get("proxySettings", { type: 'json' });
@@ -53,114 +53,124 @@ export async function updateDataset(request: Request, env: Env): Promise<Setting
         throw new Error(`An error occurred while getting current KV settings: ${message}`);
     }
 
-    const getParam = (field: keyof Settings, callback?: Function) => {
+    const getParam = async <T extends keyof Settings>(
+        field: keyof Settings,
+        callback?: (value: Settings[T]) => any | Promise<any>
+    ) => {
         const source = newSettings ?? currentSettings ?? settings;
         const value = source[field];
-        return callback ? callback(value) : value;
+        return callback ? await callback(value) : value;
     }
 
-    const remoteDNS = getParam('remoteDNS');
-    const initDoh = async (): Promise<DohHost> => {
-        const { host, isHostDomain } = getDomain(remoteDNS);
-        const dohHost: DohHost = {
-            host,
-            isDomain: isHostDomain,
-            ipv4: [],
-            ipv6: []
-        }
+    const fields: Array<
+        [keyof Settings] |
+        [keyof Settings, keyof Settings, (key: keyof Settings) => any | Promise<any>]
+    > = [
+        ["remoteDNS"],
+        ["remoteDnsHost", "remoteDNS", getDnsParams],
+        ["localDNS"],
+        ["antiSanctionDNS"],
+        ["fakeDNS"],
+        ["logLevel"],
+        ["allowLANConnection"],
+        ["proxyIPMode"],
+        ["proxyIPs"],
+        ["prefixes"],
+        ["outProxy"],
+        ["outProxyParams", "outProxy", extractProxyParams],
+        ["cleanIPs"],
+        ["VLTRenableIPv6"],
+        ["customCdnAddrs"],
+        ["customCdnHost"],
+        ["customCdnSni"],
+        ["bestVLTRInterval"],
+        ["VLConfigs"],
+        ["TRConfigs"],
+        ["ports"],
+        ["fingerprint"],
+        ["enableTFO"],
+        ["fragmentMode"],
+        ["fragmentLengthMin"],
+        ["fragmentLengthMax"],
+        ["fragmentIntervalMin"],
+        ["fragmentIntervalMax"],
+        ["fragmentMaxSplitMin"],
+        ["fragmentMaxSplitMax"],
+        ["fragmentPackets"],
+        ["bypassIran"],
+        ["bypassChina"],
+        ["bypassRussia"],
+        ["bypassOpenAi"],
+        ["bypassGoogleAi"],
+        ["bypassMicrosoft"],
+        ["bypassOracle"],
+        ["bypassDocker"],
+        ["bypassAdobe"],
+        ["bypassEpicGames"],
+        ["bypassIntel"],
+        ["bypassAmd"],
+        ["bypassNvidia"],
+        ["bypassAsus"],
+        ["bypassHp"],
+        ["bypassLenovo"],
+        ["blockAds"],
+        ["blockPorn"],
+        ["blockUDP443"],
+        ["customBypassRules"],
+        ["customBlockRules"],
+        ["customBypassSanctionRules"],
+        ["warpRemoteDNS"],
+        ["warpEndpoints"],
+        ["warpEnableIPv6"],
+        ["bestWarpInterval"],
+        ["xrayUdpNoises"],
+        ["knockerNoiseMode"],
+        ["noiseCountMin"],
+        ["noiseCountMax"],
+        ["noiseSizeMin"],
+        ["noiseSizeMax"],
+        ["noiseDelayMin"],
+        ["noiseDelayMax"],
+        ["amneziaNoiseCount"],
+        ["amneziaNoiseSizeMin"],
+        ["amneziaNoiseSizeMax"]
+    ];
 
-        if (isHostDomain) {
-            const { ipv4, ipv6 } = await resolveDNS(host);
-            dohHost.ipv4 = ipv4;
-            dohHost.ipv6 = ipv6;
-        }
-
-        return dohHost;
-    }
+    const entries = await Promise.all(
+        fields.map(async ([key, callbackKey, callbackFunc]) => {
+            return [key, await getParam(callbackKey ?? key, callbackFunc)];
+        })
+    );
 
     const updatedSettings: Settings = {
-        remoteDNS,
-        dohHost: await initDoh(),
-        localDNS: getParam('localDNS'),
-        antiSanctionDNS: getParam('antiSanctionDNS'),
-        fakeDNS: getParam('fakeDNS'),
-        logLevel: getParam('logLevel'),
-        allowLANConnection: getParam('allowLANConnection'),
-        proxyIPMode: getParam('proxyIPMode'),
-        proxyIPs: getParam('proxyIPs'),
-        prefixes: getParam('prefixes'),
-        outProxy: getParam('outProxy'),
-        outProxyParams: getParam('outProxy', (field: string) => extractChainProxyParams(field)),
-        cleanIPs: getParam('cleanIPs'),
-        VLTRenableIPv6: getParam('VLTRenableIPv6'),
-        customCdnAddrs: getParam('customCdnAddrs'),
-        customCdnHost: getParam('customCdnHost'),
-        customCdnSni: getParam('customCdnSni'),
-        bestVLTRInterval: getParam('bestVLTRInterval'),
-        VLConfigs: getParam('VLConfigs'),
-        TRConfigs: getParam('TRConfigs'),
-        ports: getParam('ports'),
-        fingerprint: getParam('fingerprint'),
-        enableTFO: getParam('enableTFO'),
-        fragmentMode: getParam('fragmentMode'),
-        fragmentLengthMin: getParam('fragmentLengthMin'),
-        fragmentLengthMax: getParam('fragmentLengthMax'),
-        fragmentIntervalMin: getParam('fragmentIntervalMin'),
-        fragmentIntervalMax: getParam('fragmentIntervalMax'),
-        fragmentMaxSplitMin: getParam('fragmentMaxSplitMin'),
-        fragmentMaxSplitMax: getParam('fragmentMaxSplitMax'),
-        fragmentPackets: getParam('fragmentPackets'),
-        bypassIran: getParam('bypassIran'),
-        bypassChina: getParam('bypassChina'),
-        bypassRussia: getParam('bypassRussia'),
-        bypassOpenAi: getParam('bypassOpenAi'),
-        bypassGoogleAi: getParam('bypassGoogleAi'),
-        bypassMicrosoft: getParam('bypassMicrosoft'),
-        bypassOracle: getParam('bypassOracle'),
-        bypassDocker: getParam('bypassDocker'),
-        bypassAdobe: getParam('bypassAdobe'),
-        bypassEpicGames: getParam('bypassEpicGames'),
-        bypassIntel: getParam('bypassIntel'),
-        bypassAmd: getParam('bypassAmd'),
-        bypassNvidia: getParam('bypassNvidia'),
-        bypassAsus: getParam('bypassAsus'),
-        bypassHp: getParam('bypassHp'),
-        bypassLenovo: getParam('bypassLenovo'),
-        blockAds: getParam('blockAds'),
-        blockPorn: getParam('blockPorn'),
-        blockUDP443: getParam('blockUDP443'),
-        customBypassRules: getParam('customBypassRules'),
-        customBlockRules: getParam('customBlockRules'),
-        customBypassSanctionRules: getParam('customBypassSanctionRules'),
-        warpRemoteDNS: getParam('warpRemoteDNS'),
-        warpEndpoints: getParam('warpEndpoints'),
-        warpEnableIPv6: getParam('warpEnableIPv6'),
-        bestWarpInterval: getParam('bestWarpInterval'),
-        xrayUdpNoises: getParam('xrayUdpNoises'),
-        knockerNoiseMode: getParam('knockerNoiseMode'),
-        noiseCountMin: getParam('noiseCountMin'),
-        noiseCountMax: getParam('noiseCountMax'),
-        noiseSizeMin: getParam('noiseSizeMin'),
-        noiseSizeMax: getParam('noiseSizeMax'),
-        noiseDelayMin: getParam('noiseDelayMin'),
-        noiseDelayMax: getParam('noiseDelayMax'),
-        amneziaNoiseCount: getParam('amneziaNoiseCount'),
-        amneziaNoiseSizeMin: getParam('amneziaNoiseSizeMin'),
-        amneziaNoiseSizeMax: getParam('amneziaNoiseSizeMax'),
+        ...Object.fromEntries(entries),
         panelVersion: panelVersion
     };
 
     try {
         await env.kv.put("proxySettings", JSON.stringify(updatedSettings));
+        return updatedSettings;
     } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
         console.log(error);
-        throw new Error(`An error occurred while updating KV: ${error}`);
+        throw new Error(`An error occurred while updating KV: ${message}`);
     }
-
-    return updatedSettings;
 }
 
-function extractChainProxyParams(chainProxy: string) {
+async function getDnsParams(dns: string): Promise<DnsHost> {
+    const { host, isHostDomain } = getDomain(dns);
+    const dohHost: DnsHost = { host, isDomain: isHostDomain, ipv4: [], ipv6: []};
+
+    if (isHostDomain) {
+        const { ipv4, ipv6 } = await resolveDNS(host);
+        dohHost.ipv4 = ipv4;
+        dohHost.ipv6 = ipv6;
+    }
+
+    return dohHost;
+}
+
+function extractProxyParams(chainProxy: string) {
     if (!chainProxy) return {};
     const { _SS_, _TR_, _VL_, _VM_ } = globalThis.dict;
 
