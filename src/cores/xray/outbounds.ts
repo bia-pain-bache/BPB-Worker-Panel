@@ -308,12 +308,12 @@ function buildTransport(
                             type: "http",
                             request: {
                                 headers: {
-                                    "Host": host?.split(',') || [],
+                                    "Host": host ? host.split(',') : [],
                                     "Accept-Encoding": ["gzip, deflate"],
                                     "Connection": ["keep-alive"],
                                     "Pragma": "no-cache"
                                 },
-                                path: path?.split(',') || ["/"],
+                                path: path ? path.split(',') : ["/"],
                                 method: "GET",
                                 version: "1.1"
                             }

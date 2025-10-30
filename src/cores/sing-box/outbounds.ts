@@ -134,7 +134,7 @@ export function buildChainOutbound(): AnyOutbound | null {
             }
         }
     } = globalThis;
-    
+
     const { searchParams } = new URL(outProxy);
     const ed = searchParams.get("ed");
     const earlyData = ed ? +ed : undefined;
@@ -245,7 +245,7 @@ function buildTransport(
         case 'tcp':
             if (headerType === 'http') return {
                 type: "http",
-                host: host?.split(',') || [],
+                host: host ? host.split(',') : [],
                 path: path || "/",
                 method: "GET",
                 headers: {
@@ -259,11 +259,11 @@ function buildTransport(
         case 'ws':
             return {
                 type: "ws",
-                path: path?.split('?ed=')[0] || "/",
+                path: path ? path.split('?ed=')[0] : "/",
                 max_early_data: earlyData,
                 early_data_header_name: earlyData ? "Sec-WebSocket-Protocol" : undefined,
-                headers: { 
-                    Host: host 
+                headers: {
+                    Host: host
                 }
             } satisfies WsTransport;
 
@@ -271,7 +271,7 @@ function buildTransport(
             return {
                 type: "httpupgrade",
                 host,
-                path: path?.split('?ed=')[0] || "/"
+                path: path ? path.split('?ed=')[0] : "/"
             } satisfies HttpupgradeTransport;
 
         case 'grpc':

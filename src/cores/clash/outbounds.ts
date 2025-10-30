@@ -103,7 +103,6 @@ export function buildWarpOutbound(
         privateKey
     } = warpAccount;
 
-
     return {
         "name": remark,
         "type": "wireguard",
@@ -244,15 +243,15 @@ function buildTransport(
                 "network": "http",
                 "http-opts": {
                     "method": "GET",
-                    "path": path?.split(',') || ["/"],
+                    "path": path ? path.split(',') : ["/"],
                     "headers": {
-                        "Host": host?.split(",") || [],
+                        "Host": host ? host.split(",") : [],
                         "Connection": ["keep-alive"],
                         "Content-Type": ["application/octet-stream"]
                     }
                 } satisfies HttpOpts
-            } : { 
-                "network": "tcp" 
+            } : {
+                "network": "tcp"
             } satisfies Transport;
 
         case 'ws':

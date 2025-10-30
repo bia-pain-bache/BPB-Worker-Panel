@@ -2,7 +2,10 @@ import { fetchWarpAccounts } from '@warp';
 import { getDomain, resolveDNS } from '@utils';
 import { base64DecodeUtf8 } from '@common';
 
-export async function getDataset(request: Request, env: Env): Promise<{ settings: Settings, warpAccounts: WarpAccount[] }> {
+export async function getDataset(
+    request: Request,
+    env: Env
+): Promise<{ settings: Settings, warpAccounts: WarpAccount[] }> {
     const { httpConfig: { panelVersion }, settings } = globalThis;
     let proxySettings: Settings | null, warpAccounts: WarpAccount[] | null;
 
@@ -49,16 +52,13 @@ export async function updateDataset(request: Request, env: Env): Promise<Setting
         throw new Error(`An error occurred while getting current KV settings: ${error}`);
     }
 
-    const populateField = (field: keyof Settings, callback?: Function) => {
-        if (!newSettings) {
-            return currentSettings?.[field] ?? settings[field];
-        }
-
-        const value = newSettings[field];
-        return typeof callback === 'function' ? callback(value) : value;
+    const getParam = (field: keyof Settings, callback?: Function) => {
+        const source = newSettings ?? currentSettings ?? settings;
+        const value = source[field];
+        return callback ? callback(value) : value;
     }
 
-    const remoteDNS = populateField('remoteDNS');
+    const remoteDNS = getParam('remoteDNS');
     const initDoh = async (): Promise<DohHost> => {
         const { host, isHostDomain } = getDomain(remoteDNS);
         const dohHost: DohHost = {
@@ -80,72 +80,72 @@ export async function updateDataset(request: Request, env: Env): Promise<Setting
     const updatedSettings: Settings = {
         remoteDNS,
         dohHost: await initDoh(),
-        localDNS: populateField('localDNS'),
-        antiSanctionDNS: populateField('antiSanctionDNS'),
-        fakeDNS: populateField('fakeDNS'),
-        logLevel: populateField('logLevel'),
-        allowLANConnection: populateField('allowLANConnection'),
-        proxyIPMode: populateField('proxyIPMode'),
-        proxyIPs: populateField('proxyIPs'),
-        prefixes: populateField('prefixes'),
-        outProxy: populateField('outProxy'),
-        outProxyParams: populateField('outProxy', (field: string) => extractChainProxyParams(field)),
-        cleanIPs: populateField('cleanIPs'),
-        VLTRenableIPv6: populateField('VLTRenableIPv6'),
-        customCdnAddrs: populateField('customCdnAddrs'),
-        customCdnHost: populateField('customCdnHost'),
-        customCdnSni: populateField('customCdnSni'),
-        bestVLTRInterval: populateField('bestVLTRInterval'),
-        VLConfigs: populateField('VLConfigs'),
-        TRConfigs: populateField('TRConfigs'),
-        ports: populateField('ports'),
-        fingerprint: populateField('fingerprint'),
-        enableTFO: populateField('enableTFO'),
-        fragmentMode: populateField('fragmentMode'),
-        fragmentLengthMin: populateField('fragmentLengthMin'),
-        fragmentLengthMax: populateField('fragmentLengthMax'),
-        fragmentIntervalMin: populateField('fragmentIntervalMin'),
-        fragmentIntervalMax: populateField('fragmentIntervalMax'),
-        fragmentMaxSplitMin: populateField('fragmentMaxSplitMin'),
-        fragmentMaxSplitMax: populateField('fragmentMaxSplitMax'),
-        fragmentPackets: populateField('fragmentPackets'),
-        bypassIran: populateField('bypassIran'),
-        bypassChina: populateField('bypassChina'),
-        bypassRussia: populateField('bypassRussia'),
-        bypassOpenAi: populateField('bypassOpenAi'),
-        bypassGoogleAi: populateField('bypassGoogleAi'),
-        bypassMicrosoft: populateField('bypassMicrosoft'),
-        bypassOracle: populateField('bypassOracle'),
-        bypassDocker: populateField('bypassDocker'),
-        bypassAdobe: populateField('bypassAdobe'),
-        bypassEpicGames: populateField('bypassEpicGames'),
-        bypassIntel: populateField('bypassIntel'),
-        bypassAmd: populateField('bypassAmd'),
-        bypassNvidia: populateField('bypassNvidia'),
-        bypassAsus: populateField('bypassAsus'),
-        bypassHp: populateField('bypassHp'),
-        bypassLenovo: populateField('bypassLenovo'),
-        blockAds: populateField('blockAds'),
-        blockPorn: populateField('blockPorn'),
-        blockUDP443: populateField('blockUDP443'),
-        customBypassRules: populateField('customBypassRules'),
-        customBlockRules: populateField('customBlockRules'),
-        customBypassSanctionRules: populateField('customBypassSanctionRules'),
-        warpRemoteDNS: populateField('warpRemoteDNS'),
-        warpEndpoints: populateField('warpEndpoints'),
-        warpEnableIPv6: populateField('warpEnableIPv6'),
-        bestWarpInterval: populateField('bestWarpInterval'),
-        xrayUdpNoises: populateField('xrayUdpNoises'),
-        knockerNoiseMode: populateField('knockerNoiseMode'),
-        noiseCountMin: populateField('noiseCountMin'),
-        noiseCountMax: populateField('noiseCountMax'),
-        noiseSizeMin: populateField('noiseSizeMin'),
-        noiseSizeMax: populateField('noiseSizeMax'),
-        noiseDelayMin: populateField('noiseDelayMin'),
-        noiseDelayMax: populateField('noiseDelayMax'),
-        amneziaNoiseCount: populateField('amneziaNoiseCount'),
-        amneziaNoiseSizeMin: populateField('amneziaNoiseSizeMin'),
-        amneziaNoiseSizeMax: populateField('amneziaNoiseSizeMax'),
+        localDNS: getParam('localDNS'),
+        antiSanctionDNS: getParam('antiSanctionDNS'),
+        fakeDNS: getParam('fakeDNS'),
+        logLevel: getParam('logLevel'),
+        allowLANConnection: getParam('allowLANConnection'),
+        proxyIPMode: getParam('proxyIPMode'),
+        proxyIPs: getParam('proxyIPs'),
+        prefixes: getParam('prefixes'),
+        outProxy: getParam('outProxy'),
+        outProxyParams: getParam('outProxy', (field: string) => extractChainProxyParams(field)),
+        cleanIPs: getParam('cleanIPs'),
+        VLTRenableIPv6: getParam('VLTRenableIPv6'),
+        customCdnAddrs: getParam('customCdnAddrs'),
+        customCdnHost: getParam('customCdnHost'),
+        customCdnSni: getParam('customCdnSni'),
+        bestVLTRInterval: getParam('bestVLTRInterval'),
+        VLConfigs: getParam('VLConfigs'),
+        TRConfigs: getParam('TRConfigs'),
+        ports: getParam('ports'),
+        fingerprint: getParam('fingerprint'),
+        enableTFO: getParam('enableTFO'),
+        fragmentMode: getParam('fragmentMode'),
+        fragmentLengthMin: getParam('fragmentLengthMin'),
+        fragmentLengthMax: getParam('fragmentLengthMax'),
+        fragmentIntervalMin: getParam('fragmentIntervalMin'),
+        fragmentIntervalMax: getParam('fragmentIntervalMax'),
+        fragmentMaxSplitMin: getParam('fragmentMaxSplitMin'),
+        fragmentMaxSplitMax: getParam('fragmentMaxSplitMax'),
+        fragmentPackets: getParam('fragmentPackets'),
+        bypassIran: getParam('bypassIran'),
+        bypassChina: getParam('bypassChina'),
+        bypassRussia: getParam('bypassRussia'),
+        bypassOpenAi: getParam('bypassOpenAi'),
+        bypassGoogleAi: getParam('bypassGoogleAi'),
+        bypassMicrosoft: getParam('bypassMicrosoft'),
+        bypassOracle: getParam('bypassOracle'),
+        bypassDocker: getParam('bypassDocker'),
+        bypassAdobe: getParam('bypassAdobe'),
+        bypassEpicGames: getParam('bypassEpicGames'),
+        bypassIntel: getParam('bypassIntel'),
+        bypassAmd: getParam('bypassAmd'),
+        bypassNvidia: getParam('bypassNvidia'),
+        bypassAsus: getParam('bypassAsus'),
+        bypassHp: getParam('bypassHp'),
+        bypassLenovo: getParam('bypassLenovo'),
+        blockAds: getParam('blockAds'),
+        blockPorn: getParam('blockPorn'),
+        blockUDP443: getParam('blockUDP443'),
+        customBypassRules: getParam('customBypassRules'),
+        customBlockRules: getParam('customBlockRules'),
+        customBypassSanctionRules: getParam('customBypassSanctionRules'),
+        warpRemoteDNS: getParam('warpRemoteDNS'),
+        warpEndpoints: getParam('warpEndpoints'),
+        warpEnableIPv6: getParam('warpEnableIPv6'),
+        bestWarpInterval: getParam('bestWarpInterval'),
+        xrayUdpNoises: getParam('xrayUdpNoises'),
+        knockerNoiseMode: getParam('knockerNoiseMode'),
+        noiseCountMin: getParam('noiseCountMin'),
+        noiseCountMax: getParam('noiseCountMax'),
+        noiseSizeMin: getParam('noiseSizeMin'),
+        noiseSizeMax: getParam('noiseSizeMax'),
+        noiseDelayMin: getParam('noiseDelayMin'),
+        noiseDelayMax: getParam('noiseDelayMax'),
+        amneziaNoiseCount: getParam('amneziaNoiseCount'),
+        amneziaNoiseSizeMin: getParam('amneziaNoiseSizeMin'),
+        amneziaNoiseSizeMax: getParam('amneziaNoiseSizeMax'),
         panelVersion: panelVersion
     };
 
@@ -193,40 +193,46 @@ function extractChainProxyParams(chainProxy: string) {
         port: +url.port
     };
 
-    const parseParams = () => {
-        for (const [key, value] of url.searchParams) {
-            configParams[key] = value;
+    const parseParams = (queryParams: boolean, customParams: Record<string, string>) => {
+        if (queryParams) {
+            for (const [key, value] of url.searchParams) {
+                configParams[key] = value;
+            }
         }
+
+        return {
+            ...configParams,
+            ...customParams
+        };
     }
 
     switch (stdProtocol) {
         case _VL_:
-            configParams.uuid = url.username;
-            parseParams();
-            break;
+            parseParams(true, {
+                uuid: url.username
+            });
 
         case _TR_:
-            configParams.password = url.username;
-            parseParams();
-            break;
+            parseParams(true, {
+                password: url.username
+            });
 
         case _SS_:
             const auth = base64DecodeUtf8(url.username);
             const [first, ...rest] = auth.split(':');
-            configParams.method = first;
-            configParams.password = rest.join(':');
-            parseParams();
-            break;
+            parseParams(true, {
+                method: first,
+                password: rest.join(':')
+            });
 
         case 'socks':
         case 'http':
-            configParams.user = url.username;
-            configParams.pass = url.password;
-            break;
+            parseParams(false, {
+                user: url.username,
+                pass: url.password
+            });
 
         default:
             return {};
     }
-
-    return configParams;
 }
