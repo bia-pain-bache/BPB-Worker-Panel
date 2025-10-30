@@ -140,11 +140,7 @@ https://www.nslookup.io/domains/bpb.yousef.isegaro.com/dns-records/
 !!! note "یادداشت"
     تغییر NAT64 Prefix از طریق پنل نیاز به به‌روزرسانی اشتراک داره اگه IP از کار بیفته. این می‌تونه کانفیگ‌های اهدایی رو مختل کنه، چون کاربرایی که اشتراک فعال ندارن نمی‌تونن به‌روزرسانی کنن. این روش فقط برای استفاده شخصی خوبه. روش‌های دیگه نیازی به به‌روزرسانی اشتراک ندارن.
 
-یه NAT64 Prefix از لینک زیر انتخاب کنید که IPها رو بر اساس منطقه و ISP لیست کرده:
-
-```text
-https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/NAT64Prefixes.md
-```
+میتونید یک یا چند NAT64 Prefix [از اینجا](https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/docs/NAT64Prefixes.md) انتخاب کنید که IPها رو بر اساس منطقه و ISP لیست کرده.
 
 !!! info "راهنمایی"
     برای استفاده از چند IP، اونا رو زیر هم وارد کنید.

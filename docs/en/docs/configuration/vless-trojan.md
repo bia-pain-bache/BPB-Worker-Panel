@@ -140,11 +140,7 @@ You can change the Proxy IP mode and fill in NAT64 Prefixes via the panel by app
 !!! note
     Changing the NAT64 Prefixes via the panel requires updating the subscription if the IP stops working. This can disrupt donated configs, as users without an active subscription cannot update them. Use this method only for personal usage. Other methods don’t require subscription updates.
 
-Select a NAT64 Prefixes from the following link, which lists IPs by region and ISP:
-
-```text
-https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/NAT64Prefixes.md
-```
+You can find available NAT64 Prefixes [here](https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/docs/NAT64Prefixes.md), which lists IPs by region and ISP.
 
 !!! info
     To use multiple Prefixes, fill them in below each other.
