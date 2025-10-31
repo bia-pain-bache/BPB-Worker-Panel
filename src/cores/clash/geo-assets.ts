@@ -1,10 +1,34 @@
 export function getGeoAssets(): GeoAsset[] {
-    const { localDNS, antiSanctionDNS } = globalThis.settings;
+    const {
+        localDNS,
+        antiSanctionDNS,
+        blockMalware,
+        blockPhishing,
+        blockCryptominers,
+        blockAds,
+        blockPorn,
+        bypassIran,
+        bypassChina,
+        bypassRussia,
+        bypassOpenAi,
+        bypassGoogleAi,
+        bypassMicrosoft,
+        bypassOracle,
+        bypassDocker,
+        bypassAdobe,
+        bypassEpicGames,
+        bypassIntel,
+        bypassAmd,
+        bypassNvidia,
+        bypassAsus,
+        bypassHp,
+        bypassLenovo,
+    } = globalThis.settings;
 
     return [
         {
-            rule: true,
-            type: 'REJECT',
+            rule: blockMalware,
+            type: 'block',
             format: "text",
             geosite: "malware",
             geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/malware.txt",
@@ -12,8 +36,8 @@ export function getGeoAssets(): GeoAsset[] {
             geoipURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/malware-ip.txt",
         },
         {
-            rule: true,
-            type: 'REJECT',
+            rule: blockPhishing,
+            type: 'block',
             format: "text",
             geosite: "phishing",
             geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/phishing.txt",
@@ -21,29 +45,29 @@ export function getGeoAssets(): GeoAsset[] {
             geoipURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/phishing-ip.txt",
         },
         {
-            rule: true,
-            type: 'REJECT',
+            rule: blockCryptominers,
+            type: 'block',
             format: "text",
             geosite: "cryptominers",
             geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/cryptominers.txt"
         },
         {
-            rule: settings.blockAds,
-            type: 'REJECT',
+            rule: blockAds,
+            type: 'block',
             format: "text",
             geosite: "category-ads-all",
             geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/category-ads-all.txt"
         },
         {
-            rule: settings.blockPorn,
-            type: 'REJECT',
+            rule: blockPorn,
+            type: 'block',
             format: "text",
             geosite: "nsfw",
             geositeURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/nsfw.txt",
         },
         {
-            rule: settings.bypassIran,
-            type: 'DIRECT',
+            rule: bypassIran,
+            type: 'direct',
             dns: localDNS,
             format: "text",
             geosite: "ir",
@@ -52,8 +76,8 @@ export function getGeoAssets(): GeoAsset[] {
             geoipURL: "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/ircidr.txt"
         },
         {
-            rule: settings.bypassChina,
-            type: 'DIRECT',
+            rule: bypassChina,
+            type: 'direct',
             dns: localDNS,
             format: "yaml",
             geosite: "cn",
@@ -62,8 +86,8 @@ export function getGeoAssets(): GeoAsset[] {
             geoipURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/cn.yaml"
         },
         {
-            rule: settings.bypassRussia,
-            type: 'DIRECT',
+            rule: bypassRussia,
+            type: 'direct',
             dns: localDNS,
             format: "yaml",
             geosite: "ru",
@@ -72,104 +96,104 @@ export function getGeoAssets(): GeoAsset[] {
             geoipURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/ru.yaml"
         },
         {
-            rule: settings.bypassOpenAi,
-            type: 'DIRECT',
+            rule: bypassOpenAi,
+            type: 'direct',
             dns: antiSanctionDNS,
             format: "yaml",
             geosite: "openai",
             geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/openai.yaml"
         },
         {
-            rule: settings.bypassGoogleAi,
-            type: 'DIRECT',
+            rule: bypassGoogleAi,
+            type: 'direct',
             dns: antiSanctionDNS,
             format: "yaml",
             geosite: "googleai",
             geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/google-deepmind.yaml"
         },
         {
-            rule: settings.bypassMicrosoft,
-            type: 'DIRECT',
+            rule: bypassMicrosoft,
+            type: 'direct',
             dns: antiSanctionDNS,
             format: "yaml",
             geosite: "microsoft",
             geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/microsoft.yaml"
         },
         {
-            rule: settings.bypassOracle,
-            type: 'DIRECT',
+            rule: bypassOracle,
+            type: 'direct',
             dns: antiSanctionDNS,
             format: "yaml",
             geosite: "oracle",
             geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/oracle.yaml"
         },
         {
-            rule: settings.bypassDocker,
-            type: 'DIRECT',
+            rule: bypassDocker,
+            type: 'direct',
             dns: antiSanctionDNS,
             format: "yaml",
             geosite: "docker",
             geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/docker.yaml"
         },
         {
-            rule: settings.bypassAdobe,
-            type: 'DIRECT',
+            rule: bypassAdobe,
+            type: 'direct',
             dns: antiSanctionDNS,
             format: "yaml",
             geosite: "adobe",
             geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/adobe.yaml"
         },
         {
-            rule: settings.bypassEpicGames,
-            type: 'DIRECT',
+            rule: bypassEpicGames,
+            type: 'direct',
             dns: antiSanctionDNS,
             format: "yaml",
             geosite: "epicgames",
             geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/epicgames.yaml"
         },
         {
-            rule: settings.bypassIntel,
-            type: 'DIRECT',
+            rule: bypassIntel,
+            type: 'direct',
             dns: antiSanctionDNS,
             format: "yaml",
             geosite: "intel",
             geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/intel.yaml"
         },
         {
-            rule: settings.bypassAmd,
-            type: 'DIRECT',
+            rule: bypassAmd,
+            type: 'direct',
             dns: antiSanctionDNS,
             format: "yaml",
             geosite: "amd",
             geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/amd.yaml"
         },
         {
-            rule: settings.bypassNvidia,
-            type: 'DIRECT',
+            rule: bypassNvidia,
+            type: 'direct',
             dns: antiSanctionDNS,
             format: "yaml",
             geosite: "nvidia",
             geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/nvidia.yaml"
         },
         {
-            rule: settings.bypassAsus,
-            type: 'DIRECT',
+            rule: bypassAsus,
+            type: 'direct',
             dns: antiSanctionDNS,
             format: "yaml",
             geosite: "asus",
             geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/asus.yaml"
         },
         {
-            rule: settings.bypassHp,
-            type: 'DIRECT',
+            rule: bypassHp,
+            type: 'direct',
             dns: antiSanctionDNS,
             format: "yaml",
             geosite: "hp",
             geositeURL: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/hp.yaml"
         },
         {
-            rule: settings.bypassLenovo,
-            type: 'DIRECT',
+            rule: bypassLenovo,
+            type: 'direct',
             dns: antiSanctionDNS,
             format: "yaml",
             geosite: "lenovo",

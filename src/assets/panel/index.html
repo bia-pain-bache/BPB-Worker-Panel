@@ -486,6 +486,18 @@
                                         <input type="checkbox" id="blockUDP443" name="blockUDP443" value="true">
                                         <label for="blockUDP443">QUIC</label>
                                     </div>
+                                    <div class="routing">
+                                        <input type="checkbox" id="blockMalware" name="blockMalware" value="true" onchange="handleRiskyRules(event)">
+                                        <label for="blockMalware">Malware</label>
+                                    </div>
+                                    <div class="routing">
+                                        <input type="checkbox" id="blockPhishing" name="blockPhishing" value="true" onchange="handleRiskyRules(event)">
+                                        <label for="blockPhishing">Phishing</label>
+                                    </div>
+                                    <div class="routing">
+                                        <input type="checkbox" id="blockCryptominers" name="blockCryptominers" value="true" onchange="handleRiskyRules(event)">
+                                        <label for="blockCryptominers">Cryptominers</label>
+                                    </div>
                                 </div>
                             </div>
                         </div>

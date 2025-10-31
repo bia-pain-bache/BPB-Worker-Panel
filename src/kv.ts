@@ -37,11 +37,11 @@ export async function getDataset(
 }
 
 export async function updateDataset(request: Request, env: Env): Promise<Settings> {
-    const { 
-        settings, 
-        httpConfig: { panelVersion } 
+    const {
+        settings,
+        httpConfig: { panelVersion }
     } = globalThis;
-    
+
     const newSettings: Settings | null = request.method === 'PUT' ? await request.json() : null;
     let currentSettings: Settings | null;
 
@@ -66,75 +66,78 @@ export async function updateDataset(request: Request, env: Env): Promise<Setting
         [keyof Settings] |
         [keyof Settings, keyof Settings, (key: keyof Settings) => any | Promise<any>]
     > = [
-        ["remoteDNS"],
-        ["remoteDnsHost", "remoteDNS", getDnsParams],
-        ["localDNS"],
-        ["antiSanctionDNS"],
-        ["fakeDNS"],
-        ["logLevel"],
-        ["allowLANConnection"],
-        ["proxyIPMode"],
-        ["proxyIPs"],
-        ["prefixes"],
-        ["outProxy"],
-        ["outProxyParams", "outProxy", extractProxyParams],
-        ["cleanIPs"],
-        ["VLTRenableIPv6"],
-        ["customCdnAddrs"],
-        ["customCdnHost"],
-        ["customCdnSni"],
-        ["bestVLTRInterval"],
-        ["VLConfigs"],
-        ["TRConfigs"],
-        ["ports"],
-        ["fingerprint"],
-        ["enableTFO"],
-        ["fragmentMode"],
-        ["fragmentLengthMin"],
-        ["fragmentLengthMax"],
-        ["fragmentIntervalMin"],
-        ["fragmentIntervalMax"],
-        ["fragmentMaxSplitMin"],
-        ["fragmentMaxSplitMax"],
-        ["fragmentPackets"],
-        ["bypassIran"],
-        ["bypassChina"],
-        ["bypassRussia"],
-        ["bypassOpenAi"],
-        ["bypassGoogleAi"],
-        ["bypassMicrosoft"],
-        ["bypassOracle"],
-        ["bypassDocker"],
-        ["bypassAdobe"],
-        ["bypassEpicGames"],
-        ["bypassIntel"],
-        ["bypassAmd"],
-        ["bypassNvidia"],
-        ["bypassAsus"],
-        ["bypassHp"],
-        ["bypassLenovo"],
-        ["blockAds"],
-        ["blockPorn"],
-        ["blockUDP443"],
-        ["customBypassRules"],
-        ["customBlockRules"],
-        ["customBypassSanctionRules"],
-        ["warpRemoteDNS"],
-        ["warpEndpoints"],
-        ["warpEnableIPv6"],
-        ["bestWarpInterval"],
-        ["xrayUdpNoises"],
-        ["knockerNoiseMode"],
-        ["noiseCountMin"],
-        ["noiseCountMax"],
-        ["noiseSizeMin"],
-        ["noiseSizeMax"],
-        ["noiseDelayMin"],
-        ["noiseDelayMax"],
-        ["amneziaNoiseCount"],
-        ["amneziaNoiseSizeMin"],
-        ["amneziaNoiseSizeMax"]
-    ];
+            ["remoteDNS"],
+            ["remoteDnsHost", "remoteDNS", getDnsParams],
+            ["localDNS"],
+            ["antiSanctionDNS"],
+            ["fakeDNS"],
+            ["logLevel"],
+            ["allowLANConnection"],
+            ["proxyIPMode"],
+            ["proxyIPs"],
+            ["prefixes"],
+            ["outProxy"],
+            ["outProxyParams", "outProxy", extractProxyParams],
+            ["cleanIPs"],
+            ["VLTRenableIPv6"],
+            ["customCdnAddrs"],
+            ["customCdnHost"],
+            ["customCdnSni"],
+            ["bestVLTRInterval"],
+            ["VLConfigs"],
+            ["TRConfigs"],
+            ["ports"],
+            ["fingerprint"],
+            ["enableTFO"],
+            ["fragmentMode"],
+            ["fragmentLengthMin"],
+            ["fragmentLengthMax"],
+            ["fragmentIntervalMin"],
+            ["fragmentIntervalMax"],
+            ["fragmentMaxSplitMin"],
+            ["fragmentMaxSplitMax"],
+            ["fragmentPackets"],
+            ["bypassIran"],
+            ["bypassChina"],
+            ["bypassRussia"],
+            ["bypassOpenAi"],
+            ["bypassGoogleAi"],
+            ["bypassMicrosoft"],
+            ["bypassOracle"],
+            ["bypassDocker"],
+            ["bypassAdobe"],
+            ["bypassEpicGames"],
+            ["bypassIntel"],
+            ["bypassAmd"],
+            ["bypassNvidia"],
+            ["bypassAsus"],
+            ["bypassHp"],
+            ["bypassLenovo"],
+            ["blockAds"],
+            ["blockPorn"],
+            ["blockUDP443"],
+            ["blockMalware"],
+            ["blockPhishing"],
+            ["blockCryptominers"],
+            ["customBypassRules"],
+            ["customBlockRules"],
+            ["customBypassSanctionRules"],
+            ["warpRemoteDNS"],
+            ["warpEndpoints"],
+            ["warpEnableIPv6"],
+            ["bestWarpInterval"],
+            ["xrayUdpNoises"],
+            ["knockerNoiseMode"],
+            ["noiseCountMin"],
+            ["noiseCountMax"],
+            ["noiseSizeMin"],
+            ["noiseSizeMax"],
+            ["noiseDelayMin"],
+            ["noiseDelayMax"],
+            ["amneziaNoiseCount"],
+            ["amneziaNoiseSizeMin"],
+            ["amneziaNoiseSizeMax"]
+        ];
 
     const entries = await Promise.all(
         fields.map(async ([key, callbackKey, callbackFunc]) => {
@@ -159,7 +162,7 @@ export async function updateDataset(request: Request, env: Env): Promise<Setting
 
 async function getDnsParams(dns: string): Promise<DnsHost> {
     const { host, isHostDomain } = getDomain(dns);
-    const dohHost: DnsHost = { host, isDomain: isHostDomain, ipv4: [], ipv6: []};
+    const dohHost: DnsHost = { host, isDomain: isHostDomain, ipv4: [], ipv6: [] };
 
     if (isHostDomain) {
         const { ipv4, ipv6 } = await resolveDNS(host);

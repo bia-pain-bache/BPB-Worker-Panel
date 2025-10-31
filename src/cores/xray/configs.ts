@@ -292,6 +292,7 @@ async function addWorkerlessConfigs(configs: Config[]) {
 export async function getXrCustomConfigs(isFragment: boolean): Promise<Response> {
     const { outProxy, ports } = globalThis.settings;
     const chainProxy = outProxy ? buildChainOutbound() : undefined;
+    
     const Addresses = await getConfigAddresses(isFragment);
     const totalPorts = ports.filter(port => isFragment ? isHttps(port) : true);
     const protocols = getProtocols();

@@ -191,8 +191,8 @@ export function isHttps(port: number): boolean {
     return defaultHttpsPorts.includes(port);
 }
 
-const isBypass = (type: string) => ['direct', 'DIRECT'].includes(type);
-const isBlock = (type: string) => ['block', 'REJECT', 'reject'].includes(type);
+const isBypass = (type: string) => type === "direct";
+const isBlock = (type: string) => type === "block";
 
 export function accRoutingRules(geoAssets: GeoAsset[]) {
     const {

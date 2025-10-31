@@ -12,6 +12,7 @@
 - Revised build process to reduce worker.js size up to ~120 KB.
 - Added `Log Level` and `Allow connections from LAN` to Common section as new features.
 - Changed anti saction DNS to [Shecan](https://shecan.ir/).
+- Added `Malware`, `Phishing` and `Cryptominers` block rules. Note that v2ray users should set Geo Assets to Chocolate4U and download assets, otherwise configs won't connect.
 - Panel UI improvements.
 - Updated docs.
 - And some other bug fixes and improvements.

@@ -115,6 +115,9 @@ declare global {
         blockAds: boolean;
         blockPorn: boolean;
         blockUDP443: boolean;
+        blockMalware: boolean;
+        blockPhishing: boolean;
+        blockCryptominers: boolean;
         customBypassRules: string[];
         customBlockRules: string[];
         customBypassSanctionRules: string[];

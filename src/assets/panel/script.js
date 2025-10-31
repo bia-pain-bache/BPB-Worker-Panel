@@ -378,6 +378,16 @@ function handlePortChange(event) {
     }
 }
 
+function handleRiskyRules(event) {
+    if (event.target.checked) {
+        const proceed = confirm("⛔ v2ray users should set Geo Assets to Chocolate4U and download assets, otherwise configs won't connect.\n\n❓ Proceed?");
+        if (!proceed) {
+            event.target.checked = false;
+            return;
+        }
+    }
+}
+
 function handleFragmentMode() {
     const fragmentMode = document.getElementById("fragmentMode").value;
     const formDataObj = Object.fromEntries(globalThis.initialFormData.entries());
