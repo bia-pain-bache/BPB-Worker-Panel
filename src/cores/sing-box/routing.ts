@@ -80,9 +80,11 @@ export function buildRoutingRules(isWarp: boolean, isChain: boolean): Route {
         addRoutingRule(rules, 'direct', undefined, routingRules.bypass.ips, undefined, routingRules.bypass.geoips);
     }
 
-    const ruleSets: RuleSet[] = [];
-    geoAssets.forEach(asset => addRuleSets(ruleSets, asset));
     const isIPv6 = isWarp ? warpEnableIPv6 : VLTRenableIPv6;
+    const ruleSets: RuleSet[] = geoAssets.reduce((sets, asset) => { 
+        addRuleSets(sets, asset);
+        return sets;
+    }, []);
 
     return {
         rules,

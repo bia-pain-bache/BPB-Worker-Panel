@@ -1,24 +1,9 @@
 import { getDataset } from 'kv';
 import { buildDNS } from './dns';
 import { buildRoutingRules, buildRuleProviders } from './routing';
-import {
-    buildChainOutbound,
-    buildWarpOutbound,
-    buildWebsocketOutbound
-} from './outbounds';
-
-import type {
-    AnyOutbound,
-    WireguardOutbound,
-    Config,
-    UrlTest
-} from 'types/clash';
-
-import {
-    getConfigAddresses,
-    generateRemark,
-    getProtocols
-} from '@utils';
+import { buildChainOutbound, buildWarpOutbound, buildWebsocketOutbound } from './outbounds';
+import type { AnyOutbound, WireguardOutbound, Config, UrlTest } from 'types/clash';
+import { getConfigAddresses, generateRemark, getProtocols } from '@utils';
 
 async function buildConfig(
     outbounds: AnyOutbound[],

@@ -1,10 +1,4 @@
-import {
-    isHttps,
-    generateWsPath,
-    parseHostPort,
-    randomUpperCase
-} from '@utils';
-
+import { isHttps, generateWsPath, parseHostPort, randomUpperCase } from '@utils';
 import {
     BaseOutbound,
     HttpOutbound,

@@ -1,19 +1,13 @@
 import { getDataset } from 'kv';
 import { buildDNS } from './dns';
 import { buildRoutingRules } from './routing';
+import type { Balancer, Config, Observatory, Outbound} from 'types/xray';
 import {
     buildChainOutbound,
     buildWebsocketOutbound,
     buildWarpOutbound,
     buildFreedomOutbound
 } from './outbounds';
-
-import type {
-    Balancer,
-    Config,
-    Observatory,
-    Outbound
-} from 'types/xray';
 
 import {
     getConfigAddresses,
@@ -294,7 +288,7 @@ export async function getXrCustomConfigs(isFragment: boolean): Promise<Response>
     const chainProxy = outProxy ? buildChainOutbound() : undefined;
     
     const Addresses = await getConfigAddresses(isFragment);
-    const totalPorts = ports.filter(port => isFragment ? isHttps(port) : true);
+    const totalPorts = ports.filter(port => !isFragment || isHttps(port));
     const protocols = getProtocols();
 
     const configs: Config[] = [];
@@ -366,21 +360,15 @@ export async function getXrWarpConfigs(
     const udpNoise: Outbound[] = isPro && !isKnocker ? [buildFreedomOutbound(false, true, 'udp-noise')] : [];
 
     for (const [index, endpoint] of warpEndpoints.entries()) {
-        const warpOutbounds: Outbound[] = [...udpNoise];
-        const wowOutbounds: Outbound[] = [...udpNoise];
-
         const { host } = parseHostPort(endpoint);
         if (isDomain(host)) outboundDomains.push(host);
-
+        
         const warpOutbound = buildWarpOutbound(warpAccounts[0], endpoint, false, isPro);
         const wowOutbound = buildWarpOutbound(warpAccounts[1], endpoint, true, isPro);
 
-        warpOutbounds.unshift(warpOutbound);
-        wowOutbounds.unshift(wowOutbound, warpOutbound);
-
         const warpConfig = await buildConfig(
             `💦 ${index + 1} - Warp${proIndicator}🇮🇷`,
-            warpOutbounds,
+            [warpOutbound, ...udpNoise],
             false,
             false,
             false,
@@ -391,7 +379,7 @@ export async function getXrWarpConfigs(
 
         const wowConfig = await buildConfig(
             `💦 ${index + 1} - WoW${proIndicator}🌍`,
-            wowOutbounds,
+            [wowOutbound, warpOutbound, ...udpNoise],
             false,
             true,
             false,
@@ -409,12 +397,9 @@ export async function getXrWarpConfigs(
         chains.push(chain);
     }
 
-    const warpBestPingOutbounds = [...proxies, ...udpNoise];
-    const wowBestPingOutbounds = [...chains, ...proxies, ...udpNoise];
-
     const warpBestPing = await buildConfig(
         `💦 Warp${proIndicator}- Best Ping 🚀`,
-        warpBestPingOutbounds,
+        [...proxies, ...udpNoise],
         true,
         false,
         false,
@@ -425,7 +410,7 @@ export async function getXrWarpConfigs(
 
     const wowBestPing = await buildConfig(
         `💦 WoW${proIndicator}- Best Ping 🚀`,
-        wowBestPingOutbounds,
+        [...chains, ...proxies, ...udpNoise],
         true,
         true,
         false,

@@ -29,9 +29,10 @@ export function buildRoutingRules(isWarp: boolean) {
 }
 
 export function buildRuleProviders(): Record<string, RuleProvider> {
-    return getGeoAssets().reduce<Record<string, RuleProvider>>((ruleProviders, asset) => {
-        addRuleProvider(ruleProviders, asset);
-        return ruleProviders;
+    const geoAssets = getGeoAssets();
+    return geoAssets.reduce((providers, asset) => {
+        addRuleProvider(providers, asset);
+        return providers;
     }, {});
 }
 

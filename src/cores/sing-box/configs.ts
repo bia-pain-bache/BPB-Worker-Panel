@@ -1,25 +1,9 @@
 import { getDataset } from 'kv';
 import { buildDNS } from './dns';
 import { buildRoutingRules } from './routing';
-import {
-    buildChainOutbound,
-    buildWarpOutbound,
-    buildWebsocketOutbound
-} from './outbounds.js';
-
-import {
-    AnyOutbound,
-    WireguardEndpoint,
-    Config,
-    URLTest
-} from 'types/sing-box';
-
-import {
-    getConfigAddresses,
-    generateRemark,
-    isHttps,
-    getProtocols
-} from '@utils';
+import { buildChainOutbound, buildWarpOutbound, buildWebsocketOutbound } from './outbounds.js';
+import { AnyOutbound, WireguardEndpoint, Config, URLTest } from 'types/sing-box';
+import { getConfigAddresses, generateRemark, isHttps, getProtocols } from '@utils';
 
 async function buildConfig(
     outbounds: AnyOutbound[],
@@ -127,15 +111,12 @@ export async function getSbCustomConfig(isFragment: boolean): Promise<Response> 
 
     const protocols = getProtocols();
     const Addresses = await getConfigAddresses(isFragment);
-    const finalPorts = isFragment
-        ? ports.filter(port => isHttps(port))
-        : ports;
-
+    const totalPorts = ports.filter(port => !isFragment || isHttps(port));
     const selectorTags = ["💦 Best Ping 🚀"].concatIf(isChain, "💦 🔗 Best Ping 🚀");
 
     protocols.forEach(protocol => {
         let protocolIndex = 1;
-        finalPorts.forEach(port => {
+        totalPorts.forEach(port => {
             Addresses.forEach(addr => {
                 const tag = generateRemark(protocolIndex, port, addr, protocol, isFragment, false);
                 const outbound = buildWebsocketOutbound(protocol, tag, addr, port, isFragment);
