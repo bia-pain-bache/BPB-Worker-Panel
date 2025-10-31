@@ -12,8 +12,14 @@ Using predefined routing rules, you can apply these settings to configs:
 * Block Iranian and foreign ads, up to 90 percent.
 * Block Porn content websites.
 * Block QUIC connections (due to network instability).
+* Block Malware (Read warning)
+* Block Phishing (Read warning)
+* Block Cryptominers (Read warning)
 
 Direct access to local addresses like 127.0.0.1 is set by default on configs and there's no need to manually add them.
+
+!!! warning
+    v2ray users should change Geo Assets to **Chocolate4U** and download assets if they wanna use `Malware`, `Phishing` and `Cryptominers` rules, otherwise configs won't connect.
 
 !!! warning
     If you enable routing rules and the client does not connect, the primary reason is that the Geo asset is not updated. Go to the Geo assets settings in the v2rayNG menu and click the cloud or download icon to update them. If the update process is unsuccessful, you will not be able to connect. If you have tried everything and it still does not update, download the two files from the links below, and instead of clicking the update button, click the add button and import these two files:
@@ -33,7 +39,7 @@ There are cases which predefined rules cannot help. For example, if you have blo
 !!! info
     You can use three different formats in this section:
 
-    * Domains
+    * Domains 
     * IPs 
     * IP/cidr
 
@@ -47,13 +53,13 @@ There are cases which predefined rules cannot help. For example, if you have blo
     192.168.1.1
     ```
     ```title="IPv6"
-    [2606:4700::6810:85e5]
+    2606:4700::6810:85e5
     ```
     ```title="IPv4 CIDR"
     192.168.1.1/32
     ```
     ```title="IPv6 CIDR"
-    [2606:4700::6810:85e5]/128
+    2606:4700::6810:85e5/128
     ```
 
 ## Sanction Rules
