@@ -17,7 +17,6 @@ import {
 import {
     getConfigAddresses,
     generateRemark,
-    randomUpperCase,
     isHttps,
     getProtocols
 } from '@utils';
@@ -32,11 +31,11 @@ async function buildConfig(
     isIPv6: boolean,
     isChain: boolean
 ): Promise<Config> {
-    const { 
-        bestWarpInterval, 
+    const {
+        bestWarpInterval,
         bestVLTRInterval,
         logLevel,
-        allowLANConnection 
+        allowLANConnection
     } = globalThis.settings;
 
     const config: Config = {
@@ -118,18 +117,7 @@ async function buildConfig(
 }
 
 export async function getSbCustomConfig(isFragment: boolean): Promise<Response> {
-    const {
-        httpConfig: { hostName },
-        settings: {
-            outProxy,
-            ports,
-            customCdnAddrs,
-            customCdnHost,
-            customCdnSni,
-            VLTRenableIPv6
-        }
-    } = globalThis;
-
+    const { outProxy, ports, VLTRenableIPv6 } = globalThis.settings;
     const chainProxy = outProxy ? buildChainOutbound() : undefined;
     const isChain = !!chainProxy;
 
@@ -149,19 +137,15 @@ export async function getSbCustomConfig(isFragment: boolean): Promise<Response> 
         let protocolIndex = 1;
         finalPorts.forEach(port => {
             Addresses.forEach(addr => {
-                const isCustomAddr = customCdnAddrs.includes(addr);
-                const configType = isFragment ? 'F' : isCustomAddr ? 'C' : '';
-                const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
-                const host = isCustomAddr ? customCdnHost : hostName;
-                const tag = generateRemark(protocolIndex, port, addr, protocol, configType, false);
+                const tag = generateRemark(protocolIndex, port, addr, protocol, isFragment, false);
+                const outbound = buildWebsocketOutbound(protocol, tag, addr, port, isFragment);
 
-                const outbound = buildWebsocketOutbound(protocol, tag, addr, port, host, sni, isCustomAddr, isFragment);
                 outbounds.push(outbound);
                 proxyTags.push(tag);
                 selectorTags.push(tag);
 
                 if (isChain) {
-                    const chainTag = generateRemark(protocolIndex, port, addr, protocol, configType, true);
+                    const chainTag = generateRemark(protocolIndex, port, addr, protocol, isFragment, true);
                     const chain = structuredClone(chainProxy);
                     chain.tag = chainTag;
                     chain.detour = tag;
@@ -177,13 +161,13 @@ export async function getSbCustomConfig(isFragment: boolean): Promise<Response> 
     });
 
     const config = await buildConfig(
-        outbounds, 
-        [], 
-        selectorTags, 
-        proxyTags, 
-        chainTags, 
-        false, 
-        VLTRenableIPv6, 
+        outbounds,
+        [],
+        selectorTags,
+        proxyTags,
+        chainTags,
+        false,
+        VLTRenableIPv6,
         isChain
     );
 
@@ -223,13 +207,13 @@ export async function getSbWarpConfig(request: Request, env: Env): Promise<Respo
     });
 
     const config = await buildConfig(
-        [], 
-        outbounds, 
-        selectorTags, 
-        proxyTags, 
-        chainTags, 
-        true, 
-        warpEnableIPv6, 
+        [],
+        outbounds,
+        selectorTags,
+        proxyTags,
+        chainTags,
+        true,
+        warpEnableIPv6,
         false
     );
 

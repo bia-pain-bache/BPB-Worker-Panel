@@ -2,7 +2,8 @@ import {
     isHttps,
     base64ToDecimal,
     generateWsPath,
-    parseHostPort
+    parseHostPort,
+    randomUpperCase
 } from '@utils';
 
 import {
@@ -22,7 +23,7 @@ import {
     Transport,
     HttpupgradeTransport,
     TransportType,
-    Fingerprint,
+    Fingerprint
 } from 'types/sing-box';
 
 function buildOutbound<T>(
@@ -52,20 +53,22 @@ export function buildWebsocketOutbound(
     remark: string,
     address: string,
     port: number,
-    host: string,
-    sni: string,
-    allowInsecure: boolean,
     isFragment: boolean
 ): VlessOutbound | TrojanOutbound {
     const {
         dict: { _VL_ },
         globalConfig: { userID, TrPass },
-        settings: { fingerprint, enableTFO }
+        httpConfig: { hostName },
+        settings: { fingerprint, enableTFO, customCdnAddrs, customCdnHost, customCdnSni }
     } = globalThis;
+
+    const isCustomAddr = customCdnAddrs.includes(address);
+    const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
+    const host = isCustomAddr ? customCdnHost : hostName;
 
     const transport = buildTransport("ws", "none", generateWsPath(protocol), host, undefined, 2560);
     const tls = isHttps(port)
-        ? buildTLS("tls", isFragment, allowInsecure, undefined, sni, "http/1.1", fingerprint)
+        ? buildTLS("tls", isFragment, isCustomAddr, undefined, sni, "http/1.1", fingerprint)
         : undefined;
 
     if (protocol === _VL_) return buildOutbound<VlessOutbound>(remark, protocol, address, port, enableTFO, {

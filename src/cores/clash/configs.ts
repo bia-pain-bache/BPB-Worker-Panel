@@ -17,7 +17,6 @@ import type {
 import {
     getConfigAddresses,
     generateRemark,
-    randomUpperCase,
     getProtocols
 } from '@utils';
 
@@ -30,8 +29,8 @@ async function buildConfig(
     isWarp: boolean,
     isPro: boolean
 ): Promise<Config> {
-    const { 
-        bestWarpInterval, 
+    const {
+        bestWarpInterval,
         bestVLTRInterval,
         logLevel,
         allowLANConnection
@@ -127,17 +126,7 @@ async function buildConfig(
 }
 
 export async function getClNormalConfig(): Promise<Response> {
-    const {
-        httpConfig: { hostName },
-        settings: {
-            outProxy,
-            ports,
-            customCdnAddrs,
-            customCdnHost,
-            customCdnSni
-        }
-    } = globalThis;
-
+    const { outProxy, ports } = globalThis.settings;
     const chainProxy = outProxy ? buildChainOutbound() : undefined;
     const isChain = !!chainProxy;
 
@@ -153,12 +142,8 @@ export async function getClNormalConfig(): Promise<Response> {
         let protocolIndex = 1;
         ports.forEach(port => {
             Addresses.forEach(addr => {
-                const isCustomAddr = customCdnAddrs.includes(addr);
-                const configType = isCustomAddr ? 'C' : '';
-                const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
-                const host = isCustomAddr ? customCdnHost : hostName;
-                const tag = generateRemark(protocolIndex, port, addr, protocol, configType, false);
-                const outbound = buildWebsocketOutbound(protocol, tag, addr, port, host!, sni, isCustomAddr);
+                const tag = generateRemark(protocolIndex, port, addr, protocol, false, false);
+                const outbound = buildWebsocketOutbound(protocol, tag, addr, port);
 
                 if (outbound) {
                     proxyTags.push(tag);
@@ -166,7 +151,7 @@ export async function getClNormalConfig(): Promise<Response> {
                     outbounds.push(outbound);
 
                     if (isChain) {
-                        const chainTag = generateRemark(protocolIndex, port, addr, protocol, configType, true);
+                        const chainTag = generateRemark(protocolIndex, port, addr, protocol, false, true);
                         let chain = structuredClone(chainProxy);
                         chain['name'] = chainTag;
                         chain['dialer-proxy'] = tag;
@@ -183,12 +168,12 @@ export async function getClNormalConfig(): Promise<Response> {
     });
 
     const config = await buildConfig(
-        outbounds, 
-        selectorTags, 
-        proxyTags, 
-        chainTags, 
-        isChain, 
-        false, 
+        outbounds,
+        selectorTags,
+        proxyTags,
+        chainTags,
+        isChain,
+        false,
         false
     );
 
@@ -229,12 +214,12 @@ export async function getClWarpConfig(request: Request, env: Env, isPro: boolean
     });
 
     const config = await buildConfig(
-        outbounds, 
-        selectorTags, 
-        proxyTags, 
-        chainTags, 
-        false, 
-        true, 
+        outbounds,
+        selectorTags,
+        proxyTags,
+        chainTags,
+        false,
+        true,
         isPro
     );
 

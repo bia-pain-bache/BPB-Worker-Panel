@@ -63,7 +63,7 @@ export async function getConfigAddresses(isFragment: boolean): Promise<string[]>
         ...cleanIPs
     ];
 
-    return addrs.concatIf(isFragment, customCdnAddrs);
+    return addrs.concatIf(!isFragment, customCdnAddrs);
 }
 
 export function generateRemark(
@@ -71,16 +71,17 @@ export function generateRemark(
     port: number,
     address: string,
     protocol: string,
-    configType: string,
+    isFragment: boolean,
     isChain: boolean
 ): string {
     const {
-        settings: { cleanIPs },
+        settings: { cleanIPs, customCdnAddrs },
         dict: { _VL_, _VL_CAP_, _TR_CAP_ }
     } = globalThis;
 
+    const isCustomAddr = customCdnAddrs.includes(address);
+    const configType = isCustomAddr ? ' C' : isFragment ? ' F' : '';
     const chainSign = isChain ? '🔗 ' : '';
-    const type = configType ? ` ${configType}` : '';
     const protoSign = protocol === _VL_ ? _VL_CAP_ : _TR_CAP_;
     let addressType;
 
@@ -88,7 +89,7 @@ export function generateRemark(
         ? addressType = 'Clean IP'
         : addressType = isDomain(address) ? 'Domain' : isIPv4(address) ? 'IPv4' : isIPv6(address) ? 'IPv6' : '';
 
-    return `💦 ${index} - ${chainSign}${protoSign}${type} - ${addressType} : ${port}`;
+    return `💦 ${index} - ${chainSign}${protoSign}${configType} - ${addressType} : ${port}`;
 }
 
 export function randomUpperCase(str: string): string {
@@ -171,7 +172,7 @@ export function getDomain(url: string) {
     }
 }
 
-export function parseHostPort(input: string, brackets?: boolean): {host: string, port: number} {
+export function parseHostPort(input: string, brackets?: boolean): { host: string, port: number } {
     const regex = /^(?:\[(?<ipv6>.+?)\]|(?<host>[^:]+))(:(?<port>\d+))?$/;
     const match = input.match(regex);
 

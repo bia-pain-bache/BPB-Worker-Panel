@@ -1,7 +1,8 @@
 import {
     isHttps,
     generateWsPath,
-    parseHostPort
+    parseHostPort,
+    randomUpperCase
 } from '@utils';
 
 import {
@@ -21,7 +22,7 @@ import {
     Transport,
     AmneziaOpts,
     Network,
-    Fingerprint,
+    Fingerprint
 } from 'types/clash';
 
 function buildOutbound<T>(
@@ -54,20 +55,22 @@ export function buildWebsocketOutbound(
     remark: string,
     address: string,
     port: number,
-    host: string,
-    sni: string,
-    allowInsecure: boolean
 ): VlessOutbound | TrojanOutbound | null {
     const {
         dict: { _VL_, _TR_ },
         globalConfig: { userID, TrPass },
-        settings: { fingerprint, enableTFO, VLTRenableIPv6 }
+        httpConfig: { hostName },
+        settings: { fingerprint, enableTFO, VLTRenableIPv6, customCdnAddrs, customCdnSni, customCdnHost }
     } = globalThis;
 
     const isTLS = isHttps(port);
     if (protocol === _TR_ && !isTLS) return null;
 
-    const tls = buildTLS(protocol, "tls", allowInsecure, undefined, sni, "http/1.1", fingerprint);
+    const isCustomAddr = customCdnAddrs.includes(address);
+    const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
+    const host = isCustomAddr ? customCdnHost : hostName;
+
+    const tls = buildTLS(protocol, "tls", isCustomAddr, undefined, sni, "http/1.1", fingerprint);
     const transport = buildTransport("ws", undefined, generateWsPath(protocol), host, undefined, 2560);
 
     if (protocol === _VL_) return buildOutbound<VlessOutbound>(remark, protocol, address, port, VLTRenableIPv6, enableTFO, tls, transport, {
