@@ -1,7 +1,8 @@
 import { getDataset } from 'kv';
 import { buildDNS } from './dns';
 import { buildRoutingRules } from './routing';
-import type { Balancer, Config, Observatory, Outbound} from 'types/xray';
+import type { Balancer, Config, Observatory, Outbound } from 'types/xray';
+import { buildDokodemoInbound, buildMixedInbound } from './inbounds';
 import {
     buildChainOutbound,
     buildWebsocketOutbound,
@@ -16,8 +17,20 @@ import {
     isHttps,
     getProtocols,
     parseHostPort,
-    toRange
+    toRange,
+    customReplacer
 } from '@utils';
+
+function buildBalancer(tag: string, selector: string, hasFallback: boolean): Balancer {
+    return {
+        tag,
+        selector: [selector],
+        strategy: {
+            type: "leastPing",
+        },
+        fallbackTag: hasFallback ? "proxy-2" : undefined
+    };
+}
 
 async function buildConfig(
     remark: string,
@@ -42,21 +55,10 @@ async function buildConfig(
     let balancers, observatory;
 
     if (isBalancer) {
-        const createBalancer = (tag: string, selector: string, hasFallback: boolean): Balancer => {
-            return {
-                tag,
-                selector: [selector],
-                strategy: {
-                    type: "leastPing",
-                },
-                fallbackTag: hasFallback ? "proxy-2" : undefined
-            };
-        }
-
-        balancers = [createBalancer("all-proxies", "proxy", balancerFallback)];
+        balancers = [buildBalancer("all-proxies", "proxy", balancerFallback)];
 
         if (isChain) {
-            const chainBalancer = createBalancer("all-chains", "chain", false)
+            const chainBalancer = buildBalancer("all-chains", "chain", false)
             balancers.push(chainBalancer);
         }
 
@@ -70,10 +72,6 @@ async function buildConfig(
         } satisfies Observatory;
     }
 
-    const destOverride = ["http", "tls"]
-        .concatIf(isWorkerLess, "quic")
-        .concatIf(fakeDNS, "fakedns");
-
     const config: Config = {
         remarks: remark,
         log: {
@@ -81,32 +79,8 @@ async function buildConfig(
         },
         dns: await buildDNS(outboundAddrs, isWorkerLess, isWarp, domainToStaticIPs, customDns, customDnsHosts),
         inbounds: [
-            {
-                listen: allowLANConnection ? "0.0.0.0" : "127.0.0.1",
-                port: 10808,
-                protocol: "socks",
-                settings: {
-                    auth: "noauth",
-                    udp: true,
-                    userLevel: 8,
-                },
-                sniffing: {
-                    destOverride,
-                    enabled: true,
-                    routeOnly: true
-                },
-                tag: "mixed-in",
-            },
-            {
-                port: 10853,
-                protocol: "dokodemo-door",
-                settings: {
-                    address: "1.1.1.1",
-                    network: "tcp,udp",
-                    port: 53
-                },
-                tag: "dns-in"
-            }
+            buildMixedInbound(allowLANConnection, isWorkerLess, fakeDNS),
+            buildDokodemoInbound(allowLANConnection)
         ],
         outbounds: [
             ...outbounds,
@@ -128,7 +102,7 @@ async function buildConfig(
                 protocol: "blackhole",
                 settings: {
                     response: {
-                        type: "http",
+                        type: "http"
                     }
                 },
                 tag: "block"
@@ -142,16 +116,16 @@ async function buildConfig(
         observatory,
         policy: {
             levels: {
-                8: {
+                0: {
                     connIdle: 300,
-                    downlinkOnly: 1,
                     handshake: 4,
                     uplinkOnly: 1,
+                    downlinkOnly: 1
                 }
             },
             system: {
                 statsOutboundUplink: true,
-                statsOutboundDownlink: true,
+                statsOutboundDownlink: true
             }
         },
         stats: {}
@@ -286,7 +260,7 @@ async function addWorkerlessConfigs(configs: Config[]) {
 export async function getXrCustomConfigs(isFragment: boolean): Promise<Response> {
     const { outProxy, ports } = globalThis.settings;
     const chainProxy = outProxy ? buildChainOutbound() : undefined;
-    
+
     const Addresses = await getConfigAddresses(isFragment);
     const totalPorts = ports.filter(port => !isFragment || isHttps(port));
     const protocols = getProtocols();
@@ -333,7 +307,7 @@ export async function getXrCustomConfigs(isFragment: boolean): Promise<Response>
         await addWorkerlessConfigs(configs);
     }
 
-    return new Response(JSON.stringify(configs, null, 4), {
+    return new Response(JSON.stringify(configs, customReplacer, 4), {
         status: 200,
         headers: {
             'Content-Type': 'text/plain;charset=utf-8',
@@ -362,7 +336,7 @@ export async function getXrWarpConfigs(
     for (const [index, endpoint] of warpEndpoints.entries()) {
         const { host } = parseHostPort(endpoint);
         if (isDomain(host)) outboundDomains.push(host);
-        
+
         const warpOutbound = buildWarpOutbound(warpAccounts[0], endpoint, false, isPro);
         const wowOutbound = buildWarpOutbound(warpAccounts[1], endpoint, true, isPro);
 
@@ -421,7 +395,7 @@ export async function getXrWarpConfigs(
 
     configs.push(warpBestPing, wowBestPing);
 
-    return new Response(JSON.stringify(configs, null, 4), {
+    return new Response(JSON.stringify(configs, customReplacer, 4), {
         status: 200,
         headers: {
             'Content-Type': 'text/plain;charset=utf-8',

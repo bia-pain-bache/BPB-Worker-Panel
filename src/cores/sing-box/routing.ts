@@ -122,17 +122,17 @@ function addRoutingRule(
     });
 }
 
-function addRuleSets(ruleSets: RuleSet[], geoAsset: any) {
+function addRuleSets(ruleSets: RuleSet[], geoAsset: GeoAsset) {
     const { geosite, geositeURL, geoip, geoipURL } = geoAsset;
 
-    const addRuleSet = (geo: string, geoURL: string) => ruleSets.push({
+    const addRuleSet = (geo: string, url: string) => ruleSets.push({
         type: "remote",
         tag: geo,
         format: "binary",
-        url: geoURL,
+        url,
         download_detour: "direct"
     });
 
-    if (geosite) addRuleSet(geosite, geositeURL);
-    if (geoip) addRuleSet(geoip, geoipURL);
+    if (geosite && geositeURL) addRuleSet(geosite, geositeURL);
+    if (geoip && geoipURL) addRuleSet(geoip, geoipURL);
 }

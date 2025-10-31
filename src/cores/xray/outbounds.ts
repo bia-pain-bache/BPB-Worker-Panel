@@ -3,7 +3,7 @@ import {
     isHttps,
     generateWsPath,
     toRange,
-    randomUpperCase
+    selectSniHost
 } from '@utils';
 
 import {
@@ -50,7 +50,6 @@ function buildOutbound<T>(
         settings: {
             address,
             port,
-            level: 8,
             ...settings
         } as T,
         streamSettings,
@@ -128,22 +127,19 @@ export function buildWebsocketOutbound(
     isFragment: boolean
 ): Outbound {
     const {
-        settings: { fingerprint, enableTFO, customCdnAddrs, customCdnHost, customCdnSni },
+        settings: { fingerprint, enableTFO },
         globalConfig: { userID, TrPass },
-        httpConfig: { hostName },
         dict: { _VL_ }
     } = globalThis;
 
     const isTLS = isHttps(port);
-    const isCustomAddr = customCdnAddrs.includes(address);
-    const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
-    const host = isCustomAddr ? customCdnHost : hostName;
+    const { host, sni, allowInsecure } = selectSniHost(address);
 
     const streamSettings: StreamSettings = {
         network: "ws",
         ...buildTransport("ws", "none", `${generateWsPath(protocol)}?ed=2560`, host),
         security: isTLS ? "tls" : "none",
-        tlsSettings: isTLS ? buildTlsSettings(sni, fingerprint, "http/1.1", isCustomAddr) : undefined,
+        tlsSettings: isTLS ? buildTlsSettings(sni, fingerprint, "http/1.1", allowInsecure) : undefined,
         sockopt: isFragment
             ? buildSockopt(false, false, undefined, "fragment")
             : buildSockopt(true, enableTFO, "UseIP"),
@@ -265,8 +261,7 @@ export function buildChainOutbound(): Outbound | undefined {
         case _SS_:
             return buildOutbound<ShadowsocksSettings>(protocol, "chain", server, port, enableMux, {
                 method,
-                password,
-                ota: false
+                password
             }, streamSettings);
 
         case _VL_:

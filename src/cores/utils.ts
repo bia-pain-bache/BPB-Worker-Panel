@@ -172,6 +172,19 @@ export function getDomain(url: string) {
     }
 }
 
+export function selectSniHost(address: string) {
+    const {
+        httpConfig: { hostName },
+        settings: { customCdnAddrs, customCdnHost, customCdnSni }
+    } = globalThis;
+
+    const isCustomAddr = customCdnAddrs.includes(address);
+    const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
+    const host = isCustomAddr ? customCdnHost : hostName;
+
+    return { host, sni, allowInsecure: isCustomAddr };
+}
+
 export function parseHostPort(input: string, brackets?: boolean): { host: string, port: number } {
     const regex = /^(?:\[(?<ipv6>.+?)\]|(?<host>[^:]+))(:(?<port>\d+))?$/;
     const match = input.match(regex);
@@ -276,3 +289,8 @@ Array.prototype.concatIf = function <T>(condition: boolean, concat: T | T[]): T[
     return [...this, concat]
 }
 
+export function customReplacer(_key: string, val: any) {
+    if (val === null) return undefined;
+    if (val && typeof val === "object" && Object.keys(val).length === 0) return undefined;
+    return val;
+}

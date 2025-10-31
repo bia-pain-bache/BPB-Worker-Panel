@@ -12,7 +12,8 @@ export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean
         remoteDnsHost,
         warpEnableIPv6,
         VLTRenableIPv6,
-        fakeDNS
+        fakeDNS,
+        allowLANConnection
     } = globalThis.settings;
 
     const finalLocalDNS = localDNS === 'localhost' ? 'system' : `${localDNS}#DIRECT`;
@@ -23,7 +24,7 @@ export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean
 
     const finalRemoteDNS = `${isWarp ? warpRemoteDNS : remoteDNS}#${remoteDnsDetour}`;
     const hosts: DnsHosts = {};
-    let nameserverPolicy: Record<string, string> = {};
+    const nameserverPolicy: Record<string, string> = {};
 
     if (isChain && !isWarp) {
         const { server } = outProxyParams;
@@ -63,6 +64,7 @@ export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean
     }
 
     bypassDomains.forEach(value => nameserverPolicy[value] = finalLocalDNS);
+    const listen = `${allowLANConnection ? "0.0.0.0" : "127.0.0.1"}:1053`;
     const fakeDnsSettings = fakeDNS ? {
         "enhanced-mode": "fake-ip" as const,
         "fake-ip-range": "198.18.0.1/16",
@@ -73,17 +75,15 @@ export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean
         "enable": true,
         "respect-rules": true,
         "use-system-hosts": false,
-        "listen": "0.0.0.0:1053",
+        "listen": listen,
         "ipv6": isIPv6,
         ...fakeDnsSettings,
-        "hosts": Object.keys(hosts).length ? hosts : undefined,
+        "hosts": hosts,
         "nameserver": [finalRemoteDNS],
         "proxy-server-nameserver": [finalLocalDNS],
-        "nameserver-policy": {
-            "raw.githubusercontent.com": finalLocalDNS,
-            "time.cloudflare.com": finalLocalDNS,
-            ...nameserverPolicy
-        }
+        "direct-nameserver": [finalLocalDNS],
+        "direct-nameserver-follow-policy": true,
+        "nameserver-policy": nameserverPolicy
     };
 
     return dns;

@@ -1,28 +1,28 @@
 export type DnsHosts = Record<string, string[]>
 export type DomainStrategy = "UseIP" | "UseIPv4" | "UseIPv4v6";
 export type TransportType = "tcp" | "raw" | "ws" | "httpupgrade" | "grpc";
-export type Protocol = 
-    | "http" 
-    | "socks" 
-    | "shadowsocks" 
-    | "vless" 
-    | "trojan" 
-    | "vmess" 
-    | "wireguard" 
+export type Protocol =
+    | "http"
+    | "socks"
+    | "shadowsocks"
+    | "vless"
+    | "trojan"
+    | "vmess"
+    | "wireguard"
     | "dns"
     | "freedom"
     | "blackhole";
 
-export type Fingerprint = 
-    | "chrome" 
-    | "firefox" 
-    | "safari" 
-    | "ios" 
-    | "android" 
-    | "edge" 
-    | "360" 
-    | "qq" 
-    | "random" 
+export type Fingerprint =
+    | "chrome"
+    | "firefox"
+    | "safari"
+    | "ios"
+    | "android"
+    | "edge"
+    | "360"
+    | "qq"
+    | "random"
     | "randomized";
 
 export interface DnsServer {
@@ -39,6 +39,34 @@ export interface Dns {
     servers: Array<"fakedns" | DnsServer>;
     queryStrategy: DomainStrategy;
     tag: "dns";
+}
+
+export interface MixedInbound {
+    listen: string;
+    port: 10808;
+    protocol: "socks" | "mixed";
+    settings: {
+        auth: "noauth";
+        udp: true;
+    };
+    sniffing: {
+        destOverride: Array<"http" | "tls" | "quic" | "fakedns">;
+        enabled: true;
+        routeOnly: true;
+    };
+    tag: "mixed-in";
+}
+
+export interface DokodemoDoor {
+    listen: string;
+    port: 10853;
+    protocol: "dokodemo-door";
+    settings: {
+        address: "1.1.1.1";
+        network: "tcp,udp";
+        port: 53;
+    };
+    tag: "dns-in";
 }
 
 export interface RoutingRule {
@@ -134,10 +162,10 @@ export interface GrpcSettings {
     serviceName?: string;
 }
 
-export type Transport = 
-    | RawSettings 
-    | WsSettings 
-    | HttpupgradeSettings 
+export type Transport =
+    | RawSettings
+    | WsSettings
+    | HttpupgradeSettings
     | GrpcSettings;
 
 export interface HappyEyeballs {
@@ -200,7 +228,6 @@ export interface HttpSocksSettings {
     port: number;
     user: string;
     pass: string;
-    level: 8
 }
 
 export interface ShadowsocksSettings {
@@ -208,8 +235,6 @@ export interface ShadowsocksSettings {
     port: number;
     method: string;
     password: string;
-    ota: false,
-    level: 8
 }
 
 export interface VlessSettings {
@@ -217,8 +242,7 @@ export interface VlessSettings {
     port: number;
     id: string;
     flow?: "xtls-rprx-vision";
-    encryption: "none",
-    level: 8
+    encryption: "none";
 }
 
 export interface VmessSettings {
@@ -226,14 +250,12 @@ export interface VmessSettings {
     port: number;
     id: string;
     security: "auto";
-    level: 8
 }
 
 export interface TrojanSettings {
     address: string;
     port: number;
     password: string;
-    level: 8
 }
 
 export interface WireguardSettings {
@@ -254,14 +276,14 @@ export interface WireguardSettings {
     wnoisedelay?: string;
 }
 
-export type AnyOutboundSettings = 
-    | DnsOutSettings 
-    | BlockholeSettings 
-    | FreedomSettings 
-    | HttpSocksSettings 
-    | ShadowsocksSettings 
-    | VlessSettings 
-    | VmessSettings 
+export type AnyOutboundSettings =
+    | DnsOutSettings
+    | BlockholeSettings
+    | FreedomSettings
+    | HttpSocksSettings
+    | ShadowsocksSettings
+    | VlessSettings
+    | VmessSettings
     | TrojanSettings;
 
 export interface Outbound {

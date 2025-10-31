@@ -3,7 +3,7 @@ import {
     base64ToDecimal,
     generateWsPath,
     parseHostPort,
-    randomUpperCase
+    selectSniHost
 } from '@utils';
 
 import {
@@ -58,17 +58,13 @@ export function buildWebsocketOutbound(
     const {
         dict: { _VL_ },
         globalConfig: { userID, TrPass },
-        httpConfig: { hostName },
-        settings: { fingerprint, enableTFO, customCdnAddrs, customCdnHost, customCdnSni }
+        settings: { fingerprint, enableTFO }
     } = globalThis;
 
-    const isCustomAddr = customCdnAddrs.includes(address);
-    const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
-    const host = isCustomAddr ? customCdnHost : hostName;
-
+    const { host, sni, allowInsecure } = selectSniHost(address);
     const transport = buildTransport("ws", "none", generateWsPath(protocol), host, undefined, 2560);
     const tls = isHttps(port)
-        ? buildTLS("tls", isFragment, isCustomAddr, undefined, sni, "http/1.1", fingerprint)
+        ? buildTLS("tls", isFragment, allowInsecure, undefined, sni, "http/1.1", fingerprint)
         : undefined;
 
     if (protocol === _VL_) return buildOutbound<VlessOutbound>(remark, protocol, address, port, enableTFO, {

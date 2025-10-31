@@ -54,8 +54,8 @@ function addRuleProvider(
         };
     };
 
-    if (geosite) defineProvider(geosite, 'domain', geositeURL!);
-    if (geoip) defineProvider(geoip, 'ipcidr', geoipURL!);
+    if (geosite && geositeURL) defineProvider(geosite, 'domain', geositeURL);
+    if (geoip && geoipURL) defineProvider(geoip, 'ipcidr', geoipURL);
 }
 
 function buildIpCidrRule(ip: string, proxy: string) {

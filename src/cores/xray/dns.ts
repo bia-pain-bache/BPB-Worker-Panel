@@ -100,7 +100,7 @@ export async function buildDNS(
     }
 
     return {
-        hosts: Object.keys(hosts).length ? hosts : undefined,
+        hosts: hosts,
         servers,
         queryStrategy: !isWarp || isIPv6 ? "UseIP" : "UseIPv4",
         tag: "dns"

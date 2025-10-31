@@ -1,24 +1,24 @@
 export type DnsHosts = Record<string, string[] | string>;
 export type Network = "tcp" | "http" | "ws" | "httpupgrade" | "grpc";
-export type Protocol = 
-    | "http" 
-    | "socks5" 
-    | "ss" 
-    | "vless" 
-    | "trojan" 
-    | "vmess" 
+export type Protocol =
+    | "http"
+    | "socks5"
+    | "ss"
+    | "vless"
+    | "trojan"
+    | "vmess"
     | "wireguard";
 
-export type Fingerprint = 
-    | "chrome" 
-    | "firefox" 
-    | "safari" 
-    | "ios" 
-    | "android" 
-    | "edge" 
-    | "360" 
-    | "qq" 
-    | "random" 
+export type Fingerprint =
+    | "chrome"
+    | "firefox"
+    | "safari"
+    | "ios"
+    | "android"
+    | "edge"
+    | "360"
+    | "qq"
+    | "random"
     | "randomized";
 
 export interface Dns {
@@ -32,8 +32,38 @@ export interface Dns {
     "fake-ip-filter"?: string[];
     "nameserver": string[];
     "proxy-server-nameserver": string[];
-    "nameserver-policy": Record<string, string>
+    "direct-nameserver": string[];
+    "direct-nameserver-follow-policy": boolean;
+    "nameserver-policy"?: Record<string, string>
     "hosts"?: DnsHosts
+}
+
+export interface Tun {
+    "enable": true;
+    "stack": "mixed" | "gvisor" | "system";
+    "auto-route": true;
+    "strict-route": true;
+    "auto-detect-interface": true;
+    "dns-hijack": [
+        "any:53",
+        "tcp://any:53"
+    ];
+    "mtu": 9000;
+}
+
+export interface Sniffer {
+    "enable": true;
+    "force-dns-mapping": true;
+    "parse-pure-ip": true;
+    "override-destination": true;
+    "sniff": {
+        "HTTP": {
+            "ports": number[];
+        };
+        "TLS": {
+            "ports": number[];
+        };
+    };
 }
 
 export interface WsOpts {
@@ -127,12 +157,12 @@ export type TrojanOutbound = BaseOutbound & {
     "password": string;
 } & TLS & Transport;
 
-export type AnyOutbound = 
-    | HttpOutbound 
-    | SocksOutbound 
-    | ShadowsocksOutbound 
-    | VlessOutbound 
-    | VmessOutbound 
+export type AnyOutbound =
+    | HttpOutbound
+    | SocksOutbound
+    | ShadowsocksOutbound
+    | VlessOutbound
+    | VmessOutbound
     | TrojanOutbound;
 
 export interface AmneziaOpts {
@@ -196,8 +226,8 @@ export interface Config {
     "external-controller-cors": unknown;
     "profile": unknown;
     "dns": Dns;
-    "tun": unknown;
-    "sniffer": unknown;
+    "tun": Tun;
+    "sniffer": Sniffer;
     "proxies": Array<AnyOutbound | WireguardOutbound>;
     "proxy-groups": Array<Selector | UrlTest>;
     "rule-providers": Record<string, RuleProvider>;

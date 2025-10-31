@@ -1,27 +1,27 @@
 export type TransportType = "tcp" | "ws" | "httpupgrade" | "grpc";
 export type ResolveStrategy = "ipv4_only" | "prefer_ipv4";
-export type Protocol = 
-    | "http" 
-    | "socks" 
-    | "shadowsocks" 
-    | "vless" 
-    | "trojan" 
-    | "vmess" 
-    | "wireguard" 
-    | "selector" 
-    | "urltest" 
+export type Protocol =
+    | "http"
+    | "socks"
+    | "shadowsocks"
+    | "vless"
+    | "trojan"
+    | "vmess"
+    | "wireguard"
+    | "selector"
+    | "urltest"
     | "direct";
 
-export type Fingerprint = 
-    | "chrome" 
-    | "firefox" 
-    | "safari" 
-    | "ios" 
-    | "android" 
-    | "edge" 
-    | "360" 
-    | "qq" 
-    | "random" 
+export type Fingerprint =
+    | "chrome"
+    | "firefox"
+    | "safari"
+    | "ios"
+    | "android"
+    | "edge"
+    | "360"
+    | "qq"
+    | "random"
     | "randomized";
 
 export interface DnsServer {
@@ -60,6 +60,23 @@ export interface Dns {
     independent_cache: true;
 }
 
+export interface TunInbound {
+    type: "tun";
+    tag: "tun-in";
+    address: string[];
+    mtu: 9000;
+    auto_route: true;
+    strict_route: true;
+    stack: "mixed";
+}
+
+export interface MixedInbound {
+    type: "mixed";
+    tag: "mixed-in";
+    listen: string;
+    listen_port: 2080;
+}
+
 export interface RoutingRule {
     rule_set?: string[];
     domain_suffix?: string[];
@@ -83,7 +100,7 @@ export interface RuleSet {
 
 export interface Route {
     rules: RoutingRule[];
-    rule_set: RuleSet[];
+    rule_set?: RuleSet[];
     auto_detect_interface: true;
     default_domain_resolver: {
         server: string;
@@ -139,10 +156,10 @@ export interface GrpcTransport {
     service_name?: string;
 }
 
-export type Transport = 
-    | HttpTransport 
-    | WsTransport 
-    | HttpupgradeTransport 
+export type Transport =
+    | HttpTransport
+    | WsTransport
+    | HttpupgradeTransport
     | GrpcTransport;
 
 export interface BaseOutbound {
@@ -197,12 +214,12 @@ export interface VmessOutbound extends BaseOutbound {
     transport?: Transport
 };
 
-export type AnyOutbound = 
-    | HttpOutbound 
-    | SocksOutbound 
-    | ShadowsocksOutbound 
-    | VlessOutbound 
-    | VmessOutbound 
+export type AnyOutbound =
+    | HttpOutbound
+    | SocksOutbound
+    | ShadowsocksOutbound
+    | VlessOutbound
+    | VmessOutbound
     | TrojanOutbound;
 
 export interface WireguardEndpoint {
@@ -234,7 +251,7 @@ export interface URLTest {
 export interface Config {
     log: unknown;
     dns: Dns;
-    inbounds: unknown[];
+    inbounds: Array<TunInbound | MixedInbound>;
     outbounds: Array<BaseOutbound | AnyOutbound | Selector | URLTest>;
     endpoints?: WireguardEndpoint[];
     route: Route;

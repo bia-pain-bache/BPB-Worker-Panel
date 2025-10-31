@@ -3,7 +3,8 @@ import { buildDNS } from './dns';
 import { buildRoutingRules, buildRuleProviders } from './routing';
 import { buildChainOutbound, buildWarpOutbound, buildWebsocketOutbound } from './outbounds';
 import type { AnyOutbound, WireguardOutbound, Config, UrlTest } from 'types/clash';
-import { getConfigAddresses, generateRemark, getProtocols } from '@utils';
+import { getConfigAddresses, generateRemark, getProtocols, customReplacer } from '@utils';
+import { sniffer, tun } from './inbounds';
 
 async function buildConfig(
     outbounds: AnyOutbound[],
@@ -50,32 +51,8 @@ async function buildConfig(
             "store-fake-ip": true
         },
         "dns": await buildDNS(isChain, isWarp, isPro),
-        "tun": {
-            "enable": true,
-            "stack": "mixed",
-            "auto-route": true,
-            "strict-route": true,
-            "auto-detect-interface": true,
-            "dns-hijack": [
-                "any:53",
-                "tcp://any:53"
-            ],
-            "mtu": 9000
-        },
-        "sniffer": {
-            "enable": true,
-            "force-dns-mapping": true,
-            "parse-pure-ip": true,
-            "override-destination": true,
-            "sniff": {
-                "HTTP": {
-                    "ports": [80, 8080, 8880, 2052, 2082, 2086, 2095]
-                },
-                "TLS": {
-                    "ports": [443, 8443, 2053, 2083, 2087, 2096]
-                }
-            }
-        },
+        "tun": tun,
+        "sniffer": sniffer,
         "proxies": outbounds,
         "proxy-groups": [
             {
@@ -162,7 +139,7 @@ export async function getClNormalConfig(): Promise<Response> {
         false
     );
 
-    return new Response(JSON.stringify(config, null, 4), {
+    return new Response(JSON.stringify(config, customReplacer, 4), {
         status: 200,
         headers: {
             'Content-Type': 'text/plain;charset=utf-8',
@@ -208,7 +185,7 @@ export async function getClWarpConfig(request: Request, env: Env, isPro: boolean
         isPro
     );
 
-    return new Response(JSON.stringify(config, null, 4), {
+    return new Response(JSON.stringify(config, customReplacer, 4), {
         status: 200,
         headers: {
             'Content-Type': 'text/plain;charset=utf-8',
