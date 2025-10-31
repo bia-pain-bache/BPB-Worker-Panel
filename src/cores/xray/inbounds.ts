@@ -1,4 +1,4 @@
-import { DokodemoDoor, MixedInbound } from "types/xray";
+import { DokodemoDoorInbound, MixedInbound } from "types/xray";
 
 export function buildMixedInbound(
     allowLANConnection: boolean,
@@ -26,7 +26,7 @@ export function buildMixedInbound(
     };
 }
 
-export function buildDokodemoInbound(allowLANConnection: boolean): DokodemoDoor {
+export function buildDokodemoInbound(allowLANConnection: boolean): DokodemoDoorInbound {
     return {
         listen: allowLANConnection ? "0.0.0.0" : "127.0.0.1",
         port: 10853,

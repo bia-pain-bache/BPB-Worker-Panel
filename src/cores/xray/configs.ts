@@ -55,12 +55,8 @@ async function buildConfig(
     let balancers, observatory;
 
     if (isBalancer) {
-        balancers = [buildBalancer("all-proxies", "proxy", balancerFallback)];
-
-        if (isChain) {
-            const chainBalancer = buildBalancer("all-chains", "chain", false)
-            balancers.push(chainBalancer);
-        }
+        balancers = [buildBalancer("all-proxies", "proxy", balancerFallback)]
+            .concatIf(isChain, buildBalancer("all-chains", "chain", false));
 
         observatory = {
             subjectSelector: isChain ? ["chain", "proxy"] : ["proxy"],

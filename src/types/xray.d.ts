@@ -57,7 +57,7 @@ export interface MixedInbound {
     tag: "mixed-in";
 }
 
-export interface DokodemoDoor {
+export interface DokodemoDoorInbound {
     listen: string;
     port: 10853;
     protocol: "dokodemo-door";
@@ -298,7 +298,7 @@ export interface Config {
     remarks: string;
     log: unknown;
     dns: Dns;
-    inbounds: unknown[];
+    inbounds: Array<MixedInbound | DokodemoDoorInbound>;
     outbounds: Outbound[];
     policy: unknown;
     routing: Routing,
