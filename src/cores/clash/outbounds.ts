@@ -164,16 +164,14 @@ export function buildChainOutbound(): AnyOutbound | null {
         case _VL_:
             return buildOutbound<VlessOutbound>("", _VL_, server, port, false, false, tls, transport, {
                 "uuid": uuid,
-                "flow": flow,
-                "packet-encoding": ""
+                "flow": flow
             });
 
         case _VM_:
             return buildOutbound<VmessOutbound>("", _VM_, server, port, false, false, tls, transport, {
                 "uuid": uuid,
                 "cipher": "auto",
-                "alterId": 0,
-                "packet-encoding": ""
+                "alterId": 0
             });
 
         case _TR_:

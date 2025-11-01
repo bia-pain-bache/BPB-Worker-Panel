@@ -168,7 +168,6 @@ export function buildChainOutbound(): AnyOutbound | null {
             return buildOutbound<VlessOutbound>("", protocol, server, port, false, {
                 uuid,
                 flow,
-                packet_encoding: "",
                 network: "tcp"
             }, tls, transport);
 
@@ -176,7 +175,6 @@ export function buildChainOutbound(): AnyOutbound | null {
             return buildOutbound<VmessOutbound>("", protocol, server, port, false, {
                 uuid: uuid,
                 security: "auto",
-                packet_encoding: "",
                 network: "tcp"
             }, tls, transport);
 

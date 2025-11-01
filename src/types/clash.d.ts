@@ -148,14 +148,14 @@ export type VlessOutbound = BaseOutbound & OptionalIntersection<{
     "uuid": string;
     "flow"?: "xtls-rprx-vision";
     "servername"?: string;
-    "packet-encoding": "";
+    "packet-encoding"?: "";
 }, TLS> & Transport;
 
 export type VmessOutbound = BaseOutbound & OptionalIntersection<{
     "uuid": string;
     "cipher": "auto";
     "alterId": 0;
-    "packet-encoding": "";
+    "packet-encoding"?: "";
 }, TLS> & Transport;
 
 export type TrojanOutbound = BaseOutbound & {

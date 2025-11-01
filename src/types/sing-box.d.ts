@@ -199,7 +199,7 @@ export interface TrojanOutbound extends BaseOutbound {
 export interface VlessOutbound extends BaseOutbound {
     uuid: string;
     flow?: "xtls-rprx-vision";
-    packet_encoding: "";
+    packet_encoding?: "";
     network: "tcp";
     tls?: TLS;
     transport?: Transport
@@ -208,7 +208,7 @@ export interface VlessOutbound extends BaseOutbound {
 export interface VmessOutbound extends BaseOutbound {
     uuid: string;
     security: "auto";
-    packet_encoding: "";
+    packet_encoding?: "";
     network: "tcp";
     tls?: TLS;
     transport?: Transport
