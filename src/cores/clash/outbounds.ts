@@ -16,7 +16,8 @@ import {
     Transport,
     AmneziaOpts,
     Network,
-    Fingerprint
+    Fingerprint,
+    URLTest
 } from 'types/clash';
 
 function buildOutbound<T>(
@@ -53,7 +54,7 @@ export function buildWebsocketOutbound(
     const {
         dict: { _VL_, _TR_ },
         globalConfig: { userID, TrPass },
-        settings: { fingerprint, enableTFO, VLTRenableIPv6 }
+        settings: { fingerprint, enableTFO, enableIPv6 }
     } = globalThis;
 
     const isTLS = isHttps(port);
@@ -63,12 +64,12 @@ export function buildWebsocketOutbound(
     const tls = buildTLS(protocol, "tls", allowInsecure, undefined, sni, "http/1.1", fingerprint);
     const transport = buildTransport("ws", undefined, generateWsPath(protocol), host, undefined, 2560);
 
-    if (protocol === _VL_) return buildOutbound<VlessOutbound>(remark, protocol, address, port, VLTRenableIPv6, enableTFO, tls, transport, {
+    if (protocol === _VL_) return buildOutbound<VlessOutbound>(remark, protocol, address, port, enableIPv6, enableTFO, tls, transport, {
         "uuid": userID,
         "packet-encoding": ""
     });
 
-    return buildOutbound<TrojanOutbound>(remark, protocol, address, port, VLTRenableIPv6, enableTFO, tls, transport, {
+    return buildOutbound<TrojanOutbound>(remark, protocol, address, port, enableIPv6, enableTFO, tls, transport, {
         "password": TrPass
     });
 }
@@ -84,10 +85,10 @@ export function buildWarpOutbound(
         amneziaNoiseCount,
         amneziaNoiseSizeMin,
         amneziaNoiseSizeMax,
-        warpEnableIPv6
+        enableIPv6
     } = globalThis.settings;
     const { host, port } = parseHostPort(endpoint, false);
-    const ipVersion = warpEnableIPv6 ? "ipv4-prefer" : "ipv4";
+    const ipVersion = enableIPv6 ? "ipv4-prefer" : "ipv4";
 
     const {
         warpIPv6,
@@ -183,6 +184,22 @@ export function buildChainOutbound(): AnyOutbound | null {
 
         default:
             return null;
+    };
+}
+
+export function buildUrlTest(
+    name: string,
+    proxies: string[],
+    isWarp: boolean
+): URLTest {
+    const { bestWarpInterval, bestVLTRInterval } = globalThis.settings;
+    return {
+        "name": name,
+        "type": "url-test",
+        "proxies": proxies,
+        "url": "https://www.gstatic.com/generate_204",
+        "interval": isWarp ? bestWarpInterval : bestVLTRInterval,
+        "tolerance": 50
     };
 }
 

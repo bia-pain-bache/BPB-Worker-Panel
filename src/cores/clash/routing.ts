@@ -61,6 +61,5 @@ function addRuleProvider(
 function buildIpCidrRule(ip: string, proxy: string) {
     ip = isIPv6(ip) ? ip.replace(/\[|\]/g, '') : ip;
     const cidr = ip.includes('/') ? '' : isIPv4(ip) ? '/32' : '/128';
-
     return `IP-CIDR,${ip}${cidr},${proxy}`;
 }

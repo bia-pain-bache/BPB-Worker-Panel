@@ -1,8 +1,8 @@
 import { getDataset } from 'kv';
 import { buildDNS } from './dns';
 import { buildRoutingRules, buildRuleProviders } from './routing';
-import { buildChainOutbound, buildWarpOutbound, buildWebsocketOutbound } from './outbounds';
-import type { AnyOutbound, WireguardOutbound, Config, UrlTest } from 'types/clash';
+import { buildChainOutbound, buildUrlTest, buildWarpOutbound, buildWebsocketOutbound } from './outbounds';
+import type { AnyOutbound, WireguardOutbound, Config } from 'types/clash';
 import { getConfigAddresses, generateRemark, getProtocols, customReplacer } from '@utils';
 import { sniffer, tun } from './inbounds';
 
@@ -15,13 +15,7 @@ async function buildConfig(
     isWarp: boolean,
     isPro: boolean
 ): Promise<Config> {
-    const {
-        bestWarpInterval,
-        bestVLTRInterval,
-        logLevel,
-        allowLANConnection
-    } = globalThis.settings;
-
+    const { logLevel, allowLANConnection } = globalThis.settings;
     const tcpSettings = isWarp ? {} : {
         "disable-keep-alive": false,
         "keep-alive-idle": 10,
@@ -71,18 +65,11 @@ async function buildConfig(
         }
     };
 
-    const addUrlTest = (name: string, proxies: string[]) => config['proxy-groups'].push({
-        "name": name,
-        "type": "url-test",
-        "proxies": proxies,
-        "url": "https://www.gstatic.com/generate_204",
-        "interval": isWarp ? bestWarpInterval : bestVLTRInterval,
-        "tolerance": 50
-    } satisfies UrlTest);
-
-    addUrlTest(isWarp ? `💦 Warp ${isPro ? 'Pro ' : ''}- Best Ping 🚀` : '💦 Best Ping 🚀', proxyTags);
-    if (isWarp) addUrlTest(`💦 WoW ${isPro ? 'Pro ' : ''}- Best Ping 🚀`, chainTags);
-    if (isChain) addUrlTest('💦 🔗 Best Ping 🚀', chainTags);
+    const name = isWarp ? `💦 Warp ${isPro ? "Pro " : ""}- Best Ping 🚀` : "💦 Best Ping 🚀";
+    const mainUrlTest = buildUrlTest(name, proxyTags, isWarp);
+    config["proxy-groups"].push(mainUrlTest);
+    if (isWarp) config["proxy-groups"].push(buildUrlTest(`💦 WoW ${isPro ? "Pro " : ""}- Best Ping 🚀`, chainTags, isWarp));
+    if (isChain) config["proxy-groups"].push(buildUrlTest("💦 🔗 Best Ping 🚀", chainTags, isWarp));
 
     return config;
 }

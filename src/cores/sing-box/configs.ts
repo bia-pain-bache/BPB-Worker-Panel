@@ -1,8 +1,8 @@
 import { getDataset } from 'kv';
 import { buildDNS } from './dns';
 import { buildRoutingRules } from './routing';
-import { buildChainOutbound, buildWarpOutbound, buildWebsocketOutbound } from './outbounds.js';
-import { AnyOutbound, WireguardEndpoint, Config, URLTest } from 'types/sing-box';
+import { buildChainOutbound, buildUrlTest, buildWarpOutbound, buildWebsocketOutbound } from './outbounds.js';
+import { AnyOutbound, WireguardEndpoint, Config } from 'types/sing-box';
 import { getConfigAddresses, generateRemark, isHttps, getProtocols, customReplacer } from '@utils';
 import { buildMixedInbound, buildTunInbound } from './inbounds';
 
@@ -13,15 +13,9 @@ async function buildConfig(
     urlTestTags: string[],
     secondUrlTestTags: string[],
     isWarp: boolean,
-    isIPv6: boolean,
     isChain: boolean
 ): Promise<Config> {
-    const {
-        bestWarpInterval,
-        bestVLTRInterval,
-        logLevel,
-        allowLANConnection
-    } = globalThis.settings;
+    const { logLevel } = globalThis.settings;
 
     const config: Config = {
         log: {
@@ -31,8 +25,8 @@ async function buildConfig(
         },
         dns: await buildDNS(isWarp, isChain),
         inbounds: [
-            buildTunInbound(isIPv6),
-            buildMixedInbound(allowLANConnection)
+            buildTunInbound(),
+            buildMixedInbound()
         ],
         outbounds: [
             ...outbounds,
@@ -65,31 +59,24 @@ async function buildConfig(
             clash_api: {
                 external_controller: "127.0.0.1:9090",
                 external_ui: "ui",
+                default_mode: "Rule",
                 external_ui_download_url: "https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip",
-                external_ui_download_detour: "direct",
-                default_mode: "Rule"
+                external_ui_download_detour: "direct"
             }
         }
     };
 
-    const addUrlTest = (tag: string, outbounds: string[]) => config.outbounds.push({
-        type: "urltest",
-        tag,
-        outbounds,
-        url: "https://www.gstatic.com/generate_204",
-        interrupt_exist_connections: false,
-        interval: isWarp ? `${bestWarpInterval}s` : `${bestVLTRInterval}s`
-    } satisfies URLTest);
-
-    addUrlTest(isWarp ? `💦 Warp - Best Ping 🚀` : "💦 Best Ping 🚀", urlTestTags);
-    if (isWarp) addUrlTest("💦 WoW - Best Ping 🚀", secondUrlTestTags);
-    if (isChain) addUrlTest("💦 🔗 Best Ping 🚀", secondUrlTestTags);
+    const tag = isWarp ? `💦 Warp - Best Ping 🚀` : "💦 Best Ping 🚀";
+    const mainUrlTest = buildUrlTest(tag, urlTestTags, isWarp);
+    config.outbounds.push(mainUrlTest);
+    if (isWarp) config.outbounds.push(buildUrlTest("💦 WoW - Best Ping 🚀", secondUrlTestTags, isWarp));
+    if (isChain) config.outbounds.push(buildUrlTest("💦 🔗 Best Ping 🚀", secondUrlTestTags, isWarp));
 
     return config;
 }
 
 export async function getSbCustomConfig(isFragment: boolean): Promise<Response> {
-    const { outProxy, ports, VLTRenableIPv6 } = globalThis.settings;
+    const { outProxy, ports } = globalThis.settings;
     const chainProxy = outProxy ? buildChainOutbound() : undefined;
     const isChain = !!chainProxy;
 
@@ -136,7 +123,6 @@ export async function getSbCustomConfig(isFragment: boolean): Promise<Response> 
         proxyTags,
         chainTags,
         false,
-        VLTRenableIPv6,
         isChain
     );
 
@@ -151,7 +137,7 @@ export async function getSbCustomConfig(isFragment: boolean): Promise<Response> 
 }
 
 export async function getSbWarpConfig(request: Request, env: Env): Promise<Response> {
-    const { warpEndpoints, warpEnableIPv6 } = globalThis.settings;
+    const { warpEndpoints } = globalThis.settings;
     const { warpAccounts } = await getDataset(request, env);
 
     const proxyTags: string[] = [];
@@ -182,7 +168,6 @@ export async function getSbWarpConfig(request: Request, env: Env): Promise<Respo
         proxyTags,
         chainTags,
         true,
-        warpEnableIPv6,
         false
     );
 

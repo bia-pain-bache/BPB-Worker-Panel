@@ -25,6 +25,10 @@ This DNS server is used for **Sanction Rules** [explained here](./routing-rules.
 !!! info
     DNS server can be in shape of an IP (UDP DNS), TCP DNS, DOT or DoH.
 
+## Enabling IPv6
+
+The panel provides IPv6 VLESS/Trojan configs by default. If your ISP doesn’t support IPv6, disable it to reduce the number of configs and also optimize DNS and routing settings for VLESS, Trojan and Warp configs.
+
 ## Allow connections from LAN
 
 If you enable this feature, others in you network (for example WiFi network) can use your proxy by knowing your device local IP. They can set a socks proxy on their device, set your local IP as address and these ports based on which client you are using:

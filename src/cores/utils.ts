@@ -51,10 +51,10 @@ export function getProtocols() {
 export async function getConfigAddresses(isFragment: boolean): Promise<string[]> {
     const {
         httpConfig: { hostName },
-        settings: { VLTRenableIPv6, customCdnAddrs, cleanIPs }
+        settings: { enableIPv6, customCdnAddrs, cleanIPs }
     } = globalThis;
 
-    const { ipv4, ipv6 } = await resolveDNS(hostName, !VLTRenableIPv6);
+    const { ipv4, ipv6 } = await resolveDNS(hostName, !enableIPv6);
     const addrs = [
         hostName,
         'www.speedtest.net',

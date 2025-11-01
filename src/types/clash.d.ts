@@ -1,3 +1,4 @@
+type OptionalIntersection<T, U> = T | (T & U);
 export type DnsHosts = Record<string, string[] | string>;
 export type Network = "tcp" | "http" | "ws" | "httpupgrade" | "grpc";
 export type Protocol =
@@ -21,22 +22,26 @@ export type Fingerprint =
     | "random"
     | "randomized";
 
-export interface Dns {
+export interface FakeDNS {
+    "fake-ip-range": string;
+    "fake-ip-filter-mode": "blacklist" | "whitelist";
+    "fake-ip-filter": string[];
+}
+
+export type Dns = OptionalIntersection<{
     "enable": true;
     "listen": string;
     "ipv6": boolean;
     "respect-rules": true;
     "use-system-hosts": false;
-    "enhanced-mode"?: "redir-host" | "fake-ip";
-    "fake-ip-range"?: string;
-    "fake-ip-filter"?: string[];
+    "enhanced-mode": "redir-host" | "fake-ip";
     "nameserver": string[];
     "proxy-server-nameserver": string[];
     "direct-nameserver": string[];
     "direct-nameserver-follow-policy": boolean;
     "nameserver-policy"?: Record<string, string>
     "hosts"?: DnsHosts
-}
+}, FakeDNS>;
 
 export interface Tun {
     "enable": true;
@@ -139,19 +144,19 @@ export interface ShadowsocksOutbound extends BaseOutbound {
     "cipher"?: string;
 }
 
-export type VlessOutbound = BaseOutbound & {
+export type VlessOutbound = BaseOutbound & OptionalIntersection<{
     "uuid": string;
     "flow"?: "xtls-rprx-vision";
     "servername"?: string;
     "packet-encoding": "";
-} & Partial<TLS> & Transport;
+}, TLS> & Transport;
 
-export type VmessOutbound = BaseOutbound & {
+export type VmessOutbound = BaseOutbound & OptionalIntersection<{
     "uuid": string;
     "cipher": "auto";
     "alterId": 0;
     "packet-encoding": "";
-} & Partial<TLS> & Transport;
+}, TLS> & Transport;
 
 export type TrojanOutbound = BaseOutbound & {
     "password": string;
@@ -189,7 +194,7 @@ export interface Selector {
     "proxies": string[];
 }
 
-export interface UrlTest {
+export interface URLTest {
     "name": string;
     "type": "url-test";
     "proxies": string[];
@@ -229,7 +234,7 @@ export interface Config {
     "tun": Tun;
     "sniffer": Sniffer;
     "proxies": Array<AnyOutbound | WireguardOutbound>;
-    "proxy-groups": Array<Selector | UrlTest>;
+    "proxy-groups": Array<Selector | URLTest>;
     "rule-providers": Record<string, RuleProvider>;
     "rules": string[];
     "ntp": unknown;

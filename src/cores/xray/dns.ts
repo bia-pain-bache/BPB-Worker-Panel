@@ -16,23 +16,21 @@ export async function buildDNS(
         warpRemoteDNS,
         antiSanctionDNS,
         remoteDnsHost,
-        warpEnableIPv6,
-        VLTRenableIPv6,
+        enableIPv6,
         fakeDNS
     } = globalThis.settings;
 
     const hosts: DnsHosts = {};
     const servers: Array<DnsServer | "fakedns"> = [];
     const fakeDnsDomains = [];
-    const isIPv6 = isWarp ? warpEnableIPv6 : VLTRenableIPv6;
 
     if (remoteDnsHost.isDomain && !isWorkerLess && !isWarp) {
         const { ipv4, ipv6, host } = remoteDnsHost;
-        hosts[host] = ipv4.concatIf(isIPv6, ipv6);
+        hosts[host] = ipv4.concatIf(enableIPv6, ipv6);
     }
 
     if (domainToStaticIPs) {
-        const { ipv4, ipv6 } = await resolveDNS(domainToStaticIPs, VLTRenableIPv6);
+        const { ipv4, ipv6 } = await resolveDNS(domainToStaticIPs, enableIPv6);
         hosts[domainToStaticIPs] = [...ipv4, ...ipv6];
     }
 
@@ -102,7 +100,7 @@ export async function buildDNS(
     return {
         hosts: hosts,
         servers,
-        queryStrategy: !isWarp || isIPv6 ? "UseIP" : "UseIPv4",
+        queryStrategy: isWarp && !enableIPv6 ? "UseIPv4" : "UseIP",
         tag: "dns"
     };
 }

@@ -75,7 +75,7 @@ export function buildFreedomOutbound(
         fragmentMaxSplitMax,
         enableTFO,
         xrayUdpNoises,
-        warpEnableIPv6
+        enableIPv6
     } = globalThis.settings;
 
     let freedomSettings: FreedomSettings = {};
@@ -108,7 +108,7 @@ export function buildFreedomOutbound(
             noises: freedomNoises,
             domainStrategy: isFragment
                 ? undefined
-                : warpEnableIPv6 ? "UseIPv4v6" : "UseIPv4"
+                : enableIPv6 ? "UseIPv4v6" : "UseIPv4"
         };
     }
 
@@ -227,7 +227,7 @@ export function buildChainOutbound(): Outbound | undefined {
     const {
         dict: { _VL_, _TR_, _SS_, _VM_ },
         settings: {
-            VLTRenableIPv6,
+            enableIPv6,
             outProxyParams: {
                 protocol, server, port, user,
                 pass, password, method, uuid,
@@ -245,7 +245,7 @@ export function buildChainOutbound(): Outbound | undefined {
         security,
         tlsSettings: security === 'tls' ? buildTlsSettings(sni || server, fp, alpn, false) : undefined,
         realitySettings: security === "reality" ? buildRealitySettings(sni, fp, pbk, sid, spx) : undefined,
-        sockopt: buildSockopt(false, false, VLTRenableIPv6 ? "UseIPv4v6" : "UseIPv4", "proxy")
+        sockopt: buildSockopt(false, false, "UseIPv4", "proxy")
     };
 
     const enableMux = !(security === "reality" || type === "grpc");

@@ -18,6 +18,7 @@ globalThis.settings = {
     localDNS: "8.8.8.8",
     antiSanctionDNS: "178.22.122.100",
     fakeDNS: false,
+    enableIPv6: true,
     allowLANConnection: false,
     logLevel: "warning",
     remoteDNS: "https://8.8.8.8/dns-query",
@@ -33,7 +34,6 @@ globalThis.settings = {
     outProxy: "",
     outProxyParams: {},
     cleanIPs: [],
-    VLTRenableIPv6: true,
     customCdnAddrs: [],
     customCdnHost: "",
     customCdnSni: "",
@@ -78,7 +78,6 @@ globalThis.settings = {
     customBypassSanctionRules: [],
     warpRemoteDNS: "1.1.1.1",
     warpEndpoints: ["engage.cloudflareclient.com:2408"],
-    warpEnableIPv6: true,
     bestWarpInterval: 30,
     xrayUdpNoises: [
         {

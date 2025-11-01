@@ -23,7 +23,8 @@ import {
     Transport,
     HttpupgradeTransport,
     TransportType,
-    Fingerprint
+    Fingerprint,
+    URLTest
 } from 'types/sing-box';
 
 function buildOutbound<T>(
@@ -187,6 +188,22 @@ export function buildChainOutbound(): AnyOutbound | null {
 
         default:
             return null;
+    };
+}
+
+export function buildUrlTest(
+    tag: string,
+    outboundTags: string[],
+    isWarp: boolean
+): URLTest {
+    const { bestWarpInterval, bestVLTRInterval } = globalThis.settings;
+    return {
+        type: "urltest",
+        tag,
+        outbounds: outboundTags,
+        url: "https://www.gstatic.com/generate_204",
+        interrupt_exist_connections: false,
+        interval: isWarp ? `${bestWarpInterval}s` : `${bestVLTRInterval}s`
     };
 }
 

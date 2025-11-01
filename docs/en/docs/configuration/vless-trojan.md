@@ -81,10 +81,6 @@ For non-**Normal** subscription, you may want to use clean IPs. The panel includ
 
 To add custom configs alongside default ones, enter clean IPs or domains as shown in the section image and click **Apply**. Updated subscription will import these new configs, which are also added to **Best Ping** and **Best Fragment** configs.
 
-## Enabling IPv6
-
-The panel provides IPv6 configs by default. If your ISP doesn’t support IPv6, disable it to reduce the number of configs and optimize DNS and routing settings.
-
 ## Protocol Selection
 
 Enable either or both **VLESS** and **Trojan** protocols.

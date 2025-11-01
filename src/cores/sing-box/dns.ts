@@ -10,15 +10,12 @@ export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<Dns> 
         antiSanctionDNS,
         outProxyParams,
         remoteDnsHost,
-        warpEnableIPv6,
-        VLTRenableIPv6,
+        enableIPv6,
         fakeDNS
     } = globalThis.settings;
 
     const url = new URL(remoteDNS);
     const protocol = url.protocol.replace(':', '');
-    const isIPv6 = isWarp ? warpEnableIPv6 : VLTRenableIPv6;
-
     const servers: DnsServer[] = [
         {
             type: isWarp ? "udp" : protocol,
@@ -55,7 +52,7 @@ export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<Dns> 
 
     if (remoteDnsHost.isDomain && !isWarp) {
         const { ipv4, ipv6, host } = remoteDnsHost;
-        const predefined = ipv4.concatIf(isIPv6, ipv6);
+        const predefined = ipv4.concatIf(enableIPv6, ipv6);
         addDnsServer(servers, "hosts", "hosts", undefined, undefined, undefined, host, predefined);
         rules.unshift({
             ip_accept_any: true,
@@ -143,7 +140,7 @@ export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<Dns> 
             undefined,
             undefined,
             "198.18.0.0/15",
-            isIPv6 ? "fc00::/18" : undefined
+            enableIPv6 ? "fc00::/18" : undefined
         );
 
         addDnsRule(rules, "dns-fake", "tun-in", undefined, undefined, undefined, ["A", "AAAA"]);
@@ -152,7 +149,7 @@ export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<Dns> 
     return {
         servers,
         rules,
-        strategy: isIPv6 ? "prefer_ipv4" : "ipv4_only",
+        strategy: enableIPv6 ? "prefer_ipv4" : "ipv4_only",
         independent_cache: true
     }
 }

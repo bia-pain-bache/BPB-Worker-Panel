@@ -68,6 +68,7 @@ declare global {
         localDNS: string;
         antiSanctionDNS: string;
         fakeDNS: boolean;
+        enableIPv6: boolean;
         allowLANConnection: boolean;
         logLevel: "none" | "warning" | "error" | "info" | "debug";
         remoteDNS: string;
@@ -78,7 +79,6 @@ declare global {
         outProxy: string;
         outProxyParams: any;
         cleanIPs: string[];
-        VLTRenableIPv6: boolean;
         customCdnAddrs: string[];
         customCdnHost: string;
         customCdnSni: string;
@@ -123,7 +123,6 @@ declare global {
         customBypassSanctionRules: string[];
         warpRemoteDNS: string;
         warpEndpoints: string[];
-        warpEnableIPv6: boolean;
         bestWarpInterval: number;
         xrayUdpNoises: XrUdpNoise[];
         knockerNoiseMode: string;

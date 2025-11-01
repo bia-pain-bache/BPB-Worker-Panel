@@ -3,12 +3,8 @@ import { accRoutingRules } from '@utils';
 import { Route, RoutingRule, RuleSet } from 'types/sing-box';
 
 export function buildRoutingRules(isWarp: boolean, isChain: boolean): Route {
-    const { 
-        blockUDP443, 
-        warpEnableIPv6, 
-        VLTRenableIPv6 
-    } = globalThis.settings;
-    
+    const { blockUDP443, enableIPv6 } = globalThis.settings;
+
     const rules: RoutingRule[] = [
         {
             ip_cidr: "172.18.0.2",
@@ -80,8 +76,8 @@ export function buildRoutingRules(isWarp: boolean, isChain: boolean): Route {
         addRoutingRule(rules, 'direct', undefined, routingRules.bypass.ips, undefined, routingRules.bypass.geoips);
     }
 
-    const isIPv6 = isWarp ? warpEnableIPv6 : VLTRenableIPv6;
-    const ruleSets: RuleSet[] = geoAssets.reduce((sets, asset) => { 
+    const strategy = enableIPv6 ? "prefer_ipv4" : "ipv4_only";
+    const ruleSets: RuleSet[] = geoAssets.reduce((sets, asset) => {
         addRuleSets(sets, asset);
         return sets;
     }, []);
@@ -92,7 +88,7 @@ export function buildRoutingRules(isWarp: boolean, isChain: boolean): Route {
         auto_detect_interface: true,
         default_domain_resolver: {
             server: "dns-direct",
-            strategy: isIPv6 ? "prefer_ipv4" : "ipv4_only",
+            strategy,
             rewrite_ttl: 60
         },
         final: "✅ Selector"
