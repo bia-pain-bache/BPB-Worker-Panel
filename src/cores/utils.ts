@@ -278,7 +278,7 @@ export function accDnsRules(geoAssets: GeoAsset[]) {
 }
 
 export function toRange(min?: number, max?: number) {
-    if (min === undefined || max === undefined) return undefined;
+    if (!min || !max) return undefined;
     if (min === max) return String(min);
     return `${min}-${max}`;
 }

@@ -15,6 +15,7 @@
 - Added `Malware`, `Phishing` and `Cryptominers` block rules. Note that v2ray users should set Geo Assets to Chocolate4U and download assets, otherwise configs won't connect.
 - Panel UI improvements.
 - Updated docs.
+- Clash Fake DNS bug fix.
 - And some other bug fixes and improvements.
 
 > [!NOTE]

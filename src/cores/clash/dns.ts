@@ -18,8 +18,9 @@ export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean
 
     const finalLocalDNS = localDNS === 'localhost' ? 'system' : `${localDNS}#DIRECT`;
     const isIPv6 = isWarp ? warpEnableIPv6 : VLTRenableIPv6;
+    const proSign = isPro ? "Pro " : "";
     const remoteDnsDetour = isWarp
-        ? `💦 Warp ${isPro ? "Pro " : ""}- Best Ping 🚀`
+        ? `💦 Warp ${proSign}- Best Ping 🚀`
         : isChain ? "💦 Best Ping 🚀" : "✅ Selector";
 
     const finalRemoteDNS = `${isWarp ? warpRemoteDNS : remoteDNS}#${remoteDnsDetour}`;
@@ -68,7 +69,7 @@ export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean
     const fakeDnsSettings = fakeDNS ? {
         "enhanced-mode": "fake-ip" as const,
         "fake-ip-range": "198.18.0.1/16",
-        "fake-ip-filter": ["*", "+.lan", "+.local"]
+        "fake-ip-filter": ["+.lan", "+.local"]
     } : {};
 
     const dns: Dns = {
