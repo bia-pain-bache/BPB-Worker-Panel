@@ -6,7 +6,7 @@ It is highly recommended to use [Wizard installation](./wizard.md) to avoid Clou
 
 ### 1. Create Cloudflare Account
 
-If you don’t have a Cloudflare account, create one [here](https://dash.cloudflare.com/sign-up). You only need an email for registration. Due to Cloudflare’s restrictions, use a reputable email provider like Gmail.
+If you don’t have a Cloudflare account, create one [from here](https://dash.cloudflare.com/sign-up). You only need an email for registration. Due to Cloudflare’s restrictions, use a reputable email provider like Gmail.
 
 ### 2. Create Pages Project
 

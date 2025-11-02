@@ -4,61 +4,58 @@
 
 ## Remote DNS
 
-به‌صورت پیش‌فرض، Remote DNS از Google DNS با پروتکل HTTPS (DoH) استفاده می‌کنه.
+به‌صورت پیش‌فرض، Remote DNS از Google DNS با پروتکل DoH  دیگه استفاده می‌کنه، اگرچه می‌تونید از سرورهای معروف DoH یا DoT استفاده کنید، مثل:
 
-```title="Remote DNS پیشفرض"
-https://8.8.8.8/dns-query
-```
-
-!!! tip "نکته"
-    از نسخه 2.5.5 به بعد، می‌تونید از سرورهای معروف DoH یا DoT استفاده کنید، مثل:
-    ```
+!!! tip "چند DNS معروف"
+    ```text
     https://dns.google/dns-query
     ```
-    ```
+    ```text
     https://dns.adguard-dns.com/dns-query
     ```
-    ```
+    ```text
     https://dns.quad9.net/dns-query
     ```
-    ```
+    ```text
     tls://dns.google
     ```
 
 ## Chain Proxy
 
-همون‌طور که گفته شد، Proxy IP باعث ثابت شدن IP برای آدرس‌های هدف Cloudflare می‌شه، ولی IP شما برای بقیه آدرس‌ها ممکنه فرق کنه. **Chain Proxy** یه IP ثابت برای همه آدرس‌ها تضمین می‌کنه. اینجا می‌تونید از یه کانفیگ رایگان **VLESS**، **Trojan**، **Shadowsocks**، **Socks** یا **HTTP** استفاده کنید، حتی اگه توسط اپراتورتون فیلتر شده باشه، تا IP شما به IP این کانفیگ تغییر کنه.
+همون‌طور که گفته شد، Proxy IP باعث ثابت شدن IP برای آدرس‌های هدف Cloudflare می‌شه، ولی IP شما برای بقیه آدرس‌ها ممکنه فرق کنه. **Chain Proxy** یه IP ثابت برای همه آدرس‌ها تضمین می‌کنه. اینجا می‌تونید از یه کانفیگ رایگان استفاده کنید، حتی اگه توسط اپراتورتون فیلتر شده باشه، تا IP شما به IP این کانفیگ تغییر کنه.
+
+### پروتکل‌های پشتیبانی شده
+
+* VLESS
+* VMess
+* Trojan
+* Shadowsocks
+* Socks
+* Http
+
+### انواع Transport پشتیبانی شده
+
+* TCP
+* TCP http header
+* Websocket
+* GRPC
+* Httpupgrade
+
+### انواع TLS پشتیبانی شده
+
+* TLS
+* Reality
 
 !!! note "یادداشت"
     کانفیگ Chain Proxy نباید خودش Worker باشه، وگرنه IP نهایی بازم تغییر می‌کنه.
 
-!!! info "راهنمایی"
-    انواع کانفیگ‌های VLESS و Trojan پشتیبانی‌شده شامل موارد زیره:
+!!! info "فرمت‌های قابل قبول SOCKS"
+    - `socks://address:port`
+    - `socks://user:pass@address:port`
 
-    * WS
-    * WS TLS
-    * Httpupgrade
-    * Httpupgrade TLS
-    * GRPC
-    * Reality GRPC
-    * GRPC TLS
-    * TCP
-    * Reality TCP
-    * TCP Header
-    * Reality TCP Header
-    * TCP TLS
-
-!!! info "راهنمایی"
-    کانفیگ‌های Socks می‌تونن این فرمت‌ها رو داشته باشن:
-
-    * socks://`address`:`port`
-    * socks://`user`:`pass`@`address`:`port`
-
-!!! info "راهنمایی"
-    کانفیگ‌های HTTP می‌تونن این فرمت‌ها رو داشته باشن:
-
-    * http://`address`:`port`
-    * http://`user`:`pass`@`address`:`port`
+!!! info "فرمت‌های قابل قبول HTTP"
+    - `http://address:port`
+    - `http://user:pass@address:port`
 
 !!! info "راهنمایی"
     کانفیگ Shadowsocks باید ساده باشه و نمیتونه از نوع websocket، grpc و غیره باشه و همچنین نمیتونه TLS داشته باشه.
@@ -120,11 +117,7 @@ https://8.8.8.8/dns-query
 !!! note "یادداشت"
     تغییر Proxy IP از طریق پنل نیاز به به‌روزرسانی اشتراک داره اگه IP از کار بیفته. این می‌تونه کانفیگ‌های اهدایی رو مختل کنه، چون کاربرایی که اشتراک فعال ندارن نمی‌تونن به‌روزرسانی کنن. این روش فقط برای استفاده شخصی خوبه. روش‌های دیگه نیازی به به‌روزرسانی اشتراک ندارن.
 
-یه Proxy IP از لینک زیر انتخاب کنید که IPها رو بر اساس منطقه و ISP لیست کرده:
-
-```text
-https://www.nslookup.io/domains/bpb.yousef.isegaro.com/dns-records/
-```
+یه Proxy IP از [اینجا](https://www.nslookup.io/domains/bpb.yousef.isegaro.com/dns-records/) انتخاب کنید که IPها رو بر اساس منطقه و ISP لیست کرده.
 
 !!! info "راهنمایی"
     برای استفاده از چند Proxy IP، اونا رو زیر هم وارد کنید.

@@ -19,7 +19,6 @@ Endpoints for Warp function similarly to Clean IPs for VLESS and Trojan. The pan
     - Endpoints are formatted as IP:Port or Domain:Port and must be entered one per line.
     - For IPv6 addresses, enclose them in square brackets. See the example below:
 
-    Endpoint examples:
     ```title="IPv4"
     123.45.8.6:1701
     ```

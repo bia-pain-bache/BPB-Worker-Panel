@@ -73,9 +73,8 @@ salamchetori123
 ```
 
 !!! tip "نکته"
-
-    * برای تبدیل متن به Base64 میتونید از [این ابزار](https://onlinebase64tools.com/base64-encode) استفاده کنید.
-    * برای تولید رشته Hex میتونید از [این ابزار](https://onlinetools.com/random/generate-random-hexadecimal-numbers) استفاده کنید.
+    - برای تبدیل متن به Base64 میتونید از [این ابزار](https://onlinebase64tools.com/base64-encode) استفاده کنید.
+    - برای تولید رشته Hex میتونید از [این ابزار](https://onlinetools.com/random/generate-random-hexadecimal-numbers) استفاده کنید.
 
 ### Applies To
 

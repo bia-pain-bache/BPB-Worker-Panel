@@ -14,7 +14,7 @@ This applies to clients using the Xray core, such as v2rayNG, MansaNG, and v2ray
     The Workerless config unblocks many restricted websites and applications (e.g., YouTube, Twitter, Google Play...) without using a Worker. Note that this config does not change your local IP, so avoid using it for activities requiring security or anonymity. Fragment setting changes apply to this config, except for Chain Proxy.
 
 ???+ question "What is the Best Fragment config?"
-    The Best Fragment config tests 18 different fragment settings, selecting the fastest based on your ISP’s performance. These modes are designed to cover all primary scenarios, with the config testing all modes every 30s and connecting to the optimal one. Advanced fragment settings are detailed [here](../configuration/fragment.md).
+    The Best Fragment config tests 18 different fragment settings, selecting the fastest based on your ISP’s performance. These modes are designed to cover all primary scenarios, with the config testing all modes every 30s and connecting to the optimal one. Advanced fragment settings are [explained here](../configuration/fragment.md).
 
 ## Fragment for sing-box
 

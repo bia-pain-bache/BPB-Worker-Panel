@@ -4,61 +4,50 @@
 
 ## Remote DNS
 
-By default, the remote DNS is Google DNS over HTTPS (DoH).
+By default, the remote DNS is Google DNS over HTTPS (DoH). However, you can use other DoH or DoT servers, except Cloudflare DNS servers:
 
-```title="Default Remote DNS"
-https://8.8.8.8/dns-query
-```
-
-!!! tip
-    From version 2.5.5 onward, you can use some well known DoH or DoT servers:
-    ```
-    https://dns.google/dns-query
-    ```
-    ```
-    https://dns.adguard-dns.com/dns-query
-    ```
-    ```
-    https://dns.quad9.net/dns-query
-    ```
-    ```
-    tls://dns.google
-    ```
+!!! tip "Well known DOH and DOT servers"
+    - https://dns.google/dns-query
+    - https://dns.adguard-dns.com/dns-query
+    - https://dns.quad9.net/dns-query
+    - tls://dns.google
 
 ## Chain Proxy
 
-As noted, a Proxy IP fixes the IP for Cloudflare target addresses, but node IPs may differ for other targets. A **Chain Proxy** ensures a consistent IP for all targets. You can use a free **VLESS**, **VMess**, **Trojan**, **Shadowsocks**, **Socks**, or **HTTP** config here, even if it’s blocked by your ISP, to permanently fix your IP to the Chain Proxy IP.
+As noted, a Proxy IP fixes the IP for Cloudflare target addresses, but node IPs may differ for other targets. A **Chain Proxy** ensures a consistent IP for all targets. You can use a free config here, even if it’s blocked by your ISP, to permanently fix your IP to the Chain Proxy IP.
+
+### Supported protocols
+
+* VLESS
+* VMess
+* Trojan
+* Shadowsocks
+* Socks
+* Http
+
+### Supported Transports
+
+* TCP
+* TCP http header
+* Websocket
+* GRPC
+* Httpupgrade
+
+### Supported TLS
+
+* TLS
+* Reality
 
 !!! note
     The Chain Proxy config must not be a worker itself, or the final IP will still change.
 
-!!! note
-    VLESS, VMess and Trojan configs support:  
+!!! info "Valid SOCKS proxy formats"
+    - socks://address:port
+    - socks://user:pass@address:port
 
-    - WS
-    - WS TLS
-    - Httpupgrade
-    - Httpupgrade TLS
-    - GRPC
-    - Reality GRPC
-    - GRPC TLS
-    - TCP
-    - Reality TCP
-    - TCP Header
-    - Reality TCP Header
-    - TCP TLS
-
-!!! info
-    Socks configs can be in these formats:
-
-    - socks://`address`:`port`
-    - socks://`user`:`pass`@`address`:`port`
-
-!!! info
-    HTTP configs can be in these formats:  
-
-    - http://`address`:`port`
-    - http://`user`:`pass`@`address`:`port`
+!!! info "Valid HTTP proxy formats"
+    - http://address:port
+    - http://user:pass@address:port
 
 !!! info
     Shadowsocks cannot have any transport like websocket, grpc... and cannot have TLS.
@@ -120,11 +109,7 @@ You can change the Proxy IP via the panel by applying the change and updating th
 !!! note
     Changing the Proxy IP via the panel requires updating the subscription if the IP stops working. This can disrupt donated configs, as users without an active subscription cannot update them. Use this method only for personal usage. Other methods don’t require subscription updates.
 
-Select a Proxy IP from the following link, which lists IPs by region and ISP:
-
-```text
-https://www.nslookup.io/domains/bpb.yousef.isegaro.com/dns-records/
-```
+Select a Proxy IP [from here](https://www.nslookup.io/domains/bpb.yousef.isegaro.com/dns-records/), which lists IPs by region and ISP.
 
 !!! info
     To use multiple Proxy IPs, fill in them below each other.
@@ -136,7 +121,7 @@ You can change the Proxy IP mode and fill in NAT64 Prefixes via the panel by app
 !!! note
     Changing the NAT64 Prefixes via the panel requires updating the subscription if the IP stops working. This can disrupt donated configs, as users without an active subscription cannot update them. Use this method only for personal usage. Other methods don’t require subscription updates.
 
-You can find available NAT64 Prefixes [here](https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/docs/NAT64Prefixes.md), which lists IPs by region and ISP.
+You can find available NAT64 Prefixes [in here](https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/docs/NAT64Prefixes.md), which lists IPs by region and ISP.
 
 !!! info
     To use multiple Prefixes, fill them in below each other.

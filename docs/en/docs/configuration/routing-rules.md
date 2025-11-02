@@ -36,31 +36,29 @@ https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite
 
 There are cases which predefined rules cannot help. For example, if you have blocked porn contents but a specific website was not on the list and is not blocked, you will need to use custom rules.
 
-!!! info
-    You can use three different formats in this section:
+You can use three different formats in this section i.e. **Domain**, **IP** and **IP/CIDR**.
 
-    * Domains 
-    * IPs 
-    * IP/cidr
+Please be aware that if you enter `google.com`, all of its subdomains will also be blocked or routed directly, such as `drive.google.com` or `mail.google.com`. Examples:
 
-    Please be aware that if you enter `google.com`, all of its subdomains will also be blocked or routed directly, such as `drive.google.com` or `mail.google.com`.
+```title="Domain"
+google.com
+```
 
-    Examples:
-    ```title="Domain"
-    google.com
-    ```
-    ```title="IPv4"
-    192.168.1.1
-    ```
-    ```title="IPv6"
-    2606:4700::6810:85e5
-    ```
-    ```title="IPv4 CIDR"
-    192.168.1.1/32
-    ```
-    ```title="IPv6 CIDR"
-    2606:4700::6810:85e5/128
-    ```
+```title="IPv4"
+192.168.1.1
+```
+
+```title="IPv6"
+2606:4700::6810:85e5
+```
+
+```title="IPv4 CIDR"
+192.168.1.1/32
+```
+
+```title="IPv6 CIDR"
+2606:4700::6810:85e5/128
+```
 
 ## Sanction Rules
 

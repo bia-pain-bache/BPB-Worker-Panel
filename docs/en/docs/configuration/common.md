@@ -8,10 +8,6 @@ This section provides shared settings between all subscriptions and protocols.
 
 The local DNS is mainly used for routing bypass rules. By default the local DNS server is set to Google DNS.
 
-```title="Default Local DNS"
-8.8.8.8
-```
-
 Many DNS servers are available to use as Local DNS in shape of IP, however you can use **localhost** which uses your ISP DNS server which is fine for routing purposes.
 
 ## Fake DNS
