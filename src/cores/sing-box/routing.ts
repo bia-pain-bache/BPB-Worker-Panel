@@ -7,7 +7,7 @@ export function buildRoutingRules(isWarp: boolean, isChain: boolean): Route {
 
     const rules: RoutingRule[] = [
         {
-            ip_cidr: "172.18.0.2",
+            ip_cidr: "172.19.0.2",
             action: "hijack-dns"
         },
         {

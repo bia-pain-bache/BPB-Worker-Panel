@@ -4,7 +4,7 @@ import { buildRoutingRules } from './routing';
 import { buildChainOutbound, buildUrlTest, buildWarpOutbound, buildWebsocketOutbound } from './outbounds.js';
 import { Outbound, WireguardEndpoint, Config } from 'types/sing-box';
 import { getConfigAddresses, generateRemark, isHttps, getProtocols } from '@utils';
-import { buildMixedInbound, buildTunInbound } from './inbounds';
+import { buildMixedInbound, tun } from './inbounds';
 
 async function buildConfig(
     outbounds: Outbound[],
@@ -25,7 +25,7 @@ async function buildConfig(
         },
         dns: await buildDNS(isWarp, isChain),
         inbounds: [
-            buildTunInbound(),
+            tun,
             buildMixedInbound()
         ],
         outbounds: [
