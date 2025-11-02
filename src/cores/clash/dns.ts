@@ -1,8 +1,8 @@
 import { getGeoAssets } from './geo-assets';
-import { Dns, DnsHosts, FakeDNS } from 'types/clash';
+import { DNS, DnsHosts, FakeDNS } from 'types/clash';
 import { isDomain, getDomain, accDnsRules } from '@utils';
 
-export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean): Promise<Dns> {
+export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean): Promise<DNS> {
     const {
         localDNS,
         remoteDNS,
@@ -66,6 +66,7 @@ export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean
     const listen = `${allowLANConnection ? "0.0.0.0" : "127.0.0.1"}:1053`;
     let enhancedMode: "redir-host" | "fake-ip" = "redir-host";
     let fakeDnsSettings: Partial<FakeDNS> = {};
+    
     if (fakeDNS) {
         enhancedMode = "fake-ip";
         fakeDnsSettings = {
@@ -75,18 +76,18 @@ export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean
         };
     }
 
-    const dns: Dns = {
+    const dns: DNS = {
         "enable": true,
         "respect-rules": true,
         "use-system-hosts": false,
         "listen": listen,
         "ipv6": enableIPv6,
-        "hosts": hosts,
+        "hosts": hosts.omitEmpty(),
         "nameserver": [finalRemoteDNS],
         "proxy-server-nameserver": [finalLocalDNS],
         "direct-nameserver": [finalLocalDNS],
         "direct-nameserver-follow-policy": true,
-        "nameserver-policy": nameserverPolicy,
+        "nameserver-policy": nameserverPolicy.omitEmpty(),
         "enhanced-mode": enhancedMode,
         ...fakeDnsSettings
     };

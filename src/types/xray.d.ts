@@ -34,7 +34,7 @@ export interface DnsServer {
     tag?: string;
 }
 
-export interface Dns {
+export interface DNS {
     hosts?: DnsHosts;
     servers: Array<"fakedns" | DnsServer>;
     queryStrategy: DomainStrategy;
@@ -276,7 +276,7 @@ export interface WireguardSettings {
     wnoisedelay?: string;
 }
 
-export type AnyOutboundSettings =
+type OutboundSettings =
     | DnsOutSettings
     | BlockholeSettings
     | FreedomSettings
@@ -284,23 +284,41 @@ export type AnyOutboundSettings =
     | ShadowsocksSettings
     | VlessSettings
     | VmessSettings
-    | TrojanSettings;
+    | TrojanSettings
+    | WireguardSettings;
 
 export interface Outbound {
     protocol: Protocol;
     mux?: Mux;
-    settings: AnyOutboundSettings | WireguardSettings;
+    settings: OutboundSettings;
     streamSettings?: StreamSettings;
     tag: string;
 }
 
+interface Log {
+    loglevel: "none" | "warning" | "error" | "info" | "debug";
+}
+
+interface Policy {
+    levels: Record<number, {
+        connIdle: number;
+        handshake: number;
+        uplinkOnly: number;
+        downlinkOnly: number;
+    }>;
+    system: {
+        statsOutboundUplink: true;
+        statsOutboundDownlink: true;
+    };
+}
+
 export interface Config {
     remarks: string;
-    log: unknown;
+    log: Log;
     dns: Dns;
     inbounds: Array<MixedInbound | DokodemoDoorInbound>;
     outbounds: Outbound[];
-    policy: unknown;
+    policy: Policy;
     routing: Routing,
     observatory?: Observatory;
     stats: {};

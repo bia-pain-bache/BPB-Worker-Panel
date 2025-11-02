@@ -84,7 +84,7 @@ export function buildRoutingRules(isWarp: boolean, isChain: boolean): Route {
 
     return {
         rules,
-        rule_set: ruleSets,
+        rule_set: ruleSets.omitEmpty(),
         auto_detect_interface: true,
         default_domain_resolver: {
             server: "dns-direct",

@@ -227,7 +227,6 @@ export function buildChainOutbound(): Outbound | undefined {
     const {
         dict: { _VL_, _TR_, _SS_, _VM_ },
         settings: {
-            enableIPv6,
             outProxyParams: {
                 protocol, server, port, user,
                 pass, password, method, uuid,

@@ -17,8 +17,7 @@ import {
     isHttps,
     getProtocols,
     parseHostPort,
-    toRange,
-    customReplacer
+    toRange
 } from '@utils';
 
 function buildBalancer(tag: string, selector: string, hasFallback: boolean): Balancer {
@@ -303,7 +302,7 @@ export async function getXrCustomConfigs(isFragment: boolean): Promise<Response>
         await addWorkerlessConfigs(configs);
     }
 
-    return new Response(JSON.stringify(configs, customReplacer, 4), {
+    return new Response(JSON.stringify(configs, null, 4), {
         status: 200,
         headers: {
             'Content-Type': 'text/plain;charset=utf-8',
@@ -391,7 +390,7 @@ export async function getXrWarpConfigs(
 
     configs.push(warpBestPing, wowBestPing);
 
-    return new Response(JSON.stringify(configs, customReplacer, 4), {
+    return new Response(JSON.stringify(configs, null, 4), {
         status: 200,
         headers: {
             'Content-Type': 'text/plain;charset=utf-8',

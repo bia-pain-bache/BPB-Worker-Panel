@@ -289,8 +289,7 @@ Array.prototype.concatIf = function <T>(condition: boolean, concat: T | T[]): T[
     return [...this, concat]
 }
 
-export function customReplacer(_key: string, val: any) {
-    if (val === null) return undefined;
-    if (val && typeof val === "object" && Object.keys(val).length === 0) return undefined;
-    return val;
+Object.prototype.omitEmpty = function <T>(): T | undefined {
+    if (Object.keys(this).length === 0) return undefined;
+    return this as T;
 }

@@ -2,12 +2,12 @@ import { getDataset } from 'kv';
 import { buildDNS } from './dns';
 import { buildRoutingRules } from './routing';
 import { buildChainOutbound, buildUrlTest, buildWarpOutbound, buildWebsocketOutbound } from './outbounds.js';
-import { AnyOutbound, WireguardEndpoint, Config } from 'types/sing-box';
-import { getConfigAddresses, generateRemark, isHttps, getProtocols, customReplacer } from '@utils';
+import { Outbound, WireguardEndpoint, Config } from 'types/sing-box';
+import { getConfigAddresses, generateRemark, isHttps, getProtocols } from '@utils';
 import { buildMixedInbound, buildTunInbound } from './inbounds';
 
 async function buildConfig(
-    outbounds: AnyOutbound[],
+    outbounds: Outbound[],
     endpoints: WireguardEndpoint[],
     selectorTags: string[],
     urlTestTags: string[],
@@ -20,7 +20,7 @@ async function buildConfig(
     const config: Config = {
         log: {
             disabled: logLevel === "none",
-            level: logLevel === "none" ? undefined : logLevel.replace("warning", "warn"),
+            level: logLevel === "none" ? undefined : logLevel === "warning" ? "warn" : logLevel,
             timestamp: true
         },
         dns: await buildDNS(isWarp, isChain),
@@ -41,7 +41,7 @@ async function buildConfig(
                 tag: "direct"
             }
         ],
-        endpoints: endpoints,
+        endpoints: endpoints.omitEmpty(),
         route: buildRoutingRules(isWarp, isChain),
         ntp: {
             enabled: true,
@@ -82,7 +82,7 @@ export async function getSbCustomConfig(isFragment: boolean): Promise<Response> 
 
     const proxyTags: string[] = [];
     const chainTags: string[] = [];
-    const outbounds: AnyOutbound[] = [];
+    const outbounds: Outbound[] = [];
 
     const protocols = getProtocols();
     const Addresses = await getConfigAddresses(isFragment);
@@ -126,7 +126,7 @@ export async function getSbCustomConfig(isFragment: boolean): Promise<Response> 
         isChain
     );
 
-    return new Response(JSON.stringify(config, customReplacer, 4), {
+    return new Response(JSON.stringify(config, null, 4), {
         status: 200,
         headers: {
             'Content-Type': 'text/plain;charset=utf-8',
@@ -171,7 +171,7 @@ export async function getSbWarpConfig(request: Request, env: Env): Promise<Respo
         false
     );
 
-    return new Response(JSON.stringify(config, customReplacer, 4), {
+    return new Response(JSON.stringify(config, null, 4), {
         status: 200,
         headers: {
             'Content-Type': 'text/plain;charset=utf-8',

@@ -13,7 +13,6 @@ import {
     ShadowsocksOutbound,
     VlessOutbound,
     TrojanOutbound,
-    AnyOutbound,
     WireguardEndpoint,
     VmessOutbound,
     HttpTransport,
@@ -24,7 +23,8 @@ import {
     HttpupgradeTransport,
     TransportType,
     Fingerprint,
-    URLTest
+    URLTest,
+    ChainOutbound
 } from 'types/sing-box';
 
 function buildOutbound<T>(
@@ -120,7 +120,7 @@ export function buildWarpOutbound(
     } satisfies WireguardEndpoint;
 }
 
-export function buildChainOutbound(): AnyOutbound | null {
+export function buildChainOutbound(): ChainOutbound | undefined {
     const {
         dict: { _VL_, _TR_, _SS_, _VM_ },
         settings: {
@@ -185,7 +185,7 @@ export function buildChainOutbound(): AnyOutbound | null {
             }, tls, transport);
 
         default:
-            return null;
+            return undefined;
     };
 }
 

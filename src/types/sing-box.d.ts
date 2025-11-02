@@ -42,7 +42,7 @@ export interface DnsRule {
     type?: "logical";
     clash_mode?: "Global" | "Direct";
     mode?: "and";
-    rules?: unknown[];
+    rules?: { rule_set: string | string[]; }[];
     rule_set?: string[] | string;
     domain?: string[];
     domain_suffix?: string[];
@@ -53,7 +53,7 @@ export interface DnsRule {
     server?: string;
 }
 
-export interface Dns {
+export interface DNS {
     servers: DnsServer[];
     rules: DnsRule[];
     strategy: ResolveStrategy;
@@ -194,7 +194,7 @@ export interface TrojanOutbound extends BaseOutbound {
     network: "tcp";
     tls?: TLS;
     transport?: Transport
-};
+}
 
 export interface VlessOutbound extends BaseOutbound {
     uuid: string;
@@ -203,7 +203,7 @@ export interface VlessOutbound extends BaseOutbound {
     network: "tcp";
     tls?: TLS;
     transport?: Transport
-};
+}
 
 export interface VmessOutbound extends BaseOutbound {
     uuid: string;
@@ -212,24 +212,6 @@ export interface VmessOutbound extends BaseOutbound {
     network: "tcp";
     tls?: TLS;
     transport?: Transport
-};
-
-export type AnyOutbound =
-    | HttpOutbound
-    | SocksOutbound
-    | ShadowsocksOutbound
-    | VlessOutbound
-    | VmessOutbound
-    | TrojanOutbound;
-
-export interface WireguardEndpoint {
-    tag: string;
-    type: string;
-    address: string[];
-    mtu: 1280;
-    peers: unknown[];
-    private_key: string;
-    detour?: string;
 }
 
 export interface Selector {
@@ -243,18 +225,82 @@ export interface URLTest {
     type: "urltest";
     tag: string;
     outbounds: string[];
-    url?: string;
-    interval?: string;
+    url: string;
+    interval: string;
     interrupt_exist_connections: false;
 }
 
+export type Outbound =
+    | BaseOutbound
+    | HttpOutbound
+    | SocksOutbound
+    | ShadowsocksOutbound
+    | VlessOutbound
+    | VmessOutbound
+    | TrojanOutbound
+    | Selector
+    | URLTest;
+
+export type ChainOutbound = Exclude<Outbound, Selector | URLTest>;
+
+interface Peer {
+    address: string;
+    port: number;
+    public_key: string;
+    reserved: number[];
+    allowed_ips: [
+        "0.0.0.0/0",
+        "::/0"
+    ];
+    persistent_keepalive_interval: number;
+}
+
+export interface WireguardEndpoint {
+    tag: string;
+    type: "wireguard";
+    address: string[];
+    mtu: 1280;
+    peers: Peer[];
+    private_key: string;
+    detour?: string;
+}
+
+interface Log {
+    disabled: boolean;
+    level?: "warn" | "error" | "debug" | "info";
+    timestamp: true;
+}
+
+interface NTP {
+    enabled: true;
+    server: string;
+    server_port: number;
+    domain_resolver: string;
+    interval: string;
+    write_to_system: false;
+}
+
+interface Experimental {
+    cache_file: {
+        enabled: true;
+        store_fakeip: true;
+    };
+    clash_api: {
+        external_controller: string;
+        external_ui: "ui";
+        default_mode: "Rule";
+        external_ui_download_url: string;
+        external_ui_download_detour: "direct";
+    };
+}
+
 export interface Config {
-    log: unknown;
-    dns: Dns;
+    log: Log;
+    dns: DNS;
     inbounds: Array<TunInbound | MixedInbound>;
-    outbounds: Array<BaseOutbound | AnyOutbound | Selector | URLTest>;
+    outbounds: Outbound[];
     endpoints?: WireguardEndpoint[];
     route: Route;
-    ntp: unknown;
-    experimental: unknown;
+    ntp: NTP;
+    experimental: Experimental;
 }

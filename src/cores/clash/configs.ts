@@ -2,12 +2,12 @@ import { getDataset } from 'kv';
 import { buildDNS } from './dns';
 import { buildRoutingRules, buildRuleProviders } from './routing';
 import { buildChainOutbound, buildUrlTest, buildWarpOutbound, buildWebsocketOutbound } from './outbounds';
-import type { AnyOutbound, WireguardOutbound, Config } from 'types/clash';
-import { getConfigAddresses, generateRemark, getProtocols, customReplacer } from '@utils';
+import type { WireguardOutbound, Config, Outbound } from 'types/clash';
+import { getConfigAddresses, generateRemark, getProtocols } from '@utils';
 import { sniffer, tun } from './inbounds';
 
 async function buildConfig(
-    outbounds: AnyOutbound[],
+    outbounds: Outbound[],
     selectorTags: string[],
     proxyTags: string[],
     chainTags: string[],
@@ -34,12 +34,12 @@ async function buildConfig(
         "geo-auto-update": true,
         "geo-update-interval": 168,
         "external-controller": "127.0.0.1:9090",
-        "external-ui-url": "https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip",
-        "external-ui": "ui",
         "external-controller-cors": {
             "allow-origins": ["*"],
             "allow-private-network": true
         },
+        "external-ui": "ui",
+        "external-ui-url": "https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip",
         "profile": {
             "store-selected": true,
             "store-fake-ip": true
@@ -55,7 +55,7 @@ async function buildConfig(
                 "proxies": selectorTags
             }
         ],
-        "rule-providers": buildRuleProviders(),
+        "rule-providers": buildRuleProviders().omitEmpty(),
         "rules": buildRoutingRules(isWarp),
         "ntp": {
             "enable": true,
@@ -81,7 +81,7 @@ export async function getClNormalConfig(): Promise<Response> {
 
     const proxyTags: string[] = [];
     const chainTags: string[] = [];
-    const outbounds: AnyOutbound[] = [];
+    const outbounds: Outbound[] = [];
 
     const Addresses = await getConfigAddresses(false);
     const protocols = getProtocols();
@@ -126,7 +126,7 @@ export async function getClNormalConfig(): Promise<Response> {
         false
     );
 
-    return new Response(JSON.stringify(config, customReplacer, 4), {
+    return new Response(JSON.stringify(config, null, 4), {
         status: 200,
         headers: {
             'Content-Type': 'text/plain;charset=utf-8',
@@ -172,7 +172,7 @@ export async function getClWarpConfig(request: Request, env: Env, isPro: boolean
         isPro
     );
 
-    return new Response(JSON.stringify(config, customReplacer, 4), {
+    return new Response(JSON.stringify(config, null, 4), {
         status: 200,
         headers: {
             'Content-Type': 'text/plain;charset=utf-8',

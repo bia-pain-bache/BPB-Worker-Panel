@@ -176,6 +176,10 @@ declare global {
     interface Array<T> {
         concatIf<T>(condition: boolean, concat: T | T[]): T[];
     }
+
+    interface Object {
+        omitEmpty<T>(): T | undefined;
+    }
 }
 
 export { };

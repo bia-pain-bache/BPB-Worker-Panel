@@ -6,7 +6,6 @@ import {
     ShadowsocksOutbound,
     VlessOutbound,
     TrojanOutbound,
-    AnyOutbound,
     WireguardOutbound,
     WsOpts,
     GrpcOpts,
@@ -17,7 +16,8 @@ import {
     AmneziaOpts,
     Network,
     Fingerprint,
-    URLTest
+    URLTest,
+    ChainOutbound
 } from 'types/clash';
 
 function buildOutbound<T>(
@@ -120,7 +120,7 @@ export function buildWarpOutbound(
     };
 }
 
-export function buildChainOutbound(): AnyOutbound | null {
+export function buildChainOutbound(): ChainOutbound | undefined {
     const {
         dict: { _SS_, _VL_, _TR_, _VM_ },
         settings: {
@@ -175,13 +175,13 @@ export function buildChainOutbound(): AnyOutbound | null {
             });
 
         case _TR_:
-            if (security === "none") return null;
+            if (security === "none") return undefined;
             return buildOutbound<TrojanOutbound>("", _TR_, server, port, false, false, tls, transport, {
                 "password": password
             });
 
         default:
-            return null;
+            return undefined;
     };
 }
 

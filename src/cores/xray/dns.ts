@@ -1,5 +1,5 @@
 import { getGeoAssets } from './geo-assets';
-import type { Dns, DnsServer, DnsHosts } from 'types/xray';
+import type { DNS, DnsServer, DnsHosts } from 'types/xray';
 import { resolveDNS, isDomain, getDomain, accDnsRules } from '@utils';
 
 export async function buildDNS(
@@ -9,7 +9,7 @@ export async function buildDNS(
     domainToStaticIPs?: string,
     customDns?: string,
     customDnsHosts?: string[]
-): Promise<Dns> {
+): Promise<DNS> {
     const {
         localDNS,
         remoteDNS,
@@ -98,7 +98,7 @@ export async function buildDNS(
     }
 
     return {
-        hosts: hosts,
+        hosts: hosts.omitEmpty(),
         servers,
         queryStrategy: isWarp && !enableIPv6 ? "UseIPv4" : "UseIP",
         tag: "dns"

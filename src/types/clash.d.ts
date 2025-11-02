@@ -28,7 +28,7 @@ export interface FakeDNS {
     "fake-ip-filter": string[];
 }
 
-export type Dns = OptionalIntersection<{
+export type DNS = OptionalIntersection<{
     "enable": true;
     "listen": string;
     "ipv6": boolean;
@@ -162,14 +162,6 @@ export type TrojanOutbound = BaseOutbound & {
     "password": string;
 } & TLS & Transport;
 
-export type AnyOutbound =
-    | HttpOutbound
-    | SocksOutbound
-    | ShadowsocksOutbound
-    | VlessOutbound
-    | VmessOutbound
-    | TrojanOutbound;
-
 export interface AmneziaOpts {
     "jc": number;
     "jmin": number;
@@ -203,12 +195,40 @@ export interface URLTest {
     "tolerance"?: number;
 }
 
+export type Outbound =
+    | HttpOutbound
+    | SocksOutbound
+    | ShadowsocksOutbound
+    | VlessOutbound
+    | VmessOutbound
+    | TrojanOutbound
+    | WireguardOutbound;
+
+export type ChainOutbound = Exclude<Outbound, WireguardOutbound>;
+
 export interface RuleProvider {
     "type": "http";
     "format": string;
     "behavior": "domain" | "ipcidr";
     "url": string;
     "path": string;
+    "interval": number;
+}
+
+interface ExternalControllerCors {
+    "allow-origins": ["*"];
+    "allow-private-network": true;
+}
+
+interface Profile {
+    "store-selected": true;
+    "store-fake-ip": true;
+}
+
+interface NTP {
+    "enable": true;
+    "server": string;
+    "port": number;
     "interval": number;
 }
 
@@ -226,16 +246,16 @@ export interface Config {
     "geo-auto-update": true;
     "geo-update-interval": 168;
     "external-controller": string;
-    "external-ui-url": string;
+    "external-controller-cors": ExternalControllerCors;
     "external-ui": "ui";
-    "external-controller-cors": unknown;
-    "profile": unknown;
+    "external-ui-url": string;
+    "profile": Profile;
     "dns": Dns;
     "tun": Tun;
     "sniffer": Sniffer;
-    "proxies": Array<AnyOutbound | WireguardOutbound>;
+    "proxies": Outbound[];
     "proxy-groups": Array<Selector | URLTest>;
-    "rule-providers": Record<string, RuleProvider>;
+    "rule-providers"?: Record<string, RuleProvider>;
     "rules": string[];
-    "ntp": unknown;
+    "ntp": NTP;
 }
