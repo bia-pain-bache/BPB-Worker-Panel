@@ -2,7 +2,8 @@
 
 - Refactore the whole project using TypeScript.
 - Added VMess support to Chain Proxies. All main protocols are now supported: **VLESS**, **VMess**, **Trojan**, **Shadowsocks**, **Socks** and **Http**.
-- Improved Chain Proxy performance.
+- Removed Port 443 restriction for TLS Chain proxies.
+- Overal Chain Proxy performance improvements.
 - Added Warp Remote DNS (IPv4 only). It's highly recommended to use Cloudflare DNS servers for Warp if you wanna change it.
 - Made **TCP Fast Open** optional due to some devices and ISPs compatibility. Please note that you have to enable TCP Fast Open on linux manually #1097
 - Added `maxSplit` to Fragment settings, please use it only if you understand this feature.

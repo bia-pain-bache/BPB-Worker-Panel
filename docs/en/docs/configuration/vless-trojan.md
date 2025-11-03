@@ -7,10 +7,10 @@
 By default, the remote DNS is Google DNS over HTTPS (DoH). However, you can use other DoH or DoT servers, except Cloudflare DNS servers:
 
 !!! tip "Well known DOH and DOT servers"
-    - https://dns.google/dns-query
-    - https://dns.adguard-dns.com/dns-query
-    - https://dns.quad9.net/dns-query
-    - tls://dns.google
+    - `https://dns.google/dns-query`
+    - `https://dns.adguard-dns.com/dns-query`
+    - `https://dns.quad9.net/dns-query`
+    - `tls://dns.google`
 
 ## Chain Proxy
 
@@ -42,19 +42,18 @@ As noted, a Proxy IP fixes the IP for Cloudflare target addresses, but node IPs 
     The Chain Proxy config must not be a worker itself, or the final IP will still change.
 
 !!! info "Valid SOCKS proxy formats"
-    - socks://address:port
-    - socks://user:pass@address:port
+    - `socks://address:port`
+    - `socks://user:pass@address:port`
 
 !!! info "Valid HTTP proxy formats"
-    - http://address:port
-    - http://user:pass@address:port
+    - `http://address:port`
+    - `http://user:pass@address:port`
 
 !!! info
     Shadowsocks cannot have any transport like websocket, grpc... and cannot have TLS.
 
 !!! warning
-    - TLS configs for chaining must use port 443.
-    - VLESS and Trojan configs with randomized ALPN values are incompatible with Clash due to lack of Fingerprint
+    VLESS, VMess and Trojan configs with `randomized` ALPN values are incompatible with Clash due to lack of Fingerprint
 
 This setting applies to **Normal** and **Fragment** subscriptions. After applying, update the subscription. The chained configs will be added alongside original configs using 🔗 icon. This way, when Chain Proxy stops working, you still have access to original configs.
 

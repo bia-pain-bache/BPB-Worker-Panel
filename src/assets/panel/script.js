@@ -820,14 +820,13 @@ function validateChainProxy() {
     }
 
     const config = new URL(chainProxy);
-    let { protocol, username, port } = config;
+    let { protocol, username } = config;
     let security = config.searchParams.get('security');
     let type = config.searchParams.get('type');
 
     if (isVMess) {
         const vmConfig = JSON.parse(atob(config.host));
         username = vmConfig.id;
-        port = vmConfig.port;
         security = vmConfig.tls;
         type = vmConfig.net;
     }
@@ -855,15 +854,6 @@ function validateChainProxy() {
             alert(
                 '⛔ Invalid Config!\n' +
                 '💡 VLESS, VMess or Trojan transmission can be tcp, ws, grpc or httpupgrade.'
-            );
-
-            return false;
-        }
-
-        if (security === 'tls' && Number(port) !== 443) {
-            alert(
-                '⛔ Invalid Config!\n' +
-                '💡 VLESS, VMess or Trojan TLS port can be only 443.'
             );
 
             return false;
