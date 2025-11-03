@@ -37,11 +37,7 @@ export async function getDataset(
 }
 
 export async function updateDataset(request: Request, env: Env): Promise<Settings> {
-    const {
-        settings,
-        httpConfig: { panelVersion }
-    } = globalThis;
-
+    const { settings, httpConfig: { panelVersion } } = globalThis;
     const newSettings: Settings | null = request.method === 'PUT' ? await request.json() : null;
     let currentSettings: Settings | null;
 
@@ -60,7 +56,7 @@ export async function updateDataset(request: Request, env: Env): Promise<Setting
         const source = newSettings ?? currentSettings ?? settings;
         const value = source[field];
         return callback ? await callback(value) : value;
-    }
+    };
 
     const fields: Array<
         [keyof Settings] |
@@ -150,6 +146,7 @@ export async function updateDataset(request: Request, env: Env): Promise<Setting
     };
 
     try {
+        console.log(JSON.stringify(updatedSettings));
         await env.kv.put("proxySettings", JSON.stringify(updatedSettings));
         return updatedSettings;
     } catch (error) {
@@ -186,21 +183,22 @@ function extractProxyParams(chainProxy: string) {
             protocol: stdProtocol,
             uuid: config.id,
             server: config.add,
-            port: config.port,
+            port: +config.port,
+            aid: +config.aid,
             type: config.net,
             headerType: config.type,
-            serviceName: config.path,
-            authority: config.authority,
-            path: config.path,
-            host: config.host,
+            serviceName: config.path || undefined,
+            authority: config.authority || undefined,
+            path: config.path || undefined,
+            host: config.host || undefined,
             security: config.tls,
             sni: config.sni,
             fp: config.fp,
-            alpn: config.alpn
+            alpn: config.alpn || undefined
         };
     }
 
-    const configParams: Record<string, string | number> = {
+    const configParams: Record<string, string | number | undefined> = {
         protocol: stdProtocol,
         server: url.hostname,
         port: +url.port
@@ -209,7 +207,7 @@ function extractProxyParams(chainProxy: string) {
     const parseParams = (queryParams: boolean, customParams: Record<string, string>) => {
         if (queryParams) {
             for (const [key, value] of url.searchParams) {
-                configParams[key] = value;
+                configParams[key] = value || undefined;
             }
         }
 
@@ -221,26 +219,26 @@ function extractProxyParams(chainProxy: string) {
 
     switch (stdProtocol) {
         case _VL_:
-            parseParams(true, {
+            return parseParams(true, {
                 uuid: url.username
             });
 
         case _TR_:
-            parseParams(true, {
+            return parseParams(true, {
                 password: url.username
             });
 
         case _SS_:
             const auth = base64DecodeUtf8(url.username);
             const [first, ...rest] = auth.split(':');
-            parseParams(true, {
+            return parseParams(true, {
                 method: first,
                 password: rest.join(':')
             });
 
         case 'socks':
         case 'http':
-            parseParams(false, {
+            return parseParams(false, {
                 user: url.username,
                 pass: url.password
             });

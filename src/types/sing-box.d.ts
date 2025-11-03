@@ -208,6 +208,7 @@ export interface VlessOutbound extends BaseOutbound {
 export interface VmessOutbound extends BaseOutbound {
     uuid: string;
     security: "auto";
+    alter_id: number;
     packet_encoding?: "";
     network: "tcp";
     tls?: TLS;

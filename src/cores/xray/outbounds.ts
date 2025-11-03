@@ -306,12 +306,12 @@ function buildTransport(
                             type: "http",
                             request: {
                                 headers: {
-                                    "Host": host ? host.split(',') : [],
+                                    "Host": host?.split(',') || [],
                                     "Accept-Encoding": ["gzip, deflate"],
                                     "Connection": ["keep-alive"],
                                     "Pragma": "no-cache"
                                 },
-                                path: path ? path.split(',') : ["/"],
+                                path: path?.split(',') || ["/"],
                                 method: "GET",
                                 version: "1.1"
                             }
@@ -378,7 +378,7 @@ function buildTlsSettings(
     return {
         serverName,
         fingerprint: fingerprint,
-        alpn: alpn ? alpn.split(',') : undefined,
+        alpn: alpn?.split(','),
         allowInsecure
     }
 }

@@ -65,7 +65,7 @@ export function buildWebsocketOutbound(
     const { host, sni, allowInsecure } = selectSniHost(address);
     const transport = buildTransport("ws", "none", generateWsPath(protocol), host, undefined, 2560);
     const tls = isHttps(port)
-        ? buildTLS("tls", isFragment, allowInsecure, undefined, sni, "http/1.1", fingerprint)
+        ? buildTLS("tls", isFragment, allowInsecure, sni, "http/1.1", fingerprint)
         : undefined;
 
     if (protocol === _VL_) return buildOutbound<VlessOutbound>(remark, protocol, address, port, enableTFO, {
@@ -130,7 +130,7 @@ export function buildChainOutbound(): ChainOutbound | undefined {
                 pass, password, method, uuid,
                 flow, security, type, sni, fp,
                 host, path, alpn, pbk, sid,
-                headerType, serviceName
+                headerType, serviceName, aid
             }
         }
     } = globalThis;
@@ -139,7 +139,7 @@ export function buildChainOutbound(): ChainOutbound | undefined {
     const ed = searchParams.get("ed");
     const earlyData = ed ? +ed : undefined;
 
-    const tls = buildTLS(security, false, false, undefined, sni, alpn, fp, pbk, sid);
+    const tls = buildTLS(security, false, false, sni || server, alpn, fp, pbk, sid);
     const transport = buildTransport(type, headerType, path, host, serviceName, earlyData);
 
     switch (protocol) {
@@ -175,6 +175,7 @@ export function buildChainOutbound(): ChainOutbound | undefined {
             return buildOutbound<VmessOutbound>("", protocol, server, port, false, {
                 uuid: uuid,
                 security: "auto",
+                alter_id: aid,
                 network: "tcp"
             }, tls, transport);
 
@@ -209,22 +210,18 @@ function buildTLS(
     security: "tls" | "reality" | "none",
     isFragment: boolean,
     allowInsecure: boolean,
-    server?: string,
     sni?: string,
     alpn?: string,
     fingerprint?: Fingerprint,
     publicKey?: string,
     shortID?: string
 ): TLS | undefined {
-    if (!sni && !server) return undefined;
-
-    const tlsAlpns = alpn
-        ? alpn.split(',').filter((value: string) => value !== 'h2')
-        : undefined;
-
+    if (!["tls", "reality"].includes(security) || !sni) return undefined;
+    const tlsAlpns = alpn?.split(',').filter((value: string) => value !== 'h2') || undefined;
+    
     const tls: TLS = {
         enabled: true,
-        server_name: sni || server!,
+        server_name: sni,
         record_fragment: isFragment,
         insecure: allowInsecure,
         alpn: tlsAlpns,
@@ -243,8 +240,6 @@ function buildTLS(
             short_id: shortID
         }
     };
-
-    return undefined;
 }
 
 function buildTransport(
@@ -255,11 +250,13 @@ function buildTransport(
     serviceName?: string,
     earlyData?: number
 ): Transport | undefined {
+    path = path?.split("?")[0];
+    
     switch (type) {
         case 'tcp':
             if (headerType === 'http') return {
                 type: "http",
-                host: host ? host.split(',') : [],
+                host: host?.split(',') || [],
                 path: path || "/",
                 method: "GET",
                 headers: {
@@ -273,7 +270,7 @@ function buildTransport(
         case 'ws':
             return {
                 type: "ws",
-                path: path ? path.split('?ed=')[0] : "/",
+                path: path?.split('?ed=')[0] || "/",
                 max_early_data: earlyData,
                 early_data_header_name: earlyData ? "Sec-WebSocket-Protocol" : undefined,
                 headers: {
@@ -284,8 +281,8 @@ function buildTransport(
         case 'httpupgrade':
             return {
                 type: "httpupgrade",
-                host,
-                path: path ? path.split('?ed=')[0] : "/"
+                host: host,
+                path: path?.split('?ed=')[0] || "/"
             } satisfies HttpupgradeTransport;
 
         case 'grpc':

@@ -154,7 +154,7 @@ export type VlessOutbound = BaseOutbound & OptionalIntersection<{
 export type VmessOutbound = BaseOutbound & OptionalIntersection<{
     "uuid": string;
     "cipher": "auto";
-    "alterId": 0;
+    "alterId": number;
     "packet-encoding"?: "";
 }, TLS> & Transport;
 

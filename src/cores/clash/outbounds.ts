@@ -61,7 +61,7 @@ export function buildWebsocketOutbound(
     if (protocol === _TR_ && !isTLS) return null;
     const { host, sni, allowInsecure } = selectSniHost(address);
 
-    const tls = isTLS ? buildTLS(protocol, "tls", allowInsecure, undefined, sni, "http/1.1", fingerprint) : {};
+    const tls = isTLS ? buildTLS(protocol, "tls", allowInsecure, sni, "http/1.1", fingerprint) : {};
     const transport = buildTransport("ws", undefined, generateWsPath(protocol), host, undefined, 2560);
 
     if (protocol === _VL_) return buildOutbound<VlessOutbound>(remark, protocol, address, port, enableIPv6, enableTFO, tls, transport, {
@@ -131,7 +131,7 @@ export function buildChainOutbound(): ChainOutbound | undefined {
                 pass, password, method, uuid,
                 flow, security, type, sni, fp,
                 host, path, alpn, pbk, sid,
-                headerType, serviceName
+                headerType, serviceName, aid
             }
         }
     } = globalThis;
@@ -140,7 +140,7 @@ export function buildChainOutbound(): ChainOutbound | undefined {
     const ed = searchParams.get("ed");
     const earlyData = ed ? +ed : undefined;
 
-    const tls = buildTLS(protocol, security, false, server, sni, alpn, fp, pbk, sid);
+    const tls = buildTLS(protocol, security, false, sni || server, alpn, fp, pbk, sid);
     const transport = buildTransport(type, headerType, path, host, serviceName, earlyData);
 
     switch (protocol) {
@@ -172,7 +172,7 @@ export function buildChainOutbound(): ChainOutbound | undefined {
             return buildOutbound<VmessOutbound>("", _VM_, server, port, false, false, tls, transport, {
                 "uuid": uuid,
                 "cipher": "auto",
-                "alterId": 0
+                "alterId": aid
             });
 
         case _TR_:
@@ -206,17 +206,18 @@ function buildTLS(
     protocol: string,
     security: "tls" | "reality" | "none",
     allowInsecure: boolean,
-    server?: string,
     sni?: string,
     alpn?: string,
     fingerprint?: Fingerprint,
     publicKey?: string,
     shortID?: string
 ): Partial<TLS> {
+    if (!["tls", "reality"].includes(security) || !sni) return {};
     const { _TR_ } = globalThis.dict;
+
     const common: TLS = {
         "tls": true,
-        [protocol === _TR_ ? "sni" : "servername"]: sni || server,
+        [protocol === _TR_ ? "sni" : "servername"]: sni,
         "client-fingerprint": fingerprint === "randomized" ? "random" : fingerprint,
         "skip-cert-verify": allowInsecure
     };
@@ -224,7 +225,7 @@ function buildTLS(
     if (security === "tls") {
         return {
             ...common,
-            "alpn": alpn ? alpn.split(',') : undefined
+            "alpn": alpn?.split(',')
         };
     } else if (security === "reality" && publicKey && shortID) {
         return {
@@ -245,6 +246,7 @@ function buildTransport(
     serviceName?: string,
     earlyData?: number
 ): Partial<Transport> {
+    path = path?.split("?")[0];
 
     switch (type) {
         case 'tcp':
@@ -252,9 +254,9 @@ function buildTransport(
                 "network": "http",
                 "http-opts": {
                     "method": "GET",
-                    "path": path ? path.split(',') : ["/"],
+                    "path": path?.split(',') || ["/"],
                     "headers": {
-                        "Host": host ? host.split(",") : [],
+                        "Host": host?.split(",") || [],
                         "Connection": ["keep-alive"],
                         "Content-Type": ["application/octet-stream"]
                     }

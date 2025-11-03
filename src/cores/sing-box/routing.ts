@@ -31,7 +31,7 @@ export function buildRoutingRules(isWarp: boolean, isChain: boolean): Route {
         }
     ];
 
-    if (!(isWarp || isChain)) {
+    if (!isWarp) {
         addRoutingRule(rules, 'reject', undefined, undefined, undefined, undefined, "udp");
     } else if (blockUDP443) {
         addRoutingRule(rules, 'reject', undefined, undefined, undefined, undefined, "udp", "quic", 443);
