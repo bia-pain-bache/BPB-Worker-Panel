@@ -61,7 +61,7 @@ export function buildWebsocketOutbound(
     if (protocol === _TR_ && !isTLS) return null;
     const { host, sni, allowInsecure } = selectSniHost(address);
 
-    const tls = buildTLS(protocol, "tls", allowInsecure, undefined, sni, "http/1.1", fingerprint);
+    const tls = isTLS ? buildTLS(protocol, "tls", allowInsecure, undefined, sni, "http/1.1", fingerprint) : {};
     const transport = buildTransport("ws", undefined, generateWsPath(protocol), host, undefined, 2560);
 
     if (protocol === _VL_) return buildOutbound<VlessOutbound>(remark, protocol, address, port, enableIPv6, enableTFO, tls, transport, {
@@ -87,6 +87,7 @@ export function buildWarpOutbound(
         amneziaNoiseSizeMax,
         enableIPv6
     } = globalThis.settings;
+    
     const { host, port } = parseHostPort(endpoint, false);
     const ipVersion = enableIPv6 ? "ipv4-prefer" : "ipv4";
 

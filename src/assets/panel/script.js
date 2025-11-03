@@ -1,5 +1,4 @@
 localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
-
 const form = document.getElementById("configForm");
 const [
     selectElements,
@@ -17,9 +16,6 @@ const [
 
 const defaultHttpsPorts = [443, 8443, 2053, 2083, 2087, 2096];
 const defaultHttpPorts = [80, 8080, 8880, 2052, 2082, 2086, 2095];
-const domainRegex = /^(?=.{1,253}$)(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)\.)+[a-zA-Z]{2,63}$/;
-const ipv4Regex = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/;
-const ipv6Regex = /^\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}|:(?::[a-fA-F0-9]{1,4}){1,7})\]$/;
 
 fetch('/panel/settings')
     .then(async response => response.json())
@@ -50,6 +46,15 @@ fetch('/panel/settings')
                 qrcodeContainer.lastElementChild.remove();
             }
         }
+
+        document.querySelectorAll(".toggle-password").forEach(toggle => {
+            toggle.addEventListener("click", function () {
+                const input = this.previousElementSibling;
+                const isPassword = input.type === "password";
+                input.type = isPassword ? "text" : "password";
+                this.textContent = isPassword ? "visibility" : "visibility_off";
+            });
+        });
     });
 
 function initiatePanel(proxySettings) {
@@ -332,7 +337,11 @@ async function updateWarpConfigs() {
         refreshBtn.classList.remove('fa-spin');
 
         if (!success) {
-            alert(`⚠️ An error occured, Please try again!\n⛔ ${message}`);
+            alert(
+                '⚠️ An error occured, Please try again!\n' +
+                `⛔ ${message}`
+            );
+
             throw new Error(`status ${status} - ${message}`);
         }
 
@@ -380,7 +389,11 @@ function handlePortChange(event) {
 
 function handleRiskyRules(event) {
     if (event.target.checked) {
-        const proceed = confirm("⛔ v2ray users should set Geo Assets to Chocolate4U and download assets, otherwise configs won't connect.\n\n❓ Proceed?");
+        const proceed = confirm(
+            "⛔ v2ray users should set Geo Assets to Chocolate4U and download assets, otherwise configs won't connect.\n\n" +
+            "❓ Proceed?"
+        );
+
         if (!proceed) {
             event.target.checked = false;
             return;
@@ -444,95 +457,6 @@ function resetSettings() {
         .catch(error => console.error("Reseting settings error:", error.message || error));
 }
 
-function validateSettings() {
-    const configForm = document.getElementById('configForm');
-    const formData = new FormData(configForm);
-
-    const xrayUdpNoises = [];
-    const fields = [
-        'udpXrayNoiseMode',
-        'udpXrayNoisePacket',
-        'udpXrayNoiseDelayMin',
-        'udpXrayNoiseDelayMax',
-        'udpXrayNoiseCount',
-        'applyTo'
-    ].map(field => formData.getAll(field));
-
-    const validations = [
-        validateRemoteDNS(),
-        validateSanctionDns(),
-        validateLocalDNS(),
-        validateWarpDNS(),
-        validateMultipleHostNames(),
-        validateProxyIPs(),
-        validateNAT64Prefixes(),
-        validateWarpEndpoints(),
-        validateMinMax(),
-        validateChainProxy(),
-        validateCustomCdn(),
-        validateKnockerNoise(),
-        validateXrayNoises(fields),
-        validateCustomRules()
-    ];
-
-    if (!validations.every(Boolean)) {
-        return false;
-    }
-
-    const form = Object.fromEntries(formData.entries());
-    const [modes, packets, delaysMin, delaysMax, counts, applyTo] = fields;
-
-    modes.forEach((mode, index) => {
-        xrayUdpNoises.push({
-            type: mode,
-            packet: packets[index],
-            delay: `${delaysMin[index]}-${delaysMax[index]}`,
-            applyTo: applyTo[index],
-            count: counts[index]
-        });
-    });
-
-    form.xrayUdpNoises = xrayUdpNoises;
-    const ports = [
-        ...defaultHttpPorts,
-        ...defaultHttpsPorts
-    ];
-
-    form.ports = ports.reduce((acc, port) => {
-        formData.has(port.toString()) && acc.push(port);
-        return acc;
-    }, []);
-
-    checkboxElements.forEach(elm => {
-        form[elm.id] = formData.has(elm.id);
-    });
-
-    selectElements.forEach(elm => {
-        let value = form[elm.id];
-        if (value === 'true') value = true;
-        if (value === 'false') value = false;
-        form[elm.id] = value;
-    });
-
-    inputElements.forEach(elm => {
-        if (typeof form[elm.id] === 'string') {
-            form[elm.id] = form[elm.id].trim();
-        }
-    });
-
-    numInputElements.forEach(elm => {
-        form[elm.id] = Number(form[elm.id].trim());
-    });
-
-    textareaElements.forEach(elm => {
-        const key = elm.id;
-        const value = form[key];
-        form[key] = value?.split('\n').map(val => val.trim()).filter(Boolean) || [];
-    });
-
-    return form;
-}
-
 function updateSettings(event, data) {
     event.preventDefault();
     event.stopPropagation();
@@ -574,6 +498,63 @@ function updateSettings(event, data) {
         });
 }
 
+function parseElmValues(id) {
+    return document.getElementById(id).value?.split('\n')
+        .map(value => value.trim())
+        .filter(Boolean) || [];
+}
+
+function getElmValue(id) {
+    return document.getElementById(id).value?.trim();
+}
+
+function isDomain(value) {
+    const domainRegex = /^(?=.{1,253}$)(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)\.)+[a-zA-Z]{2,63}$/;
+    return domainRegex.test(value);
+}
+
+function isIPv4(value) {
+    const ipv4Regex = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/;
+    return ipv4Regex.test(value);
+}
+
+function isIPv4CIDR(value) {
+    const ipv4CidrRegex = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)(?:\/(?:[0-9]|[1-2][0-9]|3[0-2]))?$/;
+    return ipv4CidrRegex.test(value);
+}
+
+function isIPv6(value) {
+    const ipv6Regex = /^\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}|:(?::[a-fA-F0-9]{1,4}){1,7})\]$/;
+    return ipv6Regex.test(value);
+}
+
+function isIPv6CIDR(value) {
+    const ipv6CidrRegex = /^(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}|:(?::[a-fA-F0-9]{1,4}){1,7}|::)(?:\/(?:12[0-8]|1[01]?[0-9]|[0-9]?[0-9]))?$/;
+    return ipv6CidrRegex.test(value);
+}
+
+function parseHostPort(input) {
+    const regex = /^(?<host>\[.*?\]|[^:]+)(?::(?<port>\d+))?$/;
+    const match = input.match(regex);
+
+    if (!match) return null;
+
+    return {
+        host: match.groups.host,
+        port: match.groups.port ? +match.groups.port : null
+    };
+}
+
+function isValidHostName(value, isHost) {
+    const hostPort = parseHostPort(value.trim());
+    if (!hostPort) return false;
+    const { host, port } = hostPort;
+    if (port && (port > 65535 || port < 1)) return false;
+    if (isHost && !port) return false;
+
+    return isIPv6(host) || isIPv4(host) || isDomain(host);
+}
+
 function validateRemoteDNS() {
     let url;
     const dns = getElmValue("remoteDNS");
@@ -611,7 +592,11 @@ function validateRemoteDNS() {
     }
 
     if (cloudflareDNS.includes(url.hostname)) {
-        alert("⛔ Cloudflare DNS is not allowed for workers.\n💡 Please use other public DNS servers like Google, Adguard...");
+        alert(
+            "⛔ Cloudflare DNS is not allowed for workers.\n" +
+            "💡 Please use other public DNS servers like Google, Adguard..."
+        );
+
         return false;
     }
 
@@ -632,7 +617,11 @@ function validateSanctionDns() {
     const isValid = isValidHostName(host, false);
 
     if (!isValid) {
-        alert(`⛔ Invalid IPs or Domains.\n⚠️ ${host}`);
+        alert(
+            '⛔ Invalid IPs or Domains.\n' +
+            `⚠️ ${host}`
+        );
+
         return false;
     }
 
@@ -641,10 +630,15 @@ function validateSanctionDns() {
 
 function validateWarpDNS() {
     const dns = getElmValue("warpRemoteDNS");
-    const isValid = ipv4Regex.test(dns);
+    const isValid = isIPv4(dns);
 
     if (!isValid) {
-        alert(`⛔ Invalid Warp DNS.\n💡 Please fill in an IPv4 address (UDP DNS).\n\n⚠️ ${dns}`);
+        alert(
+            '⛔ Invalid Warp DNS.\n' +
+            '💡 Please fill in an IPv4 address (UDP DNS).\n\n' +
+            `⚠️ ${dns}`
+        );
+
         return false;
     }
 
@@ -653,60 +647,46 @@ function validateWarpDNS() {
 
 function validateLocalDNS() {
     const dns = getElmValue("localDNS");
-    const isValid = ipv4Regex.test(dns) || dns === 'localhost';
+    const isValid = isIPv4(dns) || dns === 'localhost';
 
     if (!isValid) {
-        alert(`⛔ Invalid local DNS.\n💡 Please fill in an IPv4 address or "localhost".\n\n⚠️ ${dns}`);
+        alert(
+            '⛔ Invalid local DNS.\n' +
+            '💡 Please fill in an IPv4 address or "localhost".\n\n' +
+            `⚠️ ${dns}`
+        );
+
         return false;
     }
 
     return true;
 }
 
-function parseElmValues(id) {
-    return document.getElementById(id).value?.split('\n')
-        .map(value => value.trim())
-        .filter(Boolean) || [];
-}
-
-function getElmValue(id) {
-    return document.getElementById(id).value?.trim();
-}
-
-function parseHostPort(input) {
-    const regex = /^(?<host>\[.*?\]|[^:]+)(?::(?<port>\d+))?$/;
-    const match = input.match(regex);
-
-    if (!match) return null;
-
-    return {
-        host: match.groups.host,
-        port: match.groups.port ? +match.groups.port : null
-    };
-}
-
-function isValidHostName(value, isHost) {
-    const hostPort = parseHostPort(value.trim());
-    if (!hostPort) return false;
-    const { host, port } = hostPort;
-    if (port && (port > 65535 || port < 1)) return false;
-    if (isHost && !port) return false;
-
-    return ipv6Regex.test(host) || ipv4Regex.test(host) || domainRegex.test(host);
-}
-
 function validateCustomRules() {
-    const ipv4CidrRegex = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)(?:\/(?:[0-9]|[1-2][0-9]|3[0-2]))?$/;
-    const ipv6CidrRegex = /^(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}|:(?::[a-fA-F0-9]{1,4}){1,7}|::)(?:\/(?:12[0-8]|1[01]?[0-9]|[0-9]?[0-9]))?$/;
-    const invalidValues = [
+    const invalidDomainIpValues = [
         'customBypassRules',
-        'customBlockRules',
-        'customBypassSanctionRules'
+        'customBlockRules'
     ].flatMap(parseElmValues)
-        .filter(value => !ipv4CidrRegex.test(value) && !ipv6CidrRegex.test(value) && !domainRegex.test(value));
+        .filter(value => !isIPv4CIDR(value) && !isIPv6CIDR(value) && !isDomain(value));
 
-    if (invalidValues.length) {
-        alert('⛔ Invalid IPs, Domains or IP ranges.\n💡 Please enter each value in a new line.\n\n' + invalidValues.map(ip => `⚠️ ${ip}`).join('\n'));
+    const invalidDomainValues = parseElmValues('customBypassSanctionRules').filter(value => !isDomain(value));
+
+    if (invalidDomainIpValues.length) {
+        alert(
+            '⛔ Invalid IPs, Domains or IP ranges.\n' +
+            '💡 Please enter each value in a new line.\n\n' +
+            invalidDomainIpValues.map(val => `⚠️ ${val}`).join('\n')
+        );
+
+        return false;
+    }
+
+    if (invalidDomainValues.length) {
+        alert(
+            '⛔ Invalid Domains.\n💡 Please enter each value in a new line.\n\n' +
+            invalidDomainValues.map(val => `⚠️ ${val}`).join('\n')
+        );
+
         return false;
     }
 
@@ -723,7 +703,12 @@ function validateMultipleHostNames() {
         .filter(value => !isValidHostName(value));
 
     if (invalidValues.length) {
-        alert('⛔ Invalid IPs or Domains.\n💡 Please enter each value in a new line.\n\n' + invalidValues.map(ip => `⚠️ ${ip}`).join('\n'));
+        alert(
+            '⛔ Invalid IPs or Domains.\n' +
+            '💡 Please enter each value in a new line.\n\n' +
+            invalidValues.map(ip => `⚠️ ${ip}`).join('\n')
+        );
+
         return false;
     }
 
@@ -735,7 +720,12 @@ function validateProxyIPs() {
         .filter(value => !isValidHostName(value));
 
     if (invalidValues.length) {
-        alert('⛔ Invalid proxy IPs.\n💡 Please enter each value in a new line.\n\n' + invalidValues.map(ip => `⚠️ ${ip}`).join('\n'));
+        alert(
+            '⛔ Invalid proxy IPs.\n' +
+            '💡 Please enter each value in a new line.\n\n' +
+            invalidValues.map(ip => `⚠️ ${ip}`).join('\n')
+        );
+
         return false;
     }
 
@@ -744,10 +734,15 @@ function validateProxyIPs() {
 
 function validateNAT64Prefixes() {
     const invalidValues = parseElmValues('prefixes')
-        .filter(value => !ipv6Regex.test(value));
+        .filter(value => !isIPv6(value));
 
     if (invalidValues.length) {
-        alert('⛔ Invalid NAT64 prefix.\n💡 Please enter each prefix in a new line using [].\n\n' + invalidValues.map(ip => `⚠️ ${ip}`).join('\n'));
+        alert(
+            '⛔ Invalid NAT64 prefix.\n' +
+            '💡 Please enter each prefix in a new line using [].\n\n' +
+            invalidValues.map(ip => `⚠️ ${ip}`).join('\n')
+        );
+
         return false;
     }
 
@@ -759,7 +754,11 @@ function validateWarpEndpoints() {
         .filter(value => !isValidHostName(value, true));
 
     if (invalidEndpoints.length) {
-        alert('⛔ Invalid endpoint.\n\n' + invalidEndpoints.map(endpoint => `⚠️ ${endpoint}`).join('\n'));
+        alert(
+            '⛔ Invalid endpoint.\n\n' +
+            invalidEndpoints.map(endpoint => `⚠️ ${endpoint}`).join('\n')
+        );
+
         return false;
     }
 
@@ -806,7 +805,17 @@ function validateChainProxy() {
     const isOthers = /(vless|trojan|ss):\/\/[^\s@]+@[^\s:]+:[^\s]+/.test(chainProxy);
 
     if (!isSocksHttp && !isVMess && !isOthers) {
-        alert('⛔ Invalid Config!\n💡 Standard formats are:\n + (socks or http)://user:pass@server:port\n + (socks or http)://server:port\n + vless://uuid@server:port...\n + vmess://config...\n + trojan://password@server:port...\n + ss://password@server:port...');
+        alert(
+            '⛔ Invalid Config!\n' +
+            '💡 Standard formats are:\n\n' +
+            ' + (socks or http)://user:pass@server:port\n' +
+            ' + (socks or http)://server:port\n' +
+            ' + vless://uuid@server:port...\n' +
+            ' + vmess://config...\n' +
+            ' + trojan://password@server:port...\n' +
+            ' + ss://userInfo@server:port...'
+        );
+
         return false;
     }
 
@@ -814,7 +823,7 @@ function validateChainProxy() {
     let { protocol, username, port } = config;
     let security = config.searchParams.get('security');
     let type = config.searchParams.get('type');
-    
+
     if (isVMess) {
         const vmConfig = JSON.parse(atob(config.host));
         username = vmConfig.id;
@@ -825,22 +834,38 @@ function validateChainProxy() {
 
     if (['vless:', 'trojan:', 'vmess:'].includes(protocol)) {
         if (!username) {
-            alert('⛔ Invalid Config!\n💡 Config URL should contain UUID or Password.');
+            alert(
+                '⛔ Invalid Config!\n' +
+                '💡 Config URL should contain UUID or Password.'
+            );
+
             return false;
         }
 
         if (security && !['tls', 'none', 'reality'].includes(security)) {
-            alert('⛔ Invalid Config!\n💡 VLESS, VMess or Trojan security can be TLS, Reality or None.');
+            alert(
+                '⛔ Invalid Config!\n' +
+                '💡 VLESS, VMess or Trojan security can be TLS, Reality or None.'
+            );
+
             return false;
         }
 
         if (!['tcp', 'raw', 'ws', 'grpc', 'httpupgrade'].includes(type)) {
-            alert('⛔ Invalid Config!\n💡 VLESS, VMess or Trojan transmission can be tcp, ws, grpc or httpupgrade.');
+            alert(
+                '⛔ Invalid Config!\n' +
+                '💡 VLESS, VMess or Trojan transmission can be tcp, ws, grpc or httpupgrade.'
+            );
+
             return false;
         }
 
         if (security === 'tls' && Number(port) !== 443) {
-            alert('⛔ Invalid Config!\n💡 VLESS, VMess or Trojan TLS port can be only 443.');
+            alert(
+                '⛔ Invalid Config!\n' +
+                '💡 VLESS, VMess or Trojan TLS port can be only 443.'
+            );
+
             return false;
         }
     }
@@ -867,7 +892,11 @@ function validateKnockerNoise() {
     const knockerNoise = getElmValue("knockerNoiseMode");
 
     if (!regex.test(knockerNoise)) {
-        alert('⛔ Invalid noise  mode.\n💡 Please use "none", "quic", "random" or a valid hex value.');
+        alert(
+            '⛔ Invalid noise  mode.\n' +
+            '💡 Please use "none", "quic", "random" or a valid hex value.'
+        );
+
         return false;
     }
 
@@ -912,7 +941,10 @@ function validateXrayNoises(fields) {
             }
             case 'hex': {
                 if (!(/^(?=(?:[0-9A-Fa-f]{2})*$)[0-9A-Fa-f]+$/.test(packets[index]))) {
-                    alert('⛔ The Hex noise packet is not a valid hex value! It should have even length and consisted of 0-9, a-f and A-F.');
+                    alert(
+                        '⛔ The Hex noise packet is not a valid hex value!\n' +
+                        '💡 It should have even length and consisted of 0-9, a-f and A-F.'
+                    );
                     submisionError = true;
                 }
 
@@ -922,6 +954,86 @@ function validateXrayNoises(fields) {
     });
 
     return !submisionError;
+}
+
+function validateSettings() {
+    const configForm = document.getElementById('configForm');
+    const formData = new FormData(configForm);
+
+    const fields = [
+        'udpXrayNoiseMode',
+        'udpXrayNoisePacket',
+        'udpXrayNoiseDelayMin',
+        'udpXrayNoiseDelayMax',
+        'udpXrayNoiseCount',
+        'applyTo'
+    ].map(field => formData.getAll(field));
+
+    const validations = [
+        validateRemoteDNS(),
+        validateSanctionDns(),
+        validateLocalDNS(),
+        validateWarpDNS(),
+        validateMultipleHostNames(),
+        validateProxyIPs(),
+        validateNAT64Prefixes(),
+        validateWarpEndpoints(),
+        validateMinMax(),
+        validateChainProxy(),
+        validateCustomCdn(),
+        validateKnockerNoise(),
+        validateXrayNoises(fields),
+        validateCustomRules()
+    ];
+
+    if (!validations.every(Boolean)) {
+        return false;
+    }
+
+    const form = Object.fromEntries(formData.entries());
+    const [modes, packets, delaysMin, delaysMax, counts, applyTo] = fields;
+
+    form.xrayUdpNoises = modes.map((mode, index) => ({
+        type: mode,
+        packet: packets[index],
+        delay: `${delaysMin[index]}-${delaysMax[index]}`,
+        applyTo: applyTo[index],
+        count: counts[index]
+    }));
+
+    form.ports = [
+        ...defaultHttpPorts,
+        ...defaultHttpsPorts
+    ].filter(port => formData.has(port.toString()));
+
+    checkboxElements.forEach(elm => {
+        form[elm.id] = formData.has(elm.id);
+    });
+
+    selectElements.forEach(elm => {
+        let value = form[elm.id];
+        if (value === 'true') value = true;
+        if (value === 'false') value = false;
+        form[elm.id] = value;
+    });
+
+    inputElements.forEach(elm => {
+        if (typeof form[elm.id] === 'string') {
+            form[elm.id] = form[elm.id].trim();
+        }
+    });
+
+    numInputElements.forEach(elm => {
+        form[elm.id] = Number(form[elm.id].trim());
+    });
+
+    textareaElements.forEach(elm => {
+        const key = elm.id;
+        const value = form[key];
+        form[key] = value?.split('\n').map(val => val.trim()).filter(Boolean) || [];
+    });
+
+    return form;
 }
 
 function logout(event) {
@@ -937,15 +1049,6 @@ function logout(event) {
         })
         .catch(error => console.error("Logout error:", error.message || error));
 }
-
-document.querySelectorAll(".toggle-password").forEach(toggle => {
-    toggle.addEventListener("click", function () {
-        const input = this.previousElementSibling;
-        const isPassword = input.type === "password";
-        input.type = isPassword ? "text" : "password";
-        this.textContent = isPassword ? "visibility" : "visibility_off";
-    });
-});
 
 function resetPassword(event) {
     event.preventDefault();
@@ -1157,7 +1260,11 @@ function deleteUdpNoise(event) {
         return;
     }
 
-    const confirmReset = confirm('⚠️ This will delete the noise.\n\n❓ Are you sure?');
+    const confirmReset = confirm(
+        '⚠️ This will delete the noise.\n\n' +
+        '❓ Are you sure?'
+    );
+
     if (!confirmReset) return;
     event.target.closest(".inner-container").remove();
     enableApplyButton();

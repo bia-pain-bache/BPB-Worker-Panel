@@ -84,7 +84,7 @@ export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<DNS> 
             rules,
             'dns-direct',
             undefined,
-            geosite, 
+            [geosite], 
             geoip,
             undefined
         );
@@ -185,8 +185,8 @@ function addDnsRule(
     rules: DnsRule[],
     dns: string,
     inbound?: string,
-    geosite?: string[] | string,
-    geoip?: string[] | string,
+    geosite?: string[],
+    geoip?: string,
     domain?: string[],
     query_type?: Array<"A" | "AAAA">
 ) {
@@ -199,8 +199,8 @@ function addDnsRule(
             { rule_set: geosite }, 
             { rule_set: geoip }
         ] : undefined,
-        rule_set: geosite && !geoip ? geosite : undefined,
-        domain_suffix: domain?.length ? domain : undefined,
+        rule_set: geosite?.length && !geoip ? geosite : undefined,
+        domain_suffix: domain?.omitEmpty(),
         query_type,
         action: dns === 'reject' ? 'reject' : 'route',
         server: dns === 'reject' ? undefined : dns
