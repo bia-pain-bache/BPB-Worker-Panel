@@ -41,13 +41,8 @@ As noted, a Proxy IP fixes the IP for Cloudflare target addresses, but node IPs 
 !!! note
     The Chain Proxy config must not be a worker itself, or the final IP will still change.
 
-!!! info "Valid SOCKS proxy formats"
-    - `socks://address:port`
-    - `socks://user:pass@address:port`
-
-!!! info "Valid HTTP proxy formats"
-    - `http://address:port`
-    - `http://user:pass@address:port`
+!!! info
+    Socks and http configs should have username and password, Xray does not support raw configs.
 
 !!! info
     Shadowsocks cannot have any transport like websocket, grpc... and cannot have TLS.

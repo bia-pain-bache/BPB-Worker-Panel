@@ -800,20 +800,19 @@ function validateMinMax() {
 function validateChainProxy() {
     let chainProxy = getElmValue('outProxy');
     if (!chainProxy) return true;
-    const isSocksHttp = /(http|socks):\/\/(?:([^:@]+):([^:@]+)@)?([^:@]+):(\d+)$/.test(chainProxy);
     const isVMess = /vmess:\/\/.+$/.test(chainProxy);
-    const isOthers = /(vless|trojan|ss):\/\/[^\s@]+@[^\s:]+:[^\s]+/.test(chainProxy);
+    const isOthers = /(http|socks|socks5|vless|trojan|ss):\/\/[^\s@]+@[^\s:]+:[^\s]+/.test(chainProxy);
 
-    if (!isSocksHttp && !isVMess && !isOthers) {
+    if (!isVMess && !isOthers) {
         alert(
             '⛔ Invalid Config!\n' +
             '💡 Standard formats are:\n\n' +
-            ' + (socks or http)://user:pass@server:port\n' +
-            ' + (socks or http)://server:port\n' +
+            ' + (socks or socks5 or http)://user:pass@server:port\n' +
+            ' + (socks or socks5 or http)://base64@server:port\n' +
             ' + vless://uuid@server:port...\n' +
-            ' + vmess://config...\n' +
+            ' + vmess://base64\n' +
             ' + trojan://password@server:port...\n' +
-            ' + ss://userInfo@server:port...'
+            ' + ss://base64@server:port...'
         );
 
         return false;

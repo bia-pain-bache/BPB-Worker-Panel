@@ -41,13 +41,8 @@
 !!! note "یادداشت"
     کانفیگ Chain Proxy نباید خودش Worker باشه، وگرنه IP نهایی بازم تغییر می‌کنه.
 
-!!! info "فرمت‌های قابل قبول SOCKS"
-    - `socks://address:port`
-    - `socks://user:pass@address:port`
-
-!!! info "فرمت‌های قابل قبول HTTP"
-    - `http://address:port`
-    - `http://user:pass@address:port`
+!!! info
+    کانفیگ‌های Socks و http باید username و password داشته باشن، هسته Xray این رو اجباری کرده.
 
 !!! info "راهنمایی"
     کانفیگ Shadowsocks باید ساده باشه و نمیتونه از نوع websocket، grpc و غیره باشه و همچنین نمیتونه TLS داشته باشه.

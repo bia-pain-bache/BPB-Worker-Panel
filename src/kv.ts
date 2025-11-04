@@ -146,7 +146,6 @@ export async function updateDataset(request: Request, env: Env): Promise<Setting
     };
 
     try {
-        console.log(JSON.stringify(updatedSettings));
         await env.kv.put("proxySettings", JSON.stringify(updatedSettings));
         return updatedSettings;
     } catch (error) {
@@ -175,7 +174,7 @@ function extractProxyParams(chainProxy: string) {
 
     let url = new URL(chainProxy);
     const protocol = url.protocol.slice(0, -1);
-    const stdProtocol = protocol === "ss" ? _SS_ : protocol;
+    const stdProtocol = protocol === "ss" ? _SS_ : protocol.replace("socks5", "socks");
 
     if (stdProtocol === _VM_) {
         const config = JSON.parse(base64DecodeUtf8(url.host));
@@ -204,7 +203,7 @@ function extractProxyParams(chainProxy: string) {
         port: +url.port
     };
 
-    const parseParams = (queryParams: boolean, customParams: Record<string, string>) => {
+    const parseParams = (queryParams: boolean, customParams: Record<string, string | undefined>) => {
         if (queryParams) {
             for (const [key, value] of url.searchParams) {
                 configParams[key] = value || undefined;
@@ -238,9 +237,20 @@ function extractProxyParams(chainProxy: string) {
 
         case 'socks':
         case 'http':
+            let user, pass;
+            if (url.username) {
+                try {
+                    const userInfo = base64DecodeUtf8(url.username);
+                    if (userInfo.includes(":")) [user, pass] = userInfo.split(":");
+                } catch (error) {
+                    user = url.username;
+                    pass = url.password;
+                }
+            }
+
             return parseParams(false, {
-                user: url.username,
-                pass: url.password
+                user: user || undefined,
+                pass: pass || undefined
             });
 
         default:
