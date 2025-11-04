@@ -90,7 +90,7 @@ export interface HttpOpts {
     "method": "GET";
     "path": string[];
     "headers": {
-        "Host": string[];
+        "Host"?: string[];
         "Connection": ["keep-alive"],
         "Content-Type": ["application/octet-stream"]
     };

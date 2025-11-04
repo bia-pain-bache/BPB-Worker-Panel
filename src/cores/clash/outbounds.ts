@@ -206,13 +206,13 @@ function buildTLS(
     protocol: string,
     security: "tls" | "reality" | "none",
     allowInsecure: boolean,
-    sni?: string,
+    sni: string,
     alpn?: string,
     fingerprint?: Fingerprint,
     publicKey?: string,
     shortID?: string
 ): Partial<TLS> {
-    if (!["tls", "reality"].includes(security) || !sni) return {};
+    if (!["tls", "reality"].includes(security)) return {};
     const { _TR_ } = globalThis.dict;
 
     const common: TLS = {
@@ -241,7 +241,7 @@ function buildTLS(
 function buildTransport(
     type: Network,
     headerType?: "http" | "none",
-    path?: string,
+    path: string = "/",
     host?: string,
     serviceName?: string,
     earlyData?: number
@@ -254,9 +254,9 @@ function buildTransport(
                 "network": "http",
                 "http-opts": {
                     "method": "GET",
-                    "path": path?.split(',') || ["/"],
+                    "path": path.split(','),
                     "headers": {
-                        "Host": host?.split(",") || [],
+                        "Host": host?.split(","),
                         "Connection": ["keep-alive"],
                         "Content-Type": ["application/octet-stream"]
                     }
@@ -269,7 +269,7 @@ function buildTransport(
             return {
                 "network": "ws",
                 "ws-opts": {
-                    "path": path || "/",
+                    "path": path,
                     "max-early-data": earlyData,
                     "early-data-header-name": earlyData ? "Sec-WebSocket-Protocol" : undefined,
                     "headers": {
@@ -285,7 +285,7 @@ function buildTransport(
                 "ws-opts": {
                     [`${_V2_}-http-upgrade`]: true,
                     [`${_V2_}-http-upgrade-fast-open`]: true,
-                    "path": path || "/",
+                    "path": path,
                     "headers": {
                         "Host": host
                     }

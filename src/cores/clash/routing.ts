@@ -28,12 +28,12 @@ export function buildRoutingRules(isWarp: boolean) {
     ];
 }
 
-export function buildRuleProviders(): Record<string, RuleProvider> {
+export function buildRuleProviders(): Record<string, RuleProvider> | undefined {
     const geoAssets = getGeoAssets();
     return geoAssets.reduce((providers, asset) => {
         addRuleProvider(providers, asset);
         return providers;
-    }, {});
+    }, {}).omitEmpty();
 }
 
 function addRuleProvider(

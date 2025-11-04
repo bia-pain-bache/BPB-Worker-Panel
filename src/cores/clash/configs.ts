@@ -55,7 +55,7 @@ async function buildConfig(
                 "proxies": selectorTags
             }
         ],
-        "rule-providers": buildRuleProviders().omitEmpty(),
+        "rule-providers": buildRuleProviders(),
         "rules": buildRoutingRules(isWarp),
         "ntp": {
             "enable": true,

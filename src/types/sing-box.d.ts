@@ -129,7 +129,7 @@ export interface TLS {
 
 export interface HttpTransport {
     type: "http";
-    host: string[];
+    host?: string[];
     path: string;
     method: "GET";
     headers: Record<string, string[]>

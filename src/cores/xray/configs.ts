@@ -138,14 +138,14 @@ async function addBestPingConfigs(
 ) {
     const isChain = !!chainOutbounds.length;
     const chainSign = isChain ? '🔗 ' : '';
-    const remark = `💦 ${chainSign}Best Ping 🚀`;
+    const remark = `💦 ${chainSign}Best Ping F 🚀`;
     const outbounds = [
         ...chainOutbounds,
         ...proxyOutbounds
     ];
 
     if (isFragment) {
-        const fragmentOutbound = buildFreedomOutbound(true, false, 'fragment', '', '');
+        const fragmentOutbound = buildFreedomOutbound(true, false, 'fragment');
         outbounds.push(fragmentOutbound);
     }
 

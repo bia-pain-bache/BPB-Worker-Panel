@@ -131,7 +131,7 @@ export interface TcpHeader {
     type: "http" | "none";
     request?: {
         headers: {
-            "Host": string[];
+            "Host"?: string[];
             "Accept-Encoding": ["gzip, deflate"];
             "Connection": ["keep-alive"];
             "Pragma": "no-cache";

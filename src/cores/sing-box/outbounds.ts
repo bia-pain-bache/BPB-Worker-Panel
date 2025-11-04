@@ -210,14 +210,14 @@ function buildTLS(
     security: "tls" | "reality" | "none",
     isFragment: boolean,
     allowInsecure: boolean,
-    sni?: string,
+    sni: string,
     alpn?: string,
     fingerprint?: Fingerprint,
     publicKey?: string,
     shortID?: string
 ): TLS | undefined {
-    if (!["tls", "reality"].includes(security) || !sni) return undefined;
-    const tlsAlpns = alpn?.split(',').filter((value: string) => value !== 'h2') || undefined;
+    if (!["tls", "reality"].includes(security)) return undefined;
+    const tlsAlpns = alpn?.split(',').filter(value => value !== 'h2');
     
     const tls: TLS = {
         enabled: true,
@@ -245,7 +245,7 @@ function buildTLS(
 function buildTransport(
     type: TransportType,
     headerType?: "http" | "none",
-    path?: string,
+    path: string = "/",
     host?: string,
     serviceName?: string,
     earlyData?: number
@@ -256,8 +256,8 @@ function buildTransport(
         case 'tcp':
             if (headerType === 'http') return {
                 type: "http",
-                host: host?.split(',') || [],
-                path: path || "/",
+                host: host?.split(','),
+                path: path,
                 method: "GET",
                 headers: {
                     "Connection": ["keep-alive"],
@@ -270,7 +270,7 @@ function buildTransport(
         case 'ws':
             return {
                 type: "ws",
-                path: path?.split('?ed=')[0] || "/",
+                path: path?.split('?ed=')[0],
                 max_early_data: earlyData,
                 early_data_header_name: earlyData ? "Sec-WebSocket-Protocol" : undefined,
                 headers: {
@@ -282,7 +282,7 @@ function buildTransport(
             return {
                 type: "httpupgrade",
                 host: host,
-                path: path?.split('?ed=')[0] || "/"
+                path: path?.split('?ed=')[0]
             } satisfies HttpupgradeTransport;
 
         case 'grpc':

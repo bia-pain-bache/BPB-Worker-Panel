@@ -36,7 +36,7 @@ function buildOutbound<T>(
     address: string,
     port: number,
     enableMux: boolean,
-    settings: Omit<T, "address" | "port" | "level">,
+    settings: Omit<T, "address" | "port">,
     streamSettings?: StreamSettings
 ): Outbound {
     return {
@@ -289,13 +289,12 @@ export function buildChainOutbound(): Outbound | undefined {
 function buildTransport(
     type: TransportType,
     headerType?: "http" | "none",
-    path?: string,
+    path: string = "/",
     host?: string,
     serviceName?: string,
     mode?: string,
     authority?: string
 ): Record<string, Transport> {
-
     switch (type) {
         case 'tcp':
         case 'raw':
@@ -306,12 +305,12 @@ function buildTransport(
                             type: "http",
                             request: {
                                 headers: {
-                                    "Host": host?.split(',') || [],
+                                    "Host": host?.split(','),
                                     "Accept-Encoding": ["gzip, deflate"],
                                     "Connection": ["keep-alive"],
                                     "Pragma": "no-cache"
                                 },
-                                path: path?.split(',') || ["/"],
+                                path: path.split(','),
                                 method: "GET",
                                 version: "1.1"
                             }
@@ -324,7 +323,7 @@ function buildTransport(
             return {
                 wsSettings: {
                     host: host,
-                    path: path || "/"
+                    path: path
                 } satisfies WsSettings
             };
 
@@ -332,7 +331,7 @@ function buildTransport(
             return {
                 httpupgradeSettings: {
                     host: host,
-                    path: path || "/"
+                    path: path
                 } satisfies HttpupgradeSettings
             };
 
