@@ -32,7 +32,8 @@ export async function getDataset(
         };
     } catch (error) {
         console.log(error);
-        throw new Error(`An error occurred while getting KV: ${error}`);
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`An error occurred while getting KV: ${message}`);
     }
 }
 

@@ -292,7 +292,7 @@ async function getWarpConfigs(request: Request, env: Env): Promise<Response> {
     const trimLines = (str: string) => str.split("\n").map(line => line.trim()).join("\n");
 
     try {
-        warpEndpoints?.forEach((endpoint: string, index: number) => {
+        warpEndpoints?.forEach((endpoint, index) => {
             const config =
                 `[Interface]
                 PrivateKey = ${privateKey}
@@ -310,7 +310,7 @@ async function getWarpConfigs(request: Request, env: Env): Promise<Response> {
                     H3 = 0
                     H4 = 0`
                     : ''
-                },
+                }
                 [Peer]
                 PublicKey = ${publicKey}
                 AllowedIPs = 0.0.0.0/0, ::/0
