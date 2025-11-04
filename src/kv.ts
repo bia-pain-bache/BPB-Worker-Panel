@@ -53,8 +53,7 @@ export async function updateDataset(request: Request, env: Env): Promise<Setting
         field: keyof Settings,
         callback?: (value: Settings[T]) => any | Promise<any>
     ) => {
-        const source = newSettings ?? currentSettings ?? settings;
-        const value = source[field];
+        const value = newSettings?.[field] ?? currentSettings?.[field] ?? settings[field];
         return callback ? await callback(value) : value;
     };
 

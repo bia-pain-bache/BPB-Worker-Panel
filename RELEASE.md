@@ -18,6 +18,7 @@
 - Panel UI improvements.
 - Updated docs.
 - Clash Fake DNS bug fix.
+- Bug fix #1116
 - And some other bug fixes and improvements.
 
 > [!NOTE]
