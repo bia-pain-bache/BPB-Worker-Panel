@@ -21,7 +21,7 @@ export async function buildDNS(
     } = globalThis.settings;
 
     const hosts: DnsHosts = {};
-    const servers: Array<DnsServer | "fakedns"> = [];
+    const servers: DnsServer[] = [];
     const fakeDnsDomains = [];
 
     if (remoteDnsHost.isDomain && !isWorkerLess && !isWarp) {
@@ -54,7 +54,7 @@ export async function buildDNS(
         ...dnsRules.block.domains.map(domain => `domain:${domain}`)
     ];
 
-    blockDomains.forEach(domain => hosts[domain] = ['#3']);
+    blockDomains.forEach(domain => hosts[domain] = '#3');
 
     dnsRules.bypass.localDNS.geositeGeoips.forEach(({ geosite, geoip }) => {
         const localDnsServer = buildDnsServer(localDNS, [geosite], [geoip!], skipFallback);

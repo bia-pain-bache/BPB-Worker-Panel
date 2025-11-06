@@ -170,8 +170,8 @@ async function getDnsParams(dns: string): Promise<DnsHost> {
 
 function extractProxyParams(chainProxy: string) {
     if (!chainProxy) return {};
+    
     const { _SS_, _TR_, _VL_, _VM_ } = globalThis.dict;
-
     let url = new URL(chainProxy);
     const protocol = url.protocol.slice(0, -1);
     const stdProtocol = protocol === "ss" ? _SS_ : protocol.replace("socks5", "socks");
@@ -186,8 +186,8 @@ function extractProxyParams(chainProxy: string) {
             aid: +config.aid,
             type: config.net,
             headerType: config.type,
-            serviceName: config.path || undefined,
-            authority: config.authority || undefined,
+            serviceName: config.path,
+            authority: config.authority,
             path: config.path || undefined,
             host: config.host || undefined,
             security: config.tls,
@@ -238,14 +238,12 @@ function extractProxyParams(chainProxy: string) {
         case 'socks':
         case 'http':
             let user, pass;
-            if (url.username) {
-                try {
-                    const userInfo = base64DecodeUtf8(url.username);
-                    if (userInfo.includes(":")) [user, pass] = userInfo.split(":");
-                } catch (error) {
-                    user = url.username;
-                    pass = url.password;
-                }
+            try {
+                const userInfo = base64DecodeUtf8(url.username);
+                if (userInfo.includes(":")) [user, pass] = userInfo.split(":");
+            } catch (error) {
+                user = url.username;
+                pass = url.password;
             }
 
             return parseParams(false, {

@@ -24,8 +24,8 @@
 > [!NOTE]
 > Some fields like `IPv6` and `Fake DNS` should be, they will be set to default after upgrading to this version.
 
-> [!NOTE]
-> Xray configs are now base on new Xray v25.10.15 format, so v2rayNG will show configs like null:null. You have to wait for its developer to adjust to new formats.
+> [!CAUTION]
+> Xray configs are now based on new Xray v25.10.15 format, so v2rayNG will work but shows configs like `null : null`. You have to wait for its developer to adapt new formats. Also Streisand may have issues parsing configs even though updated core to 25.10.15, so I recommend use this version as a new deployment to test and keep old versions.
 
 > [!CAUTION]
 > sing-box client version should be 1.12.0 or higher.

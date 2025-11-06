@@ -1,4 +1,4 @@
-export type DnsHosts = Record<string, string[]>
+export type DnsHosts = Record<string, string[] | string>
 export type DomainStrategy = "UseIP" | "UseIPv4" | "UseIPv4v6";
 export type TransportType = "tcp" | "raw" | "ws" | "httpupgrade" | "grpc";
 export type Protocol =
@@ -25,14 +25,14 @@ export type Fingerprint =
     | "random"
     | "randomized";
 
-export interface DnsServer {
+export type DnsServer = {
     address: string;
     domains?: string[];
     expectIPs?: string[];
     skipFallback?: boolean;
     finalQuery?: boolean;
     tag?: string;
-}
+} | "fakedns";
 
 export interface DNS {
     hosts?: DnsHosts;
