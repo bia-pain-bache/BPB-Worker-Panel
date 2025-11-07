@@ -33,10 +33,8 @@ import {
 function buildOutbound<T>(
     protocol: string,
     tag: string,
-    address: string,
-    port: number,
     enableMux: boolean,
-    settings: Omit<T, "address" | "port">,
+    settings: T,
     streamSettings?: StreamSettings
 ): Outbound {
     return {
@@ -47,11 +45,7 @@ function buildOutbound<T>(
             xudpConcurrency: 16,
             xudpProxyUDP443: "reject"
         } : undefined,
-        settings: {
-            address,
-            port,
-            ...settings
-        } as T,
+        settings: settings,
         streamSettings,
         tag
     } as Outbound;
@@ -146,13 +140,25 @@ export function buildWebsocketOutbound(
     };
 
 
-    if (protocol === _VL_) return buildOutbound<VlessSettings>(protocol, "proxy", address, port, false, {
-        id: userID,
-        encryption: "none"
+    if (protocol === _VL_) return buildOutbound<VlessSettings>(protocol, "proxy", false, {
+        vnext: [{
+            address,
+            port,
+            users: [
+                {
+                    id: userID,
+                    encryption: "none"
+                }
+            ]
+        }]
     }, streamSettings);
 
-    return buildOutbound<TrojanSettings>(protocol, "proxy", address, port, false, {
-        password: TrPass
+    return buildOutbound<TrojanSettings>(protocol, "proxy", false, {
+        servers: [{
+            address,
+            port,
+            password: TrPass
+        }]
     }, streamSettings);
 }
 
@@ -228,8 +234,8 @@ export function buildChainOutbound(): Outbound | undefined {
         dict: { _VL_, _TR_, _SS_, _VM_ },
         settings: {
             outProxyParams: {
-                protocol, server, port, user,
-                pass, password, method, uuid,
+                protocol, server: address, port,
+                user, pass, password, method, uuid,
                 flow, security, type, sni, fp,
                 host, path, alpn, pbk, sid, spx,
                 headerType, serviceName, mode,
@@ -242,7 +248,7 @@ export function buildChainOutbound(): Outbound | undefined {
         network: type || "raw",
         ...buildTransport(type, headerType, path, host, serviceName, mode, authority),
         security,
-        tlsSettings: security === 'tls' ? buildTlsSettings(sni || server, fp, alpn, false) : undefined,
+        tlsSettings: security === 'tls' ? buildTlsSettings(sni || address, fp, alpn, false) : undefined,
         realitySettings: security === "reality" ? buildRealitySettings(sni, fp, pbk, sid, spx) : undefined,
         sockopt: buildSockopt(false, false, "UseIPv4", "proxy")
     };
@@ -252,33 +258,59 @@ export function buildChainOutbound(): Outbound | undefined {
     switch (protocol) {
         case 'http':
         case 'socks':
-            return buildOutbound<HttpSocksSettings>(protocol, "chain", server, port, enableMux, {
-                user: user,
-                pass: pass
+            return buildOutbound<HttpSocksSettings>(protocol, "chain", enableMux, {
+                servers: [{
+                    address,
+                    port,
+                    users: [{
+                        user,
+                        pass
+                    }]
+                }]
             }, streamSettings);
 
         case _SS_:
-            return buildOutbound<ShadowsocksSettings>(protocol, "chain", server, port, enableMux, {
-                method,
-                password
+            return buildOutbound<ShadowsocksSettings>(protocol, "chain", enableMux, {
+                servers: [{
+                    address,
+                    port,
+                    method,
+                    password
+                }]
             }, streamSettings);
 
         case _VL_:
-            return buildOutbound<VlessSettings>(protocol, "chain", server, port, enableMux, {
-                id: uuid,
-                flow: flow,
-                encryption: "none"
+            return buildOutbound<VlessSettings>(protocol, "chain", enableMux, {
+                vnext: [{
+                    address,
+                    port,
+                    users: [{
+                        id: uuid,
+                        flow: flow,
+                        encryption: "none"
+                    }]
+                }]
             }, streamSettings);
 
         case _VM_:
-            return buildOutbound<VmessSettings>(protocol, "chain", server, port, enableMux, {
-                id: uuid,
-                security: "auto"
+            return buildOutbound<VmessSettings>(protocol, "chain", enableMux, {
+                vnext: [{
+                    address,
+                    port,
+                    users: [{
+                        id: uuid,
+                        security: "auto"
+                    }]
+                }]
             }, streamSettings);
 
         case _TR_:
-            return buildOutbound<TrojanSettings>(protocol, "chain", server, port, enableMux, {
-                password
+            return buildOutbound<TrojanSettings>(protocol, "chain", enableMux, {
+                servers: [{
+                    address,
+                    port,
+                    password
+                }]
             }, streamSettings);
 
         default:

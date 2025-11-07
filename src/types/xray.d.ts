@@ -224,50 +224,64 @@ export interface FreedomSettings {
 }
 
 export interface HttpSocksSettings {
-    address: string;
-    port: number;
-    user: string;
-    pass: string;
+    servers: [{
+        address: string;
+        port: number;
+        users: [{
+            user: string;
+            pass: string;
+        }];
+    }];
 }
 
 export interface ShadowsocksSettings {
-    address: string;
-    port: number;
-    method: string;
-    password: string;
+    servers: [{
+        address: string;
+        port: number;
+        method: string;
+        password: string;
+    }];
 }
 
 export interface VlessSettings {
-    address: string;
-    port: number;
-    id: string;
-    flow?: "xtls-rprx-vision";
-    encryption: "none";
+    vnext: [{
+        address: string;
+        port: number;
+        users: [{
+            id: string;
+            flow?: "xtls-rprx-vision";
+            encryption: "none";
+        }];
+    }]
 }
 
 export interface VmessSettings {
-    address: string;
-    port: number;
-    id: string;
-    security: "auto";
+    vnext: [{
+        address: string;
+        port: number;
+        users: [{
+            id: string;
+            security: "auto";
+        }];
+    }];
 }
 
 export interface TrojanSettings {
-    address: string;
-    port: number;
-    password: string;
+    servers: [{
+        address: string;
+        port: number;
+        password: string;
+    }];
 }
 
 export interface WireguardSettings {
     address: string[];
     mtu: 1280;
-    peers: [
-        {
-            endpoint: string;
-            publicKey: string;
-            keepAlive: number;
-        }
-    ];
+    peers: [{
+        endpoint: string;
+        publicKey: string;
+        keepAlive: number;
+    }];
     reserved: number[];
     secretKey: string;
     wnoise?: string;

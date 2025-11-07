@@ -26,9 +26,6 @@
 > Some fields like `IPv6` and `Fake DNS` should be, they will be set to default after upgrading to this version.
 
 > [!CAUTION]
-> Xray configs are now based on new Xray v25.10.15 format, so v2rayNG will work but shows configs like `null : null`. You have to wait for its developer to adapt new formats. Also Streisand may have issues parsing configs even though updated core to 25.10.15, so I recommend using this version as a new deployment to test and keep old versions.
-
-> [!CAUTION]
 > If you are upgrading from versions below 3.5.1 to 4, you should get subscriptions from panel again.
 
 > [!CAUTION]
