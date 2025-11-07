@@ -7,6 +7,8 @@ use_directory_urls: true
 site_dir: ../../site
 extra_css:
   - stylesheet/extra.css
+extra_javascript:
+  - scripts/lang-switch.js
 
 theme:
   name: material
@@ -61,7 +63,7 @@ markdown_extensions:
 
 extra:
   alternate:
-    - name: Farsi
+    - name: فارسی
       lang: fa
       link: /BPB-Worker-Panel/fa/
   social:

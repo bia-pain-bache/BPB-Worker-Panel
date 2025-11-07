@@ -7,6 +7,8 @@ use_directory_urls: true
 site_dir: ../../site/fa
 extra_css:
   - stylesheet/extra.css
+extra_javascript:
+  - scripts/lang-switch.js
 
 theme:
   name: material
