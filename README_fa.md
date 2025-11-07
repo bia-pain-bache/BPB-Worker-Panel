@@ -53,12 +53,12 @@
 
 |       Client        |     Version      | پشتیبانی از Fragment | پشتیبانی از Warp Pro |
 | :-----------------: | :--------------: | :------------------: | :------------------: |
-|     **v2rayNG**     | 1.10.11 و بالاتر |  :heavy_check_mark:  |  :heavy_check_mark:  |
+|     **v2rayNG**     | 1.10.26 و بالاتر |  :heavy_check_mark:  |  :heavy_check_mark:  |
 |     **MahsaNG**     |   14 و بالاتر    |  :heavy_check_mark:  |  :heavy_check_mark:  |
-|     **v2rayN**      | 7.14.6 و بالاتر  |  :heavy_check_mark:  |  :heavy_check_mark:  |
+|     **v2rayN**      | 7.15.4 و بالاتر  |  :heavy_check_mark:  |  :heavy_check_mark:  |
 |   **v2rayN-PRO**    |   2.0 و بالاتر   |  :heavy_check_mark:  |  :heavy_check_mark:  |
 |    **Sing-box**     | 1.12.0 و بالاتر  |  :heavy_check_mark:  |         :x:          |
-|    **Streisand**    | 1.6.60 و بالاتر  |  :heavy_check_mark:  |  :heavy_check_mark:  |
+|    **Streisand**    | 1.6.64 و بالاتر  |  :heavy_check_mark:  |  :heavy_check_mark:  |
 |   **Clash Meta**    |                  |         :x:          |  :heavy_check_mark:  |
 | **Clash Verge Rev** |                  |         :x:          |  :heavy_check_mark:  |
 |     **FLClash**     |                  |         :x:          |  :heavy_check_mark:  |

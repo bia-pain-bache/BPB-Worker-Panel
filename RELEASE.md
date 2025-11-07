@@ -17,6 +17,7 @@
 - Added `Malware`, `Phishing` and `Cryptominers` block rules. Note that v2ray users should set Geo Assets to Chocolate4U and download assets, otherwise configs won't connect.
 - Panel UI improvements.
 - Updated docs.
+- Fixed website language switch.
 - Clash Fake DNS bug fix.
 - Bug fix #1116
 - And some other bug fixes and improvements.
@@ -32,3 +33,6 @@
 
 > [!CAUTION]
 > sing-box client version should be 1.12.0 or higher.
+
+> [!CAUTION]
+> v2rayNG version should be 1.10.26 or higher and v2rayN should be 7.15.4 or higher.

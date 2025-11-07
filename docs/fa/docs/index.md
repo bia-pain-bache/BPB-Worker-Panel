@@ -44,12 +44,12 @@
 
 |       Client        |      Version      | پشتیبانی از Fragment | پشتیبانی از Warp Pro |
 | :-----------------: | :---------------: | :------------------: | :------------------: |
-|     **v2rayNG**     | 1.10.11 یا بالاتر |   :material-check:   |   :material-check:   |
+|     **v2rayNG**     | 1.10.26 یا بالاتر |   :material-check:   |   :material-check:   |
 |     **MahsaNG**     |   14 یا بالاتر    |   :material-check:   |   :material-check:   |
-|     **v2rayN**      | 7.14.6 یا بالاتر  |   :material-check:   |   :material-check:   |
+|     **v2rayN**      | 7.15.4 یا بالاتر  |   :material-check:   |   :material-check:   |
 |   **v2rayN-PRO**    |   1.9 یا بالاتر   |   :material-check:   |   :material-check:   |
 |    **Sing-box**     | 1.11.2 یا بالاتر  |   :material-close:   |   :material-close:   |
-|    **Streisand**    | 1.6.60 یا بالاتر  |   :material-check:   |   :material-check:   |
+|    **Streisand**    | 1.6.64 یا بالاتر  |   :material-check:   |   :material-check:   |
 |   **Clash Meta**    |                   |   :material-close:   |   :material-check:   |
 | **Clash Verge Rev** |                   |   :material-close:   |   :material-check:   |
 |     **FLClash**     |                   |   :material-close:   |   :material-check:   |
