@@ -1,6 +1,6 @@
 # :material-cloud-question-outline:{ .lg .middle } Frequently Asked Questions
 
-??? question "Why don't configs connect?"
+??? question "Why don't v2ray configs connect?"
     If you enabled `Routing rules` and the VPN doesn't connect, the only reason is that the Geo assets are not updated. In the v2rayN(G) client menu, go to the `Asset files` section and tap the cloud or download icon to update. Note that it takes a while to update, you have to wait to see `success` for all files. If the update fails, it won't connect. If you tried everything and it still doesn't update, download the two files below from the links and instead of updating, tap the add button and import these two files:
     ```title="GeoIP"
     https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat
@@ -9,14 +9,11 @@
     https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat
     ```
 
+??? question "Why configs connect in v2rayNG and not Streisand for example?"
+    BPB tries adapting new cores' features ASAP, meanwhile some developers just upgrade cores to the latest version regardless of full features adaption and optimizations. So you should communicate such issues with their own developers.
+
 ??? question "Why Fragment configs speed is slow on my ISP?"
-    Each operator has its own prefered Fragment settings. Most are fine with the panel defaults, but these values may work better on your operator; you need to test:  
-    ```title="Length"
-    10-100
-    ```
-    ```title="Interval"
-    10-20  
-    ```
+    Each ISP has its own prefered Fragment settings. Most are fine with the panel defaults, but these values may work well on yours. You may need to change Fragment profile to `Medium`, `High` or even manually change settings in `Custom` profile to achieve better results. Also MahsaNG is recommended to connect to fragment configs.
 
 ??? question "I extracted and used a Proxy IP regarding tutorials, why some sites or applications like X still won't work!"  
     There are many public IPs and some of them might be unstable. You need to test to find a good one.  

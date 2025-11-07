@@ -113,7 +113,7 @@ export function init(request: Request, env: Env) {
     globalThis.globalConfig = {
         userID: UUID,
         TrPass: TR_PASS,
-        pathName: pathname,
+        pathName: decodeURI(pathname),
         fallbackDomain: FALLBACK || 'speed.cloudflare.com',
         dohURL: DOH_URL || 'https://cloudflare-dns.com/dns-query'
     };
@@ -137,10 +137,9 @@ export function initWs(env: any) {
 export function initHttp(request: Request, env: any) {
     const { _VL_CAP_, _TR_CAP_, _website_ } = globalThis.dict;
     const { UUID, TR_PASS, SUB_PATH, kv } = env;
-    const { pathname, origin, search, hostname } = new URL(request.url);
-    const searchParams = new URLSearchParams(search);
+    const { pathname, origin, searchParams, hostname } = new URL(request.url);
 
-    if (!['/secrets', '/favicon.ico'].includes(pathname)) {
+    if (!['/secrets', '/favicon.ico'].includes(decodeURI(pathname))) {
         if (!UUID || !TR_PASS) throw new Error(`Please set ${_VL_CAP_} UUID and ${_TR_CAP_} password first. Visit <a href="${origin}/secrets" target="_blank">here</a> to generate them.`, { cause: "init" });
         if (!isValidUUID(UUID)) throw new Error(`Invalid UUID: ${UUID}`, { cause: "init" });
         if (typeof kv !== 'object') throw new Error(`KV Dataset is not properly set! Please refer to <a href="${_website_}" target="_blank">tutorials</a>.`, { cause: "init" });
@@ -151,7 +150,7 @@ export function initHttp(request: Request, env: any) {
         defaultHttpPorts: [80, 8080, 2052, 2082, 2086, 2095, 8880],
         defaultHttpsPorts: [443, 8443, 2053, 2083, 2087, 2096],
         hostName: hostname,
-        client: searchParams.get('app') || '',
+        client: decodeURIComponent(searchParams.get('app') ?? ''),
         urlOrigin: origin,
         subPath: SUB_PATH || UUID,
     };

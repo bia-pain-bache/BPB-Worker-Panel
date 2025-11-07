@@ -35,7 +35,7 @@ export async function handleWebsocket(request: Request): Promise<Response> {
         }
 
     } catch (error) {
-        return new Response('Failed to parse WebSocket path config', { status: 400 });
+        return new Response('Failed to parse WebSocket path config', { status: HttpStatus.BAD_REQUEST });
     }
 }
 
@@ -78,7 +78,7 @@ export async function renderError(error: any): Promise<Response> {
     const errorPage = html.replace('__ERROR_MESSAGE__', message);
 
     return new Response(errorPage, {
-        status: 200,
+        status: HttpStatus.OK,
         headers: { 'Content-Type': 'text/html; charset=utf-8' }
     });
 }
@@ -111,9 +111,7 @@ export async function handleSubscriptions(request: Request, env: Env): Promise<R
         httpConfig: { client, subPath }
     } = globalThis;
 
-    const path = decodeURIComponent(pathName);
-
-    switch (path) {
+    switch (pathName) {
         case `/sub/normal/${subPath}`:
             switch (client) {
                 case 'xray':
@@ -275,7 +273,7 @@ async function getWarpConfigs(request: Request, env: Env): Promise<Response> {
     const auth = await Authenticate(request, env);
 
     if (!auth) {
-        return new Response('Unauthorized or expired session.', { status: 401 });
+        return new Response('Unauthorized or expired session.', { status: HttpStatus.UNAUTHORIZED });
     }
 
     const { warpAccounts, settings } = await getDataset(request, env);
@@ -331,7 +329,7 @@ async function getWarpConfigs(request: Request, env: Env): Promise<Response> {
         });
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        return new Response(`Error generating ZIP file: ${message}`, { status: 500 });
+        return new Response(`Error generating ZIP file: ${message}`, { status: HttpStatus.INTERNAL_SERVER_ERROR });
     }
 }
 
