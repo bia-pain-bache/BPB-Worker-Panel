@@ -1,5 +1,6 @@
 import { isValidUUID } from '@common';
 import {
+    safeCloseTcpSocket,
     handleTCPOutBound,
     makeReadableWebSocketStream,
     WS_READY_STATE_OPEN
@@ -81,7 +82,7 @@ export async function VlOverWSHandler(request: Request): Promise<Response> {
             );
         },
         close() {
-            log(`readableWebSocketStream is close`);
+            safeCloseTcpSocket(remoteSocketWapper.value);
         },
         abort(reason) {
             log(`readableWebSocketStream is abort`, JSON.stringify(reason));
@@ -90,7 +91,10 @@ export async function VlOverWSHandler(request: Request): Promise<Response> {
 
     readableWebSocketStream
         .pipeTo(writableStream)
-        .catch(err => log("readableWebSocketStream pipeTo error", err));
+        .catch(error => {
+            log("readableWebSocketStream pipeTo error", error);
+            safeCloseTcpSocket(remoteSocketWapper.value);
+        });
 
     return new Response(null, {
         status: 101,
@@ -120,9 +124,8 @@ function parseVlHeader(VLBuffer: ArrayBuffer, userID: string) {
 
     const optLength = new Uint8Array(VLBuffer.slice(17, 18))[0];
     const command = new Uint8Array(VLBuffer.slice(18 + optLength, 18 + optLength + 1))[0];
-
     let isUDP = false;
-    
+
     if (command === 1) {
     } else if (command === 2) {
         isUDP = true;

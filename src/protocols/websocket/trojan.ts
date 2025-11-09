@@ -1,4 +1,8 @@
-import { handleTCPOutBound, makeReadableWebSocketStream } from './common';
+import {
+    handleTCPOutBound,
+    makeReadableWebSocketStream,
+    safeCloseTcpSocket
+} from './common';
 
 export async function TrOverWSHandler(request: Request): Promise<Response> {
     const webSocketPair = new WebSocketPair();
@@ -57,7 +61,7 @@ export async function TrOverWSHandler(request: Request): Promise<Response> {
             );
         },
         close() {
-            log(`readableWebSocketStream is closed`);
+            safeCloseTcpSocket(remoteSocketWapper.value);
         },
         abort(reason) {
             log(`readableWebSocketStream is aborted`, JSON.stringify(reason));
@@ -66,7 +70,10 @@ export async function TrOverWSHandler(request: Request): Promise<Response> {
 
     readableWebSocketStream
         .pipeTo(writableStream)
-        .catch(err => log("readableWebSocketStream pipeTo error", err));
+        .catch(error => {
+            log("readableWebSocketStream pipeTo error", error);
+            safeCloseTcpSocket(remoteSocketWapper.value);
+        });
 
     return new Response(null, {
         status: 101,

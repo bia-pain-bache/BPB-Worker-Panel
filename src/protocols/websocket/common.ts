@@ -111,10 +111,11 @@ async function remoteSocketToWS(
             }
         },
         close() {
-            log(`remoteConnection!.readable is close with hasIncomingData is ${hasIncomingData}`);
+            log(`remoteConnection.readable is close with hasIncomingData is ${hasIncomingData}`);
         },
         abort(reason) {
-            console.error(`remoteConnection!.readable abort`, reason);
+            console.error(`remoteConnection.readable abort`, reason);
+            safeCloseTcpSocket(remoteSocket);
         },
     });
 
@@ -122,6 +123,7 @@ async function remoteSocketToWS(
         await remoteSocket.readable.pipeTo(writableStream);
     } catch (error) {
         console.error('VLRemoteSocketToWS has exception.', error);
+        safeCloseTcpSocket(remoteSocket);
         safeCloseWebSocket(webSocket);
     }
 
@@ -185,6 +187,16 @@ function base64ToArrayBuffer(base64Str: string) {
         return { earlyData: arryBuffer.buffer, error: null };
     } catch (error) {
         return { earlyData: null, error };
+    }
+}
+
+export function safeCloseTcpSocket(socket: Socket | null) {
+    if (socket) {
+        try {
+            socket.close();
+        } catch (error) {
+            console.error("Failed to close TCP socket:", error);
+        }
     }
 }
 
