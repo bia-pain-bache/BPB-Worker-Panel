@@ -8,7 +8,6 @@ import {
 export async function VlOverWSHandler(request: Request): Promise<Response> {
     const webSocketPair = new WebSocketPair();
     const [client, webSocket] = Object.values(webSocketPair);
-
     webSocket.accept();
 
     let address = "";
@@ -21,77 +20,77 @@ export async function VlOverWSHandler(request: Request): Promise<Response> {
     const earlyDataHeader = request.headers.get("sec-websocket-protocol") || "";
     const readableWebSocketStream = makeReadableWebSocketStream(webSocket, earlyDataHeader, log);
 
-    let remoteSocketWapper: { value: any } = { value: null };
+    let remoteSocketWapper: { value: Socket | null } = { value: null };
     let udpStreamWrite: any = null;
     let isDns = false;
 
-    readableWebSocketStream.pipeTo(
-        new WritableStream({
-            async write(chunk) {
-                if (isDns && udpStreamWrite) {
-                    return udpStreamWrite(chunk);
-                }
+    const writableStream = new WritableStream({
+        async write(chunk) {
+            if (isDns && udpStreamWrite) {
+                return udpStreamWrite(chunk);
+            }
 
-                if (remoteSocketWapper.value) {
-                    const writer = remoteSocketWapper.value.writable.getWriter();
-                    await writer.write(chunk);
-                    writer.releaseLock();
+            if (remoteSocketWapper.value) {
+                const writer = remoteSocketWapper.value.writable.getWriter();
+                await writer.write(chunk);
+                writer.releaseLock();
+                return;
+            }
+
+            const { userID } = globalThis.globalConfig;
+            const {
+                hasError,
+                message,
+                portRemote = 443,
+                addressRemote = "",
+                rawDataIndex,
+                VLVersion = new Uint8Array([0, 0]),
+                isUDP,
+            } = parseVlHeader(chunk, userID!);
+
+            address = addressRemote;
+            portWithRandomLog = `${portRemote}--${Math.random()} ${isUDP ? "udp " : "tcp "} `;
+
+            if (hasError) {
+                throw new Error(message);
+            }
+
+            const VLResponseHeader = new Uint8Array([VLVersion[0], 0]);
+            const rawClientData = chunk.slice(rawDataIndex);
+
+            if (isUDP) {
+                if (portRemote === 53) {
+                    isDns = true;
+                    const { write } = await handleUDPOutBound(webSocket, VLResponseHeader, log);
+                    udpStreamWrite = write;
+                    udpStreamWrite(rawClientData);
                     return;
+                } else {
+                    throw new Error("UDP proxy only enable for DNS which is port 53");
                 }
+            }
 
-                const { userID } = globalThis.globalConfig;
-                const {
-                    hasError,
-                    message,
-                    portRemote = 443,
-                    addressRemote = "",
-                    rawDataIndex,
-                    VLVersion = new Uint8Array([0, 0]),
-                    isUDP,
-                } = processVLHeader(chunk, userID!);
+            await handleTCPOutBound(
+                remoteSocketWapper,
+                addressRemote,
+                portRemote,
+                rawClientData,
+                webSocket,
+                VLResponseHeader,
+                log
+            );
+        },
+        close() {
+            log(`readableWebSocketStream is close`);
+        },
+        abort(reason) {
+            log(`readableWebSocketStream is abort`, JSON.stringify(reason));
+        },
+    });
 
-                address = addressRemote;
-                portWithRandomLog = `${portRemote}--${Math.random()} ${isUDP ? "udp " : "tcp "} `;
-
-                if (hasError) {
-                    throw new Error(message);
-                }
-
-                const VLResponseHeader = new Uint8Array([VLVersion[0], 0]);
-                const rawClientData = chunk.slice(rawDataIndex);
-
-                if (isUDP) {
-                    if (portRemote === 53) {
-                        isDns = true;
-                        const { write } = await handleUDPOutBound(webSocket, VLResponseHeader, log);
-                        udpStreamWrite = write;
-                        udpStreamWrite(rawClientData);
-                        return;
-                    } else {
-                        throw new Error("UDP proxy only enable for DNS which is port 53");
-                    }
-                }
-
-                handleTCPOutBound(
-                    remoteSocketWapper,
-                    addressRemote,
-                    portRemote,
-                    rawClientData,
-                    webSocket,
-                    VLResponseHeader,
-                    log
-                );
-            },
-            close() {
-                log(`readableWebSocketStream is close`);
-            },
-            abort(reason) {
-                log(`readableWebSocketStream is abort`, JSON.stringify(reason));
-            },
-        }))
-        .catch((err) => {
-            log("readableWebSocketStream pipeTo error", err);
-        });
+    readableWebSocketStream
+        .pipeTo(writableStream)
+        .catch(err => log("readableWebSocketStream pipeTo error", err));
 
     return new Response(null, {
         status: 101,
@@ -99,7 +98,7 @@ export async function VlOverWSHandler(request: Request): Promise<Response> {
     });
 }
 
-function processVLHeader(VLBuffer: ArrayBuffer, userID: string) {
+function parseVlHeader(VLBuffer: ArrayBuffer, userID: string) {
     if (VLBuffer.byteLength < 24) {
         return {
             hasError: true,
@@ -123,6 +122,7 @@ function processVLHeader(VLBuffer: ArrayBuffer, userID: string) {
     const command = new Uint8Array(VLBuffer.slice(18 + optLength, 18 + optLength + 1))[0];
 
     let isUDP = false;
+    
     if (command === 1) {
     } else if (command === 2) {
         isUDP = true;
