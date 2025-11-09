@@ -50,7 +50,7 @@ export async function TrOverWSHandler(request: Request): Promise<Response> {
                 throw new Error(message);
             }
 
-            await handleTCPOutBound(
+            handleTCPOutBound(
                 remoteSocketWapper,
                 addressRemote,
                 portRemote,
@@ -65,7 +65,7 @@ export async function TrOverWSHandler(request: Request): Promise<Response> {
         },
         abort(reason) {
             log(`readableWebSocketStream is aborted`, JSON.stringify(reason));
-        },
+        }
     });
 
     readableWebSocketStream

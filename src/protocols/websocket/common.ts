@@ -43,14 +43,14 @@ export async function handleTCPOutBound(
 
         if (proxyMode === 'proxyip') {
             log(`direct connection failed, trying to use Proxy IP for ${addressRemote}`);
-            const proxyIPs = panelIPs?.length ? panelIPs : parseIPs(envProxyIPs) || defaultProxyIPs;
+            const proxyIPs = panelIPs?.length ? panelIPs : parseIPs(envProxyIPs) ?? defaultProxyIPs;
             const proxyIP = getRandomValue(proxyIPs);
             const { host, port } = parseHostPort(proxyIP, true);
             addressRemote = host || addressRemote;
             portRemote = port || portRemote;
         } else if (proxyMode === 'prefix') {
             log(`direct connection failed, trying to generate dynamic prefix for ${addressRemote}`);
-            const prefixes = panelIPs?.length ? panelIPs : parseIPs(envPrefixes) || defaultPrefixes;
+            const prefixes = panelIPs?.length ? panelIPs : parseIPs(envPrefixes) ?? defaultPrefixes;
             const prefix = getRandomValue(prefixes);
             const dynamicProxyIP = await getDynamicProxyIP(addressRemote, prefix);
 
@@ -116,7 +116,7 @@ async function remoteSocketToWS(
         abort(reason) {
             console.error(`remoteConnection.readable abort`, reason);
             safeCloseTcpSocket(remoteSocket);
-        },
+        }
     });
 
     try {

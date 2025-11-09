@@ -71,7 +71,7 @@ export async function VlOverWSHandler(request: Request): Promise<Response> {
                 }
             }
 
-            await handleTCPOutBound(
+            handleTCPOutBound(
                 remoteSocketWapper,
                 addressRemote,
                 portRemote,
