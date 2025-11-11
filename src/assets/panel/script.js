@@ -767,31 +767,25 @@ function validateWarpEndpoints() {
 
 function validateMinMax() {
     const getValue = (id) => parseInt(getElmValue(id), 10);
-    const [
-        fragmentLengthMin, fragmentLengthMax,
-        fragmentIntervalMin, fragmentIntervalMax,
-        fragmentMaxSplitMin, fragmentMaxSplitMax,
-        noiseCountMin, noiseCountMax,
-        noiseSizeMin, noiseSizeMax,
-        noiseDelayMin, noiseDelayMax
-    ] = [
-        'fragmentLengthMin', 'fragmentLengthMax',
-        'fragmentIntervalMin', 'fragmentIntervalMax',
-        'fragmentMaxSplitMin', 'fragmentMaxSplitMax',
-        'noiseCountMin', 'noiseCountMax',
-        'noiseSizeMin', 'noiseSizeMax',
-        'noiseDelayMin', 'noiseDelayMax'
-    ].map(getValue);
 
-    if (fragmentLengthMin >= fragmentLengthMax ||
-        fragmentIntervalMin > fragmentIntervalMax ||
-        fragmentMaxSplitMin > fragmentMaxSplitMax ||
-        noiseCountMin > noiseCountMax ||
-        noiseSizeMin > noiseSizeMax ||
-        noiseDelayMin > noiseDelayMax
-    ) {
-        alert('⛔ Minimum should be smaller or equal to Maximum!');
-        return false;
+    const fields = [
+        ['fragmentLengthMin', 'fragmentLengthMax', 'Fragment Length'],
+        ['fragmentIntervalMin', 'fragmentIntervalMax', 'Fragment Interval'],
+        ['fragmentMaxSplitMin', 'fragmentMaxSplitMax', 'Fragment Max Split'],
+        ['noiseCountMin', 'noiseCountMax', 'Noise Count'],
+        ['noiseSizeMin', 'noiseSizeMax', 'Noise Size'],
+        ['noiseDelayMin', 'noiseDelayMax', 'Noise Delay'],
+        ['amneziaNoiseSizeMin', 'amneziaNoiseSizeMax', 'Amnezia Noise Size']
+    ];
+
+    for (const [minId, maxId, label] of fields) {
+        const min = getValue(minId);
+        const max = getValue(maxId);
+
+        if (min > max) {
+            alert(`⛔ ${label}: Minimum cannot be bigger than Maximum!`);
+            return false;
+        }
     }
 
     return true;
