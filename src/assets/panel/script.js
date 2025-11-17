@@ -415,6 +415,7 @@ function handleFragmentMode() {
         low: [100, 200, 1, 1],
         medium: [50, 100, 1, 5],
         high: [10, 20, 10, 20],
+        severe: [1, 5, 1, 5],
         custom: inputs.map(id => formDataObj[id])
     };
 

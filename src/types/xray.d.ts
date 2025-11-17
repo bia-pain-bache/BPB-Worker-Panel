@@ -328,6 +328,10 @@ interface Policy {
 
 export interface Config {
     remarks: string;
+    version: {
+        min: string;
+        max?: string;
+    };
     log: Log;
     dns: Dns;
     inbounds: Array<MixedInbound | DokodemoDoorInbound>;
