@@ -10,7 +10,7 @@ By default settings are:
 - **Interval**: 1-1
 - **Packets**: tlshello
 
-You can also switch Fragment modes and test based on network situation. Usually default or `Low` mode should be ok. Please note that by switching to `Medium` or `High` profiles, handshake ping goes higher but it can result in better and more stable connection in high situations. The `Best Fragment` config is always the best and smart solution, just connect and wait for at least 30 seconds.
+You can also switch Fragment modes and test based on network situation. Usually default or `Low` mode should be ok. Please note that by switching to `Medium`, `High` or `Severe` profiles, handshake ping goes higher but it can result in better and more stable connection in high situations. The `Best Fragment` config is always the best and smart solution, just connect and wait for at least 30 seconds.
 
 You can set the parameters based on your ISP's situation.
 
