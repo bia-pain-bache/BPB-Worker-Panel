@@ -166,6 +166,15 @@
                         </div>
                     </div>
                     <div class="form-control">
+                        <label for="enableECH">🎭 ECH</label>
+                        <div>
+                            <select id="enableECH" name="enableECH">
+                                <option value="true">Enabled</option>
+                                <option value="false">Disabled</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-control">
                         <label for="bestVLTRInterval">🔄 Best Interval</label>
                         <div>
                             <input type="number" id="bestVLTRInterval" name="bestVLTRInterval" min="10" max="90">
@@ -479,15 +488,18 @@
                                         <label for="blockUDP443">QUIC</label>
                                     </div>
                                     <div class="routing">
-                                        <input type="checkbox" id="blockMalware" name="blockMalware" value="true" onchange="handleRiskyRules(event)">
+                                        <input type="checkbox" id="blockMalware" name="blockMalware" value="true"
+                                            onchange="handleRiskyRules(event)">
                                         <label for="blockMalware">Malware</label>
                                     </div>
                                     <div class="routing">
-                                        <input type="checkbox" id="blockPhishing" name="blockPhishing" value="true" onchange="handleRiskyRules(event)">
+                                        <input type="checkbox" id="blockPhishing" name="blockPhishing" value="true"
+                                            onchange="handleRiskyRules(event)">
                                         <label for="blockPhishing">Phishing</label>
                                     </div>
                                     <div class="routing">
-                                        <input type="checkbox" id="blockCryptominers" name="blockCryptominers" value="true" onchange="handleRiskyRules(event)">
+                                        <input type="checkbox" id="blockCryptominers" name="blockCryptominers"
+                                            value="true" onchange="handleRiskyRules(event)">
                                         <label for="blockCryptominers">Cryptominers</label>
                                     </div>
                                 </div>

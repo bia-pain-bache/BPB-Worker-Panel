@@ -120,6 +120,10 @@ export type TLS = {
     "client-fingerprint"?: Fingerprint;
     "skip-cert-verify": boolean;
     "reality-opts"?: RealityOpts;
+    "ech-opts"?: {
+        "enable": boolean;
+        "config": string;
+    };
 }
 
 export type Transport = {

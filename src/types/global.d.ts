@@ -96,6 +96,8 @@ declare global {
         fragmentPackets: "tlshello" | "1-1" | "1-2" | "1-3" | "1-5";
         fragmentMaxSplitMin?: number;
         fragmentMaxSplitMax?: number;
+        enableECH: boolean;
+        echConfig: string;
         bypassIran: boolean;
         bypassChina: boolean;
         bypassRussia: boolean;

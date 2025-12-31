@@ -121,24 +121,35 @@ export function buildWebsocketOutbound(
     isFragment: boolean
 ): Outbound {
     const {
-        settings: { fingerprint, enableTFO },
+        settings: {
+            fingerprint,
+            enableTFO,
+            enableECH,
+            echConfig
+        },
         globalConfig: { userID, TrPass },
         dict: { _VL_ }
     } = globalThis;
 
     const isTLS = isHttps(port);
     const { host, sni, allowInsecure } = selectSniHost(address);
+    const tlsSettings = isTLS ? buildTlsSettings(
+            sni,
+            fingerprint,
+            "http/1.1",
+            allowInsecure,
+            enableECH && !isFragment ? echConfig : undefined
+        ) : undefined;
 
     const streamSettings: StreamSettings = {
         network: "ws",
         ...buildTransport("ws", "none", `${generateWsPath(protocol)}?ed=2560`, host),
         security: isTLS ? "tls" : "none",
-        tlsSettings: isTLS ? buildTlsSettings(sni, fingerprint, "http/1.1", allowInsecure) : undefined,
+        tlsSettings,
         sockopt: isFragment
             ? buildSockopt(false, false, undefined, "fragment")
             : buildSockopt(true, enableTFO, "UseIP"),
     };
-
 
     if (protocol === _VL_) return buildOutbound<VlessSettings>(protocol, "proxy", false, {
         vnext: [{
@@ -404,13 +415,15 @@ function buildTlsSettings(
     serverName: string,
     fingerprint: Fingerprint,
     alpn: string,
-    allowInsecure: boolean
+    allowInsecure: boolean,
+    echConfigList?: string
 ): TlsSettings {
     return {
         serverName,
         fingerprint: fingerprint,
         alpn: alpn?.split(','),
-        allowInsecure
+        allowInsecure,
+        echConfigList
     }
 }
 

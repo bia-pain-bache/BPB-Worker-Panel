@@ -125,6 +125,10 @@ export interface TLS {
         public_key: string;
         short_id: string;
     };
+    ech?: {
+        enabled: boolean;
+        config: string;
+    };
 }
 
 export interface HttpTransport {

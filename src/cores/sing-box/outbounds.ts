@@ -59,14 +59,21 @@ export function buildWebsocketOutbound(
     const {
         dict: { _VL_ },
         globalConfig: { userID, TrPass },
-        settings: { fingerprint, enableTFO }
+        settings: { fingerprint, enableTFO, enableECH, echConfig }
     } = globalThis;
 
     const { host, sni, allowInsecure } = selectSniHost(address);
     const transport = buildTransport("ws", "none", generateWsPath(protocol), host, undefined, 2560);
     const tls = isHttps(port)
-        ? buildTLS("tls", isFragment, allowInsecure, sni, "http/1.1", fingerprint)
-        : undefined;
+        ? buildTLS(
+            "tls",
+            isFragment,
+            allowInsecure,
+            sni,
+            enableECH && !isFragment ? echConfig : undefined,
+            "http/1.1",
+            fingerprint
+        ) : undefined;
 
     if (protocol === _VL_) return buildOutbound<VlessOutbound>(remark, protocol, address, port, enableTFO, {
         uuid: userID,
@@ -139,7 +146,7 @@ export function buildChainOutbound(): ChainOutbound | undefined {
     const ed = searchParams.get("ed");
     const earlyData = ed ? +ed : undefined;
 
-    const tls = buildTLS(security, false, false, sni || server, alpn, fp, pbk, sid);
+    const tls = buildTLS(security, false, false, sni || server, undefined, alpn, fp, pbk, sid);
     const transport = buildTransport(type, headerType, path, host, serviceName, earlyData);
 
     switch (protocol) {
@@ -211,6 +218,7 @@ function buildTLS(
     isFragment: boolean,
     allowInsecure: boolean,
     sni: string,
+    echConfig?: string,
     alpn?: string,
     fingerprint?: Fingerprint,
     publicKey?: string,
@@ -218,7 +226,7 @@ function buildTLS(
 ): TLS | undefined {
     if (!["tls", "reality"].includes(security)) return undefined;
     const tlsAlpns = alpn?.split(',').filter(value => value !== 'h2');
-    
+
     const tls: TLS = {
         enabled: true,
         server_name: sni,
@@ -228,7 +236,11 @@ function buildTLS(
         utls: {
             enabled: !!fingerprint,
             fingerprint: fingerprint
-        }
+        },
+        ech: echConfig ? {
+            enabled: true,
+            config: echBase64ToPEM(echConfig)
+        } : undefined
     };
 
     if (security === "tls") return tls;
@@ -242,6 +254,22 @@ function buildTLS(
     };
 }
 
+function echBase64ToPEM(config: string) {
+    const clean = config.replace(/\s+/g, "");
+    const lines: string[] = [];
+
+    for (let i = 0; i < clean.length; i += 64) {
+        lines.push(clean.slice(i, i + 64));
+    }
+
+    return [
+        "-----BEGIN ECH CONFIGS-----",
+        ...lines,
+        "-----END ECH CONFIGS-----",
+    ].join("\n");
+}
+
+
 function buildTransport(
     type: TransportType,
     headerType?: "http" | "none",
@@ -251,7 +279,7 @@ function buildTransport(
     earlyData?: number
 ): Transport | undefined {
     path = path?.split("?")[0];
-    
+
     switch (type) {
         case 'tcp':
             if (headerType === 'http') return {

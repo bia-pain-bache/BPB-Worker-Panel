@@ -1,8 +1,12 @@
-# ⚙️ Bug fixes and Improvements
+# ⚙️ Cloudflare ECH
 
-- Removed restriction for `Fragment length`, you can set minimum to 1 now. #1131
-- Added two more length to `Best Fragment` config: `1-5`, `1-10`. The config now checks 20 main fragment modes to find the best one on ISP.
-- Added `Severe` Fragment mode with `1-5` length and `1-5` interval values.
+ECH option is added to BPB Panel now for all cores. Please note that this is not so helpful in Iran regarding tests, successfully connects but gets banned after a while on some ISPs. This option can be more helpful in other countries.
+
+> [!TIP]
+> ECH applies only to `Normal` subscription, not `Fragment`.
+
+> [!TIP]
+> BPB queries ECH config within worker and does not delegate ECH config query to client core which is an advantage (core query may fail due to DNS query failure or blocked domains). So there's no extra settings, you can just enable ECH from panel and use it.
 
 > [!NOTE]
 > These days Fragment on some ISPs stopped working in Iran, you can change `Fragment packet` to `1-1` instead of `tlshello` and test, also you can try to change `Fragment mode` to bypass IR-GFW.

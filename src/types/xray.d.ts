@@ -115,6 +115,7 @@ export interface TlsSettings {
     fingerprint: Fingerprint;
     alpn?: string[];
     allowInsecure: boolean;
+    echConfigList?: string;
 }
 
 export interface RealitySettings {
