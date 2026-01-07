@@ -52,4 +52,12 @@
 
     [:octicons-arrow-right-24: شروع](warp-pro.md)
 
+- :material-playlist-check:{ .lg .middle } **DNS over HTTPS**
+
+    ---
+
+    برای استفاده در مرورگر یا برنامه‌های بر پایه DNS مثل Intra و Rethink
+
+    [:octicons-arrow-right-24: شروع](doh.md)
+
 </div>

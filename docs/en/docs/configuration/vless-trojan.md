@@ -82,6 +82,10 @@ Select the required ports. TLS ports offer more secure configs, but during TLS d
 
 Here you can select TLS fingerprint, default to randomized.
 
+## ECH (Encrypted Client Hello)
+
+As you may know there are several techniques to obfuscate connection SNI to bypass firewall. Fragment hides SNI, Custom domain changes SNI and finally ECH can change SNI to Cloudflare default ECH domain. The problem is that Cloudflare uses a default domain named `cloudflare-ech.com` for all CDN and Worker domains, so the blockage is easy for ISPs. Right now this is not so helpful in Iran because on some ISPs config connects successfully but gets banned after a while and on some other ISPs the default domain is blocked totally. So you have to test. This option will not be activated on `Fragment` subscription.
+
 ## Best Interval
 
 By default, **Best** configs test every 30 seconds to identify the optimal config or Fragment value. For low-speed networks during activities like video streaming or gaming, this may cause lag. Adjust the interval between 10 and 90 seconds as needed.

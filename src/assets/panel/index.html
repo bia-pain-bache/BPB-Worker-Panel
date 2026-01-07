@@ -8,7 +8,7 @@
     <link rel="icon" href="/favicon.ico" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add_circle,autorenew,check_circle,content_copy,delete,download,fingerprint,info,key_vertical,open_in_new,qr_code,settings,share,terminal,tune,verified,visibility,visibility_off&display=block" />
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add_circle,autorenew,check_circle,content_copy,delete,dns,download,fingerprint,info,key_vertical,open_in_new,qr_code,settings,share,terminal,tune,verified,visibility,visibility_off&display=block" />
     __STYLE__
 </head>
 
@@ -1035,6 +1035,17 @@
                 </table>
             </div>
         </details>
+    </div>
+    <div class="form-container container">
+        <h2><span class="material-symbols-rounded">dns</span> DNS over HTTPS</h2>
+        <div class="value-container">
+            <div class="output-container">
+                <span id="doh" class="output"></span>
+            </div>
+            <span class="material-symbols-rounded" onclick="copyToClipboard(document.getElementById('doh').textContent)">
+                content_copy
+            </span>
+        </div>
     </div>
     <div class="form-container container">
         <div id="resetPassModal" class="modal">

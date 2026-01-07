@@ -419,3 +419,21 @@ async function decompressHtml(content: string, asString: boolean): Promise<strin
 
     return stream;
 }
+
+export async function handleDoH(request: Request): Promise<Response> {
+    const url = new URL(request.url);
+    const { subPath } = globalThis.httpConfig;
+    const { dohURL } = globalThis.globalConfig;
+
+    if (url.pathname !== `/dns-query/${subPath}`) {
+        return fallback(request);
+    }
+
+    const targetURL = new URL(dohURL);
+    url.searchParams.forEach((value, key) => {
+        targetURL.searchParams.set(key, value);
+    });
+
+    const proxyRequest = new Request(targetURL.toString(), request);
+    return fetch(proxyRequest);
+}

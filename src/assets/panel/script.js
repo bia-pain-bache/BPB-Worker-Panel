@@ -79,6 +79,7 @@ function initiatePanel(proxySettings) {
 }
 
 function populatePanel(proxySettings) {
+    document.getElementById("doh").textContent = `${window.origin}/dns-query/${decodeURIComponent(globalThis.subPath)}`;
     selectElements.forEach(elm => elm.value = proxySettings[elm.id]);
     checkboxElements.forEach(elm => elm.checked = proxySettings[elm.id]);
     inputElements.forEach(elm => elm.value = proxySettings[elm.id] || "");

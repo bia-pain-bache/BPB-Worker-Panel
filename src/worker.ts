@@ -8,7 +8,8 @@ import {
 	handleLogin,
 	logout,
 	renderError,
-	handleWebsocket
+	handleWebsocket,
+	handleDoH
 } from '@handlers';
 
 export default {
@@ -43,6 +44,9 @@ export default {
 
 					case 'favicon.ico':
 						return await serveIcon();
+
+					case `dns-query`:
+						return await handleDoH(request);
 
 					default:
 						return await fallback(request);

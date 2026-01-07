@@ -761,6 +761,30 @@ summary h3 {
     align-items: center;
 }
 
+.value-container {
+    color: var(--lable-text-color);
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.output-container {
+    width: 100%;
+    padding: 8px;
+    text-align: center;
+    background-color: var(--input-background-color);
+    color: var(--lable-text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+}
+
+.value-container .material-symbols-rounded {
+    color: var(--button-color);
+    cursor: pointer;
+}
+
 @media only screen and (min-width: 600px) {
     .form-control {
         flex-direction: row;

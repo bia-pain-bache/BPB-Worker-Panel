@@ -5,8 +5,7 @@ export function isDomain(address: string): boolean {
 }
 
 export async function resolveDNS(domain: string, onlyIPv4 = false): Promise<DnsResult> {
-    const { dohURL } = globalThis.globalConfig;
-    const dohBaseURL = `${dohURL}?name=${encodeURIComponent(domain)}`;
+    const dohBaseURL = `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}`;
     const dohURLs = {
         ipv4: `${dohBaseURL}&type=A`,
         ipv6: `${dohBaseURL}&type=AAAA`,
@@ -22,7 +21,7 @@ export async function resolveDNS(domain: string, onlyIPv4 = false): Promise<DnsR
     }
 }
 
-async function fetchDNSRecords(url: string, recordType: number) {
+export async function fetchDNSRecords(url: string, recordType: number): Promise<string[]> {
     try {
         const response = await fetch(url, { headers: { accept: 'application/dns-json' } });
         const data: any = await response.json();

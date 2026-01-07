@@ -52,4 +52,12 @@ First, update your client to the latest version or refer to the table below. The
 
     [:octicons-arrow-right-24: Getting started](warp-pro.md)
 
+- :material-playlist-check:{ .lg .middle } **DNS over HTTPS**
+
+    ---
+
+    Set DoH in your browser or use in DNS based clients like Intra.
+
+    [:octicons-arrow-right-24: Getting started](doh.md)
+
 </div>

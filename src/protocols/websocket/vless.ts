@@ -258,8 +258,7 @@ async function handleUDPOutBound(webSocket: WebSocket, VLResponseHeader: Uint8Ar
         .pipeTo(
             new WritableStream({
                 async write(chunk) {
-                    const { dohURL } = globalThis.globalConfig;
-                    const resp = await fetch(dohURL, {
+                    const resp = await fetch("https://cloudflare-dns.com/dns-query", {
                         method: "POST",
                         headers: {
                             "content-type": "application/dns-message",
