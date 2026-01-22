@@ -1,0 +1,5 @@
+{
+  "name": "bpb",
+  "compatibility_date": "2026-01-22",
+  "main": "./dist/worker.js"
+}
