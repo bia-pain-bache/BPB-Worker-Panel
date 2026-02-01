@@ -174,7 +174,7 @@ function parseVlHeader(VLBuffer: ArrayBuffer, userID: string) {
         default:
             return {
                 hasError: true,
-                message: `invild  addressType is ${addressType}`,
+                message: `invalid  addressType is ${addressType}`,
             };
     }
 
