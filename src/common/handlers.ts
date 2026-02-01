@@ -404,7 +404,7 @@ async function updateWarpConfigs(request: Request, env: Env): Promise<Response> 
         }
     }
 
-    return respond(false, HttpStatus.METHOD_NOT_ALLOWED, 'Method not allowd.');
+    return respond(false, HttpStatus.METHOD_NOT_ALLOWED, 'Method not allowed.');
 }
 
 async function decompressHtml(content: string, asString: boolean): Promise<string | ReadableStream<Uint8Array>> {
