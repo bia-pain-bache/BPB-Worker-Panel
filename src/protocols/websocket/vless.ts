@@ -132,7 +132,7 @@ function parseVlHeader(VLBuffer: ArrayBuffer, userID: string) {
     } else {
         return {
             hasError: true,
-            message: `command ${command} is not support, command 01-tcp,02-udp,03-mux`,
+            message: `command ${command} is not supported, command 01-tcp,02-udp,03-mux`,
         };
     }
 
