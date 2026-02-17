@@ -52,7 +52,7 @@ globalThis.settings = {
     fragmentMaxSplitMax: undefined,
     fragmentPackets: "tlshello",
     enableECH: false,
-    echConfig: "",
+    echServerName: "",
     bypassIran: false,
     bypassChina: false,
     bypassRussia: false,

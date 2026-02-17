@@ -166,15 +166,6 @@
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="enableECH">🎭 ECH</label>
-                        <div>
-                            <select id="enableECH" name="enableECH">
-                                <option value="true">Enabled</option>
-                                <option value="false">Disabled</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-control">
                         <label for="bestVLTRInterval">🔄 Best Interval</label>
                         <div>
                             <input type="number" id="bestVLTRInterval" name="bestVLTRInterval" min="10" max="90">
@@ -187,6 +178,26 @@
                                 <option value="true">Enabled</option>
                                 <option value="false">Disabled</option>
                             </select>
+                        </div>
+                    </div>
+                    <div class="container">
+                        <div class="section">
+                            <h4><span class="material-symbols-rounded">tune</span> ECH</h4>
+                            <div class="form-control">
+                                <label for="enableECH">🎭 ECH</label>
+                                <div>
+                                    <select id="enableECH" name="enableECH">
+                                        <option value="true">Enabled</option>
+                                        <option value="false">Disabled</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-control">
+                                <label for="echServerName">🧢 ECH Server Name</label>
+                                <div>
+                                    <input type="text" id="echServerName" name="echServerName">
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="container">
@@ -1042,7 +1053,8 @@
             <div class="output-container">
                 <span id="doh" class="output"></span>
             </div>
-            <span class="material-symbols-rounded" onclick="copyToClipboard(document.getElementById('doh').textContent)">
+            <span class="material-symbols-rounded"
+                onclick="copyToClipboard(document.getElementById('doh').textContent)">
                 content_copy
             </span>
         </div>
