@@ -9,6 +9,7 @@ import { VlOverWSHandler } from "@vless";
 import { TrOverWSHandler } from "@trojan";
 import JSZip from "jszip";
 import { HttpStatus, respond } from "@common";
+import { resolveDNS } from "@utils";
 
 export async function handleWebsocket(request: Request): Promise<Response> {
     const { pathName } = globalThis.globalConfig;
@@ -72,6 +73,28 @@ export async function handlePanel(request: Request, env: Env): Promise<Response>
     }
 }
 
+export async function handleProxyIPs(request: Request, env: Env): Promise<Response> {
+    const auth = await Authenticate(request, env);
+
+    if (!auth) {
+        const { urlOrigin } = globalThis.httpConfig;
+        return Response.redirect(`${urlOrigin}/login`, 302);
+    }
+
+    const { pathName } = globalThis.globalConfig;
+
+    switch (pathName) {
+        case '/proxy-ip':
+            return await renderProxyIPs();
+
+        case '/proxy-ip/get':
+            return await getProxyIPsInfo();
+
+        default:
+            return await fallback(request);
+    }
+}
+
 export async function renderError(error: any): Promise<Response> {
     const message = error instanceof Error ? error.message : String(error);
     const html = await decompressHtml(__ERROR_HTML_CONTENT__, true) as string;
@@ -79,6 +102,13 @@ export async function renderError(error: any): Promise<Response> {
 
     return new Response(errorPage, {
         status: HttpStatus.OK,
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+    });
+}
+
+async function renderProxyIPs() {
+    const html = await decompressHtml(__PROXY_IP_HTML_CONTENT__, false);
+    return new Response(html, {
         headers: { 'Content-Type': 'text/html; charset=utf-8' }
     });
 }
@@ -333,6 +363,12 @@ async function getWarpConfigs(request: Request, env: Env): Promise<Response> {
     }
 }
 
+async function getProxyIPsInfo(): Promise<Response> {
+    const ips = await resolveDNS(globalThis.dict._public_proxy_ip_, true);
+    const geoLocInfo = await geoLookupBatch(ips.ipv4);
+    return respond(true, HttpStatus.OK, undefined, geoLocInfo);
+}
+
 export async function serveIcon(): Promise<Response> {
     const faviconBase64 = __ICON__;
     const body = Uint8Array.from(atob(faviconBase64), c => c.charCodeAt(0));
@@ -436,4 +472,68 @@ export async function handleDoH(request: Request): Promise<Response> {
 
     const proxyRequest = new Request(targetURL.toString(), request);
     return fetch(proxyRequest);
+}
+
+interface IpApiBatchResponse {
+    query: string;
+    city?: string;
+    country?: string;
+    countryCode?: string;
+    isp?: string;
+    status: "success" | "fail";
+    message?: string;
+}
+
+interface GeoResult {
+    ip: string;
+    city?: string;
+    country?: string;
+    countryCode?: string;
+    isp?: string;
+}
+
+function chunkArray<T>(arr: T[], size: number): T[][] {
+    const chunks: T[][] = [];
+
+    for (let i = 0; i < arr.length; i += size) {
+        chunks.push(arr.slice(i, i + size));
+    }
+
+    return chunks;
+}
+
+async function geoLookupBatch(ipList: string[]): Promise<GeoResult[]> {
+    const batches = chunkArray(ipList, 100);
+    const results: GeoResult[] = [];
+
+    for (const batch of batches) {
+        const res = await fetch(
+            "http://ip-api.com/batch?fields=query,city,country,countryCode,isp,status",
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(batch),
+            }
+        );
+
+        if (!res.ok) {
+            throw new Error(`ip-api request failed: ${res.status}`);
+        }
+
+        const data: IpApiBatchResponse[] = await res.json();
+
+        for (const item of data) {
+            if (item.status === "success") {
+                results.push({
+                    ip: item.query,
+                    city: item.city,
+                    country: item.country,
+                    countryCode: item.countryCode,
+                    isp: item.isp,
+                });
+            }
+        }
+    }
+
+    return results;
 }

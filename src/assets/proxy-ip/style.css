@@ -1,0 +1,88 @@
+:root {
+    --color: black;
+    --header-color: #09639f;
+    --background-color: #fff;
+    --table-active-color: #f2f2f2;
+    --border-color: #ddd;
+    --button-color: #09639f;
+    --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+body {
+    font-family: Twemoji Country Flags, system-ui;
+    background-color: var(--background-color);
+    color: var(--color);
+    text-align: center;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body.dark-mode {
+    --color: white;
+    --header-color: #3498DB;
+    --background-color: #121212;
+    --table-active-color: #252525;
+    --border-color: #353535;
+    --button-color: #3498DB;
+    --header-shadow: 2px 2px 4px rgba(255, 255, 255, 0.25);
+}
+
+h1 {
+    color: var(--header-color);
+    text-shadow: var(--header-shadow);
+}
+
+.icon {
+    vertical-align: middle;
+    height: 3rem;
+}
+
+table {
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+    border: 1px solid var(--border-color);
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 14px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+th,
+td {
+    text-align: left;
+    text-wrap: nowrap;
+    padding: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+td:first-child,
+th {
+    background-color: var(--table-active-color);
+    font-weight: bold;
+}
+
+td:first-child {
+    text-align: center;
+}
+
+td:nth-child(2) {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.material-symbols-rounded {
+    color: var(--button-color);
+    cursor: pointer;
+    font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+}

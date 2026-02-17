@@ -174,6 +174,7 @@ declare global {
     const __PANEL_HTML_CONTENT__: string;
     const __LOGIN_HTML_CONTENT__: string;
     const __SECRETS_HTML_CONTENT__: string;
+    const __PROXY_IP_HTML_CONTENT__: string;
 
     interface Array<T> {
         concatIf<T>(condition: boolean, concat: T | T[]): T[];
