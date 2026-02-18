@@ -5,7 +5,7 @@
 - Fixed ECH config query. Be aware that ECH config query is delegated to Core DNS module (Local DNS) now, so this DNS server should be locally available. Optional `ECH Server Name` is also added. #1190
 
 > [!CAUTION]
-> Please note that `ECH Server Name` option is available in Xray for a while, however sing-box supports this feature from 1.13.0 and Clash supports it from v1.19.20. If you leave it empty, it uses your worker domain to query ECH config which works on all cores' stable versions right now.
+> Please note that `ECH Server Name` option is available in Xray for a while, however sing-box supports this feature from 1.13.0 and Clash supports it from v1.19.20. If you leave it empty, it uses your worker domain to query ECH config which works on all cores' stable versions right now. Also if you enter a Cloudflare domain, it should have ECH enabled on it, otherwise it won't work. To check this, visit [here](https://dns.google/query?name=&rr_type=HTTPS&ecs=) and resolve your desired domain, you should see an `ech` value in `Answer` field.
 
 > [!CAUTION]
 > ECH is still unstable in IRAN.
