@@ -132,7 +132,7 @@ function parseVlHeader(VLBuffer: ArrayBuffer, userID: string) {
     } else {
         return {
             hasError: true,
-            message: `command ${command} is not support, command 01-tcp,02-udp,03-mux`,
+            message: `command ${command} is not supported, command 01-tcp,02-udp,03-mux`,
         };
     }
 
@@ -174,7 +174,7 @@ function parseVlHeader(VLBuffer: ArrayBuffer, userID: string) {
         default:
             return {
                 hasError: true,
-                message: `invild  addressType is ${addressType}`,
+                message: `invalid addressType is ${addressType}`,
             };
     }
 

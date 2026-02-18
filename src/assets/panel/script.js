@@ -944,7 +944,7 @@ function validateXrayNoises(fields) {
 function validateEchConfig() {
     const echServerName = getElmValue("echServerName");
     
-    if (!isDomain(echServerName)) {
+    if (echServerName && !isDomain(echServerName)) {
         alert('⛔ The ECH Server Name should be a domain!');
         return false;
     }

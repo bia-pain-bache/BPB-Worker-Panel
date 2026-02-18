@@ -13,6 +13,10 @@
 > [!TIP]
 > ECH applies only to `Normal` subscription, not `Fragment`.
 
+- Fixed `ECH Server Name` bug #1224
+- Fixed ECH query DNS if local DNS is set to `localhost`
+- Fixed some typos, PR #1191
+
 > [!NOTE]
 > These days Fragment on some ISPs stopped working in Iran, you can change `Fragment packet` to `1-1` instead of `tlshello` and test, also you can try to change `Fragment mode` to bypass IR-GFW.
 

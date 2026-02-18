@@ -421,6 +421,7 @@ function buildTlsSettings(
     echServerName?: string
 ): TlsSettings {
     const { localDNS } = globalThis.settings;
+    const echQueryDNS = localDNS === "localhost" ? "8.8.8.8" : localDNS
     
     return {
         serverName,
@@ -429,8 +430,8 @@ function buildTlsSettings(
         allowInsecure,
         echConfigList: enableECH 
             ? echServerName 
-                ? `${echServerName}+udp://${localDNS}` 
-                : `udp://${localDNS}` 
+                ? `${echServerName}+udp://${echQueryDNS}`
+                : `udp://${echQueryDNS}` 
             : undefined
     }
 }

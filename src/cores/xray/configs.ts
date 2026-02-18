@@ -141,7 +141,8 @@ async function addBestPingConfigs(
 ) {
     const isChain = !!chainOutbounds.length;
     const chainSign = isChain ? '🔗 ' : '';
-    const remark = `💦 ${chainSign}Best Ping F 🚀`;
+    const configType = isFragment ? ' F' : '';
+    const remark = `💦 ${chainSign}Best Ping${configType} 🚀`;
     const outbounds = [
         ...chainOutbounds,
         ...proxyOutbounds
