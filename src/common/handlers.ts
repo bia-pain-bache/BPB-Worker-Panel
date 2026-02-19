@@ -8,8 +8,8 @@ import { fetchWarpAccounts } from "@warp";
 import { VlOverWSHandler } from "@vless";
 import { TrOverWSHandler } from "@trojan";
 import JSZip from "jszip";
-import { HttpStatus, respond } from "@common";
-import { resolveDNS } from "@utils";
+import { base64EncodeUtf8, HttpStatus, respond } from "@common";
+import { generateRemark, generateWsPath, getConfigAddresses, randomUpperCase, resolveDNS } from "@utils";
 
 export async function handleWebsocket(request: Request): Promise<Response> {
     const { pathName } = globalThis.globalConfig;
@@ -152,6 +152,16 @@ export async function handleSubscriptions(request: Request, env: Env): Promise<R
 
                 case 'clash':
                     return await getClNormalConfig();
+
+                default:
+                    break;
+            }
+
+        case `/sub/raw/${subPath}`:
+            switch (client) {
+                case 'xray':
+                case 'sing-box':
+                    return await getURLConfigs();
 
                 default:
                     break;
@@ -536,4 +546,112 @@ async function geoLookupBatch(ipList: string[]): Promise<GeoResult[]> {
     }
 
     return results;
+}
+
+export async function getURLConfigs() {
+    const {
+        globalConfig: { userID, TrPass },
+        httpConfig: { defaultHttpsPorts, client, hostName },
+        dict: { _VL_, _TR_, _project_ },
+        settings: {
+            fingerprint,
+            ports,
+            customCdnAddrs,
+            customCdnHost,
+            customCdnSni,
+            VLConfigs,
+            TRConfigs,
+            outProxy,
+            remoteDNS
+        }
+    } = globalThis;
+
+    const buildConfig = (protocol: string, addr: string, port: number, host: string, sni: string, remark: string) => {
+        const isTLS = defaultHttpsPorts.includes(port);
+        const security = isTLS ? 'tls' : 'none';
+        const config = new URL(`${protocol}://config`);
+
+        if (protocol === _VL_) {
+            config.username = userID;
+            config.searchParams.append('encryption', 'none');
+        } else {
+            config.username = TrPass;
+        }
+
+        const path = generateWsPath(protocol);
+        config.hostname = addr;
+        config.port = port.toString();
+        config.searchParams.append('host', host);
+        config.searchParams.append('type', 'ws');
+        config.searchParams.append('security', security);
+        config.hash = remark;
+
+        if (client === 'sing-box') {
+            config.searchParams.append('eh', 'Sec-WebSocket-Protocol');
+            config.searchParams.append('ed', '2560');
+            config.searchParams.append('path', path);
+        } else {
+            config.searchParams.append('path', `${path}?ed=2560`);
+        }
+
+        if (isTLS) {
+            config.searchParams.append('sni', sni);
+            config.searchParams.append('fp', fingerprint);
+            config.searchParams.append('alpn', 'http/1.1');
+        }
+
+        return config.href;
+    }
+
+    let VLConfs = '', TRConfs = '', chainProxy = '';
+    let proxyIndex = 1;
+    const addrs = await getConfigAddresses(false);
+
+    ports.forEach(port => {
+        addrs.forEach(addr => {
+            const isCustomAddr = customCdnAddrs.includes(addr);
+            const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
+            const host = isCustomAddr ? customCdnHost : hostName;
+
+            if (VLConfigs) {
+                const remark = generateRemark(proxyIndex, port, addr, _VL_, false, false);
+                const vlConfig = buildConfig(atob('dmxlc3M='), addr, port, host, sni, remark);
+                VLConfs += `${vlConfig}\n`;
+            }
+
+            if (TRConfigs) {
+                const remark = generateRemark(proxyIndex, port, addr, _TR_, false, false);
+                const trConfig = buildConfig(atob('dHJvamFu'), addr, port, host, sni, remark);
+                TRConfs += `${trConfig}\n`;
+            }
+
+            proxyIndex++;
+        });
+    });
+
+    if (outProxy) {
+        let chainRemark = `#${encodeURIComponent('💦 Chain proxy 🔗')}`;
+        if (outProxy.startsWith('socks') || outProxy.startsWith('http')) {
+            const regex = /^(?:socks|http):\/\/([^@]+)@/;
+            const isUserPass = outProxy.match(regex);
+            const userPass = isUserPass ? isUserPass[1] : false;
+            chainProxy = userPass
+                ? outProxy.replace(userPass, btoa(userPass)) + chainRemark
+                : outProxy + chainRemark;
+        } else {
+            chainProxy = outProxy.split('#')[0] + chainRemark;
+        }
+    }
+
+    const configs = btoa(VLConfs + TRConfs + chainProxy);
+    return new Response(configs, {
+        status: 200,
+        headers: {
+            'Content-Type': 'text/plain;charset=utf-8',
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'CDN-Cache-Control': 'no-store',
+            'Profile-Title': `base64:${base64EncodeUtf8(`💦 ${_project_} Raw`)}`,
+            'DNS': remoteDNS
+        }
+    });
 }
