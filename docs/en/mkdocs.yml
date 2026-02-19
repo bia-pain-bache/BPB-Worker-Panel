@@ -92,7 +92,9 @@ nav:
     - usage/index.md
     - Normal: usage/normal.md
     - Fragment: usage/fragment.md
+    - Raw: usage/raw.md
     - Warp: usage/warp.md
     - Warp PRO: usage/warp-pro.md
+    - DoH: usage/doh.md
     - My IP: usage/my-ip.md
   - FAQ: faq.md

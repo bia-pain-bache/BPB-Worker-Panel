@@ -9,6 +9,18 @@
     https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat
     ```
 
+??? question "Why don't Raw subscription configs connect or cannot open websites?"  
+    To use these configs, disable `Mux` in the settings of whichever app you’re using. Also set remote DNS to DOH, DoT or TCP:
+    ```title="DoH"
+    https://8.8.8.8/dns-query
+    ```
+    ```title="DoT"
+    tls://8.8.8.8  
+    ```
+    ```title="TCP"
+    tcp://8.8.8.8  
+    ```
+
 ??? question "Why configs connect in v2rayNG and not Streisand for example?"
     BPB tries adapting new cores' features ASAP, meanwhile some developers just upgrade cores to the latest version regardless of full features adaption and optimizations. So you should communicate such issues with their own developers.
 
@@ -41,11 +53,7 @@
     Cloudflare can't properly handle the UDP traffic. There is currently no effective solution. Use Warp configs instead.  
 
 ??? question "Why won't ChatGPT open?"
-    Because the panel's default proxy IPs are public and many might appear suspicious to ChatGPT. Use the link below to search and test an appropriate IP for yourself:  
-    ```link
-    https://www.nslookup.io/domains/bpb.yousef.isegaro.com/dns-records/
-    ```
-    Or enable the `Bypass ChatGPT` option in the routing section of the panel.  
+    Because the panel's default proxy IPs are public and many might appear suspicious to ChatGPT. Set a single clean Proxy IP regarding instructions or enable the `Bypass ChatGPT` option in the routing section of the panel.  
 
 ??? question "I forgot the panel password. What should I do?"
     Go to your Cloudflare dashboard, find the KV created for Worker or Pages, click view, go to the KV Pairs section. In the table, you’ll see a `pwd` key — the value next to it is your password.  

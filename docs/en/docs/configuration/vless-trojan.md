@@ -82,10 +82,6 @@ Select the required ports. TLS ports offer more secure configs, but during TLS d
 
 Here you can select TLS fingerprint, default to randomized.
 
-## ECH (Encrypted Client Hello)
-
-As you may know there are several techniques to obfuscate connection SNI to bypass firewall. Fragment hides SNI, Custom domain changes SNI and finally ECH can change SNI to Cloudflare default ECH domain. The problem is that Cloudflare uses a default domain named `cloudflare-ech.com` for all CDN and Worker domains, so the blockage is easy for ISPs. Right now this is not so helpful in Iran because on some ISPs config connects successfully but gets banned after a while and on some other ISPs the default domain is blocked totally. So you have to test. This option will not be activated on `Fragment` subscription.
-
 ## Best Interval
 
 By default, **Best** configs test every 30 seconds to identify the optimal config or Fragment value. For low-speed networks during activities like video streaming or gaming, this may cause lag. Adjust the interval between 10 and 90 seconds as needed.
@@ -93,6 +89,17 @@ By default, **Best** configs test every 30 seconds to identify the optimal confi
 ## TCP Fast Open
 
 If your device supports TCP Fast Open and your ISP does not interfere with TFO, you can enable the feature to enhance your connections. Please note that Linux users have to enable TFO before activating this feature.
+
+## ECH (Encrypted Client Hello)
+
+As you may know there are several techniques to obfuscate connection SNI to bypass firewall. Fragment hides SNI, Custom domain changes SNI and finally ECH can change SNI to Cloudflare default ECH domain. The problem is that Cloudflare uses a default domain named `cloudflare-ech.com` for all CDN and Worker domains, so the blockage is easy for ISPs. This option will not be activated on `Fragment` subscription.
+
+### ECH Server Name
+
+If you leave this field empty, the ECH config will be queried from your worker domain. however, if your worker domain is blocked, you can use another domains which have enabled ECH on Cloudflare CDN. To check this, visit [here](https://dns.google/query?name=&rr_type=HTTPS&ecs=) and resolve your desired domain, you should see an `ech` value in `Answer` field.
+
+!!! warning
+    Please note that `ECH Server Name` option is available in Xray for a while, however sing-box supports this feature from 1.13.0 and Clash supports it from v1.19.20. So if your client doesn't meet these versions, please leave it empty.
 
 ## Proxy IP
 
@@ -107,7 +114,7 @@ You can change the Proxy IP via the panel by applying the change and updating th
 !!! note
     Changing the Proxy IP via the panel requires updating the subscription if the IP stops working. This can disrupt donated configs, as users without an active subscription cannot update them. Use this method only for personal usage. Other methods don’t require subscription updates.
 
-Select a Proxy IP [from here](https://www.nslookup.io/domains/bpb.yousef.isegaro.com/dns-records/), which lists IPs by region and ISP.
+You can check available Proxy IPs by clicking the icon beside this field in panel or visiting `/proxy-ip` in browser, which lists IPs by region and ISP.
 
 !!! info
     To use multiple Proxy IPs, fill in them below each other.

@@ -73,11 +73,8 @@
 
 ![Pages Application](../images/pages-env-vars.jpg)
 
-روی `Add` کلیک کنید و توی خونه اول `PROXY_IP` (با حروف بزرگ) رو وارد کنید. IPها رو می‌تونید از لینک زیر بگیرید که IPهای مناطق و ISPهای مختلف رو نشون می‌ده:
-
-```text
-https://www.nslookup.io/domains/bpb.yousef.isegaro.com/dns-records/
-```
+روی `Add` کلیک کنید و توی خونه اول `PROXY_IP` (با حروف بزرگ) رو وارد کنید.
+می‌تونید  Proxy IP های موجود رو با کلیک روی آیکون کنار فیلد `Proxy IPs / Domains` در پنل یا مراجعه به `/proxy-ip` در مرورگر ببینید، که IP ها رو بر اساس منطقه و ISP فهرست می‌کنه.
 
 ![Pages Application](../images/proxy-ips.jpg)
 

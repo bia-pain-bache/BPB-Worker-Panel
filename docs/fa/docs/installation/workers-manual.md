@@ -72,12 +72,7 @@
 ![Workers env variable](../images/workers-variables.jpg)
 
 روی `Add` کلیک کنید، `PROXY_IP` (با حروف بزرگ) رو به‌عنوان `Variable name` بنویسید.
-
-IPها رو می‌تونید از لینک زیر بگیرید — چندتا IP با منطقه و ISPشون نشون می‌ده. یک یا چندتا انتخاب کنید:
-
-```text
-https://www.nslookup.io/domains/bpb.yousef.isegaro.com/dns-records/
-```
+می‌تونید  Proxy IP های موجود رو با کلیک روی آیکون کنار فیلد `Proxy IPs / Domains` در پنل یا مراجعه به `/proxy-ip` در مرورگر ببینید، که IP ها رو بر اساس منطقه و ISP فهرست می‌کنه.
 
 ![Proxy IPs](../images/proxy-ips.jpg)
 
