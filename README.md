@@ -9,7 +9,7 @@
 
 ## Introduction
 
-This project is aimed to provide a user panel to access FREE, SECURE and PRIVATE **VLESS**, **Trojan** and **Warp** configs, It ensures connectivity even when domains or Warp services are blocked by ISPs, offering two deployment options:
+This project is aimed to provide a user panel to access FREE, SECURE and PRIVATE **VLESS**, **Trojan** and **Warp** configs and also a **private DoH** server. It ensures connectivity even when domains or Warp services are blocked by ISPs, offering two deployment options:
 
 - **Workers** deployment
 - **Pages** deployment
@@ -27,13 +27,14 @@ This project is aimed to provide a user panel to access FREE, SECURE and PRIVATE
 1. **Free and Private**: No costs involved and the server is private.
 2. **Intuitive Panel:** Streamlined for effortless navigation, configuration and use.
 3. **Versatile Protocols:** Provides VLESS, Trojan and Wireguard (Warp) protocols.
-4. **Warp Pro configs:** Optimized Warp for crucial circumstances.
-5. **Fragment support:** Supports Fragment functionality for crucial network situations.
-6. **Comprehensive Routing Rules:** Bypassing Iran/China/Russia, Blocking QUIC, Porn, Ads, Malwares, Phishing and also bypassing sanctions.
-7. **Chain Proxy:** Capable of adding a chain proxy (VLESS, Trojan, Shadowsocks, socks and http) to fix IP.
-8. **Broad client compatibility:** Offers subscription links for Xray, Sing-box and Clash-Mihomo core clients.
-9. **Password-protected panel:** Provides secure and private panel with password protection.
-10. **Fully customizable:** Supports setting up clean IP-domains, Proxy IPs, DNS servers, choosing ports and protocols, Warp endpoints and more.
+4. **Private DoH:** A ready to use DoH server, capable of customizing underlying DNS server.
+5. **Warp Pro configs:** Optimized Warp for crucial circumstances.
+6. **Fragment support:** Supports Fragment functionality for crucial network situations.
+7. **Comprehensive Routing Rules:** Bypassing Iran/China/Russia, Blocking QUIC, Porn, Ads, Malwares, Phishing and also bypassing sanctions.
+8. **Chain Proxy:** Capable of adding a chain proxy (VLESS, Trojan, Shadowsocks, socks and http) to fix IP.
+9. **Broad client compatibility:** Offers subscription links for Xray, Sing-box and Clash-Mihomo core clients.
+10. **Password-protected panel:** Provides secure and private panel with password protection.
+11. **Fully customizable:** Supports setting up clean IP-domains, Proxy IPs, DNS servers, choosing ports and protocols, Warp endpoints and more.
 
 ## Limitations
 
