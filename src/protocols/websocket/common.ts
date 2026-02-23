@@ -44,6 +44,10 @@ export async function handleTCPOutBound(
         if (proxyMode === 'proxyip') {
             log(`direct connection failed, trying to use Proxy IP for ${addressRemote}`);
             const proxyIPs = panelIPs?.length ? panelIPs : parseIPs(envProxyIPs) ?? defaultProxyIPs;
+            if (!proxyIPs.length) {
+                webSocket.close(1011, 'Retry connection failed: No Proxy IP configured. Set PROXY_IP env variable or configure proxy IPs in the panel settings.');
+                return;
+            }
             const proxyIP = getRandomValue(proxyIPs);
             const { host, port } = parseHostPort(proxyIP, true);
             addressRemote = host || addressRemote;

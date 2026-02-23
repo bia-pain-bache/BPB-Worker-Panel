@@ -845,10 +845,10 @@ function validateChainProxy() {
             return false;
         }
 
-        if (!['tcp', 'raw', 'ws', 'grpc', 'httpupgrade'].includes(type)) {
+        if (!['tcp', 'raw', 'ws', 'grpc', 'httpupgrade', 'h2', 'http'].includes(type)) {
             alert(
                 '⛔ Invalid Config!\n' +
-                '💡 VLESS, VMess or Trojan transmission can be tcp, ws, grpc or httpupgrade.'
+                '💡 VLESS, VMess or Trojan transmission can be tcp, ws, grpc, httpupgrade or h2.'
             );
 
             return false;
