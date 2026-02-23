@@ -374,7 +374,11 @@ async function getWarpConfigs(request: Request, env: Env): Promise<Response> {
 }
 
 async function getProxyIPsInfo(): Promise<Response> {
-    const ips = await resolveDNS(globalThis.dict._public_proxy_ip_, true);
+    const { _public_proxy_ip_ } = globalThis.dict;
+    if (!_public_proxy_ip_) {
+        return respond(true, HttpStatus.OK, undefined, []);
+    }
+    const ips = await resolveDNS(_public_proxy_ip_, true);
     const geoLocInfo = await geoLookupBatch(ips.ipv4);
     return respond(true, HttpStatus.OK, undefined, geoLocInfo);
 }

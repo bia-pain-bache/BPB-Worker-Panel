@@ -11,7 +11,7 @@ globalThis.dict = {
     _V2_: atob('djJyYXk='),
     _project_: atob('QlBC'),
     _website_: atob('aHR0cHM6Ly9iaWEtcGFpbi1iYWNoZS5naXRodWIuaW8vQlBCLVdvcmtlci1QYW5lbC8='),
-    _public_proxy_ip_: atob('YnBiLnlvdXNlZi5pc2VnYXJvLmNvbQ==')
+    _public_proxy_ip_: ''
 };
 
 globalThis.settings = {
@@ -127,7 +127,7 @@ export function initWs(env: any) {
     globalThis.wsConfig = {
         envProxyIPs: env.PROXY_IP,
         envPrefixes: env.PREFIX,
-        defaultProxyIPs: [_public_proxy_ip_],
+        defaultProxyIPs: _public_proxy_ip_ ? [_public_proxy_ip_] : [],
         defaultPrefixes: [
             '[2a02:898:146:64::]',
             '[2602:fc59:b0:64::]',
