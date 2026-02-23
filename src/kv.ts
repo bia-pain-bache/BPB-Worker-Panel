@@ -180,13 +180,14 @@ function extractProxyParams(chainProxy: string) {
 
     if (stdProtocol === _VM_) {
         const config = JSON.parse(base64DecodeUtf8(url.host));
+        const net = config.net === 'h2' ? 'http' : config.net;
         return {
             protocol: stdProtocol,
             uuid: config.id,
             server: config.add,
             port: +config.port,
             aid: +config.aid,
-            type: config.net,
+            type: net,
             headerType: config.type,
             serviceName: config.path,
             authority: config.authority,
@@ -195,7 +196,7 @@ function extractProxyParams(chainProxy: string) {
             security: config.tls,
             sni: config.sni,
             fp: config.fp,
-            alpn: config.alpn || undefined
+            alpn: config.alpn || (net === 'http' ? 'h2' : undefined)
         };
     }
 

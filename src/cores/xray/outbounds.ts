@@ -18,6 +18,7 @@ import {
     WsSettings,
     HttpupgradeSettings,
     GrpcSettings,
+    Http2Settings,
     HttpSocksSettings,
     ShadowsocksSettings,
     VmessSettings,
@@ -386,6 +387,14 @@ function buildTransport(
                     multiMode: mode === 'multi',
                     serviceName: serviceName
                 } satisfies GrpcSettings
+            };
+
+        case 'http':
+            return {
+                httpSettings: {
+                    host: host ? host.split(',').map(h => h.trim()).filter(Boolean) : undefined,
+                    path: path
+                } satisfies Http2Settings
             };
 
         default:
