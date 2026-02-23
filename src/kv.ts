@@ -186,7 +186,7 @@ function extractProxyParams(chainProxy: string) {
             server: config.add,
             port: +config.port,
             aid: +config.aid,
-            type: config.net,
+            type: net,
             headerType: config.type,
             serviceName: config.path,
             authority: config.authority,
@@ -195,7 +195,7 @@ function extractProxyParams(chainProxy: string) {
             security: config.tls,
             sni: config.sni,
             fp: config.fp,
-            alpn: config.alpn || undefined
+            alpn: config.alpn || (net === 'http' ? 'h2' : undefined)
         };
     }
 
