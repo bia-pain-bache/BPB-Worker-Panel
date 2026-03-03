@@ -94,7 +94,7 @@ export async function updateDataset(request: Request, env: Env): Promise<Setting
             ["fragmentMaxSplitMax"],
             ["fragmentPackets"],
             ["enableECH"],
-            ["echConfig", "enableECH", extractEchConfig],
+            ["echServerName"],
             ["bypassIran"],
             ["bypassChina"],
             ["bypassRussia"],
@@ -258,26 +258,26 @@ function extractProxyParams(chainProxy: string) {
     }
 }
 
-async function extractEchConfig(enableECH: boolean): Promise<string> {
-    if (!enableECH) return "";
+// async function extractEchConfig(enableECH: boolean): Promise<string> {
+//     if (!enableECH) return "";
     
-    const { httpConfig: { hostName }} = globalThis;
-    const url = new URL("https://dns.google/resolve");
-    url.searchParams.set("name", hostName);
-    url.searchParams.set("type", "HTTPS");
+//     const { httpConfig: { hostName }} = globalThis;
+//     const url = new URL("https://dns.google/resolve");
+//     url.searchParams.set("name", hostName);
+//     url.searchParams.set("type", "HTTPS");
 
-    const res = await fetch(url.toString(), {
-        headers: { accept: "application/dns-json" },
-    });
+//     const res = await fetch(url.toString(), {
+//         headers: { accept: "application/dns-json" },
+//     });
 
-    const dns = await res.json() as {
-        Answer: Array<{ data: string }>;
-    };
+//     const dns = await res.json() as {
+//         Answer: Array<{ data: string }>;
+//     };
 
-    for (const ans of dns.Answer) {
-        const ech = ans.data.match(/ech=([^ ]+)/)?.[1];
-        if (ech) return ech;
-    }
+//     for (const ans of dns.Answer) {
+//         const ech = ans.data.match(/ech=([^ ]+)/)?.[1];
+//         if (ech) return ech;
+//     }
 
-    throw new Error("ECH record not found");
-}
+//     throw new Error("ECH record not found");
+// }

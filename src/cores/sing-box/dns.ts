@@ -11,7 +11,9 @@ export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<DNS> 
         outProxyParams,
         remoteDnsHost,
         enableIPv6,
-        fakeDNS
+        fakeDNS,
+        enableECH,
+        echServerName
     } = globalThis.settings;
 
     const url = new URL(remoteDNS);
@@ -41,6 +43,11 @@ export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<DNS> 
             server: "dns-remote"
         }
     ];
+
+    if (enableECH) {
+        const { hostName } = globalThis.httpConfig;
+        addDnsRule(rules, 'dns-direct', undefined, undefined, undefined, [echServerName || hostName], ["HTTPS"]);
+    }
 
     if (isChain && !isWarp) {
         const { server } = outProxyParams;
@@ -188,7 +195,7 @@ function addDnsRule(
     geosite?: string[],
     geoip?: string,
     domain?: string[],
-    query_type?: Array<"A" | "AAAA">
+    query_type?: Array<"A" | "AAAA" | "HTTPS">
 ) {
     const isPair = geosite && geoip;
     rules.push({

@@ -54,14 +54,24 @@ export function buildWebsocketOutbound(
     const {
         dict: { _VL_, _TR_ },
         globalConfig: { userID, TrPass },
-        settings: { fingerprint, enableTFO, enableIPv6, enableECH, echConfig }
+        settings: { fingerprint, enableTFO, enableIPv6, enableECH, echServerName }
     } = globalThis;
 
     const isTLS = isHttps(port);
     if (protocol === _TR_ && !isTLS) return null;
     const { host, sni, allowInsecure } = selectSniHost(address);
 
-    const tls = isTLS ? buildTLS(protocol, "tls", allowInsecure, sni, enableECH ? echConfig : undefined, "http/1.1", fingerprint) : {};
+    const tls = isTLS ? buildTLS(
+        protocol, 
+        "tls", 
+        allowInsecure, 
+        sni, 
+        enableECH, 
+        echServerName || undefined, 
+        "http/1.1", 
+        fingerprint
+    ) : {};
+    
     const transport = buildTransport("ws", undefined, generateWsPath(protocol), host, undefined, 2560);
 
     if (protocol === _VL_) return buildOutbound<VlessOutbound>(remark, protocol, address, port, enableIPv6, enableTFO, tls, transport, {
@@ -140,7 +150,7 @@ export function buildChainOutbound(): ChainOutbound | undefined {
     const ed = searchParams.get("ed");
     const earlyData = ed ? +ed : undefined;
 
-    const tls = buildTLS(protocol, security, false, sni || server, undefined, alpn, fp, pbk, sid);
+    const tls = buildTLS(protocol, security, false, sni || server, false, undefined, alpn, fp, pbk, sid);
     const transport = buildTransport(type, headerType, path, host, serviceName, earlyData);
 
     switch (protocol) {
@@ -207,7 +217,8 @@ function buildTLS(
     security: "tls" | "reality" | "none",
     allowInsecure: boolean,
     sni: string,
-    echConfig?: string,
+    enableECH: boolean,
+    echServerName?: string,
     alpn?: string,
     fingerprint?: Fingerprint,
     publicKey?: string,
@@ -227,9 +238,9 @@ function buildTLS(
         return {
             ...common,
             "alpn": alpn?.split(','),
-            "ech-opts": echConfig ? {
+            "ech-opts": enableECH ? {
                 "enable": true,
-                "config": echConfig
+                "query-server-name": echServerName
             } : undefined
         };
     } else if (security === "reality" && publicKey && shortID) {

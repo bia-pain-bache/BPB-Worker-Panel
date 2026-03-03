@@ -1,23 +1,29 @@
-# 💡 Improvements
+# 💡 Bug fixes & Improvements
 
-## ⚙️ Cloudflare ECH
+- Due to nslookup issue for querying proxy IPs, the built-in proxy IPs list is now implemented and is accessible under `/proxy-ip` or by clicking provided shortcut in panel which lists Country, City and ISP. #1185
 
-ECH option is added to BPB Panel now for all cores. Please note that this is not so helpful in Iran regarding tests, successfully connects but gets banned after a while on some ISPs. This option can be more helpful in other countries.
+- Fixed ECH config query. Be aware that ECH config query is delegated to Core DNS module (Local DNS) now, so this DNS server should be locally available. Optional `ECH Server Name` is also added. #1190
+
+> [!CAUTION]
+> Please note that `ECH Server Name` option is available in Xray for a while, however sing-box supports this feature from 1.13.0 and Clash supports it from v1.19.20. If you leave it empty, it uses your worker domain to query ECH config which works on all cores' stable versions right now. Also if you enter a Cloudflare domain, it should have ECH enabled on it, otherwise it won't work. To check this, visit [here](https://dns.google/query?name=&rr_type=HTTPS&ecs=) and resolve your desired domain, you should see an `ech` value in `Answer` field.
+
+> [!CAUTION]
+> ECH is still unstable in IRAN.
 
 > [!TIP]
 > ECH applies only to `Normal` subscription, not `Fragment`.
 
-> [!TIP]
-> BPB queries ECH config within worker and does not delegate ECH config query to client core which is an advantage (core query may fail due to DNS query failure or blocked domains). So there's no extra settings, you can just enable ECH from panel and use it.
-
-## ⚙️ BPB DoH
-
-As most of famous public DoH servers are blocked by firewalls, we can use domain fronting to successfully use them. BPB DoH only supports RFC 8484 standard DoH servers which typically are in `https://domain/dns-query` format. For example Google has two types of DoH `https://dns.google/dns-query` which is `RFC 8484` and `https://dns.google/resolve` which is `JSON API`. BPB only supports the first type.
-To change underlying DoH you can set an environment variable named `DOH_URL` in worker settings and set your desired DoH.
+- Fixed `ECH Server Name` bug #1224
+- Fixed ECH query DNS if local DNS is set to `localhost`
+- Fixed some typos, PR #1191
+- Reverted back URL configs to panel as `Raw` subscription. None of panel settings apply to these configs as you know and also they consume more worker requests than `Normal` configs and won't perform as others. They're not recommended to use and connections issues will not be supported anymore, please use `Normal` configs instead.
 
 > [!CAUTION]
-> Avoid using BPB DoH for `remote DNS`, otherwise you will waste your worker requests. It's better be use in browsers or DoH based clients like Intra, Rethink...
+> You have to manually set DoH as remote DNS in your clients and disable MUX to use `Raw` configs.
 
+---
+
+## 💡 Other tips
 
 > [!NOTE]
 > These days Fragment on some ISPs stopped working in Iran, you can change `Fragment packet` to `1-1` instead of `tlshello` and test, also you can try to change `Fragment mode` to bypass IR-GFW.

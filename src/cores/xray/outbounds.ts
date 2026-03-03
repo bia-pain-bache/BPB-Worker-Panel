@@ -125,7 +125,7 @@ export function buildWebsocketOutbound(
             fingerprint,
             enableTFO,
             enableECH,
-            echConfig
+            echServerName
         },
         globalConfig: { userID, TrPass },
         dict: { _VL_ }
@@ -134,12 +134,13 @@ export function buildWebsocketOutbound(
     const isTLS = isHttps(port);
     const { host, sni, allowInsecure } = selectSniHost(address);
     const tlsSettings = isTLS ? buildTlsSettings(
-            sni,
-            fingerprint,
-            "http/1.1",
-            allowInsecure,
-            enableECH && !isFragment ? echConfig : undefined
-        ) : undefined;
+        sni,
+        fingerprint,
+        "http/1.1",
+        allowInsecure,
+        enableECH && !isFragment,
+        echServerName || undefined,
+    ) : undefined;
 
     const streamSettings: StreamSettings = {
         network: "ws",
@@ -259,7 +260,7 @@ export function buildChainOutbound(): Outbound | undefined {
         network: type || "raw",
         ...buildTransport(type, headerType, path, host, serviceName, mode, authority),
         security,
-        tlsSettings: security === 'tls' ? buildTlsSettings(sni || address, fp, alpn, false) : undefined,
+        tlsSettings: security === 'tls' ? buildTlsSettings(sni || address, fp, alpn, false, false, undefined) : undefined,
         realitySettings: security === "reality" ? buildRealitySettings(sni, fp, pbk, sid, spx) : undefined,
         sockopt: buildSockopt(false, false, "UseIPv4", "proxy")
     };
@@ -416,14 +417,22 @@ function buildTlsSettings(
     fingerprint: Fingerprint,
     alpn: string,
     allowInsecure: boolean,
-    echConfigList?: string
+    enableECH: boolean,
+    echServerName?: string
 ): TlsSettings {
+    const { localDNS } = globalThis.settings;
+    const echQueryDNS = localDNS === "localhost" ? "8.8.8.8" : localDNS
+    
     return {
         serverName,
         fingerprint: fingerprint,
         alpn: alpn?.split(','),
         allowInsecure,
-        echConfigList
+        echConfigList: enableECH 
+            ? echServerName 
+                ? `${echServerName}+udp://${echQueryDNS}`
+                : `udp://${echQueryDNS}` 
+            : undefined
     }
 }
 

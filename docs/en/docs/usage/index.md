@@ -36,6 +36,14 @@ First, update your client to the latest version or refer to the table below. The
 
     [:octicons-arrow-right-24: Getting started](fragment.md)
 
+- :material-playlist-check:{ .lg .middle } **Raw**
+
+    ---
+
+    Connect to Raw **VLESS** and **Trojan** configs which don't include panel settings.
+
+    [:octicons-arrow-right-24: Getting started](raw.md)
+
 - :material-playlist-check:{ .lg .middle } **Warp**
 
     ---

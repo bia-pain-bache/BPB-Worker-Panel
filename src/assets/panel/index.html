@@ -166,15 +166,6 @@
                         </div>
                     </div>
                     <div class="form-control">
-                        <label for="enableECH">🎭 ECH</label>
-                        <div>
-                            <select id="enableECH" name="enableECH">
-                                <option value="true">Enabled</option>
-                                <option value="false">Disabled</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-control">
                         <label for="bestVLTRInterval">🔄 Best Interval</label>
                         <div>
                             <input type="number" id="bestVLTRInterval" name="bestVLTRInterval" min="10" max="90">
@@ -187,6 +178,26 @@
                                 <option value="true">Enabled</option>
                                 <option value="false">Disabled</option>
                             </select>
+                        </div>
+                    </div>
+                    <div class="container">
+                        <div class="section">
+                            <h4><span class="material-symbols-rounded">tune</span> ECH</h4>
+                            <div class="form-control">
+                                <label for="enableECH">🎭 ECH</label>
+                                <div>
+                                    <select id="enableECH" name="enableECH">
+                                        <option value="true">Enabled</option>
+                                        <option value="false">Disabled</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-control">
+                                <label for="echServerName">🧢 ECH Server Name</label>
+                                <div>
+                                    <input type="text" id="echServerName" name="echServerName">
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="container">
@@ -204,9 +215,8 @@
                             <div class="form-control">
                                 <label for="proxyIPs">
                                     📍 Proxy IPs / Domains
-                                    <a class="scanner"
-                                        href="https://www.nslookup.io/domains/bpb.yousef.isegaro.com/dns-records/"
-                                        title="Proxy IPs" target="_blank" rel="noopener noreferrer">
+                                    <a class="scanner" href="/proxy-ip" title="Proxy IPs" target="_blank"
+                                        rel="noopener noreferrer">
                                         <span class="material-symbols-rounded">open_in_new</span>
                                     </a>
                                 </label>
@@ -798,6 +808,95 @@
                 </table>
             </div>
         </details>
+        <details class="details">
+            <summary>
+                <h3>
+                    Raw (without settings)
+                    <a href="https://bia-pain-bache.github.io/BPB-Worker-Panel/usage/raw/" target="_blank"
+                        title="Help">
+                        <span class="material-symbols-rounded">info</span>
+                    </a>
+                </h3>
+            </summary>
+            <div class="table-container">
+                <table id="normal-configs-table">
+                    <tr>
+                        <td>
+                            <div>
+                                <span class="material-symbols-rounded">verified</span>
+                                <span>v2rayNG</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-rounded">verified</span>
+                                <span>MahsaNG</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-rounded">verified</span>
+                                <span>v2rayN</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-rounded">verified</span>
+                                <span>v2rayN-PRO</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-rounded">verified</span>
+                                <span>Shadowrocket</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-rounded">verified</span>
+                                <span>Streisand</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-rounded">verified</span>
+                                <span>PassWall</span>
+                            </div>
+                        </td>
+                        <td>
+                            <button title="Display QR code"
+                                onclick="openQR('raw', 'xray', 'Raw', 'Raw Subscription')">
+                                <span class="material-symbols-rounded">qr_code</span>
+                            </button>
+                            <button title="Copy subscription URL" onclick="subURL('raw', 'xray', 'Raw')">
+                                <span class="material-symbols-rounded">content_copy</span>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div>
+                                <span class="material-symbols-rounded">verified</span>
+                                <span>husi</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-rounded">verified</span>
+                                <span>Nekobox</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-rounded">verified</span>
+                                <span>Nekoray</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-rounded">verified</span>
+                                <span>Hiddify</span>
+                            </div>
+                            <div>
+                                <span class="material-symbols-rounded">verified</span>
+                                <span>Karing</span>
+                            </div>
+                        </td>
+                        <td>
+                            <button title="Display QR code"
+                                onclick="openQR('raw', 'sing-box', 'Raw', 'Raw Subscription')">
+                                <span class="material-symbols-rounded">qr_code</span>
+                            </button>
+                            <button title="Copy subscription URL" onclick="subURL('raw', 'sing-box', 'Raw')">
+                                <span class="material-symbols-rounded">content_copy</span>
+                            </button>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </details>
         <details>
             <summary>
                 <h3>Warp
@@ -1042,7 +1141,8 @@
             <div class="output-container">
                 <span id="doh" class="output"></span>
             </div>
-            <span class="material-symbols-rounded" onclick="copyToClipboard(document.getElementById('doh').textContent)">
+            <span class="material-symbols-rounded"
+                onclick="copyToClipboard(document.getElementById('doh').textContent)">
                 content_copy
             </span>
         </div>

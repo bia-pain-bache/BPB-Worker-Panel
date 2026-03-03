@@ -59,7 +59,7 @@ export function buildWebsocketOutbound(
     const {
         dict: { _VL_ },
         globalConfig: { userID, TrPass },
-        settings: { fingerprint, enableTFO, enableECH, echConfig }
+        settings: { fingerprint, enableTFO, enableECH, echServerName }
     } = globalThis;
 
     const { host, sni, allowInsecure } = selectSniHost(address);
@@ -70,7 +70,8 @@ export function buildWebsocketOutbound(
             isFragment,
             allowInsecure,
             sni,
-            enableECH && !isFragment ? echConfig : undefined,
+            enableECH && !isFragment,
+            echServerName || undefined,
             "http/1.1",
             fingerprint
         ) : undefined;
@@ -146,7 +147,7 @@ export function buildChainOutbound(): ChainOutbound | undefined {
     const ed = searchParams.get("ed");
     const earlyData = ed ? +ed : undefined;
 
-    const tls = buildTLS(security, false, false, sni || server, undefined, alpn, fp, pbk, sid);
+    const tls = buildTLS(security, false, false, sni || server, false, undefined, alpn, fp, pbk, sid);
     const transport = buildTransport(type, headerType, path, host, serviceName, earlyData);
 
     switch (protocol) {
@@ -218,7 +219,8 @@ function buildTLS(
     isFragment: boolean,
     allowInsecure: boolean,
     sni: string,
-    echConfig?: string,
+    enableECH: boolean,
+    echServerName?: string,
     alpn?: string,
     fingerprint?: Fingerprint,
     publicKey?: string,
@@ -237,9 +239,9 @@ function buildTLS(
             enabled: !!fingerprint,
             fingerprint: fingerprint
         },
-        ech: echConfig ? {
+        ech: enableECH ? {
             enabled: true,
-            config: echBase64ToPEM(echConfig)
+            query_server_name: echServerName
         } : undefined
     };
 
@@ -254,21 +256,20 @@ function buildTLS(
     };
 }
 
-function echBase64ToPEM(config: string) {
-    const clean = config.replace(/\s+/g, "");
-    const lines: string[] = [];
+// function echBase64ToPEM(config: string) {
+//     const clean = config.replace(/\s+/g, "");
+//     const lines: string[] = [];
 
-    for (let i = 0; i < clean.length; i += 64) {
-        lines.push(clean.slice(i, i + 64));
-    }
+//     for (let i = 0; i < clean.length; i += 64) {
+//         lines.push(clean.slice(i, i + 64));
+//     }
 
-    return [
-        "-----BEGIN ECH CONFIGS-----",
-        ...lines,
-        "-----END ECH CONFIGS-----",
-    ].join("\n");
-}
-
+//     return [
+//         "-----BEGIN ECH CONFIGS-----",
+//         ...lines,
+//         "-----END ECH CONFIGS-----",
+//     ].join("\n");
+// }
 
 function buildTransport(
     type: TransportType,

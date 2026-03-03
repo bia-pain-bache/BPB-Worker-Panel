@@ -12,14 +12,14 @@
 
 فایل زیپ Worker رو از [اینجا](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/worker.zip) دانلود کنید.
 
-توی اکانت Cloudflare به بخش  `Developer Platform` برید، روی `Create application` کلیک کنید، تب `Pages` رو انتخاب کنید و بعد `Use direct upload` > `Get started` رو بزنید.
+توی اکانت  Cloudflare از نوارابزار سمت چپ به بخش  `Compute & AI` برید و `Workers & Pages` رو انتخاب کنید `Create application` رو بزنید. اون پایین نوشته `Looking to deploy Pages?`. اینجا `Get started` رو بزنید و از صفحه‌ای که باز میشه `Drag and drop your files` رو استارت کنید.
 
 یه `Project Name` وارد کنید که دامنه پنل شما رو تشکیل می‌ده.
 
 !!! danger "خطر"
     اسمی انتخاب کنید که کلمه `bpb` توش نباشه، چون ممکنه Cloudflare اکانتتون رو شناسایی کنه و خطای `1101` بده.
 
-روی `Create Project` کلیک کنید و بعد فایل زیپ دانلودشده رو با کلیک روی `Select from computer` و انتخاب `Upload zip` آپلود کنید.
+روی `Create Project` کلیک کنید و بعد در قسمت آپلود `file` رو انتخاب کنید و فایل زیپی که دانلود کردید رو آپلود کنید.
 
 حالا روی `Deploy site` و بعد `Continue to project` کلیک کنید.
 
@@ -34,19 +34,19 @@
 
 ### ۳. ساخت KV
 
-از منوی سمت چپ، به بخش `Storage and Databases` > `KV` برید:
+مطابق تصویر از نوارابزار به صفحه `Workers KV` برید:
 
-![Pages Application](../images/nav-dash-kv.jpg)
+![KV dashboard](../images/nav-dash-kv.jpg)
 
-روی `Create` کلیک کنید، یه اسم دلخواه بذارید و `Add` رو بزنید.
+روی `Create Instance` کلیک کنید، یه اسم بذارید (مثلاً Test) و `Create` رو بزنید.
 
 برگردید به بخش `Workers & Pages` و پروژه Pages که ساختید رو باز کنید. به بخش `Settings` برید، همون‌طور که توی تصویر زیر نشون داده شده:
 
 ![Pages Application](../images/settings-functions.jpg)
 
-توی بخش `Bindings`، روی `Add` کلیک کنید و `KV Namespace` رو انتخاب کنید. `Variable name` رو حتماً `kv` (دقیقاً به همین شکل) بذارید و برای `KV namespace` اون KV که قبلاً ساختید رو انتخاب کنید. روی `Save` کلیک کنید.
+توی بخش `Bindings`، روی `Add` کلیک کنید و `KV namespace` رو انتخاب کنید. `Variable name` رو حتماً `kv` (دقیقاً به همین شکل) بذارید و برای `KV namespace` اون KV که قبلاً ساختید رو انتخاب کنید. روی `Save` کلیک کنید.
 
-![Pages Application](../images/bind-kv.jpg)
+![Pages Application](../images/pages-bind-kv.jpg)
 
 تنظیمات KV تموم شد.
 
@@ -73,11 +73,8 @@
 
 ![Pages Application](../images/pages-env-vars.jpg)
 
-روی `Add` کلیک کنید و توی خونه اول `PROXY_IP` (با حروف بزرگ) رو وارد کنید. IPها رو می‌تونید از لینک زیر بگیرید که IPهای مناطق و ISPهای مختلف رو نشون می‌ده:
-
-```text
-https://www.nslookup.io/domains/bpb.yousef.isegaro.com/dns-records/
-```
+روی `Add` کلیک کنید و توی خونه اول `PROXY_IP` (با حروف بزرگ) رو وارد کنید.
+می‌تونید  Proxy IP های موجود رو با کلیک روی آیکون کنار فیلد `Proxy IPs / Domains` در پنل یا مراجعه به `/proxy-ip` در مرورگر ببینید، که IP ها رو بر اساس منطقه و ISP فهرست می‌کنه.
 
 ![Pages Application](../images/proxy-ips.jpg)
 
@@ -116,10 +113,10 @@ IPها رو توی قسمت `Value` وارد کنید و `Save` کنید. از �
 
 ### افزودن دامنه اختصاصی
 
-توی داشبورد Cloudflare، به `Compute (Workers)` > `Workers & Pages` برید و پنلتون رو انتخاب کنید. توی تب `Custom domains`، روی `Set up a custom domain` کلیک کنید. یه دامنه وارد کنید (باید قبلاً دامنه رو خریده باشید و توی همین اکانت فعال کرده باشید). مثلاً اگه دامنه `bpb.com` دارید، می‌تونید خود دامنه یا یه زیردامنه مثل `xyz.bpb.com` رو وارد کنید. روی `Continue` و بعد `Activate domain` کلیک کنید.
+توی داشبورد Cloudflare، از نوارابزار سمت چپ به `Compute & AI` > `Workers & Pages` برید و پنلتون رو انتخاب کنید. توی تب `Custom domains`، روی `Set up a custom domain` کلیک کنید. یه دامنه وارد کنید (باید قبلاً دامنه رو خریده باشید و توی همین اکانت فعال کرده باشید). مثلاً اگه دامنه `bpb.com` دارید، می‌تونید خود دامنه یا یه زیردامنه مثل `xyz.bpb.com` رو وارد کنید. روی `Continue` و بعد `Activate domain` کلیک کنید.
 
 توی رکوردهای DNS دامنه‌تون، یه CNAME DNS Record برای `xyz.bpb.com` اضافه کنید که به دامنه Pages اشاره کنه. Cloudflare بعد از یه مدت کوتاه Pages رو به دامنه‌تون متصل می‌کنه. بعدش می‌تونید از آدرس `https://xyz.bpb.com/panel` وارد پنلتون بشید و اشتراک‌های جدید بگیرید.
 
 ## به‌روزرسانی پنل
 
-برای به‌روزرسانی پنل، فایل زیپ جدید رو از [اینجا](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/worker.zip) دانلود کنید. توی اکانت Cloudflare، به `Compute (Workers)` > `Workers & Pages` برید، پروژه Pages رو انتخاب کنید، روی `Create deployment` کلیک کنید و فایل زیپ جدید رو آپلود کنید.
+برای به‌روزرسانی پنل، فایل زیپ جدید رو از [اینجا](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/worker.zip) دانلود کنید. توی اکانت Cloudflare، از نوارابزار سمت چپ به `Compute & AI` > `Workers & Pages` برید، پروژه Pages رو انتخاب کنید، روی `Create deployment` کلیک کنید و فایل زیپ جدید رو آپلود کنید.

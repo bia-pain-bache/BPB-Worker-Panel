@@ -122,7 +122,7 @@ export type TLS = {
     "reality-opts"?: RealityOpts;
     "ech-opts"?: {
         "enable": boolean;
-        "config": string;
+        "query-server-name"?: string;
     };
 }
 

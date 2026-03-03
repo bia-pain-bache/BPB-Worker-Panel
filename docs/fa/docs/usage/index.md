@@ -36,6 +36,14 @@
 
     [:octicons-arrow-right-24: شروع](fragment.md)
 
+- :material-playlist-check:{ .lg .middle } **اشتراک Raw یا خام**
+
+    ---
+
+    کانفیگ‌های خام **VLESS** و **Trojan** بدون اعمال تنظیمات پنل.
+
+    [:octicons-arrow-right-24: شروع](raw.md)
+
 - :material-playlist-check:{ .lg .middle } **اشتراک Warp**
 
     ---

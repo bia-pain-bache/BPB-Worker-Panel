@@ -12,23 +12,23 @@
 
 اول، کد Worker رو از [اینجا](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/worker.js) دانلود کنید.
 
-توی اکانت  Cloudflare به بخش  `Developer Platform` برید، روی `Create application` کلیک کنید، تب`Workers` رو انتخاب کنید `Start with Hello World!` رو پیدا کنید و `Get started` رو بزنید.
+توی اکانت  Cloudflare از نوارابزار سمت چپ به بخش  `Compute & AI` برید و `Workers & Pages` رو انتخاب کنید `Create application` رو بزنید و `Start with Hello World!` رو بزنید.
 
 یه اسم دلخواه وارد کنید که دامنه پنل شما رو تشکیل می‌ده و `Deploy` کنید.
 
 !!! danger "خطر"
     اسمی انتخاب کنید که کلمه `bpb` توش نباشه، چون ممکنه Cloudflare اکانتتون رو شناسایی کنه و خطای `1101` بده.
 
-بعد روی `Edit code` کلیک کنید. توی نوار کناری سمت چپ، فایل `worker.js` رو حذف کنید و فایل جدیدی که دانلود کردید رو آپلود کنید. اگه ارور داد، فایل `package-lock.json` رو هم حذف کنید. چون کد بزرگ شده، کپی و پیست کردن توی موبایل سختِ — به تصویر زیر نگاه کنید و درست آپلود کنید. توی موبایل، منوی کناری رو باز کنید، روی Explorer کلیک طولانی کنید و `Upload...` رو بزنید.
+بعد روی `Edit code` کلیک کنید. توی نوار کناری سمت چپ، فایل `worker.js` رو حذف کنید و فایل جدیدی که دانلود کردید رو آپلود کنید. چون کد بزرگ شده، کپی و پیست کردن توی موبایل سخته، به تصویر زیر نگاه کنید و درست آپلود کنید. توی موبایل، منوی کناری رو باز کنید، روی Explorer کلیک طولانی کنید و `Upload...` رو بزنید.
 
 ![Mobile upload](../images/worker-mobile-upload.jpg)
 
-در نهایت، Worker رو `Deploy` کنید.
+در نهایت، Worker رو `Deploy` کنید و صبر کنید تا پیغام سبز `Version saved` رو ببینید.
 
 !!! tip "نکته"
-    توجه کنید که فرآیند به‌روزرسانی پنل دقیقاً همینه — فایل‌های قدیمی رو حذف می‌کنید، فایل‌های جدید رو آپلود می‌کنید و Deploy می‌کنید. تنظیمات دست‌نخورده می‌مونن، فقط پنل به‌روزرسانی می‌شه.
+    توجه کنید که فرآیند به‌روزرسانی پنل دقیقاً همینه، فایل‌ قدیمی رو حذف می‌کنید، فایل‌ جدید رو آپلود می‌کنید و Deploy می‌کنید. تنظیمات دست‌‌‌‌نخورده می‌مونن، فقط پنل بروزرسانی می‌شه.
 
-اول، بالای داشبورد روی `Visit` کلیک کنید. یه ارور می‌بینید که می‌گه باید اول UUID و Trojan Password رو تنظیم کنید. یه لینک (Secrets generator) داره — اونو توی مرورگر باز کنید و برای مرحله بعد نگه دارید.
+اول، بالای داشبورد روی `Visit` کلیک کنید. یه ارور می‌بینید که می‌گه باید اول UUID و Trojan Password رو تنظیم کنید. یه لینک (Secrets generator) داره، اونو توی مرورگر باز کنید و برای مرحله بعد نگه دارید.
 
 ![Generate secrets](../images/generate-secrets.jpg)
 
@@ -38,15 +38,15 @@
 
 ![Workers dashboard](../images/nav-worker-dash.jpg)
 
-از اینجا، به صفحه `KV` برید:
+مطابق تصویر از نوارابزار به صفحه `Workers KV` برید:
 
 ![KV dashboard](../images/nav-dash-kv.jpg)
 
-توی بخش KV، روی `Create` کلیک کنید، یه اسم بذارید (مثلاً Test) و `Add` رو بزنید.
+روی `Create Instance` کلیک کنید، یه اسم بذارید (مثلاً Test) و `Create` رو بزنید.
 
-دوباره به بخش `Developer Platform`  برید، Worker  که ساختید رو باز کنید، به  `Bindings`برید و `Add Bindings`  رو پیدا بزنید و `KV Namespace` رو انتخاب کنید. از منوی کشویی، KV که تازه ساختید (مثلاً Test) رو انتخاب کنید. مهم اینه که خونه اول باید حتماً `kv` باشه. بعد `Deploy` کنید.
+دوباره از نوارابزار به بخش `Workers & Pages`  برید، Worker  که ساختید رو باز کنید، به  `Bindings`برید و `Add binding`  رو بزنید و `KV namespace` رو انتخاب کنید و `Add Binding` رو بزنید. از منوی کشویی، KV که تازه ساختید (مثلاً Test) رو انتخاب کنید. مهم اینه که خونه اول یا `Variable name` باید حتماً `kv` باشه. بعد دوباره ` Add Binding` رو بزنید.
 
-![Bind KV](../images/bind-kv.jpg)
+![Bind KV](../images/workers-bind-kv.jpg)
 
 ### ۴. تنظیم UUID ، پسورد Trojanو مسیر امن لینک‌های اشتراک
 
@@ -72,12 +72,7 @@
 ![Workers env variable](../images/workers-variables.jpg)
 
 روی `Add` کلیک کنید، `PROXY_IP` (با حروف بزرگ) رو به‌عنوان `Variable name` بنویسید.
-
-IPها رو می‌تونید از لینک زیر بگیرید — چندتا IP با منطقه و ISPشون نشون می‌ده. یک یا چندتا انتخاب کنید:
-
-```text
-https://www.nslookup.io/domains/bpb.yousef.isegaro.com/dns-records/
-```
+می‌تونید  Proxy IP های موجود رو با کلیک روی آیکون کنار فیلد `Proxy IPs / Domains` در پنل یا مراجعه به `/proxy-ip` در مرورگر ببینید، که IP ها رو بر اساس منطقه و ISP فهرست می‌کنه.
 
 ![Proxy IPs](../images/proxy-ips.jpg)
 
@@ -116,7 +111,7 @@ IPها رو توی قسمت `Value` وارد کنید و `Deploy` کنید.
 
 ### افزودن دامنه اختصاصی
 
-توی داشبورد Cloudflare، از `Compute (Workers)` > `Workers & Pages` Worker خودتون رو باز کنید. به `Settings` برید و بالای صفحه، `Domains & Routes` رو می‌بینید. روی `Add +` کلیک کنید، بعد `Custom domain` رو انتخاب کنید.
+توی داشبورد Cloudflare، از `Compute & AI` > `Workers & Pages` ورکر خودتون رو باز کنید. به `Settings` برید و بالای صفحه، `Domains & Routes` رو می‌بینید. روی `Add +` کلیک کنید، بعد `Custom domain` رو انتخاب کنید.
 
 یه دامنه وارد کنید (باید دامنه رو داشته باشید و توی همین اکانت فعال کرده باشید).  
 فرض کنید دامنه‌تون `bpb.com` هست. می‌تونید دامنه اصلی یا یه زیردامنه مثل `xyz.bpb.com` رو وارد کنید، بعد روی `Add domain` کلیک کنید.
@@ -137,4 +132,4 @@ Cloudflare Worker رو به دامنه‌تون متصل می‌کنه (ممکن
 
 ## به‌روزرسانی پنل
 
-برای به‌روزرسانی پنل، فایل worker.js جدید رو از [اینجا](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/worker.js) دانلود کنید. توی اکانت Cloudflare، به `Compute (Workers)` > `Workers & Pages` برید، پروژه Worker رو انتخاب کنید، ویرایش کنید، فایل قدیمی رو حذف کنید، فایل جدید رو آپلود کنید و Deploy کنید.
+برای به‌روزرسانی پنل، فایل worker.js جدید رو از [اینجا](https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest/download/worker.js) دانلود کنید. توی اکانت Cloudflare، از نوارابزار به `Compute & AI` > `Workers & Pages` برید، پروژه Worker رو انتخاب کنید، ویرایش کنید، فایل قدیمی رو حذف کنید، فایل جدید رو آپلود کنید و Deploy کنید.
