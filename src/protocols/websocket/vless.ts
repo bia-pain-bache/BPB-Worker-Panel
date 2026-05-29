@@ -18,7 +18,10 @@ export async function VlOverWSHandler(request: Request): Promise<Response> {
         console.log(`[${address}:${portWithRandomLog}] ${info}`, event || "");
     };
 
-    const earlyDataHeader = request.headers.get("sec-websocket-protocol") || "";
+    const earlyDataHeader =
+    request.headers.get("sec-websocket-protocol") ||
+    request.headers.get("x-http-early-data") ||
+    "";
     const readableWebSocketStream = makeReadableWebSocketStream(webSocket, earlyDataHeader, log);
 
     let remoteSocketWapper: { value: Socket | null } = { value: null };
@@ -96,11 +99,16 @@ export async function VlOverWSHandler(request: Request): Promise<Response> {
             safeCloseTcpSocket(remoteSocketWapper.value);
         });
 
-    return new Response(null, {
-        status: 101,
-        webSocket: client,
-    });
+    if (
+    request.headers.get("upgrade")?.toLowerCase() !== "websocket"
+) {
+    return new Response("xhttp ok", { status: 200 });
 }
+
+return new Response(null, {
+    status: 101,
+    webSocket: client,
+});
 
 function parseVlHeader(VLBuffer: ArrayBuffer, userID: string) {
     if (VLBuffer.byteLength < 24) {
