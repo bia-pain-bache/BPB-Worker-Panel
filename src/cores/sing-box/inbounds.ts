@@ -1,4 +1,4 @@
-import { MixedInbound, TunInbound } from "types/sing-box";
+import { MixedInbound, TunInbound } from "#types/sing-box";
 
 export const tun: TunInbound = {
     type: "tun",

@@ -1,4 +1,4 @@
-import { getDataset } from "kv";
+import { getDataset } from "@kv";
 import { isValidUUID } from "@common";
 
 globalThis.dict = {
@@ -86,7 +86,6 @@ globalThis.settings = {
             type: "rand",
             packet: "50-100",
             delay: "1-1",
-            applyTo: "ip",
             count: 5
         }
     ],

@@ -28,7 +28,7 @@ import {
     TransportType,
     DomainStrategy,
     Transport
-} from 'types/xray';
+} from '#types/xray';
 
 function buildOutbound<T>(
     protocol: string,
@@ -91,15 +91,9 @@ export function buildFreedomOutbound(
     }
 
     if (isUdpNoises) {
-        const freedomNoises: Noise[] = [];
-        xrayUdpNoises.forEach((noise: XrUdpNoise) => {
-            const { count, ...rest } = noise;
-            freedomNoises.push(...Array.from({ length: count }, () => rest));
-        });
-
         freedomSettings = {
             ...freedomSettings,
-            noises: freedomNoises,
+            noises: buildUDPNoises(xrayUdpNoises),
             domainStrategy: isFragment
                 ? undefined
                 : enableIPv6 ? "UseIPv4v6" : "UseIPv4"
@@ -115,17 +109,27 @@ export function buildFreedomOutbound(
 }
 
 export function buildWebsocketOutbound(
+    tag: string,
     protocol: string,
     address: string,
     port: number,
-    isFragment: boolean
+    isFragment: boolean,
+    fragLength?: string,
+    fragInterval?: string
 ): Outbound {
     const {
         settings: {
             fingerprint,
             enableTFO,
             enableECH,
-            echServerName
+            echServerName,
+            fragmentPackets,
+            fragmentLengthMin,
+            fragmentLengthMax,
+            fragmentIntervalMin,
+            fragmentIntervalMax,
+            fragmentMaxSplitMin,
+            fragmentMaxSplitMax
         },
         globalConfig: { userID, TrPass },
         dict: { _VL_ }
@@ -147,12 +151,23 @@ export function buildWebsocketOutbound(
         ...buildTransport("ws", "none", `${generateWsPath(protocol)}?ed=2560`, host),
         security: isTLS ? "tls" : "none",
         tlsSettings,
-        sockopt: isFragment
-            ? buildSockopt(false, false, undefined, "fragment")
-            : buildSockopt(true, enableTFO, "UseIP"),
+        sockopt: buildSockopt(true, enableTFO, "UseIP"),
+        finalmask: isFragment ? {
+            tcp: [
+                {
+                    type: "fragment",
+                    settings: {
+                        packets: fragmentPackets,
+                        length: fragLength ?? toRange(fragmentLengthMin, fragmentLengthMax) as string,
+                        delay: fragInterval ?? toRange(fragmentIntervalMin, fragmentIntervalMax) as string,
+                        maxSplit: toRange(fragmentMaxSplitMin, fragmentMaxSplitMax)
+                    }
+                }
+            ]
+        } : undefined
     };
 
-    if (protocol === _VL_) return buildOutbound<VlessSettings>(protocol, "proxy", false, {
+    if (protocol === _VL_) return buildOutbound<VlessSettings>(protocol, tag, false, {
         vnext: [{
             address,
             port,
@@ -165,7 +180,7 @@ export function buildWebsocketOutbound(
         }]
     }, streamSettings);
 
-    return buildOutbound<TrojanSettings>(protocol, "proxy", false, {
+    return buildOutbound<TrojanSettings>(protocol, tag, false, {
         servers: [{
             address,
             port,
@@ -178,15 +193,16 @@ export function buildWarpOutbound(
     warpAccount: WarpAccount,
     endpoint: string,
     isWoW: boolean,
-    isPro: boolean
+    isPro: boolean,
+    isKnocker: boolean
 ): Outbound {
+    const { xrayUdpNoises } = globalThis.settings;
     const {
         warpIPv6,
         reserved,
         publicKey,
         privateKey
     } = warpAccount;
-    const { client } = globalThis.httpConfig;
 
     let wgSettings: WireguardSettings = {
         address: [
@@ -205,38 +221,48 @@ export function buildWarpOutbound(
         secretKey: privateKey
     };
 
-    const chain = isWoW
-        ? "proxy"
-        : isPro && client === 'xray' ? "udp-noise" : "";
+    const streamSettings: StreamSettings = {};
+    if (isWoW) {
+        streamSettings.sockopt = buildSockopt(false, false, undefined, "proxy");
+    } else if (isPro) {
+        if (isKnocker) {
+            const {
+                knockerNoiseMode,
+                noiseCountMin,
+                noiseCountMax,
+                noiseSizeMin,
+                noiseSizeMax,
+                noiseDelayMin,
+                noiseDelayMax
+            } = globalThis.settings;
 
-    const streamSettings = chain ? {
-        sockopt: buildSockopt(false, false, undefined, chain)
-    } : undefined;
+            wgSettings = {
+                ...wgSettings,
+                wnoise: knockerNoiseMode,
+                wnoisecount: toRange(noiseCountMin, noiseCountMax),
+                wpayloadsize: toRange(noiseSizeMin, noiseSizeMax),
+                wnoisedelay: toRange(noiseDelayMin, noiseDelayMax)
+            };
 
-    if (client === 'xray-knocker' && !isWoW) {
-        const {
-            knockerNoiseMode,
-            noiseCountMin,
-            noiseCountMax,
-            noiseSizeMin,
-            noiseSizeMax,
-            noiseDelayMin,
-            noiseDelayMax
-        } = globalThis.settings;
-
-        wgSettings = {
-            ...wgSettings,
-            wnoise: knockerNoiseMode,
-            wnoisecount: toRange(noiseCountMin, noiseCountMax),
-            wpayloadsize: toRange(noiseSizeMin, noiseSizeMax),
-            wnoisedelay: toRange(noiseDelayMin, noiseDelayMax)
-        };
+        } else {
+            streamSettings.finalmask = {
+                udp: [
+                    {
+                        type: "noise",
+                        settings: {
+                            reset: "30-60",
+                            noise: buildUDPNoises(xrayUdpNoises)
+                        }
+                    }
+                ]
+            }
+        }
     }
 
     return {
         protocol: "wireguard",
         settings: wgSettings,
-        streamSettings,
+        streamSettings: streamSettings.omitEmpty(),
         tag: isWoW ? "chain" : "proxy"
     } satisfies Outbound;
 }
@@ -422,16 +448,16 @@ function buildTlsSettings(
 ): TlsSettings {
     const { localDNS } = globalThis.settings;
     const echQueryDNS = localDNS === "localhost" ? "8.8.8.8" : localDNS
-    
+
     return {
         serverName,
         fingerprint: fingerprint,
         alpn: alpn?.split(','),
         allowInsecure,
-        echConfigList: enableECH 
-            ? echServerName 
+        echConfigList: enableECH
+            ? echServerName
                 ? `${echServerName}+udp://${echQueryDNS}`
-                : `udp://${echQueryDNS}` 
+                : `udp://${echQueryDNS}`
             : undefined
     }
 }
@@ -452,4 +478,24 @@ function buildRealitySettings(
         show: false,
         allowInsecure: false
     }
+}
+
+function buildUDPNoises(panelNoises: XrUdpNoise[]): Noise[] {
+    return panelNoises.flatMap(({ type, packet, delay, count }) => {
+        const noise: Noise = type === "rand"
+            ? {
+                rand: packet,
+                randRange: "0-255",
+                delay
+            }
+            : {
+                type,
+                packet: type === "array"
+                    ? packet.split(",").map(Number)
+                    : packet,
+                delay
+            };
+
+        return Array.from({ length: count }, () => noise);
+    });
 }

@@ -1,4 +1,4 @@
-import { RuleProvider } from 'types/clash';
+import { RuleProvider } from '#types/clash';
 import { getGeoAssets } from './geo-assets';
 import { isIPv6, isIPv4, accRoutingRules } from '@utils';
 

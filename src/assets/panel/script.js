@@ -935,6 +935,18 @@ function validateXrayNoises(fields) {
 
                 break;
             }
+            case 'array': {
+                const valid = packets[index]
+                    .split(',')
+                    .every(n => /^\d+$/.test(n) && +n >= 0 && +n <= 255);
+
+                if (!valid) {
+                    alert('⛔ The values should be comma separated numbers between 0-255');
+                    submisionError = true;
+                }
+
+                break;
+            }
         }
     });
 
@@ -943,7 +955,7 @@ function validateXrayNoises(fields) {
 
 function validateEchConfig() {
     const echServerName = getElmValue("echServerName");
-    
+
     if (echServerName && !isDomain(echServerName)) {
         alert('⛔ The ECH Server Name should be a domain!');
         return false;
@@ -961,8 +973,7 @@ function validateSettings() {
         'udpXrayNoisePacket',
         'udpXrayNoiseDelayMin',
         'udpXrayNoiseDelayMax',
-        'udpXrayNoiseCount',
-        'applyTo'
+        'udpXrayNoiseCount'
     ].map(field => formData.getAll(field));
 
     const validations = [
@@ -988,13 +999,12 @@ function validateSettings() {
     }
 
     const form = Object.fromEntries(formData.entries());
-    const [modes, packets, delaysMin, delaysMax, counts, applyTo] = fields;
+    const [modes, packets, delaysMin, delaysMax, counts] = fields;
 
     form.xrayUdpNoises = modes.map((mode, index) => ({
         type: mode,
         packet: packets[index],
         delay: `${delaysMin[index]}-${delaysMax[index]}`,
-        applyTo: applyTo[index],
         count: counts[index]
     }));
 
@@ -1161,6 +1171,7 @@ function addUdpNoise(isManual, noiseIndex, udpNoise) {
                         <option value="rand" ${noise.type === 'rand' ? 'selected' : ''}>Random</option>
                         <option value="str" ${noise.type === 'str' ? 'selected' : ''}>String</option>
                         <option value="hex" ${noise.type === 'hex' ? 'selected' : ''}>Hex</option>
+                        <option value="array" ${noise.type === 'array' ? 'selected' : ''}>Array</option>
                     </select>
                 </div>
             </div>
@@ -1184,16 +1195,6 @@ function addUdpNoise(isManual, noiseIndex, udpNoise) {
                     <span> - </span>
                     <input type="number" name="udpXrayNoiseDelayMax"
                         value="${noise.delay.split('-')[1]}" min="1" required>
-                </div>
-            </div>
-            <div class="form-control">
-                <label>⚙️ Applies to</label>
-                <div>
-                    <select name="applyTo">
-                        <option value="ip" ${!noise.applyTo || noise.applyTo === 'ip' ? 'selected' : ''}>IP</option>
-                        <option value="ipv4" ${noise.applyTo === 'ipv4' ? 'selected' : ''}>IPv4</option>
-                        <option value="ipv6" ${noise.applyTo === 'ipv6' ? 'selected' : ''}>IPv6</option>
-                    </select>
                 </div>
             </div>
         </div>`;

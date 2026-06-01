@@ -18,7 +18,7 @@ import {
     Fingerprint,
     URLTest,
     ChainOutbound
-} from 'types/clash';
+} from '#types/clash';
 
 function buildOutbound<T>(
     name: string,

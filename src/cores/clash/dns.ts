@@ -1,5 +1,5 @@
 import { getGeoAssets } from './geo-assets';
-import { DNS, DnsHosts, FakeDNS } from 'types/clash';
+import { DNS, DnsHosts, FakeDNS } from '#types/clash';
 import { isDomain, getDomain, accDnsRules } from '@utils';
 
 export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean): Promise<DNS> {

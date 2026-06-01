@@ -1,4 +1,4 @@
-import { Sniffer, Tun } from "types/clash";
+import { Sniffer, Tun } from "#types/clash";
 
 export const tun: Tun = {
     "enable": true,

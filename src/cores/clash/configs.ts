@@ -1,8 +1,8 @@
-import { getDataset } from 'kv';
+import { getDataset } from '@kv';
 import { buildDNS } from './dns';
 import { buildRoutingRules, buildRuleProviders } from './routing';
 import { buildChainOutbound, buildUrlTest, buildWarpOutbound, buildWebsocketOutbound } from './outbounds';
-import type { WireguardOutbound, Config, Outbound } from 'types/clash';
+import type { WireguardOutbound, Config, Outbound } from '#types/clash';
 import { getConfigAddresses, generateRemark, getProtocols } from '@utils';
 import { sniffer, tun } from './inbounds';
 

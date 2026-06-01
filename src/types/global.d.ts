@@ -57,10 +57,9 @@ declare global {
     }
 
     interface XrUdpNoise {
-        type: "rand" | "str" | "base64" | "hex";
+        type: "rand" | "str" | "base64" | "hex" | "array";
         packet: string;
         delay: string;
-        applyTo: "ip" | "ipv4" | "ipv6";
         count: number;
     }
 

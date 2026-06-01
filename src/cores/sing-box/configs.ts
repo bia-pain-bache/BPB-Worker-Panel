@@ -1,8 +1,8 @@
-import { getDataset } from 'kv';
+import { getDataset } from '@kv';
 import { buildDNS } from './dns';
 import { buildRoutingRules } from './routing';
 import { buildChainOutbound, buildUrlTest, buildWarpOutbound, buildWebsocketOutbound } from './outbounds.js';
-import { Outbound, WireguardEndpoint, Config } from 'types/sing-box';
+import { Outbound, WireguardEndpoint, Config } from '#types/sing-box';
 import { getConfigAddresses, generateRemark, isHttps, getProtocols } from '@utils';
 import { buildMixedInbound, tun } from './inbounds';
 
@@ -42,7 +42,7 @@ async function buildConfig(
             }
         ],
         endpoints: endpoints.omitEmpty(),
-        route: buildRoutingRules(isWarp, isChain),
+        route: buildRoutingRules(isWarp),
         ntp: {
             enabled: true,
             server: "time.cloudflare.com",

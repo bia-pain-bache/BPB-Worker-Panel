@@ -176,6 +176,24 @@ export interface HappyEyeballs {
     maxConcurrentTry: number;
 }
 
+type TCPMask = {
+    type: "fragment";
+    settings: {
+        packets: "tlshello" | "1-1" | "1-2" | "1-3" | "1-5";
+        length: string;
+        delay: string;
+        maxSplit?: string;
+    };
+};
+
+type UDPMask = {
+    type: string;
+    settings: {
+        reset: string;
+        noise: Noise[];
+    };
+};
+
 export interface Sockopt {
     dialerProxy?: string;
     domainStrategy?: DomainStrategy;
@@ -192,7 +210,11 @@ export interface StreamSettings {
     wsSettings?: WsSettings;
     httpupgradeSettings?: HttpupgradeSettings;
     grpcSettings?: GrpcSettings;
-    sockopt: Sockopt;
+    sockopt?: Sockopt;
+    finalmask?: {
+        tcp?: TCPMask[];
+        udp?: UDPMask[];
+    }
 }
 
 interface BlockholeSettings {
@@ -213,8 +235,10 @@ interface Fragment {
 }
 
 export interface Noise {
-    type: 'rand' | 'base64' | 'hex' | 'str';
-    packet: string;
+    rand?: string;
+    randRange?: string;
+    type?: "array" | "str" | "base64" | "hex";
+    packet?: string | number[];
     delay: string;
 }
 

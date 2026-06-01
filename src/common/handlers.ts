@@ -1,5 +1,5 @@
-import { Authenticate, generateJWTToken, resetPassword } from "auth";
-import { getDataset, updateDataset } from "kv";
+import { Authenticate, generateJWTToken, resetPassword } from "@auth";
+import { getDataset, updateDataset } from "@kv";
 import { setSettings } from "@init";
 import { getClNormalConfig, getClWarpConfig } from "@clash/configs";
 import { getSbCustomConfig, getSbWarpConfig } from "@sing-box/configs";

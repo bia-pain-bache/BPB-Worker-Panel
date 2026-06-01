@@ -25,7 +25,7 @@ import {
     Fingerprint,
     URLTest,
     ChainOutbound
-} from 'types/sing-box';
+} from '#types/sing-box';
 
 function buildOutbound<T>(
     tag: string,

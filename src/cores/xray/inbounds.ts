@@ -1,4 +1,4 @@
-import { DokodemoDoorInbound, MixedInbound } from "types/xray";
+import { DokodemoDoorInbound, MixedInbound } from "#types/xray";
 
 export function buildMixedInbound(
     allowLANConnection: boolean,

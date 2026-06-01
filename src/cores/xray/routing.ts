@@ -1,5 +1,5 @@
 import { getGeoAssets } from './geo-assets';
-import { RoutingRule } from 'types/xray';
+import { RoutingRule } from '#types/xray';
 import { accRoutingRules } from '@utils';
 
 export function buildRoutingRules(

@@ -1,5 +1,5 @@
 import { getGeoAssets } from './geo-assets';
-import type { DNS, DnsServer, DnsHosts } from 'types/xray';
+import type { DNS, DnsServer, DnsHosts } from '#types/xray';
 import { resolveDNS, isDomain, getDomain, accDnsRules } from '@utils';
 
 export async function buildDNS(
