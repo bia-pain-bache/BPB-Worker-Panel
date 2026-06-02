@@ -31,6 +31,11 @@ globalThis.settings = {
     proxyIPMode: "proxyip",
     proxyIPs: [],
     prefixes: [],
+    upstreamProxy: "",
+    upstreamParams: {
+        upstreamServer: undefined,
+        upstreamPort: undefined
+    },
     outProxy: "",
     outProxyParams: {},
     cleanIPs: [],

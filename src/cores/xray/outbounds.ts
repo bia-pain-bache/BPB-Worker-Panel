@@ -129,13 +129,14 @@ export function buildWebsocketOutbound(
             fragmentIntervalMin,
             fragmentIntervalMax,
             fragmentMaxSplitMin,
-            fragmentMaxSplitMax
+            fragmentMaxSplitMax,
+            upstreamParams: { upstreamServer }
         },
         globalConfig: { userID, TrPass },
         dict: { _VL_ }
     } = globalThis;
 
-    const isTLS = isHttps(port);
+    const isTLS = isHttps(port) || address === upstreamServer;
     const { host, sni, allowInsecure } = selectSniHost(address);
     const tlsSettings = isTLS ? buildTlsSettings(
         sni,

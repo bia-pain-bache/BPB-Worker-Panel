@@ -74,7 +74,7 @@ export function generateRemark(
     isChain: boolean
 ): string {
     const {
-        settings: { cleanIPs, customCdnAddrs },
+        settings: { cleanIPs, customCdnAddrs, upstreamParams: { upstreamServer } },
         dict: { _VL_, _VL_CAP_, _TR_CAP_ }
     } = globalThis;
 
@@ -88,7 +88,9 @@ export function generateRemark(
         ? addressType = 'Clean IP'
         : addressType = isDomain(address) ? 'Domain' : isIPv4(address) ? 'IPv4' : isIPv6(address) ? 'IPv6' : '';
 
-    return `💦 ${index} - ${chainSign}${protoSign}${configType} - ${addressType} : ${port}`;
+    return address === upstreamServer
+        ? `💦 ${index} - ${chainSign}${protoSign}${configType} - Upstream Proxy`
+        : `💦 ${index} - ${chainSign}${protoSign}${configType} - ${addressType} : ${port}`;
 }
 
 export function randomUpperCase(str: string): string {

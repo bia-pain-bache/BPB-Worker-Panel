@@ -51,6 +51,11 @@ declare global {
         ipv6: string[];
     }
 
+    interface UpstreamProxy {
+        upstreamServer?: string;
+        upstreamPort?: number;
+    }
+
     interface DnsResult {
         ipv4: string[];
         ipv6: string[];
@@ -75,6 +80,8 @@ declare global {
         proxyIPMode: "proxyip" | "prefix";
         proxyIPs: string[];
         prefixes: string[];
+        upstreamProxy: string;
+        upstreamParams: UpstreamProxy;
         outProxy: string;
         outProxyParams: any;
         cleanIPs: string[];

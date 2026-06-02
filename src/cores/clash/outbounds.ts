@@ -54,10 +54,17 @@ export function buildWebsocketOutbound(
     const {
         dict: { _VL_, _TR_ },
         globalConfig: { userID, TrPass },
-        settings: { fingerprint, enableTFO, enableIPv6, enableECH, echServerName }
+        settings: { 
+            fingerprint, 
+            enableTFO, 
+            enableIPv6, 
+            enableECH, 
+            echServerName, 
+            upstreamParams: { upstreamServer } 
+        }
     } = globalThis;
 
-    const isTLS = isHttps(port);
+    const isTLS = isHttps(port) || address === upstreamServer;
     if (protocol === _TR_ && !isTLS) return null;
     const { host, sni, allowInsecure } = selectSniHost(address);
 

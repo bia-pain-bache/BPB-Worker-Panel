@@ -964,6 +964,20 @@ function validateEchConfig() {
     return true;
 }
 
+function validateUpstreamProxy() {
+    const upstreamProxy = getElmValue('upstreamProxy');
+
+    if (upstreamProxy && !isValidHostName(upstreamProxy, true)) {
+        alert(
+            '⛔ Invalid Upstream proxy!\n' +
+            '💡 It can be either IP:Port or Domain:Port'
+        );
+        return false;
+    }
+
+    return true;
+}
+
 function validateSettings() {
     const configForm = document.getElementById('configForm');
     const formData = new FormData(configForm);
@@ -986,6 +1000,7 @@ function validateSettings() {
         validateNAT64Prefixes(),
         validateWarpEndpoints(),
         validateMinMax(),
+        validateUpstreamProxy(),
         validateChainProxy(),
         validateCustomCdn(),
         validateKnockerNoise(),

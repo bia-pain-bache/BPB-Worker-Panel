@@ -76,32 +76,39 @@ async function buildConfig(
 }
 
 export async function getSbCustomConfig(isFragment: boolean): Promise<Response> {
-    const { outProxy, ports } = globalThis.settings;
+    const { outProxy, ports, upstreamParams: { upstreamServer, upstreamPort } } = globalThis.settings;
     const chainProxy = outProxy ? buildChainOutbound() : undefined;
     const isChain = !!chainProxy;
+    const protocols = getProtocols();
+    const hosts = await getConfigAddresses(isFragment);
+    const totalPorts = ports.filter(port => !isFragment || isHttps(port));
+
+    if (upstreamServer && upstreamPort && !isFragment) {
+        totalPorts.unshift(upstreamPort);
+        hosts.unshift(upstreamServer);
+    }
 
     const proxyTags: string[] = [];
     const chainTags: string[] = [];
     const outbounds: Outbound[] = [];
 
-    const protocols = getProtocols();
-    const Addresses = await getConfigAddresses(isFragment);
-    const totalPorts = ports.filter(port => !isFragment || isHttps(port));
     const selectorTags = ["💦 Best Ping 🚀"].concatIf(isChain, "💦 🔗 Best Ping 🚀");
 
-    protocols.forEach(protocol => {
+    for (const protocol of protocols) {
         let protocolIndex = 1;
-        totalPorts.forEach(port => {
-            Addresses.forEach(addr => {
-                const tag = generateRemark(protocolIndex, port, addr, protocol, isFragment, false);
-                const outbound = buildWebsocketOutbound(protocol, tag, addr, port, isFragment);
+        for (const port of totalPorts) {
+            for (const host of hosts) {
+                if ((port === upstreamPort) !== (host === upstreamServer)) continue;
+
+                const tag = generateRemark(protocolIndex, port, host, protocol, isFragment, false);
+                const outbound = buildWebsocketOutbound(protocol, tag, host, port, isFragment);
 
                 outbounds.push(outbound);
                 proxyTags.push(tag);
                 selectorTags.push(tag);
 
                 if (isChain) {
-                    const chainTag = generateRemark(protocolIndex, port, addr, protocol, isFragment, true);
+                    const chainTag = generateRemark(protocolIndex, port, host, protocol, isFragment, true);
                     const chain = structuredClone(chainProxy);
                     chain.tag = chainTag;
                     chain.detour = tag;
@@ -112,9 +119,9 @@ export async function getSbCustomConfig(isFragment: boolean): Promise<Response> 
                 }
 
                 protocolIndex++;
-            });
-        });
-    });
+            }
+        }
+    }
 
     const config = await buildConfig(
         outbounds,
