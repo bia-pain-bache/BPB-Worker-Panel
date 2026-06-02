@@ -1,13 +1,12 @@
 # 💡 Bug fixes & Improvements
 
-- Implemented FinalMask feature of Xray core. Please update your clients to the latest version.
+- **External Raw Configs**: You can add desired subscriptions and URL configs to this section, BPB fetches all configs and add them to Raw subscription.
+- **Upstream TCP Proxy**: adds a TLS config to `Normal` and `Raw` subscriptions which can be used with upstream proxies like SNI Spoof. It can be `IPv4:Port`, `[IPv6]:Port` or `Domain:Port`.
+- Implemented FinalMask feature of Xray core. Please update your clients to the latest version to support this.
 
 ---
 
 ## 💡 Other tips
-
-> [!NOTE]
-> These days Fragment on some ISPs stopped working in Iran, you can change `Fragment packet` to `1-1` instead of `tlshello` and test, also you can try to change `Fragment mode` to bypass IR-GFW.
 
 > [!CAUTION]
 > If you are upgrading from versions below 3.5.1 to 4, you should get subscriptions from panel again.
