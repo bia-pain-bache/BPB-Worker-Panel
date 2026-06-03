@@ -8,6 +8,7 @@ export async function TrOverWSHandler(request: Request): Promise<Response> {
     const webSocketPair = new WebSocketPair();
     const [client, webSocket] = Object.values(webSocketPair);
     webSocket.accept();
+    webSocket.binaryType = 'arraybuffer';
 
     let address = "";
     let portWithRandomLog = "";
@@ -50,7 +51,7 @@ export async function TrOverWSHandler(request: Request): Promise<Response> {
                 throw new Error(message);
             }
 
-            handleTCPOutBound(
+            await handleTCPOutBound(
                 remoteSocketWapper,
                 addressRemote,
                 portRemote,

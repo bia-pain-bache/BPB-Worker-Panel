@@ -12,19 +12,20 @@ export function buildRoutingRules(
     const rules: RoutingRule[] = [
         {
             inboundTag: [
-                "mixed-in"
+                "mixed-in",
+                "tun"
             ],
             port: 53,
             outboundTag: "dns-out",
             type: "field"
         },
-        {
-            inboundTag: [
-                "dns-in"
-            ],
-            outboundTag: "dns-out",
-            type: "field"
-        }
+        // {
+        //     inboundTag: [
+        //         "dns-in"
+        //     ],
+        //     outboundTag: "dns-out",
+        //     type: "field"
+        // }
     ];
 
     const finallOutboundTag = isChain ? "chain" : isWorkerless ? "direct" : "proxy";

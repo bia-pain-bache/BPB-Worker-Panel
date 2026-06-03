@@ -10,6 +10,7 @@ export async function VlOverWSHandler(request: Request): Promise<Response> {
     const webSocketPair = new WebSocketPair();
     const [client, webSocket] = Object.values(webSocketPair);
     webSocket.accept();
+    webSocket.binaryType = 'arraybuffer';
 
     let address = "";
     let portWithRandomLog = "";
@@ -64,14 +65,14 @@ export async function VlOverWSHandler(request: Request): Promise<Response> {
                     isDns = true;
                     const { write } = await handleUDPOutBound(webSocket, VLResponseHeader, log);
                     udpStreamWrite = write;
-                    udpStreamWrite(rawClientData);
+                    await udpStreamWrite(rawClientData);
                     return;
                 } else {
                     throw new Error("UDP proxy only enable for DNS which is port 53");
                 }
             }
 
-            handleTCPOutBound(
+            await handleTCPOutBound(
                 remoteSocketWapper,
                 addressRemote,
                 portRemote,
@@ -290,8 +291,8 @@ async function handleUDPOutBound(webSocket: WebSocket, VLResponseHeader: Uint8Ar
     const writer = transformStream.writable.getWriter();
 
     return {
-        write(chunk: ArrayBuffer) {
-            writer.write(chunk);
+        async write(chunk: ArrayBuffer) {
+            await writer.write(chunk);
         },
     };
 }

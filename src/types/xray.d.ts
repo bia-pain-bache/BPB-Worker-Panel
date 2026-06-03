@@ -41,6 +41,12 @@ export interface DNS {
     tag: "dns";
 }
 
+interface Sniffing {
+    destOverride: Array<"http" | "tls" | "quic" | "fakedns">;
+    enabled: true;
+    routeOnly: true;
+}
+
 export interface MixedInbound {
     listen: string;
     port: 10808;
@@ -49,12 +55,18 @@ export interface MixedInbound {
         auth: "noauth";
         udp: true;
     };
-    sniffing: {
-        destOverride: Array<"http" | "tls" | "quic" | "fakedns">;
-        enabled: true;
-        routeOnly: true;
-    };
+    sniffing: Sniffing;
     tag: "mixed-in";
+}
+
+export interface TunInbound {
+    protocol: "tun";
+    settings: {
+        mtu: 1500;
+        name: "xray0";
+    };
+    sniffing: Sniffing;
+    tag: "tun";
 }
 
 export interface DokodemoDoorInbound {
@@ -224,7 +236,11 @@ interface BlockholeSettings {
 }
 
 interface DnsOutSettings {
-    nonIPQuery: "reject";
+    rules: [
+        {
+            action: "hijack";
+        }
+    ];
 }
 
 interface Fragment {
@@ -359,7 +375,7 @@ export interface Config {
     };
     log: Log;
     dns: Dns;
-    inbounds: Array<MixedInbound | DokodemoDoorInbound>;
+    inbounds: Array<MixedInbound | DokodemoDoorInbound | TunInbound>;
     outbounds: Outbound[];
     policy: Policy;
     routing: Routing,

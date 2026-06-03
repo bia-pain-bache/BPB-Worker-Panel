@@ -1,8 +1,12 @@
 # 💡 Bug fixes & Improvements
 
-- **External Raw Configs**: You can add desired subscriptions and URL configs to this section, BPB fetches all configs and add them to Raw subscription.
+- Fixed Cloudflare worker compatibility issue. Please select the newest compatibility date in dashboard if you have manually changed it before.
+- **External Raw Configs**: You can add desired subscriptions and URL configs and BPB fetches all configs and integrate them into Raw subscription.
 - **Upstream TCP Proxy**: adds a TLS config to `Normal` and `Raw` subscriptions which can be used with upstream proxies like SNI Spoof. It can be `IPv4:Port`, `[IPv6]:Port` or `Domain:Port`.
 - Implemented FinalMask feature of Xray core. Please update your clients to the latest version to support this.
+- Update Xray UDP Noise and added `Array` noise type, you should enter numbers between 0-255 like `1,100,23,18...` in panel.
+- Updated packages.
+- Fixed hourly releases.
 
 ---
 

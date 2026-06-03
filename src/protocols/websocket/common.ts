@@ -139,8 +139,8 @@ export function makeReadableWebSocketStream(webSocketServer: WebSocket, earlyDat
         start(controller) {
             webSocketServer.addEventListener("message", (event) => {
                 if (readableStreamCancel) return;
-                const message = event.data;
-                controller.enqueue(message);
+                // WebSocket binaryType='arraybuffer' ensures event.data is always ArrayBuffer
+                controller.enqueue(event.data);
             });
 
             webSocketServer.addEventListener("close", () => {
