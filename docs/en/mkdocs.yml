@@ -85,6 +85,7 @@ nav:
     - Common: configuration/common.md
     - VLESS - Trojan: configuration/vless-trojan.md 
     - Fragment: configuration/fragment.md
+    - External Raw Configs: configuration/external-configs.md
     - Warp General: configuration/warp.md
     - Warp PRO: configuration/warp-pro.md
     - Routing rules: configuration/routing-rules.md

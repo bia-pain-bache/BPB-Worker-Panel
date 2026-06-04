@@ -31,6 +31,11 @@ export async function fetchWarpAccounts(env: Env): Promise<WarpAccount[]> {
                 })
             });
 
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(`API returned status ${response.status}: ${text}`);
+            }
+
             return await response.json();
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
@@ -38,7 +43,8 @@ export async function fetchWarpAccounts(env: Env): Promise<WarpAccount[]> {
         }
     };
 
-    for (const key of warpKeys) {
+    for (let i = 0; i < 2; i++) {
+        const key = warpKeys[i];
         const { config } = await fetchAccount(key);
         WarpAccounts.push({
             privateKey: key.privateKey,
@@ -46,6 +52,8 @@ export async function fetchWarpAccounts(env: Env): Promise<WarpAccount[]> {
             reserved: config.client_id,
             publicKey: config.peers[0].public_key
         });
+
+        if (i === 0) await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
     await env.kv.put('warpAccounts', JSON.stringify(WarpAccounts));

@@ -32,6 +32,14 @@
 
     [:octicons-arrow-right-24: شروع](fragment.md)
 
+- :material-cog-outline:{ .lg .middle } __اضافه کردن کانفیگ‌های شخصی__
+
+    ---
+
+    اضافه کردن لینک اشتراک و کانفیگ‌های شخصی جهت اضافه شدن به لسنک اشتراک Raw.
+
+    [:octicons-arrow-right-24: شروع](external-configs.md)
+
 - :material-cog-outline:{ .lg .middle } __تنظیمات عمومی Warp__
 
     ---

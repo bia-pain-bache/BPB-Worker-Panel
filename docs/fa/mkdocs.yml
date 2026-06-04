@@ -85,6 +85,7 @@ nav:
     - تنظیمات مشترک یا Common: configuration/common.md 
     - پروتکل‌های VLESS و Trojan: configuration/vless-trojan.md 
     - تنظیمات Fragment: configuration/fragment.md
+    - اضافه کردن کانفیگ‌های شخصی: configuration/external-configs.md
     - تنظیمات عمومی Warp: configuration/warp.md
     - تنظیمات Warp PRO: configuration/warp-pro.md
     - قوانین مسیریابی یا Routing Rules: configuration/routing-rules.md

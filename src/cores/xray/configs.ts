@@ -2,7 +2,7 @@ import { getDataset } from '@kv';
 import { buildDNS } from './dns';
 import { buildRoutingRules } from './routing';
 import type { Balancer, Config, Observatory, Outbound } from '#types/xray';
-import { buildMixedInbound } from './inbounds';
+import { buildDokodemoInbound, buildMixedInbound } from './inbounds';
 import {
     buildChainOutbound,
     buildWebsocketOutbound,
@@ -77,7 +77,7 @@ async function buildConfig(
         dns: await buildDNS(outboundAddrs, isWorkerLess, isWarp, domainToStaticIPs, customDns, customDnsHosts),
         inbounds: [
             buildMixedInbound(allowLANConnection, isWorkerLess, fakeDNS),
-            // buildDokodemoInbound(allowLANConnection),
+            buildDokodemoInbound(allowLANConnection),
             // buildTunInbound(isWorkerLess, fakeDNS)
         ],
         outbounds: [

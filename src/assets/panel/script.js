@@ -183,13 +183,14 @@ async function fetchIPInfo() {
     };
 
     try {
-        const response = await fetch('https://ipwho.is/' + '?nocache=' + Date.now(), { cache: "no-store" });
-        const { success, ip, message } = await response.json();
-
-        if (!success) {
-            throw new Error(`Fetch Other targets IP failed at ${response.url} - ${message}`);
+        const response = await fetch('https://ipv4.geojs.io/v1/ip.json' + '?nocache=' + Date.now(), { cache: "no-store" });
+        
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error(`Fetch Other targets IP failed with status ${response.status} at ${response.url} - ${errorMessage}`);
         }
 
+        const { ip } = await response.json();
         const { country, countryCode, city, isp } = await getIpDetails(ip);
         updateUI(ip, country, countryCode, city, isp);
         refreshIcon.classList.remove('fa-spin');

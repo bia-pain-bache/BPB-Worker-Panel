@@ -1,4 +1,4 @@
-import { DokodemoDoorInbound, MixedInbound, TunInbound } from "#types/xray";
+import { DokodemoDoorInbound, MixedInbound } from "#types/xray";
 
 export function buildMixedInbound(
     allowLANConnection: boolean,
@@ -46,16 +46,16 @@ export function buildMixedInbound(
 //     };
 // }
 
-// export function buildDokodemoInbound(allowLANConnection: boolean): DokodemoDoorInbound {
-//     return {
-//         listen: allowLANConnection ? "0.0.0.0" : "127.0.0.1",
-//         port: 10853,
-//         protocol: "dokodemo-door",
-//         settings: {
-//             address: "1.1.1.1",
-//             network: "tcp,udp",
-//             port: 53
-//         },
-//         tag: "dns-in"
-//     };
-// }
+export function buildDokodemoInbound(allowLANConnection: boolean): DokodemoDoorInbound {
+    return {
+        listen: allowLANConnection ? "0.0.0.0" : "127.0.0.1",
+        port: 10853,
+        protocol: "dokodemo-door",
+        settings: {
+            address: "1.1.1.1",
+            network: "tcp,udp",
+            port: 53
+        },
+        tag: "dns-in"
+    };
+}
