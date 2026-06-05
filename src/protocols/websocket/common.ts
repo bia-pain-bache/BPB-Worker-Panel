@@ -1,5 +1,6 @@
 import { connect } from 'cloudflare:sockets';
 import { isIPv4, parseHostPort, resolveDNS } from '@utils';
+import { safeErrorMessage } from '@common';
 
 export const WS_READY_STATE_OPEN = 1;
 const WS_READY_STATE_CLOSING = 2;
@@ -69,9 +70,8 @@ export async function handleTCPOutBound(
 
             remoteSocketToWS(tcpSocket, webSocket, VLResponseHeader, null, log);
         } catch (error) {
-            const message = error instanceof Error ? error.message : String(error);
             console.error('Retry connection failed:', error);
-            webSocket.close(1011, `Retry connection failed: ${message}`);
+            webSocket.close(1011, `Retry connection failed: ${safeErrorMessage(error)}`);
         }
     }
 
@@ -79,9 +79,8 @@ export async function handleTCPOutBound(
         const tcpSocket = await connectAndWrite(addressRemote, portRemote);
         remoteSocketToWS(tcpSocket, webSocket, VLResponseHeader, retry, log);
     } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
         console.error(`Connection failed: ${error}`);
-        webSocket.close(1011, `Connection failed: ${message}`);
+        webSocket.close(1011, `Connection failed: ${safeErrorMessage(error)}`);
     }
 }
 

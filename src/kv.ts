@@ -1,6 +1,6 @@
 import { fetchWarpAccounts } from '@warp';
 import { getDomain, parseHostPort, resolveDNS } from '@utils';
-import { base64DecodeUtf8 } from '@common';
+import { base64DecodeUtf8, safeErrorMessage } from '@common';
 
 export async function getDataset(
     request: Request,
@@ -32,8 +32,7 @@ export async function getDataset(
         };
     } catch (error) {
         console.log(error);
-        const message = error instanceof Error ? error.message : String(error);
-        throw new Error(`An error occurred while getting KV: ${message}`);
+        throw new Error(`An error occurred while getting KV: ${safeErrorMessage(error)}`);
     }
 }
 
@@ -45,9 +44,8 @@ export async function updateDataset(request: Request, env: Env): Promise<Setting
     try {
         currentSettings = await env.kv.get("proxySettings", { type: 'json' });
     } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        console.log(message);
-        throw new Error(`An error occurred while getting current KV settings: ${message}`);
+        console.log(error);
+        throw new Error(`An error occurred while getting current KV settings: ${safeErrorMessage(error)}`);
     }
 
     const getParam = async <T extends keyof Settings>(
@@ -155,9 +153,8 @@ export async function updateDataset(request: Request, env: Env): Promise<Setting
         await env.kv.put("proxySettings", JSON.stringify(updatedSettings));
         return updatedSettings;
     } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
         console.log(error);
-        throw new Error(`An error occurred while updating KV: ${message}`);
+        throw new Error(`An error occurred while updating KV: ${safeErrorMessage(error)}`);
     }
 }
 

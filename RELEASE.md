@@ -6,9 +6,10 @@
 - Implemented FinalMask feature of Xray core. Please update your clients to the latest version to support this.
 - Update Xray UDP Noise and added `Array` mode, you should enter numbers between 0-255 like `1,100,23,18...` in this field.
 - Fixed hourly releases.
-- Fixed `undefined` appeared in subscriptions links and Warp regestration. #1270
+- Fixed `undefined` appeared in subscriptions links and Warp regestration. #1270 #1291
 - Fixed My IP section.
 - Updated packages and docs.
+- Improved error handling.
 
 ---
 

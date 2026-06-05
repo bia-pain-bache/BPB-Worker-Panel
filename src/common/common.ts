@@ -47,4 +47,8 @@ export function respond(
     return new Response(JSON.stringify(responseBody), { status, headers });
 }
 
+export function safeErrorMessage(error: any): string {
+    return error instanceof Error ? error.message : String(error);
+}
+
 

@@ -65,8 +65,7 @@ export async function Authenticate(request: Request, env: Env): Promise<boolean>
 
         return true;
     } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        console.log(message);
+        console.log(error);
         return false;
     }
 }

@@ -7,7 +7,7 @@ import { getXrCustomConfigs, getXrWarpConfigs } from "@xray/configs";
 import { fetchWarpAccounts } from "@warp";
 import { VlOverWSHandler } from "@vless";
 import { TrOverWSHandler } from "@trojan";
-import { base64DecodeUtf8, base64EncodeUtf8, HttpStatus, respond } from "@common";
+import { base64DecodeUtf8, base64EncodeUtf8, HttpStatus, respond, safeErrorMessage } from "@common";
 import { generateRemark, generateWsPath, getConfigAddresses, randomUpperCase, resolveDNS } from "@utils";
 import JSZip from "jszip";
 
@@ -96,9 +96,8 @@ export async function handleProxyIPs(request: Request, env: Env): Promise<Respon
 }
 
 export async function renderError(error: any): Promise<Response> {
-    const message = error instanceof Error ? error.message : String(error);
     const html = await decompressHtml(__ERROR_HTML_CONTENT__, true) as string;
-    const errorPage = html.replace('__ERROR_MESSAGE__', message);
+    const errorPage = html.replace('__ERROR_MESSAGE__', safeErrorMessage(error));
 
     return new Response(errorPage, {
         status: HttpStatus.OK,
@@ -225,8 +224,13 @@ async function updateSettings(request: Request, env: Env): Promise<Response> {
         return respond(false, HttpStatus.UNAUTHORIZED, 'Unauthorized or expired session.');
     }
 
-    const proxySettings = await updateDataset(request, env);
-    return respond(true, HttpStatus.OK, '', proxySettings);
+    try {
+        const proxySettings = await updateDataset(request, env);
+        return respond(true, HttpStatus.OK, '', proxySettings);
+    } catch (error) {
+        console.log(error);
+        return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `Error occurred while updating settings: ${safeErrorMessage(error)}`);
+    }
 }
 
 async function resetSettings(request: Request, env: Env): Promise<Response> {
@@ -245,9 +249,8 @@ async function resetSettings(request: Request, env: Env): Promise<Response> {
         await env.kv.put("proxySettings", JSON.stringify(settings));
         return respond(true, HttpStatus.OK, '', settings);
     } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
         console.log(error);
-        throw new Error(`An error occurred while updating KV: ${message}`);
+        return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `Error occurred while resetting settings: ${safeErrorMessage(error)}`);
     }
 }
 
@@ -259,16 +262,21 @@ async function getSettings(request: Request, env: Env): Promise<Response> {
         return respond(false, HttpStatus.UNAUTHORIZED, 'Unauthorized or expired session.', { isPassSet });
     }
 
-    const dataset = await getDataset(request, env);
-    const { subPath } = globalThis.httpConfig;
+    try {
+        const dataset = await getDataset(request, env);
+        const { subPath } = globalThis.httpConfig;
 
-    const data = {
-        proxySettings: dataset.settings,
-        isPassSet,
-        subPath: subPath
-    };
+        const data = {
+            proxySettings: dataset.settings,
+            isPassSet,
+            subPath: subPath
+        };
 
-    return respond(true, HttpStatus.OK, undefined, data);
+        return respond(true, HttpStatus.OK, undefined, data);
+    } catch (error) {
+        console.log(error);
+        return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `Error occurred while fetching settings: ${safeErrorMessage(error)}`);
+    }
 }
 
 export async function fallback(request: Request): Promise<Response> {
@@ -294,12 +302,10 @@ async function getMyIP(request: Request): Promise<Response> {
     try {
         const response = await fetch(`http://ip-api.com/json/${ip}?nocache=${Date.now()}`);
         const geoLocation = await response.json();
-
         return respond(true, HttpStatus.OK, '', geoLocation);
     } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
         console.error('Error fetching IP address:', error);
-        return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `Error fetching IP address: ${message}`)
+        return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `Error fetching IP address: ${safeErrorMessage(error)}`)
     }
 }
 
@@ -316,20 +322,21 @@ async function getWarpConfigs(request: Request, env: Env): Promise<Response> {
         return new Response('Unauthorized or expired session.', { status: HttpStatus.UNAUTHORIZED });
     }
 
-    const { warpAccounts, settings } = await getDataset(request, env);
-    const { warpIPv6, publicKey, privateKey } = warpAccounts[0];
-    const {
-        warpEndpoints,
-        warpRemoteDNS,
-        amneziaNoiseCount,
-        amneziaNoiseSizeMin,
-        amneziaNoiseSizeMax
-    } = settings;
-
-    const zip = new JSZip();
-    const trimLines = (str: string) => str.split("\n").map(line => line.trim()).join("\n");
-
+    
     try {
+        const { warpAccounts, settings } = await getDataset(request, env);
+        const { warpIPv6, publicKey, privateKey } = warpAccounts[0];
+        const {
+            warpEndpoints,
+            warpRemoteDNS,
+            amneziaNoiseCount,
+            amneziaNoiseSizeMin,
+            amneziaNoiseSizeMax
+        } = settings;
+    
+        const zip = new JSZip();
+        const trimLines = (str: string) => str.split("\n").map(line => line.trim()).join("\n");
+
         warpEndpoints?.forEach((endpoint, index) => {
             const config =
                 `[Interface]
@@ -368,8 +375,7 @@ async function getWarpConfigs(request: Request, env: Env): Promise<Response> {
             },
         });
     } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        return new Response(`Error generating ZIP file: ${message}`, { status: HttpStatus.INTERNAL_SERVER_ERROR });
+        return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `Error generating ZIP file: ${safeErrorMessage(error)}`);
     }
 }
 
@@ -433,24 +439,20 @@ export async function renderSecrets(): Promise<Response> {
 }
 
 async function updateWarpConfigs(request: Request, env: Env): Promise<Response> {
-    if (request.method === 'POST') {
-        const auth = await Authenticate(request, env);
+    if (request.method !== 'POST') return respond(false, HttpStatus.METHOD_NOT_ALLOWED, 'Method not allowed.');
+    const auth = await Authenticate(request, env);
 
-        if (!auth) {
-            return respond(false, HttpStatus.UNAUTHORIZED, 'Unauthorized.');
-        }
-
-        try {
-            await fetchWarpAccounts(env);
-            return respond(true, HttpStatus.OK, 'Warp configs updated successfully!');
-        } catch (error) {
-            const message = error instanceof Error ? error.message : String(error);
-            console.log(error);
-            return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `An error occurred while updating Warp configs: ${message}`);
-        }
+    if (!auth) {
+        return respond(false, HttpStatus.UNAUTHORIZED, 'Unauthorized.');
     }
 
-    return respond(false, HttpStatus.METHOD_NOT_ALLOWED, 'Method not allowed.');
+    try {
+        await fetchWarpAccounts(env);
+        return respond(true, HttpStatus.OK, 'Warp configs updated successfully!');
+    } catch (error) {
+        console.log(error);
+        return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `An error occurred while updating Warp configs: ${safeErrorMessage(error)}`);
+    }
 }
 
 async function decompressHtml(content: string, asString: boolean): Promise<string | ReadableStream<Uint8Array>> {

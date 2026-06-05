@@ -1,3 +1,5 @@
+import { safeErrorMessage } from "@common";
+
 export function isDomain(address: string): boolean {
     if (!address) return false;
     const domainRegex = /^(?!-)(?:[A-Za-z0-9-]{1,63}.)+[A-Za-z]{2,}$/;
@@ -16,8 +18,7 @@ export async function resolveDNS(domain: string, onlyIPv4 = false): Promise<DnsR
         const ipv6 = onlyIPv4 ? [] : await fetchDNSRecords(dohURLs.ipv6, 28);
         return { ipv4, ipv6 };
     } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        throw new Error(`Error resolving DNS for ${domain}: ${message}`);
+        throw new Error(`Error resolving DNS for ${domain}: ${safeErrorMessage(error)}`);
     }
 }
 
@@ -33,8 +34,7 @@ export async function fetchDNSRecords(url: string, recordType: number): Promise<
             .map((record: any) => record.data);
 
     } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        throw new Error(`Failed to fetch DNS records from ${url}: ${message}`);
+        throw new Error(`Failed to fetch DNS records from ${url}: ${safeErrorMessage(error)}`);
     }
 }
 
