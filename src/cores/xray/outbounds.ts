@@ -137,12 +137,11 @@ export function buildWebsocketOutbound(
     } = globalThis;
 
     const isTLS = isHttps(port) || address === upstreamServer;
-    const { host, sni, allowInsecure } = selectSniHost(address);
+    const { host, sni } = selectSniHost(address);
     const tlsSettings = isTLS ? buildTlsSettings(
         sni,
         fingerprint,
         "http/1.1",
-        allowInsecure,
         enableECH && !isFragment,
         echServerName || undefined,
     ) : undefined;
@@ -287,7 +286,7 @@ export function buildChainOutbound(): Outbound | undefined {
         network: type || "raw",
         ...buildTransport(type, headerType, path, host, serviceName, mode, authority),
         security,
-        tlsSettings: security === 'tls' ? buildTlsSettings(sni || address, fp, alpn, false, false, undefined) : undefined,
+        tlsSettings: security === 'tls' ? buildTlsSettings(sni || address, fp, alpn, false, undefined) : undefined,
         realitySettings: security === "reality" ? buildRealitySettings(sni, fp, pbk, sid, spx) : undefined,
         sockopt: buildSockopt(false, false, "UseIPv4", "proxy")
     };
@@ -443,7 +442,6 @@ function buildTlsSettings(
     serverName: string,
     fingerprint: Fingerprint,
     alpn: string,
-    allowInsecure: boolean,
     enableECH: boolean,
     echServerName?: string
 ): TlsSettings {
@@ -454,7 +452,6 @@ function buildTlsSettings(
         serverName,
         fingerprint: fingerprint,
         alpn: alpn?.split(','),
-        allowInsecure,
         echConfigList: enableECH
             ? echServerName
                 ? `${echServerName}+udp://${echQueryDNS}`

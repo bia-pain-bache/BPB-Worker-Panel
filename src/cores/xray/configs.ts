@@ -69,7 +69,7 @@ async function buildConfig(
     const config: Config = {
         remarks: remark,
         version: {
-            min: "25.10.15"
+            min: "26.2.6"
         },
         log: {
             loglevel: logLevel,

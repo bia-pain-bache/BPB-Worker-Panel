@@ -52,19 +52,19 @@
 
 <div dir="rtl">
 
-|       Client        |     Version      | پشتیبانی از Fragment | پشتیبانی از Warp Pro |
-| :-----------------: | :--------------: | :------------------: | :------------------: |
-|     **v2rayNG**     | 1.10.26 و بالاتر |  :heavy_check_mark:  |  :heavy_check_mark:  |
-|     **MahsaNG**     |   14 و بالاتر    |  :heavy_check_mark:  |  :heavy_check_mark:  |
-|     **v2rayN**      | 7.15.4 و بالاتر  |  :heavy_check_mark:  |  :heavy_check_mark:  |
-|   **v2rayN-PRO**    |   2.0 و بالاتر   |  :heavy_check_mark:  |  :heavy_check_mark:  |
-|    **Sing-box**     | 1.12.0 و بالاتر  |  :heavy_check_mark:  |         :x:          |
-|    **Streisand**    | 1.6.64 و بالاتر  |  :heavy_check_mark:  |  :heavy_check_mark:  |
-|   **Clash Meta**    |                  |         :x:          |  :heavy_check_mark:  |
-| **Clash Verge Rev** |                  |         :x:          |  :heavy_check_mark:  |
-|     **FLClash**     |                  |         :x:          |  :heavy_check_mark:  |
-|   **AmneziaVPN**    |                  |         :x:          |  :heavy_check_mark:  |
-|    **WG Tunnel**    |                  |         :x:          |  :heavy_check_mark:  |
+|       Client        | حداقل نسخه پشتیبانی | پشتیبانی از Fragment | پشتیبانی از Warp Pro |
+| :-----------------: | :-----------------: | :------------------: | :------------------: |
+|     **v2rayNG**     |        2.2.3        |  :heavy_check_mark:  |  :heavy_check_mark:  |
+|     **MahsaNG**     |         16          |  :heavy_check_mark:  |  :heavy_check_mark:  |
+|     **v2rayN**      |       7.22.5        |  :heavy_check_mark:  |  :heavy_check_mark:  |
+|   **v2rayN-PRO**    |         2.0         |  :heavy_check_mark:  |  :heavy_check_mark:  |
+|    **Sing-box**     |       1.12.0        |  :heavy_check_mark:  |         :x:          |
+|    **Streisand**    |       1.6.71        |  :heavy_check_mark:  |  :heavy_check_mark:  |
+|   **Clash Meta**    |                     |         :x:          |  :heavy_check_mark:  |
+| **Clash Verge Rev** |                     |         :x:          |  :heavy_check_mark:  |
+|     **FLClash**     |                     |         :x:          |  :heavy_check_mark:  |
+|   **AmneziaVPN**    |                     |         :x:          |  :heavy_check_mark:  |
+|    **WG Tunnel**    |                     |         :x:          |  :heavy_check_mark:  |
 
 </div>
 

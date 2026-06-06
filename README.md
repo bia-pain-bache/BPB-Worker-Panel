@@ -50,19 +50,19 @@ This project is aimed to provide a user panel to access FREE, SECURE and PRIVATE
 
 ## Supported Clients
 
-|       Client        |      Version      |  Fragment support  |  Warp Pro support  |
-| :-----------------: | :---------------: | :----------------: | :----------------: |
-|     **v2rayNG**     | 1.10.26 or higher | :heavy_check_mark: | :heavy_check_mark: |
-|     **MahsaNG**     |   14 or higher    | :heavy_check_mark: | :heavy_check_mark: |
-|     **v2rayN**      | 7.15.4 or higher  | :heavy_check_mark: | :heavy_check_mark: |
-|   **v2rayN-PRO**    |   1.9 or higher   | :heavy_check_mark: | :heavy_check_mark: |
-|    **Sing-box**     | 1.12.0 or higher  | :heavy_check_mark: |        :x:         |
-|    **Streisand**    | 1.6.64 or higher  | :heavy_check_mark: | :heavy_check_mark: |
-|   **Clash Meta**    |                   |        :x:         | :heavy_check_mark: |
-| **Clash Verge Rev** |                   |        :x:         | :heavy_check_mark: |
-|     **FLClash**     |                   |        :x:         | :heavy_check_mark: |
-|   **AmneziaVPN**    |                   |        :x:         | :heavy_check_mark: |
-|    **WG Tunnel**    |                   |        :x:         | :heavy_check_mark: |
+|       Client        | Minimum version |  Fragment support  |  Warp Pro support  |
+| :-----------------: | :-------------: | :----------------: | :----------------: |
+|     **v2rayNG**     |      2.2.3      | :heavy_check_mark: | :heavy_check_mark: |
+|     **MahsaNG**     |       16        | :heavy_check_mark: | :heavy_check_mark: |
+|     **v2rayN**      |     7.22.5      | :heavy_check_mark: | :heavy_check_mark: |
+|   **v2rayN-PRO**    |       1.9       | :heavy_check_mark: | :heavy_check_mark: |
+|    **Sing-box**     |     1.12.0      | :heavy_check_mark: |        :x:         |
+|    **Streisand**    |     1.6.71      | :heavy_check_mark: | :heavy_check_mark: |
+|   **Clash Meta**    |                 |        :x:         | :heavy_check_mark: |
+| **Clash Verge Rev** |                 |        :x:         | :heavy_check_mark: |
+|     **FLClash**     |                 |        :x:         | :heavy_check_mark: |
+|   **AmneziaVPN**    |                 |        :x:         | :heavy_check_mark: |
+|    **WG Tunnel**    |                 |        :x:         | :heavy_check_mark: |
 
 ## Environment variables
 

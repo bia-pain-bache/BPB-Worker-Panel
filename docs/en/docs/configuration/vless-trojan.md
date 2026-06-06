@@ -12,6 +12,10 @@ By default, the remote DNS is Google DNS over HTTPS (DoH). However, you can use 
     - `https://dns.quad9.net/dns-query`
     - `tls://dns.google`
 
+## Upstream TCP Proxy
+
+This can be used to setup a TCP upstream proxy like SNI Spoofing and get the Upstream config in `Normal` and `Raw` subscriptions. It can be in forms of `IPv4:Port`, `[IPv6]:Port` and `Domain:Port`.
+
 ## Chain Proxy
 
 As noted, a Proxy IP fixes the IP for Cloudflare target addresses, but node IPs may differ for other targets. A **Chain Proxy** ensures a consistent IP for all targets. You can use a free config here, even if it’s blocked by your ISP, to permanently fix your IP to the Chain Proxy IP.

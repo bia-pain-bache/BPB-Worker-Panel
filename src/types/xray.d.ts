@@ -126,7 +126,6 @@ export interface TlsSettings {
     serverName: string;
     fingerprint: Fingerprint;
     alpn?: string[];
-    allowInsecure: boolean;
     echConfigList?: string;
 }
 

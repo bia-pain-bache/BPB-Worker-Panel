@@ -43,19 +43,19 @@
 
 ## برنامه‌های پشتیبانی‌شده
 
-|       Client        |      Version      | پشتیبانی از Fragment | پشتیبانی از Warp Pro |
-| :-----------------: | :---------------: | :------------------: | :------------------: |
-|     **v2rayNG**     | 1.10.26 یا بالاتر |   :material-check:   |   :material-check:   |
-|     **MahsaNG**     |   14 یا بالاتر    |   :material-check:   |   :material-check:   |
-|     **v2rayN**      | 7.15.4 یا بالاتر  |   :material-check:   |   :material-check:   |
-|   **v2rayN-PRO**    |   1.9 یا بالاتر   |   :material-check:   |   :material-check:   |
-|    **Sing-box**     | 1.11.2 یا بالاتر  |   :material-close:   |   :material-close:   |
-|    **Streisand**    | 1.6.64 یا بالاتر  |   :material-check:   |   :material-check:   |
-|   **Clash Meta**    |                   |   :material-close:   |   :material-check:   |
-| **Clash Verge Rev** |                   |   :material-close:   |   :material-check:   |
-|     **FLClash**     |                   |   :material-close:   |   :material-check:   |
-|   **AmneziaVPN**    |                   |   :material-close:   |   :material-check:   |
-|    **WG Tunnel**    |                   |   :material-close:   |   :material-check:   |
+|       Client        | حداقل نسخه پشتیبانی | پشتیبانی از Fragment | پشتیبانی از Warp Pro |
+| :-----------------: | :-----------------: | :------------------: | :------------------: |
+|     **v2rayNG**     |        2.2.3        |  :heavy_check_mark:  |  :heavy_check_mark:  |
+|     **MahsaNG**     |         16          |  :heavy_check_mark:  |  :heavy_check_mark:  |
+|     **v2rayN**      |       7.22.5        |  :heavy_check_mark:  |  :heavy_check_mark:  |
+|   **v2rayN-PRO**    |         2.0         |  :heavy_check_mark:  |  :heavy_check_mark:  |
+|    **Sing-box**     |       1.12.0        |  :heavy_check_mark:  |         :x:          |
+|    **Streisand**    |       1.6.71        |  :heavy_check_mark:  |  :heavy_check_mark:  |
+|   **Clash Meta**    |                     |         :x:          |  :heavy_check_mark:  |
+| **Clash Verge Rev** |                     |         :x:          |  :heavy_check_mark:  |
+|     **FLClash**     |                     |         :x:          |  :heavy_check_mark:  |
+|   **AmneziaVPN**    |                     |         :x:          |  :heavy_check_mark:  |
+|    **WG Tunnel**    |                     |         :x:          |  :heavy_check_mark:  |
 
 ## متغیرهای محیطی (داشبورد کلادفلر)
 
