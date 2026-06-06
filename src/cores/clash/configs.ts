@@ -65,11 +65,11 @@ async function buildConfig(
         }
     };
 
-    const name = isWarp ? `💦 Warp ${isPro ? "Pro " : ""}- Best Ping 🚀` : "💦 Best Ping 🚀";
+    const name = isWarp ? `Pshka Warp ${isPro ? "Pro " : ""}- Best Ping 🚀` : "Pshka Best Ping 🚀";
     const mainUrlTest = buildUrlTest(name, proxyTags, isWarp);
     config["proxy-groups"].push(mainUrlTest);
-    if (isWarp) config["proxy-groups"].push(buildUrlTest(`💦 WoW ${isPro ? "Pro " : ""}- Best Ping 🚀`, chainTags, isWarp));
-    if (isChain) config["proxy-groups"].push(buildUrlTest("💦 🔗 Best Ping 🚀", chainTags, isWarp));
+    if (isWarp) config["proxy-groups"].push(buildUrlTest(`Pshka WoW ${isPro ? "Pro " : ""}- Best Ping 🚀`, chainTags, isWarp));
+    if (isChain) config["proxy-groups"].push(buildUrlTest("Pshka 🔗 Best Ping 🚀", chainTags, isWarp));
 
     return config;
 }
@@ -85,7 +85,7 @@ export async function getClNormalConfig(): Promise<Response> {
 
     const Addresses = await getConfigAddresses(false);
     const protocols = getProtocols();
-    const selectorTags = ["💦 Best Ping 🚀"].concatIf(isChain, "💦 🔗 Best Ping 🚀");
+    const selectorTags = ["Pshka Best Ping 🚀"].concatIf(isChain, "Pshka 🔗 Best Ping 🚀");
 
     protocols.forEach(protocol => {
         let protocolIndex = 1;
@@ -140,20 +140,20 @@ export async function getClWarpConfig(request: Request, env: Env, isPro: boolean
     const { warpEndpoints } = globalThis.settings;
     const { warpAccounts } = await getDataset(request, env);
 
-    const proxyTags: string[] = [];
+    const  proxyTags: string[] = [];
     const chainTags: string[] = [];
     const outbounds: WireguardOutbound[] = [];
     const proSign = isPro ? "Pro " : "";
     const selectorTags = [
-        `💦 Warp ${proSign}- Best Ping 🚀`,
-        `💦 WoW ${proSign}- Best Ping 🚀`
+        `Pshka Warp ${proSign}- Best Ping 🚀`,
+        `Pshka WoW ${proSign}- Best Ping 🚀`
     ];
 
     warpEndpoints.forEach((endpoint, index) => {
-        const warpTag = `💦 ${index + 1} - Warp ${proSign}🇮🇷`;
+        const warpTag = `Pshka ${index + 1} - Warp ${proSign}🇮🇷`;
         proxyTags.push(warpTag);
 
-        const wowTag = `💦 ${index + 1} - WoW ${proSign}🌍`;
+        const wowTag = `Pshka ${index + 1} - WoW ${proSign}🌍`;
         chainTags.push(wowTag);
 
         selectorTags.push(warpTag, wowTag);

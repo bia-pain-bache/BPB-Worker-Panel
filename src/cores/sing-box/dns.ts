@@ -22,7 +22,7 @@ export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<DNS> 
         {
             type: isWarp ? "udp" : protocol,
             server: isWarp ? warpRemoteDNS : remoteDnsHost.host,
-            detour: isWarp ? "💦 Warp - Best Ping 🚀" : isChain ? "💦 Best Ping 🚀" : "✅ Selector",
+            detour: isWarp ? "Pshka Warp - Best Ping 🚀" : isChain ? "Pshka Best Ping 🚀" : "✅ Selector",
             tag: "dns-remote"
         }
     ];
