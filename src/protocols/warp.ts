@@ -37,7 +37,7 @@ export async function fetchWarpAccounts(env: Env): Promise<WarpAccount[]> {
                 publicKey: config.peers[0].public_key
             });
 
-            if (index === 0) await new Promise(resolve => setTimeout(resolve, 5000));
+            if (index === 0) await new Promise(resolve => setTimeout(resolve, 1000));
         }
 
         await env.kv.put('warpAccounts', JSON.stringify(warpAccounts));
