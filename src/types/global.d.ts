@@ -34,6 +34,7 @@ declare global {
         readonly PREFIX: string;
         readonly FALLBACK: string;
         readonly DOH_URL: string;
+        readonly SUB_PATH: string;
         readonly kv: KVNamespace;
     }
 
@@ -143,6 +144,8 @@ declare global {
         amneziaNoiseCount: number;
         amneziaNoiseSizeMin: number;
         amneziaNoiseSizeMax: number;
+        telegramBotToken: string;
+        telegramAdminId: string;
         customSubs: string[];
         customConfigs: string[];
         panelVersion: string;

@@ -324,6 +324,55 @@ function copyToClipboard(text) {
         .catch(error => console.error('Failed to copy:', error));
 }
 
+async function setupTelegramWebhook() {
+    const token = document.getElementById('telegramBotToken').value.trim();
+    const adminId = document.getElementById('telegramAdminId').value.trim();
+
+    if (!token) {
+        alert('⛔ Please enter a Bot Token first.');
+        return;
+    }
+    if (!adminId) {
+        alert('⛔ Please enter an Admin Telegram ID first.');
+        return;
+    }
+
+    const form = validateSettings();
+    if (!form) return;
+
+    document.body.style.cursor = 'wait';
+    try {
+        const saveRes = await fetch('/panel/update-settings', {
+            method: 'PUT',
+            body: JSON.stringify(form),
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const saveData = await saveRes.json();
+        if (!saveData.success) {
+            alert(`⚠️ Failed to save settings: ${saveData.message}`);
+            document.body.style.cursor = 'default';
+            return;
+        }
+
+        const response = await fetch('/panel/setup-telegram-webhook');
+        const { success, status, message } = await response.json();
+
+        if (!success) {
+            alert(`⚠️ ${message}`);
+            document.body.style.cursor = 'default';
+            return;
+        }
+
+        alert('✅ Telegram webhook set up successfully!\n💡 Send /start to your bot to test.');
+    } catch (error) {
+        console.error("Setup webhook error:", error.message || error);
+        alert('⚠️ Failed to setup webhook. Please try again.');
+    } finally {
+        document.body.style.cursor = 'default';
+    }
+}
+
 async function updateWarpConfigs() {
     const confirmReset = confirm('⚠️ Are you sure?');
     if (!confirmReset) return;
@@ -979,6 +1028,26 @@ function validateUpstreamProxy() {
     return true;
 }
 
+function validateTelegramToken() {
+    const token = document.getElementById('telegramBotToken').value.trim();
+    if (!token) return true;
+    if (!/^\d+:[A-Za-z0-9_-]+$/.test(token)) {
+        alert('⛔ Invalid Bot Token format!\n💡 It should look like: 1234567890:ABCdef12345');
+        return false;
+    }
+    return true;
+}
+
+function validateTelegramAdminId() {
+    const id = document.getElementById('telegramAdminId').value.trim();
+    if (!id) return true;
+    if (!/^\d+$/.test(id)) {
+        alert('⛔ Admin Telegram ID must be numeric!\n💡 Get your ID from @userinfobot');
+        return false;
+    }
+    return true;
+}
+
 function validateSettings() {
     const configForm = document.getElementById('configForm');
     const formData = new FormData(configForm);
@@ -1007,7 +1076,9 @@ function validateSettings() {
         validateKnockerNoise(),
         validateXrayNoises(fields),
         validateCustomRules(),
-        validateEchConfig()
+        validateEchConfig(),
+        validateTelegramToken(),
+        validateTelegramAdminId()
     ];
 
     if (!validations.every(Boolean)) {

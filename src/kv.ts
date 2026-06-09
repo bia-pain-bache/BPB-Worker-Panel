@@ -134,6 +134,8 @@ export async function updateDataset(request: Request, env: Env): Promise<Setting
             ["amneziaNoiseCount"],
             ["amneziaNoiseSizeMin"],
             ["amneziaNoiseSizeMax"],
+            ["telegramBotToken"],
+            ["telegramAdminId"],
             ["customSubs"],
             ["customConfigs"]
         ];

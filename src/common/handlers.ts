@@ -68,6 +68,9 @@ export async function handlePanel(request: Request, env: Env): Promise<Response>
         case '/panel/get-warp-configs':
             return await getWarpConfigs(request, env);
 
+        case '/panel/setup-telegram-webhook':
+            return await setupTelegramWebhook(request, env);
+
         default:
             return await fallback(request);
     }
@@ -251,6 +254,41 @@ async function resetSettings(request: Request, env: Env): Promise<Response> {
     } catch (error) {
         console.log(error);
         return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `Error occurred while resetting settings: ${safeErrorMessage(error)}`);
+    }
+}
+
+async function setupTelegramWebhook(request: Request, env: Env): Promise<Response> {
+    const auth = await Authenticate(request, env);
+    if (!auth) return respond(false, HttpStatus.UNAUTHORIZED, 'Unauthorized.');
+
+    const proxySettings: any = await env.kv.get("proxySettings", { type: 'json' });
+    const token: string = proxySettings?.telegramBotToken;
+    if (!token) return respond(false, HttpStatus.BAD_REQUEST, 'Bot token not set in settings.');
+
+    const { urlOrigin } = globalThis.httpConfig;
+    const webhookUrl = `${urlOrigin}/telegram`;
+
+    try {
+        const res = await fetch(`https://api.telegram.org/bot${token}/setWebhook?url=${encodeURIComponent(webhookUrl)}`);
+        const data: any = await res.json();
+        if (!data.ok) return respond(false, HttpStatus.BAD_REQUEST, data.description || 'Failed to set webhook.');
+
+        await fetch(`https://api.telegram.org/bot${token}/setMyCommands`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                commands: [
+                    { command: 'start', description: '🤖 Show welcome menu' },
+                    { command: 'config', description: '📥 Get subscription config' },
+                    { command: 'qr', description: '📱 Get QR codes' },
+                    { command: 'info', description: '⚙️ Show settings info' },
+                ]
+            })
+        });
+
+        return respond(true, HttpStatus.OK, 'Telegram webhook set successfully!', { url: webhookUrl });
+    } catch (error) {
+        return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `Error: ${safeErrorMessage(error)}`);
     }
 }
 

@@ -104,6 +104,8 @@ globalThis.settings = {
     amneziaNoiseCount: 5,
     amneziaNoiseSizeMin: 50,
     amneziaNoiseSizeMax: 100,
+    telegramBotToken: "",
+    telegramAdminId: "",
     customSubs: [],
     customConfigs: [],
     panelVersion: __VERSION__

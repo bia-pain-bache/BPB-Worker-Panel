@@ -12,6 +12,7 @@ import {
 	handleDoH,
 	handleProxyIPs
 } from '@handlers';
+import { handleTelegramWebhook } from '@telegram';
 
 export default {
 	async fetch(request: Request, env: Env) {
@@ -23,9 +24,14 @@ export default {
 				initWs(env);
 				return await handleWebsocket(request);
 			} else {
-				initHttp(request, env);
 				const { pathName } = globalThis.globalConfig;
 				const path = pathName.split('/')[1];
+
+				if (path === 'telegram') {
+					return await handleTelegramWebhook(request, env);
+				}
+
+				initHttp(request, env);
 
 				switch (path) {
 					case 'panel':

@@ -35,6 +35,7 @@ This project is aimed to provide a user panel to access FREE, SECURE and PRIVATE
 9. **Broad client compatibility:** Offers subscription links for Xray, Sing-box and Clash-Mihomo core clients.
 10. **Password-protected panel:** Provides secure and private panel with password protection.
 11. **Fully customizable:** Supports setting up clean IP-domains, Proxy IPs, DNS servers, choosing ports and protocols, Warp endpoints and more.
+12. **Telegram Bot Integration:** Built-in Telegram bot for receiving subscription links, QR codes, and settings info directly in Telegram.
 
 ## Limitations
 

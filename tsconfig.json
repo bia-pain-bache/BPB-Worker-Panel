@@ -23,6 +23,7 @@
             "@trojan": ["./src/protocols/websocket/trojan"],
             "@warp": ["./src/protocols/warp"],
             "@kv": ["./src/kv"],
+            "@telegram": ["./src/telegram"],
             "@auth": ["./src/auth"],
             "@workers": ["./src/workers"],
             "#types/*": ["./src/types/*"]

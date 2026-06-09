@@ -1,5 +1,6 @@
 # 💡 Bug fixes & Improvements
 
+- **Telegram Bot Integration**: Added a built-in Telegram bot with inline keyboard menus, subscription delivery, QR code generation, and settings info display. Configure via Panel → Telegram Bot section.
 - Fixed Cloudflare worker compatibility issue. Please select the latest compatibility date in dashboard if you have manually changed it before.
 - **External Raw Configs**: You can add desired subscriptions and URL configs and BPB fetches all configs and integrate them into Raw subscription.
 - **Upstream TCP Proxy**: adds a TLS config to `Normal` and `Raw` subscriptions which can be used with upstream proxies like SNI Spoof. It can be `IPv4:Port`, `[IPv6]:Port` or `Domain:Port`.
