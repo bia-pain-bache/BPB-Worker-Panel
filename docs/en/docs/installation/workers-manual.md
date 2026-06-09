@@ -94,13 +94,14 @@ By default, the code uses multiple NAT64 prefixes randomly, assigning a new rand
 In the project’s `Settings` section, open `Variables and Secrets`, click `Add` and enter `NAT64_PREFIX` (in capital letters) in the first box. Obtain IPs from the following link, which lists IPs from various regions and ISPs:
 
 ```text
-https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/NAT64Prefixes.md
+https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/docs/NAT64Prefixes.md
 ```
 
 !!! info
-    To use multiple IPs, fill them comma-separated.
+    To use multiple IPs, enter each prefix on a new line using [].
     ```title="Example"
-    [2602:fc59:b0:64::], [2602:fc59:11:64::]
+    [2602:fc59:b0:64::]
+    [2602:fc59:11:64::]
     ```
 
 Enter the IPs in the `Value` field and click `Deploy`.
