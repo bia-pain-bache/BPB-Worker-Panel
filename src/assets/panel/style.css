@@ -936,6 +936,114 @@ textarea.neon-input {
     gap: 12px;
 }
 
+/* ===== Help Text ===== */
+.help-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--bg-glass);
+    border: 1px solid var(--border-glass);
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 8px;
+    line-height: 1.8;
+}
+
+/* ===== Usage Card ===== */
+.usage-card {
+    background: var(--bg-glass);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    animation: fadeIn 0.3s ease;
+}
+
+.usage-card-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.usage-metric {
+    padding: 12px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.usage-metric:last-child { margin-bottom: 0; }
+
+.usage-metric-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.usage-progress {
+    width: 100%;
+    height: 8px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.usage-progress-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s ease;
+}
+
+.usage-progress-bar.green { background: var(--success); }
+.usage-progress-bar.amber { background: var(--warning); }
+.usage-progress-bar.red {
+    background: var(--danger);
+    animation: usagePulse 1s ease-in-out infinite;
+}
+
+@keyframes usagePulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.usage-warning {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: rgba(245,158,11,0.12);
+    border: 1px solid rgba(245,158,11,0.4);
+    border-radius: 8px;
+    color: var(--warning);
+    font-size: 0.8rem;
+    font-weight: 500;
+    animation: warningPulse 2s ease-in-out infinite;
+}
+
+@keyframes warningPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.2); }
+    50% { box-shadow: 0 0 12px 2px rgba(245,158,11,0.3); }
+}
+
+.usage-over-limit {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: rgba(239,68,68,0.12);
+    border: 1px solid rgba(239,68,68,0.4);
+    border-radius: 8px;
+    color: var(--danger);
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.usage-loading {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
 /* ===== Skeleton Loading ===== */
 .skeleton {
     background: linear-gradient(90deg, var(--bg-secondary) 25%, rgba(139,92,246,0.1) 50%, var(--bg-secondary) 75%);

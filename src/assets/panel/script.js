@@ -141,6 +141,9 @@ function initiatePanel(proxySettings) {
     renderUdpNoiseBlock(xrayUdpNoises);
     initiateForm();
     fetchIPInfo();
+    if (proxySettings.cfAccountId) {
+        setTimeout(fetchCfUsage, 500);
+    }
 }
 
 function populatePanel(proxySettings) {
@@ -196,6 +199,100 @@ function enableApplyButton() {
     const isChanged = hasFormDataChanged();
     applyButton.disabled = !isChanged;
     applyButton.classList.toggle('disabled', !isChanged);
+}
+
+function togglePassword(btn) {
+    const input = btn.previousElementSibling;
+    const isPassword = input.type === 'password';
+    input.type = isPassword ? 'text' : 'password';
+    btn.textContent = isPassword ? '🙈' : '👁️';
+}
+
+async function saveCfCredentials() {
+    const form = validateSettings();
+    if (!form) return;
+    document.body.style.cursor = 'wait';
+    try {
+        const res = await fetch('/panel/update-settings', {
+            method: 'PUT',
+            body: JSON.stringify(form),
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (!data.success) {
+            showToast(`Failed to save: ${data.message}`, 'error');
+            document.body.style.cursor = 'default';
+            return;
+        }
+        showToast('CF credentials saved!', 'success');
+        fetchCfUsage();
+    } catch (err) {
+        showToast('Failed to save credentials.', 'error');
+    } finally {
+        document.body.style.cursor = 'default';
+    }
+}
+
+async function fetchCfUsage() {
+    const card = document.getElementById('cfUsageCard');
+    if (!card) return;
+    card.style.display = 'block';
+    card.innerHTML = '<div class="usage-loading">🔄 Fetching usage stats...</div>';
+    try {
+        const res = await fetch('/panel/cf-usage', { credentials: 'include' });
+        const { success, body, message } = await res.json();
+        if (!success) {
+            card.innerHTML = `<div class="usage-loading">⚠️ ${message || 'Failed to fetch usage.'}</div>`;
+            return;
+        }
+        renderUsageCard(body);
+    } catch (err) {
+        card.innerHTML = '<div class="usage-loading">❌ Error fetching usage stats.</div>';
+    }
+}
+
+function renderUsageCard(data) {
+    const card = document.getElementById('cfUsageCard');
+    const reqPct = data.requests.percent;
+    const obsPct = data.observability.percent;
+
+    const reqBarClass = reqPct >= 80 ? 'red' : reqPct >= 60 ? 'amber' : 'green';
+    const obsBarClass = obsPct >= 80 ? 'red' : obsPct >= 60 ? 'amber' : 'green';
+
+    const fmt = n => n.toLocaleString();
+    let warningsHtml = '';
+    if (data.warnings && data.warnings.length > 0) {
+        warningsHtml = data.warnings.map(w =>
+            `<div class="usage-warning">⚠️ ${w}</div>`
+        ).join('');
+    }
+    if (data.overLimit) {
+        warningsHtml += '<div class="usage-over-limit">🚫 You have exceeded your Cloudflare Workers limit!</div>';
+    }
+
+    card.innerHTML = `
+        <div class="usage-card-title">📊 Usage Stats &bull; ${data.period}</div>
+        <div class="usage-metric">
+            <div class="usage-metric-label">
+                <span>🔵 Requests today</span>
+                <span>${fmt(data.requests.used)} / ${fmt(data.requests.limit)} (${reqPct}%)</span>
+            </div>
+            <div class="usage-progress">
+                <div class="usage-progress-bar ${reqBarClass}" style="width:${Math.min(reqPct, 100)}%"></div>
+            </div>
+        </div>
+        <div class="usage-metric">
+            <div class="usage-metric-label">
+                <span>👁 Observability</span>
+                <span>${fmt(data.observability.used)} / ${fmt(data.observability.limit)} (${obsPct}%)</span>
+            </div>
+            <div class="usage-progress">
+                <div class="usage-progress-bar ${obsBarClass}" style="width:${Math.min(obsPct, 100)}%"></div>
+            </div>
+        </div>
+        ${warningsHtml}
+    `;
 }
 
 function openResetPass() {

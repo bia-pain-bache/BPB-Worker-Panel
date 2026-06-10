@@ -69,6 +69,9 @@ export async function handlePanel(request: Request, env: Env): Promise<Response>
         case '/panel/get-warp-configs':
             return await getWarpConfigs(request, env);
 
+        case '/panel/cf-usage':
+            return await getCfUsage(request, env);
+
         case '/panel/setup-telegram-webhook':
             return await setupTelegramWebhook(request, env);
 
@@ -262,6 +265,94 @@ async function resetSettings(request: Request, env: Env): Promise<Response> {
     } catch (error) {
         console.log(error);
         return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `Error occurred while resetting settings: ${safeErrorMessage(error)}`);
+    }
+}
+
+async function getCfUsage(request: Request, env: Env): Promise<Response> {
+    const auth = await Authenticate(request, env);
+    if (!auth) return respond(false, HttpStatus.UNAUTHORIZED, 'Unauthorized.');
+
+    try {
+        const { settings } = await getDataset(request, env);
+        const { cfAccountId, cfApiToken, cfWorkerName } = settings;
+
+        if (!cfAccountId || !cfApiToken || !cfWorkerName) {
+            return respond(false, HttpStatus.BAD_REQUEST, 'CF credentials not configured.');
+        }
+
+        const today = new Date().toISOString().split('T')[0];
+
+        const graphqlQuery = {
+            query: `{ viewer { accounts(filter: {accountTag: "${cfAccountId}"}) { workersInvocationsAdaptive(limit: 100, filter: { scriptName: "${cfWorkerName}", datetime_geq: "${today}T00:00:00Z", datetime_leq: "${today}T23:59:59Z" }) { sum { requests subrequests errors } } } } }`
+        };
+
+        const gqlRes = await fetch('https://api.cloudflare.com/client/v4/graphql', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${cfApiToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(graphqlQuery)
+        });
+
+        const gqlData: any = await gqlRes.json();
+
+        let requestsUsed = 0;
+        let subrequestsUsed = 0;
+        let errors = 0;
+
+        if (gqlData?.data?.viewer?.accounts?.[0]?.workersInvocationsAdaptive?.length > 0) {
+            const sums = gqlData.data.viewer.accounts[0].workersInvocationsAdaptive;
+            for (const entry of sums) {
+                if (entry.sum) {
+                    requestsUsed += entry.sum.requests || 0;
+                    subrequestsUsed += entry.sum.subrequests || 0;
+                    errors += entry.sum.errors || 0;
+                }
+            }
+        }
+
+        const requestsLimit = 100000;
+        const subrequestsLimit = 100000;
+        const observabilityLimit = 200000;
+
+        const requestsPercent = Math.round((requestsUsed / requestsLimit) * 10000) / 100;
+        const observabilityPercent = Math.round(((subrequestsUsed + errors) / observabilityLimit) * 10000) / 100;
+
+        const warnings: string[] = [];
+        if (requestsPercent > 80) {
+            warnings.push(`Requests today: ${requestsPercent}% used.`);
+        }
+        if (observabilityPercent > 80) {
+            warnings.push(`Observability today: ${observabilityPercent}% used.`);
+        }
+
+        const nearLimit = warnings.length > 0;
+        const overLimit = requestsPercent >= 100 || observabilityPercent >= 100;
+
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        const period = `${startOfMonth.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+
+        return respond(true, HttpStatus.OK, '', {
+            period,
+            today,
+            requests: {
+                used: requestsUsed,
+                limit: requestsLimit,
+                percent: requestsPercent
+            },
+            observability: {
+                used: subrequestsUsed + errors,
+                limit: observabilityLimit,
+                percent: observabilityPercent
+            },
+            overLimit,
+            nearLimit,
+            warnings
+        });
+    } catch (error) {
+        return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `Error fetching CF usage: ${safeErrorMessage(error)}`);
     }
 }
 

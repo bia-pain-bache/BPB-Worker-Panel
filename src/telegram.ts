@@ -109,6 +109,7 @@ function mainKeyboard() {
         inline_keyboard: [
             [{ text: '📥 Get Config', callback_data: 'sub' }],
             [{ text: '👥 Users', callback_data: 'users_menu' }],
+            [{ text: '📊 Usage', callback_data: 'usage' }],
             [{ text: '⚙️ Settings Info', callback_data: 'info' }]
         ]
     };
@@ -198,6 +199,113 @@ function buildStatsText(users: UserData[]): string {
         `🟢 Active: ${active}\n` +
         `🔴 Expired: ${expired}\n` +
         `⏸ Disabled: ${disabled}`;
+}
+
+async function getCfUsageForTelegram(env: Env): Promise<{ success: boolean; text: string; data?: any } | null> {
+    const proxySettings: any = await env.kv.get("proxySettings", { type: 'json' });
+    if (!proxySettings) return null;
+
+    const { cfAccountId, cfApiToken, cfWorkerName } = proxySettings;
+    if (!cfAccountId || !cfApiToken || !cfWorkerName) {
+        return { success: false, text: '⚠️ Cloudflare credentials not configured.\nSet them in Panel → Common → Cloudflare Usage Monitor.' };
+    }
+
+    try {
+        const today = new Date().toISOString().split('T')[0];
+        const gqlQuery = {
+            query: `{ viewer { accounts(filter: {accountTag: "${cfAccountId}"}) { workersInvocationsAdaptive(limit: 100, filter: { scriptName: "${cfWorkerName}", datetime_geq: "${today}T00:00:00Z", datetime_leq: "${today}T23:59:59Z" }) { sum { requests subrequests errors } } } } }`
+        };
+
+        const gqlRes = await fetch('https://api.cloudflare.com/client/v4/graphql', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${cfApiToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(gqlQuery)
+        });
+        const gqlData: any = await gqlRes.json();
+
+        let requestsUsed = 0;
+        let subrequestsUsed = 0;
+        let errors = 0;
+
+        if (gqlData?.data?.viewer?.accounts?.[0]?.workersInvocationsAdaptive) {
+            for (const entry of gqlData.data.viewer.accounts[0].workersInvocationsAdaptive) {
+                if (entry.sum) {
+                    requestsUsed += entry.sum.requests || 0;
+                    subrequestsUsed += entry.sum.subrequests || 0;
+                    errors += entry.sum.errors || 0;
+                }
+            }
+        }
+
+        const requestsLimit = 100000;
+        const observabilityLimit = 200000;
+        const reqPct = Math.round((requestsUsed / requestsLimit) * 10000) / 100;
+        const obsPct = Math.round(((subrequestsUsed + errors) / observabilityLimit) * 10000) / 100;
+        const nearLimit = reqPct > 80 || obsPct > 80;
+        const overLimit = reqPct >= 100 || obsPct >= 100;
+
+        const data = {
+            requests: { used: requestsUsed, limit: requestsLimit, percent: reqPct },
+            observability: { used: subrequestsUsed + errors, limit: observabilityLimit, percent: obsPct },
+            nearLimit,
+            overLimit
+        };
+
+        return { success: true, text: buildUsageText(data), data };
+    } catch (error) {
+        return { success: false, text: '⚠️ Error fetching usage data. Check your credentials.' };
+    }
+}
+
+function buildUsageText(data: any): string {
+    const fmt = (n: number) => n.toLocaleString();
+    const reqPct = data.requests.percent;
+    const obsPct = data.observability.percent;
+    const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    const bar = (pct: number) => {
+        const filled = Math.round(pct / 10);
+        return '▓'.repeat(Math.min(filled, 10)) + '░'.repeat(Math.max(0, 10 - filled));
+    };
+
+    let text = `📊 <b>Cloudflare Workers Usage</b>\n`;
+    text += `━━━━━━━━━━━━━━━━━━━━\n`;
+    text += `📅 Today: ${today}\n\n`;
+    text += `🔵 <b>Requests</b>\n`;
+    text += `${fmt(data.requests.used)} / ${fmt(data.requests.limit)} (${reqPct}%)\n`;
+    text += `${bar(reqPct)}\n\n`;
+    text += `👁 <b>Observability</b>\n`;
+    text += `${fmt(data.observability.used)} / ${fmt(data.observability.limit)} (${obsPct}%)\n`;
+    text += `${bar(obsPct)}\n\n`;
+
+    if (data.overLimit) {
+        text += `🚫 <b>LIMIT EXCEEDED!</b>\n`;
+    } else if (data.nearLimit) {
+        text += `⚠️ <b>WARNING:</b> Approaching limit!\n`;
+        if (reqPct > 80) {
+            text += `🔴 Requests: ${fmt(data.requests.used)} / ${fmt(data.requests.limit)} (${reqPct}%)\n`;
+        }
+        if (obsPct > 80) {
+            text += `🔴 Observability: ${fmt(data.observability.used)} / ${fmt(data.observability.limit)} (${obsPct}%)\n`;
+        }
+    } else {
+        text += `✅ All within limits\n`;
+    }
+
+    text += `━━━━━━━━━━━━━━━━━━━━`;
+    return text;
+}
+
+function usageKeyboard() {
+    return {
+        inline_keyboard: [
+            [{ text: '🔄 Refresh', callback_data: 'usage_refresh' }],
+            [{ text: '🔙 Back', callback_data: 'main' }]
+        ]
+    };
 }
 
 async function sendUserList(token: string, chatId: number, page: number, env: Env, origin: string) {
@@ -459,6 +567,42 @@ async function handleUserCallback(cq: TgCallbackQuery, token: string, chatId: nu
                 inline_keyboard: [[{ text: '🔙 Back', callback_data: 'main' }]]
             }
         });
+    } else if (data === 'usage' || data === 'usage_refresh') {
+        const result = await getCfUsageForTelegram(env);
+        if (!result) {
+            await tgFetch(token, 'sendMessage', {
+                chat_id: chatId,
+                text: '⚠️ Could not fetch usage data.',
+                parse_mode: 'HTML',
+                reply_markup: { inline_keyboard: [[{ text: '🔙 Back', callback_data: 'main' }]] }
+            });
+            return;
+        }
+        if (!result.success) {
+            await tgFetch(token, 'sendMessage', {
+                chat_id: chatId,
+                text: result.text,
+                parse_mode: 'HTML',
+                reply_markup: { inline_keyboard: [[{ text: '🔙 Back', callback_data: 'main' }]] }
+            });
+            return;
+        }
+        if (data === 'usage_refresh' && cq.message?.message_id) {
+            await tgFetch(token, 'editMessageText', {
+                chat_id: chatId,
+                message_id: cq.message.message_id,
+                text: result.text,
+                parse_mode: 'HTML',
+                reply_markup: usageKeyboard()
+            });
+        } else {
+            await tgFetch(token, 'sendMessage', {
+                chat_id: chatId,
+                text: result.text,
+                parse_mode: 'HTML',
+                reply_markup: usageKeyboard()
+            });
+        }
     } else if (data.startsWith('type_')) {
         const typeKey = data.slice(5);
         const typeInfo = SUB_TYPES[typeKey];
@@ -639,6 +783,63 @@ async function handleUserMessage(msg: TgMessage, token: string, chatId: number, 
     }
 }
 
+async function checkCfUsageWarning(proxySettings: any, botToken: string, chatId: number, env: Env): Promise<void> {
+    if (!proxySettings.cfAccountId || !proxySettings.cfApiToken || !proxySettings.cfWorkerName) return;
+
+    try {
+        const now = Date.now();
+        const cacheRaw = await env.kv.get('cfUsageCache', { type: 'json' });
+        const cache: any = cacheRaw || {};
+
+        let needFetch = true;
+        if (cache.data && cache.fetchedAt && (now - cache.fetchedAt < 30 * 60 * 1000)) {
+            needFetch = false;
+        }
+
+        if (needFetch) {
+            const result = await getCfUsageForTelegram(env);
+            if (!result || !result.success || !result.data) return;
+            await env.kv.put('cfUsageCache', JSON.stringify({ data: result.data, fetchedAt: now }));
+
+            if (result.data.nearLimit) {
+                const lastWarningRaw = await env.kv.get('cfLastWarning', { type: 'json' });
+                const lastWarning: number = lastWarningRaw?.timestamp || 0;
+                if (now - lastWarning > 6 * 60 * 60 * 1000) {
+                    const warningText = result.data.overLimit
+                        ? `🚫 <b>Cloudflare Workers limit exceeded!</b>\n\n${result.text}`
+                        : `⚠️ <b>Cloudflare Workers near limit!</b>\n\n${result.text}`;
+
+                    await tgFetch(botToken, 'sendMessage', {
+                        chat_id: chatId,
+                        text: warningText,
+                        parse_mode: 'HTML',
+                        reply_markup: usageKeyboard()
+                    });
+                    await env.kv.put('cfLastWarning', JSON.stringify({ timestamp: now }));
+                }
+            }
+        } else if (cache.data && cache.data.nearLimit) {
+            const lastWarningRaw = await env.kv.get('cfLastWarning', { type: 'json' });
+            const lastWarning: number = lastWarningRaw?.timestamp || 0;
+            if (now - lastWarning > 6 * 60 * 60 * 1000) {
+                const warningText = cache.data.overLimit
+                    ? `🚫 <b>Cloudflare Workers limit exceeded!</b>\n\n${buildUsageText(cache.data)}`
+                    : `⚠️ <b>Cloudflare Workers near limit!</b>\n\n${buildUsageText(cache.data)}`;
+
+                await tgFetch(botToken, 'sendMessage', {
+                    chat_id: chatId,
+                    text: warningText,
+                    parse_mode: 'HTML',
+                    reply_markup: usageKeyboard()
+                });
+                await env.kv.put('cfLastWarning', JSON.stringify({ timestamp: now }));
+            }
+        }
+    } catch {
+        // Silently ignore errors in background check
+    }
+}
+
 export async function handleTelegramWebhook(request: Request, env: Env): Promise<Response> {
     const proxySettings: any = await env.kv.get("proxySettings", { type: 'json' });
     if (!proxySettings) return new Response(null, { status: 200 });
@@ -673,6 +874,7 @@ export async function handleTelegramWebhook(request: Request, env: Env): Promise
             await handleUserCallback(cq, botToken, chatId, env, origin);
         }
 
+        checkCfUsageWarning(proxySettings, botToken, chatId, env);
         return new Response(null, { status: 200 });
     }
 
@@ -735,6 +937,7 @@ export async function handleTelegramWebhook(request: Request, env: Env): Promise
             }
         }
 
+        checkCfUsageWarning(proxySettings, botToken, chatId, env);
         return new Response(null, { status: 200 });
     }
 

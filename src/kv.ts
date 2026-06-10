@@ -136,6 +136,9 @@ export async function updateDataset(request: Request, env: Env): Promise<Setting
             ["amneziaNoiseSizeMax"],
             ["telegramBotToken"],
             ["telegramAdminId"],
+            ["cfAccountId"],
+            ["cfApiToken"],
+            ["cfWorkerName"],
             ["customSubs"],
             ["customConfigs"]
         ];

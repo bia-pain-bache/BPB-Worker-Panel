@@ -35,8 +35,8 @@ export default {
 				initHttp(request, env);
 
 				switch (path) {
-					case 'panel':
-						return await handlePanel(request, env);
+				case 'panel':
+					return await handlePanel(request, env);
 
 					case 'sub':
 						if (pathName.startsWith('/sub/user/')) {

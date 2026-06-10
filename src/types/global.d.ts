@@ -146,6 +146,9 @@ declare global {
         amneziaNoiseSizeMax: number;
         telegramBotToken: string;
         telegramAdminId: string;
+        cfAccountId: string;
+        cfApiToken: string;
+        cfWorkerName: string;
         customSubs: string[];
         customConfigs: string[];
         panelVersion: string;

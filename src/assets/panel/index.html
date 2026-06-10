@@ -110,6 +110,32 @@
                     </div>
                     <button type="button" class="btn-ghost" onclick="fetchIPInfo()" id="refresh-geo-location"><i class="fa fa-refresh"></i> Refresh</button>
                 </div>
+                <div class="glass-card">
+                    <div class="glass-card-header">
+                        <div class="glass-card-title">☁️ Cloudflare Usage Monitor</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Account ID</label>
+                        <input class="neon-input" type="text" id="cfAccountId" name="cfAccountId" placeholder="e.g. a1b2c3d4e5f6...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">API Token</label>
+                        <div class="password-wrapper">
+                            <input class="neon-input" type="password" id="cfApiToken" name="cfApiToken" placeholder="Workers Analytics Read token">
+                            <button type="button" class="toggle-vis" onclick="togglePassword(this)">👁️</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Worker / Pages Project Name</label>
+                        <input class="neon-input" type="text" id="cfWorkerName" name="cfWorkerName" placeholder="your-worker-name">
+                    </div>
+                    <div class="btn-group" style="margin-top:12px;">
+                        <button type="button" class="btn-neon" onclick="saveCfCredentials()">💾 Save</button>
+                        <button type="button" class="btn-ghost" onclick="fetchCfUsage()">🔄 Refresh Stats</button>
+                    </div>
+                    <div id="cfUsageCard" class="usage-card" style="display:none;margin-top:16px;"></div>
+                </div>
+
             </div>
 
             <!-- VLESS-Trojan Tab -->
