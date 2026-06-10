@@ -37,6 +37,7 @@ This project is aimed to provide a user panel to access FREE, SECURE and PRIVATE
 11. **Fully customizable:** Supports setting up clean IP-domains, Proxy IPs, DNS servers, choosing ports and protocols, Warp endpoints and more.
 12. **Telegram Bot Integration:** Built-in Telegram bot for receiving subscription links, QR codes, and settings info directly in Telegram.
 13. **User Management:** Create users with expiry dates and usage limits, manage them via panel or Telegram bot, and serve personalized subscriptions.
+14. **Cloudflare Usage Monitor:** View real-time Workers usage stats (requests, subrequests, observability) directly in the panel with progress bars and automatic Telegram alerts when approaching limits.
 
 ## Limitations
 

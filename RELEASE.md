@@ -1,5 +1,7 @@
 # 💡 Bug fixes & Improvements
 
+- **Cloudflare Usage Monitor**: New panel section in Common tab — enter Account ID, API Token, and Worker Name to view live Workers usage stats (requests, subrequests, observability). Progress bars with color thresholds (green/amber/red), warning banner when nearing limits, and auto-fetch on page load if configured.
+- **Telegram Bot — Usage Command**: Added "📊 Usage" button to the bot main menu, displays formatted usage stats with ASCII progress bars and near-limit warnings. Proactive usage warning sent automatically when any metric exceeds 80%, throttled to once per 6 hours with 30-minute data cache.
 - **Redesigned Login Page**: Glass morphism card, neon inputs, password toggle, theme toggle pill with emoji indicators, and responsive design.
 - **Toast Notifications**: Replaced all `alert()` calls with elegant toast notifications (success/error/warning/info types) with auto-dismiss and progress bar.
 - **Confirm Modal**: Replaced all `confirm()` dialogs with a custom glass-card confirm modal with gradient buttons and spring animation.
