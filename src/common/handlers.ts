@@ -9,6 +9,7 @@ import { VlOverWSHandler } from "@vless";
 import { TrOverWSHandler } from "@trojan";
 import { base64DecodeUtf8, base64EncodeUtf8, HttpStatus, respond, safeErrorMessage } from "@common";
 import { generateRemark, generateWsPath, getConfigAddresses, randomUpperCase, resolveDNS } from "@utils";
+import { listUsers, createUser, getUser, updateUser, deleteUser, getStatus, findUserBySubPath, type UserData } from "@users";
 import JSZip from "jszip";
 
 export async function handleWebsocket(request: Request): Promise<Response> {
@@ -71,7 +72,14 @@ export async function handlePanel(request: Request, env: Env): Promise<Response>
         case '/panel/setup-telegram-webhook':
             return await setupTelegramWebhook(request, env);
 
+        case '/panel/users':
+        case '/panel/users/':
+            return await handleUsers(request, env);
+
         default:
+            if (pathName.startsWith('/panel/users/')) {
+                return await handleUsers(request, env);
+            }
             return await fallback(request);
     }
 }
@@ -282,6 +290,7 @@ async function setupTelegramWebhook(request: Request, env: Env): Promise<Respons
                     { command: 'config', description: '📥 Get subscription config' },
                     { command: 'qr', description: '📱 Get QR codes' },
                     { command: 'info', description: '⚙️ Show settings info' },
+                    { command: 'users', description: '👥 User management' },
                 ]
             })
         });
@@ -314,6 +323,115 @@ async function getSettings(request: Request, env: Env): Promise<Response> {
     } catch (error) {
         console.log(error);
         return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `Error occurred while fetching settings: ${safeErrorMessage(error)}`);
+    }
+}
+
+async function userAuth(request: Request, env: Env): Promise<boolean> {
+    const pwd = await env.kv.get('pwd');
+    if (!pwd) return true;
+    return await Authenticate(request, env);
+}
+
+async function handleUsers(request: Request, env: Env): Promise<Response> {
+    const auth = await userAuth(request, env);
+    if (!auth) return respond(false, HttpStatus.UNAUTHORIZED, 'Unauthorized.');
+
+    const { pathName } = globalThis.globalConfig;
+    const method = request.method;
+
+    if (pathName === '/panel/users' || pathName === '/panel/users/') {
+        if (method === 'GET') {
+            try {
+                const users = await listUsers(env);
+                return respond(true, HttpStatus.OK, '', users);
+            } catch (error) {
+                return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `Error: ${safeErrorMessage(error)}`);
+            }
+        }
+
+        if (method === 'POST') {
+            try {
+                const body: { username?: string; days?: number; note?: string } = await request.json();
+                const result = await createUser(body.username || '', body.days || 30, body.note || '', env);
+                if (!result.success) return respond(false, HttpStatus.BAD_REQUEST, result.message);
+                return respond(true, HttpStatus.OK, result.message, result.user);
+            } catch (error) {
+                return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `Error: ${safeErrorMessage(error)}`);
+            }
+        }
+
+        return respond(false, HttpStatus.METHOD_NOT_ALLOWED, 'Method not allowed.');
+    }
+
+    const username = pathName.replace('/panel/users/', '');
+    if (!username) return respond(false, HttpStatus.NOT_FOUND, 'User not found.');
+
+    if (method === 'GET') {
+        try {
+            const user = await getUser(username, env);
+            if (!user) return respond(false, HttpStatus.NOT_FOUND, 'User not found.');
+            return respond(true, HttpStatus.OK, '', user);
+        } catch (error) {
+            return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `Error: ${safeErrorMessage(error)}`);
+        }
+    }
+
+    if (method === 'PUT') {
+        try {
+            const body: { days?: number; note?: string; active?: boolean } = await request.json();
+            const result = await updateUser(username, { days: body.days, note: body.note, active: body.active }, env);
+            if (!result.success) return respond(false, HttpStatus.NOT_FOUND, result.message);
+            return respond(true, HttpStatus.OK, result.message, result.user);
+        } catch (error) {
+            return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `Error: ${safeErrorMessage(error)}`);
+        }
+    }
+
+    if (method === 'DELETE') {
+        try {
+            const result = await deleteUser(username, env);
+            if (!result.success) return respond(false, HttpStatus.NOT_FOUND, result.message);
+            return respond(true, HttpStatus.OK, result.message);
+        } catch (error) {
+            return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `Error: ${safeErrorMessage(error)}`);
+        }
+    }
+
+    return respond(false, HttpStatus.METHOD_NOT_ALLOWED, 'Method not allowed.');
+}
+
+export async function handleUserSub(request: Request, env: Env): Promise<Response> {
+    const { pathName } = globalThis.globalConfig;
+    const segments = pathName.split('/');
+    const userSubPath = segments[3];
+    if (!userSubPath) return new Response('Not found', { status: 404 });
+
+    const user = await findUserBySubPath(userSubPath, env);
+    if (!user) return new Response('Your subscription has expired. Please contact the administrator.', { status: 404 });
+
+    const status = getStatus(user);
+    if (status !== 'active') {
+        return new Response('Your subscription has expired. Please contact the administrator.', { status: 403 });
+    }
+
+    const panelSubPath = globalThis.httpConfig.subPath;
+    (globalThis.globalConfig as any).pathName = `/sub/normal/${panelSubPath}`;
+
+    const url = new URL(request.url);
+    const app = decodeURIComponent(url.searchParams.get('app') ?? '');
+    if (app) (globalThis.httpConfig as any).client = app;
+
+    await setSettings(request, env);
+
+    const { client } = globalThis.httpConfig;
+    try {
+        switch (client) {
+            case 'sing-box': return await getSbCustomConfig(false);
+            case 'clash': return await getClNormalConfig();
+            default: return await getXrCustomConfigs(false);
+        }
+    } catch (error) {
+        return new Response(`Config error: ${safeErrorMessage(error)}`, { status: 500 });
     }
 }
 

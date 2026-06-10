@@ -1,5 +1,16 @@
 # 💡 Bug fixes & Improvements
 
+- **Redesigned Login Page**: Glass morphism card, neon inputs, password toggle, theme toggle pill with emoji indicators, and responsive design.
+- **Toast Notifications**: Replaced all `alert()` calls with elegant toast notifications (success/error/warning/info types) with auto-dismiss and progress bar.
+- **Confirm Modal**: Replaced all `confirm()` dialogs with a custom glass-card confirm modal with gradient buttons and spring animation.
+- **Fixed Modal Centering**: Changed all existing modals from `display: block` to `display: flex` so `align-items: center; justify-content: center;` works correctly.
+- **Telegram Bot — Removed QR from /start**: Removed "📱 QR Codes" button from the main menu.
+- **Telegram Bot — Custom Days Input**: Added "✏️ Custom days" button in user editor, stores state in KV, validates integer range `-3650…3650`.
+- **Telegram Bot — Fixed Delete Loop**: Replaced repeated `delete` callback with unique one-time `confirm_delete:{username}` callback data, no more message loop.
+- **Navbar Positioning**: Changed from `position: fixed` to `position: relative` to remove floating behavior; adjusted main container padding and tab-bar top.
+- **Knocker Noise Mode UI**: Changed from text input to `<select>` dropdown (none/quic/random/custom) with conditional hex input field.
+- **WireGuard Download Buttons**: Added ⬇️ Download Normal / 🌀 Download Amnezia buttons in Warp Pro settings tab, and a WireGuard download row in subscription cards.
+- **User Management System**: Full user CRUD with expiry dates, usage limits (based on fetch quota), and dedicated subscription endpoints (`/sub/user/:subPath`). Manage users via Panel → Users tab or Telegram bot menu.
 - **Telegram Bot Integration**: Added a built-in Telegram bot with inline keyboard menus, subscription delivery, QR code generation, and settings info display. Configure via Panel → Telegram Bot section.
 - Fixed Cloudflare worker compatibility issue. Please select the latest compatibility date in dashboard if you have manually changed it before.
 - **External Raw Configs**: You can add desired subscriptions and URL configs and BPB fetches all configs and integrate them into Raw subscription.

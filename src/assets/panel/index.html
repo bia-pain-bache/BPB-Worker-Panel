@@ -1,1311 +1,774 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BPB Panel v__VERSION__</title>
     <link rel="icon" href="/favicon.ico" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add_circle,autorenew,check_circle,content_copy,delete,dns,download,fingerprint,info,key_vertical,open_in_new,qr_code,settings,share,terminal,tune,verified,visibility,visibility_off&display=block" />
     __STYLE__
 </head>
-
 <body>
-    <h1>
-        <img class="icon" src="/favicon.ico" alt="BPB Logo"> BPB Panel <span id="panel-version"
-            style="font-size: smaller;">
-            v__VERSION__
-        </span>
-    </h1>
-    <div class="form-container container">
-        <h2><span class="material-symbols-rounded">settings</span> Settings</h2>
-        <form id="configForm" class="configForm" onsubmit="updateSettings(event)">
-            <details>
-                <summary>
-                    <h3>Common
-                        <a href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/common/"
-                            target="_blank" title="Help">
-                            <span class="material-symbols-rounded">info</span>
-                        </a>
-                    </h3>
-                </summary>
-                <div class="section">
-                    <div class="form-control">
-                        <label for="localDNS">🏚️ Local DNS</label>
-                        <div>
-                            <input type="text" id="localDNS" name="localDNS" required>
+    <div class="navbar-wrapper">
+        <!-- Left pill: Logo -->
+        <div class="nav-pill nav-logo">
+            <span class="logo-icon">💦</span>
+            <span class="logo-text">BPB Panel <span class="logo-version">v__VERSION__</span></span>
+        </div>
+
+        <!-- Center: empty space (flex: 1) -->
+
+        <!-- Right pill: actions -->
+        <div class="nav-pill nav-actions">
+            <button type="button" class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+            <button type="button" class="nav-btn logout-btn" onclick="logout(event)" title="Logout">⏻</button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="tab-bar" id="tabBar">
+            <div class="tab-list">
+                <button class="tab-btn active" data-tab="common">Common</button>
+                <button class="tab-btn" data-tab="vless">VLESS-Trojan</button>
+                <button class="tab-btn" data-tab="fragment">Fragment</button>
+                <button class="tab-btn" data-tab="warp">Warp</button>
+                <button class="tab-btn" data-tab="warp-pro">Warp Pro</button>
+                <button class="tab-btn" data-tab="routing">Routing</button>
+                <button class="tab-btn" data-tab="external">External</button>
+                <button class="tab-btn" data-tab="telegram">Telegram</button>
+                <button class="tab-btn" data-tab="subscriptions">Subscriptions</button>
+                <button class="tab-btn" data-tab="users">Users</button>
+            </div>
+        </div>
+
+        <form id="configForm" onsubmit="updateSettings(event)">
+            <!-- Common Tab -->
+            <div class="tab-content active" id="tab-common" data-tab="common">
+                <div class="glass-card">
+                    <div class="glass-card-header">
+                        <div class="glass-card-title">🌐 DNS & Network</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🏚️ Local DNS</label>
+                        <input class="neon-input" type="text" id="localDNS" name="localDNS" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🌏 Anti Sanction DNS</label>
+                        <input class="neon-input" type="text" id="antiSanctionDNS" name="antiSanctionDNS" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🧢 Fake DNS</label>
+                        <select class="neon-input" id="fakeDNS" name="fakeDNS">
+                            <option value="true">Enabled</option>
+                            <option value="false">Disabled</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🔛 IPv6</label>
+                        <select class="neon-input" id="enableIPv6" name="enableIPv6">
+                            <option value="true">Enabled</option>
+                            <option value="false">Disabled</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">⛔ Allow LAN</label>
+                        <select class="neon-input" id="allowLANConnection" name="allowLANConnection">
+                            <option value="true">Enabled</option>
+                            <option value="false">Disabled</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🎚️ Log Level</label>
+                        <select class="neon-input" id="logLevel" name="logLevel">
+                            <option value="none">Disabled</option>
+                            <option value="warning">Warning</option>
+                            <option value="error">Error</option>
+                            <option value="info">Info</option>
+                            <option value="debug">Debug</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="glass-card">
+                    <div class="glass-card-header">
+                        <div class="glass-card-title">🔗 DoH URL</div>
+                    </div>
+                    <div class="sub-url-display" id="doh"></div>
+                </div>
+                <div class="glass-card">
+                    <div class="glass-card-header">
+                        <div class="glass-card-title">📍 IP Information</div>
+                    </div>
+                    <div class="ip-info" id="ipInfo">
+                        <div class="ip-info-item"><div class="label">IP</div><div class="value" id="ip">-</div></div>
+                        <div class="ip-info-item"><div class="label">Country</div><div class="value" id="country">-</div></div>
+                        <div class="ip-info-item"><div class="label">City</div><div class="value" id="city">-</div></div>
+                        <div class="ip-info-item"><div class="label">ISP</div><div class="value" id="isp">-</div></div>
+                        <div class="ip-info-item"><div class="label">CF IP</div><div class="value" id="cf-ip">-</div></div>
+                        <div class="ip-info-item"><div class="label">CF Country</div><div class="value" id="cf-country">-</div></div>
+                        <div class="ip-info-item"><div class="label">CF City</div><div class="value" id="cf-city">-</div></div>
+                        <div class="ip-info-item"><div class="label">CF ISP</div><div class="value" id="cf-isp">-</div></div>
+                    </div>
+                    <button type="button" class="btn-ghost" onclick="fetchIPInfo()" id="refresh-geo-location"><i class="fa fa-refresh"></i> Refresh</button>
+                </div>
+            </div>
+
+            <!-- VLESS-Trojan Tab -->
+            <div class="tab-content" id="tab-vless" data-tab="vless">
+                <div class="glass-card">
+                    <div class="glass-card-header">
+                        <div class="glass-card-title">⚙️ VLESS & Trojan Settings</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🌏 Remote DNS</label>
+                        <input class="neon-input" type="text" id="remoteDNS" name="remoteDNS" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🚪 Upstream TCP Proxy</label>
+                        <input class="neon-input" type="text" id="upstreamProxy" name="upstreamProxy">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">✈️ Chain Proxy</label>
+                        <input class="neon-input" type="text" id="outProxy" name="outProxy">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">✨ Clean IPs / Domains</label>
+                        <textarea class="neon-input" id="cleanIPs" name="cleanIPs" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">⚙️ Protocols</label>
+                        <div class="proto-group">
+                            <label class="toggle-label">
+                                <input type="checkbox" id="VLConfigs" name="VLConfigs" value="true" onchange="handleProtocolChange(event)">
+                                <span class="toggle-switch"></span> VLESS
+                            </label>
+                            <label class="toggle-label">
+                                <input type="checkbox" id="TRConfigs" name="TRConfigs" value="true" onchange="handleProtocolChange(event)">
+                                <span class="toggle-switch"></span> Trojan
+                            </label>
                         </div>
                     </div>
-                    <div class="form-control">
-                        <label for="antiSanctionDNS">🌏 Anti Sanction DNS</label>
-                        <div>
-                            <input type="text" id="antiSanctionDNS" name="antiSanctionDNS" required>
+                    <div class="form-group">
+                        <label class="form-label">🔒 TLS Ports</label>
+                        <div class="toggle-group" id="tls-ports"></div>
+                    </div>
+                    <div id="none-tls" class="form-group" style="display:none;">
+                        <label class="form-label">🔓 Non-TLS Ports</label>
+                        <div class="toggle-group" id="non-tls-ports"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">👆 Fingerprint</label>
+                        <select class="neon-input" id="fingerprint" name="fingerprint">
+                            <option value="chrome">chrome</option>
+                            <option value="firefox">firefox</option>
+                            <option value="safari">safari</option>
+                            <option value="ios">ios</option>
+                            <option value="android">android</option>
+                            <option value="edge">edge</option>
+                            <option value="360">360</option>
+                            <option value="qq">qq</option>
+                            <option value="random">random</option>
+                            <option value="randomized">randomized</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🔄 Best Interval (s)</label>
+                        <input class="neon-input" type="number" id="bestVLTRInterval" name="bestVLTRInterval" min="10" max="90">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">⏩ TCP Fast Open</label>
+                        <select class="neon-input" id="enableTFO" name="enableTFO">
+                            <option value="true">Enabled</option>
+                            <option value="false">Disabled</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="glass-card">
+                    <div class="glass-card-header">
+                        <div class="glass-card-title">🎭 ECH</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">ECH</label>
+                        <select class="neon-input" id="enableECH" name="enableECH">
+                            <option value="true">Enabled</option>
+                            <option value="false">Disabled</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🧢 ECH Server Name</label>
+                        <input class="neon-input" type="text" id="echServerName" name="echServerName">
+                    </div>
+                </div>
+                <div class="glass-card">
+                    <div class="glass-card-header">
+                        <div class="glass-card-title">📍 Proxy IP</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🎚️ Mode</label>
+                        <select class="neon-input" id="proxyIPMode" name="proxyIPMode">
+                            <option value="proxyip">Proxy IP</option>
+                            <option value="prefix">NAT64</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">📍 Proxy IPs / Domains</label>
+                        <textarea class="neon-input" id="proxyIPs" name="proxyIPs" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">📍 NAT64 Prefixes</label>
+                        <textarea class="neon-input" id="prefixes" name="prefixes" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="glass-card">
+                    <div class="glass-card-header">
+                        <div class="glass-card-title">💀 Custom CDN</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Addresses</label>
+                        <textarea class="neon-input" id="customCdnAddrs" name="customCdnAddrs" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Host</label>
+                        <input class="neon-input" type="text" id="customCdnHost" name="customCdnHost">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">SNI</label>
+                        <input class="neon-input" type="text" id="customCdnSni" name="customCdnSni">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fragment Tab -->
+            <div class="tab-content" id="tab-fragment" data-tab="fragment">
+                <div class="glass-card">
+                    <div class="glass-card-header">
+                        <div class="glass-card-title">🧩 Xray Fragment</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🎚️ Mode</label>
+                        <select class="neon-input" id="fragmentMode" name="fragmentMode" onchange="handleFragmentMode()">
+                            <option value="custom">Custom</option>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="severe">Severe</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">📐 Length</label>
+                        <div class="min-max-row">
+                            <input class="neon-input" type="number" id="fragmentLengthMin" name="fragmentLengthMin" min="1" required>
+                            <span>—</span>
+                            <input class="neon-input" type="number" id="fragmentLengthMax" name="fragmentLengthMax" max="500" required>
                         </div>
                     </div>
-                    <div class="form-control">
-                        <label for="fakeDNS">🧢 Fake DNS</label>
-                        <div>
-                            <select id="fakeDNS" name="fakeDNS">
-                                <option value="true">Enabled</option>
-                                <option value="false">Disabled</option>
+                    <div class="form-group">
+                        <label class="form-label">🕞 Interval</label>
+                        <div class="min-max-row">
+                            <input class="neon-input" type="number" id="fragmentIntervalMin" name="fragmentIntervalMin" min="1" max="30" required>
+                            <span>—</span>
+                            <input class="neon-input" type="number" id="fragmentIntervalMax" name="fragmentIntervalMax" min="1" max="30" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">⛓️ Max Split</label>
+                        <div class="min-max-row">
+                            <input class="neon-input" type="number" id="fragmentMaxSplitMin" name="fragmentMaxSplitMin" min="2">
+                            <span>—</span>
+                            <input class="neon-input" type="number" id="fragmentMaxSplitMax" name="fragmentMaxSplitMax" min="2">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">📦 Packets</label>
+                        <select class="neon-input" id="fragmentPackets" name="fragmentPackets">
+                            <option value="tlshello">tlshello</option>
+                            <option value="1-1">1-1</option>
+                            <option value="1-2">1-2</option>
+                            <option value="1-3">1-3</option>
+                            <option value="1-5">1-5</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Warp Tab -->
+            <div class="tab-content" id="tab-warp" data-tab="warp">
+                <div class="glass-card">
+                    <div class="glass-card-header">
+                        <div class="glass-card-title">🌀 Warp General</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🌏 Remote DNS</label>
+                        <input class="neon-input" type="text" id="warpRemoteDNS" name="warpRemoteDNS" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">✨ Endpoints</label>
+                        <textarea class="neon-input" id="warpEndpoints" name="warpEndpoints" rows="2" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🔄 Best Interval (s)</label>
+                        <input class="neon-input" type="number" id="bestWarpInterval" name="bestWarpInterval" min="10" max="90">
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" class="btn-neon" onclick="updateWarpConfigs()">♻️ Update Warp Accounts</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Warp Pro Tab -->
+            <div class="tab-content" id="tab-warp-pro" data-tab="warp-pro">
+                <div class="glass-card">
+                    <div class="glass-card-header">
+                        <div class="glass-card-title">🌀 Warp Pro</div>
+                    </div>
+                    <div class="glass-card" style="margin-bottom:12px;">
+                        <div class="glass-card-title" style="font-size:0.85rem;margin-bottom:8px;">😵‍💫 MahsaNG Noise</div>
+                        <div class="form-group">
+                            <label class="form-label">Mode</label>
+                            <select class="neon-input" id="knockerNoiseMode" name="knockerNoiseMode" onchange="handleKnockerMode()">
+                                <option value="none">None</option>
+                                <option value="quic">QUIC</option>
+                                <option value="random">Random</option>
+                                <option value="custom">Custom HEX</option>
                             </select>
                         </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="enableIPv6">🔛 IPv6</label>
-                        <div>
-                            <select id="enableIPv6" name="enableIPv6">
-                                <option value="true">Enabled</option>
-                                <option value="false">Disabled</option>
-                            </select>
+                        <div class="form-group" id="knockerHexGroup" style="display:none;">
+                            <label class="form-label">Custom HEX Value</label>
+                            <input class="neon-input" type="text" id="knockerNoiseHex" name="knockerNoiseHex" placeholder="Enter hex value">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Count</label>
+                            <div class="min-max-row">
+                                <input class="neon-input" type="number" id="noiseCountMin" name="noiseCountMin" min="1" required>
+                                <span>—</span>
+                                <input class="neon-input" type="number" id="noiseCountMax" name="noiseCountMax" min="1" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Size</label>
+                            <div class="min-max-row">
+                                <input class="neon-input" type="number" id="noiseSizeMin" name="noiseSizeMin" min="1" required>
+                                <span>—</span>
+                                <input class="neon-input" type="number" id="noiseSizeMax" name="noiseSizeMax" min="1" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Delay</label>
+                            <div class="min-max-row">
+                                <input class="neon-input" type="number" id="noiseDelayMin" name="noiseDelayMin" min="1" required>
+                                <span>—</span>
+                                <input class="neon-input" type="number" id="noiseDelayMax" name="noiseDelayMax" min="1" required>
+                            </div>
                         </div>
                     </div>
-                    <div class="form-control">
-                        <label for="allowLANConnection">⛔ Allow connections from LAN</label>
-                        <div>
-                            <select id="allowLANConnection" name="allowLANConnection">
-                                <option value="true">Enabled</option>
-                                <option value="false">Disabled</option>
-                            </select>
+                    <div class="glass-card" style="margin-bottom:12px;">
+                        <div class="glass-card-title" style="font-size:0.85rem;margin-bottom:8px;">🔊 Clash - Amnezia Noise</div>
+                        <div class="form-group">
+                            <label class="form-label">Count</label>
+                            <input class="neon-input" type="number" id="amneziaNoiseCount" name="amneziaNoiseCount" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Size</label>
+                            <div class="min-max-row">
+                                <input class="neon-input" type="number" id="amneziaNoiseSizeMin" name="amneziaNoiseSizeMin" min="1" required>
+                                <span>—</span>
+                                <input class="neon-input" type="number" id="amneziaNoiseSizeMax" name="amneziaNoiseSizeMax" min="1" required>
+                            </div>
                         </div>
                     </div>
-                    <div class="form-control">
-                        <label for="logLevel">🎚️ Log Level</label>
-                        <div>
-                            <select id="logLevel" name="logLevel">
-                                <option value="none">Disabled</option>
-                                <option value="warning">Warning</option>
-                                <option value="error">Error</option>
-                                <option value="info">Info</option>
-                                <option value="debug">Debug</option>
-                            </select>
+                    <div class="glass-card">
+                        <div class="flex items-center justify-between" style="margin-bottom:12px;">
+                            <div class="glass-card-title" style="font-size:0.85rem;margin:0;">🔊 v2rayNG/v2rayN Noise</div>
+                            <button type="button" class="btn-ghost" onclick="addUdpNoise(true)">+ Add Noise</button>
+                        </div>
+                        <div id="noises" class="noise-grid"></div>
+                    </div>
+                    <div class="glass-card">
+                        <div class="glass-card-title" style="font-size:0.85rem;margin-bottom:12px;">🔌 WireGuard Configs</div>
+                        <div class="btn-group" style="margin:0;">
+                            <button type="button" class="btn-neon" onclick="downloadWarpConfigs(false)">⬇️ Download Normal</button>
+                            <button type="button" class="btn-neon" onclick="downloadWarpConfigs(true)">⬇️ Download Amnezia</button>
                         </div>
                     </div>
                 </div>
-            </details>
-            <details class="details">
-                <summary>
-                    <h3>VLESS - Trojan
-                        <a href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/vless-trojan/"
-                            target="_blank" title="Help">
-                            <span class="material-symbols-rounded">info</span>
-                        </a>
-                    </h3>
-                </summary>
-                <div class="section">
-                    <div class="form-control">
-                        <label for="remoteDNS">🌏 Remote DNS</label>
-                        <div>
-                            <input type="text" id="remoteDNS" name="remoteDNS" required>
-                        </div>
+            </div>
+
+            <!-- Routing Tab -->
+            <div class="tab-content" id="tab-routing" data-tab="routing">
+                <div class="glass-card">
+                    <div class="glass-card-header">
+                        <div class="glass-card-title">🟩 Bypass Rules</div>
                     </div>
-                    <div class="form-control">
-                        <label for="upstreamProxy">🚪 Upstream TCP Proxy</label>
-                        <div>
-                            <input type="text" id="upstreamProxy" name="upstreamProxy">
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="outProxy">✈️ Chain Proxy</label>
-                        <div>
-                            <input type="text" id="outProxy" name="outProxy">
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="cleanIPs">
-                            ✨ Clean IPs / Domains
-                            <a class="scanner" href="https://github.com/bia-pain-bache/Cloudflare-Clean-IP-Scanner"
-                                title="Scanner" target="_blank" rel="noopener noreferrer">
-                                <span class="material-symbols-rounded">open_in_new</span>
-                            </a>
-                        </label>
-                        <div>
-                            <textarea type="text" id="cleanIPs" name="cleanIPs" rows="1"></textarea>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="VLConfigs">⚙️ Protocols</label>
-                        <div>
-                            <div class="protocols inner-container">
-                                <div class="proto">
-                                    <input type="checkbox" id="VLConfigs" name="VLConfigs" value="true"
-                                        onchange="handleProtocolChange(event)">
-                                    <label for="VLConfigs">VLESS</label>
-                                </div>
-                                <div class="proto">
-                                    <input type="checkbox" id="TRConfigs" name="TRConfigs" value="true"
-                                        onchange="handleProtocolChange(event)">
-                                    <label for="TRConfigs">Trojan</label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="tls-ports">🔒 TLS Ports</label>
-                        <div>
-                            <div id="tls-ports" class="rules inner-container"></div>
-                        </div>
-                    </div>
-                    <div id="none-tls" class="form-control" style="display: none;">
-                        <label for="non-tls-ports">🔓 non-TLS Ports</label>
-                        <div>
-                            <div id="non-tls-ports" class="rules inner-container"></div>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="fingerprint">👆 Fingerprint</label>
-                        <div>
-                            <select id="fingerprint" name="fingerprint">
-                                <option value="chrome">chrome</option>
-                                <option value="firefox">firefox</option>
-                                <option value="safari">safari</option>
-                                <option value="ios">ios</option>
-                                <option value="android">android</option>
-                                <option value="edge">edge</option>
-                                <option value="360">360</option>
-                                <option value="qq">qq</option>
-                                <option value="random">random</option>
-                                <option value="randomized">randomized</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="bestVLTRInterval">🔄 Best Interval</label>
-                        <div>
-                            <input type="number" id="bestVLTRInterval" name="bestVLTRInterval" min="10" max="90">
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="enableTFO">⏩ TCP Fast Open</label>
-                        <div>
-                            <select id="enableTFO" name="enableTFO">
-                                <option value="true">Enabled</option>
-                                <option value="false">Disabled</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="container">
-                        <div class="section">
-                            <h4><span class="material-symbols-rounded">tune</span> ECH</h4>
-                            <div class="form-control">
-                                <label for="enableECH">🎭 ECH</label>
-                                <div>
-                                    <select id="enableECH" name="enableECH">
-                                        <option value="true">Enabled</option>
-                                        <option value="false">Disabled</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-control">
-                                <label for="echServerName">🧢 ECH Server Name</label>
-                                <div>
-                                    <input type="text" id="echServerName" name="echServerName">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="container">
-                        <div class="section">
-                            <h4><span class="material-symbols-rounded">tune</span> Proxy IP</h4>
-                            <div class="form-control">
-                                <label for="proxyIPMode">🎚️ Mode</label>
-                                <div>
-                                    <select id="proxyIPMode" name="proxyIPMode">
-                                        <option value="proxyip">Proxy IP</option>
-                                        <option value="prefix">NAT64</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-control">
-                                <label for="proxyIPs">
-                                    📍 Proxy IPs / Domains
-                                    <a class="scanner" href="/proxy-ip" title="Proxy IPs" target="_blank"
-                                        rel="noopener noreferrer">
-                                        <span class="material-symbols-rounded">open_in_new</span>
-                                    </a>
-                                </label>
-                                <div>
-                                    <textarea type="text" id="proxyIPs" name="proxyIPs" rows="1"></textarea>
-                                </div>
-                            </div>
-                            <div class="form-control">
-                                <label for="prefixes">
-                                    📍 NAT64 Prefixes
-                                    <a class="scanner"
-                                        href="https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/docs/NAT64Prefixes.md"
-                                        title="NAT64 prefixes" target="_blank" rel="noopener noreferrer">
-                                        <span class="material-symbols-rounded">open_in_new</span>
-                                    </a>
-                                </label>
-                                <div>
-                                    <textarea type="text" id="prefixes" name="prefixes" rows="1"></textarea>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="container">
-                        <div class="section">
-                            <h4><span class="material-symbols-rounded">tune</span> Custom CDN</h4>
-                            <div class="form-control">
-                                <label for="customCdnAddrs">💀 Addresses</label>
-                                <div>
-                                    <textarea type="text" id="customCdnAddrs" name="customCdnAddrs" rows="1"></textarea>
-                                </div>
-                            </div>
-                            <div class="form-control">
-                                <label for="customCdnHost">💀 Host</label>
-                                <div>
-                                    <input type="text" id="customCdnHost" name="customCdnHost">
-                                </div>
-                            </div>
-                            <div class="form-control">
-                                <label for="customCdnSni">💀 SNI</label>
-                                <div>
-                                    <input type="text" id="customCdnSni" name="customCdnSni">
-                                </div>
-                            </div>
-                        </div>
+                    <div class="toggle-group" id="bypass-rules">
+                        <label class="toggle-label"><input type="checkbox" id="bypassIran" name="bypassIran" value="true"><span class="toggle-switch"></span> Iran</label>
+                        <label class="toggle-label"><input type="checkbox" id="bypassChina" name="bypassChina" value="true"><span class="toggle-switch"></span> China</label>
+                        <label class="toggle-label"><input type="checkbox" id="bypassRussia" name="bypassRussia" value="true"><span class="toggle-switch"></span> Russia</label>
                     </div>
                 </div>
-            </details>
-            <details>
-                <summary>
-                    <h3>Xray Fragment
-                        <a href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/fragment/"
-                            target="_blank" title="Help">
-                            <span class="material-symbols-rounded">info</span>
-                        </a>
-                    </h3>
-                </summary>
-                <div class="section">
-                    <div class="form-control">
-                        <label for="fragmentMode">🎚️ Mode</label>
-                        <div>
-                            <select id="fragmentMode" name="fragmentMode" onchange="handleFragmentMode()">
-                                <option value="custom">Custom</option>
-                                <option value="low">Low</option>
-                                <option value="medium">Medium</option>
-                                <option value="high">High</option>
-                                <option value="severe">Severe</option>
-                            </select>
-                        </div>
+                <div class="glass-card">
+                    <div class="glass-card-header">
+                        <div class="glass-card-title">🟥 Block Rules</div>
                     </div>
-                    <div class="form-control">
-                        <label for="fragmentLengthMin">📐 Length</label>
-                        <div class="min-max">
-                            <input type="number" id="fragmentLengthMin" name="fragmentLengthMin" min="1" required>
-                            <span>-</span>
-                            <input type="number" id="fragmentLengthMax" name="fragmentLengthMax" max="500" required>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="fragmentIntervalMin">🕞 Interval</label>
-                        <div class="min-max">
-                            <input type="number" id="fragmentIntervalMin" name="fragmentIntervalMin" min="1" max="30"
-                                required>
-                            <span>-</span>
-                            <input type="number" id="fragmentIntervalMax" name="fragmentIntervalMax" min="1" max="30"
-                                required>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="fragmentMaxSplitMin">⛓️ Max Split</label>
-                        <div class="min-max">
-                            <input type="number" id="fragmentMaxSplitMin" name="fragmentMaxSplitMin" min="2">
-                            <span>-</span>
-                            <input type="number" id="fragmentMaxSplitMax" name="fragmentMaxSplitMax" min="2">
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="fragmentPackets">📦 Packets</label>
-                        <div>
-                            <select id="fragmentPackets" name="fragmentPackets">
-                                <option value="tlshello">tlshello</option>
-                                <option value="1-1">1-1</option>
-                                <option value="1-2">1-2</option>
-                                <option value="1-3">1-3</option>
-                                <option value="1-5">1-5</option>
-                            </select>
-                        </div>
+                    <div class="toggle-group" id="block-rules">
+                        <label class="toggle-label"><input type="checkbox" id="blockAds" name="blockAds" value="true"><span class="toggle-switch"></span> Ads</label>
+                        <label class="toggle-label"><input type="checkbox" id="blockPorn" name="blockPorn" value="true"><span class="toggle-switch"></span> Porn</label>
+                        <label class="toggle-label"><input type="checkbox" id="blockUDP443" name="blockUDP443" value="true"><span class="toggle-switch"></span> QUIC</label>
+                        <label class="toggle-label"><input type="checkbox" id="blockMalware" name="blockMalware" value="true" onchange="handleRiskyRules(event)"><span class="toggle-switch"></span> Malware</label>
+                        <label class="toggle-label"><input type="checkbox" id="blockPhishing" name="blockPhishing" value="true" onchange="handleRiskyRules(event)"><span class="toggle-switch"></span> Phishing</label>
+                        <label class="toggle-label"><input type="checkbox" id="blockCryptominers" name="blockCryptominers" value="true" onchange="handleRiskyRules(event)"><span class="toggle-switch"></span> Cryptominers</label>
                     </div>
                 </div>
-            </details>
-            <details>
-                <summary>
-                    <h3>External Raw Configs
-                        <a href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/external-configs/"
-                            target="_blank" title="Help">
-                            <span class="material-symbols-rounded">info</span>
-                        </a>
-                    </h3>
-                </summary>
-                <div class="section">
-                    <div class="form-control">
-                        <label for="customSubs">🔗 Subscriptions</label>
-                        <div>
-                            <textarea type="text" id="customSubs" name="customSubs" rows="1" wrap="off"></textarea>
-                        </div>
+                <div class="glass-card">
+                    <div class="glass-card-header">
+                        <div class="glass-card-title">🟩 Sanction Bypass</div>
                     </div>
-                    <div class="form-control">
-                        <label for="customConfigs">➕ Single Configs</label>
-                        <div>
-                            <textarea type="text" id="customConfigs" name="customConfigs" rows="1" wrap="off"></textarea>
-                        </div>
+                    <div class="toggle-group" id="bypass-sanction-rules">
+                        <label class="toggle-label"><input type="checkbox" id="bypassOpenAi" name="bypassOpenAi" value="true"><span class="toggle-switch"></span> ChatGPT</label>
+                        <label class="toggle-label"><input type="checkbox" id="bypassGoogleAi" name="bypassGoogleAi" value="true"><span class="toggle-switch"></span> Google AIs</label>
+                        <label class="toggle-label"><input type="checkbox" id="bypassMicrosoft" name="bypassMicrosoft" value="true"><span class="toggle-switch"></span> Microsoft</label>
+                        <label class="toggle-label"><input type="checkbox" id="bypassOracle" name="bypassOracle" value="true"><span class="toggle-switch"></span> Oracle</label>
+                        <label class="toggle-label"><input type="checkbox" id="bypassDocker" name="bypassDocker" value="true"><span class="toggle-switch"></span> Docker</label>
+                        <label class="toggle-label"><input type="checkbox" id="bypassAdobe" name="bypassAdobe" value="true"><span class="toggle-switch"></span> Adobe</label>
+                        <label class="toggle-label"><input type="checkbox" id="bypassEpicGames" name="bypassEpicGames" value="true"><span class="toggle-switch"></span> Epic Games</label>
+                        <label class="toggle-label"><input type="checkbox" id="bypassIntel" name="bypassIntel" value="true"><span class="toggle-switch"></span> Intel</label>
+                        <label class="toggle-label"><input type="checkbox" id="bypassAmd" name="bypassAmd" value="true"><span class="toggle-switch"></span> AMD</label>
+                        <label class="toggle-label"><input type="checkbox" id="bypassNvidia" name="bypassNvidia" value="true"><span class="toggle-switch"></span> Nvidia</label>
+                        <label class="toggle-label"><input type="checkbox" id="bypassAsus" name="bypassAsus" value="true"><span class="toggle-switch"></span> Asus</label>
+                        <label class="toggle-label"><input type="checkbox" id="bypassHp" name="bypassHp" value="true"><span class="toggle-switch"></span> HP</label>
+                        <label class="toggle-label"><input type="checkbox" id="bypassLenovo" name="bypassLenovo" value="true"><span class="toggle-switch"></span> Lenovo</label>
                     </div>
                 </div>
-            </details>
-            <details>
-                <summary>
-                    <h3> Telegram Bot</h3>
-                </summary>
-                <div class="section">
-                    <div class="form-control">
-                        <label for="telegramBotToken">🔑 Bot Token</label>
+                <div class="glass-card">
+                    <div class="glass-card-header">
+                        <div class="glass-card-title">✏️ Custom Rules</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🟩 Bypass IPs/Domains</label>
+                        <textarea class="neon-input" id="customBypassRules" name="customBypassRules" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🟥 Block IPs/Domains</label>
+                        <textarea class="neon-input" id="customBlockRules" name="customBlockRules" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🟩 Bypass Sanction Domains</label>
+                        <textarea class="neon-input" id="customBypassSanctionRules" name="customBypassSanctionRules" rows="2"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- External Tab -->
+            <div class="tab-content" id="tab-external" data-tab="external">
+                <div class="glass-card">
+                    <div class="glass-card-header">
+                        <div class="glass-card-title">🔗 External Raw Configs</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Subscriptions</label>
+                        <textarea class="neon-input" id="customSubs" name="customSubs" rows="3" wrap="off"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Single Configs</label>
+                        <textarea class="neon-input" id="customConfigs" name="customConfigs" rows="3" wrap="off"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Telegram Tab -->
+            <div class="tab-content" id="tab-telegram" data-tab="telegram">
+                <div class="glass-card">
+                    <div class="glass-card-header">
+                        <div class="glass-card-title">🤖 Telegram Bot</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">🔑 Bot Token</label>
                         <div class="password-wrapper">
-                            <input type="password" id="telegramBotToken" name="telegramBotToken">
-                            <span class="material-symbols-rounded toggle-password">visibility_off</span>
+                            <input class="neon-input" type="password" id="telegramBotToken" name="telegramBotToken">
+                            <button type="button" class="toggle-vis" onclick="togglePassword(this)">👁️</button>
                         </div>
                     </div>
-                    <div class="form-control">
-                        <label for="telegramAdminId">🆔 Admin Telegram ID</label>
-                        <div>
-                            <input type="text" id="telegramAdminId" name="telegramAdminId">
-                        </div>
+                    <div class="form-group">
+                        <label class="form-label">🆔 Admin Telegram ID</label>
+                        <input class="neon-input" type="text" id="telegramAdminId" name="telegramAdminId">
                     </div>
-                    <div class="form-control">
-                        <label for="setupWebhookBtn">🔗 Webhook</label>
-                        <div>
-                            <button type="button" class="button reverse" onclick="setupTelegramWebhook()">
-                                Setup Webhook<span class="material-symbols-rounded">settings</span>
-                            </button>
-                        </div>
+                    <div class="btn-group">
+                        <button type="button" class="btn-neon" onclick="setupTelegramWebhook()">🔗 Setup Webhook</button>
                     </div>
                 </div>
-            </details>
-            <details>
-                <summary>
-                    <h3>Warp General
-                        <a href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/warp/" target="_blank"
-                            title="Help">
-                            <span class="material-symbols-rounded">info</span>
-                        </a>
-                    </h3>
-                </summary>
-                <div class="section">
-                    <div class="form-control">
-                        <label for="warpRemoteDNS">🌏 remote DNS</label>
-                        <div>
-                            <input type="text" id="warpRemoteDNS" name="warpRemoteDNS" required>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="warpEndpoints">
-                            ✨ Endpoints
-                            <a class="scanner" href="https://github.com/bia-pain-bache/BPB-Warp-Scanner" title="Scanner"
-                                target="_blank" rel="noopener noreferrer">
-                                <span class="material-symbols-rounded">open_in_new</span>
-                            </a>
-                        </label>
-                        <div>
-                            <textarea type="text" id="warpEndpoints" name="warpEndpoints" rows="1" required></textarea>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="bestWarpInterval">🔄 Best Interval</label>
-                        <div>
-                            <input type="number" id="bestWarpInterval" name="bestWarpInterval" min="10" max="90">
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="refreshBtn">♻️ Warp Accounts</label>
-                        <div>
-                            <button type="button" class="button reverse" onclick="updateWarpConfigs()">
-                                Update<span id="warp-update" class="material-symbols-rounded">autorenew</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </details>
-            <details>
-                <summary>
-                    <h3>Warp PRO
-                        <a href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/warp-pro/"
-                            target="_blank" title="Help">
-                            <span class="material-symbols-rounded">info</span>
-                        </a>
-                    </h3>
-                </summary>
-                <div class="section">
-                    <div class="container">
-                        <div class="section">
-                            <h4><span class="material-symbols-rounded">tune</span> MahsaNG Noise</h4>
-                            <div class="form-control">
-                                <label for="knockerNoiseMode">😵‍💫 Mode</label>
-                                <div>
-                                    <input type="text" id="knockerNoiseMode" name="knockerNoiseMode"
-                                        title="Fill in 'none', 'quic', 'random', or any HEX string like 'ee0000000108aaaa'"
-                                        required>
-                                </div>
-                            </div>
-                            <div class="form-control">
-                                <label for="noiseCountMin">🎚️ Count</label>
-                                <div class="min-max">
-                                    <input type="number" id="noiseCountMin" name="noiseCountMin" min="1" required>
-                                    <span>-</span>
-                                    <input type="number" id="noiseCountMax" name="noiseCountMax" min="1" required>
-                                </div>
-                            </div>
-                            <div class="form-control">
-                                <label for="noiseSizeMin">📏 Size</label>
-                                <div class="min-max">
-                                    <input type="number" id="noiseSizeMin" name="noiseSizeMin" min="1" required>
-                                    <span>-</span>
-                                    <input type="number" id="noiseSizeMax" name="noiseSizeMax" min="1" required>
-                                </div>
-                            </div>
-                            <div class="form-control">
-                                <label for="noiseDelayMin">🕞 Delay</label>
-                                <div class="min-max">
-                                    <input type="number" id="noiseDelayMin" name="noiseDelayMin" min="1" required>
-                                    <span>-</span>
-                                    <input type="number" id="noiseDelayMax" name="noiseDelayMax" min="1" required>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="container">
-                        <div class="section">
-                            <h4><span class="material-symbols-rounded">tune</span> Clash - Amnezia Noise</h4>
-                            <div class="form-control">
-                                <label for="amneziaNoiseCount">🎚️ Count</label>
-                                <div>
-                                    <input type="number" id="amneziaNoiseCount" name="amneziaNoiseCount" min="1"
-                                        required>
-                                </div>
-                            </div>
-                            <div class="form-control">
-                                <label for="amneziaNoiseSizeMin">📏 Size</label>
-                                <div class="min-max">
-                                    <input type="number" id="amneziaNoiseSizeMin" name="amneziaNoiseSizeMin" min="1"
-                                        required>
-                                    <span>-</span>
-                                    <input type="number" id="amneziaNoiseSizeMax" name="amneziaNoiseSizeMax" min="1"
-                                        required>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="udp-noise-container" class="container">
-                        <div class="header-container">
-                            <h4><span class="material-symbols-rounded">tune</span> v2rayNG - v2rayN Noise</h4>
-                            <button type="button" class="add-noise" onclick="addUdpNoise(true)">
-                                <span class="material-symbols-rounded">add_circle</span>
-                            </button>
-                        </div>
-                        <div id="noises" class="section"></div>
-                    </div>
-                </div>
-            </details>
-            <details>
-                <summary>
-                    <h3>Routing Rules
-                        <a href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/routing-rules/"
-                            target="_blank" title="Help">
-                            <span class="material-symbols-rounded">info</span>
-                        </a>
-                    </h3>
-                </summary>
-                <div class="section">
-                    <div class="container">
-                        <h4><span class="material-symbols-rounded">tune</span> Preset Rules</h4>
-                        <div class="form-control">
-                            <label for="bypass-rules">🟩 Bypass rules</label>
-                            <div>
-                                <div id="bypass-rules" class="rules inner-container">
-                                    <div class="routing">
-                                        <input type="checkbox" id="bypassIran" name="bypassIran" value="true">
-                                        <label for="bypassIran">Iran</label>
-                                    </div>
-                                    <div class="routing">
-                                        <input type="checkbox" id="bypassChina" name="bypassChina" value="true">
-                                        <label for="bypassChina">China</label>
-                                    </div>
-                                    <div class="routing">
-                                        <input type="checkbox" id="bypassRussia" name="bypassRussia" value="true">
-                                        <label for="bypassRussia">Russia</label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-control">
-                            <label for="block-rules">🟥 Block rules</label>
-                            <div>
-                                <div id="block-rules" class="rules inner-container">
-                                    <div class="routing">
-                                        <input type="checkbox" id="blockAds" name="blockAds" value="true">
-                                        <label for="blockAds">Ads.</label>
-                                    </div>
-                                    <div class="routing">
-                                        <input type="checkbox" id="blockPorn" name="blockPorn" value="true">
-                                        <label for="blockPorn">Porn</label>
-                                    </div>
-                                    <div class="routing">
-                                        <input type="checkbox" id="blockUDP443" name="blockUDP443" value="true">
-                                        <label for="blockUDP443">QUIC</label>
-                                    </div>
-                                    <div class="routing">
-                                        <input type="checkbox" id="blockMalware" name="blockMalware" value="true"
-                                            onchange="handleRiskyRules(event)">
-                                        <label for="blockMalware">Malware</label>
-                                    </div>
-                                    <div class="routing">
-                                        <input type="checkbox" id="blockPhishing" name="blockPhishing" value="true"
-                                            onchange="handleRiskyRules(event)">
-                                        <label for="blockPhishing">Phishing</label>
-                                    </div>
-                                    <div class="routing">
-                                        <input type="checkbox" id="blockCryptominers" name="blockCryptominers"
-                                            value="true" onchange="handleRiskyRules(event)">
-                                        <label for="blockCryptominers">Cryptominers</label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="container">
-                        <h4><span class="material-symbols-rounded">tune</span> Custom Rules</h4>
-                        <div class="form-control">
-                            <label for="customBypassRules">🟩 Bypass IPs / Domains</label>
-                            <div>
-                                <textarea type="text" id="customBypassRules" name="customBypassRules"
-                                    rows="1"></textarea>
-                            </div>
-                        </div>
-                        <div class="form-control">
-                            <label for="customBlockRules">🟥 Block IPs / Domains</label>
-                            <div>
-                                <textarea type="text" id="customBlockRules" name="customBlockRules" rows="1"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="container">
-                        <h4><span class="material-symbols-rounded">tune</span> Sanction Rules</h4>
-                        <div class="form-control">
-                            <label for="bypass-sanction-rules">🟩 Bypass rules</label>
-                            <div>
-                                <div id="bypass-sanction-rules" class="rules inner-container">
-                                    <div class="routing">
-                                        <input type="checkbox" id="bypassOpenAi" name="bypassOpenAi" value="true">
-                                        <label for="bypassOpenAi">ChatGPT</label>
-                                    </div>
-                                    <div class="routing">
-                                        <input type="checkbox" id="bypassGoogleAi" name="bypassGoogleAi" value="true">
-                                        <label for="bypassGoogleAi">Google AIs</label>
-                                    </div>
-                                    <div class="routing">
-                                        <input type="checkbox" id="bypassMicrosoft" name="bypassMicrosoft" value="true">
-                                        <label for="bypassMicrosoft">Microsoft</label>
-                                    </div>
-                                    <div class="routing">
-                                        <input type="checkbox" id="bypassOracle" name="bypassOracle" value="true">
-                                        <label for="bypassOracle">Oracle</label>
-                                    </div>
-                                    <div class="routing">
-                                        <input type="checkbox" id="bypassDocker" name="bypassDocker" value="true">
-                                        <label for="bypassDocker">Docker</label>
-                                    </div>
-                                    <div class="routing">
-                                        <input type="checkbox" id="bypassAdobe" name="bypassAdobe" value="true">
-                                        <label for="bypassAdobe">Adobe</label>
-                                    </div>
-                                    <div class="routing">
-                                        <input type="checkbox" id="bypassEpicGames" name="bypassEpicGames" value="true">
-                                        <label for="bypassEpicGames">Epic Games</label>
-                                    </div>
-                                    <div class="routing">
-                                        <input type="checkbox" id="bypassIntel" name="bypassIntel" value="true">
-                                        <label for="bypassIntel">Intel</label>
-                                    </div>
-                                    <div class="routing">
-                                        <input type="checkbox" id="bypassAmd" name="bypassAmd" value="true">
-                                        <label for="bypassAmd">AMD</label>
-                                    </div>
-                                    <div class="routing">
-                                        <input type="checkbox" id="bypassNvidia" name="bypassNvidia" value="true">
-                                        <label for="bypassNvidia">Nvidia</label>
-                                    </div>
-                                    <div class="routing">
-                                        <input type="checkbox" id="bypassAsus" name="bypassAsus" value="true">
-                                        <label for="bypassAsus">Asus</label>
-                                    </div>
-                                    <div class="routing">
-                                        <input type="checkbox" id="bypassHp" name="bypassHp" value="true">
-                                        <label for="bypassHp">HP</label>
-                                    </div>
-                                    <div class="routing">
-                                        <input type="checkbox" id="bypassLenovo" name="bypassLenovo" value="true">
-                                        <label for="bypassLenovo">Lenovo</label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-control">
-                            <label for="customBypassSanctionRules">🟩 Bypass Domains</label>
-                            <div>
-                                <textarea type="text" id="customBypassSanctionRules" name="customBypassSanctionRules"
-                                    rows="1"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </details>
-            <div id="apply" class="form-control apply">
-                <button type="submit" id="applyButton" class="button disabled apply-settings" form="configForm">
-                    Apply <span class="material-symbols-rounded">check_circle</span>
-                </button>
-                <button type="button" class="panel-settings" title="Reset panel settings to default"
-                    onclick="resetSettings()">
-                    <i id="refresh-btn" class="fa fa-refresh fa-2x" aria-hidden="true"></i>
-                </button>
-                <button type="button" class="panel-settings" title="Export panel settings" onclick="exportSettings()">
-                    <i class="fa fa-cloud-download fa-2x" aria-hidden="true"></i>
-                </button>
-                <button type="button" class="panel-settings" title="Import panel settings" onclick="importSettings()">
-                    <i class="fa fa-cloud-upload fa-2x" aria-hidden="true"></i>
-                    <input type="file" id="fileInput" accept=".dat" style="display: none;"
-                        onchange="uploadSettings(event)" />
-                </button>
             </div>
         </form>
-    </div>
-    <div class="form-container container">
-        <h2><span class="material-symbols-rounded">share</span> Subscriptions</h2>
-        <details>
-            <summary>
-                <h3>Normal
-                    <a href="https://bia-pain-bache.github.io/BPB-Worker-Panel/usage/normal/" target="_blank"
-                        title="Help">
-                        <span class="material-symbols-rounded">info</span>
-                    </a>
-                </h3>
-            </summary>
-            <div class="table-container">
-                <table id="full-normal-configs-table">
-                    <tr>
-                        <td>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>v2rayNG</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>MahsaNG</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>v2rayN</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>v2rayN-PRO</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Streisand</span>
-                            </div>
-                        </td>
-                        <td>
-                            <button title="Display QR code"
-                                onclick="openQR('normal', 'xray', 'Normal', 'Normal Subscription')">
-                                <span class="material-symbols-rounded">qr_code</span>
-                            </button>
-                            <button title="Copy subscription URL" onclick="subURL('normal', 'xray', 'Normal')">
-                                <span class="material-symbols-rounded">content_copy</span>
-                            </button>
-                            <button title="Download config" onclick="dlURL('normal', 'xray')">
-                                <span class="material-symbols-rounded">download</span>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>sing-box</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>v2rayN (sing-box)</span>
-                            </div>
-                        </td>
-                        <td>
-                            <button title="Display QR code"
-                                onclick="openQR('normal', 'sing-box', 'Normal', 'Normal Subscription', true)">
-                                <span class="material-symbols-rounded">qr_code</span>
-                            </button>
-                            <button title="Copy subscription URL" onclick="subURL('normal', 'sing-box', 'Normal')">
-                                <span class="material-symbols-rounded">content_copy</span>
-                            </button>
-                            <button title="Download config" onclick="dlURL('normal', 'sing-box')">
-                                <span class="material-symbols-rounded">download</span>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Clash Meta</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Clash Verge</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>FlClash</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Stash</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>v2rayN (mihomo)</span>
-                            </div>
-                        </td>
-                        <td>
-                            <button title="Display QR code"
-                                onclick="openQR('normal', 'clash', 'Normal', 'Normal Subscription')">
-                                <span class="material-symbols-rounded">qr_code</span>
-                            </button>
-                            <button title="Copy subscription URL" onclick="subURL('normal', 'clash', 'Normal')">
-                                <span class="material-symbols-rounded">content_copy</span>
-                            </button>
-                            <button title="Download config" onclick="dlURL('normal', 'clash')">
-                                <span class="material-symbols-rounded">download</span>
-                            </button>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-        </details>
-        <details>
-            <summary>
-                <h3>Fragment
-                    <a href="https://bia-pain-bache.github.io/BPB-Worker-Panel/usage/fragment/" target="_blank"
-                        title="Help">
-                        <span class="material-symbols-rounded">info</span>
-                    </a>
-                </h3>
-            </summary>
-            <div class="table-container">
-                <table id="frag-sub-table">
-                    <tr>
-                        <td>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>v2rayNG</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>MahsaNG</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>v2rayN</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>v2rayN-PRO</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Streisand</span>
-                            </div>
-                        </td>
-                        <td>
-                            <button title="Display QR code"
-                                onclick="openQR('fragment', 'xray', 'Fragment', 'Fragment Subscription')">
-                                <span class="material-symbols-rounded">qr_code</span>
-                            </button>
-                            <button title="Copy subscription URL" onclick="subURL('fragment', 'xray', 'Fragment')">
-                                <span class="material-symbols-rounded">content_copy</span>
-                            </button>
-                            <button title="Download config" onclick="dlURL('fragment', 'xray')">
-                                <span class="material-symbols-rounded">download</span>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>sing-box</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>v2rayN (sing-box)</span>
-                            </div>
-                        </td>
-                        <td>
-                            <button title="Display QR code"
-                                onclick="openQR('fragment', 'sing-box', 'Fragment', 'Fragment Subscription', true)">
-                                <span class="material-symbols-rounded">qr_code</span>
-                            </button>
-                            <button title="Copy subscription URL" onclick="subURL('fragment', 'sing-box', 'Fragment')">
-                                <span class="material-symbols-rounded">content_copy</span>
-                            </button>
-                            <button title="Download config" onclick="dlURL('fragment', 'sing-box')">
-                                <span class="material-symbols-rounded">download</span>
-                            </button>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-        </details>
-        <details class="details">
-            <summary>
-                <h3>
-                    Raw (without settings)
-                    <a href="https://bia-pain-bache.github.io/BPB-Worker-Panel/usage/raw/" target="_blank" title="Help">
-                        <span class="material-symbols-rounded">info</span>
-                    </a>
-                </h3>
-            </summary>
-            <div class="table-container">
-                <table id="normal-configs-table">
-                    <tr>
-                        <td>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>v2rayNG</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>MahsaNG</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>v2rayN</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>v2rayN-PRO</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Shadowrocket</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Streisand</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>PassWall</span>
-                            </div>
-                        </td>
-                        <td>
-                            <button title="Display QR code" onclick="openQR('raw', 'xray', 'Raw', 'Raw Subscription')">
-                                <span class="material-symbols-rounded">qr_code</span>
-                            </button>
-                            <button title="Copy subscription URL" onclick="subURL('raw', 'xray', 'Raw')">
-                                <span class="material-symbols-rounded">content_copy</span>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>husi</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Nekobox</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Nekoray</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Hiddify</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Karing</span>
-                            </div>
-                        </td>
-                        <td>
-                            <button title="Display QR code"
-                                onclick="openQR('raw', 'sing-box', 'Raw', 'Raw Subscription')">
-                                <span class="material-symbols-rounded">qr_code</span>
-                            </button>
-                            <button title="Copy subscription URL" onclick="subURL('raw', 'sing-box', 'Raw')">
-                                <span class="material-symbols-rounded">content_copy</span>
-                            </button>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-        </details>
-        <details>
-            <summary>
-                <h3>Warp
-                    <a href="https://bia-pain-bache.github.io/BPB-Worker-Panel/usage/warp/" target="_blank"
-                        title="Help">
-                        <span class="material-symbols-rounded">info</span>
-                    </a>
-                </h3>
-            </summary>
-            <div class="table-container">
-                <table id="warp-configs-table">
-                    <tr>
-                        <td>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>v2rayNG</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>v2rayN</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Streisand</span>
-                            </div>
-                        </td>
-                        <td>
-                            <button title="Display QR code"
-                                onclick="openQR('warp', 'xray', 'Warp', 'Warp Subscription')">
-                                <span class="material-symbols-rounded">qr_code</span>
-                            </button>
-                            <button title="Copy subscription URL" onclick="subURL('warp', 'xray', 'Warp')">
-                                <span class="material-symbols-rounded">content_copy</span>
-                            </button>
-                            <button title="Download config" onclick="dlURL('warp', 'xray')">
-                                <span class="material-symbols-rounded">download</span>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>sing-box</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>v2rayN (sing-box)</span>
-                            </div>
-                        </td>
-                        <td>
-                            <button title="Display QR code"
-                                onclick="openQR('warp', 'sing-box', 'Warp', 'Warp Subscription', true)">
-                                <span class="material-symbols-rounded">qr_code</span>
-                            </button>
-                            <button title="Copy subscription URL" onclick="subURL('warp', 'sing-box', 'Warp')">
-                                <span class="material-symbols-rounded">content_copy</span>
-                            </button>
-                            <button title="Download config" onclick="dlURL('warp', 'sing-box')">
-                                <span class="material-symbols-rounded">download</span>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Clash Meta</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Clash Verge</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>FlClash</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Stash</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>v2rayN (mihomo)</span>
-                            </div>
-                        </td>
-                        <td>
-                            <button title="Display QR code"
-                                onclick="openQR('warp', 'clash', 'Warp', 'Warp Subscription')">
-                                <span class="material-symbols-rounded">qr_code</span>
-                            </button>
-                            <button title="Copy subscription URL" onclick="subURL('warp', 'clash', 'Warp')">
-                                <span class="material-symbols-rounded">content_copy</span>
-                            </button>
-                            <button title="Download config" onclick="dlURL('warp', 'clash')">
-                                <span class="material-symbols-rounded">download</span>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Wireguard</span>
-                            </div>
-                        </td>
-                        <td>
-                            <button title="Download configs zip" id="dlConfigsBtn" type="button"
-                                onclick="downloadWarpConfigs(false)">
-                                <span class="material-symbols-rounded">download</span>
-                            </button>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-        </details>
-        <details>
-            <summary>
-                <h3>Warp PRO
-                    <a href="https://bia-pain-bache.github.io/BPB-Worker-Panel/usage/warp-pro/" target="_blank"
-                        title="Help">
-                        <span class="material-symbols-rounded">info</span>
-                    </a>
-                </h3>
-            </summary>
-            <div class="table-container">
-                <table id="warp-pro-configs-table">
-                    <tr>
-                        <td>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>v2rayNG</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>v2rayN</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Streisand</span>
-                            </div>
-                        </td>
-                        <td>
-                            <button title="Display QR code"
-                                onclick="openQR('warp-pro', 'xray', 'Warp Pro', 'Warp Pro Subscription')">
-                                <span class="material-symbols-rounded">qr_code</span>
-                            </button>
-                            <button title="Copy subscription URL" onclick="subURL('warp-pro', 'xray', 'Warp Pro')">
-                                <span class="material-symbols-rounded">content_copy</span>
-                            </button>
-                            <button title="Download config" onclick="dlURL('warp-pro', 'xray')">
-                                <span class="material-symbols-rounded">download</span>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>MahsaNG</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>v2rayN-PRO</span>
-                            </div>
-                        </td>
-                        <td>
-                            <button title="Display QR code"
-                                onclick="openQR('warp-pro', 'xray-knocker', 'Warp Pro', 'Warp Pro Subscription')">
-                                <span class="material-symbols-rounded">qr_code</span>
-                            </button>
-                            <button title="Copy subscription URL"
-                                onclick="subURL('warp-pro', 'xray-knocker', 'Warp Pro')">
-                                <span class="material-symbols-rounded">content_copy</span>
-                            </button>
-                            <button title="Download config" onclick="dlURL('warp-pro', 'xray-knocker')">
-                                <span class="material-symbols-rounded">download</span>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Clash Meta</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Clash Verge</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>FlClash</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Stash</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>v2rayN (mihomo)</span>
-                            </div>
-                        </td>
-                        <td>
-                            <button title="Display QR code"
-                                onclick="openQR('warp-pro', 'clash', 'Warp Pro', 'Warp Pro Subscription')">
-                                <span class="material-symbols-rounded">qr_code</span>
-                            </button>
-                            <button title="Copy subscription URL" onclick="subURL('warp-pro', 'clash', 'Warp Pro')">
-                                <span class="material-symbols-rounded">content_copy</span>
-                            </button>
-                            <button title="Download config" onclick="dlURL('warp-pro', 'clash')">
-                                <span class="material-symbols-rounded">download</span>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>Amnezia</span>
-                            </div>
-                            <div>
-                                <span class="material-symbols-rounded">verified</span>
-                                <span>WG Tunnel</span>
-                            </div>
-                        </td>
-                        <td>
-                            <button title="Download configs zip" id="dlAmneziaConfigsBtn" type="button"
-                                onclick="downloadWarpConfigs(true)">
-                                <span class="material-symbols-rounded">download</span>
-                            </button>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-        </details>
-    </div>
-    <div class="form-container container">
-        <h2><span class="material-symbols-rounded">dns</span> DNS over HTTPS</h2>
-        <div class="value-container">
-            <div class="output-container">
-                <span id="doh" class="output"></span>
-            </div>
-            <span class="material-symbols-rounded"
-                onclick="copyToClipboard(document.getElementById('doh').textContent)">
-                content_copy
-            </span>
-        </div>
-    </div>
-    <div class="form-container container">
-        <div id="resetPassModal" class="modal">
-            <div class="modal-content">
-                <span class="close" id="closeResetPass" onclick="closeResetPass()">&times;</span>
-                <form id="passwordChangeForm" onsubmit="resetPassword(event)">
-                    <h2>Change Password</h2>
-                    <div class="section">
-                        <div class="form-control">
-                            <label for="newPassword">New Password</label>
-                            <div class="password-wrapper">
-                                <input type="password" id="newPassword" name="newPassword" required>
-                                <span class="material-symbols-rounded toggle-password">
-                                    visibility_off
-                                </span>
-                            </div>
-                        </div>
-                        <div class="form-control">
-                            <label for="confirmPassword">Confirm Password</label>
-                            <div class="password-wrapper">
-                                <input type="password" id="confirmPassword" name="confirmPassword" required>
-                                <span class="material-symbols-rounded toggle-password">
-                                    visibility_off
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="passwordError" class="password-error"></div>
-                    <button id="changePasswordBtn" type="submit" class="button">Change Password</button>
-                </form>
-            </div>
-        </div>
-        <div id="qrModal" class="modalQR">
-            <div class="modal-content" class="modal-content">
-                <div class="modal-header">
-                    <span id="closeQR" class="close" onclick="closeQR()">&times;</span>
-                    <span id="qrcodeTitle" class="qr-title"></span>
-                </div>
-                <div id="qrcode-container"></div>
-            </div>
-        </div>
-        <div class="header-container">
-            <h2><span class="material-symbols-rounded">fingerprint</span> My IP</h2>
-            <button type="button" id="refresh-geo-location" class="refresh-geo-location" onclick="fetchIPInfo()">
-                <i class="fa fa-refresh fa-2x refresh-my-ip" aria-hidden="true"></i>
-            </button>
-        </div>
-        <div class="my-ip">
-            <table id="ips" class="my-ip">
-                <thead>
-                    <th>Information</th>
-                    <th>Cloudflare targets</th>
-                    <th>Other targets</th>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>IP</td>
-                        <td id="cf-ip"></td>
-                        <td id="ip"></td>
-                    </tr>
-                    <tr>
-                        <td>Country</td>
-                        <td id="cf-country"></td>
-                        <td id="country"></td>
-                    </tr>
-                    <tr>
-                        <td>City</td>
-                        <td id="cf-city"></td>
-                        <td id="city"></td>
-                    </tr>
-                    <tr>
-                        <td>ISP</td>
-                        <td id="cf-isp"></td>
-                        <td id="isp"></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <div class="footer-container">
-        <div class="footer">
-            <div class="github-container">
-                <i class="fa fa-github"></i>
-                <a class="link" id="github-link" href="https://github.com/bia-pain-bache/BPB-Worker-Panel"
-                    target="_blank">Github</a>
-            </div>
-            <button id="openResetPass" class="button" onclick="openResetPass()">Change Password <span
-                    class="material-symbols-rounded">key_vertical</span></button>
-            <button type="button" id="logout" class="logout" title="Log out" onclick="logout(event)">
-                <i class="fa fa-power-off fa-2x" aria-hidden="true"></i>
-            </button>
-        </div>
-    </div>
-    </div>
-    <button id="darkModeToggle" class="floating-button" onclick="darkModeToggle()">
-        <i id="modeIcon" class="fa fa-2x fa-adjust dark-mode" aria-hidden="true"></i>
-    </button>
 
-    <script type="module" defer>
-        import { polyfillCountryFlagEmojis } from "https://cdn.skypack.dev/country-flag-emoji-polyfill";
-        polyfillCountryFlagEmojis();
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+        <!-- Subscriptions Tab (outside form) -->
+        <div class="tab-content" id="tab-subscriptions" data-tab="subscriptions">
+            <div class="glass-card">
+                <div class="glass-card-header">
+                    <div class="glass-card-title">💠 Normal</div>
+                </div>
+                <div class="sub-row">
+                    <div><b>v2rayNG / MahsaNG / v2rayN</b><br><span class="sub-app-tag">Xray</span></div>
+                    <div class="sub-actions">
+                        <button class="btn-icon" onclick="openQR('normal','xray','Normal','Normal')" title="QR">📱</button>
+                        <button class="btn-icon" onclick="subURL('normal','xray','Normal')" title="Copy URL">📋</button>
+                        <button class="btn-icon" onclick="dlURL('normal','xray')" title="Download">⬇️</button>
+                    </div>
+                </div>
+                <div class="sub-row">
+                    <div><b>Sing-box</b><br><span class="sub-app-tag">Sing-box</span></div>
+                    <div class="sub-actions">
+                        <button class="btn-icon" onclick="openQR('normal','sing-box','Normal','Normal',true)" title="QR">📱</button>
+                        <button class="btn-icon" onclick="subURL('normal','sing-box','Normal')" title="Copy URL">📋</button>
+                        <button class="btn-icon" onclick="dlURL('normal','sing-box')" title="Download">⬇️</button>
+                    </div>
+                </div>
+                <div class="sub-row">
+                    <div><b>Clash Meta / Verge / FLClash</b><br><span class="sub-app-tag">Clash</span></div>
+                    <div class="sub-actions">
+                        <button class="btn-icon" onclick="openQR('normal','clash','Normal','Normal')" title="QR">📱</button>
+                        <button class="btn-icon" onclick="subURL('normal','clash','Normal')" title="Copy URL">📋</button>
+                        <button class="btn-icon" onclick="dlURL('normal','clash')" title="Download">⬇️</button>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-card">
+                <div class="glass-card-header">
+                    <div class="glass-card-title">🧩 Fragment</div>
+                </div>
+                <div class="sub-row">
+                    <div><b>v2rayNG / MahsaNG / v2rayN</b><br><span class="sub-app-tag">Xray</span></div>
+                    <div class="sub-actions">
+                        <button class="btn-icon" onclick="openQR('fragment','xray','Fragment','Fragment')" title="QR">📱</button>
+                        <button class="btn-icon" onclick="subURL('fragment','xray','Fragment')" title="Copy URL">📋</button>
+                        <button class="btn-icon" onclick="dlURL('fragment','xray')" title="Download">⬇️</button>
+                    </div>
+                </div>
+                <div class="sub-row">
+                    <div><b>Sing-box</b><br><span class="sub-app-tag">Sing-box</span></div>
+                    <div class="sub-actions">
+                        <button class="btn-icon" onclick="openQR('fragment','sing-box','Fragment','Fragment',true)" title="QR">📱</button>
+                        <button class="btn-icon" onclick="subURL('fragment','sing-box','Fragment')" title="Copy URL">📋</button>
+                        <button class="btn-icon" onclick="dlURL('fragment','sing-box')" title="Download">⬇️</button>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-card">
+                <div class="glass-card-header">
+                    <div class="glass-card-title">📄 Raw</div>
+                </div>
+                <div class="sub-row">
+                    <div><b>v2rayNG / v2rayN / Streisand / etc</b><br><span class="sub-app-tag">Xray</span></div>
+                    <div class="sub-actions">
+                        <button class="btn-icon" onclick="openQR('raw','xray','Raw','Raw')" title="QR">📱</button>
+                        <button class="btn-icon" onclick="subURL('raw','xray','Raw')" title="Copy URL">📋</button>
+                        <button class="btn-icon" onclick="dlURL('raw','xray')" title="Download">⬇️</button>
+                    </div>
+                </div>
+                <div class="sub-row">
+                    <div><b>Sing-box clients</b><br><span class="sub-app-tag">Sing-box</span></div>
+                    <div class="sub-actions">
+                        <button class="btn-icon" onclick="openQR('raw','sing-box','Raw','Raw',true)" title="QR">📱</button>
+                        <button class="btn-icon" onclick="subURL('raw','sing-box','Raw')" title="Copy URL">📋</button>
+                        <button class="btn-icon" onclick="dlURL('raw','sing-box')" title="Download">⬇️</button>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-card">
+                <div class="glass-card-header">
+                    <div class="glass-card-title">🌀 Warp</div>
+                </div>
+                <div class="sub-row">
+                    <div><b>v2rayNG / v2rayN / Streisand</b><br><span class="sub-app-tag">Xray</span></div>
+                    <div class="sub-actions">
+                        <button class="btn-icon" onclick="openQR('warp','xray','Warp','Warp')" title="QR">📱</button>
+                        <button class="btn-icon" onclick="subURL('warp','xray','Warp')" title="Copy URL">📋</button>
+                        <button class="btn-icon" onclick="dlURL('warp','xray')" title="Download">⬇️</button>
+                    </div>
+                </div>
+                <div class="sub-row">
+                    <div><b>Sing-box</b><br><span class="sub-app-tag">Sing-box</span></div>
+                    <div class="sub-actions">
+                        <button class="btn-icon" onclick="openQR('warp','sing-box','Warp','Warp',true)" title="QR">📱</button>
+                        <button class="btn-icon" onclick="subURL('warp','sing-box','Warp')" title="Copy URL">📋</button>
+                        <button class="btn-icon" onclick="dlURL('warp','sing-box')" title="Download">⬇️</button>
+                    </div>
+                </div>
+                <div class="sub-row">
+                    <div><b>Clash Meta / Verge / FLClash</b><br><span class="sub-app-tag">Clash</span></div>
+                    <div class="sub-actions">
+                        <button class="btn-icon" onclick="openQR('warp','clash','Warp','Warp')" title="QR">📱</button>
+                        <button class="btn-icon" onclick="subURL('warp','clash','Warp')" title="Copy URL">📋</button>
+                        <button class="btn-icon" onclick="dlURL('warp','clash')" title="Download">⬇️</button>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-card">
+                <div class="glass-card-header">
+                    <div class="glass-card-title">🌀 Warp Pro</div>
+                </div>
+                <div class="sub-row">
+                    <div><b>v2rayNG / v2rayN / Streisand</b><br><span class="sub-app-tag">Xray</span></div>
+                    <div class="sub-actions">
+                        <button class="btn-icon" onclick="openQR('warp-pro','xray','Warp Pro','Warp Pro')" title="QR">📱</button>
+                        <button class="btn-icon" onclick="subURL('warp-pro','xray','Warp Pro')" title="Copy URL">📋</button>
+                        <button class="btn-icon" onclick="dlURL('warp-pro','xray')" title="Download">⬇️</button>
+                    </div>
+                </div>
+                <div class="sub-row">
+                    <div><b>Clash Meta / Verge / FLClash</b><br><span class="sub-app-tag">Clash</span></div>
+                    <div class="sub-actions">
+                        <button class="btn-icon" onclick="openQR('warp-pro','clash','Warp Pro','Warp Pro')" title="QR">📱</button>
+                        <button class="btn-icon" onclick="subURL('warp-pro','clash','Warp Pro')" title="Copy URL">📋</button>
+                        <button class="btn-icon" onclick="dlURL('warp-pro','clash')" title="Download">⬇️</button>
+                    </div>
+                </div>
+                <div class="sub-row">
+                    <div><b>🔌 WireGuard</b><br><span class="sub-app-tag">WireGuard</span></div>
+                    <div class="sub-actions">
+                        <button class="btn-icon" onclick="downloadWarpConfigs(false)" title="Download Normal">⬇️</button>
+                        <button class="btn-icon" onclick="downloadWarpConfigs(true)" title="Download Amnezia">🌀</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users Tab -->
+        <div class="tab-content" id="tab-users" data-tab="users">
+            <div class="glass-card">
+                <div class="glass-card-header">
+                    <div class="glass-card-title">👥 Users</div>
+                </div>
+                <div class="add-user-form">
+                    <div class="form-group" style="margin:0;">
+                        <label class="form-label">Username</label>
+                        <input class="neon-input" type="text" id="addUserUsername" placeholder="3-20 chars, a-z, 0-9, _">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label class="form-label">Days</label>
+                        <input class="neon-input" type="number" id="addUserDays" value="30" min="1">
+                    </div>
+                    <div class="form-group full-width" style="margin:0;">
+                        <label class="form-label">Note</label>
+                        <input class="neon-input" type="text" id="addUserNote" placeholder="Optional">
+                    </div>
+                </div>
+                <button class="btn-neon" onclick="addUser()">➕ Add User</button>
+            </div>
+            <div class="glass-card">
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Expires</th>
+                            <th>Status</th>
+                            <th>Note</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-tbody">
+                        <tr><td colspan="5" class="text-muted text-sm" style="text-align:center;padding:24px;">No users found.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Apply / Actions Bar -->
+        <div class="glass-card" style="position:sticky;bottom:16px;z-index:50;">
+            <div class="flex items-center justify-between gap-4" style="flex-wrap:wrap;">
+                <div class="btn-group" style="margin:0;">
+                    <button type="submit" class="btn-neon" id="applyButton" form="configForm" disabled>💾 Apply Settings</button>
+                    <button type="button" class="btn-ghost" onclick="resetSettings()">↺ Reset</button>
+                </div>
+                <div class="btn-group" style="margin:0;">
+                    <button type="button" class="btn-ghost" onclick="exportSettings()">📤 Export</button>
+                    <button type="button" class="btn-ghost" onclick="importSettings()">📥 Import</button>
+                    <input type="file" id="fileInput" accept=".dat" style="display:none;" onchange="uploadSettings(event)">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Modal -->
+    <div class="modal-overlay hidden" id="qrModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="qrcodeTitle">QR Code</h3>
+                <button class="modal-close" onclick="closeQR()">✕</button>
+            </div>
+            <div class="qr-container" id="qrcode-container"></div>
+        </div>
+    </div>
+
+    <!-- User Edit Modal -->
+    <div class="modal-overlay hidden" id="userEditModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>✏️ Edit User</h3>
+                <button class="modal-close" onclick="closeUserEdit()">✕</button>
+            </div>
+            <div id="editUserInfo"></div>
+            <div class="form-group">
+                <label class="form-label">Extend Days</label>
+                <input class="neon-input" type="number" id="editUserDays" value="0" min="0">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Note</label>
+                <input class="neon-input" type="text" id="editUserNote">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Active</label>
+                <select class="neon-input" id="editUserActive">
+                    <option value="true">Active</option>
+                    <option value="false">Disabled</option>
+                </select>
+            </div>
+            <div class="btn-group">
+                <button class="btn-neon" onclick="saveUserEdit()">💾 Save</button>
+                <button class="btn-ghost" onclick="deleteUser(document.getElementById('editUserUsername')?.textContent || '')">🗑️ Delete</button>
+                <button class="btn-ghost" onclick="closeUserEdit()">Cancel</button>
+            </div>
+            <input type="hidden" id="editUserUsername">
+        </div>
+    </div>
+
+    <!-- Reset Password Modal -->
+    <div class="modal-overlay hidden" id="resetPassModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🔑 Set Password</h3>
+                <button class="modal-close" onclick="closeResetPass()">✕</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">New Password</label>
+                <input class="neon-input" type="password" id="newPassword" placeholder="Min 8 chars, 1 capital, 1 number">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Confirm</label>
+                <input class="neon-input" type="password" id="confirmPassword" placeholder="Repeat password">
+            </div>
+            <div class="text-sm text-muted" id="passwordError" style="margin-bottom:8px;"></div>
+            <div class="btn-group">
+                <button class="btn-neon" onclick="resetPassword(event)">🔑 Set Password</button>
+                <button class="btn-ghost" onclick="closeResetPass()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <div id="confirm-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-box glass-card">
+            <div class="modal-icon" id="confirmModalIcon">⚠️</div>
+            <h3 class="modal-title" id="confirmModalTitle">Are you sure?</h3>
+            <p class="modal-message" id="confirmModalMessage"></p>
+            <div class="modal-actions">
+                <button class="btn-modal-cancel" id="confirmModalCancel">Cancel</button>
+                <button class="btn-modal-confirm" id="confirmModalConfirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script>__SCRIPT__</script>
 </body>
-
 </html>

@@ -89,8 +89,8 @@ export function generateRemark(
         : addressType = isDomain(address) ? 'Domain' : isIPv4(address) ? 'IPv4' : isIPv6(address) ? 'IPv6' : '';
 
     return address === upstreamServer
-        ? `💦 ${index} - ${chainSign}${protoSign}${configType} - Upstream Proxy`
-        : `💦 ${index} - ${chainSign}${protoSign}${configType} - ${addressType} : ${port}`;
+        ? `${index} - ${chainSign}${protoSign}${configType} - Upstream Proxy`
+        : `${index} - ${chainSign}${protoSign}${configType} - ${addressType} : ${port}`;
 }
 
 export function randomUpperCase(str: string): string {
