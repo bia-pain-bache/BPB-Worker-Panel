@@ -106,6 +106,9 @@ globalThis.settings = {
     amneziaNoiseSizeMax: 100,
     telegramBotToken: "",
     telegramAdminId: "",
+    cfAccountId: "",
+    cfApiToken: "",
+    cfWorkerName: "",
     customSubs: [],
     customConfigs: [],
     panelVersion: __VERSION__

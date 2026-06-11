@@ -792,7 +792,7 @@ async function checkCfUsageWarning(proxySettings: any, botToken: string, chatId:
         const cache: any = cacheRaw || {};
 
         let needFetch = true;
-        if (cache.data && cache.fetchedAt && (now - cache.fetchedAt < 30 * 60 * 1000)) {
+        if ((cache as any).data && (cache as any).fetchedAt && (now - (cache as any).fetchedAt < 30 * 60 * 1000)) {
             needFetch = false;
         }
 
@@ -802,7 +802,7 @@ async function checkCfUsageWarning(proxySettings: any, botToken: string, chatId:
             await env.kv.put('cfUsageCache', JSON.stringify({ data: result.data, fetchedAt: now }));
 
             if (result.data.nearLimit) {
-                const lastWarningRaw = await env.kv.get('cfLastWarning', { type: 'json' });
+                const lastWarningRaw: any = await env.kv.get('cfLastWarning', { type: 'json' });
                 const lastWarning: number = lastWarningRaw?.timestamp || 0;
                 if (now - lastWarning > 6 * 60 * 60 * 1000) {
                     const warningText = result.data.overLimit
@@ -818,8 +818,8 @@ async function checkCfUsageWarning(proxySettings: any, botToken: string, chatId:
                     await env.kv.put('cfLastWarning', JSON.stringify({ timestamp: now }));
                 }
             }
-        } else if (cache.data && cache.data.nearLimit) {
-            const lastWarningRaw = await env.kv.get('cfLastWarning', { type: 'json' });
+        } else if ((cache as any).data && (cache as any).data.nearLimit) {
+            const lastWarningRaw: any = await env.kv.get('cfLastWarning', { type: 'json' });
             const lastWarning: number = lastWarningRaw?.timestamp || 0;
             if (now - lastWarning > 6 * 60 * 60 * 1000) {
                 const warningText = cache.data.overLimit
