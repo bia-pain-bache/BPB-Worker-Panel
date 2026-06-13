@@ -8,7 +8,7 @@ function generateUUID() {
 
 function generateStrongPassword() {
     const charset =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+[]{}|;:',.<>?";
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@%^&*()_+|;:,.<>?";
     let password = '';
     const randomValues = new Uint8Array(16);
     crypto.getRandomValues(randomValues);
@@ -20,7 +20,7 @@ function generateStrongPassword() {
 }
 
 function generateSubURIPath() {
-    const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@$&*_-+;:,.";
+    const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.-~";
     let uriPath = '';
     const randomValues = new Uint8Array(16);
     crypto.getRandomValues(randomValues);
