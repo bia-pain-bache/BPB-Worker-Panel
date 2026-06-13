@@ -100,8 +100,9 @@ async function tgFetch(token: string, method: string, body: any): Promise<any> {
     return res.json();
 }
 
-function buildSubUrl(origin: string, subPath: string, type: string, app: string): string {
-    return `${origin}/sub/${type}/${subPath}?app=${app}`;
+function buildSubUrl(origin: string, subPath: string, type: string, app: string, label?: string): string {
+    const base = `${origin}/sub/${type}/${encodeURIComponent(subPath)}?app=${app}`;
+    return label ? `${base}#${encodeURIComponent(`💦 BPB ${label}`)}` : base;
 }
 
 function mainKeyboard() {
@@ -339,7 +340,7 @@ async function sendUserList(token: string, chatId: number, page: number, env: En
     let text = '📋 <b>Users</b>\n\n';
     for (const user of pageUsers) {
         text += buildUserStatus(user) + '\n';
-        const subUrl = `${origin}/sub/user/${user.subPath}`;
+        const subUrl = `${origin}/sub/user/${encodeURIComponent(user.subPath)}`;
         text += `🔗 <code>${subUrl}</code>\n\n`;
     }
 
@@ -430,7 +431,7 @@ async function handleUserCallback(cq: TgCallbackQuery, token: string, chatId: nu
             });
             return;
         }
-        const subUrl = `${origin}/sub/user/${user.subPath}`;
+        const subUrl = `${origin}/sub/user/${encodeURIComponent(user.subPath)}`;
         const text = `${buildUserStatus(user)}\n🔗 <code>${subUrl}</code>`;
         await tgFetch(token, 'sendMessage', {
             chat_id: chatId,
@@ -449,7 +450,7 @@ async function handleUserCallback(cq: TgCallbackQuery, token: string, chatId: nu
         if (user) {
             user.expiresAt = new Date(new Date(user.expiresAt).getTime() + days * 86400000).toISOString();
             await env.kv.put(`user:${username}`, JSON.stringify(user));
-            const subUrl = `${origin}/sub/user/${user.subPath}`;
+            const subUrl = `${origin}/sub/user/${encodeURIComponent(user.subPath)}`;
             const text = `${buildUserStatus(user)}\n🔗 <code>${subUrl}</code>`;
             await tgFetch(token, 'editMessageText', {
                 chat_id: chatId,
@@ -610,7 +611,7 @@ async function handleUserCallback(cq: TgCallbackQuery, token: string, chatId: nu
 
         const subPath = env.SUB_PATH || env.UUID || '';
         for (const appInfo of typeInfo.apps) {
-            const url = buildSubUrl(origin, subPath, typeKey, appInfo.app);
+            const url = buildSubUrl(origin, subPath, typeKey, appInfo.app, typeInfo.label);
             const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(url)}&size=400x400`;
             const supportedList = appInfo.supportedApps.map(a => `✅ ${a}`).join('\n');
             const caption = `${typeInfo.emoji} <b>BPB ${typeInfo.label}</b>\n\n<code>${url}</code>\n\n<b>Supported apps:</b>\n${supportedList}`;
@@ -770,7 +771,7 @@ async function handleUserMessage(msg: TgMessage, token: string, chatId: number, 
         index.push(username);
         await env.kv.put('users:index', JSON.stringify(index));
 
-        const subUrl = `${origin}/sub/user/${uuid}`;
+        const subUrl = `${origin}/sub/user/${encodeURIComponent(uuid)}`;
         await tgFetch(token, 'sendMessage', {
             chat_id: chatId,
             text: `✅ <b>User created!</b>\n\n👤 ${username}\n📅 Expires: ${new Date(expiresAt).toLocaleDateString()}\n📝 Note: ${note || '(none)'}\n\n🔗 <code>${subUrl}</code>`,
