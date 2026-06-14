@@ -10,8 +10,7 @@ import {
 	renderError,
 	handleWebsocket,
 	handleDoH,
-	handleProxyIPs,
-	handleUserSub
+	handleProxyIPs
 } from '@handlers';
 import { handleTelegramWebhook } from '@telegram';
 
@@ -39,9 +38,6 @@ export default {
 					return await handlePanel(request, env);
 
 					case 'sub':
-						if (pathName.startsWith('/sub/user/')) {
-							return await handleUserSub(request, env);
-						}
 						return await handleSubscriptions(request, env);
 
 					case 'login':

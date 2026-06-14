@@ -36,20 +36,7 @@ interface SubTypeInfo {
     apps: SubAppInfo[];
 }
 
-interface BotState {
-    step: 'awaiting_username' | 'awaiting_days' | 'awaiting_note' | 'awaiting_custom_days';
-    data: { username?: string; days?: number };
-    timestamp: number;
-}
 
-interface UserData {
-    username: string;
-    subPath: string;
-    createdAt: string;
-    expiresAt: string;
-    note: string;
-    active: boolean;
-}
 
 const SUB_TYPES: Record<string, SubTypeInfo> = {
     normal: {
@@ -109,7 +96,6 @@ function mainKeyboard() {
     return {
         inline_keyboard: [
             [{ text: '📥 Get Config', callback_data: 'sub' }],
-            [{ text: '👥 Users', callback_data: 'users_menu' }],
             [{ text: '📊 Usage', callback_data: 'usage' }],
             [{ text: '⚙️ Settings Info', callback_data: 'info' }]
         ]
@@ -129,52 +115,6 @@ function typeKeyboard(prefix: string) {
     };
 }
 
-function usersKeyboard() {
-    return {
-        inline_keyboard: [
-            [{ text: '➕ Add User', callback_data: 'users_add' }],
-            [{ text: '📋 List Users', callback_data: 'users_list_0' }],
-            [{ text: '📊 Stats', callback_data: 'users_stats' }],
-            [{ text: '🔙 Back', callback_data: 'main' }]
-        ]
-    };
-}
-
-function buildUserStatus(user: UserData): string {
-    const now = new Date();
-    const expires = new Date(user.expiresAt);
-    const daysLeft = Math.ceil((expires.getTime() - now.getTime()) / 86400000);
-
-    let statusEmoji: string;
-    if (!user.active) statusEmoji = '⏸';
-    else if (expires < now) statusEmoji = '❌';
-    else statusEmoji = '✅';
-
-    const expiryStr = daysLeft >= 0 ? `(${daysLeft}d left)` : '(expired)';
-
-    return `${statusEmoji} <b>${user.username}</b>\n` +
-        `📅 Expires: ${expires.toLocaleDateString()} ${expiryStr}`;
-}
-
-function editUserKeyboard(username: string) {
-    return {
-        inline_keyboard: [
-            [
-                { text: '+7 days', callback_data: `u_ext_days_${username}_7` },
-                { text: '+30 days', callback_data: `u_ext_days_${username}_30` },
-                { text: '+90 days', callback_data: `u_ext_days_${username}_90` },
-            ],
-            [
-                { text: '✏️ Custom days', callback_data: `u_custom_days_${username}` },
-            ],
-            [
-                { text: '🗑️ Delete', callback_data: `u_del_${username}` },
-                { text: '🔙 Back', callback_data: 'users_list_0' },
-            ]
-        ]
-    };
-}
-
 function buildSettingsInfo(s: any): string {
     const protocols: string[] = [];
     if (s.VLConfigs) protocols.push('VLESS');
@@ -186,20 +126,6 @@ function buildSettingsInfo(s: any): string {
         `🔌 <b>Ports:</b> ${ports}\n` +
         `🌐 <b>Proxy IP Mode:</b> ${s.proxyIPMode || 'proxyip'}\n` +
         `🧩 <b>Fragment:</b> ${fragActive ? '✅ Active' : '❌ Inactive'}`;
-}
-
-function buildStatsText(users: UserData[]): string {
-    const now = new Date();
-    const total = users.length;
-    const active = users.filter(u => u.active && new Date(u.expiresAt) > now).length;
-    const expired = users.filter(u => new Date(u.expiresAt) <= now).length;
-    const disabled = users.filter(u => !u.active).length;
-
-    return `📊 <b>Panel Stats</b>\n\n` +
-        `👥 Total users: ${total}\n` +
-        `🟢 Active: ${active}\n` +
-        `🔴 Expired: ${expired}\n` +
-        `⏸ Disabled: ${disabled}`;
 }
 
 async function getCfUsageForTelegram(env: Env): Promise<{ success: boolean; text: string; data?: any } | null> {
@@ -309,239 +235,8 @@ function usageKeyboard() {
     };
 }
 
-async function sendUserList(token: string, chatId: number, page: number, env: Env, origin: string) {
-    const rawIndex: any = await env.kv.get('users:index', { type: 'json' });
-    const index: string[] = Array.isArray(rawIndex) ? rawIndex : [];
-    let users: UserData[] = [];
-    if (index.length > 0) {
-        const results = await Promise.all(
-            index.map(u => env.kv.get(`user:${u}`, { type: 'json' }))
-        );
-        users = results.filter((u): u is UserData => u !== null);
-    }
-
-    if (users.length === 0) {
-        await tgFetch(token, 'sendMessage', {
-            chat_id: chatId,
-            text: '📋 <b>Users</b>\n\nNo users found.',
-            parse_mode: 'HTML',
-            reply_markup: {
-                inline_keyboard: [[{ text: '🔙 Back', callback_data: 'users_menu' }]]
-            }
-        });
-        return;
-    }
-
-    const perPage = 5;
-    const totalPages = Math.ceil(users.length / perPage);
-    const start = page * perPage;
-    const pageUsers = users.slice(start, start + perPage);
-
-    let text = '📋 <b>Users</b>\n\n';
-    for (const user of pageUsers) {
-        text += buildUserStatus(user) + '\n';
-        const subUrl = `${origin}/sub/user/${encodeURIComponent(user.subPath)}`;
-        text += `🔗 <code>${subUrl}</code>\n\n`;
-    }
-
-    const navRow: { text: string; callback_data: string }[] = [];
-    if (page > 0) navRow.push({ text: '◀️ Prev', callback_data: `users_list_${page - 1}` });
-    if (page < totalPages - 1) navRow.push({ text: 'Next ▶️', callback_data: `users_list_${page + 1}` });
-
-    const keyboard = {
-        inline_keyboard: [
-            ...pageUsers.map(u => [{ text: `✏️ ${u.username}`, callback_data: `u_view_${u.username}` }]),
-            navRow.length ? navRow : [],
-            [{ text: '🔙 Back', callback_data: 'users_menu' }]
-        ].filter(row => row.length > 0)
-    };
-
-    await tgFetch(token, 'sendMessage', {
-        chat_id: chatId,
-        text: text,
-        parse_mode: 'HTML',
-        reply_markup: keyboard
-    });
-}
-
-async function handleUserCallback(cq: TgCallbackQuery, token: string, chatId: number, env: Env, origin: string): Promise<void> {
+async function handleCallback(cq: TgCallbackQuery, token: string, chatId: number, env: Env, origin: string): Promise<void> {
     const data = cq.data || '';
-
-    if (data === 'users_menu') {
-        await tgFetch(token, 'sendMessage', {
-            chat_id: chatId,
-            text: '👥 <b>User Management</b>\n\nManage your panel users:',
-            parse_mode: 'HTML',
-            reply_markup: usersKeyboard()
-        });
-        return;
-    }
-
-    if (data === 'users_add') {
-        const now = Math.floor(Date.now() / 1000);
-        await env.kv.put(`botState:${chatId}`, JSON.stringify({
-            step: 'awaiting_username',
-            data: {},
-            timestamp: now
-        }));
-        await tgFetch(token, 'sendMessage', {
-            chat_id: chatId,
-            text: '➕ <b>Add User</b>\n\nStep 1/3: Enter username (3-20 chars, alphanumeric and underscore):\n\n<i>Send /cancel to abort.</i>',
-            parse_mode: 'HTML'
-        });
-        return;
-    }
-
-    if (data === 'users_stats') {
-        const rawIdx: any = await env.kv.get('users:index', { type: 'json' });
-        const idx: string[] = Array.isArray(rawIdx) ? rawIdx : [];
-        let users: UserData[] = [];
-        if (idx.length > 0) {
-            const results = await Promise.all(
-                idx.map(u => env.kv.get(`user:${u}`, { type: 'json' }))
-            );
-            users = results.filter((u): u is UserData => u !== null);
-        }
-        const stats = buildStatsText(users);
-        await tgFetch(token, 'sendMessage', {
-            chat_id: chatId,
-            text: stats,
-            parse_mode: 'HTML',
-            reply_markup: {
-                inline_keyboard: [[{ text: '🔙 Back', callback_data: 'users_menu' }]]
-            }
-        });
-        return;
-    }
-
-    if (data.startsWith('users_list_')) {
-        const page = parseInt(data.slice(11)) || 0;
-        await sendUserList(token, chatId, page, env, origin);
-        return;
-    }
-
-    if (data.startsWith('u_view_')) {
-        const username = data.slice(7);
-        const user: UserData | null = await env.kv.get(`user:${username}`, { type: 'json' });
-        if (!user) {
-            await tgFetch(token, 'answerCallbackQuery', {
-                callback_query_id: cq.id,
-                text: 'User not found.',
-                show_alert: true
-            });
-            return;
-        }
-        const subUrl = `${origin}/sub/user/${encodeURIComponent(user.subPath)}`;
-        const text = `${buildUserStatus(user)}\n🔗 <code>${subUrl}</code>`;
-        await tgFetch(token, 'sendMessage', {
-            chat_id: chatId,
-            text: text,
-            parse_mode: 'HTML',
-            reply_markup: editUserKeyboard(username)
-        });
-        return;
-    }
-
-    if (data.startsWith('u_ext_days_')) {
-        const parts = data.split('_');
-        const username = parts.slice(3, -1).join('_');
-        const days = parseInt(parts[parts.length - 1]);
-        const user: UserData | null = await env.kv.get(`user:${username}`, { type: 'json' });
-        if (user) {
-            user.expiresAt = new Date(new Date(user.expiresAt).getTime() + days * 86400000).toISOString();
-            await env.kv.put(`user:${username}`, JSON.stringify(user));
-            const subUrl = `${origin}/sub/user/${encodeURIComponent(user.subPath)}`;
-            const text = `${buildUserStatus(user)}\n🔗 <code>${subUrl}</code>`;
-            await tgFetch(token, 'editMessageText', {
-                chat_id: chatId,
-                message_id: cq.message?.message_id,
-                text: text,
-                parse_mode: 'HTML',
-                reply_markup: editUserKeyboard(username)
-            });
-            await tgFetch(token, 'answerCallbackQuery', {
-                callback_query_id: cq.id,
-                text: `✅ Added ${days} days`
-            });
-        }
-        return;
-    }
-
-    if (data.startsWith('u_custom_days_')) {
-        const username = data.slice(14);
-        const now = Math.floor(Date.now() / 1000);
-        await env.kv.put(`botState:${chatId}`, JSON.stringify({
-            step: 'awaiting_custom_days',
-            data: { username },
-            timestamp: now
-        }));
-        await tgFetch(token, 'sendMessage', {
-            chat_id: chatId,
-            text: `✏️ Enter number of days to extend (or negative to reduce):\n\n<i>Send /cancel to abort.</i>`,
-            parse_mode: 'HTML'
-        });
-        return;
-    }
-
-    if (data.startsWith('u_del_')) {
-        const username = data.slice(6);
-        const confirmKeyboard = {
-            inline_keyboard: [
-                [
-                    { text: '✅ Yes, delete', callback_data: `confirm_delete:${username}` },
-                    { text: '❌ Cancel', callback_data: 'cancel_delete' },
-                ]
-            ]
-        };
-        await tgFetch(token, 'sendMessage', {
-            chat_id: chatId,
-            text: `⚠️ Delete user <b>${username}</b>? This cannot be undone.`,
-            parse_mode: 'HTML',
-            reply_markup: confirmKeyboard
-        });
-        return;
-    }
-
-    if (data.startsWith('confirm_delete:')) {
-        const username = data.slice(15);
-        const user: UserData | null = await env.kv.get(`user:${username}`, { type: 'json' });
-        if (user) {
-            await env.kv.delete(`user:${username}`);
-            const index: string[] = await env.kv.get('users:index', { type: 'json' }) || [];
-            await env.kv.put('users:index', JSON.stringify(index.filter(u => u !== username)));
-            await tgFetch(token, 'answerCallbackQuery', {
-                callback_query_id: cq.id,
-                text: `🗑️ Deleted ${username}`
-            });
-            await tgFetch(token, 'editMessageText', {
-                chat_id: chatId,
-                message_id: cq.message?.message_id,
-                text: `✅ User ${username} deleted.`,
-                parse_mode: 'HTML'
-            });
-        } else {
-            await tgFetch(token, 'answerCallbackQuery', {
-                callback_query_id: cq.id,
-                text: 'User not found.',
-                show_alert: true
-            });
-        }
-        return;
-    }
-
-    if (data === 'cancel_delete') {
-        await tgFetch(token, 'answerCallbackQuery', {
-            callback_query_id: cq.id,
-            text: '❌ Cancelled'
-        });
-        await tgFetch(token, 'editMessageText', {
-            chat_id: chatId,
-            message_id: cq.message?.message_id,
-            text: '❌ Deletion cancelled.',
-            parse_mode: 'HTML'
-        });
-        return;
-    }
 
     if (data === 'sub') {
         await tgFetch(token, 'sendMessage', {
@@ -635,155 +330,6 @@ async function handleUserCallback(cq: TgCallbackQuery, token: string, chatId: nu
     }
 }
 
-async function handleUserMessage(msg: TgMessage, token: string, chatId: number, env: Env, origin: string): Promise<void> {
-    const text = msg.text || '';
-
-    if (text === '/cancel') {
-        await env.kv.delete(`botState:${chatId}`);
-        await tgFetch(token, 'sendMessage', {
-            chat_id: chatId,
-            text: '❌ Operation cancelled.',
-            parse_mode: 'HTML',
-            reply_markup: mainKeyboard()
-        });
-        return;
-    }
-
-    const stateRaw = await env.kv.get(`botState:${chatId}`, { type: 'json' });
-    if (!stateRaw) return;
-
-    const state = stateRaw as BotState;
-    const now = Math.floor(Date.now() / 1000);
-    if (now - state.timestamp > 300) {
-        await env.kv.delete(`botState:${chatId}`);
-        await tgFetch(token, 'sendMessage', {
-            chat_id: chatId,
-            text: '⏰ Session expired. Please start again.',
-            parse_mode: 'HTML',
-            reply_markup: mainKeyboard()
-        });
-        return;
-    }
-
-    if (state.step === 'awaiting_custom_days') {
-        const days = parseInt(text);
-        if (isNaN(days) || days < -3650 || days > 3650) {
-            await tgFetch(token, 'sendMessage', {
-                chat_id: chatId,
-                text: '⛔ Invalid number. Enter a value between -3650 and 3650.\n\nSend /cancel to abort.',
-                parse_mode: 'HTML'
-            });
-            return;
-        }
-
-        const username = state.data.username!;
-        const user: UserData | null = await env.kv.get(`user:${username}`, { type: 'json' });
-        if (user) {
-            user.expiresAt = new Date(new Date(user.expiresAt).getTime() + days * 86400000).toISOString();
-            await env.kv.put(`user:${username}`, JSON.stringify(user));
-            await env.kv.delete(`botState:${chatId}`);
-            await tgFetch(token, 'sendMessage', {
-                chat_id: chatId,
-                text: `✅ Extended by ${days} days. New expiry: ${new Date(user.expiresAt).toLocaleDateString()}`,
-                parse_mode: 'HTML',
-                reply_markup: {
-                    inline_keyboard: [[{ text: '👥 Users', callback_data: 'users_menu' }]]
-                }
-            });
-        } else {
-            await env.kv.delete(`botState:${chatId}`);
-            await tgFetch(token, 'sendMessage', {
-                chat_id: chatId,
-                text: '⛔ User not found.',
-                parse_mode: 'HTML',
-                reply_markup: mainKeyboard()
-            });
-        }
-        return;
-    }
-
-    if (state.step === 'awaiting_username') {
-        if (!/^[a-zA-Z0-9_]{3,20}$/.test(text)) {
-            await tgFetch(token, 'sendMessage', {
-                chat_id: chatId,
-                text: '⛔ Invalid username. Use 3-20 alphanumeric characters or underscores.\n\nTry again or send /cancel:',
-                parse_mode: 'HTML'
-            });
-            return;
-        }
-
-        const index: string[] = await env.kv.get('users:index', { type: 'json' }) || [];
-        if (index.includes(text)) {
-            await tgFetch(token, 'sendMessage', {
-                chat_id: chatId,
-                text: '⛔ Username already exists. Choose another or send /cancel:',
-                parse_mode: 'HTML'
-            });
-            return;
-        }
-
-        state.data.username = text;
-        state.step = 'awaiting_days';
-        state.timestamp = now;
-        await env.kv.put(`botState:${chatId}`, JSON.stringify(state));
-        await tgFetch(token, 'sendMessage', {
-            chat_id: chatId,
-            text: `✅ Username: <b>${text}</b>\n\nStep 2/4: Duration in days (default 30):`,
-            parse_mode: 'HTML'
-        });
-        return;
-    }
-
-    if (state.step === 'awaiting_days') {
-        const days = parseInt(text) || 30;
-        state.data.days = Math.max(1, Math.min(days, 3650));
-        state.step = 'awaiting_note';
-        state.timestamp = now;
-        await env.kv.put(`botState:${chatId}`, JSON.stringify(state));
-        await tgFetch(token, 'sendMessage', {
-            chat_id: chatId,
-            text: `✅ Duration: ${state.data.days} days\n\nStep 3/3: Note (optional, send - to skip):`,
-            parse_mode: 'HTML'
-        });
-        return;
-    }
-
-    if (state.step === 'awaiting_note') {
-        const note = text === '-' ? '' : text;
-        await env.kv.delete(`botState:${chatId}`);
-
-        const username = state.data.username!;
-        const hex = '0123456789abcdef';
-        const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return c === 'x' ? hex[r] : hex[(r & 0x3) | 0x8]; });
-        const expiresAt = new Date(Date.now() + (state.data.days || 30) * 86400000).toISOString();
-
-        const user = {
-            username,
-            subPath: uuid,
-            createdAt: new Date().toISOString(),
-            expiresAt,
-            note,
-            active: true
-        };
-
-        await env.kv.put(`user:${username}`, JSON.stringify(user));
-        const index: string[] = await env.kv.get('users:index', { type: 'json' }) || [];
-        index.push(username);
-        await env.kv.put('users:index', JSON.stringify(index));
-
-        const subUrl = `${origin}/sub/user/${encodeURIComponent(uuid)}`;
-        await tgFetch(token, 'sendMessage', {
-            chat_id: chatId,
-            text: `✅ <b>User created!</b>\n\n👤 ${username}\n📅 Expires: ${new Date(expiresAt).toLocaleDateString()}\n📝 Note: ${note || '(none)'}\n\n🔗 <code>${subUrl}</code>`,
-            parse_mode: 'HTML',
-            reply_markup: {
-                inline_keyboard: [[{ text: '👥 Users', callback_data: 'users_menu' }]]
-            }
-        });
-        return;
-    }
-}
-
 async function checkCfUsageWarning(proxySettings: any, botToken: string, chatId: number, env: Env): Promise<void> {
     if (!proxySettings.cfAccountId || !proxySettings.cfApiToken || !proxySettings.cfWorkerName) return;
 
@@ -872,7 +418,7 @@ export async function handleTelegramWebhook(request: Request, env: Env): Promise
                 reply_markup: mainKeyboard()
             });
         } else {
-            await handleUserCallback(cq, botToken, chatId, env, origin);
+            await handleCallback(cq, botToken, chatId, env, origin);
         }
 
         checkCfUsageWarning(proxySettings, botToken, chatId, env);
@@ -916,26 +462,13 @@ export async function handleTelegramWebhook(request: Request, env: Env): Promise
                     inline_keyboard: [[{ text: '🔙 Back', callback_data: 'main' }]]
                 }
             });
-        } else if (text === '/users') {
+        } else {
             await tgFetch(botToken, 'sendMessage', {
                 chat_id: chatId,
-                text: '👥 <b>User Management</b>\n\nManage your panel users:',
+                text: '🤖 <b>BPB Panel Bot</b>\n\nChoose an option:',
                 parse_mode: 'HTML',
-                reply_markup: usersKeyboard()
+                reply_markup: mainKeyboard()
             });
-        } else {
-            const origin = new URL(request.url).origin;
-            const state = await env.kv.get(`botState:${chatId}`, { type: 'json' });
-            if (state) {
-                await handleUserMessage(update.message, botToken, chatId, env, origin);
-            } else {
-                await tgFetch(botToken, 'sendMessage', {
-                    chat_id: chatId,
-                    text: '🤖 <b>BPB Panel Bot</b>\n\nChoose an option:',
-                    parse_mode: 'HTML',
-                    reply_markup: mainKeyboard()
-                });
-            }
         }
 
         checkCfUsageWarning(proxySettings, botToken, chatId, env);

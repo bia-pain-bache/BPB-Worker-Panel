@@ -37,7 +37,6 @@
                 <button class="tab-btn" data-tab="external">External</button>
                 <button class="tab-btn" data-tab="telegram">Telegram</button>
                 <button class="tab-btn" data-tab="subscriptions">Subscriptions</button>
-                <button class="tab-btn" data-tab="users">Users</button>
             </div>
         </div>
 
@@ -655,46 +654,6 @@
             </div>
         </div>
 
-        <!-- Users Tab -->
-        <div class="tab-content" id="tab-users" data-tab="users">
-            <div class="glass-card">
-                <div class="glass-card-header">
-                    <div class="glass-card-title">👥 Users</div>
-                </div>
-                <div class="add-user-form">
-                    <div class="form-group" style="margin:0;">
-                        <label class="form-label">Username</label>
-                        <input class="neon-input" type="text" id="addUserUsername" placeholder="3-20 chars, a-z, 0-9, _">
-                    </div>
-                    <div class="form-group" style="margin:0;">
-                        <label class="form-label">Days</label>
-                        <input class="neon-input" type="number" id="addUserDays" value="30" min="1">
-                    </div>
-                    <div class="form-group full-width" style="margin:0;">
-                        <label class="form-label">Note</label>
-                        <input class="neon-input" type="text" id="addUserNote" placeholder="Optional">
-                    </div>
-                </div>
-                <button class="btn-neon" onclick="addUser()">➕ Add User</button>
-            </div>
-            <div class="glass-card">
-                <table class="users-table">
-                    <thead>
-                        <tr>
-                            <th>Username</th>
-                            <th>Expires</th>
-                            <th>Status</th>
-                            <th>Note</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="users-tbody">
-                        <tr><td colspan="5" class="text-muted text-sm" style="text-align:center;padding:24px;">No users found.</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
         <!-- Apply / Actions Bar -->
         <div class="glass-card" style="position:sticky;bottom:16px;z-index:50;">
             <div class="flex items-center justify-between gap-4" style="flex-wrap:wrap;">
@@ -719,38 +678,6 @@
                 <button class="modal-close" onclick="closeQR()">✕</button>
             </div>
             <div class="qr-container" id="qrcode-container"></div>
-        </div>
-    </div>
-
-    <!-- User Edit Modal -->
-    <div class="modal-overlay hidden" id="userEditModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>✏️ Edit User</h3>
-                <button class="modal-close" onclick="closeUserEdit()">✕</button>
-            </div>
-            <div id="editUserInfo"></div>
-            <div class="form-group">
-                <label class="form-label">Extend Days</label>
-                <input class="neon-input" type="number" id="editUserDays" value="0" min="0">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Note</label>
-                <input class="neon-input" type="text" id="editUserNote">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Active</label>
-                <select class="neon-input" id="editUserActive">
-                    <option value="true">Active</option>
-                    <option value="false">Disabled</option>
-                </select>
-            </div>
-            <div class="btn-group">
-                <button class="btn-neon" onclick="saveUserEdit()">💾 Save</button>
-                <button class="btn-ghost" onclick="deleteUser(document.getElementById('editUserUsername')?.textContent || '')">🗑️ Delete</button>
-                <button class="btn-ghost" onclick="closeUserEdit()">Cancel</button>
-            </div>
-            <input type="hidden" id="editUserUsername">
         </div>
     </div>
 

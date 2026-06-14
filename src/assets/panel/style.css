@@ -545,58 +545,6 @@ textarea.neon-input {
 .badge-warning { background: rgba(245,158,11,0.15); color: var(--warning); border: 1px solid rgba(245,158,11,0.3); }
 .badge-muted { background: rgba(71,85,105,0.2); color: var(--text-muted); border: 1px solid rgba(71,85,105,0.3); }
 
-/* ===== Users Table ===== */
-.users-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.users-table th {
-    text-align: left;
-    padding: 10px 12px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--text-muted);
-    border-bottom: 1px solid var(--border-glass);
-}
-
-.users-table td {
-    padding: 10px 12px;
-    border-bottom: 1px solid rgba(139,92,246,0.08);
-    font-size: 0.85rem;
-}
-
-.users-table tr:hover td {
-    background: rgba(139,92,246,0.04);
-}
-
-.users-table .actions-cell {
-    display: flex;
-    gap: 4px;
-}
-
-.users-table .actions-cell button {
-    background: transparent;
-    border: 1px solid var(--border-glass);
-    border-radius: 6px;
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all var(--transition);
-}
-
-.users-table .actions-cell button:hover {
-    border-color: var(--neon-primary);
-    color: var(--neon-primary);
-    box-shadow: 0 0 10px var(--neon-glow);
-}
-
 .action-btn {
     display: inline-flex;
     align-items: center;
@@ -815,8 +763,6 @@ textarea.neon-input {
     .tab-bar { gap: 2px; }
     .tab-btn { padding: 6px 12px; font-size: 0.78rem; }
     .glass-card { padding: 16px; }
-    .users-table { font-size: 0.8rem; }
-    .users-table td, .users-table th { padding: 8px; }
     .sub-row { flex-direction: column; align-items: flex-start; gap: 8px; }
     .toast { min-width: auto; max-width: 90vw; right: 10px; left: 10px; }
 }
@@ -1055,28 +1001,6 @@ textarea.neon-input {
 @keyframes shimmer {
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
-}
-
-/* ===== Add User Form (inline in Users tab) ===== */
-.add-user-form {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 16px;
-}
-.add-user-form .full-width { grid-column: 1 / -1; }
-
-@media (max-width: 480px) {
-    .add-user-form { grid-template-columns: 1fr; }
-}
-
-/* ===== Edit Modal User Info Line ===== */
-.user-info-line {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-    font-size: 0.85rem;
 }
 
 /* ===== Toast Notifications ===== */
