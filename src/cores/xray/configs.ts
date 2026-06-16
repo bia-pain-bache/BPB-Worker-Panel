@@ -76,7 +76,7 @@ async function buildConfig(
         },
         dns: await buildDNS(outboundAddrs, isWorkerLess, isWarp, domainToStaticIPs, customDns, customDnsHosts),
         inbounds: [
-            buildMixedInbound(allowLANConnection, isWorkerLess, fakeDNS),
+            buildMixedInbound(allowLANConnection, isWorkerLess, isWorkerLess || fakeDNS),
             buildDokodemoInbound(allowLANConnection),
             // buildTunInbound(isWorkerLess, fakeDNS)
         ],

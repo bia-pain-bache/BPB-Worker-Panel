@@ -89,7 +89,7 @@ export async function buildDNS(
         fakeDnsDomains.push(...bypassDomains);
     }
 
-    if (fakeDNS) {
+    if (fakeDNS || isWorkerLess) {
         const fakeDNSServer = fakeDnsDomains.length
             ? buildDnsServer("fakedns", fakeDnsDomains, undefined, false, undefined)
             : "fakedns";
