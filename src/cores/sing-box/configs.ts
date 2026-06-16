@@ -38,7 +38,8 @@ async function buildConfig(
             },
             {
                 type: "direct",
-                tag: "direct"
+                tag: "direct",
+                domain_resolver: "dns-direct"
             }
         ],
         endpoints: endpoints.omitEmpty(),

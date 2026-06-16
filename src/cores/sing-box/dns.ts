@@ -1,6 +1,6 @@
 import { getGeoAssets } from './geo-assets';
 import { DNS, DnsRule, DnsServer } from '#types/sing-box';
-import { isDomain, getDomain, accDnsRules } from '@utils';
+import { getDomain, accDnsRules } from '@utils';
 
 export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<DNS> {
     const {
@@ -8,7 +8,6 @@ export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<DNS> 
         remoteDNS,
         warpRemoteDNS,
         antiSanctionDNS,
-        outProxyParams,
         remoteDnsHost,
         enableIPv6,
         fakeDNS,
@@ -47,14 +46,6 @@ export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<DNS> 
     if (enableECH) {
         const { hostName } = globalThis.httpConfig;
         addDnsRule(rules, 'dns-direct', undefined, undefined, undefined, [echServerName || hostName], ["HTTPS"]);
-    }
-
-    if (isChain && !isWarp) {
-        const { server } = outProxyParams;
-        if (isDomain(server)) rules.push({
-            domain: server,
-            server: "dns-remote"
-        });
     }
 
     if (remoteDnsHost.isDomain && !isWarp) {

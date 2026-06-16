@@ -102,11 +102,6 @@ export interface Route {
     rules: RoutingRule[];
     rule_set?: RuleSet[];
     auto_detect_interface: true;
-    default_domain_resolver: {
-        server: string;
-        strategy: ResolveStrategy;
-        rewrite_ttl: number;
-    };
     final: string;
 }
 
@@ -173,6 +168,7 @@ export interface BaseOutbound {
     server_port?: number;
     tcp_fast_open?: boolean;
     detour?: string;
+    domain_resolver?: string;
 }
 
 export interface SocksOutbound extends BaseOutbound {
@@ -268,6 +264,7 @@ export interface WireguardEndpoint {
     peers: Peer[];
     private_key: string;
     detour?: string;
+    domain_resolver?: string;
 }
 
 interface Log {

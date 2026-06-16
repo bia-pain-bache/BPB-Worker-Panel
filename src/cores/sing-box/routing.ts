@@ -3,7 +3,7 @@ import { accRoutingRules } from '@utils';
 import { Route, RoutingRule, RuleSet } from '#types/sing-box';
 
 export function buildRoutingRules(isWarp: boolean): Route {
-    const { blockUDP443, enableIPv6 } = globalThis.settings;
+    const { blockUDP443 } = globalThis.settings;
 
     const rules: RoutingRule[] = [
         {
@@ -76,7 +76,6 @@ export function buildRoutingRules(isWarp: boolean): Route {
         addRoutingRule(rules, 'direct', undefined, routingRules.bypass.ips, undefined, routingRules.bypass.geoips);
     }
 
-    const strategy = enableIPv6 ? "prefer_ipv4" : "ipv4_only";
     const ruleSets: RuleSet[] = geoAssets.reduce((sets, asset) => {
         addRuleSets(sets, asset);
         return sets;
@@ -86,11 +85,6 @@ export function buildRoutingRules(isWarp: boolean): Route {
         rules,
         rule_set: ruleSets.omitEmpty(),
         auto_detect_interface: true,
-        default_domain_resolver: {
-            server: "dns-direct",
-            strategy,
-            rewrite_ttl: 60
-        },
         final: "✅ Selector"
     };
 }

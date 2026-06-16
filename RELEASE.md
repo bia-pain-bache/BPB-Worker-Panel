@@ -1,6 +1,7 @@
 # 💡 Bug fixes & Improvements
 
 - Bug fix, WorkerLess configs are working again. Recommended Fragment settings are `Packet: 1-1` and `Mode: Severe` #1305
+- Adapted sing-box new DNS features.
 
 > [!CAUTION]
 > Please update whatever client you use, specially these ones:
