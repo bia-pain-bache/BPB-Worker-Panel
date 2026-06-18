@@ -205,6 +205,11 @@ type UDPMask = {
     };
 };
 
+export interface FinalMask {
+    tcp?: TCPMask[];
+    udp?: UDPMask[];
+}
+
 export interface Sockopt {
     dialerProxy?: string;
     domainStrategy?: DomainStrategy;
@@ -242,8 +247,10 @@ interface DnsOutSettings {
     ];
 }
 
+export type FragmentPacket = "tlshello" | "1-1" | "1-2" | "1-3" | "1-5";
+
 interface Fragment {
-    packets: "tlshello" | "1-1" | "1-2" | "1-3" | "1-5";
+    packets: FragmentPacket;
     length: string;
     interval: string;
     maxSplit?: string;
@@ -258,8 +265,6 @@ export interface Noise {
 }
 
 export interface FreedomSettings {
-    fragment?: Fragment;
-    noises?: Noise[];
     domainStrategy?: DomainStrategy;
 }
 

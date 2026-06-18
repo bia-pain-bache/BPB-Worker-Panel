@@ -27,7 +27,9 @@ import {
     Fingerprint,
     TransportType,
     DomainStrategy,
-    Transport
+    Transport,
+    FinalMask,
+    FragmentPacket
 } from '#types/xray';
 
 function buildOutbound<T>(
@@ -57,48 +59,17 @@ export function buildFreedomOutbound(
     tag: string,
     length?: string,
     interval?: string,
-    packets?: "tlshello" | "1-1" | "1-2" | "1-3" | "1-5"
+    packets?: FragmentPacket
 ): Outbound {
-    const {
-        fragmentPackets,
-        fragmentLengthMin,
-        fragmentLengthMax,
-        fragmentIntervalMin,
-        fragmentIntervalMax,
-        fragmentMaxSplitMin,
-        fragmentMaxSplitMax,
-        enableTFO,
-        xrayUdpNoises,
-        enableIPv6
-    } = globalThis.settings;
+    const { enableTFO, enableIPv6 } = globalThis.settings;
+    const freedomSettings: FreedomSettings = {
+        domainStrategy: isFragment ? undefined : enableIPv6 ? "UseIPv4v6" : "UseIPv4"
+    };
 
-    let freedomSettings: FreedomSettings = {};
-    let streamSettings: StreamSettings | undefined;
-
-    if (isFragment) {
-        freedomSettings = {
-            fragment: {
-                packets: packets || fragmentPackets,
-                length: length || toRange(fragmentLengthMin, fragmentLengthMax) as string,
-                interval: interval || toRange(fragmentIntervalMin, fragmentIntervalMax) as string,
-                maxSplit: toRange(fragmentMaxSplitMin, fragmentMaxSplitMax)
-            }
-        };
-
-        streamSettings = {
-            sockopt: buildSockopt(true, enableTFO, "UseIP")
-        } satisfies StreamSettings;
-    }
-
-    if (isUdpNoises) {
-        freedomSettings = {
-            ...freedomSettings,
-            noises: buildUDPNoises(xrayUdpNoises),
-            domainStrategy: isFragment
-                ? undefined
-                : enableIPv6 ? "UseIPv4v6" : "UseIPv4"
-        };
-    }
+    const streamSettings: StreamSettings = {
+        sockopt: isFragment ? buildSockopt(true, enableTFO, "UseIP") : undefined,
+        finalmask: buildFinalMask(isFragment, isUdpNoises, length, interval, packets)
+    };
 
     return {
         protocol: "freedom",
@@ -123,13 +94,6 @@ export function buildWebsocketOutbound(
             enableTFO,
             enableECH,
             echServerName,
-            fragmentPackets,
-            fragmentLengthMin,
-            fragmentLengthMax,
-            fragmentIntervalMin,
-            fragmentIntervalMax,
-            fragmentMaxSplitMin,
-            fragmentMaxSplitMax,
             upstreamParams: { upstreamServer }
         },
         globalConfig: { userID, TrPass },
@@ -152,19 +116,7 @@ export function buildWebsocketOutbound(
         security: isTLS ? "tls" : "none",
         tlsSettings,
         sockopt: buildSockopt(true, enableTFO, "UseIP"),
-        finalmask: isFragment ? {
-            tcp: [
-                {
-                    type: "fragment",
-                    settings: {
-                        packets: fragmentPackets,
-                        length: fragLength ?? toRange(fragmentLengthMin, fragmentLengthMax) as string,
-                        delay: fragInterval ?? toRange(fragmentIntervalMin, fragmentIntervalMax) as string,
-                        maxSplit: toRange(fragmentMaxSplitMin, fragmentMaxSplitMax)
-                    }
-                }
-            ]
-        } : undefined
+        finalmask: buildFinalMask(isFragment, false, fragLength, fragInterval)
     };
 
     if (protocol === _VL_) return buildOutbound<VlessSettings>(protocol, tag, false, {
@@ -196,14 +148,7 @@ export function buildWarpOutbound(
     isPro: boolean,
     isKnocker: boolean
 ): Outbound {
-    const { xrayUdpNoises } = globalThis.settings;
-    const {
-        warpIPv6,
-        reserved,
-        publicKey,
-        privateKey
-    } = warpAccount;
-
+    const { warpIPv6, reserved, publicKey, privateKey } = warpAccount;
     let wgSettings: WireguardSettings = {
         address: [
             "172.16.0.2/32",
@@ -245,17 +190,7 @@ export function buildWarpOutbound(
             };
 
         } else {
-            streamSettings.finalmask = {
-                udp: [
-                    {
-                        type: "noise",
-                        settings: {
-                            reset: "30-60",
-                            noise: buildUDPNoises(xrayUdpNoises)
-                        }
-                    }
-                ]
-            }
+            streamSettings.finalmask = buildFinalMask(false, isPro)
         }
     }
 
@@ -488,12 +423,55 @@ function buildUDPNoises(panelNoises: XrUdpNoise[]): Noise[] {
             }
             : {
                 type,
-                packet: type === "array"
-                    ? packet.split(",").map(Number)
-                    : packet,
+                packet: type === "array" ? packet.split(",").map(Number) : packet,
                 delay
             };
 
         return Array.from({ length: count }, () => noise);
     });
+}
+
+function buildFinalMask(
+    isFragment: boolean,
+    isUdpNoise: boolean,
+    fragLength?: string,
+    fragDelay?: string,
+    fragPacket?: FragmentPacket
+): FinalMask | undefined {
+    if (!isFragment && !isUdpNoise) return;
+    const {
+        settings: {
+            fragmentPackets,
+            fragmentLengthMin,
+            fragmentLengthMax,
+            fragmentIntervalMin,
+            fragmentIntervalMax,
+            fragmentMaxSplitMin,
+            fragmentMaxSplitMax,
+            xrayUdpNoises
+        }
+    } = globalThis;
+
+    return {
+        tcp: isFragment ? [
+            {
+                type: "fragment",
+                settings: {
+                    packets: fragPacket || fragmentPackets,
+                    length: fragLength || toRange(fragmentLengthMin, fragmentLengthMax) as string,
+                    delay: fragDelay || toRange(fragmentIntervalMin, fragmentIntervalMax) as string,
+                    maxSplit: toRange(fragmentMaxSplitMin, fragmentMaxSplitMax)
+                }
+            }
+        ] : undefined,
+        udp: isUdpNoise ? [
+            {
+                type: "noise",
+                settings: {
+                    reset: "30-60",
+                    noise: buildUDPNoises(xrayUdpNoises)
+                }
+            }
+        ] : undefined
+    }
 }

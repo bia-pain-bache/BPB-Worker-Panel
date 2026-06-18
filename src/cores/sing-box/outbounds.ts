@@ -3,7 +3,8 @@ import {
     base64ToDecimal,
     generateWsPath,
     parseHostPort,
-    selectSniHost
+    selectSniHost,
+    isDomain
 } from '@utils';
 
 import {
@@ -35,7 +36,8 @@ function buildOutbound<T>(
     tcp_fast_open: boolean,
     fields: Omit<T, keyof BaseOutbound>,
     tls?: TLS,
-    transport?: Transport
+    transport?: Transport,
+    isChain?: boolean
 ): T {
     return {
         tag,
@@ -45,7 +47,8 @@ function buildOutbound<T>(
         tcp_fast_open,
         ...fields,
         tls,
-        transport
+        transport,
+        domain_resolver: isDomain(server) ? (isChain ? "dns-remote" : "dns-direct") : undefined
     } as T;
 }
 
@@ -108,6 +111,7 @@ export function buildWarpOutbound(
         privateKey
     } = warpAccount;
 
+    const address = chain ? "162.159.192.1" : host;
     return {
         tag: remark,
         detour: chain || undefined,
@@ -119,7 +123,7 @@ export function buildWarpOutbound(
         mtu: 1280,
         peers: [
             {
-                address: chain ? "162.159.192.1" : host,
+                address,
                 port: chain ? 2408 : port,
                 public_key: publicKey,
                 reserved: base64ToDecimal(reserved),
@@ -130,7 +134,8 @@ export function buildWarpOutbound(
                 persistent_keepalive_interval: 5
             }
         ],
-        private_key: privateKey
+        private_key: privateKey,
+        domain_resolver: isDomain(address) ? "dns-direct" : undefined
     } satisfies WireguardEndpoint;
 }
 
@@ -161,7 +166,7 @@ export function buildChainOutbound(): ChainOutbound | undefined {
             return buildOutbound<HttpOutbound>("", protocol, server, port, false, {
                 username: user,
                 password: pass
-            });
+            }, undefined, undefined, true);
 
         case "socks":
             return buildOutbound<SocksOutbound>("", protocol, server, port, false, {
@@ -169,21 +174,21 @@ export function buildChainOutbound(): ChainOutbound | undefined {
                 password: pass,
                 version: "5",
                 network: "tcp"
-            });
+            }, undefined, undefined, true);
 
         case _SS_:
             return buildOutbound<ShadowsocksOutbound>("", protocol, server, port, false, {
                 method,
                 password,
                 network: "tcp"
-            });
+            }, undefined, undefined, true);
 
         case _VL_:
             return buildOutbound<VlessOutbound>("", protocol, server, port, false, {
                 uuid,
                 flow,
                 network: "tcp"
-            }, tls, transport);
+            }, tls, transport, true);
 
         case _VM_:
             return buildOutbound<VmessOutbound>("", protocol, server, port, false, {
@@ -191,13 +196,13 @@ export function buildChainOutbound(): ChainOutbound | undefined {
                 security: "auto",
                 alter_id: aid,
                 network: "tcp"
-            }, tls, transport);
+            }, tls, transport, true);
 
         case _TR_:
             return buildOutbound<TrojanOutbound>("", protocol, server, port, false, {
                 password: password,
                 network: "tcp"
-            }, tls, transport);
+            }, tls, transport, true);
 
         default:
             return undefined;

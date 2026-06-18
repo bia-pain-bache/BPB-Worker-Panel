@@ -22,10 +22,11 @@
 - Fixed My IP section.
 - Updated packages and docs.
 - Improved error handling.
+- Bug fix, WorkerLess configs are working again. Recommended Fragment settings are `Packet: 1-1` and `Mode: Severe` #1305
+- Adapted sing-box new DNS features.
 
 > [!CAUTION]
-> 1- No further actions are required if you create a new panel, however it's highly recommended to reset panel settings and update subscriptions if you are upgrading to this version.
-> 2- Please update whatever client you use, specially these ones:
+> Please update whatever client you use, specially these ones:
 
 |       Client        | Minimum version |  Fragment support  |  Warp Pro support  |
 | :-----------------: | :-------------: | :----------------: | :----------------: |
