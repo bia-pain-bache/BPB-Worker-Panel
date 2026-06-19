@@ -184,7 +184,7 @@ async function fetchIPInfo() {
 
     try {
         const response = await fetch('https://ipv4.geojs.io/v1/ip.json' + '?nocache=' + Date.now(), { cache: "no-store" });
-        
+
         if (!response.ok) {
             const errorMessage = await response.text();
             throw new Error(`Fetch Other targets IP failed with status ${response.status} at ${response.url} - ${errorMessage}`);
@@ -320,12 +320,12 @@ function openQR(path, app, tag, title, singboxType) {
 
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text)
-        .then(() => alert('✅ Copied to clipboard:\n\n' + text))
+        .then(() => alert(t('panel.alert.copied', { text })))
         .catch(error => console.error('Failed to copy:', error));
 }
 
 async function updateWarpConfigs() {
-    const confirmReset = confirm('⚠️ Are you sure?');
+    const confirmReset = confirm(t('panel.alert.warpConfirm'));
     if (!confirmReset) return;
     const refreshBtn = document.getElementById('warp-update');
     document.body.style.cursor = 'wait';
@@ -339,15 +339,12 @@ async function updateWarpConfigs() {
         refreshBtn.classList.remove('fa-spin');
 
         if (!success) {
-            alert(
-                '⚠️ An error occured, Please try again!\n' +
-                `⛔ ${message}`
-            );
+            alert(t('panel.alert.warpFail', { message }));
 
             throw new Error(`status ${status} - ${message}`);
         }
 
-        alert('✅ Warp configs updated successfully!');
+        alert(t('panel.alert.warpSuccess'));
     } catch (error) {
         console.error("Updating Warp configs error:", error.message || error)
     }
@@ -364,7 +361,7 @@ function handleProtocolChange(event) {
     if (globalThis.activeProtocols === 0) {
         event.preventDefault();
         event.target.checked = !event.target.checked;
-        alert("⛔ At least one Protocol should be selected!");
+        alert(t('panel.alert.needOneProtocol'));
         globalThis.activeProtocols++;
         return false;
     }
@@ -383,7 +380,7 @@ function handlePortChange(event) {
     if (globalThis.activeTlsPorts.length === 0) {
         event.preventDefault();
         event.target.checked = !event.target.checked;
-        alert("⛔ At least one TLS port should be selected!");
+        alert(t('panel.alert.needOneTlsPort'));
         globalThis.activeTlsPorts.push(portField);
         return false;
     }
@@ -391,10 +388,7 @@ function handlePortChange(event) {
 
 function handleRiskyRules(event) {
     if (event.target.checked) {
-        const proceed = confirm(
-            "⛔ v2ray users should set Geo Assets to Chocolate4U and download assets, otherwise configs won't connect.\n\n" +
-            "❓ Proceed?"
-        );
+        const proceed = confirm(t('panel.alert.riskyRules'));
 
         if (!proceed) {
             event.target.checked = false;
@@ -431,7 +425,7 @@ function handleFragmentMode() {
 }
 
 function resetSettings() {
-    const confirmReset = confirm('⚠️ This will reset all panel settings.\n\n❓ Are you sure?');
+    const confirmReset = confirm(t('panel.alert.resetConfirm'));
     if (!confirmReset) return;
 
     const resetBtn = document.getElementById("refresh-btn");
@@ -455,7 +449,7 @@ function resetSettings() {
             }
 
             initiatePanel(body);
-            alert('✅ Panel settings reset to default successfully!\n💡 Please update your subscriptions.');
+            alert(t('panel.alert.resetSuccess'));
         })
         .catch(error => console.error("Reseting settings error:", error.message || error));
 }
@@ -471,7 +465,7 @@ function updateSettings(event, data) {
     const applyButton = document.getElementById('applyButton');
     document.body.style.cursor = 'wait';
     const applyButtonVal = applyButton.value;
-    applyButton.value = '⌛ Loading...';
+    applyButton.value = t('panel.alert.loading');
 
     fetch('/panel/update-settings', {
         method: 'PUT',
@@ -483,7 +477,7 @@ function updateSettings(event, data) {
         .then(({ success, status, message }) => {
 
             if (status === 401) {
-                alert('⚠️ Session expired! Please login again.');
+                alert(t('panel.alert.sessionExpired'));
                 window.location.href = '/login';
             }
 
@@ -492,7 +486,7 @@ function updateSettings(event, data) {
             }
 
             initiatePanel(form);
-            alert('✅ Settings applied successfully!\n💡 Please update your subscriptions.');
+            alert(t('panel.alert.settingsApplied'));
         })
         .catch(error => console.error("Update settings error:", error.message || error))
         .finally(() => {
@@ -565,7 +559,7 @@ function validateRemoteDNS() {
     try {
         url = new URL(dns);
     } catch (error) {
-        alert("⛔ Invalid DNS, Please enter a URL.");
+        alert(t('panel.alert.invalidDnsUrl'));
         return false;
     }
 
@@ -590,15 +584,12 @@ function validateRemoteDNS() {
     ];
 
     if (!["tcp:", "https:", "tls:"].includes(url.protocol)) {
-        alert("⛔ Please enter TCP, DoH or DoT servers.");
+        alert(t('panel.alert.invalidDnsProto'));
         return false;
     }
 
     if (cloudflareDNS.includes(url.hostname)) {
-        alert(
-            "⛔ Cloudflare DNS is not allowed for workers.\n" +
-            "💡 Please use other public DNS servers like Google, Adguard..."
-        );
+        alert(t('panel.alert.cfDnsForbidden'));
 
         return false;
     }
@@ -620,11 +611,7 @@ function validateSanctionDns() {
     const isValid = isValidHostName(host, false);
 
     if (!isValid) {
-        alert(
-            '⛔ Invalid IPs or Domains.\n' +
-            `⚠️ ${host}`
-        );
-
+        alert(t('panel.alert.invalidHosts', { host }));
         return false;
     }
 
@@ -636,12 +623,7 @@ function validateWarpDNS() {
     const isValid = isIPv4(dns);
 
     if (!isValid) {
-        alert(
-            '⛔ Invalid Warp DNS.\n' +
-            '💡 Please fill in an IPv4 address (UDP DNS).\n\n' +
-            `⚠️ ${dns}`
-        );
-
+        alert(t('panel.alert.invalidWarpDns', { dns }));
         return false;
     }
 
@@ -653,12 +635,7 @@ function validateLocalDNS() {
     const isValid = isIPv4(dns) || dns === 'localhost';
 
     if (!isValid) {
-        alert(
-            '⛔ Invalid local DNS.\n' +
-            '💡 Please fill in an IPv4 address or "localhost".\n\n' +
-            `⚠️ ${dns}`
-        );
-
+        alert(t('panel.alert.invalidLocalDns', { dns }));
         return false;
     }
 
@@ -675,21 +652,16 @@ function validateCustomRules() {
     const invalidDomainValues = parseElmValues('customBypassSanctionRules').filter(value => !isDomain(value));
 
     if (invalidDomainIpValues.length) {
-        alert(
-            '⛔ Invalid IPs, Domains or IP ranges.\n' +
-            '💡 Please enter each value in a new line.\n\n' +
-            invalidDomainIpValues.map(val => `⚠️ ${val}`).join('\n')
-        );
-
+        alert(t('panel.alert.invalidIpDomainList', {
+            list: invalidDomainIpValues.map(val => `⚠️ ${val}`).join('\n')
+        }));
         return false;
     }
 
     if (invalidDomainValues.length) {
-        alert(
-            '⛔ Invalid Domains.\n💡 Please enter each value in a new line.\n\n' +
-            invalidDomainValues.map(val => `⚠️ ${val}`).join('\n')
-        );
-
+        alert(t('panel.alert.invalidDomainList', {
+            list: invalidDomainValues.map(val => `⚠️ ${val}`).join('\n')
+        }));
         return false;
     }
 
@@ -706,12 +678,9 @@ function validateMultipleHostNames() {
         .filter(value => !isValidHostName(value));
 
     if (invalidValues.length) {
-        alert(
-            '⛔ Invalid IPs or Domains.\n' +
-            '💡 Please enter each value in a new line.\n\n' +
-            invalidValues.map(ip => `⚠️ ${ip}`).join('\n')
-        );
-
+        alert(t('panel.alert.invalidIpDomainListShort', {
+            list: invalidValues.map(ip => `⚠️ ${ip}`).join('\n')
+        }));
         return false;
     }
 
@@ -723,12 +692,9 @@ function validateProxyIPs() {
         .filter(value => !isValidHostName(value));
 
     if (invalidValues.length) {
-        alert(
-            '⛔ Invalid proxy IPs.\n' +
-            '💡 Please enter each value in a new line.\n\n' +
-            invalidValues.map(ip => `⚠️ ${ip}`).join('\n')
-        );
-
+        alert(t('panel.alert.invalidProxyIPs', {
+            list: invalidValues.map(ip => `⚠️ ${ip}`).join('\n')
+        }));
         return false;
     }
 
@@ -740,12 +706,9 @@ function validateNAT64Prefixes() {
         .filter(value => !isIPv6(value));
 
     if (invalidValues.length) {
-        alert(
-            '⛔ Invalid NAT64 prefix.\n' +
-            '💡 Please enter each prefix in a new line using [].\n\n' +
-            invalidValues.map(ip => `⚠️ ${ip}`).join('\n')
-        );
-
+        alert(t('panel.alert.invalidNat64', {
+            list: invalidValues.map(ip => `⚠️ ${ip}`).join('\n')
+        }));
         return false;
     }
 
@@ -757,11 +720,9 @@ function validateWarpEndpoints() {
         .filter(value => !isValidHostName(value, true));
 
     if (invalidEndpoints.length) {
-        alert(
-            '⛔ Invalid endpoint.\n\n' +
-            invalidEndpoints.map(endpoint => `⚠️ ${endpoint}`).join('\n')
-        );
-
+        alert(t('panel.alert.invalidEndpoint', {
+            list: invalidEndpoints.map(endpoint => `⚠️ ${endpoint}`).join('\n')
+        }));
         return false;
     }
 
@@ -772,21 +733,21 @@ function validateMinMax() {
     const getValue = (id) => parseInt(getElmValue(id), 10);
 
     const fields = [
-        ['fragmentLengthMin', 'fragmentLengthMax', 'Fragment Length'],
-        ['fragmentIntervalMin', 'fragmentIntervalMax', 'Fragment Interval'],
-        ['fragmentMaxSplitMin', 'fragmentMaxSplitMax', 'Fragment Max Split'],
-        ['noiseCountMin', 'noiseCountMax', 'Noise Count'],
-        ['noiseSizeMin', 'noiseSizeMax', 'Noise Size'],
-        ['noiseDelayMin', 'noiseDelayMax', 'Noise Delay'],
-        ['amneziaNoiseSizeMin', 'amneziaNoiseSizeMax', 'Amnezia Noise Size']
+        ['fragmentLengthMin', 'fragmentLengthMax', 'panel.fragLabel'],
+        ['fragmentIntervalMin', 'fragmentIntervalMax', 'panel.fragInterval'],
+        ['fragmentMaxSplitMin', 'fragmentMaxSplitMax', 'panel.fragMaxSplit'],
+        ['noiseCountMin', 'noiseCountMax', 'panel.noiseCount'],
+        ['noiseSizeMin', 'noiseSizeMax', 'panel.noiseSize'],
+        ['noiseDelayMin', 'noiseDelayMax', 'panel.noiseDelay'],
+        ['amneziaNoiseSizeMin', 'amneziaNoiseSizeMax', 'panel.amneziaSize']
     ];
 
-    for (const [minId, maxId, label] of fields) {
+    for (const [minId, maxId, labelKey] of fields) {
         const min = getValue(minId);
         const max = getValue(maxId);
 
         if (min > max) {
-            alert(`⛔ ${label}: Minimum cannot be bigger than Maximum!`);
+            alert(t('panel.alert.minMax', { label: t(labelKey) }));
             return false;
         }
     }
@@ -801,17 +762,7 @@ function validateChainProxy() {
     const isOthers = /(http|socks|socks5|vless|trojan|ss):\/\/[^\s@]+@[^\s:]+:[^\s]+/.test(chainProxy);
 
     if (!isVMess && !isOthers) {
-        alert(
-            '⛔ Invalid Config!\n' +
-            '💡 Standard formats are:\n\n' +
-            ' + (socks or socks5 or http)://user:pass@server:port\n' +
-            ' + (socks or socks5 or http)://base64@server:port\n' +
-            ' + vless://uuid@server:port...\n' +
-            ' + vmess://base64\n' +
-            ' + trojan://password@server:port...\n' +
-            ' + ss://base64@server:port...'
-        );
-
+        alert(t('panel.alert.invalidConfig'));
         return false;
     }
 
@@ -829,29 +780,17 @@ function validateChainProxy() {
 
     if (['vless:', 'trojan:', 'vmess:'].includes(protocol)) {
         if (!username) {
-            alert(
-                '⛔ Invalid Config!\n' +
-                '💡 Config URL should contain UUID or Password.'
-            );
-
+            alert(t('panel.alert.configNoUser'));
             return false;
         }
 
         if (security && !['tls', 'none', 'reality'].includes(security)) {
-            alert(
-                '⛔ Invalid Config!\n' +
-                '💡 VLESS, VMess or Trojan security can be TLS, Reality or None.'
-            );
-
+            alert(t('panel.alert.configBadSec'));
             return false;
         }
 
         if (!['tcp', 'raw', 'ws', 'grpc', 'httpupgrade'].includes(type)) {
-            alert(
-                '⛔ Invalid Config!\n' +
-                '💡 VLESS, VMess or Trojan transmission can be tcp, ws, grpc or httpupgrade.'
-            );
-
+            alert(t('panel.alert.configBadType'));
             return false;
         }
     }
@@ -866,7 +805,7 @@ function validateCustomCdn() {
     const isCustomCdn = customCdnAddrs.length || customCdnHost !== '' || customCdnSni !== '';
 
     if (isCustomCdn && !(customCdnAddrs.length && customCdnHost && customCdnSni)) {
-        alert('⛔ All "Custom" fields should be filled or deleted together!');
+        alert(t('panel.alert.cdnAllOrNone'));
         return false;
     }
 
@@ -878,11 +817,7 @@ function validateKnockerNoise() {
     const knockerNoise = getElmValue("knockerNoiseMode");
 
     if (!regex.test(knockerNoise)) {
-        alert(
-            '⛔ Invalid noise  mode.\n' +
-            '💡 Please use "none", "quic", "random" or a valid hex value.'
-        );
-
+        alert(t('panel.alert.invalidKnockerNoise'));
         return false;
     }
 
@@ -896,7 +831,7 @@ function validateXrayNoises(fields) {
 
     modes.forEach((mode, index) => {
         if (Number(delaysMin[index]) > Number(delaysMax[index])) {
-            alert('⛔ The minimum noise delay should be smaller or equal to maximum!');
+            alert(t('panel.alert.noiseDelayMinMax'));
             submisionError = true;
             return;
         }
@@ -904,7 +839,7 @@ function validateXrayNoises(fields) {
         switch (mode) {
             case 'base64': {
                 if (!base64Regex.test(packets[index])) {
-                    alert('⛔ The Base64 noise packet is not a valid base64 value!');
+                    alert(t('panel.alert.base64Invalid'));
                     submisionError = true;
                 }
 
@@ -912,14 +847,14 @@ function validateXrayNoises(fields) {
             }
             case 'rand': {
                 if (!(/^\d+-\d+$/.test(packets[index]))) {
-                    alert('⛔ The Random noise packet should be a range like 0-10 or 10-30!');
+                    alert(t('panel.alert.randInvalid'));
                     submisionError = true;
                 }
 
                 const [min, max] = packets[index].split("-").map(Number);
 
                 if (min > max) {
-                    alert('⛔ The minimum Random noise packet should be smaller or equal to maximum!');
+                    alert(t('panel.alert.randMinMax'));
                     submisionError = true;
                 }
 
@@ -927,10 +862,7 @@ function validateXrayNoises(fields) {
             }
             case 'hex': {
                 if (!(/^(?=(?:[0-9A-Fa-f]{2})*$)[0-9A-Fa-f]+$/.test(packets[index]))) {
-                    alert(
-                        '⛔ The Hex noise packet is not a valid hex value!\n' +
-                        '💡 It should have even length and consisted of 0-9, a-f and A-F.'
-                    );
+                    alert(t('panel.alert.hexInvalid'));
                     submisionError = true;
                 }
 
@@ -942,7 +874,7 @@ function validateXrayNoises(fields) {
                     .every(n => /^\d+$/.test(n) && +n >= 0 && +n <= 255);
 
                 if (!valid) {
-                    alert('⛔ The values should be comma separated numbers between 0-255');
+                    alert(t('panel.alert.arrayInvalid'));
                     submisionError = true;
                 }
 
@@ -958,7 +890,7 @@ function validateEchConfig() {
     const echServerName = getElmValue("echServerName");
 
     if (echServerName && !isDomain(echServerName)) {
-        alert('⛔ The ECH Server Name should be a domain!');
+        alert(t('panel.alert.echDomain'));
         return false;
     }
 
@@ -969,10 +901,7 @@ function validateUpstreamProxy() {
     const upstreamProxy = getElmValue('upstreamProxy');
 
     if (upstreamProxy && !isValidHostName(upstreamProxy, true)) {
-        alert(
-            '⛔ Invalid Upstream proxy!\n' +
-            '💡 It can be either IP:Port or Domain:Port'
-        );
+        alert(t('panel.alert.invalidUpstream'));
         return false;
     }
 
@@ -1083,7 +1012,7 @@ function resetPassword(event) {
     const confirmPassword = confirmPasswordInput.value;
 
     if (newPassword !== confirmPassword) {
-        passwordError.textContent = "Passwords do not match";
+        passwordError.textContent = t('panel.pwd.notMatch');
         return false;
     }
 
@@ -1092,7 +1021,7 @@ function resetPassword(event) {
     const isLongEnough = newPassword.length >= 8;
 
     if (!(hasCapitalLetter && hasNumber && isLongEnough)) {
-        passwordError.textContent = '⚠️ Password must contain at least one capital letter, one number, and be at least 8 characters long.';
+        passwordError.textContent = t('panel.pwd.weak');
         return false;
     }
 
@@ -1111,7 +1040,7 @@ function resetPassword(event) {
                 throw new Error(`status ${status} - ${message}`);
             }
 
-            alert("✅ Password changed successfully! 👍");
+            alert(t('panel.pwd.success'));
             window.location.href = '/login';
 
         })
@@ -1173,14 +1102,14 @@ function addUdpNoise(isManual, noiseIndex, udpNoise) {
 
     container.innerHTML = `
         <div class="header-container">
-            <h4>Noise ${index + 1}</h4>
+            <h4>${t('panel.warpPro.noiseLabel', { n: index + 1 })}</h4>
             <button type="button" class="delete-noise">
                 <span class="material-symbols-rounded">delete</span>
-            </button>      
+            </button>
         </div>
         <div class="section">
             <div class="form-control">
-                <label>😵‍💫 Mode</label>
+                <label>${t('panel.warpPro.noiseMode')}</label>
                 <div>
                     <select name="udpXrayNoiseMode">
                         <option value="base64" ${noise.type === 'base64' ? 'selected' : ''}>Base64</option>
@@ -1192,19 +1121,19 @@ function addUdpNoise(isManual, noiseIndex, udpNoise) {
                 </div>
             </div>
             <div class="form-control">
-                <label>📦 Packet</label>
+                <label>${t('panel.warpPro.packet')}</label>
                 <div>
                     <input type="text" name="udpXrayNoisePacket" value="${noise.packet}">
                 </div>
             </div>
             <div class="form-control">
-                <label>🎚️ Count</label>
+                <label>${t('panel.warpPro.count')}</label>
                 <div>
                     <input type="number" name="udpXrayNoiseCount" value="${noise.count}" min="1" required>
                 </div>
             </div>
             <div class="form-control">
-                <label>🕞 Delay</label>
+                <label>${t('panel.warpPro.delay')}</label>
                 <div class="min-max">
                     <input type="number" name="udpXrayNoiseDelayMin"
                         value="${noise.delay.split('-')[0]}" min="1" required>
@@ -1270,14 +1199,11 @@ function generateUdpNoise(event) {
 
 function deleteUdpNoise(event) {
     if (globalThis.xrayNoiseCount === 1) {
-        alert('⛔ You cannot delete all noises!');
+        alert(t('panel.alert.noiseDeleteAll'));
         return;
     }
 
-    const confirmReset = confirm(
-        '⚠️ This will delete the noise.\n\n' +
-        '❓ Are you sure?'
-    );
+    const confirmReset = confirm(t('panel.alert.noiseDeleteConfirm'));
 
     if (!confirmReset) return;
     event.target.closest(".inner-container").remove();

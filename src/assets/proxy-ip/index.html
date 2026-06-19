@@ -21,24 +21,26 @@
     <table id="geo-table">
         <thead>
             <tr>
-                <th>#</th>
-                <th>Proxy IP</th>
-                <th>Country</th>
-                <th>City</th>
-                <th>ISP</th>
+                <th data-i18n="proxyIp.num"></th>
+                <th data-i18n="proxyIp.proxyIp"></th>
+                <th data-i18n="proxyIp.country"></th>
+                <th data-i18n="proxyIp.city"></th>
+                <th data-i18n="proxyIp.isp"></th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td colspan="5">Loading...</td>
+                <td colspan="5" data-i18n="proxyIp.loading"></td>
             </tr>
         </tbody>
     </table>
+    <button id="langToggle" class="lang-toggle-fixed" onclick="toggleLang()">中</button>
 
     <script type="module" defer>
         import { polyfillCountryFlagEmojis } from "https://cdn.skypack.dev/country-flag-emoji-polyfill";
         polyfillCountryFlagEmojis();
     </script>
+    <script>__I18N__</script>
     <script>__SCRIPT__</script>
 </body>
 

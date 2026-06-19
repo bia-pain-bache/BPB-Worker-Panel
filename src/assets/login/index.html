@@ -21,10 +21,10 @@
             </span>
         </h1>
         <div class="form-container">
-            <h2>User Login</h2>
+            <h2 data-i18n="login.title"></h2>
             <form id="loginForm" class="login-form">
                 <div class="form-control">
-                    <label for="password">Password</label>
+                    <label for="password" data-i18n="login.password"></label>
                     <div class="password-wrapper">
                         <input type="password" id="password" name="password" required>
                         <span id="togglePassword" class="material-symbols-rounded toggle-password">
@@ -34,7 +34,7 @@
                 </div>
                 <div id="passwordError" class="hint"></div>
                 <button type="submit" class="button">
-                    Login
+                    <span data-i18n="common.login"></span>
                     <span class="material-symbols-rounded">
                         login
                     </span>
@@ -42,6 +42,8 @@
             </form>
         </div>
     </div>
+    <button id="langToggle" class="lang-toggle-fixed" onclick="toggleLang()">中</button>
+    <script>__I18N__</script>
     <script>__SCRIPT__</script>
 </body>
 

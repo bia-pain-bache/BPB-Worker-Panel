@@ -712,6 +712,16 @@ body.dark-mode .floating-button:hover {
     transform: scale(1.1);
 }
 
+.floating-button.lang-toggle {
+    left: 90px;
+    color: var(--background-color);
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 60px;
+    text-align: center;
+    padding: 0;
+}
+
 .refresh-geo-location {
     background: none;
     margin: 0;
