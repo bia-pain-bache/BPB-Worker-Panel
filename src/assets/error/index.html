@@ -61,7 +61,7 @@
             </span>
         </h1>
         <div>
-            <h2>❌ Something went wrong!</h2>
+            <h2 id="err-title">❌ Something went wrong!</h2>
             <p>
                 <b>__ERROR_MESSAGE__</b>
             </p>
@@ -69,6 +69,13 @@
     </div>
     <script>
         localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
+        (() => {
+            const lang = (localStorage.getItem('lang') === 'zh' || localStorage.getItem('lang') === 'en')
+                ? localStorage.getItem('lang')
+                : (navigator.language.toLowerCase().startsWith('zh') ? 'zh' : 'en');
+            document.documentElement.lang = lang;
+            if (lang === 'zh') document.getElementById('err-title').textContent = '❌ 出错了!';
+        })();
     </script>
 </body>
 

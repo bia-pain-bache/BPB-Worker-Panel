@@ -47,6 +47,6 @@ window.copyToClipboard = function (elementId) {
         : `UUID=${uuid}\nTR_PASS=${password}\nSUB_PATH=${uriPath}`;
 
     navigator.clipboard.writeText(textToCopy)
-        .then(() => alert('✅ Copied to clipboard!'))
+        .then(() => alert(t('secrets.copied')))
         .catch(err => console.error('Failed to copy text:', err));
 }

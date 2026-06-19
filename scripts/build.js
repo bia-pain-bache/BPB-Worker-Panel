@@ -30,6 +30,8 @@ const version = pkg.version;
 
 async function processHtmlPages() {
     const indexFiles = globSync('**/index.html', { cwd: ASSET_PATH });
+    const i18nCode = readFileSync(join(ASSET_PATH, 'i18n.js'), 'utf8');
+    const i18nMinified = (await jsMinify(i18nCode)).code;
     const result = {};
 
     for (const relativeIndexPath of indexFiles) {
@@ -45,6 +47,7 @@ async function processHtmlPages() {
             const finalScriptCode = await jsMinify(scriptCode);
             finalHtml = finalHtml
                 .replaceAll('__STYLE__', `<style>${styleCode}</style>`)
+                .replaceAll('__I18N__', i18nMinified)
                 .replaceAll('__SCRIPT__', finalScriptCode.code);
         }
 

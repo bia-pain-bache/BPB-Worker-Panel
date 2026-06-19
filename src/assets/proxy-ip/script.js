@@ -12,7 +12,7 @@ async function loadGeoData() {
         }
 
         if (!body.length) {
-            tableBody.innerHTML = "<tr><td colspan='5'>Failed to get Proxy IPs</td></tr>";
+            tableBody.innerHTML = `<tr><td colspan='5'>${t('proxyIp.failed')}</td></tr>`;
             return;
         }
 
@@ -41,13 +41,13 @@ async function loadGeoData() {
         });
 
     } catch (err) {
-        tableBody.innerHTML = `<tr><td colspan='5'>Error: ${err.message}</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan='5'>${t('proxyIp.error', { msg: err.message })}</td></tr>`;
         console.error(err);
     }
 }
 
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text)
-        .then(() => alert('✅ Copied to clipboard:\n\n' + text))
+        .then(() => alert(t('panel.alert.copied', { text })))
         .catch(error => console.error('Failed to copy:', error));
 }
