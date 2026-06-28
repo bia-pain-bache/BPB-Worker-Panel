@@ -1,8 +1,8 @@
 import { RuleProvider } from '#types/clash';
 import { getGeoAssets } from './geo-assets';
-import { isIPv6, isIPv4, accRoutingRules } from '@utils';
+import { isIPv6, isIPv4, accRoutingRules, omitEmpty } from '@utils';
 
-export function buildRoutingRules(isWarp: boolean) {
+export function buildRoutingRules(isWarp: boolean): string[] {
     const { blockUDP443 } = globalThis.settings;
     const geoAssets = getGeoAssets();
     const routingRules = accRoutingRules(geoAssets);
@@ -30,10 +30,13 @@ export function buildRoutingRules(isWarp: boolean) {
 
 export function buildRuleProviders(): Record<string, RuleProvider> | undefined {
     const geoAssets = getGeoAssets();
-    return geoAssets.reduce((providers, asset) => {
-        addRuleProvider(providers, asset);
-        return providers;
-    }, {}).omitEmpty();
+
+    const providers = geoAssets.reduce<Record<string, RuleProvider>>((acc, asset) => {
+        addRuleProvider(acc, asset);
+        return acc;
+    }, {});
+
+    return omitEmpty(providers);
 }
 
 function addRuleProvider(
@@ -58,8 +61,8 @@ function addRuleProvider(
     if (geoip && geoipURL) defineProvider(geoip, 'ipcidr', geoipURL);
 }
 
-function buildIpCidrRule(ip: string, proxy: string) {
-    ip = isIPv6(ip) ? ip.replace(/\[|\]/g, '') : ip;
-    const cidr = ip.includes('/') ? '' : isIPv4(ip) ? '/32' : '/128';
-    return `IP-CIDR,${ip}${cidr},${proxy}`;
+function buildIpCidrRule(ip: string, proxy: string): string {
+    const cleanIp = isIPv6(ip) ? ip.replace(/\[|\]/g, '') : ip;
+    const cidr = cleanIp.includes('/') ? '' : isIPv4(cleanIp) ? '/32' : '/128';
+    return `IP-CIDR,${cleanIp}${cidr},${proxy}`;
 }

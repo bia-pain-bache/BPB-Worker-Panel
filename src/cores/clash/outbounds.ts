@@ -1,4 +1,4 @@
-import { isHttps, generateWsPath, parseHostPort, selectSniHost } from '@utils';
+import { isHttps, generateWsPath, parseHostPort, selectSniHost, base64ToDecimal } from '@utils';
 import {
     BaseOutbound,
     HttpOutbound,
@@ -29,7 +29,7 @@ function buildOutbound<T>(
     tfo: boolean,
     tls: Partial<TLS>,
     transport: Partial<Transport>,
-    fields: Omit<T, keyof BaseOutbound | keyof TLS | keyof Transport>,
+    fields: Omit<T, keyof BaseOutbound | keyof TLS | keyof Transport>
 ): T {
     return {
         "name": name,
@@ -49,42 +49,49 @@ export function buildWebsocketOutbound(
     protocol: string,
     remark: string,
     address: string,
-    port: number,
+    port: number
 ): VlessOutbound | TrojanOutbound | null {
     const {
         dict: { _VL_, _TR_ },
         globalConfig: { userID, TrPass },
-        settings: { 
-            fingerprint, 
-            enableTFO, 
-            enableIPv6, 
-            enableECH, 
-            echServerName, 
-            upstreamParams: { upstreamServer } 
+        settings: {
+            fingerprint,
+            enableTFO,
+            enableIPv6,
+            enableECH,
+            echServerName,
+            upstreamParams: { upstreamServer }
         }
     } = globalThis;
 
     const isTLS = isHttps(port) || address === upstreamServer;
-    if (protocol === _TR_ && !isTLS) return null;
+
+    if (protocol === _TR_ && !isTLS) {
+        console.warn(`Skipping Trojan outbound for ${address}:${port} — TLS required.`);
+        return null;
+    }
+
     const { host, sni, allowInsecure } = selectSniHost(address);
 
     const tls = isTLS ? buildTLS(
-        protocol, 
-        "tls", 
-        allowInsecure, 
-        sni, 
-        enableECH, 
-        echServerName || undefined, 
-        "http/1.1", 
+        protocol,
+        "tls",
+        allowInsecure,
+        sni,
+        enableECH,
+        echServerName || undefined,
+        "http/1.1",
         fingerprint
     ) : {};
-    
+
     const transport = buildTransport("ws", undefined, generateWsPath(protocol), host, undefined, 2560);
 
-    if (protocol === _VL_) return buildOutbound<VlessOutbound>(remark, protocol, address, port, enableIPv6, enableTFO, tls, transport, {
-        "uuid": userID,
-        "packet-encoding": ""
-    });
+    if (protocol === _VL_) {
+        return buildOutbound<VlessOutbound>(remark, protocol, address, port, enableIPv6, enableTFO, tls, transport, {
+            "uuid": userID,
+            "packet-encoding": ""
+        });
+    }
 
     return buildOutbound<TrojanOutbound>(remark, protocol, address, port, enableIPv6, enableTFO, tls, transport, {
         "password": TrPass
@@ -107,13 +114,7 @@ export function buildWarpOutbound(
 
     const { host, port } = parseHostPort(endpoint, false);
     const ipVersion = enableIPv6 ? "ipv4-prefer" : "ipv4";
-
-    const {
-        warpIPv6,
-        reserved,
-        publicKey,
-        privateKey
-    } = warpAccount;
+    const { warpIPv6, reserved, publicKey, privateKey } = warpAccount;
 
     return {
         "name": remark,
@@ -153,54 +154,81 @@ export function buildChainOutbound(): ChainOutbound | undefined {
         }
     } = globalThis;
 
+    if (!protocol || !server || !port) return undefined;
+
     const { searchParams } = new URL(outProxy);
     const ed = searchParams.get("ed");
     const earlyData = ed ? +ed : undefined;
 
-    const tls = buildTLS(protocol, security, false, sni || server, false, undefined, alpn, fp, pbk, sid);
-    const transport = buildTransport(type, headerType, path, host, serviceName, earlyData);
+    const tls = buildTLS(
+        protocol,
+        security ?? "none",
+        false,
+        sni ?? server,
+        false,
+        undefined,
+        alpn,
+        fp as Fingerprint | undefined,
+        pbk,
+        sid
+    );
+
+    const transport = buildTransport(
+        type as Network | undefined,
+        headerType,
+        path,
+        host,
+        serviceName,
+        earlyData
+    );
 
     switch (protocol) {
         case "http":
-            return buildOutbound<HttpOutbound>("", "http", server, port, false, false, {}, {}, {
+            return buildOutbound<HttpOutbound>("chain", "http", server, port, false, false, {}, {}, {
                 "username": user,
                 "password": pass
             });
 
         case "socks":
-            return buildOutbound<SocksOutbound>("", "socks5", server, port, false, false, {}, {}, {
+            return buildOutbound<SocksOutbound>("chain", "socks5", server, port, false, false, {}, {}, {
                 "username": user,
                 "password": pass
             });
 
         case _SS_:
-            return buildOutbound<ShadowsocksOutbound>("", "ss", server, port, false, false, {}, {}, {
+            return buildOutbound<ShadowsocksOutbound>("chain", "ss", server, port, false, false, {}, {}, {
                 "cipher": method,
                 "password": password
             });
 
         case _VL_:
-            return buildOutbound<VlessOutbound>("", _VL_, server, port, false, false, tls, transport, {
+            if (!uuid) return undefined;
+            return buildOutbound<VlessOutbound>("chain", _VL_, server, port, false, false, tls, transport, {
                 "uuid": uuid,
                 "flow": flow
             });
 
         case _VM_:
-            return buildOutbound<VmessOutbound>("", _VM_, server, port, false, false, tls, transport, {
+            if (!uuid) return undefined;
+            return buildOutbound<VmessOutbound>("chain", _VM_, server, port, false, false, tls, transport, {
                 "uuid": uuid,
                 "cipher": "auto",
-                "alterId": aid
+                "alterId": aid ?? 0
             });
 
-        case _TR_:
-            if (security === "none") return undefined;
-            return buildOutbound<TrojanOutbound>("", _TR_, server, port, false, false, tls, transport, {
-                "password": password
+        case _TR_: {
+            if (!security || security === "none") {
+                console.warn('Trojan chain proxy requires TLS, skipping.');
+                return undefined;
+            }
+            return buildOutbound<TrojanOutbound>("chain", _TR_, server, port, false, false, tls, transport, {
+                "password": password ?? ""
             });
+        }
 
         default:
             return undefined;
-    };
+    }
 }
 
 export function buildUrlTest(
@@ -236,7 +264,7 @@ function buildTLS(
 
     const common: TLS = {
         "tls": true,
-        [protocol === _TR_ ? "sni" : "servername"]: sni,
+        ...(protocol === _TR_ ? { "sni": sni } : { "servername": sni }),
         "client-fingerprint": fingerprint === "randomized" ? "random" : fingerprint,
         "skip-cert-verify": allowInsecure
     };
@@ -250,7 +278,14 @@ function buildTLS(
                 "query-server-name": echServerName
             } : undefined
         };
-    } else if (security === "reality" && publicKey && shortID) {
+    }
+
+    if (security === "reality") {
+        if (!publicKey || !shortID) {
+            console.warn('Reality security missing publicKey or shortID.');
+            return {};
+        }
+
         return {
             ...common,
             "reality-opts": {
@@ -258,18 +293,20 @@ function buildTLS(
                 "short-id": shortID
             }
         };
-    } else return {};
+    }
+
+    return {};
 }
 
 function buildTransport(
-    type: Network,
+    type?: Network,
     headerType?: "http" | "none",
     path: string = "/",
     host?: string,
     serviceName?: string,
     earlyData?: number
 ): Partial<Transport> {
-    path = path?.split("?")[0];
+    const cleanPath = path?.split("?")[0] ?? "/";
 
     switch (type) {
         case 'tcp':
@@ -277,43 +314,38 @@ function buildTransport(
                 "network": "http",
                 "http-opts": {
                     "method": "GET",
-                    "path": path.split(','),
+                    "path": cleanPath.split(','),
                     "headers": {
                         "Host": host?.split(","),
                         "Connection": ["keep-alive"],
                         "Content-Type": ["application/octet-stream"]
                     }
                 } satisfies HttpOpts
-            } : {
-                "network": "tcp"
-            } satisfies Transport;
+            } : { "network": "tcp" } satisfies Transport;
 
         case 'ws':
             return {
                 "network": "ws",
                 "ws-opts": {
-                    "path": path,
+                    "path": cleanPath,
                     "max-early-data": earlyData,
                     "early-data-header-name": earlyData ? "Sec-WebSocket-Protocol" : undefined,
-                    "headers": {
-                        "Host": host
-                    }
+                    "headers": { "Host": host }
                 } satisfies WsOpts
             };
 
-        case 'httpupgrade':
+        case 'httpupgrade': {
             const { _V2_ } = globalThis.dict;
             return {
                 "network": "ws",
                 "ws-opts": {
                     [`${_V2_}-http-upgrade`]: true,
                     [`${_V2_}-http-upgrade-fast-open`]: true,
-                    "path": path,
-                    "headers": {
-                        "Host": host
-                    }
+                    "path": cleanPath,
+                    "headers": { "Host": host }
                 } satisfies WsOpts
             };
+        }
 
         case 'grpc':
             return {

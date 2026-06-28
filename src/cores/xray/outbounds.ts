@@ -3,7 +3,9 @@ import {
     isHttps,
     generateWsPath,
     toRange,
-    selectSniHost
+    selectSniHost,
+    concatIf,
+    omitEmpty
 } from '@utils';
 
 import {
@@ -123,21 +125,12 @@ export function buildWebsocketOutbound(
         vnext: [{
             address,
             port,
-            users: [
-                {
-                    id: userID,
-                    encryption: "none"
-                }
-            ]
+            users: [{ id: userID, encryption: "none" }]
         }]
     }, streamSettings);
 
     return buildOutbound<TrojanSettings>(protocol, tag, false, {
-        servers: [{
-            address,
-            port,
-            password: TrPass
-        }]
+        servers: [{ address, port, password: TrPass }]
     }, streamSettings);
 }
 
@@ -150,23 +143,19 @@ export function buildWarpOutbound(
 ): Outbound {
     const { warpIPv6, reserved, publicKey, privateKey } = warpAccount;
     let wgSettings: WireguardSettings = {
-        address: [
-            "172.16.0.2/32",
-            warpIPv6
-        ],
+        address: ["172.16.0.2/32", warpIPv6],
         mtu: 1280,
-        peers: [
-            {
-                endpoint: isWoW ? "162.159.192.1:2408" : endpoint,
-                publicKey: publicKey,
-                keepAlive: 5
-            }
-        ],
+        peers: [{
+            endpoint: isWoW ? "162.159.192.1:2408" : endpoint,
+            publicKey,
+            keepAlive: 5
+        }],
         reserved: base64ToDecimal(reserved),
         secretKey: privateKey
     };
 
     const streamSettings: StreamSettings = {};
+
     if (isWoW) {
         streamSettings.sockopt = buildSockopt(false, false, undefined, "proxy");
     } else if (isPro) {
@@ -188,16 +177,15 @@ export function buildWarpOutbound(
                 wpayloadsize: toRange(noiseSizeMin, noiseSizeMax),
                 wnoisedelay: toRange(noiseDelayMin, noiseDelayMax)
             };
-
         } else {
-            streamSettings.finalmask = buildFinalMask(false, isPro)
+            streamSettings.finalmask = buildFinalMask(false, isPro);
         }
     }
 
     return {
         protocol: "wireguard",
         settings: wgSettings,
-        streamSettings: streamSettings.omitEmpty(),
+        streamSettings: omitEmpty(streamSettings),
         tag: isWoW ? "chain" : "proxy"
     } satisfies Outbound;
 }
@@ -205,28 +193,72 @@ export function buildWarpOutbound(
 export function buildChainOutbound(): Outbound | undefined {
     const {
         dict: { _VL_, _TR_, _SS_, _VM_ },
-        settings: {
-            outProxyParams: {
-                protocol, server: address, port,
-                user, pass, password, method, uuid,
-                flow, security, type, sni, fp,
-                host, path, alpn, pbk, sid, spx,
-                headerType, serviceName, mode,
-                authority
-            }
-        }
+        settings: { outProxyParams }
     } = globalThis;
 
-    const streamSettings: StreamSettings = {
-        network: type || "raw",
-        ...buildTransport(type, headerType, path, host, serviceName, mode, authority),
+    const {
+        protocol,
+        server: address,
+        port,
+        user,
+        pass,
+        password,
+        method,
+        uuid,
+        flow,
         security,
-        tlsSettings: security === 'tls' ? buildTlsSettings(sni || address, fp, alpn, false, undefined) : undefined,
-        realitySettings: security === "reality" ? buildRealitySettings(sni, fp, pbk, sid, spx) : undefined,
+        type,
+        sni,
+        fp,
+        host,
+        path,
+        alpn,
+        pbk,
+        sid,
+        spx,
+        headerType,
+        serviceName,
+        mode,
+        authority
+    } = outProxyParams;
+
+    // All three are required for any outbound type
+    if (!protocol || !address || !port) return undefined;
+
+    const resolvedSecurity = security ?? "none";
+
+    // Cast string to TransportType — validated by extractProxyParams upstream
+    const resolvedType = (type ?? "raw") as TransportType;
+
+    // Cast string to Fingerprint — validated by extractProxyParams upstream
+    const resolvedFp = fp as Fingerprint | undefined;
+
+    const streamSettings: StreamSettings = {
+        network: resolvedType,
+        ...buildTransport(resolvedType, headerType, path, host, serviceName, mode, authority),
+        security: resolvedSecurity,
+        tlsSettings: resolvedSecurity === 'tls'
+            ? buildTlsSettings(
+                sni ?? address,
+                resolvedFp ?? "chrome",
+                alpn ?? "",
+                false,
+                undefined
+            )
+            : undefined,
+        realitySettings: resolvedSecurity === "reality"
+            ? buildRealitySettings(
+                sni ?? address,
+                resolvedFp ?? "chrome",
+                pbk ?? "",
+                sid ?? "",
+                spx ?? ""
+            )
+            : undefined,
         sockopt: buildSockopt(false, false, "UseIPv4", "proxy")
     };
 
-    const enableMux = !(security === "reality" || type === "grpc");
+    const enableMux = !(resolvedSecurity === "reality" || resolvedType === "grpc");
 
     switch (protocol) {
         case 'http':
@@ -235,10 +267,7 @@ export function buildChainOutbound(): Outbound | undefined {
                 servers: [{
                     address,
                     port,
-                    users: [{
-                        user,
-                        pass
-                    }]
+                    users: [{ user, pass }]
                 }]
             }, streamSettings);
 
@@ -253,19 +282,21 @@ export function buildChainOutbound(): Outbound | undefined {
             }, streamSettings);
 
         case _VL_:
+            if (!uuid) return undefined;
             return buildOutbound<VlessSettings>(protocol, "chain", enableMux, {
                 vnext: [{
                     address,
                     port,
                     users: [{
                         id: uuid,
-                        flow: flow,
+                        flow,
                         encryption: "none"
                     }]
                 }]
             }, streamSettings);
 
         case _VM_:
+            if (!uuid) return undefined;
             return buildOutbound<VmessSettings>(protocol, "chain", enableMux, {
                 vnext: [{
                     address,
@@ -327,31 +358,32 @@ function buildTransport(
         case 'ws':
             return {
                 wsSettings: {
-                    host: host,
-                    path: path
+                    host,
+                    path
                 } satisfies WsSettings
             };
 
         case 'httpupgrade':
             return {
                 httpupgradeSettings: {
-                    host: host,
-                    path: path
+                    host,
+                    path
                 } satisfies HttpupgradeSettings
             };
 
         case 'grpc':
             return {
                 grpcSettings: {
-                    authority: authority,
+                    authority,
                     multiMode: mode === 'multi',
-                    serviceName: serviceName
+                    serviceName
                 } satisfies GrpcSettings
             };
 
         default:
+            console.warn(`Unknown transport type: ${type}`);
             return {};
-    };
+    }
 }
 
 function buildSockopt(
@@ -381,18 +413,18 @@ function buildTlsSettings(
     echServerName?: string
 ): TlsSettings {
     const { localDNS } = globalThis.settings;
-    const echQueryDNS = localDNS === "localhost" ? "8.8.8.8" : localDNS
+    const echQueryDNS = localDNS === "localhost" ? "8.8.8.8" : localDNS;
 
     return {
         serverName,
-        fingerprint: fingerprint,
+        fingerprint,
         alpn: alpn?.split(','),
         echConfigList: enableECH
             ? echServerName
                 ? `${echServerName}+udp://${echQueryDNS}`
                 : `udp://${echQueryDNS}`
             : undefined
-    }
+    };
 }
 
 function buildRealitySettings(
@@ -404,23 +436,19 @@ function buildRealitySettings(
 ): RealitySettings {
     return {
         serverName,
-        fingerprint: fingerprint,
+        fingerprint,
         publicKey,
         shortId,
         spiderX,
         show: false,
         allowInsecure: false
-    }
+    };
 }
 
 function buildUDPNoises(panelNoises: XrUdpNoise[]): Noise[] {
     return panelNoises.flatMap(({ type, packet, delay, count }) => {
         const noise: Noise = type === "rand"
-            ? {
-                rand: packet,
-                randRange: "0-255",
-                delay
-            }
+            ? { rand: packet, randRange: "0-255", delay }
             : {
                 type,
                 packet: type === "array" ? packet.split(",").map(Number) : packet,
@@ -438,7 +466,8 @@ function buildFinalMask(
     fragDelay?: string,
     fragPacket?: FragmentPacket
 ): FinalMask | undefined {
-    if (!isFragment && !isUdpNoise) return;
+    if (!isFragment && !isUdpNoise) return undefined;
+
     const {
         settings: {
             fragmentPackets,
@@ -453,25 +482,21 @@ function buildFinalMask(
     } = globalThis;
 
     return {
-        tcp: isFragment ? [
-            {
-                type: "fragment",
-                settings: {
-                    packets: fragPacket || fragmentPackets,
-                    length: fragLength || toRange(fragmentLengthMin, fragmentLengthMax) as string,
-                    delay: fragDelay || toRange(fragmentIntervalMin, fragmentIntervalMax) as string,
-                    maxSplit: toRange(fragmentMaxSplitMin, fragmentMaxSplitMax)
-                }
+        tcp: isFragment ? [{
+            type: "fragment",
+            settings: {
+                packets: fragPacket || fragmentPackets,
+                length: fragLength || toRange(fragmentLengthMin, fragmentLengthMax) as string,
+                delay: fragDelay || toRange(fragmentIntervalMin, fragmentIntervalMax) as string,
+                maxSplit: toRange(fragmentMaxSplitMin, fragmentMaxSplitMax)
             }
-        ] : undefined,
-        udp: isUdpNoise ? [
-            {
-                type: "noise",
-                settings: {
-                    reset: "30-60",
-                    noise: buildUDPNoises(xrayUdpNoises)
-                }
+        }] : undefined,
+        udp: isUdpNoise ? [{
+            type: "noise",
+            settings: {
+                reset: "30-60",
+                noise: buildUDPNoises(xrayUdpNoises)
             }
-        ] : undefined
-    }
+        }] : undefined
+    };
 }

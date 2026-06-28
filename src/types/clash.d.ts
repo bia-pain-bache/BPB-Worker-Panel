@@ -28,7 +28,7 @@ export interface FakeDNS {
     "fake-ip-filter": string[];
 }
 
-export type DNS = OptionalIntersection<{
+type BaseDNS = {
     "enable": true;
     "listen": string;
     "ipv6": boolean;
@@ -39,28 +39,27 @@ export type DNS = OptionalIntersection<{
     "proxy-server-nameserver": string[];
     "direct-nameserver": string[];
     "direct-nameserver-follow-policy": boolean;
-    "nameserver-policy"?: Record<string, string>
-    "hosts"?: DnsHosts
-}, FakeDNS>;
+    "nameserver-policy"?: Record<string, string>;
+    "hosts"?: DnsHosts;
+};
+
+export type DNS = OptionalIntersection<BaseDNS, FakeDNS>;
 
 export interface Tun {
-    "enable": true;
+    "enable": boolean;
     "stack": "mixed" | "gvisor" | "system";
-    "auto-route": true;
-    "strict-route": true;
-    "auto-detect-interface": true;
-    "dns-hijack": [
-        "any:53",
-        "tcp://any:53"
-    ];
-    "mtu": 9000;
+    "auto-route": boolean;
+    "strict-route": boolean;
+    "auto-detect-interface": boolean;
+    "dns-hijack": string[];
+    "mtu": number;
 }
 
 export interface Sniffer {
-    "enable": true;
-    "force-dns-mapping": true;
-    "parse-pure-ip": true;
-    "override-destination": true;
+    "enable": boolean;
+    "force-dns-mapping": boolean;
+    "parse-pure-ip": boolean;
+    "override-destination": boolean;
     "sniff": {
         "HTTP": {
             "ports": number[];
@@ -78,8 +77,9 @@ export interface WsOpts {
     };
     "max-early-data"?: number;
     "early-data-header-name"?: "Sec-WebSocket-Protocol";
-    "v2ray-http-upgrade"?: true;
-    "v2ray-http-upgrade-fast-open"?: true;
+    "v2ray-http-upgrade"?: boolean;
+    "v2ray-http-upgrade-fast-open"?: boolean;
+    [key: string]: unknown;
 }
 
 export interface GrpcOpts {
@@ -91,8 +91,8 @@ export interface HttpOpts {
     "path": string[];
     "headers": {
         "Host"?: string[];
-        "Connection": ["keep-alive"],
-        "Content-Type": ["application/octet-stream"]
+        "Connection": string[];
+        "Content-Type": string[];
     };
 }
 
@@ -103,7 +103,7 @@ export interface BaseOutbound {
     "port": number;
     "udp": boolean;
     "ip-version": "ipv4" | "ipv4-prefer";
-    "tfo"?: true;
+    "tfo"?: boolean;
     "dialer-proxy"?: string;
 }
 
@@ -117,21 +117,21 @@ export type TLS = {
     "sni"?: string;
     "servername"?: string;
     "alpn"?: string[];
-    "client-fingerprint"?: Fingerprint;
+    "client-fingerprint"?: Fingerprint | "random";
     "skip-cert-verify": boolean;
     "reality-opts"?: RealityOpts;
     "ech-opts"?: {
         "enable": boolean;
         "query-server-name"?: string;
     };
-}
+};
 
 export type Transport = {
     "network"?: Network;
     "ws-opts"?: WsOpts;
     "http-opts"?: HttpOpts;
     "grpc-opts"?: GrpcOpts;
-}
+};
 
 export interface HttpOutbound extends BaseOutbound {
     "username"?: string;
@@ -177,10 +177,10 @@ export interface WireguardOutbound extends BaseOutbound {
     "ipv6": string;
     "private-key": string;
     "public-key": string;
-    "allowed-ips": string[]
+    "allowed-ips": string[];
     "reserved": string;
     "udp": true;
-    "mtu": 1280;
+    "mtu": number;
     "amnezia-wg-option"?: AmneziaOpts;
 }
 
@@ -220,17 +220,17 @@ export interface RuleProvider {
 }
 
 interface ExternalControllerCors {
-    "allow-origins": ["*"];
-    "allow-private-network": true;
+    "allow-origins": string[];
+    "allow-private-network": boolean;
 }
 
 interface Profile {
-    "store-selected": true;
-    "store-fake-ip": true;
+    "store-selected": boolean;
+    "store-fake-ip": boolean;
 }
 
 interface NTP {
-    "enable": true;
+    "enable": boolean;
     "server": string;
     "port": number;
     "interval": number;
@@ -246,15 +246,15 @@ export interface Config {
     "keep-alive-idle"?: number;
     "keep-alive-interval"?: number;
     "tcp-concurrent"?: boolean;
-    "unified-delay": false;
-    "geo-auto-update": true;
-    "geo-update-interval": 168;
+    "unified-delay": boolean;
+    "geo-auto-update": boolean;
+    "geo-update-interval": number;
     "external-controller": string;
     "external-controller-cors": ExternalControllerCors;
-    "external-ui": "ui";
+    "external-ui": string;
     "external-ui-url": string;
     "profile": Profile;
-    "dns": Dns;
+    "dns": DNS;
     "tun": Tun;
     "sniffer": Sniffer;
     "proxies": Outbound[];

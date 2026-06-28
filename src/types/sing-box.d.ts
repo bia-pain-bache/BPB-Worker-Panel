@@ -46,7 +46,7 @@ export interface DnsRule {
     rule_set?: string[] | string;
     domain?: string[];
     domain_suffix?: string[];
-    ip_accept_any?: true;
+    ip_accept_any?: boolean;
     inbound?: string;
     query_type?: Array<"A" | "AAAA" | "HTTPS">;
     action?: "route" | "reject";
@@ -57,31 +57,31 @@ export interface DNS {
     servers: DnsServer[];
     rules: DnsRule[];
     strategy: ResolveStrategy;
-    independent_cache: true;
+    independent_cache: boolean;
 }
 
 export interface TunInbound {
     type: "tun";
     tag: "tun-in";
     address: string[];
-    mtu: 9000;
-    auto_route: true;
-    strict_route: true;
-    stack: "mixed";
+    mtu: number;
+    auto_route: boolean;
+    strict_route: boolean;
+    stack: "mixed" | "gvisor" | "system";
 }
 
 export interface MixedInbound {
     type: "mixed";
     tag: "mixed-in";
     listen: string;
-    listen_port: 2080;
+    listen_port: number;
 }
 
 export interface RoutingRule {
     rule_set?: string[];
     domain_suffix?: string[];
     ip_cidr?: string[] | string;
-    ip_is_private?: true;
+    ip_is_private?: boolean;
     network?: "tcp" | "udp";
     protocol?: "http" | "tls" | "quic" | "dns";
     port?: number;
@@ -101,12 +101,12 @@ export interface RuleSet {
 export interface Route {
     rules: RoutingRule[];
     rule_set?: RuleSet[];
-    auto_detect_interface: true;
+    auto_detect_interface: boolean;
     final: string;
 }
 
 export interface TLS {
-    enabled: true;
+    enabled: boolean;
     server_name: string;
     record_fragment?: boolean;
     insecure: boolean;
@@ -116,7 +116,7 @@ export interface TLS {
         fingerprint?: Fingerprint;
     };
     reality?: {
-        enabled: true;
+        enabled: boolean;
         public_key: string;
         short_id: string;
     };
@@ -131,7 +131,7 @@ export interface HttpTransport {
     host?: string[];
     path: string;
     method: "GET";
-    headers: Record<string, string[]>
+    headers: Record<string, string[]>;
 }
 
 export interface WsTransport {
@@ -193,7 +193,7 @@ export interface TrojanOutbound extends BaseOutbound {
     password: string;
     network: "tcp";
     tls?: TLS;
-    transport?: Transport
+    transport?: Transport;
 }
 
 export interface VlessOutbound extends BaseOutbound {
@@ -202,7 +202,7 @@ export interface VlessOutbound extends BaseOutbound {
     packet_encoding?: "";
     network: "tcp";
     tls?: TLS;
-    transport?: Transport
+    transport?: Transport;
 }
 
 export interface VmessOutbound extends BaseOutbound {
@@ -212,14 +212,14 @@ export interface VmessOutbound extends BaseOutbound {
     packet_encoding?: "";
     network: "tcp";
     tls?: TLS;
-    transport?: Transport
+    transport?: Transport;
 }
 
 export interface Selector {
     type: "selector";
     tag: string;
     outbounds: string[];
-    interrupt_exist_connections: false;
+    interrupt_exist_connections: boolean;
 }
 
 export interface URLTest {
@@ -228,7 +228,7 @@ export interface URLTest {
     outbounds: string[];
     url: string;
     interval: string;
-    interrupt_exist_connections: false;
+    interrupt_exist_connections: boolean;
 }
 
 export type Outbound =
@@ -244,15 +244,12 @@ export type Outbound =
 
 export type ChainOutbound = Exclude<Outbound, Selector | URLTest>;
 
-interface Peer {
+export interface Peer {
     address: string;
     port: number;
     public_key: string;
     reserved: number[];
-    allowed_ips: [
-        "0.0.0.0/0",
-        "::/0"
-    ];
+    allowed_ips: string[];
     persistent_keepalive_interval: number;
 }
 
@@ -260,7 +257,7 @@ export interface WireguardEndpoint {
     tag: string;
     type: "wireguard";
     address: string[];
-    mtu: 1280;
+    mtu: number;
     peers: Peer[];
     private_key: string;
     detour?: string;
@@ -270,26 +267,26 @@ export interface WireguardEndpoint {
 interface Log {
     disabled: boolean;
     level?: "warn" | "error" | "debug" | "info";
-    timestamp: true;
+    timestamp: boolean;
 }
 
 interface NTP {
-    enabled: true;
+    enabled: boolean;
     server: string;
     server_port: number;
     domain_resolver: string;
     interval: string;
-    write_to_system: false;
+    write_to_system: boolean;
 }
 
 interface Experimental {
     cache_file: {
-        enabled: true;
-        store_fakeip: true;
+        enabled: boolean;
+        store_fakeip: boolean;
     };
     clash_api: {
         external_controller: string;
-        external_ui: "ui";
+        external_ui: string;
         default_mode: "Rule";
         external_ui_download_url: string;
         external_ui_download_detour: "direct";

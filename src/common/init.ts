@@ -109,12 +109,12 @@ globalThis.settings = {
     panelVersion: __VERSION__
 };
 
-export async function setSettings(request: Request, env: Env) {
+export async function setSettings(request: Request, env: Env): Promise<void> {
     const dataset = await getDataset(request, env);
     globalThis.settings = dataset.settings;
 }
 
-export function init(request: Request, env: Env) {
+export function init(request: Request, env: Env): void {
     const { pathname } = new URL(request.url);
     const { UUID, TR_PASS, FALLBACK, DOH_URL } = env;
 
@@ -127,7 +127,7 @@ export function init(request: Request, env: Env) {
     };
 }
 
-export function initWs(env: any) {
+export function initWs(env: Env): void {
     const { _public_proxy_ip_ } = globalThis.dict;
 
     globalThis.wsConfig = {
@@ -138,19 +138,41 @@ export function initWs(env: any) {
             '[2a02:898:146:64::]',
             '[2602:fc59:b0:64::]',
             '[2602:fc59:11:64::]'
-        ]
+        ],
+        wsProtocol: undefined,
+        proxyMode: undefined,
+        panelIPs: undefined
     };
 }
 
-export function initHttp(request: Request, env: any) {
+export function initHttp(request: Request, env: Env): void {
     const { _VL_CAP_, _TR_CAP_, _website_ } = globalThis.dict;
     const { UUID, TR_PASS, SUB_PATH, kv } = env;
     const { pathname, origin, searchParams, hostname } = new URL(request.url);
+    const decodedPath = decodeURIComponent(pathname);
 
-    if (!['/secrets', '/favicon.ico'].includes(decodeURIComponent(pathname))) {
-        if (!UUID || !TR_PASS) throw new Error(`Please set ${_VL_CAP_} UUID and ${_TR_CAP_} password first. Visit <a href="${origin}/secrets" target="_blank">here</a> to generate them.`, { cause: "init" });
-        if (!isValidUUID(UUID)) throw new Error(`Invalid UUID: ${UUID}`, { cause: "init" });
-        if (typeof kv !== 'object') throw new Error(`KV Dataset is not properly set! Please refer to <a href="${_website_}" target="_blank">tutorials</a>.`, { cause: "init" });
+    const publicPaths = ['/secrets', '/favicon.ico'];
+
+    if (!publicPaths.includes(decodedPath)) {
+        if (!UUID || !TR_PASS) {
+            throw new Error(
+                `Please set ${_VL_CAP_} UUID and ${_TR_CAP_} password first. ` +
+                `Visit <a href="/secrets" target="_blank">here</a> to generate them.`,
+                { cause: "init" }
+            );
+        }
+
+        if (!isValidUUID(UUID)) {
+            throw new Error(`Invalid UUID format.`, { cause: "init" });
+        }
+
+        if (typeof kv !== 'object') {
+            throw new Error(
+                `KV Dataset is not properly set! Please refer to ` +
+                `<a href="${_website_}" target="_blank">tutorials</a>.`,
+                { cause: "init" }
+            );
+        }
     }
 
     globalThis.httpConfig = {

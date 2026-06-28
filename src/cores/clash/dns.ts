@@ -1,6 +1,6 @@
 import { getGeoAssets } from './geo-assets';
 import { DNS, DnsHosts, FakeDNS } from '#types/clash';
-import { isDomain, getDomain, accDnsRules } from '@utils';
+import { isDomain, getDomain, accDnsRules, omitEmpty } from '@utils';
 
 export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean): Promise<DNS> {
     const {
@@ -26,13 +26,15 @@ export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean
     const nameserverPolicy: Record<string, string> = {};
 
     if (isChain && !isWarp) {
-        const { server } = outProxyParams;
-        if (isDomain(server)) nameserverPolicy[server] = finalRemoteDNS;
+        const server = outProxyParams?.server;
+        if (server && isDomain(server)) {
+            nameserverPolicy[server] = finalRemoteDNS;
+        }
     }
 
     if (remoteDnsHost.isDomain && !isWarp) {
         const { ipv4, ipv6, host } = remoteDnsHost;
-        hosts[host] = ipv4.concatIf(enableIPv6, ipv6);
+        hosts[host] = [...ipv4, ...(enableIPv6 ? ipv6 : [])];
     }
 
     const geoAssets = getGeoAssets();
@@ -43,7 +45,7 @@ export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean
         ...dnsRules.block.domains.map(domain => `+.${domain}`)
     ];
 
-    blockDomains.forEach(value => hosts[value] = "rcode://refused");
+    blockDomains.forEach(value => { hosts[value] = "rcode://refused"; });
 
     const sanctionDomains = [
         ...dnsRules.bypass.antiSanctionDNS.geosites.map(geosite => `rule-set:${geosite}`),
@@ -57,16 +59,17 @@ export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean
     ];
 
     if (sanctionDomains.length) {
-        sanctionDomains.forEach(value => nameserverPolicy[value] = `${antiSanctionDNS}#DIRECT`);
+        sanctionDomains.forEach(value => { nameserverPolicy[value] = `${antiSanctionDNS}#DIRECT`; });
         const { host, isHostDomain } = getDomain(antiSanctionDNS);
         if (isHostDomain) bypassDomains.push(host);
     }
 
-    bypassDomains.forEach(value => nameserverPolicy[value] = finalLocalDNS);
+    bypassDomains.forEach(value => { nameserverPolicy[value] = finalLocalDNS; });
+
     const listen = `${allowLANConnection ? "0.0.0.0" : "127.0.0.1"}:1053`;
     let enhancedMode: "redir-host" | "fake-ip" = "redir-host";
     let fakeDnsSettings: Partial<FakeDNS> = {};
-    
+
     if (fakeDNS) {
         enhancedMode = "fake-ip";
         fakeDnsSettings = {
@@ -82,12 +85,12 @@ export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean
         "use-system-hosts": false,
         "listen": listen,
         "ipv6": enableIPv6,
-        "hosts": hosts.omitEmpty(),
+        "hosts": omitEmpty(hosts),
         "nameserver": [finalRemoteDNS],
         "proxy-server-nameserver": [finalLocalDNS],
         "direct-nameserver": [finalLocalDNS],
         "direct-nameserver-follow-policy": true,
-        "nameserver-policy": nameserverPolicy.omitEmpty(),
+        "nameserver-policy": omitEmpty(nameserverPolicy),
         "enhanced-mode": enhancedMode,
         ...fakeDnsSettings
     };

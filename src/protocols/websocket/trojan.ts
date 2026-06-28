@@ -4,6 +4,8 @@ import {
     safeCloseTcpSocket
 } from './common';
 
+type Logger = (info: string, event?: string) => void;
+
 export async function TrOverWSHandler(request: Request): Promise<Response> {
     const webSocketPair = new WebSocketPair();
     const [client, webSocket] = Object.values(webSocketPair);
@@ -13,24 +15,19 @@ export async function TrOverWSHandler(request: Request): Promise<Response> {
     let address = "";
     let portWithRandomLog = "";
 
-    const log = (info: string, event?: string) => {
+    const log: Logger = (info: string, event?: string) => {
         console.log(`[${address}:${portWithRandomLog}] ${info}`, event || "");
     };
 
     const earlyDataHeader = request.headers.get("sec-websocket-protocol") || "";
     const readableWebSocketStream = makeReadableWebSocketStream(webSocket, earlyDataHeader, log);
 
-    let remoteSocketWapper: { value: any } = { value: null };
-    let udpStreamWrite: any = null;
+    let remoteSocketWrapper: { value: Socket | null } = { value: null };
 
     const writableStream = new WritableStream({
         async write(chunk, _controller) {
-            if (udpStreamWrite) {
-                return udpStreamWrite(chunk);
-            }
-
-            if (remoteSocketWapper.value) {
-                const writer = remoteSocketWapper.value.writable.getWriter();
+            if (remoteSocketWrapper.value) {
+                const writer = remoteSocketWrapper.value.writable.getWriter();
                 await writer.write(chunk);
                 writer.releaseLock();
                 return;
@@ -42,7 +39,7 @@ export async function TrOverWSHandler(request: Request): Promise<Response> {
                 portRemote = 443,
                 addressRemote = "",
                 rawClientData,
-            } = parseTrHeader(chunk);
+            } = await parseTrHeader(chunk);
 
             address = addressRemote;
             portWithRandomLog = `${portRemote}--${Math.random()} tcp`;
@@ -52,7 +49,7 @@ export async function TrOverWSHandler(request: Request): Promise<Response> {
             }
 
             await handleTCPOutBound(
-                remoteSocketWapper,
+                remoteSocketWrapper,
                 addressRemote,
                 portRemote,
                 rawClientData,
@@ -62,7 +59,7 @@ export async function TrOverWSHandler(request: Request): Promise<Response> {
             );
         },
         close() {
-            safeCloseTcpSocket(remoteSocketWapper.value);
+            safeCloseTcpSocket(remoteSocketWrapper.value);
         },
         abort(reason) {
             log(`readableWebSocketStream is aborted`, JSON.stringify(reason));
@@ -73,7 +70,7 @@ export async function TrOverWSHandler(request: Request): Promise<Response> {
         .pipeTo(writableStream)
         .catch(error => {
             log("readableWebSocketStream pipeTo error", error);
-            safeCloseTcpSocket(remoteSocketWapper.value);
+            safeCloseTcpSocket(remoteSocketWrapper.value);
         });
 
     return new Response(null, {
@@ -82,50 +79,68 @@ export async function TrOverWSHandler(request: Request): Promise<Response> {
     });
 }
 
-function parseTrHeader(buffer: ArrayBuffer) {
-    if (buffer.byteLength < 56) {
-        return {
-            hasError: true,
-            message: "invalid data",
-        };
+function timingSafeEqual(a: string, b: string): boolean {
+    if (typeof a !== 'string' || typeof b !== 'string') return false;
+    const aBytes = new TextEncoder().encode(a);
+    const bBytes = new TextEncoder().encode(b);
+
+    if (aBytes.length !== bBytes.length) {
+        let diff = 0;
+        for (let i = 0; i < aBytes.length; i++) diff |= aBytes[i] ^ (bBytes[i % bBytes.length] ?? 0);
+        return false;
     }
 
-    let crLfIndex = 56;
-    const cr = new Uint8Array(buffer.slice(crLfIndex, crLfIndex + 1))[0];
-    const lf = new Uint8Array(buffer.slice(crLfIndex + 1, crLfIndex + 2))[0];
+    let diff = 0;
+    for (let i = 0; i < aBytes.length; i++) {
+        diff |= aBytes[i] ^ bBytes[i];
+    }
+
+    return diff === 0;
+}
+
+async function parseTrHeader(buffer: ArrayBuffer): Promise<{
+    hasError: boolean;
+    message?: string;
+    portRemote?: number;
+    addressRemote?: string;
+    rawClientData?: ArrayBuffer;
+}> {
+    if (buffer.byteLength < 56) {
+        return { hasError: true, message: "invalid data" };
+    }
+
+    const crLfIndex = 56;
+    const headerBytes = new Uint8Array(buffer);
+    const cr = headerBytes[crLfIndex];
+    const lf = headerBytes[crLfIndex + 1];
 
     if (cr !== 0x0d || lf !== 0x0a) {
-        return {
-            hasError: true,
-            message: "invalid header format (missing CR LF)",
-        };
+        return { hasError: true, message: "invalid header format" };
     }
 
     const password = new TextDecoder().decode(buffer.slice(0, crLfIndex));
     const { TrPass } = globalThis.globalConfig;
 
-    if (password !== sha224(TrPass!)) {
-        return {
-            hasError: true,
-            message: "invalid password",
-        };
+    if (!TrPass) {
+        return { hasError: true, message: "server misconfiguration" };
+    }
+
+    const expectedHash = sha224(TrPass);
+
+    if (!timingSafeEqual(password, expectedHash)) {
+        return { hasError: true, message: "authentication failed" };
     }
 
     const socks5DataBuffer = buffer.slice(crLfIndex + 2);
     if (socks5DataBuffer.byteLength < 6) {
-        return {
-            hasError: true,
-            message: "invalid SOCKS5 request data",
-        };
+        return { hasError: true, message: "invalid request data" };
     }
 
     const view = new DataView(socks5DataBuffer);
     const cmd = view.getUint8(0);
+
     if (cmd !== 1) {
-        return {
-            hasError: true,
-            message: "unsupported command, only TCP (CONNECT) is allowed",
-        };
+        return { hasError: true, message: "unsupported command" };
     }
 
     const atype = view.getUint8(1);
@@ -148,7 +163,7 @@ function parseTrHeader(buffer: ArrayBuffer) {
         case 4: {
             addressLength = 16;
             const dataView = new DataView(socks5DataBuffer.slice(addressIndex, addressIndex + addressLength));
-            const ipv6 = [];
+            const ipv6: string[] = [];
 
             for (let i = 0; i < 8; i++) {
                 ipv6.push(dataView.getUint16(i * 2).toString(16));
@@ -157,18 +172,13 @@ function parseTrHeader(buffer: ArrayBuffer) {
             address = ipv6.join(":");
             break;
         }
+
         default:
-            return {
-                hasError: true,
-                message: `invalid addressType is ${atype}`,
-            };
+            return { hasError: true, message: "invalid address type" };
     }
 
     if (!address) {
-        return {
-            hasError: true,
-            message: `address is empty, addressType is ${atype}`,
-        };
+        return { hasError: true, message: "empty address" };
     }
 
     const portIndex = addressIndex + addressLength;
@@ -183,8 +193,14 @@ function parseTrHeader(buffer: ArrayBuffer) {
     };
 }
 
+const byteToHex: string[] = Array.from(
+    { length: 256 },
+    (_, i) => (i + 256).toString(16).slice(1)
+);
+
 function sha224(string: string): string {
-    const rightRotate = (value: number, amount: number) => (value >>> amount) | (value << (32 - amount));
+    const rightRotate = (value: number, amount: number) =>
+        (value >>> amount) | (value << (32 - amount));
 
     const h = [
         0xc1059ed8, 0x367cd507, 0x3070dd17, 0xf70e5939,
@@ -210,8 +226,8 @@ function sha224(string: string): string {
         0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
     ];
 
-    const utf8Encode = (str: string) => {
-        const utf8 = [];
+    const utf8Encode = (str: string): number[] => {
+        const utf8: number[] = [];
 
         for (let i = 0; i < str.length; i++) {
             let charcode = str.charCodeAt(i);
@@ -245,21 +261,13 @@ function sha224(string: string): string {
     const bitLength = bytes.length * 8;
 
     bytes.push(0x80);
-
-    while ((bytes.length % 64) !== 56) {
-        bytes.push(0);
-    }
+    while ((bytes.length % 64) !== 56) bytes.push(0);
 
     const lengthHi = Math.floor(bitLength / 0x100000000);
     const lengthLo = bitLength & 0xffffffff;
 
-    for (let i = 3; i >= 0; i--) {
-        bytes.push((lengthHi >> (i * 8)) & 0xff);
-    }
-
-    for (let i = 3; i >= 0; i--) {
-        bytes.push((lengthLo >> (i * 8)) & 0xff);
-    }
+    for (let i = 3; i >= 0; i--) bytes.push((lengthHi >> (i * 8)) & 0xff);
+    for (let i = 3; i >= 0; i--) bytes.push((lengthLo >> (i * 8)) & 0xff);
 
     for (let offset = 0; offset < bytes.length; offset += 64) {
         const w = new Array(64).fill(0);
@@ -288,13 +296,9 @@ function sha224(string: string): string {
             const maj = (a & b) ^ (a & c) ^ (b & c);
             const temp2 = (S0 + maj) | 0;
 
-            h8 = g;
-            g = f;
-            f = e;
+            h8 = g; g = f; f = e;
             e = (d + temp1) | 0;
-            d = c;
-            c = b;
-            b = a;
+            d = c; c = b; b = a;
             a = (temp1 + temp2) | 0;
         }
 
@@ -310,6 +314,9 @@ function sha224(string: string): string {
 
     return h
         .slice(0, 7)
-        .map((word) => ('00000000' + (word >>> 0).toString(16)).slice(-8))
+        .map(word => byteToHex[(word >>> 24) & 0xff] +
+            byteToHex[(word >>> 16) & 0xff] +
+            byteToHex[(word >>> 8) & 0xff] +
+            byteToHex[word & 0xff])
         .join('');
 }

@@ -13,15 +13,26 @@ import JSZip from "jszip";
 
 export async function handleWebsocket(request: Request): Promise<Response> {
     const { pathName } = globalThis.globalConfig;
-    const encodedPathConfig = pathName.replace("/", "");
+    const encodedPathConfig = pathName.replace(/^\//, "");
 
     try {
-        const { protocol, mode, panelIPs } = JSON.parse(atob(encodedPathConfig));
+        const decoded = JSON.parse(atob(encodedPathConfig));
+
+        if (
+            !decoded ||
+            typeof decoded !== 'object' ||
+            !['vl', 'tr'].includes(decoded.protocol) ||
+            !['proxyip', 'prefix'].includes(decoded.mode)
+        ) {
+            return new Response('Invalid path config', { status: HttpStatus.BAD_REQUEST });
+        }
+
+        const { protocol, mode, panelIPs } = decoded;
         globalThis.wsConfig = {
             ...globalThis.wsConfig,
             wsProtocol: protocol,
             proxyMode: mode,
-            panelIPs: panelIPs
+            panelIPs: Array.isArray(panelIPs) ? panelIPs : []
         };
 
         switch (protocol) {
@@ -95,7 +106,7 @@ export async function handleProxyIPs(request: Request, env: Env): Promise<Respon
     }
 }
 
-export async function renderError(error: any): Promise<Response> {
+export async function renderError(error: unknown): Promise<Response> {
     const html = await decompressHtml(__ERROR_HTML_CONTENT__, true) as string;
     const errorPage = html.replace('__ERROR_MESSAGE__', safeErrorMessage(error));
 
@@ -141,7 +152,7 @@ export async function handleSubscriptions(request: Request, env: Env): Promise<R
     } = globalThis;
 
     switch (pathName) {
-        case `/sub/normal/${subPath}`:
+        case `/sub/normal/${subPath}`: {
             switch (client) {
                 case 'xray':
                     return await getXrCustomConfigs(false);
@@ -153,20 +164,22 @@ export async function handleSubscriptions(request: Request, env: Env): Promise<R
                     return await getClNormalConfig();
 
                 default:
-                    break;
+                    return await fallback(request);
             }
+        }
 
-        case `/sub/raw/${subPath}`:
+        case `/sub/raw/${subPath}`: {
             switch (client) {
                 case 'xray':
                 case 'sing-box':
                     return await getURLConfigs();
 
                 default:
-                    break;
+                    return await fallback(request);
             }
+        }
 
-        case `/sub/fragment/${subPath}`:
+        case `/sub/fragment/${subPath}`: {
             switch (client) {
                 case 'xray':
                     return await getXrCustomConfigs(true);
@@ -175,10 +188,11 @@ export async function handleSubscriptions(request: Request, env: Env): Promise<R
                     return await getSbCustomConfig(true);
 
                 default:
-                    break;
+                    return await fallback(request);
             }
+        }
 
-        case `/sub/warp/${subPath}`:
+        case `/sub/warp/${subPath}`: {
             switch (client) {
                 case 'xray':
                     return await getXrWarpConfigs(request, env, false, false);
@@ -190,10 +204,11 @@ export async function handleSubscriptions(request: Request, env: Env): Promise<R
                     return await getClWarpConfig(request, env, false);
 
                 default:
-                    break;
+                    return await fallback(request);
             }
+        }
 
-        case `/sub/warp-pro/${subPath}`:
+        case `/sub/warp-pro/${subPath}`: {
             switch (client) {
                 case 'xray':
                     return await getXrWarpConfigs(request, env, true, false);
@@ -205,8 +220,9 @@ export async function handleSubscriptions(request: Request, env: Env): Promise<R
                     return await getClWarpConfig(request, env, true);
 
                 default:
-                    break;
+                    return await fallback(request);
             }
+        }
 
         default:
             return await fallback(request);
@@ -228,7 +244,7 @@ async function updateSettings(request: Request, env: Env): Promise<Response> {
         const proxySettings = await updateDataset(request, env);
         return respond(true, HttpStatus.OK, '', proxySettings);
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `Error occurred while updating settings: ${safeErrorMessage(error)}`);
     }
 }
@@ -249,7 +265,7 @@ async function resetSettings(request: Request, env: Env): Promise<Response> {
         await env.kv.put("proxySettings", JSON.stringify(settings));
         return respond(true, HttpStatus.OK, '', settings);
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `Error occurred while resetting settings: ${safeErrorMessage(error)}`);
     }
 }
@@ -274,21 +290,26 @@ async function getSettings(request: Request, env: Env): Promise<Response> {
 
         return respond(true, HttpStatus.OK, undefined, data);
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `Error occurred while fetching settings: ${safeErrorMessage(error)}`);
     }
 }
 
 export async function fallback(request: Request): Promise<Response> {
     const { fallbackDomain } = globalThis.globalConfig;
-    const { url, method, headers, body } = request;
+    const { url, method, body } = request;
 
     const newURL = new URL(url);
     newURL.hostname = fallbackDomain;
     newURL.protocol = 'https:';
+
+    const safeHeaders = new Headers(request.headers);
+    safeHeaders.delete('Cookie');
+    safeHeaders.delete('Authorization');
+
     const newRequest = new Request(newURL.toString(), {
         method,
-        headers,
+        headers: safeHeaders,
         body,
         redirect: 'manual'
     });
@@ -297,15 +318,21 @@ export async function fallback(request: Request): Promise<Response> {
 }
 
 async function getMyIP(request: Request): Promise<Response> {
-    const ip = await request.text();
+    const ip = (await request.text()).trim();
+    const ipv4Regex = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/;
+    const ipv6Regex = /^(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}$|^(?:[a-fA-F0-9]{1,4}:){1,7}:$/;
+
+    if (!ipv4Regex.test(ip) && !ipv6Regex.test(ip)) {
+        return respond(false, HttpStatus.BAD_REQUEST, 'Invalid IP address.');
+    }
 
     try {
-        const response = await fetch(`http://ip-api.com/json/${ip}?nocache=${Date.now()}`);
+        const response = await fetch(`https://ip-api.com/json/${encodeURIComponent(ip)}?nocache=${Date.now()}`);
         const geoLocation = await response.json();
         return respond(true, HttpStatus.OK, '', geoLocation);
     } catch (error) {
         console.error('Error fetching IP address:', error);
-        return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `Error fetching IP address: ${safeErrorMessage(error)}`)
+        return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `Error fetching IP address: ${safeErrorMessage(error)}`);
     }
 }
 
@@ -322,7 +349,6 @@ async function getWarpConfigs(request: Request, env: Env): Promise<Response> {
         return new Response('Unauthorized or expired session.', { status: HttpStatus.UNAUTHORIZED });
     }
 
-    
     try {
         const { warpAccounts, settings } = await getDataset(request, env);
         const { warpIPv6, publicKey, privateKey } = warpAccounts[0];
@@ -333,36 +359,35 @@ async function getWarpConfigs(request: Request, env: Env): Promise<Response> {
             amneziaNoiseSizeMin,
             amneziaNoiseSizeMax
         } = settings;
-    
+
         const zip = new JSZip();
-        const trimLines = (str: string) => str.split("\n").map(line => line.trim()).join("\n");
 
         warpEndpoints?.forEach((endpoint, index) => {
-            const config =
-                `[Interface]
-                PrivateKey = ${privateKey}
-                Address = 172.16.0.2/32, ${warpIPv6}
-                DNS = ${warpRemoteDNS}
-                MTU = 1280
-                ${isPro ?
-                    `Jc = ${amneziaNoiseCount}
-                    Jmin = ${amneziaNoiseSizeMin}
-                    Jmax = ${amneziaNoiseSizeMax}
-                    S1 = 0
-                    S2 = 0
-                    H1 = 0
-                    H2 = 0
-                    H3 = 0
-                    H4 = 0`
-                    : ''
-                }
-                [Peer]
-                PublicKey = ${publicKey}
-                AllowedIPs = 0.0.0.0/0, ::/0
-                Endpoint = ${endpoint}
-                PersistentKeepalive = 25`;
+            const lines = [
+                '[Interface]',
+                `PrivateKey = ${privateKey}`,
+                `Address = 172.16.0.2/32, ${warpIPv6}`,
+                `DNS = ${warpRemoteDNS}`,
+                'MTU = 1280',
+                ...(isPro ? [
+                    `Jc = ${amneziaNoiseCount}`,
+                    `Jmin = ${amneziaNoiseSizeMin}`,
+                    `Jmax = ${amneziaNoiseSizeMax}`,
+                    'S1 = 0',
+                    'S2 = 0',
+                    'H1 = 0',
+                    'H2 = 0',
+                    'H3 = 0',
+                    'H4 = 0'
+                ] : []),
+                '[Peer]',
+                `PublicKey = ${publicKey}`,
+                'AllowedIPs = 0.0.0.0/0, ::/0',
+                `Endpoint = ${endpoint}`,
+                'PersistentKeepalive = 25'
+            ];
 
-            zip.file(`${_project_}-Warp-${index + 1}.conf`, trimLines(config));
+            zip.file(`${_project_}-Warp-${index + 1}.conf`, lines.join('\n'));
         });
 
         const zipBlob = await zip.generateAsync({ type: "blob" });
@@ -450,22 +475,30 @@ async function updateWarpConfigs(request: Request, env: Env): Promise<Response> 
         await fetchWarpAccounts(env);
         return respond(true, HttpStatus.OK, 'Warp configs updated successfully!');
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `An error occurred while updating Warp configs: ${safeErrorMessage(error)}`);
     }
 }
 
-async function decompressHtml(content: string, asString: boolean): Promise<string | ReadableStream<Uint8Array>> {
+async function decompressHtmlToString(content: string): Promise<string> {
     const bytes = Uint8Array.from(atob(content), c => c.charCodeAt(0));
     const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+    const decompressedArrayBuffer = await new Response(stream).arrayBuffer();
+    return new TextDecoder().decode(decompressedArrayBuffer);
+}
 
-    if (asString) {
-        const decompressedArrayBuffer = await new Response(stream).arrayBuffer();
-        const decodedString = new TextDecoder().decode(decompressedArrayBuffer);
-        return decodedString;
-    }
+async function decompressHtmlToStream(content: string): Promise<ReadableStream<Uint8Array>> {
+    const bytes = Uint8Array.from(atob(content), c => c.charCodeAt(0));
+    return new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+}
 
-    return stream;
+async function decompressHtml(
+    content: string,
+    asString: boolean
+): Promise<string | ReadableStream<Uint8Array>> {
+    return asString
+        ? decompressHtmlToString(content)
+        : decompressHtmlToStream(content);
 }
 
 export async function handleDoH(request: Request): Promise<Response> {
@@ -520,7 +553,7 @@ async function geoLookupBatch(ipList: string[]): Promise<GeoResult[]> {
 
     for (const batch of batches) {
         const res = await fetch(
-            "http://ip-api.com/batch?fields=query,city,country,countryCode,isp,status",
+            "https://ip-api.com/batch?fields=query,city,country,countryCode,isp,status",
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -606,23 +639,29 @@ export async function getURLConfigs() {
         }
 
         return config.href;
-    }
+    };
 
     let VLConfs = '', TRConfs = '', chainProxy = '';
     let proxyIndex = 1;
     const addrs = await getConfigAddresses(false);
 
-    if (upstreamServer && upstreamPort) {
-        ports.unshift(upstreamPort);
-        addrs.unshift(upstreamServer);
-    }
+    const effectivePorts = (upstreamServer && upstreamPort)
+        ? [upstreamPort, ...ports]
+        : [...ports];
 
-    for (const port of ports) {
-        for (const addr of addrs) {
+    const effectiveAddrs = (upstreamServer && upstreamPort)
+        ? [upstreamServer, ...addrs]
+        : addrs;
+
+    for (const port of effectivePorts) {
+        for (const addr of effectiveAddrs) {
+            const isUpstreamPair = port === upstreamPort && addr === upstreamServer;
+            const isNormalPair = port !== upstreamPort && addr !== upstreamServer;
+            if (!isUpstreamPair && !isNormalPair) continue;
+
             const isCustomAddr = customCdnAddrs.includes(addr);
             const sni = isCustomAddr ? customCdnSni : randomUpperCase(hostName);
             const host = isCustomAddr ? customCdnHost : hostName;
-            if ((port === upstreamPort) !== (addr === upstreamServer)) continue;
 
             if (VLConfigs) {
                 const remark = generateRemark(proxyIndex, port, addr, _VL_, false, false);
@@ -688,15 +727,14 @@ async function fetchCustomSubs(subs: string[]): Promise<string> {
                 }
 
                 return text;
-            } catch {
+            } catch (error) {
+                console.warn(`Failed to fetch custom sub ${url}:`, error);
                 return "";
             }
         })
     );
 
-    return results
-        .filter(Boolean)
-        .join("\n");
+    return results.filter(Boolean).join("\n");
 }
 
 function isBase64(str: string): boolean {

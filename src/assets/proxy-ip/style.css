@@ -56,7 +56,7 @@ table {
 th,
 td {
     text-align: left;
-    text-wrap: nowrap;
+    white-space: nowrap;
     padding: 10px;
     border-bottom: 1px solid var(--border-color);
 }

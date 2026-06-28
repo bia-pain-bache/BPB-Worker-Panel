@@ -3,7 +3,7 @@ import { buildDNS } from './dns';
 import { buildRoutingRules, buildRuleProviders } from './routing';
 import { buildChainOutbound, buildUrlTest, buildWarpOutbound, buildWebsocketOutbound } from './outbounds';
 import type { WireguardOutbound, Config, Outbound } from '#types/clash';
-import { getConfigAddresses, generateRemark, getProtocols } from '@utils';
+import { getConfigAddresses, generateRemark, getProtocols, concatIf } from '@utils';
 import { sniffer, tun } from './inbounds';
 
 async function buildConfig(
@@ -66,8 +66,7 @@ async function buildConfig(
     };
 
     const name = isWarp ? `💦 Warp ${isPro ? "Pro " : ""}- Best Ping 🚀` : "💦 Best Ping 🚀";
-    const mainUrlTest = buildUrlTest(name, proxyTags, isWarp);
-    config["proxy-groups"].push(mainUrlTest);
+    config["proxy-groups"].push(buildUrlTest(name, proxyTags, isWarp));
     if (isWarp) config["proxy-groups"].push(buildUrlTest(`💦 WoW ${isPro ? "Pro " : ""}- Best Ping 🚀`, chainTags, isWarp));
     if (isChain) config["proxy-groups"].push(buildUrlTest("💦 🔗 Best Ping 🚀", chainTags, isWarp));
 
@@ -81,21 +80,26 @@ export async function getClNormalConfig(): Promise<Response> {
     const hosts = await getConfigAddresses(false);
     const protocols = getProtocols();
 
-    if (upstreamServer && upstreamPort) {
-        ports.unshift(upstreamPort);
-        hosts.unshift(upstreamServer);
-    }
+    const effectivePorts = upstreamServer && upstreamPort
+        ? [upstreamPort, ...ports]
+        : [...ports];
+
+    const effectiveHosts = upstreamServer && upstreamPort
+        ? [upstreamServer, ...hosts]
+        : hosts;
 
     const proxyTags: string[] = [];
     const chainTags: string[] = [];
     const outbounds: Outbound[] = [];
-    const selectorTags = ["💦 Best Ping 🚀"].concatIf(isChain, "💦 🔗 Best Ping 🚀");
+    const selectorTags = concatIf(["💦 Best Ping 🚀"], isChain, "💦 🔗 Best Ping 🚀");
 
     for (const protocol of protocols) {
         let protocolIndex = 1;
-        for (const port of ports) {
-            for (const host of hosts) {
-                if ((port === upstreamPort) !== (host === upstreamServer)) continue;
+        for (const port of effectivePorts) {
+            for (const host of effectiveHosts) {
+                const isUpstreamPair = port === upstreamPort && host === upstreamServer;
+                const isNormalPair = port !== upstreamPort && host !== upstreamServer;
+                if (!isUpstreamPair && !isNormalPair) continue;
 
                 const tag = generateRemark(protocolIndex, port, host, protocol, false, false);
                 const outbound = buildWebsocketOutbound(protocol, tag, host, port);
@@ -107,11 +111,10 @@ export async function getClNormalConfig(): Promise<Response> {
 
                     if (isChain) {
                         const chainTag = generateRemark(protocolIndex, port, host, protocol, false, true);
-                        let chain = structuredClone(chainProxy);
+                        const chain = structuredClone(chainProxy);
                         chain['name'] = chainTag;
                         chain['dialer-proxy'] = tag;
                         outbounds.push(chain);
-
                         chainTags.push(chainTag);
                         selectorTags.push(chainTag);
                     }
@@ -123,13 +126,7 @@ export async function getClNormalConfig(): Promise<Response> {
     }
 
     const config = await buildConfig(
-        outbounds,
-        selectorTags,
-        proxyTags,
-        chainTags,
-        isChain,
-        false,
-        false
+        outbounds, selectorTags, proxyTags, chainTags, isChain, false, false
     );
 
     return new Response(JSON.stringify(config, null, 4), {
@@ -157,25 +154,20 @@ export async function getClWarpConfig(request: Request, env: Env, isPro: boolean
 
     warpEndpoints.forEach((endpoint, index) => {
         const warpTag = `💦 ${index + 1} - Warp ${proSign}🇮🇷`;
-        proxyTags.push(warpTag);
-
         const wowTag = `💦 ${index + 1} - WoW ${proSign}🌍`;
-        chainTags.push(wowTag);
 
+        proxyTags.push(warpTag);
+        chainTags.push(wowTag);
         selectorTags.push(warpTag, wowTag);
-        const warpOutbound = buildWarpOutbound(warpAccounts[0], warpTag, endpoint, '', isPro);
-        const wowOutbound = buildWarpOutbound(warpAccounts[1], wowTag, endpoint, warpTag, false);
-        outbounds.push(warpOutbound, wowOutbound);
+
+        outbounds.push(
+            buildWarpOutbound(warpAccounts[0], warpTag, endpoint, '', isPro),
+            buildWarpOutbound(warpAccounts[1], wowTag, endpoint, warpTag, false)
+        );
     });
 
     const config = await buildConfig(
-        outbounds,
-        selectorTags,
-        proxyTags,
-        chainTags,
-        false,
-        true,
-        isPro
+        outbounds, selectorTags, proxyTags, chainTags, false, true, isPro
     );
 
     return new Response(JSON.stringify(config, null, 4), {

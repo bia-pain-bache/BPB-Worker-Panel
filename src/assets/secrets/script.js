@@ -1,6 +1,9 @@
-localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
-generateCredentials();
+if (localStorage.getItem('darkMode') === 'enabled') {
+    document.body.classList.add('dark-mode');
+}
+
 let uuid, password, uriPath;
+generateCredentials();
 
 function generateUUID() {
     return crypto.randomUUID();
@@ -9,26 +12,26 @@ function generateUUID() {
 function generateStrongPassword() {
     const charset =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+[]{}|;:',.<>?";
-    let password = '';
+    let result = '';
     const randomValues = new Uint8Array(16);
     crypto.getRandomValues(randomValues);
 
     for (let i = 0; i < 16; i++) {
-        password += charset[randomValues[i] % charset.length];
+        result += charset[randomValues[i] % charset.length];
     }
-    return password;
+    return result;
 }
 
 function generateSubURIPath() {
     const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@$&*_-+;:,.";
-    let uriPath = '';
+    let result = '';
     const randomValues = new Uint8Array(16);
     crypto.getRandomValues(randomValues);
 
     for (let i = 0; i < 16; i++) {
-        uriPath += charset[randomValues[i] % charset.length];
+        result += charset[randomValues[i] % charset.length];
     }
-    return uriPath;
+    return result;
 }
 
 function generateCredentials() {
@@ -41,12 +44,12 @@ function generateCredentials() {
     document.getElementById('sub-path').textContent = uriPath;
 }
 
-window.copyToClipboard = function (elementId) {
-    const textToCopy = elementId 
+window.copyToClipboard = function (elementId = null) {
+    const textToCopy = elementId !== null
         ? document.getElementById(elementId).textContent
         : `UUID=${uuid}\nTR_PASS=${password}\nSUB_PATH=${uriPath}`;
 
     navigator.clipboard.writeText(textToCopy)
         .then(() => alert('✅ Copied to clipboard!'))
         .catch(err => console.error('Failed to copy text:', err));
-}
+};
