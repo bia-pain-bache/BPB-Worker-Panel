@@ -14,7 +14,7 @@ export function base64EncodeUtf8(str: string): string {
     return btoa(binary);
 }
 
-export function base64DecodeUtf8(base64: string) {
+export function base64DecodeUtf8(base64: string): string {
     return new TextDecoder().decode(
         Uint8Array.from(atob(base64), c => c.charCodeAt(0))
     );
@@ -25,11 +25,11 @@ export function isValidUUID(uuid: string): boolean {
     return uuidRegex.test(uuid);
 }
 
-export function respond(
+export function respond<T = unknown>(
     success: boolean,
     status: HttpStatus,
     message?: string,
-    body?: any,
+    body?: T,
     customHeaders?: Record<string, string>
 ): Response {
     const headers = {
@@ -47,8 +47,6 @@ export function respond(
     return new Response(JSON.stringify(responseBody), { status, headers });
 }
 
-export function safeErrorMessage(error: any): string {
+export function safeErrorMessage(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
 }
-
-

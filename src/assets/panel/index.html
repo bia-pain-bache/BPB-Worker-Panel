@@ -122,7 +122,7 @@
                             </a>
                         </label>
                         <div>
-                            <textarea type="text" id="cleanIPs" name="cleanIPs" rows="1"></textarea>
+                            <textarea id="cleanIPs" name="cleanIPs" rows="1"></textarea>
                         </div>
                     </div>
                     <div class="form-control">
@@ -227,7 +227,7 @@
                                     </a>
                                 </label>
                                 <div>
-                                    <textarea type="text" id="proxyIPs" name="proxyIPs" rows="1"></textarea>
+                                    <textarea id="proxyIPs" name="proxyIPs" rows="1"></textarea>
                                 </div>
                             </div>
                             <div class="form-control">
@@ -240,7 +240,7 @@
                                     </a>
                                 </label>
                                 <div>
-                                    <textarea type="text" id="prefixes" name="prefixes" rows="1"></textarea>
+                                    <textarea id="prefixes" name="prefixes" rows="1"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -251,7 +251,7 @@
                             <div class="form-control">
                                 <label for="customCdnAddrs">💀 Addresses</label>
                                 <div>
-                                    <textarea type="text" id="customCdnAddrs" name="customCdnAddrs" rows="1"></textarea>
+                                    <textarea id="customCdnAddrs" name="customCdnAddrs" rows="1"></textarea>
                                 </div>
                             </div>
                             <div class="form-control">
@@ -345,13 +345,13 @@
                     <div class="form-control">
                         <label for="customSubs">🔗 Subscriptions</label>
                         <div>
-                            <textarea type="text" id="customSubs" name="customSubs" rows="1" wrap="off"></textarea>
+                            <textarea id="customSubs" name="customSubs" rows="1" wrap="off"></textarea>
                         </div>
                     </div>
                     <div class="form-control">
                         <label for="customConfigs">➕ Single Configs</label>
                         <div>
-                            <textarea type="text" id="customConfigs" name="customConfigs" rows="1" wrap="off"></textarea>
+                            <textarea id="customConfigs" name="customConfigs" rows="1" wrap="off"></textarea>
                         </div>
                     </div>
                 </div>
@@ -381,7 +381,7 @@
                             </a>
                         </label>
                         <div>
-                            <textarea type="text" id="warpEndpoints" name="warpEndpoints" rows="1" required></textarea>
+                            <textarea id="warpEndpoints" name="warpEndpoints" rows="1" required></textarea>
                         </div>
                     </div>
                     <div class="form-control">
@@ -551,14 +551,13 @@
                         <div class="form-control">
                             <label for="customBypassRules">🟩 Bypass IPs / Domains</label>
                             <div>
-                                <textarea type="text" id="customBypassRules" name="customBypassRules"
-                                    rows="1"></textarea>
+                                <textarea id="customBypassRules" name="customBypassRules" rows="1"></textarea>
                             </div>
                         </div>
                         <div class="form-control">
                             <label for="customBlockRules">🟥 Block IPs / Domains</label>
                             <div>
-                                <textarea type="text" id="customBlockRules" name="customBlockRules" rows="1"></textarea>
+                                <textarea id="customBlockRules" name="customBlockRules" rows="1"></textarea>
                             </div>
                         </div>
                     </div>
@@ -626,7 +625,7 @@
                         <div class="form-control">
                             <label for="customBypassSanctionRules">🟩 Bypass Domains</label>
                             <div>
-                                <textarea type="text" id="customBypassSanctionRules" name="customBypassSanctionRules"
+                                <textarea id="customBypassSanctionRules" name="customBypassSanctionRules"
                                     rows="1"></textarea>
                             </div>
                         </div>
@@ -644,10 +643,10 @@
                 <button type="button" class="panel-settings" title="Export panel settings" onclick="exportSettings()">
                     <i class="fa fa-cloud-download fa-2x" aria-hidden="true"></i>
                 </button>
+                <input type="file" id="fileInput" accept=".dat" style="display: none;"
+                    onchange="uploadSettings(event)" />
                 <button type="button" class="panel-settings" title="Import panel settings" onclick="importSettings()">
                     <i class="fa fa-cloud-upload fa-2x" aria-hidden="true"></i>
-                    <input type="file" id="fileInput" accept=".dat" style="display: none;"
-                        onchange="uploadSettings(event)" />
                 </button>
             </div>
         </form>
@@ -1207,7 +1206,7 @@
             </div>
         </div>
         <div id="qrModal" class="modalQR">
-            <div class="modal-content" class="modal-content">
+            <div class="modal-content">
                 <div class="modal-header">
                     <span id="closeQR" class="close" onclick="closeQR()">&times;</span>
                     <span id="qrcodeTitle" class="qr-title"></span>
@@ -1224,9 +1223,11 @@
         <div class="my-ip">
             <table id="ips" class="my-ip">
                 <thead>
-                    <th>Information</th>
-                    <th>Cloudflare targets</th>
-                    <th>Other targets</th>
+                    <tr>
+                        <th scope="col">Information</th>
+                        <th scope="col">Cloudflare targets</th>
+                        <th scope="col">Other targets</th>
+                    </tr>
                 </thead>
                 <tbody>
                     <tr>
@@ -1266,7 +1267,6 @@
                 <i class="fa fa-power-off fa-2x" aria-hidden="true"></i>
             </button>
         </div>
-    </div>
     </div>
     <button id="darkModeToggle" class="floating-button" onclick="darkModeToggle()">
         <i id="modeIcon" class="fa fa-2x fa-adjust dark-mode" aria-hidden="true"></i>

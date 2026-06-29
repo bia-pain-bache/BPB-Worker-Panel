@@ -2,7 +2,7 @@ import { safeErrorMessage } from "@common";
 
 export function isDomain(address: string): boolean {
     if (!address) return false;
-    const domainRegex = /^(?!-)(?:[A-Za-z0-9-]{1,63}.)+[A-Za-z]{2,}$/;
+    const domainRegex = /^(?!-)(?:[A-Za-z0-9-]{1,63}\.)+[A-Za-z]{2,}$/;
     return domainRegex.test(address);
 }
 
@@ -25,26 +25,38 @@ export async function resolveDNS(domain: string, onlyIPv4 = false): Promise<DnsR
 export async function fetchDNSRecords(url: string, recordType: number): Promise<string[]> {
     try {
         const response = await fetch(url, { headers: { accept: 'application/dns-json' } });
-        const data: any = await response.json();
+        const data: unknown = await response.json();
 
-        if (!data.Answer) return [];
+        if (
+            !data ||
+            typeof data !== 'object' ||
+            !('Answer' in data) ||
+            !Array.isArray((data as Record<string, unknown>).Answer)
+        ) {
+            return [];
+        }
 
-        return data.Answer
-            .filter((record: any) => record.type === recordType)
-            .map((record: any) => record.data);
+        const answers = (data as { Answer: Array<{ type: number; data: string }> }).Answer;
+
+        return answers
+            .filter(record => record.type === recordType)
+            .map(record => record.data);
 
     } catch (error) {
         throw new Error(`Failed to fetch DNS records from ${url}: ${safeErrorMessage(error)}`);
     }
 }
 
-export function getProtocols() {
+export function getProtocols(): string[] {
     const {
         settings: { VLConfigs, TRConfigs },
         dict: { _VL_, _TR_ }
     } = globalThis;
 
-    return [].concatIf(VLConfigs, _VL_).concatIf(TRConfigs, _TR_);
+    const protocols: string[] = [];
+    if (VLConfigs) protocols.push(_VL_);
+    if (TRConfigs) protocols.push(_TR_);
+    return protocols;
 }
 
 export async function getConfigAddresses(isFragment: boolean): Promise<string[]> {
@@ -62,7 +74,7 @@ export async function getConfigAddresses(isFragment: boolean): Promise<string[]>
         ...cleanIPs
     ];
 
-    return addrs.concatIf(!isFragment, customCdnAddrs);
+    return isFragment ? addrs : [...addrs, ...customCdnAddrs];
 }
 
 export function generateRemark(
@@ -82,11 +94,13 @@ export function generateRemark(
     const configType = isCustomAddr ? ' C' : isFragment ? ' F' : '';
     const chainSign = isChain ? '🔗 ' : '';
     const protoSign = protocol === _VL_ ? _VL_CAP_ : _TR_CAP_;
-    let addressType;
+    let addressType: string;
 
-    cleanIPs.includes(address)
-        ? addressType = 'Clean IP'
-        : addressType = isDomain(address) ? 'Domain' : isIPv4(address) ? 'IPv4' : isIPv6(address) ? 'IPv6' : '';
+    if (cleanIPs.includes(address)) {
+        addressType = 'Clean IP';
+    } else {
+        addressType = isDomain(address) ? 'Domain' : isIPv4(address) ? 'IPv4' : isIPv6(address) ? 'IPv6' : '';
+    }
 
     return address === upstreamServer
         ? `💦 ${index} - ${chainSign}${protoSign}${configType} - Upstream Proxy`
@@ -104,15 +118,13 @@ export function randomUpperCase(str: string): string {
 }
 
 export function getRandomString(lengthMin: number, lengthMax: number): string {
-    let result = '';
     const charSet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const length = Math.floor(Math.random() * (lengthMax - lengthMin + 1)) + lengthMin;
-
-    for (let i = 0; i < length; i++) {
-        result += charSet.charAt(Math.floor(Math.random() * charSet.length));
-    }
-
-    return result;
+    const rangeLength = lengthMax - lengthMin + 1;
+    const length = lengthMin + Math.floor(
+        crypto.getRandomValues(new Uint32Array(1))[0] / (0xFFFFFFFF / rangeLength + 1)
+    );
+    const bytes = crypto.getRandomValues(new Uint8Array(length));
+    return Array.from(bytes, b => charSet[b % charSet.length]).join('');
 }
 
 export function generateWsPath(protocol: string): string {
@@ -138,11 +150,9 @@ export function base64ToDecimal(base64: string): number[] {
         .map(char => char.charCodeAt(0).toString(16).padStart(2, '0'))
         .join('');
 
-    const decimalArray = hexString
+    return hexString
         .match(/.{2}/g)!
         .map(hex => parseInt(hex, 16));
-
-    return decimalArray;
 }
 
 export function isIPv4(address: string): boolean {
@@ -155,25 +165,18 @@ export function isIPv6(address: string): boolean {
     return ipv6Pattern.test(address);
 }
 
-export function getDomain(url: string) {
+export function getDomain(url: string): { host: string; isHostDomain: boolean } {
     try {
         const newUrl = new URL(url);
         const host = newUrl.hostname;
         const isHostDomain = isDomain(host);
-
-        return {
-            host,
-            isHostDomain
-        };
+        return { host, isHostDomain };
     } catch {
-        return {
-            host: '',
-            isHostDomain: false
-        };
+        return { host: '', isHostDomain: false };
     }
 }
 
-export function selectSniHost(address: string) {
+export function selectSniHost(address: string): { host: string; sni: string; allowInsecure: boolean } {
     const {
         httpConfig: { hostName },
         settings: { customCdnAddrs, customCdnHost, customCdnSni }
@@ -186,7 +189,7 @@ export function selectSniHost(address: string) {
     return { host, sni, allowInsecure: isCustomAddr };
 }
 
-export function parseHostPort(input: string, brackets?: boolean): { host: string, port: number } {
+export function parseHostPort(input: string, brackets?: boolean): { host: string; port: number } {
     const regex = /^(?:\[(?<ipv6>.+?)\]|(?<host>[^:]+))(:(?<port>\d+))?$/;
     const match = input.match(regex);
 
@@ -278,19 +281,19 @@ export function accDnsRules(geoAssets: GeoAsset[]) {
     };
 }
 
-export function toRange(min?: number, max?: number) {
-    if (!min || !max) return undefined;
+export function toRange(min?: number, max?: number): string | undefined {
+    if (min == null || max == null) return undefined;
     if (min === max) return String(min);
     return `${min}-${max}`;
 }
 
-Array.prototype.concatIf = function <T>(condition: boolean, concat: T | T[]): T[] {
-    if (!condition) return this;
-    if (Array.isArray(concat)) return [...this, ...concat];
-    return [...this, concat]
+export function concatIf<T>(arr: T[], condition: boolean, concat: T | T[]): T[] {
+    if (!condition) return arr;
+    if (Array.isArray(concat)) return [...arr, ...concat];
+    return [...arr, concat];
 }
 
-Object.prototype.omitEmpty = function <T>(): T | undefined {
-    if (Object.keys(this).length === 0) return undefined;
-    return this as T;
+export function omitEmpty<T extends object>(obj: T): T | undefined {
+    if (Array.isArray(obj)) return obj.length === 0 ? undefined : obj;
+    return Object.keys(obj).length === 0 ? undefined : obj;
 }

@@ -49,7 +49,7 @@ interface Sniffing {
 
 export interface MixedInbound {
     listen: string;
-    port: 10808;
+    port: number;
     protocol: "socks" | "mixed";
     settings: {
         auth: "noauth";
@@ -62,7 +62,7 @@ export interface MixedInbound {
 export interface TunInbound {
     protocol: "tun";
     settings: {
-        mtu: 1500;
+        mtu: number;
         name: "xray0";
     };
     sniffing: Sniffing;
@@ -71,12 +71,12 @@ export interface TunInbound {
 
 export interface DokodemoDoorInbound {
     listen: string;
-    port: 10853;
+    port: number;
     protocol: "dokodemo-door";
     settings: {
-        address: "1.1.1.1";
+        address: string;
         network: "tcp,udp";
-        port: 53;
+        port: number;
     };
     tag: "dns-in";
 }
@@ -89,7 +89,7 @@ export interface RoutingRule {
     network?: "tcp" | "udp" | "tcp,udp";
     protocol?: Array<"http" | "tls" | "bittorrent" | "quic">;
     outboundTag?: string;
-    balancerTag?: string
+    balancerTag?: string;
     type: "field";
 }
 
@@ -112,13 +112,13 @@ export interface Observatory {
     subjectSelector: string[];
     probeUrl: string;
     probeInterval: string;
-    enableConcurrency: true;
+    enableConcurrency: boolean;
 }
 
 interface Mux {
-    enabled: true;
-    concurrency: 8;
-    xudpConcurrency: 16;
+    enabled: boolean;
+    concurrency: number;
+    xudpConcurrency: number;
     xudpProxyUDP443: "reject";
 }
 
@@ -135,8 +135,8 @@ export interface RealitySettings {
     shortId: string;
     spiderX: string;
     fingerprint: Fingerprint;
-    allowInsecure: false;
-    show: false;
+    allowInsecure: boolean;
+    show: boolean;
 }
 
 export interface TcpHeader {
@@ -144,9 +144,9 @@ export interface TcpHeader {
     request?: {
         headers: {
             "Host"?: string[];
-            "Accept-Encoding": ["gzip, deflate"];
-            "Connection": ["keep-alive"];
-            "Pragma": "no-cache";
+            "Accept-Encoding": string[];
+            "Connection": string[];
+            "Pragma": string;
         };
         method: "GET";
         path: string[];
@@ -187,10 +187,12 @@ export interface HappyEyeballs {
     maxConcurrentTry: number;
 }
 
+export type FragmentPacket = "tlshello" | "1-1" | "1-2" | "1-3" | "1-5";
+
 type TCPMask = {
     type: "fragment";
     settings: {
-        packets: "tlshello" | "1-1" | "1-2" | "1-3" | "1-5";
+        packets: FragmentPacket;
         length: string;
         delay: string;
         maxSplit?: string;
@@ -227,10 +229,7 @@ export interface StreamSettings {
     httpupgradeSettings?: HttpupgradeSettings;
     grpcSettings?: GrpcSettings;
     sockopt?: Sockopt;
-    finalmask?: {
-        tcp?: TCPMask[];
-        udp?: UDPMask[];
-    }
+    finalmask?: FinalMask;
 }
 
 interface BlockholeSettings {
@@ -240,20 +239,9 @@ interface BlockholeSettings {
 }
 
 interface DnsOutSettings {
-    rules: [
-        {
-            action: "hijack";
-        }
-    ];
-}
-
-export type FragmentPacket = "tlshello" | "1-1" | "1-2" | "1-3" | "1-5";
-
-interface Fragment {
-    packets: FragmentPacket;
-    length: string;
-    interval: string;
-    maxSplit?: string;
+    rules: Array<{
+        action: "hijack";
+    }>;
 }
 
 export interface Noise {
@@ -269,64 +257,64 @@ export interface FreedomSettings {
 }
 
 export interface HttpSocksSettings {
-    servers: [{
+    servers: Array<{
         address: string;
         port: number;
-        users: [{
-            user: string;
-            pass: string;
-        }];
-    }];
+        users: Array<{
+            user?: string;
+            pass?: string;
+        }>;
+    }>;
 }
 
 export interface ShadowsocksSettings {
-    servers: [{
+    servers: Array<{
         address: string;
         port: number;
-        method: string;
-        password: string;
-    }];
+        method?: string;
+        password?: string;
+    }>;
 }
 
 export interface VlessSettings {
-    vnext: [{
+    vnext: Array<{
         address: string;
         port: number;
-        users: [{
+        users: Array<{
             id: string;
             flow?: "xtls-rprx-vision";
             encryption: "none";
-        }];
-    }]
+        }>;
+    }>;
 }
 
 export interface VmessSettings {
-    vnext: [{
+    vnext: Array<{
         address: string;
         port: number;
-        users: [{
+        users: Array<{
             id: string;
             security: "auto";
-        }];
-    }];
+        }>;
+    }>;
 }
 
 export interface TrojanSettings {
-    servers: [{
+    servers: Array<{
         address: string;
         port: number;
-        password: string;
-    }];
+        password?: string;
+    }>;
 }
 
 export interface WireguardSettings {
     address: string[];
-    mtu: 1280;
-    peers: [{
+    mtu: number;
+    peers: Array<{
         endpoint: string;
         publicKey: string;
         keepAlive: number;
-    }];
+    }>;
     reserved: number[];
     secretKey: string;
     wnoise?: string;
@@ -366,8 +354,8 @@ interface Policy {
         downlinkOnly: number;
     }>;
     system: {
-        statsOutboundUplink: true;
-        statsOutboundDownlink: true;
+        statsOutboundUplink: boolean;
+        statsOutboundDownlink: boolean;
     };
 }
 
@@ -378,11 +366,11 @@ export interface Config {
         max?: string;
     };
     log: Log;
-    dns: Dns;
+    dns: DNS;
     inbounds: Array<MixedInbound | DokodemoDoorInbound | TunInbound>;
     outbounds: Outbound[];
     policy: Policy;
-    routing: Routing,
+    routing: Routing;
     observatory?: Observatory;
-    stats: {};
+    stats: Record<never, never>;
 }

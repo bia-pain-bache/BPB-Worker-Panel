@@ -27,8 +27,8 @@ export function buildRoutingRules(
         }
     ];
 
-    const finallOutboundTag = isChain ? "chain" : isWorkerless ? "direct" : "proxy";
-    const outTag = isBalancer ? isChain ? "all-chains" : "all-proxies" : finallOutboundTag;
+    const finalOutboundTag = isChain ? "chain" : isWorkerless ? "direct" : "proxy";
+    const outTag = isBalancer ? isChain ? "all-chains" : "all-proxies" : finalOutboundTag;
     const remoteDnsProxy = isBalancer ? "all-proxies" : "proxy";
 
     addRoutingRule(rules, ["remote-dns"], undefined, undefined, undefined, undefined, undefined, remoteDnsProxy, isBalancer);

@@ -10,6 +10,7 @@
     --border-color: #ddd;
     --button-color: #09639f;
     --input-background-color: white;
+    --label-text-color: var(--color);
     --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
     --container-border-radius: 28px;
     --inner-container-border-radius: 14px;
@@ -149,7 +150,7 @@ textarea {
     scrollbar-width: thin;
     resize: none;
     color: var(--color);
-    max-height: calc(5lh + 10px);
+    max-height: calc(5 * 1.5em + 10px);
 }
 
 input[type="text"]:focus,
@@ -243,7 +244,7 @@ button.reverse {
 }
 
 .ports-block th {
-    text-wrap: nowrap;
+    white-space: nowrap;
     background-color: gray;
 }
 
@@ -279,7 +280,7 @@ button.reverse {
     width: unset;
     font-weight: 400;
     font-size: 100%;
-    text-wrap: nowrap;
+    white-space: nowrap;
 }
 
 .form-control.apply {
@@ -328,7 +329,7 @@ summary {
     font-weight: bold;
     cursor: pointer;
     text-align: left;
-    text-wrap: nowrap;
+    white-space: nowrap;
 }
 
 summary::marker {
@@ -386,7 +387,7 @@ hr {
 
 .footer button {
     margin: unset;
-    background: #212121;
+    background-color: var(--primary-color);
     max-width: fit-content;
 }
 
@@ -414,10 +415,10 @@ label {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 140px;
+    width: max-content;
     white-space: nowrap;
-    padding: 14px 14px;
-    font-size: 16px;
+    padding: 14px;
+    font-size: 1.1rem;
     font-weight: 600;
     letter-spacing: 1px;
     border: none;
@@ -427,7 +428,7 @@ label {
     cursor: pointer;
     outline: none;
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
     margin-right: auto;
     margin-left: auto;
 }
@@ -436,7 +437,7 @@ table button {
     margin-top: auto;
     margin-bottom: auto;
     max-height: fit-content;
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 600;
     border: none;
     background-color: unset;
@@ -447,17 +448,11 @@ table button {
 table button span.material-symbols-rounded {
     font-size: 28px;
     margin: 0;
-    color: var(--button-color)
+    color: var(--button-color);
 }
 
 table td div span.material-symbols-rounded {
     color: #3fb950;
-}
-
-.button {
-    font-weight: 600;
-    font-size: 1.1rem;
-    width: max-content;
 }
 
 input[type="checkbox"] {
@@ -553,7 +548,7 @@ table button:active {
 }
 
 .table-container tr td:first-child {
-    text-wrap: nowrap;
+    white-space: nowrap;
 }
 
 .table-container tr td:nth-child(2) {
@@ -578,7 +573,7 @@ table button:active {
 
 .my-ip th,
 .my-ip td {
-    text-wrap: nowrap;
+    white-space: nowrap;
     padding: 10px;
     border-bottom: 1px solid var(--border-color);
 }
@@ -609,7 +604,8 @@ table button:active {
     background-color: var(--table-active-color);
 }
 
-.modal {
+.modal,
+.modalQR {
     display: none;
     position: fixed;
     z-index: 1;
@@ -628,7 +624,7 @@ table button:active {
     margin: auto;
     padding: 10px 20px 20px;
     border: 1px solid var(--border-color);
-    border-radius: 10px;
+    border-radius: var(--element-border-radius);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     position: absolute;
     top: 50%;
@@ -651,14 +647,14 @@ table button:active {
 .close {
     align-self: flex-end;
     color: var(--color);
-    float: right;
     font-size: 28px;
     font-weight: bold;
 }
 
 .close:hover,
 .close:focus {
-    color: black;
+    color: var(--color);
+    opacity: 0.7;
     text-decoration: none;
     cursor: pointer;
 }
@@ -666,18 +662,6 @@ table button:active {
 #passwordError {
     color: red;
     margin-bottom: 10px;
-}
-
-.modalQR {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.4);
 }
 
 .floating-button {
@@ -693,23 +677,15 @@ table button:active {
     font-size: 24px;
     cursor: pointer;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s, transform 0.3s;
+    transition: transform 0.3s ease;
 }
 
 .floating-button:hover {
     transform: scale(1.1);
 }
 
-body.dark-mode .floating-button {
-    background-color: var(--color);
-}
-
 .floating-button i {
     color: var(--background-color);
-}
-
-body.dark-mode .floating-button:hover {
-    transform: scale(1.1);
 }
 
 .refresh-geo-location {
@@ -764,7 +740,7 @@ summary h3 {
 }
 
 .value-container {
-    color: var(--lable-text-color);
+    color: var(--label-text-color);
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -777,14 +753,23 @@ summary h3 {
     padding: 8px;
     text-align: center;
     background-color: var(--input-background-color);
-    color: var(--lable-text-color);
+    color: var(--label-text-color);
     border: 1px solid var(--border-color);
-    border-radius: 10px;
+    border-radius: var(--element-border-radius);
 }
 
 .value-container .material-symbols-rounded {
     color: var(--button-color);
     cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        transition: none !important;
+        animation: none !important;
+    }
 }
 
 @media only screen and (min-width: 600px) {

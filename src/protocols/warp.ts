@@ -3,6 +3,25 @@ interface WarpKeys {
     privateKey: string;
 }
 
+interface WarpApiConfig {
+    interface: {
+        addresses: {
+            v6: string;
+        };
+    };
+    client_id: string;
+    peers: Array<{
+        public_key: string;
+    }>;
+}
+
+interface WarpApiResponse {
+    config: WarpApiConfig;
+}
+
+const WARP_API_URL = 'https://api.cloudflareclient.com/v0a4005/reg';
+const WARP_API_RATE_LIMIT_MS = 1000;
+
 const defaultWarpAccounts: WarpAccount[] = [
     {
         privateKey: "sBmQVHEywGAKQ8Ratzo/f5OUCa7MSozZpz1JK2PSVXE=",
@@ -22,7 +41,6 @@ export async function fetchWarpAccounts(env: Env): Promise<WarpAccount[]> {
     const warpAccounts: WarpAccount[] = [];
 
     try {
-
         const warpKeys = [
             await generateKeyPair(),
             await generateKeyPair()
@@ -37,7 +55,9 @@ export async function fetchWarpAccounts(env: Env): Promise<WarpAccount[]> {
                 publicKey: config.peers[0].public_key
             });
 
-            if (index === 0) await new Promise(resolve => setTimeout(resolve, 1000));
+            if (index === 0) {
+                await new Promise(resolve => setTimeout(resolve, WARP_API_RATE_LIMIT_MS));
+            }
         }
 
         await env.kv.put('warpAccounts', JSON.stringify(warpAccounts));
@@ -45,7 +65,7 @@ export async function fetchWarpAccounts(env: Env): Promise<WarpAccount[]> {
 
     } catch (error) {
         console.error(
-            'Failed to fetch new WARP accounts:', 
+            'Failed to fetch new WARP accounts:',
             error instanceof Error ? error.message : String(error)
         );
 
@@ -53,8 +73,8 @@ export async function fetchWarpAccounts(env: Env): Promise<WarpAccount[]> {
     }
 }
 
-async function fetchAccount(key: WarpKeys): Promise<any> {
-    const response = await fetch('https://api.cloudflareclient.com/v0a4005/reg', {
+async function fetchAccount(key: WarpKeys): Promise<WarpApiResponse> {
+    const response = await fetch(WARP_API_URL, {
         method: 'POST',
         headers: {
             'User-Agent': 'insomnia/8.6.1',
@@ -76,7 +96,7 @@ async function fetchAccount(key: WarpKeys): Promise<any> {
         throw new Error(`API returned status ${response.status}: ${await response.text()}`);
     }
 
-    return response.json();
+    return response.json() as Promise<WarpApiResponse>;
 }
 
 async function generateKeyPair(): Promise<WarpKeys> {

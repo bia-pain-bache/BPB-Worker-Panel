@@ -6,6 +6,8 @@ import {
     WS_READY_STATE_OPEN
 } from './common';
 
+type Logger = (info: string, event?: string) => void;
+
 export async function VlOverWSHandler(request: Request): Promise<Response> {
     const webSocketPair = new WebSocketPair();
     const [client, webSocket] = Object.values(webSocketPair);
@@ -15,25 +17,25 @@ export async function VlOverWSHandler(request: Request): Promise<Response> {
     let address = "";
     let portWithRandomLog = "";
 
-    const log = (info: string, event?: string) => {
+    const log: Logger = (info, event) => {
         console.log(`[${address}:${portWithRandomLog}] ${info}`, event || "");
     };
 
     const earlyDataHeader = request.headers.get("sec-websocket-protocol") || "";
     const readableWebSocketStream = makeReadableWebSocketStream(webSocket, earlyDataHeader, log);
 
-    let remoteSocketWapper: { value: Socket | null } = { value: null };
-    let udpStreamWrite: any = null;
+    let remoteSocketWrapper: { value: Socket | null } = { value: null };
+    let udpStreamWrite: ((chunk: ArrayBuffer) => Promise<void>) | null = null;
     let isDns = false;
 
-    const writableStream = new WritableStream({
+    const writableStream = new WritableStream<ArrayBuffer>({
         async write(chunk) {
             if (isDns && udpStreamWrite) {
                 return udpStreamWrite(chunk);
             }
 
-            if (remoteSocketWapper.value) {
-                const writer = remoteSocketWapper.value.writable.getWriter();
+            if (remoteSocketWrapper.value) {
+                const writer = remoteSocketWrapper.value.writable.getWriter();
                 await writer.write(chunk);
                 writer.releaseLock();
                 return;
@@ -48,7 +50,7 @@ export async function VlOverWSHandler(request: Request): Promise<Response> {
                 rawDataIndex,
                 VLVersion = new Uint8Array([0, 0]),
                 isUDP,
-            } = parseVlHeader(chunk, userID!);
+            } = parseVlHeader(chunk, userID);
 
             address = addressRemote;
             portWithRandomLog = `${portRemote}--${Math.random()} ${isUDP ? "udp " : "tcp "} `;
@@ -73,7 +75,7 @@ export async function VlOverWSHandler(request: Request): Promise<Response> {
             }
 
             await handleTCPOutBound(
-                remoteSocketWapper,
+                remoteSocketWrapper,
                 addressRemote,
                 portRemote,
                 rawClientData,
@@ -83,7 +85,7 @@ export async function VlOverWSHandler(request: Request): Promise<Response> {
             );
         },
         close() {
-            safeCloseTcpSocket(remoteSocketWapper.value);
+            safeCloseTcpSocket(remoteSocketWrapper.value);
         },
         abort(reason) {
             log(`readableWebSocketStream is abort`, JSON.stringify(reason));
@@ -94,7 +96,7 @@ export async function VlOverWSHandler(request: Request): Promise<Response> {
         .pipeTo(writableStream)
         .catch(error => {
             log("readableWebSocketStream pipeTo error", error);
-            safeCloseTcpSocket(remoteSocketWapper.value);
+            safeCloseTcpSocket(remoteSocketWrapper.value);
         });
 
     return new Response(null, {
@@ -103,12 +105,20 @@ export async function VlOverWSHandler(request: Request): Promise<Response> {
     });
 }
 
-function parseVlHeader(VLBuffer: ArrayBuffer, userID: string) {
+interface VlHeaderResult {
+    hasError: boolean;
+    message?: string;
+    addressRemote?: string;
+    addressType?: number;
+    portRemote?: number;
+    rawDataIndex?: number;
+    VLVersion?: Uint8Array;
+    isUDP?: boolean;
+}
+
+function parseVlHeader(VLBuffer: ArrayBuffer, userID: string): VlHeaderResult {
     if (VLBuffer.byteLength < 24) {
-        return {
-            hasError: true,
-            message: "invalid data",
-        };
+        return { hasError: true, message: "invalid data" };
     }
 
     const version = new Uint8Array(VLBuffer.slice(0, 1));
@@ -117,20 +127,16 @@ function parseVlHeader(VLBuffer: ArrayBuffer, userID: string) {
     const isValidUser = slicedBufferString === userID;
 
     if (!isValidUser) {
-        return {
-            hasError: true,
-            message: "invalid user",
-        };
+        return { hasError: true, message: "invalid user" };
     }
 
     const optLength = new Uint8Array(VLBuffer.slice(17, 18))[0];
     const command = new Uint8Array(VLBuffer.slice(18 + optLength, 18 + optLength + 1))[0];
     let isUDP = false;
 
-    if (command === 1) {
-    } else if (command === 2) {
+    if (command === 2) {
         isUDP = true;
-    } else {
+    } else if (command !== 1) {
         return {
             hasError: true,
             message: `command ${command} is not supported, command 01-tcp,02-udp,03-mux`,
@@ -141,7 +147,7 @@ function parseVlHeader(VLBuffer: ArrayBuffer, userID: string) {
     const portBuffer = VLBuffer.slice(portIndex, portIndex + 2);
     const portRemote = new DataView(portBuffer).getUint16(0);
 
-    let addressIndex = portIndex + 2;
+    const addressIndex = portIndex + 2;
     const addressBuffer = new Uint8Array(VLBuffer.slice(addressIndex, addressIndex + 1));
     const addressType = addressBuffer[0];
     let addressLength = 0;
@@ -163,7 +169,7 @@ function parseVlHeader(VLBuffer: ArrayBuffer, userID: string) {
         case 3: {
             addressLength = 16;
             const dataView = new DataView(VLBuffer.slice(addressValueIndex, addressValueIndex + addressLength));
-            const ipv6 = [];
+            const ipv6: string[] = [];
 
             for (let i = 0; i < 8; i++) {
                 ipv6.push(dataView.getUint16(i * 2).toString(16));
@@ -172,18 +178,13 @@ function parseVlHeader(VLBuffer: ArrayBuffer, userID: string) {
             addressValue = ipv6.join(":");
             break;
         }
+
         default:
-            return {
-                hasError: true,
-                message: `invalid addressType is ${addressType}`,
-            };
+            return { hasError: true, message: `invalid addressType is ${addressType}` };
     }
 
     if (!addressValue) {
-        return {
-            hasError: true,
-            message: `addressValue is empty, addressType is ${addressType}`,
-        };
+        return { hasError: true, message: `addressValue is empty, addressType is ${addressType}` };
     }
 
     return {
@@ -197,13 +198,13 @@ function parseVlHeader(VLBuffer: ArrayBuffer, userID: string) {
     };
 }
 
-function unsafeStringify(arr: Uint8Array, offset = 0) {
-    const byteToHex: string[] = [];
+// Byte-to-hex lookup table, built once at module scope
+const byteToHex: string[] = Array.from(
+    { length: 256 },
+    (_, i) => (i + 256).toString(16).slice(1)
+);
 
-    for (let i = 0; i < 256; ++i) {
-        byteToHex.push((i + 256).toString(16).slice(1));
-    }
-
+function unsafeStringify(arr: Uint8Array, offset = 0): string {
     return (
         byteToHex[arr[offset + 0]] +
         byteToHex[arr[offset + 1]] +
@@ -228,7 +229,7 @@ function unsafeStringify(arr: Uint8Array, offset = 0) {
     ).toLowerCase();
 }
 
-function stringify(arr: Uint8Array, offset = 0) {
+function stringify(arr: Uint8Array, offset = 0): string {
     const uuid = unsafeStringify(arr, offset);
 
     if (!isValidUUID(uuid)) {
@@ -238,33 +239,35 @@ function stringify(arr: Uint8Array, offset = 0) {
     return uuid;
 }
 
-async function handleUDPOutBound(webSocket: WebSocket, VLResponseHeader: Uint8Array<ArrayBuffer>, log: Function) {
+async function handleUDPOutBound(
+    webSocket: WebSocket,
+    VLResponseHeader: Uint8Array<ArrayBuffer>,
+    log: Logger
+): Promise<{ write: (chunk: ArrayBuffer) => Promise<void> }> {
     let isVLHeaderSent = false;
 
-    const transformStream = new TransformStream({
-        start(_controller) { },
+    const transformStream = new TransformStream<ArrayBuffer, Uint8Array>({
         transform(chunk, controller) {
             for (let index = 0; index < chunk.byteLength;) {
                 const lengthBuffer = chunk.slice(index, index + 2);
-                const udpPakcetLength = new DataView(lengthBuffer).getUint16(0);
-                const udpData = new Uint8Array(chunk.slice(index + 2, index + 2 + udpPakcetLength));
-                index = index + 2 + udpPakcetLength;
+                const udpPacketLength = new DataView(lengthBuffer).getUint16(0);
+                const udpData = new Uint8Array(chunk.slice(index + 2, index + 2 + udpPacketLength));
+                index = index + 2 + udpPacketLength;
                 controller.enqueue(udpData);
             }
-        },
-        flush(_controller) { },
+        }
     });
 
     transformStream.readable
         .pipeTo(
-            new WritableStream({
+            new WritableStream<Uint8Array>({
                 async write(chunk) {
                     const resp = await fetch("https://cloudflare-dns.com/dns-query", {
                         method: "POST",
                         headers: {
                             "content-type": "application/dns-message",
                         },
-                        body: chunk
+                        body: chunk.buffer as ArrayBuffer
                     });
 
                     const dnsQueryResult = await resp.arrayBuffer();

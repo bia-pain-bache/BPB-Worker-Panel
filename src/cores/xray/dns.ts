@@ -1,6 +1,6 @@
 import { getGeoAssets } from './geo-assets';
 import type { DNS, DnsServer, DnsHosts } from '#types/xray';
-import { resolveDNS, isDomain, getDomain, accDnsRules } from '@utils';
+import { resolveDNS, isDomain, getDomain, accDnsRules, omitEmpty } from '@utils';
 
 export async function buildDNS(
     outboundAddrs: string[],
@@ -22,15 +22,15 @@ export async function buildDNS(
 
     const hosts: DnsHosts = {};
     const servers: DnsServer[] = [];
-    const fakeDnsDomains = [];
+    const fakeDnsDomains: string[] = [];
 
     if (remoteDnsHost.isDomain && !isWorkerLess && !isWarp) {
         const { ipv4, ipv6, host } = remoteDnsHost;
-        hosts[host] = ipv4.concatIf(enableIPv6, ipv6);
+        hosts[host] = [...ipv4, ...(enableIPv6 ? ipv6 : [])];
     }
 
     if (domainToStaticIPs) {
-        const { ipv4, ipv6 } = await resolveDNS(domainToStaticIPs, enableIPv6);
+        const { ipv4, ipv6 } = await resolveDNS(domainToStaticIPs, !enableIPv6);
         hosts[domainToStaticIPs] = [...ipv4, ...ipv6];
     }
 
@@ -43,8 +43,7 @@ export async function buildDNS(
         skipFallback = false;
     }
 
-    const remoteDnsServer = buildDnsServer(finalRemoteDNS, undefined, undefined, undefined, undefined, "remote-dns");
-    servers.push(remoteDnsServer);
+    servers.push(buildDnsServer(finalRemoteDNS, undefined, undefined, undefined, undefined, "remote-dns"));
 
     const geoAssets = getGeoAssets();
     const dnsRules = accDnsRules(geoAssets);
@@ -54,11 +53,10 @@ export async function buildDNS(
         ...dnsRules.block.domains.map(domain => `domain:${domain}`)
     ];
 
-    blockDomains.forEach(domain => hosts[domain] = '#3');
+    blockDomains.forEach(domain => { hosts[domain] = '#3'; });
 
     dnsRules.bypass.localDNS.geositeGeoips.forEach(({ geosite, geoip }) => {
-        const localDnsServer = buildDnsServer(localDNS, [geosite], [geoip!], skipFallback);
-        servers.push(localDnsServer);
+        servers.push(buildDnsServer(localDNS, [geosite], [geoip!], skipFallback));
         fakeDnsDomains.push(geosite);
     });
 
@@ -74,9 +72,7 @@ export async function buildDNS(
     ];
 
     if (sanctionDomains.length) {
-        const sanctionDnsServer = buildDnsServer(antiSanctionDNS, sanctionDomains, undefined, skipFallback, true);
-        servers.push(sanctionDnsServer);
-        
+        servers.push(buildDnsServer(antiSanctionDNS, sanctionDomains, undefined, skipFallback, true));
         const { host, isHostDomain } = getDomain(antiSanctionDNS);
         if (isHostDomain) bypassDomains.push(`full:${host}`);
     }
@@ -84,13 +80,12 @@ export async function buildDNS(
     customDnsHosts?.filter(isDomain).forEach(host => bypassDomains.push(`full:${host}`));
 
     if (bypassDomains.length) {
-        const localDnsServer = buildDnsServer(localDNS, bypassDomains, undefined, skipFallback);
-        servers.push(localDnsServer);
+        servers.push(buildDnsServer(localDNS, bypassDomains, undefined, skipFallback));
         fakeDnsDomains.push(...bypassDomains);
     }
 
     if (fakeDNS || isWorkerLess) {
-        const fakeDNSServer = fakeDnsDomains.length
+        const fakeDNSServer: DnsServer = fakeDnsDomains.length
             ? buildDnsServer("fakedns", fakeDnsDomains, undefined, false, undefined)
             : "fakedns";
 
@@ -98,7 +93,7 @@ export async function buildDNS(
     }
 
     return {
-        hosts: hosts.omitEmpty(),
+        hosts: omitEmpty(hosts),
         servers,
         queryStrategy: isWarp && !enableIPv6 ? "UseIPv4" : "UseIP",
         tag: "dns"

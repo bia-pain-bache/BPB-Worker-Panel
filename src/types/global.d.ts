@@ -34,6 +34,7 @@ declare global {
         readonly PREFIX: string;
         readonly FALLBACK: string;
         readonly DOH_URL: string;
+        readonly SUB_PATH: string;
         readonly kv: KVNamespace;
     }
 
@@ -68,6 +69,33 @@ declare global {
         count: number;
     }
 
+    interface OutProxyParams {
+        protocol?: string;
+        server?: string;
+        port?: number;
+        user?: string;
+        pass?: string;
+        password?: string;
+        method?: string;
+        uuid?: string;
+        flow?: "xtls-rprx-vision";
+        security?: "tls" | "reality" | "none";
+        type?: string;
+        sni?: string;
+        fp?: string;
+        host?: string;
+        path?: string;
+        alpn?: string;
+        pbk?: string;
+        sid?: string;
+        spx?: string;
+        headerType?: "http" | "none";
+        serviceName?: string;
+        mode?: string;
+        authority?: string;
+        aid?: number;
+    }
+
     interface Settings {
         localDNS: string;
         antiSanctionDNS: string;
@@ -83,7 +111,7 @@ declare global {
         upstreamProxy: string;
         upstreamParams: UpstreamProxy;
         outProxy: string;
-        outProxyParams: any;
+        outProxyParams: OutProxyParams;
         cleanIPs: string[];
         customCdnAddrs: string[];
         customCdnHost: string;
@@ -94,7 +122,7 @@ declare global {
         ports: number[];
         fingerprint: Fingerprint;
         enableTFO: boolean;
-        fragmentMode: "custom" | "low" | "medium" | "high";
+        fragmentMode: "custom" | "low" | "medium" | "high" | "severe";
         fragmentLengthMin: number;
         fragmentLengthMax: number;
         fragmentIntervalMin: number;
@@ -184,13 +212,17 @@ declare global {
     const __SECRETS_HTML_CONTENT__: string;
     const __PROXY_IP_HTML_CONTENT__: string;
 
-    interface Array<T> {
-        concatIf<T>(condition: boolean, concat: T | T[]): T[];
-    }
-
-    interface Object {
-        omitEmpty<T>(): T | undefined;
-    }
+    type Fingerprint =
+        | "chrome"
+        | "firefox"
+        | "safari"
+        | "ios"
+        | "android"
+        | "edge"
+        | "360"
+        | "qq"
+        | "random"
+        | "randomized";
 }
 
 export { };

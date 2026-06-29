@@ -5,6 +5,9 @@ import { safeErrorMessage } from '@common';
 export const WS_READY_STATE_OPEN = 1;
 const WS_READY_STATE_CLOSING = 2;
 
+type Logger = (info: string, event?: string) => void;
+type RetryFn = () => Promise<void>;
+
 export async function handleTCPOutBound(
     remoteSocket: { value: Socket | null },
     addressRemote: string,
@@ -12,15 +15,10 @@ export async function handleTCPOutBound(
     rawClientData: ArrayBuffer | undefined,
     webSocket: WebSocket,
     VLResponseHeader: Uint8Array<ArrayBuffer> | null,
-    log: Function
-) {
+    log: Logger
+): Promise<void> {
     async function connectAndWrite(address: string, port: number): Promise<Socket> {
-        // if (/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(address)) address = `${atob('d3d3Lg==')}${address}${atob('LnNzbGlwLmlv')}`;
-        const tcpSocket = connect({
-            hostname: address,
-            port: port,
-        });
-
+        const tcpSocket = connect({ hostname: address, port });
         remoteSocket.value = tcpSocket;
         log(`connected to ${address}:${port}`);
         const writer = tcpSocket.writable.getWriter();
@@ -29,41 +27,9 @@ export async function handleTCPOutBound(
         return tcpSocket;
     }
 
-    async function retry() {
-        const {
-            proxyMode,
-            panelIPs,
-            envProxyIPs,
-            defaultProxyIPs,
-            envPrefixes,
-            defaultPrefixes
-        } = globalThis.wsConfig;
-
-        const getRandomValue = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
-        const parseIPs = (value: string) => value ? value.split(',').map(val => val.trim()).filter(Boolean) : undefined;
-
-        if (proxyMode === 'proxyip') {
-            log(`direct connection failed, trying to use Proxy IP for ${addressRemote}`);
-            const proxyIPs = panelIPs?.length ? panelIPs : parseIPs(envProxyIPs) ?? defaultProxyIPs;
-            const proxyIP = getRandomValue(proxyIPs);
-            const { host, port } = parseHostPort(proxyIP, true);
-            addressRemote = host || addressRemote;
-            portRemote = port || portRemote;
-        } else if (proxyMode === 'prefix') {
-            log(`direct connection failed, trying to generate dynamic prefix for ${addressRemote}`);
-            const prefixes = panelIPs?.length ? panelIPs : parseIPs(envPrefixes) ?? defaultPrefixes;
-            const prefix = getRandomValue(prefixes);
-            const dynamicProxyIP = await getDynamicProxyIP(addressRemote, prefix);
-
-            if (dynamicProxyIP) {
-                addressRemote = dynamicProxyIP;
-            } else {
-                webSocket.close(1011, 'Retry connection failed: Invalid Prefix');
-            }
-        }
-
+    async function retry(retryAddress: string, retryPort: number): Promise<void> {
         try {
-            const tcpSocket = await connectAndWrite(addressRemote, portRemote);
+            const tcpSocket = await connectAndWrite(retryAddress, retryPort);
             tcpSocket.closed
                 .catch(error => console.log('retry TCP socket closed error', error))
                 .finally(() => safeCloseWebSocket(webSocket));
@@ -71,16 +37,68 @@ export async function handleTCPOutBound(
             remoteSocketToWS(tcpSocket, webSocket, VLResponseHeader, null, log);
         } catch (error) {
             console.error('Retry connection failed:', error);
-            webSocket.close(1011, `Retry connection failed: ${safeErrorMessage(error)}`);
+            webSocket.close(1011, 'Connection failed');
         }
+    }
+
+    async function resolveRetryTarget(): Promise<{ address: string; port: number }> {
+        const {
+            proxyMode,
+            panelIPs,
+            envProxyIPs,
+            envPrefixes,
+            defaultProxyIPs,
+            defaultPrefixes
+        } = globalThis.wsConfig;
+
+        const getRandomValue = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+        const parseIPs = (value: string): string[] | undefined =>
+            value ? value.split(',').map(v => v.trim()).filter(Boolean) : undefined;
+
+        if (proxyMode === 'proxyip') {
+            log(`direct connection failed, trying Proxy IP for ${addressRemote}`);
+            const proxyIPs = panelIPs?.length
+                ? panelIPs
+                : parseIPs(envProxyIPs) ?? defaultProxyIPs;
+            const proxyIP = getRandomValue(proxyIPs);
+            const { host, port } = parseHostPort(proxyIP, true);
+            return {
+                address: host || addressRemote,
+                port: port || portRemote
+            };
+        }
+
+        if (proxyMode === 'prefix') {
+            log(`direct connection failed, trying NAT64 prefix for ${addressRemote}`);
+            const prefixes = panelIPs?.length
+                ? panelIPs
+                : parseIPs(envPrefixes) ?? defaultPrefixes;
+            const prefix = getRandomValue(prefixes);
+            const dynamicProxyIP = await getDynamicProxyIP(addressRemote, prefix);
+            return {
+                address: dynamicProxyIP,
+                port: portRemote
+            };
+        }
+
+        return { address: addressRemote, port: portRemote };
     }
 
     try {
         const tcpSocket = await connectAndWrite(addressRemote, portRemote);
-        remoteSocketToWS(tcpSocket, webSocket, VLResponseHeader, retry, log);
+        remoteSocketToWS(
+            tcpSocket,
+            webSocket,
+            VLResponseHeader,
+            async () => {
+                const { address, port } = await resolveRetryTarget();
+                await retry(address, port);
+            },
+            log
+        );
     } catch (error) {
         console.error(`Connection failed: ${error}`);
-        webSocket.close(1011, `Connection failed: ${safeErrorMessage(error)}`);
+        webSocket.close(1011, 'Connection failed');
     }
 }
 
@@ -88,18 +106,19 @@ async function remoteSocketToWS(
     remoteSocket: Socket,
     webSocket: WebSocket,
     VLResponseHeader: Uint8Array<ArrayBuffer> | null,
-    retry: Function | null,
-    log: Function
-) {
+    retry: RetryFn | null,
+    log: Logger
+): Promise<void> {
     let vlHeader = VLResponseHeader;
     let hasIncomingData = false;
 
     const writableStream = new WritableStream({
-        start() { },
         async write(chunk, controller) {
             hasIncomingData = true;
+
             if (webSocket.readyState !== WS_READY_STATE_OPEN) {
                 controller.error("webSocket.readyState is not open, maybe close");
+                return;
             }
 
             if (vlHeader) {
@@ -121,25 +140,29 @@ async function remoteSocketToWS(
     try {
         await remoteSocket.readable.pipeTo(writableStream);
     } catch (error) {
-        console.error('VLRemoteSocketToWS has exception.', error);
+        console.error('remoteSocketToWS has exception.', error);
         safeCloseTcpSocket(remoteSocket);
         safeCloseWebSocket(webSocket);
     }
 
-    if (hasIncomingData === false && retry) {
+    if (!hasIncomingData && retry) {
         log(`retry`);
-        retry();
+        await retry();
     }
 }
 
-export function makeReadableWebSocketStream(webSocketServer: WebSocket, earlyDataHeader: string, log: Function) {
+export function makeReadableWebSocketStream(
+    webSocketServer: WebSocket,
+    earlyDataHeader: string,
+    log: Logger
+): ReadableStream<ArrayBuffer> {
     let readableStreamCancel = false;
-    const stream = new ReadableStream({
+
+    const stream = new ReadableStream<ArrayBuffer>({
         start(controller) {
             webSocketServer.addEventListener("message", (event) => {
                 if (readableStreamCancel) return;
-                // WebSocket binaryType='arraybuffer' ensures event.data is always ArrayBuffer
-                controller.enqueue(event.data);
+                controller.enqueue(event.data as ArrayBuffer);
             });
 
             webSocketServer.addEventListener("close", () => {
@@ -161,7 +184,6 @@ export function makeReadableWebSocketStream(webSocketServer: WebSocket, earlyDat
                 controller.enqueue(earlyData);
             }
         },
-        pull(_controller) { },
         cancel(reason) {
             if (readableStreamCancel) return;
             log(`ReadableStream was canceled, due to ${reason}`);
@@ -173,23 +195,22 @@ export function makeReadableWebSocketStream(webSocketServer: WebSocket, earlyDat
     return stream;
 }
 
-function base64ToArrayBuffer(base64Str: string) {
+function base64ToArrayBuffer(base64Str: string): { earlyData: ArrayBuffer | null; error: unknown | null } {
     if (!base64Str) {
         return { earlyData: null, error: null };
     }
 
     try {
-        // go use modified Base64 for URL rfc4648 which js atob not support
-        base64Str = base64Str.replace(/-/g, '+').replace(/_/g, '/');
-        const decode = atob(base64Str);
-        const arryBuffer = Uint8Array.from(decode, (c) => c.charCodeAt(0));
+        const normalized = base64Str.replace(/-/g, '+').replace(/_/g, '/');
+        const decode = atob(normalized);
+        const arryBuffer = Uint8Array.from(decode, c => c.charCodeAt(0));
         return { earlyData: arryBuffer.buffer, error: null };
     } catch (error) {
         return { earlyData: null, error };
     }
 }
 
-export function safeCloseTcpSocket(socket: Socket | null) {
+export function safeCloseTcpSocket(socket: Socket | null): void {
     if (socket) {
         try {
             socket.close();
@@ -199,9 +220,12 @@ export function safeCloseTcpSocket(socket: Socket | null) {
     }
 }
 
-export function safeCloseWebSocket(socket: WebSocket) {
+export function safeCloseWebSocket(socket: WebSocket): void {
     try {
-        if (socket.readyState === WS_READY_STATE_OPEN || socket.readyState === WS_READY_STATE_CLOSING) {
+        if (
+            socket.readyState === WS_READY_STATE_OPEN ||
+            socket.readyState === WS_READY_STATE_CLOSING
+        ) {
             socket.close();
         }
     } catch (error) {
@@ -209,34 +233,34 @@ export function safeCloseWebSocket(socket: WebSocket) {
     }
 }
 
-async function getDynamicProxyIP(address: string, prefix: string) {
+async function getDynamicProxyIP(address: string, prefix: string): Promise<string> {
     let finalAddress = address;
 
     if (!isIPv4(address)) {
         const { ipv4 } = await resolveDNS(address, true);
 
-        if (ipv4.length) {
-            finalAddress = ipv4[0];
-        } else {
-            throw new Error('Unable to find IPv4 in DNS records');
+        if (!ipv4.length) {
+            throw new Error(`Unable to find IPv4 address for ${address}`);
         }
+
+        finalAddress = ipv4[0];
     }
 
     return convertToNAT64IPv6(finalAddress, prefix);
 }
 
-function convertToNAT64IPv6(ipv4Address: string, prefix: string) {
+function convertToNAT64IPv6(ipv4Address: string, prefix: string): string {
     const parts = ipv4Address.split('.');
 
     if (parts.length !== 4) {
-        throw new Error('Invalid IPv4 address');
+        throw new Error(`Invalid IPv4 address: ${ipv4Address}`);
     }
 
     const hex = parts.map(part => {
         const num = parseInt(part, 10);
 
-        if (num < 0 || num > 255) {
-            throw new Error('Invalid IPv4 address');
+        if (isNaN(num) || num < 0 || num > 255) {
+            throw new Error(`Invalid IPv4 octet: ${part}`);
         }
 
         return num.toString(16).padStart(2, '0');
@@ -244,8 +268,9 @@ function convertToNAT64IPv6(ipv4Address: string, prefix: string) {
 
     const match = prefix.match(/^\[([0-9A-Fa-f:]+)\]$/);
 
-    if (match) {
-        return `[${match[1]}${hex[0]}${hex[1]}:${hex[2]}${hex[3]}]`;
+    if (!match) {
+        throw new Error(`Invalid NAT64 prefix format: ${prefix}. Expected format: [prefix::]`);
     }
-}
 
+    return `[${match[1]}${hex[0]}${hex[1]}:${hex[2]}${hex[3]}]`;
+}
