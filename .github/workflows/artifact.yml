@@ -1,0 +1,45 @@
+name: Build Artifact
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - '**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Type check
+        run: npm run check
+
+      - name: Build project
+        run: npm run build
+
+      - name: Show build output
+        run: ls -la dist/
+
+      - name: Upload worker artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bpb-worker-${{ github.sha }}
+          path: |
+            dist/worker.js
+            dist/worker.zip
+          retention-days: 30
+          if-no-files-found: error
