@@ -183,7 +183,7 @@ function parseTrHeader(buffer: ArrayBuffer) {
     };
 }
 
-function sha224(string: string): string {
+export function sha224(string: string): string {
     const rightRotate = (value: number, amount: number) => (value >>> amount) | (value << (32 - amount));
 
     const h = [

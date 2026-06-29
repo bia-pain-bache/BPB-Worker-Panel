@@ -30,11 +30,24 @@ declare global {
     interface Env {
         readonly UUID: string;
         readonly TR_PASS: string;
+        readonly SUB_PATH: string;
         readonly PROXY_IP: string;
         readonly PREFIX: string;
         readonly FALLBACK: string;
         readonly DOH_URL: string;
         readonly kv: KVNamespace;
+    }
+
+    interface User {
+        id: string;
+        name: string;
+        uuid: string;
+        trojanPassword: string;
+        subToken: string;
+        createdAt: number;
+        expiresAt: number | null;
+        deviceLimit: number;
+        enabled: boolean;
     }
 
     interface WarpAccount {
