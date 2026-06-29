@@ -1164,6 +1164,53 @@
         </details>
     </div>
     <div class="form-container container">
+        <h2><span class="material-symbols-rounded">fingerprint</span> Users</h2>
+        <div class="users-block">
+            <div class="table-container">
+                <table id="users-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Expires</th>
+                            <th>Devices</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-tbody">
+                        <tr><td colspan="5" class="users-empty">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="users-form">
+                <h3>Add User</h3>
+                <div class="form-control">
+                    <label for="new-user-name">Name</label>
+                    <div><input type="text" id="new-user-name" maxlength="64" placeholder="e.g. alice"></div>
+                </div>
+                <div class="form-control">
+                    <label for="new-user-expiry">Expires</label>
+                    <div class="users-expiry-row">
+                        <input type="datetime-local" id="new-user-expiry">
+                        <label class="users-inline">
+                            <input type="checkbox" id="new-user-no-expiry"> No expiry
+                        </label>
+                    </div>
+                </div>
+                <div class="form-control">
+                    <label for="new-user-device-limit">Device limit</label>
+                    <div><input type="number" id="new-user-device-limit" min="0" value="0"> <small>0 = unlimited</small></div>
+                </div>
+                <div class="form-control">
+                    <button type="button" class="button" onclick="createUserSubmit()">
+                        Add user <span class="material-symbols-rounded">add_circle</span>
+                    </button>
+                </div>
+                <div id="users-error" class="password-error"></div>
+            </div>
+        </div>
+    </div>
+    <div class="form-container container">
         <h2><span class="material-symbols-rounded">dns</span> DNS over HTTPS</h2>
         <div class="value-container">
             <div class="output-container">

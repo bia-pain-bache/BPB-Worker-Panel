@@ -76,6 +76,7 @@ function initiatePanel(proxySettings) {
     renderUdpNoiseBlock(xrayUdpNoises);
     initiateForm();
     fetchIPInfo();
+    fetchUsers();
 }
 
 function populatePanel(proxySettings) {
@@ -1292,4 +1293,217 @@ function renderUdpNoiseBlock(xrayUdpNoises) {
     });
 
     globalThis.xrayNoiseCount = xrayUdpNoises.length;
+}
+// ----- Users management -----
+
+async function fetchUsers() {
+    try {
+        const res = await fetch('/panel/users/list', { credentials: 'same-origin' });
+        const data = await res.json();
+        if (!data.success) {
+            renderUsersError(data.message || 'Failed to load users.');
+            return;
+        }
+        renderUsersTable(data.body || []);
+    } catch (err) {
+        renderUsersError(err.message || String(err));
+    }
+}
+
+function renderUsersError(msg) {
+    const tbody = document.getElementById('users-tbody');
+    if (tbody) {
+        tbody.innerHTML = `<tr><td colspan="5" class="users-empty">${escapeHtml(msg)}</td></tr>`;
+    }
+}
+
+function escapeHtml(s) {
+    return String(s)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+}
+
+function formatExpiry(ms) {
+    if (ms === null || ms === undefined) return '∞';
+    const d = new Date(ms);
+    if (Number.isNaN(d.getTime())) return '—';
+    return d.toISOString().slice(0, 16).replace('T', ' ');
+}
+
+function expiryStatus(user) {
+    if (!user.enabled) return { label: 'Disabled', cls: 'user-status-off' };
+    if (user.expiresAt !== null && Date.now() >= user.expiresAt) {
+        return { label: 'Expired', cls: 'user-status-off' };
+    }
+    return { label: 'Active', cls: 'user-status-on' };
+}
+
+function renderUsersTable(users) {
+    const tbody = document.getElementById('users-tbody');
+    if (!tbody) return;
+
+    if (!users.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="users-empty">No users yet.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = users.map(u => {
+        const st = expiryStatus(u);
+        const deviceLabel = u.deviceLimit === 0 ? '∞' : String(u.deviceLimit);
+        return `<tr data-user-id="${escapeHtml(u.id)}">
+            <td>${escapeHtml(u.name)}</td>
+            <td><span class="user-status ${st.cls}">${st.label}</span></td>
+            <td>${escapeHtml(formatExpiry(u.expiresAt))}</td>
+            <td>${deviceLabel}</td>
+            <td class="users-actions">
+                <button title="Copy sub URL" onclick="copyUserSubUrl('${escapeHtml(u.subToken)}')">
+                    <span class="material-symbols-rounded">content_copy</span>
+                </button>
+                <button title="${u.enabled ? 'Disable' : 'Enable'}" onclick="toggleUserEnabled('${escapeHtml(u.id)}', ${!u.enabled})">
+                    <span class="material-symbols-rounded">${u.enabled ? 'visibility_off' : 'visibility'}</span>
+                </button>
+                <button title="Edit expiry" onclick="editUserExpiry('${escapeHtml(u.id)}', ${u.expiresAt === null ? 'null' : u.expiresAt})">
+                    <span class="material-symbols-rounded">autorenew</span>
+                </button>
+                <button title="Delete" onclick="deleteUserRow('${escapeHtml(u.id)}', '${escapeHtml(u.name)}')">
+                    <span class="material-symbols-rounded">delete</span>
+                </button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function copyUserSubUrl(subToken) {
+    const url = `${window.location.origin}/sub/normal/${encodeURIComponent(subToken)}`;
+    copyToClipboard(url);
+}
+
+async function createUserSubmit() {
+    const name = document.getElementById('new-user-name').value.trim();
+    const noExpiry = document.getElementById('new-user-no-expiry').checked;
+    const expiryStr = document.getElementById('new-user-expiry').value;
+    const deviceLimit = Number(document.getElementById('new-user-device-limit').value) || 0;
+    const errEl = document.getElementById('users-error');
+    errEl.textContent = '';
+
+    if (!name) {
+        errEl.textContent = 'Name is required.';
+        return;
+    }
+
+    let expiresAt = null;
+    if (!noExpiry) {
+        if (!expiryStr) {
+            errEl.textContent = 'Set an expiry or check "No expiry".';
+            return;
+        }
+        const t = new Date(expiryStr).getTime();
+        if (!Number.isFinite(t) || t <= Date.now()) {
+            errEl.textContent = 'Expiry must be in the future.';
+            return;
+        }
+        expiresAt = t;
+    }
+
+    try {
+        const res = await fetch('/panel/users/create', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, expiresAt, deviceLimit })
+        });
+        const data = await res.json();
+        if (!data.success) {
+            errEl.textContent = data.message || 'Failed.';
+            return;
+        }
+        document.getElementById('new-user-name').value = '';
+        document.getElementById('new-user-expiry').value = '';
+        document.getElementById('new-user-no-expiry').checked = false;
+        document.getElementById('new-user-device-limit').value = '0';
+        await fetchUsers();
+    } catch (err) {
+        errEl.textContent = err.message || String(err);
+    }
+}
+
+async function toggleUserEnabled(id, enabled) {
+    try {
+        const res = await fetch('/panel/users/update', {
+            method: 'PUT',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, enabled })
+        });
+        const data = await res.json();
+        if (!data.success) {
+            alert(data.message || 'Update failed.');
+            return;
+        }
+        await fetchUsers();
+    } catch (err) {
+        alert(err.message || String(err));
+    }
+}
+
+async function editUserExpiry(id, currentMs) {
+    const currentStr = currentMs === null
+        ? ''
+        : new Date(currentMs).toISOString().slice(0, 16);
+    const input = prompt(
+        'New expiry (YYYY-MM-DDTHH:mm) — leave empty for no expiry:',
+        currentStr
+    );
+    if (input === null) return;
+
+    let expiresAt = null;
+    const trimmed = input.trim();
+    if (trimmed) {
+        const t = new Date(trimmed).getTime();
+        if (!Number.isFinite(t)) {
+            alert('Invalid date.');
+            return;
+        }
+        expiresAt = t;
+    }
+
+    try {
+        const res = await fetch('/panel/users/update', {
+            method: 'PUT',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, expiresAt })
+        });
+        const data = await res.json();
+        if (!data.success) {
+            alert(data.message || 'Update failed.');
+            return;
+        }
+        await fetchUsers();
+    } catch (err) {
+        alert(err.message || String(err));
+    }
+}
+
+async function deleteUserRow(id, name) {
+    if (!confirm(`Delete user "${name}"? This cannot be undone.`)) return;
+    try {
+        const res = await fetch('/panel/users/delete', {
+            method: 'DELETE',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id })
+        });
+        const data = await res.json();
+        if (!data.success) {
+            alert(data.message || 'Delete failed.');
+            return;
+        }
+        await fetchUsers();
+    } catch (err) {
+        alert(err.message || String(err));
+    }
 }

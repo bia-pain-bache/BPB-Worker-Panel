@@ -8,6 +8,7 @@ import { fetchWarpAccounts } from "@warp";
 import { VlOverWSHandler } from "@vless";
 import { TrOverWSHandler } from "@trojan";
 import { resolveUserBySubToken, validateUserAccess, getActiveIdentity } from "@users/auth";
+import { handleUsersApi } from "@users/api";
 import { base64DecodeUtf8, base64EncodeUtf8, HttpStatus, respond, safeErrorMessage } from "@common";
 import { generateRemark, generateWsPath, getConfigAddresses, randomUpperCase, resolveDNS } from "@utils";
 import JSZip from "jszip";
@@ -43,6 +44,11 @@ export async function handleWebsocket(request: Request, env: Env): Promise<Respo
 
 export async function handlePanel(request: Request, env: Env): Promise<Response> {
     const { pathName } = globalThis.globalConfig;
+
+    if (pathName.startsWith('/panel/users/')) {
+        const action = pathName.slice('/panel/users/'.length);
+        return await handleUsersApi(request, env, action);
+    }
 
     switch (pathName) {
         case '/panel':

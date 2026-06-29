@@ -804,3 +804,79 @@ summary h3 {
         max-width: 768px;
     }
 }
+/* Users section */
+.users-block .table-container {
+    margin-bottom: 16px;
+}
+
+#users-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 4px;
+}
+
+#users-table th,
+#users-table td {
+    padding: 8px;
+    text-align: center;
+}
+
+.users-empty {
+    color: var(--lable-text-color);
+    opacity: 0.7;
+}
+
+.user-status {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-size: 0.85em;
+}
+
+.user-status-on {
+    background-color: rgba(72, 187, 120, 0.2);
+    color: #2f855a;
+}
+
+.user-status-off {
+    background-color: rgba(245, 101, 101, 0.2);
+    color: #c53030;
+}
+
+.users-actions {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.users-actions button {
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 4px 8px;
+    cursor: pointer;
+    color: var(--button-color);
+}
+
+.users-actions button:hover {
+    background-color: var(--input-background-color);
+}
+
+.users-form h3 {
+    margin: 16px 0 8px;
+}
+
+.users-expiry-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.users-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.9em;
+}
