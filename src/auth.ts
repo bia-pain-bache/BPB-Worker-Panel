@@ -9,6 +9,10 @@ export async function generateJWTToken(request: Request, env: Env): Promise<Resp
     const password = await request.text();
     const savedPass = await env.kv.get('pwd');
 
+    if (!savedPass) {
+        return respond(false, HttpStatus.UNAUTHORIZED, 'Panel password is not set. Please set the `pwd` key in the Cloudflare KV namespace bound to this worker before logging in.');
+    }
+
     if (password !== savedPass) {
         return respond(false, HttpStatus.UNAUTHORIZED, 'Wrong password.');
     }
@@ -71,14 +75,15 @@ export async function Authenticate(request: Request, env: Env): Promise<boolean>
 }
 
 export async function resetPassword(request: Request, env: Env): Promise<Response> {
-    let auth = await Authenticate(request, env);
-    const oldPwd = await env.kv.get('pwd');
+    const auth = await Authenticate(request, env);
 
-    if (oldPwd && !auth) {
+    if (!auth) {
         return respond(false, HttpStatus.UNAUTHORIZED, 'Unauthorized.');
     }
 
+    const oldPwd = await env.kv.get('pwd');
     const newPwd = await request.text();
+
     if (newPwd === oldPwd) {
         return respond(false, HttpStatus.BAD_REQUEST, 'Please enter a new Password.');
     }

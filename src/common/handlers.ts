@@ -398,14 +398,10 @@ export async function serveIcon(): Promise<Response> {
 }
 
 async function renderPanel(request: Request, env: Env): Promise<Response> {
-    const pwd = await env.kv.get('pwd');
-
-    if (pwd) {
-        const auth = await Authenticate(request, env);
-        if (!auth) {
-            const { urlOrigin } = globalThis.httpConfig;
-            return Response.redirect(`${urlOrigin}/login`, 302);
-        }
+    const auth = await Authenticate(request, env);
+    if (!auth) {
+        const { urlOrigin } = globalThis.httpConfig;
+        return Response.redirect(`${urlOrigin}/login`, 302);
     }
 
     const html = await decompressHtml(__PANEL_HTML_CONTENT__, false);
