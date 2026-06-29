@@ -3,7 +3,9 @@ import {
     findUserIdByTrojanHash,
     findUserIdBySubToken,
     getUser,
+    listUsers,
     resolveLegacyUser,
+    rewriteLookupsFor,
     LEGACY_USER_ID,
 } from '@users/store';
 import { checkAndRecordDevice, fingerprintFromRequest } from '@users/devices';
@@ -46,6 +48,12 @@ export async function resolveUserByVlessUuid(env: Env, uuid: string): Promise<Us
     const legacy = resolveLegacyUser(env);
     if (legacy && legacy.uuid === uuid) return legacy;
 
+    const scanned = await scanUsers(env, u => u.uuid === uuid);
+    if (scanned) {
+        await rewriteLookupsFor(env, scanned).catch(() => undefined);
+        return scanned;
+    }
+
     return null;
 }
 
@@ -59,6 +67,12 @@ export async function resolveUserByTrojanHash(env: Env, hash: string): Promise<U
 
     const legacy = resolveLegacyUser(env);
     if (legacy && sha224(legacy.trojanPassword) === hash) return legacy;
+
+    const scanned = await scanUsers(env, u => sha224(u.trojanPassword) === hash);
+    if (scanned) {
+        await rewriteLookupsFor(env, scanned).catch(() => undefined);
+        return scanned;
+    }
 
     return null;
 }
@@ -74,7 +88,22 @@ export async function resolveUserBySubToken(env: Env, token: string): Promise<Us
     const legacy = resolveLegacyUser(env);
     if (legacy && legacy.subToken === token) return legacy;
 
+    const scanned = await scanUsers(env, u => u.subToken === token);
+    if (scanned) {
+        await rewriteLookupsFor(env, scanned).catch(() => undefined);
+        return scanned;
+    }
+
     return null;
+}
+
+async function scanUsers(env: Env, match: (u: User) => boolean): Promise<User | null> {
+    try {
+        const users = await listUsers(env);
+        return users.find(match) ?? null;
+    } catch {
+        return null;
+    }
 }
 
 export function getActiveIdentity(): { uuid: string; trojanPassword: string } {

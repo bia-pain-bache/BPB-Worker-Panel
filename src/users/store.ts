@@ -145,6 +145,14 @@ export async function findUserIdBySubToken(env: Env, token: string): Promise<str
     return await env.kv.get(subLookupKey(token));
 }
 
+export async function rewriteLookupsFor(env: Env, user: User): Promise<void> {
+    await Promise.all([
+        env.kv.put(vlessLookupKey(user.uuid), user.id),
+        env.kv.put(trojanLookupKey(sha224(user.trojanPassword)), user.id),
+        env.kv.put(subLookupKey(user.subToken), user.id),
+    ]);
+}
+
 export function resolveLegacyUser(env: Env): User | null {
     if (!env.UUID || !env.TR_PASS) return null;
     return {
