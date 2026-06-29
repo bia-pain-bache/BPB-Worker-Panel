@@ -174,6 +174,13 @@ async function dispatchSubscription(
     request: Request,
     env: Env
 ): Promise<Response | null> {
+    // Default for client-agnostic fetches (subscription importers that
+    // paste a bare URL with no ?app= hint): return the universal base64
+    // list of VLESS/Trojan URLs so any generic v2ray-family app works.
+    if (!client && (type === 'normal' || type === 'raw')) {
+        return await getURLConfigs();
+    }
+
     switch (type) {
         case 'normal':
             if (client === 'xray') return await getXrCustomConfigs(false);
