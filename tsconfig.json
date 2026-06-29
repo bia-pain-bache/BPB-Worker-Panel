@@ -24,6 +24,7 @@
             "@warp": ["./src/protocols/warp"],
             "@kv": ["./src/kv"],
             "@auth": ["./src/auth"],
+            "@users/*": ["./src/users/*"],
             "@workers": ["./src/workers"],
             "#types/*": ["./src/types/*"]
         }

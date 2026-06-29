@@ -6,6 +6,7 @@ import {
     selectSniHost,
     isDomain
 } from '@utils';
+import { getActiveIdentity } from '@users/auth';
 
 import {
     BaseOutbound,
@@ -61,15 +62,15 @@ export function buildWebsocketOutbound(
 ): VlessOutbound | TrojanOutbound {
     const {
         dict: { _VL_ },
-        globalConfig: { userID, TrPass },
-        settings: { 
+        settings: {
             fingerprint, 
             enableTFO, 
             enableECH, 
             echServerName, 
-            upstreamParams: { upstreamServer } 
+            upstreamParams: { upstreamServer }
         }
     } = globalThis;
+    const { uuid: userID, trojanPassword: TrPass } = getActiveIdentity();
 
     const { host, sni, allowInsecure } = selectSniHost(address);
     const transport = buildTransport("ws", "none", generateWsPath(protocol), host, undefined, 2560);

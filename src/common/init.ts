@@ -125,6 +125,8 @@ export function init(request: Request, env: Env) {
         fallbackDomain: FALLBACK || 'www.hcaptcha.com',
         dohURL: DOH_URL || 'https://cloudflare-dns.com/dns-query'
     };
+
+    globalThis.requestUser = null;
 }
 
 export function initWs(env: any) {

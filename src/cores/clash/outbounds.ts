@@ -1,4 +1,5 @@
 import { isHttps, generateWsPath, parseHostPort, selectSniHost } from '@utils';
+import { getActiveIdentity } from '@users/auth';
 import {
     BaseOutbound,
     HttpOutbound,
@@ -53,16 +54,16 @@ export function buildWebsocketOutbound(
 ): VlessOutbound | TrojanOutbound | null {
     const {
         dict: { _VL_, _TR_ },
-        globalConfig: { userID, TrPass },
-        settings: { 
+        settings: {
             fingerprint, 
             enableTFO, 
             enableIPv6, 
             enableECH, 
             echServerName, 
-            upstreamParams: { upstreamServer } 
+            upstreamParams: { upstreamServer }
         }
     } = globalThis;
+    const { uuid: userID, trojanPassword: TrPass } = getActiveIdentity();
 
     const isTLS = isHttps(port) || address === upstreamServer;
     if (protocol === _TR_ && !isTLS) return null;

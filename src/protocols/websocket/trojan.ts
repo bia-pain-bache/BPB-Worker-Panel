@@ -1,10 +1,11 @@
+import { resolveUserByTrojanHash, validateUserAccess } from '@users/auth';
 import {
     handleTCPOutBound,
     makeReadableWebSocketStream,
     safeCloseTcpSocket
 } from './common';
 
-export async function TrOverWSHandler(request: Request): Promise<Response> {
+export async function TrOverWSHandler(request: Request, env: Env): Promise<Response> {
     const webSocketPair = new WebSocketPair();
     const [client, webSocket] = Object.values(webSocketPair);
     webSocket.accept();
@@ -42,7 +43,7 @@ export async function TrOverWSHandler(request: Request): Promise<Response> {
                 portRemote = 443,
                 addressRemote = "",
                 rawClientData,
-            } = parseTrHeader(chunk);
+            } = await parseTrHeader(chunk, env, request);
 
             address = addressRemote;
             portWithRandomLog = `${portRemote}--${Math.random()} tcp`;
@@ -82,7 +83,7 @@ export async function TrOverWSHandler(request: Request): Promise<Response> {
     });
 }
 
-function parseTrHeader(buffer: ArrayBuffer) {
+async function parseTrHeader(buffer: ArrayBuffer, env: Env, request: Request) {
     if (buffer.byteLength < 56) {
         return {
             hasError: true,
@@ -101,13 +102,14 @@ function parseTrHeader(buffer: ArrayBuffer) {
         };
     }
 
-    const password = new TextDecoder().decode(buffer.slice(0, crLfIndex));
-    const { TrPass } = globalThis.globalConfig;
+    const headerHash = new TextDecoder().decode(buffer.slice(0, crLfIndex));
+    const user = await resolveUserByTrojanHash(env, headerHash);
+    const access = await validateUserAccess(user, env, request);
 
-    if (password !== sha224(TrPass!)) {
+    if (!access.ok) {
         return {
             hasError: true,
-            message: "invalid password",
+            message: "invalid user",
         };
     }
 
@@ -183,7 +185,7 @@ function parseTrHeader(buffer: ArrayBuffer) {
     };
 }
 
-function sha224(string: string): string {
+export function sha224(string: string): string {
     const rightRotate = (value: number, amount: number) => (value >>> amount) | (value << (32 - amount));
 
     const h = [

@@ -5,6 +5,7 @@ import {
     toRange,
     selectSniHost
 } from '@utils';
+import { getActiveIdentity } from '@users/auth';
 
 import {
     Outbound,
@@ -96,9 +97,9 @@ export function buildWebsocketOutbound(
             echServerName,
             upstreamParams: { upstreamServer }
         },
-        globalConfig: { userID, TrPass },
         dict: { _VL_ }
     } = globalThis;
+    const { uuid: userID, trojanPassword: TrPass } = getActiveIdentity();
 
     const isTLS = isHttps(port) || address === upstreamServer;
     const { host, sni } = selectSniHost(address);

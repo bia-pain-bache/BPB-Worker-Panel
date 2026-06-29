@@ -1,4 +1,5 @@
 import { isValidUUID } from '@common';
+import { resolveUserByVlessUuid, validateUserAccess } from '@users/auth';
 import {
     safeCloseTcpSocket,
     handleTCPOutBound,
@@ -6,7 +7,7 @@ import {
     WS_READY_STATE_OPEN
 } from './common';
 
-export async function VlOverWSHandler(request: Request): Promise<Response> {
+export async function VlOverWSHandler(request: Request, env: Env): Promise<Response> {
     const webSocketPair = new WebSocketPair();
     const [client, webSocket] = Object.values(webSocketPair);
     webSocket.accept();
@@ -39,7 +40,6 @@ export async function VlOverWSHandler(request: Request): Promise<Response> {
                 return;
             }
 
-            const { userID } = globalThis.globalConfig;
             const {
                 hasError,
                 message,
@@ -48,7 +48,7 @@ export async function VlOverWSHandler(request: Request): Promise<Response> {
                 rawDataIndex,
                 VLVersion = new Uint8Array([0, 0]),
                 isUDP,
-            } = parseVlHeader(chunk, userID!);
+            } = await parseVlHeader(chunk, env, request);
 
             address = addressRemote;
             portWithRandomLog = `${portRemote}--${Math.random()} ${isUDP ? "udp " : "tcp "} `;
@@ -103,7 +103,7 @@ export async function VlOverWSHandler(request: Request): Promise<Response> {
     });
 }
 
-function parseVlHeader(VLBuffer: ArrayBuffer, userID: string) {
+async function parseVlHeader(VLBuffer: ArrayBuffer, env: Env, request: Request) {
     if (VLBuffer.byteLength < 24) {
         return {
             hasError: true,
@@ -114,9 +114,11 @@ function parseVlHeader(VLBuffer: ArrayBuffer, userID: string) {
     const version = new Uint8Array(VLBuffer.slice(0, 1));
     const slicedBuffer = new Uint8Array(VLBuffer.slice(1, 17));
     const slicedBufferString = stringify(slicedBuffer);
-    const isValidUser = slicedBufferString === userID;
 
-    if (!isValidUser) {
+    const user = await resolveUserByVlessUuid(env, slicedBufferString);
+    const access = await validateUserAccess(user, env, request);
+
+    if (!access.ok) {
         return {
             hasError: true,
             message: "invalid user",

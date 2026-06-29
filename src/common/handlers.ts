@@ -7,11 +7,13 @@ import { getXrCustomConfigs, getXrWarpConfigs } from "@xray/configs";
 import { fetchWarpAccounts } from "@warp";
 import { VlOverWSHandler } from "@vless";
 import { TrOverWSHandler } from "@trojan";
+import { resolveUserBySubToken, validateUserAccess, getActiveIdentity } from "@users/auth";
+import { handleUsersApi } from "@users/api";
 import { base64DecodeUtf8, base64EncodeUtf8, HttpStatus, respond, safeErrorMessage } from "@common";
 import { generateRemark, generateWsPath, getConfigAddresses, randomUpperCase, resolveDNS } from "@utils";
 import JSZip from "jszip";
 
-export async function handleWebsocket(request: Request): Promise<Response> {
+export async function handleWebsocket(request: Request, env: Env): Promise<Response> {
     const { pathName } = globalThis.globalConfig;
     const encodedPathConfig = pathName.replace("/", "");
 
@@ -26,10 +28,10 @@ export async function handleWebsocket(request: Request): Promise<Response> {
 
         switch (protocol) {
             case 'vl':
-                return await VlOverWSHandler(request);
+                return await VlOverWSHandler(request, env);
 
             case 'tr':
-                return await TrOverWSHandler(request);
+                return await TrOverWSHandler(request, env);
 
             default:
                 return await fallback(request);
@@ -42,6 +44,11 @@ export async function handleWebsocket(request: Request): Promise<Response> {
 
 export async function handlePanel(request: Request, env: Env): Promise<Response> {
     const { pathName } = globalThis.globalConfig;
+
+    if (pathName.startsWith('/panel/users/')) {
+        const action = pathName.slice('/panel/users/'.length);
+        return await handleUsersApi(request, env, action);
+    }
 
     switch (pathName) {
         case '/panel':
@@ -137,79 +144,66 @@ export async function handleSubscriptions(request: Request, env: Env): Promise<R
     await setSettings(request, env);
     const {
         globalConfig: { pathName },
-        httpConfig: { client, subPath }
+        httpConfig: { client }
     } = globalThis;
 
-    switch (pathName) {
-        case `/sub/normal/${subPath}`:
-            switch (client) {
-                case 'xray':
-                    return await getXrCustomConfigs(false);
+    const segments = pathName.split('/').filter(Boolean);
+    if (segments.length < 3 || segments[0] !== 'sub') {
+        return await fallback(request);
+    }
 
-                case 'sing-box':
-                    return await getSbCustomConfig(false);
+    const type = segments[1];
+    const token = segments[2];
 
-                case 'clash':
-                    return await getClNormalConfig();
+    const user = await resolveUserBySubToken(env, token);
+    const access = await validateUserAccess(user, env);
 
-                default:
-                    break;
-            }
+    if (!access.ok || !user) {
+        return new Response(null, { status: HttpStatus.FORBIDDEN });
+    }
 
-        case `/sub/raw/${subPath}`:
-            switch (client) {
-                case 'xray':
-                case 'sing-box':
-                    return await getURLConfigs();
+    globalThis.requestUser = user;
 
-                default:
-                    break;
-            }
+    const response = await dispatchSubscription(type, client, request, env);
+    return response ?? await fallback(request);
+}
 
-        case `/sub/fragment/${subPath}`:
-            switch (client) {
-                case 'xray':
-                    return await getXrCustomConfigs(true);
+async function dispatchSubscription(
+    type: string,
+    client: string,
+    request: Request,
+    env: Env
+): Promise<Response | null> {
+    switch (type) {
+        case 'normal':
+            if (client === 'xray') return await getXrCustomConfigs(false);
+            if (client === 'sing-box') return await getSbCustomConfig(false);
+            if (client === 'clash') return await getClNormalConfig();
+            return null;
 
-                case 'sing-box':
-                    return await getSbCustomConfig(true);
+        case 'raw':
+            if (client === 'xray' || client === 'sing-box') return await getURLConfigs();
+            return null;
 
-                default:
-                    break;
-            }
+        case 'fragment':
+            if (client === 'xray') return await getXrCustomConfigs(true);
+            if (client === 'sing-box') return await getSbCustomConfig(true);
+            return null;
 
-        case `/sub/warp/${subPath}`:
-            switch (client) {
-                case 'xray':
-                    return await getXrWarpConfigs(request, env, false, false);
+        case 'warp':
+            if (client === 'xray') return await getXrWarpConfigs(request, env, false, false);
+            if (client === 'sing-box') return await getSbWarpConfig(request, env);
+            if (client === 'clash') return await getClWarpConfig(request, env, false);
+            return null;
 
-                case 'sing-box':
-                    return await getSbWarpConfig(request, env);
-
-                case 'clash':
-                    return await getClWarpConfig(request, env, false);
-
-                default:
-                    break;
-            }
-
-        case `/sub/warp-pro/${subPath}`:
-            switch (client) {
-                case 'xray':
-                    return await getXrWarpConfigs(request, env, true, false);
-
-                case 'xray-knocker':
-                    return await getXrWarpConfigs(request, env, true, true);
-
-                case 'clash':
-                    return await getClWarpConfig(request, env, true);
-
-                default:
-                    break;
-            }
+        case 'warp-pro':
+            if (client === 'xray') return await getXrWarpConfigs(request, env, true, false);
+            if (client === 'xray-knocker') return await getXrWarpConfigs(request, env, true, true);
+            if (client === 'clash') return await getClWarpConfig(request, env, true);
+            return null;
 
         default:
-            return await fallback(request);
+            return null;
     }
 }
 
@@ -551,8 +545,8 @@ async function geoLookupBatch(ipList: string[]): Promise<GeoResult[]> {
 }
 
 export async function getURLConfigs() {
+    const { uuid: userID, trojanPassword: TrPass } = getActiveIdentity();
     const {
-        globalConfig: { userID, TrPass },
         httpConfig: { defaultHttpsPorts, client, hostName },
         dict: { _VL_, _TR_, _project_ },
         settings: {
