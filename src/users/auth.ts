@@ -4,7 +4,9 @@ import {
     findUserIdBySubToken,
     getUser,
     resolveLegacyUser,
+    LEGACY_USER_ID,
 } from '@users/store';
+import { checkAndRecordDevice, fingerprintFromRequest } from '@users/devices';
 import { sha224 } from '@trojan';
 
 export interface AccessResult {
@@ -12,7 +14,11 @@ export interface AccessResult {
     reason?: 'no_user' | 'disabled' | 'expired' | 'device_limit';
 }
 
-export async function validateUserAccess(user: User | null, _env: Env): Promise<AccessResult> {
+export async function validateUserAccess(
+    user: User | null,
+    env: Env,
+    request?: Request
+): Promise<AccessResult> {
     if (!user) return { ok: false, reason: 'no_user' };
     if (!user.enabled) return { ok: false, reason: 'disabled' };
 
@@ -20,7 +26,11 @@ export async function validateUserAccess(user: User | null, _env: Env): Promise<
         return { ok: false, reason: 'expired' };
     }
 
-    // Phase 3 hook: device-limit check goes here.
+    if (request && user.deviceLimit > 0 && user.id !== LEGACY_USER_ID) {
+        const fp = await fingerprintFromRequest(request);
+        const allowed = await checkAndRecordDevice(env, user, fp);
+        if (!allowed) return { ok: false, reason: 'device_limit' };
+    }
 
     return { ok: true };
 }

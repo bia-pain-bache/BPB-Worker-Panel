@@ -48,7 +48,7 @@ export async function VlOverWSHandler(request: Request, env: Env): Promise<Respo
                 rawDataIndex,
                 VLVersion = new Uint8Array([0, 0]),
                 isUDP,
-            } = await parseVlHeader(chunk, env);
+            } = await parseVlHeader(chunk, env, request);
 
             address = addressRemote;
             portWithRandomLog = `${portRemote}--${Math.random()} ${isUDP ? "udp " : "tcp "} `;
@@ -103,7 +103,7 @@ export async function VlOverWSHandler(request: Request, env: Env): Promise<Respo
     });
 }
 
-async function parseVlHeader(VLBuffer: ArrayBuffer, env: Env) {
+async function parseVlHeader(VLBuffer: ArrayBuffer, env: Env, request: Request) {
     if (VLBuffer.byteLength < 24) {
         return {
             hasError: true,
@@ -116,7 +116,7 @@ async function parseVlHeader(VLBuffer: ArrayBuffer, env: Env) {
     const slicedBufferString = stringify(slicedBuffer);
 
     const user = await resolveUserByVlessUuid(env, slicedBufferString);
-    const access = await validateUserAccess(user, env);
+    const access = await validateUserAccess(user, env, request);
 
     if (!access.ok) {
         return {

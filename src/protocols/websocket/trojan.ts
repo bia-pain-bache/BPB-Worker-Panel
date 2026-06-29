@@ -43,7 +43,7 @@ export async function TrOverWSHandler(request: Request, env: Env): Promise<Respo
                 portRemote = 443,
                 addressRemote = "",
                 rawClientData,
-            } = await parseTrHeader(chunk, env);
+            } = await parseTrHeader(chunk, env, request);
 
             address = addressRemote;
             portWithRandomLog = `${portRemote}--${Math.random()} tcp`;
@@ -83,7 +83,7 @@ export async function TrOverWSHandler(request: Request, env: Env): Promise<Respo
     });
 }
 
-async function parseTrHeader(buffer: ArrayBuffer, env: Env) {
+async function parseTrHeader(buffer: ArrayBuffer, env: Env, request: Request) {
     if (buffer.byteLength < 56) {
         return {
             hasError: true,
@@ -104,7 +104,7 @@ async function parseTrHeader(buffer: ArrayBuffer, env: Env) {
 
     const headerHash = new TextDecoder().decode(buffer.slice(0, crLfIndex));
     const user = await resolveUserByTrojanHash(env, headerHash);
-    const access = await validateUserAccess(user, env);
+    const access = await validateUserAccess(user, env, request);
 
     if (!access.ok) {
         return {

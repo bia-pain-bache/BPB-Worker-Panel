@@ -1,4 +1,5 @@
 import { sha224 } from '@trojan';
+import { deleteDevices } from '@users/devices';
 
 const USERS_INDEX_KEY = 'users:index';
 const userKey = (id: string) => `user:${id}`;
@@ -124,6 +125,7 @@ export async function deleteUser(env: Env, id: string): Promise<boolean> {
         env.kv.delete(vlessLookupKey(user.uuid)),
         env.kv.delete(trojanLookupKey(sha224(user.trojanPassword))),
         env.kv.delete(subLookupKey(user.subToken)),
+        deleteDevices(env, id),
     ]);
 
     const ids = (await getIndex(env)).filter(x => x !== id);
