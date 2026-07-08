@@ -12,6 +12,10 @@ Also manual deployment and BPB Wizard client deployments do not work on this rel
 - Telegram Bot is now implemented, you can get subscriptions, single configs and monitor your account request usage. It also warns about usage by passing 80% threshold, PR #1313
 - Now you can add Custom Domain to your panel from `Common` settings, dashboard setup is no longer needed. Also Custom Domain configs will be merged into your subscriptions with `D` tag so you don't need to login panel with domain and get another subscription.
 - All fixed variables like `VLESS UUID`, `Trojan Password`, `Subscription - Panel path`, `DoH URL`, `Proxy IPs`, `Nat64 Prefixes`, `Fallback` domain... can now be updated from panel. There's no Environment Variables in your Cloudflare dashboard anymore.
+
+> [!TIP]
+> BPB is not using Cloudflare D1 for this fixed variables due to D1 delay overhead and another infrastrucure inconsistencies. All of them are hardcoded into script.
+
 - Panel login now requires your `Cloudflare Email` as username. This will address security concerns like #1348
 - All Panel, Subscriptions and related URLs are ceiled by a compulsory `SECURE PATH` to maintain more security.
 
