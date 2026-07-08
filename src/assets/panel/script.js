@@ -169,7 +169,7 @@ function renderPanel(proxySettings, tgSettings, subscriptions) {
     if (tgSettings) {
         const tgForm = document.getElementById('telegramForm');
         handleTgFormChanges(tgSettings);
-        tgForm.addEventListener('input', handleTgFormChanges);
+        tgForm.addEventListener('input', () => handleTgFormChanges());
 
         for (const key in tgSettings) {
             tgForm.elements[key].value = tgSettings[key];
