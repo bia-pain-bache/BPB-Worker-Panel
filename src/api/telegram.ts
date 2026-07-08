@@ -114,6 +114,11 @@ interface TgUpdate {
     callback_query?: TgCallbackQuery;
 }
 
+interface Url {
+    url: string;
+    noCacheUrl: string;
+}
+
 function mainKeyboard() {
     return {
         inline_keyboard: [
@@ -154,13 +159,16 @@ async function tgFetch(token: string, method: string, body: any): Promise<any> {
     return res.json();
 }
 
-function buildSubUrl(origin: string, path: string, type: string, app: string, label: string): string {
+function buildSubUrl(origin: string, path: string, type: string, app: string, label: string): Url {
     const url = new URL(`/${encodeURIComponent(path)}/sub/${type}`, origin);
     url.searchParams.set('app', app);
-    url.searchParams.set('nocache', Date.now().toString());
     url.hash = encodeURIComponent(`💦 BPB ${label}`);
 
-    return url.href;
+    const clientBaseUrl = app === 'sing-box' ? `sing-box://import-remote-profile?url=${url.href}` : url.href;
+    url.searchParams.set('nocache', Date.now().toString());
+    const noCache = url.href;
+
+    return { url: clientBaseUrl, noCacheUrl: noCache };
 }
 
 function buildUsageText(totalUsage: number, panelUsage: number): string {
@@ -255,7 +263,7 @@ async function handleCallback(cq: TgCallbackQuery, token: string, chatId: number
 
             const { securePath } = getSettings();
             for (const [index, appInfo] of subscription.categories.entries()) {
-                const url = buildSubUrl(origin, securePath, typeKey, appInfo.core, subscription.label);
+                const { url, noCacheUrl } = buildSubUrl(origin, securePath, typeKey, appInfo.core, subscription.label);
                 const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(url)}&size=400x400`;
 
                 const supportedList = appInfo.clients.map(a => `✅ ${a}`).join('\n');
@@ -272,7 +280,7 @@ async function handleCallback(cq: TgCallbackQuery, token: string, chatId: number
                 if (appInfo.core === 'wireguard') {
                     await tgFetch(token, 'sendDocument', {
                         chat_id: chatId,
-                        document: url,
+                        document: noCacheUrl,
                         caption: caption,
                         parse_mode: 'HTML',
                         ...(isLast && backBtn)
@@ -291,7 +299,7 @@ async function handleCallback(cq: TgCallbackQuery, token: string, chatId: number
                     if (hasDocument) {
                         await tgFetch(token, 'sendDocument', {
                             chat_id: chatId,
-                            document: url,
+                            document: noCacheUrl,
                             ...(isLast && backBtn)
                         });
                     }
