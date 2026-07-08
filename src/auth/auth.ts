@@ -17,7 +17,8 @@ export async function generateJWTToken(request: Request, env: Env): Promise<Resp
     const data = await request.json() as any;
     const savedPass = await env.kv.get('pwd');
     const { accEmail } = getGlobals();
-    if (data.username !== accEmail || data.password !== savedPass) {
+    const username = data.username?.toLowerCase();
+    if (username !== accEmail || data.password !== savedPass) {
         return respond(false, HttpStatus.UNAUTHORIZED, 'Wrong Credentials.');
     }
 
