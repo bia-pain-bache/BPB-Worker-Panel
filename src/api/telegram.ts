@@ -164,7 +164,7 @@ function buildSubUrl(origin: string, path: string, type: string, app: string, la
     url.searchParams.set('app', app);
     url.hash = encodeURIComponent(`💦 BPB ${label}`);
 
-    const clientBaseUrl = app === 'sing-box' ? `sing-box://import-remote-profile?url=${url.href}` : url.href;
+    const clientBaseUrl = app === 'sing-box' && type !== 'raw' ? `sing-box://import-remote-profile?url=${url.href}` : url.href;
     url.searchParams.set('nocache', Date.now().toString());
     const noCache = url.href;
 
