@@ -1,7 +1,6 @@
 import { authenticate } from '@auth';
 import { HttpStatus, respond, safeError } from '@common';
-import { getGlobals, getSettings } from '@settings';
-import { json } from 'node:stream/consumers';
+import { getGlobals } from '@settings';
 
 interface CfUsageResult {
     success: boolean;
