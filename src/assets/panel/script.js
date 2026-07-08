@@ -737,7 +737,7 @@ function openResetPass(event) {
 
 function resetPassword(event) {
     event.preventDefault();
-    const username = document.getElementById('username').value.trim();
+    const username = document.getElementById('username').value.trim().toLowerCase();
     const passwordError = document.getElementById('passwordError');
     const password = document.getElementById('newPassword').value.trim();
     const confirmPassword = document.getElementById('confirmPassword').value.trim();

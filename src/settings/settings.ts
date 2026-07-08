@@ -20,7 +20,7 @@ export function init(request: Request, env: Env) {
     const { pathname, origin, searchParams, hostname } = new URL(request.url);
     globalSettings = {
         accID: EMBEDED_SETTINGS.accID,
-        accEmail: EMBEDED_SETTINGS.accEmail,
+        accEmail: EMBEDED_SETTINGS.accEmail.toLowerCase(),
         apiToken: EMBEDED_SETTINGS.apiToken,
         vlUUID: EMBEDED_SETTINGS.vlUUID,
         trPass: EMBEDED_SETTINGS.trPass,
