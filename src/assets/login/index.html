@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BPB Panel v__VERSION__</title>
-    <link rel="icon" href="/favicon.ico" />
+    <link id="favicon" rel="icon" type="image/x-icon" href="data:image/x-icon;base64,__ICON__">
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=login,visibility,visibility_off&display=block"
         rel="stylesheet" />
@@ -14,18 +14,25 @@
 
 <body>
     <div class="container">
-        <h1>
-            <img class="icon" src="/favicon.ico" alt="BPB Logo"> BPB Panel <span id="panel-version"
-                style="font-size: smaller;">
-                v__VERSION__
-            </span>
-        </h1>
+        <div class="header">
+            <img id="header-logo" src="data:image/x-icon;base64,__ICON__" alt="BPB Logo" width="48" height="48">
+            <h1>
+                BPB Panel
+                <span class="panel-version">
+                    v__VERSION__
+                </span>
+            </h1>
+        </div>
         <div class="form-container">
             <h2>User Login</h2>
             <form id="loginForm" class="login-form">
                 <div class="form-control">
+                    <label for="username">Cloudflare Email</label>
+                    <input type="text" id="username" class="input-wrapper" name="username" required>
+                </div>
+                <div class="form-control">
                     <label for="password">Password</label>
-                    <div class="password-wrapper">
+                    <div class="input-wrapper">
                         <input type="password" id="password" name="password" required>
                         <span id="togglePassword" class="material-symbols-rounded toggle-password">
                             visibility_off
@@ -34,10 +41,10 @@
                 </div>
                 <div id="passwordError" class="hint"></div>
                 <button type="submit" class="button">
-                    Login
                     <span class="material-symbols-rounded">
                         login
                     </span>
+                    Login
                 </button>
             </form>
         </div>

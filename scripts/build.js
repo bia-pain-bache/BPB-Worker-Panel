@@ -5,7 +5,6 @@ import { build } from 'esbuild';
 import { globSync } from 'glob';
 import { minify as jsMinify } from 'terser';
 import { minify as htmlMinify } from 'html-minifier';
-import JSZip from "jszip";
 import obfs from 'javascript-obfuscator';
 import pkg from '../package.json' with { type: 'json' };
 import { gzipSync } from 'zlib';
@@ -54,9 +53,8 @@ async function processHtmlPages() {
             minifyCSS: true
         });
 
-        const compressed = gzipSync(minifiedHtml);
-        const htmlBase64 = compressed.toString('base64');
-        result[dir] = JSON.stringify(htmlBase64);
+        const compressed = gzipSync(minifiedHtml, { level: 9 });
+        result[dir] = compressed.toString('base64');
     }
 
     console.log(`${success} Assets bundled successfuly!`);
@@ -85,7 +83,6 @@ function generateJunkCode() {
 }
 
 async function buildWorker() {
-
     const htmls = await processHtmlPages();
     const faviconBuffer = readFileSync('./src/assets/favicon.ico');
     const faviconBase64 = faviconBuffer.toString('base64');
@@ -95,18 +92,15 @@ async function buildWorker() {
         bundle: true,
         format: 'esm',
         write: false,
-        external: ['cloudflare:sockets'],
+        external: [
+            'cloudflare:sockets',
+            'node:crypto'
+        ],
         platform: 'browser',
         target: 'esnext',
         loader: { '.ts': 'ts' },
         define: {
-            __PANEL_HTML_CONTENT__: htmls['panel'] ?? '""',
-            __LOGIN_HTML_CONTENT__: htmls['login'] ?? '""',
-            __ERROR_HTML_CONTENT__: htmls['error'] ?? '""',
-            __SECRETS_HTML_CONTENT__: htmls['secrets'] ?? '""',
-            __PROXY_IP_HTML_CONTENT__: htmls['proxy-ip'] ?? '""',
-            __ICON__: JSON.stringify(faviconBase64),
-            __VERSION__: JSON.stringify(version)
+            VERSION: `"${version}"`
         }
     });
 
@@ -153,18 +147,27 @@ async function buildWorker() {
         finalCode = obfuscationResult.getObfuscatedCode();
     }
 
+    const gzipped = gzipSync(finalCode, { level: 9 });
+    const base64Gzip = gzipped.toString("base64");
+    
+    const embededContents = {
+        SOURCE_CONTENT: base64Gzip,
+        PANEL_HTML_CONTENT: htmls['panel'],
+        LOGIN_HTML_CONTENT: htmls['login'],
+        ERROR_HTML_CONTENT: htmls['error'],
+        PROXY_IP_HTML_CONTENT: htmls['proxy-ip'],
+        ICON_CONTENT: faviconBase64
+    };
+    
     const buildTimestamp = new Date().toISOString();
-    const buildInfo = `// Build: ${buildTimestamp}\n`;
-    const worker = `${buildInfo}// @ts-nocheck\n${finalCode}`;
+    const worker = `
+        // Build: ${buildTimestamp}
+        // @ts-nocheck
+        Object.assign(globalThis, ${JSON.stringify(embededContents)});
+        ${finalCode}`;
+
     mkdirSync(DIST_PATH, { recursive: true });
     writeFileSync('./dist/worker.js', worker, 'utf8');
-
-    const zip = new JSZip();
-    zip.file('_worker.js', worker);
-    zip.generateAsync({
-        type: 'nodebuffer',
-        compression: 'DEFLATE'
-    }).then(nodebuffer => writeFileSync('./dist/worker.zip', nodebuffer));
 
     console.log(`${success} Done!`);
 }

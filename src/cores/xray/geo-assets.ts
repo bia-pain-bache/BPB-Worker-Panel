@@ -1,3 +1,6 @@
+import { getSettings } from '@settings';
+import { GeoAsset } from '@utils';
+
 export function getGeoAssets(): GeoAsset[] {
     const {
         localDNS,
@@ -23,30 +26,30 @@ export function getGeoAssets(): GeoAsset[] {
         bypassAsus,
         bypassHp,
         bypassLenovo,
-    } = globalThis.settings;
+    } = getSettings();
 
     return [
-        { rule: blockAds, type: 'block', geosite: "geosite:category-ads-all" },
-        { rule: blockAds, type: 'block', geosite: "geosite:category-ads-ir" },
-        { rule: blockPorn, type: 'block', geosite: "geosite:category-porn" },
-        { rule: blockMalware, type: 'block', geosite: "geosite:malware", geoip: "geoip:malware" },
-        { rule: blockPhishing, type: 'block', geosite: "geosite:phishing", geoip: "geoip:phishing" },
-        { rule: blockCryptominers, type: 'block', geosite: "geosite:cryptominers" },
-        { rule: bypassIran, type: 'direct', geosite: "geosite:category-ir", geoip: "geoip:ir", dns: localDNS },
-        { rule: bypassChina, type: 'direct', geosite: "geosite:cn", geoip: "geoip:cn", dns: localDNS },
-        { rule: bypassRussia, type: 'direct', geosite: "geosite:category-ru", geoip: "geoip:ru", dns: localDNS },
-        { rule: bypassOpenAi, type: 'direct', geosite: "geosite:openai", dns: antiSanctionDNS },
-        { rule: bypassGoogleAi, type: 'direct', geosite: "geosite:google-deepmind", dns: antiSanctionDNS },
-        { rule: bypassMicrosoft, type: 'direct', geosite: "geosite:microsoft", dns: antiSanctionDNS },
-        { rule: bypassOracle, type: 'direct', geosite: "geosite:oracle", dns: antiSanctionDNS },
-        { rule: bypassDocker, type: 'direct', geosite: "geosite:docker", dns: antiSanctionDNS },
-        { rule: bypassAdobe, type: 'direct', geosite: "geosite:adobe", dns: antiSanctionDNS },
-        { rule: bypassEpicGames, type: 'direct', geosite: "geosite:epicgames", dns: antiSanctionDNS },
-        { rule: bypassIntel, type: 'direct', geosite: "geosite:intel", dns: antiSanctionDNS },
-        { rule: bypassAmd, type: 'direct', geosite: "geosite:amd", dns: antiSanctionDNS },
-        { rule: bypassNvidia, type: 'direct', geosite: "geosite:nvidia", dns: antiSanctionDNS },
-        { rule: bypassAsus, type: 'direct', geosite: "geosite:asus", dns: antiSanctionDNS },
-        { rule: bypassHp, type: 'direct', geosite: "geosite:hp", dns: antiSanctionDNS },
-        { rule: bypassLenovo, type: 'direct', geosite: "geosite:lenovo", dns: antiSanctionDNS },
+        { rule: blockAds, type: 'block', geosite: 'geosite:category-ads-all' },
+        { rule: blockAds, type: 'block', geosite: 'geosite:category-ads-ir' },
+        { rule: blockPorn, type: 'block', geosite: 'geosite:category-porn' },
+        { rule: blockMalware, type: 'block', geosite: 'geosite:malware', geoip: 'geoip:malware' },
+        { rule: blockPhishing, type: 'block', geosite: 'geosite:phishing', geoip: 'geoip:phishing' },
+        { rule: blockCryptominers, type: 'block', geosite: 'geosite:cryptominers' },
+        { rule: bypassIran, type: 'direct', geosite: 'geosite:category-ir', geoip: 'geoip:ir', dns: localDNS },
+        { rule: bypassChina, type: 'direct', geosite: 'geosite:cn', geoip: 'geoip:cn', dns: localDNS },
+        { rule: bypassRussia, type: 'direct', geosite: 'geosite:category-ru', geoip: 'geoip:ru', dns: localDNS },
+        { rule: bypassOpenAi, type: 'direct', geosite: 'geosite:openai', dns: antiSanctionDNS },
+        { rule: bypassGoogleAi, type: 'direct', geosite: 'geosite:google-deepmind', dns: antiSanctionDNS },
+        { rule: bypassMicrosoft, type: 'direct', geosite: 'geosite:microsoft', dns: antiSanctionDNS },
+        { rule: bypassOracle, type: 'direct', geosite: 'geosite:oracle', dns: antiSanctionDNS },
+        { rule: bypassDocker, type: 'direct', geosite: 'geosite:docker', dns: antiSanctionDNS },
+        { rule: bypassAdobe, type: 'direct', geosite: 'geosite:adobe', dns: antiSanctionDNS },
+        { rule: bypassEpicGames, type: 'direct', geosite: 'geosite:epicgames', dns: antiSanctionDNS },
+        { rule: bypassIntel, type: 'direct', geosite: 'geosite:intel', dns: antiSanctionDNS },
+        { rule: bypassAmd, type: 'direct', geosite: 'geosite:amd', dns: antiSanctionDNS },
+        { rule: bypassNvidia, type: 'direct', geosite: 'geosite:nvidia', dns: antiSanctionDNS },
+        { rule: bypassAsus, type: 'direct', geosite: 'geosite:asus', dns: antiSanctionDNS },
+        { rule: bypassHp, type: 'direct', geosite: 'geosite:hp', dns: antiSanctionDNS },
+        { rule: bypassLenovo, type: 'direct', geosite: 'geosite:lenovo', dns: antiSanctionDNS },
     ].filter(({ rule }) => rule);
 }

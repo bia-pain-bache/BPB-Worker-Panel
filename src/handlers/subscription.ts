@@ -1,0 +1,91 @@
+import { getClNormalConfig, getClWarpConfig } from '@cores/clash/configs';
+import { getURLConfigs } from '@cores/common';
+import { getSbCustomConfig, getSbWarpConfig } from '@cores/sing-box/configs';
+import { getWarpConfigs } from '@cores/Wireguard';
+import { getXrCustomConfigs, getXrWarpConfigs } from '@cores/xray/configs';
+import { setSettings, getGlobals } from '@settings';
+import { fallback } from './utils';
+
+export async function handleSubscriptions(request: Request, env: Env): Promise<Response> {
+    await setSettings(env);
+    const { pathname, client } = getGlobals();
+    const path = pathname.split('/')[3];
+
+    switch (path) {
+        case 'normal':
+            switch (client) {
+                case 'xray':
+                    return getXrCustomConfigs(false);
+
+                case 'sing-box':
+                    return getSbCustomConfig(false);
+
+                case 'clash':
+                    return getClNormalConfig();
+
+                default:
+                    break;
+            }
+
+        case 'raw':
+            switch (client) {
+                case 'xray':
+                case 'sing-box':
+                    return getURLConfigs();
+
+                default:
+                    break;
+            }
+
+        case 'fragment':
+            switch (client) {
+                case 'xray':
+                    return getXrCustomConfigs(true);
+
+                case 'sing-box':
+                    return getSbCustomConfig(true);
+
+                default:
+                    break;
+            }
+
+        case 'warp':
+            switch (client) {
+                case 'xray':
+                    return getXrWarpConfigs(false, false);
+
+                case 'sing-box':
+                    return getSbWarpConfig();
+
+                case 'clash':
+                    return getClWarpConfig(false);
+
+                case 'wireguard':
+                    return getWarpConfigs(false);
+
+                default:
+                    break;
+            }
+
+        case 'warp-pro':
+            switch (client) {
+                case 'xray':
+                    return getXrWarpConfigs(true, false);
+
+                case 'xray-knocker':
+                    return getXrWarpConfigs(true, true);
+
+                case 'clash':
+                    return getClWarpConfig(true);
+
+                case 'wireguard':
+                    return getWarpConfigs(true);
+
+                default:
+                    break;
+            }
+
+        default:
+            return fallback(request);
+    }
+}

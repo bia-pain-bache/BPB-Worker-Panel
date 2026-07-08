@@ -5,14 +5,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BPB Panel v__VERSION__</title>
-    <link rel="icon" href="/favicon.ico" />
+    <link id="favicon" rel="icon" type="image/x-icon" href="data:image/x-icon;base64,__ICON__">
     <style>
         :root {
-            --color: black;
-            --header-color: #09639f;
-            --background-color: #fff;
-            --border-color: #ddd;
-            --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+            --color-bg-main: linear-gradient(90deg, #000328, #00458E);
+            --color-text-primary: #f1f5f9;
+            --color-text-secondary: #aec4e2;
+            --shadow-header: 0.125rem 0.125rem 0.25rem #000328;
         }
 
         body,
@@ -24,42 +23,52 @@
             justify-content: center;
             align-items: center;
             font-family: system-ui;
-            color: var(--color);
-            background-color: var(--background-color);
+            color: var(--color-text-secondary);
+            background: var(--color-bg-main);
             text-align: center;
-        }
-
-        body.dark-mode {
-            --color: white;
-            --header-color: #3498DB;
-            --background-color: #121212;
-            --header-shadow: 2px 2px 4px rgba(255, 255, 255, 0.25);
+            text-align: center;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         h1 {
-            color: var(--header-color);
-            text-shadow: var(--header-shadow);
+            color: var(--color-text-primary);
+            text-shadow: var(--shadow-header);
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            gap: var(--space-sm);
         }
 
-        a {
-            color: var(--header-color);
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .icon {
-            vertical-align: middle;
-            height: 3rem;
+            height: 2.5rem;
+        }
+
+        .panel-version {
+            align-self: flex-start;
+            font-size: large;
         }
     </style>
 </head>
 
 <body>
     <div id="error-container">
-        <h1>
-            <img class="icon" src="/favicon.ico" alt="BPB Logo"> BPB Panel <span id="panel-version"
-                style="font-size: smaller;">
-                v__VERSION__
-            </span>
-        </h1>
+        <div class="header">
+            <img id="header-logo" src="data:image/x-icon;base64,__ICON__" alt="BPB Logo" width="48" height="48">
+            <h1>
+                BPB Panel
+                <span class="panel-version">
+                    v__VERSION__
+                </span>
+            </h1>
+        </div>
+
         <div>
             <h2>❌ Something went wrong!</h2>
             <p>
@@ -67,9 +76,7 @@
             </p>
         </div>
     </div>
-    <script>
-        localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
-    </script>
+
 </body>
 
 </html>

@@ -1,14 +1,34 @@
 :root {
-    --color: black;
-    --primary-color: #09639f;
-    --header-color: #09639f;
-    --background-color: #fff;
-    --form-background-color: #f9f9f9;
-    --lable-text-color: #333;
-    --h2-color: #3b3b3b;
-    --border-color: #ddd;
-    --input-background-color: white;
-    --header-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+    --color-bg-main: linear-gradient(90deg, #000328, #00458E);
+    --color-bg-card: rgba(15, 23, 42, 0.5);
+    --color-bg-input: rgba(2, 6, 23, 0.5);
+    --color-bg-btn: #3b82f629;
+
+    --color-text-primary: #f1f5f9;
+    --color-text-secondary: #aec4e2;
+    --color-text-btn: #a5ccfc;
+
+    --color-brand-primary: #3b82f6;
+    --color-brand-hover: #60a5fa;
+    --color-border-accent: color-mix(in srgb, var(--color-brand-hover), transparent 79%);
+
+    --radius-card: 1.5rem;
+    --radius-ui: 0.75rem;
+    --radius-btn: 1rem;
+
+    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 20px 40px -15px rgba(0, 3, 40, 0.5), 0 35px 60px -15px rgba(0, 69, 142, 0.3);
+    --shadow-input: inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(255, 255, 255, 0.05);
+    --shadow-input-focus: 0 0 0 3px rgba(59, 130, 246, 0.4), 0 8px 20px -4px rgba(59, 130, 246, 0.3);
+    --shadow-header: 0.125rem 0.125rem 0.25rem #000328;
+    --shadow-icon: 0.125rem 0.125rem 0.2rem #000328;
+
+    --space-xl: 1.5rem;
+    --space-sm: 0.5rem;
+    --space-md: 0.85rem;
+
+    --font-size-base: 1rem;
+    --transition-standard: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --element-border-radius: 10px;
 }
 
 html,
@@ -19,23 +39,12 @@ body {
 
 body {
     font-family: system-ui;
-    background-color: var(--background-color);
     position: relative;
     overflow: hidden;
     text-align: center;
-}
-
-body.dark-mode {
-    --color: white;
-    --primary-color: #09639F;
-    --header-color: #3498DB;
-    --background-color: #121212;
-    --form-background-color: #121212;
-    --lable-text-color: #DFDFDF;
-    --h2-color: #D5D5D5;
-    --border-color: #353535;
-    --input-background-color: #252525;
-    --header-shadow: 2px 2px 4px rgba(255, 255, 255, 0.25);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: var(--color-bg-main);
 }
 
 .container {
@@ -47,60 +56,70 @@ body.dark-mode {
 }
 
 h1 {
-    color: var(--header-color);
-    text-shadow: var(--header-shadow);
+    color: var(--color-text-primary);
+    text-shadow: var(--shadow-header);
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    gap: var(--space-sm);
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .icon {
-    vertical-align: middle;
-    height: 3rem;
+    height: 2.5rem;
+}
+
+.panel-version {
+    align-self: flex-start;
+    font-size: large;
 }
 
 h2 {
-    color: var(--h2-color)
+    color: var(--color-text-secondary);
+    margin-top: 0;
 }
 
 .form-container {
-    background: var(--form-background-color);
-    border: 1px solid var(--border-color);
-    border-radius: 28px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    gap: 20px;
-    display: flex;
-    flex-direction: column;
+    max-width: 95%;
+    margin: 0 auto;
+    margin-bottom: 30px;
+    background-color: var(--color-bg-card);
+    border: 1px solid var(--color-border-accent);
+    border-radius: var(--radius-card);
+    padding: var(--space-xl);
+    box-shadow: var(--shadow-card);
 }
 
 .login-form {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    align-items: center;
+    width: 100%;
 }
 
 .form-control {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
+    gap: 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
 }
 
 label {
     font-weight: bold;
-    color: var(--lable-text-color);
+    color: var(--color-text-secondary);
 }
 
-.password-wrapper {
+.input-wrapper {
     display: flex;
     width: 100%;
     position: relative;
-}
-
-.password-wrapper input[type=password],
-.password-wrapper input[type=text] {
-    width: 100%;
-    padding-right: 40px;
-    text-align: center;
-    margin: 0;
 }
 
 .toggle-password {
@@ -115,11 +134,28 @@ label {
 
 input[type="text"],
 input[type="password"] {
+    box-sizing: border-box;
+    width: 100%;
+    text-align: center;
+    margin: 0;
     padding: 10px;
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    color: var(--lable-text-color);
-    background-color: var(--input-background-color);
+    border: none;
+    border-radius: var(--radius-ui);
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-input);
+    line-height: 1.5;
+    outline: none;
+    font-size: var(--font-size-base);
+    font-family: inherit;
+    box-shadow: var(--shadow-input);
+    transition: var(--transition-standard);
+}
+
+input[type="password"]:focus,
+input[type="text"]:focus {
+    border-color: var(--color-brand-primary);
+    box-shadow: var(--shadow-input-focus);
+    outline: none;
 }
 
 .hint {
@@ -127,31 +163,35 @@ input[type="password"] {
     margin-bottom: 10px;
 }
 
-button {
-    gap: 10px;
+.button {
     display: flex;
-    justify-content: center;
     align-items: center;
-    width: 100%;
-    padding: 12px;
-    font-size: 1.1rem;
+    justify-content: center;
+    justify-self: center;
+    gap: 4px;
+    width: max-content;
+    white-space: nowrap;
+    padding: var(--space-md);
+    font-size: var(--font-size-base);
     font-weight: 600;
-    border: none;
-    border-radius: 10px;
-    color: white;
-    background-color: var(--primary-color);
+    border: 1px solid var(--color-border-accent);
+    border-radius: var(--radius-btn);
+    color: var(--color-text-btn);
+    background: var(--color-bg-btn);
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    outline: none;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
 }
 
-.button:hover,
-.button:focus {
-    background-color: #2980b9;
+button:hover {
+    background-color: var(--color-brand-primary);
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
     transform: translateY(-2px);
+    color: var(--color-text-primary);
 }
 
-.button:active {
+button:active {
     transform: translateY(1px);
     box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
 }

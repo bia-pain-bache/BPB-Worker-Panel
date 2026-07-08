@@ -1,63 +1,46 @@
-import { init, initHttp, initWs } from '@init';
-import {
-	fallback,
-	serveIcon,
-	renderSecrets,
-	handlePanel,
-	handleSubscriptions,
-	handleLogin,
-	logout,
-	renderError,
-	handleWebsocket,
-	handleDoH,
-	handleProxyIPs
-} from '@handlers';
+import { handleDoH } from '@handlers/doh';
+import { renderError } from '@handlers/error';
+import { handleLogin } from '@handlers/login';
+import { handlePanel } from '@handlers/panel';
+import { handleProxyIPs } from '@handlers/proxy-ip';
+import { handleSubscriptions } from '@handlers/subscription';
+import { handleTelegram } from '@handlers/telegram';
+import { fallback } from '@handlers/utils';
+import { handleWebsocket } from '@handlers/websocket';
+import { init, getGlobals } from '@settings';
 
 export default {
 	async fetch(request: Request, env: Env) {
 		try {
-			const upgradeHeader = request.headers.get('Upgrade');
 			init(request, env);
+			if (request.headers.get('Upgrade') === 'websocket') return handleWebsocket(request);
+			const { securePath, pathname } = getGlobals();
+			const path = pathname.split('/').splice(0, 3).join('/');
 
-			if (upgradeHeader === 'websocket') {
-				initWs(env);
-				return await handleWebsocket(request);
-			} else {
-				initHttp(request, env);
-				const { pathName } = globalThis.globalConfig;
-				const path = pathName.split('/')[1];
+			switch (path) {
+				case `/${securePath}/panel`:
+					return handlePanel(request, env);
 
-				switch (path) {
-					case 'panel':
-						return await handlePanel(request, env);
+				case `/${securePath}/login`:
+					return handleLogin(request, env);
 
-					case 'sub':
-						return await handleSubscriptions(request, env);
+				case `/${securePath}/sub`:
+					return handleSubscriptions(request, env);
 
-					case 'login':
-						return await handleLogin(request, env);
+				case `/${securePath}/telegram`:
+					return handleTelegram(request, env);
 
-					case 'logout':
-						return logout();
+				case `/${securePath}/dns-query`:
+					return handleDoH(request);
 
-					case 'secrets':
-						return await renderSecrets();
-
-					case 'favicon.ico':
-						return await serveIcon();
-
-					case 'dns-query':
-						return await handleDoH(request);
-
-					case 'proxy-ip':
-						return await handleProxyIPs(request, env);
-
-					default:
-						return await fallback(request);
-				}
+				case `/${securePath}/proxy-ip`:
+					return handleProxyIPs(request, env);
+					
+				default:
+					return fallback(request);
 			}
 		} catch (error) {
-			return await renderError(error);
+			return renderError(error);
 		}
 	}
 }

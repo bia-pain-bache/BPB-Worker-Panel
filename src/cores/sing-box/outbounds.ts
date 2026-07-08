@@ -1,3 +1,5 @@
+import { WarpAccount } from '#types/settings';
+import { getSettings } from '@settings';
 import {
     isHttps,
     base64ToDecimal,
@@ -48,7 +50,7 @@ function buildOutbound<T>(
         ...fields,
         tls,
         transport,
-        domain_resolver: isDomain(server) ? (isChain ? "dns-remote" : "dns-direct") : undefined
+        domain_resolver: isDomain(server) ? (isChain ? 'dns-remote' : 'dns-direct') : undefined
     } as T;
 }
 
@@ -57,43 +59,42 @@ export function buildWebsocketOutbound(
     remark: string,
     address: string,
     port: number,
+    domain: string,
     isFragment: boolean
 ): VlessOutbound | TrojanOutbound {
     const {
-        dict: { _VL_ },
-        globalConfig: { userID, TrPass },
-        settings: { 
-            fingerprint, 
-            enableTFO, 
-            enableECH, 
-            echServerName, 
-            upstreamParams: { upstreamServer } 
-        }
-    } = globalThis;
+        vlUUID,
+        trPass,
+        fingerprint,
+        enableTFO,
+        enableECH,
+        echServerName,
+        upstreamParams: { upstreamServer }
+    } = getSettings();
 
-    const { host, sni, allowInsecure } = selectSniHost(address);
-    const transport = buildTransport("ws", "none", generateWsPath(protocol), host, undefined, 2560);
+    const { host, sni, allowInsecure } = selectSniHost(address, domain);
+    const transport = buildTransport('ws', 'none', generateWsPath(protocol), host, undefined, 2560);
     const tls = isHttps(port) || address === upstreamServer
         ? buildTLS(
-            "tls",
+            'tls',
             isFragment,
             allowInsecure,
             sni,
             enableECH && !isFragment,
             echServerName || undefined,
-            "http/1.1",
+            'http/1.1',
             fingerprint
         ) : undefined;
 
     if (protocol === _VL_) return buildOutbound<VlessOutbound>(remark, protocol, address, port, enableTFO, {
-        uuid: userID,
-        packet_encoding: "",
-        network: "tcp"
+        uuid: vlUUID,
+        packet_encoding: '',
+        network: 'tcp'
     }, tls, transport);
 
     return buildOutbound<TrojanOutbound>(remark, protocol, address, port, enableTFO, {
-        password: TrPass,
-        network: "tcp"
+        password: trPass,
+        network: 'tcp'
     }, tls, transport);
 }
 
@@ -111,13 +112,13 @@ export function buildWarpOutbound(
         privateKey
     } = warpAccount;
 
-    const address = chain ? "162.159.192.1" : host;
+    const address = chain ? '162.159.192.1' : host;
     return {
         tag: remark,
         detour: chain || undefined,
-        type: "wireguard",
+        type: 'wireguard',
         address: [
-            "172.16.0.2/32",
+            '172.16.0.2/32',
             warpIPv6
         ],
         mtu: 1280,
@@ -128,80 +129,77 @@ export function buildWarpOutbound(
                 public_key: publicKey,
                 reserved: base64ToDecimal(reserved),
                 allowed_ips: [
-                    "0.0.0.0/0",
-                    "::/0"
+                    '0.0.0.0/0',
+                    '::/0'
                 ],
                 persistent_keepalive_interval: 5
             }
         ],
         private_key: privateKey,
-        domain_resolver: isDomain(address) ? "dns-direct" : undefined
+        domain_resolver: isDomain(address) ? 'dns-direct' : undefined
     } satisfies WireguardEndpoint;
 }
 
 export function buildChainOutbound(): ChainOutbound | undefined {
     const {
-        dict: { _VL_, _TR_, _SS_, _VM_ },
-        settings: {
-            outProxy,
-            outProxyParams: {
-                protocol, server, port, user,
-                pass, password, method, uuid,
-                flow, security, type, sni, fp,
-                host, path, alpn, pbk, sid,
-                headerType, serviceName, aid
-            }
+        chainProxy,
+        chainProxyParams: {
+            protocol, server, port, user,
+            pass, password, method, uuid,
+            flow, security, type, sni, fp,
+            host, path, alpn, pbk, sid,
+            headerType, serviceName, aid
         }
-    } = globalThis;
+    } = getSettings();
 
-    const { searchParams } = new URL(outProxy);
-    const ed = searchParams.get("ed");
+    const { searchParams } = new URL(chainProxy);
+    const ed = searchParams.get('ed');
     const earlyData = ed ? +ed : undefined;
 
     const tls = buildTLS(security, false, false, sni || server, false, undefined, alpn, fp, pbk, sid);
     const transport = buildTransport(type, headerType, path, host, serviceName, earlyData);
 
     switch (protocol) {
-        case "http":
-            return buildOutbound<HttpOutbound>("", protocol, server, port, false, {
+        case 'http':
+            return buildOutbound<HttpOutbound>('', protocol, server, port, false, {
                 username: user,
                 password: pass
             }, undefined, undefined, true);
 
-        case "socks":
-            return buildOutbound<SocksOutbound>("", protocol, server, port, false, {
+        case 'socks':
+            return buildOutbound<SocksOutbound>('', protocol, server, port, false, {
                 username: user,
                 password: pass,
-                version: "5",
-                network: "tcp"
+                version: '5',
+                network: 'tcp'
             }, undefined, undefined, true);
 
         case _SS_:
-            return buildOutbound<ShadowsocksOutbound>("", protocol, server, port, false, {
+            return buildOutbound<ShadowsocksOutbound>('', protocol, server, port, false, {
                 method,
                 password,
-                network: "tcp"
+                network: 'tcp'
             }, undefined, undefined, true);
 
         case _VL_:
-            return buildOutbound<VlessOutbound>("", protocol, server, port, false, {
+            return buildOutbound<VlessOutbound>('', protocol, server, port, false, {
                 uuid,
                 flow,
-                network: "tcp"
+                network: 'tcp'
             }, tls, transport, true);
 
         case _VM_:
-            return buildOutbound<VmessOutbound>("", protocol, server, port, false, {
+            return buildOutbound<VmessOutbound>('', protocol, server, port, false, {
                 uuid: uuid,
-                security: "auto",
+                security: 'auto',
                 alter_id: aid,
-                network: "tcp"
+                network: 'tcp'
             }, tls, transport, true);
 
         case _TR_:
-            return buildOutbound<TrojanOutbound>("", protocol, server, port, false, {
+            return buildOutbound<TrojanOutbound>('', protocol, server, port, false, {
                 password: password,
-                network: "tcp"
+                network: 'tcp'
             }, tls, transport, true);
 
         default:
@@ -214,19 +212,19 @@ export function buildUrlTest(
     outboundTags: string[],
     isWarp: boolean
 ): URLTest {
-    const { bestWarpInterval, bestVLTRInterval } = globalThis.settings;
+    const { warpBestPingInterval, bestPingInterval } = getSettings();
     return {
-        type: "urltest",
+        type: 'urltest',
         tag,
         outbounds: outboundTags,
-        url: "https://www.gstatic.com/generate_204",
+        url: 'https://www.gstatic.com/generate_204',
         interrupt_exist_connections: false,
-        interval: isWarp ? `${bestWarpInterval}s` : `${bestVLTRInterval}s`
+        interval: isWarp ? `${warpBestPingInterval}s` : `${bestPingInterval}s`
     };
 }
 
 function buildTLS(
-    security: "tls" | "reality" | "none",
+    security: 'tls' | 'reality' | 'none',
     isFragment: boolean,
     allowInsecure: boolean,
     sni: string,
@@ -237,7 +235,7 @@ function buildTLS(
     publicKey?: string,
     shortID?: string
 ): TLS | undefined {
-    if (!["tls", "reality"].includes(security)) return undefined;
+    if (!['tls', 'reality'].includes(security)) return undefined;
     const tlsAlpns = alpn?.split(',').filter(value => value !== 'h2');
 
     const tls: TLS = {
@@ -256,7 +254,7 @@ function buildTLS(
         } : undefined
     };
 
-    if (security === "tls") return tls;
+    if (security === 'tls') return tls;
     if (security === 'reality' && publicKey && shortID) return {
         ...tls,
         reality: {
@@ -267,41 +265,26 @@ function buildTLS(
     };
 }
 
-// function echBase64ToPEM(config: string) {
-//     const clean = config.replace(/\s+/g, "");
-//     const lines: string[] = [];
-
-//     for (let i = 0; i < clean.length; i += 64) {
-//         lines.push(clean.slice(i, i + 64));
-//     }
-
-//     return [
-//         "-----BEGIN ECH CONFIGS-----",
-//         ...lines,
-//         "-----END ECH CONFIGS-----",
-//     ].join("\n");
-// }
-
 function buildTransport(
     type: TransportType,
-    headerType?: "http" | "none",
-    path: string = "/",
+    headerType?: 'http' | 'none',
+    path: string = '/',
     host?: string,
     serviceName?: string,
     earlyData?: number
 ): Transport | undefined {
-    path = path?.split("?")[0];
+    path = path?.split('?')[0];
 
     switch (type) {
         case 'tcp':
             if (headerType === 'http') return {
-                type: "http",
+                type: 'http',
                 host: host?.split(','),
                 path: path,
-                method: "GET",
+                method: 'GET',
                 headers: {
-                    "Connection": ["keep-alive"],
-                    "Content-Type": ["application/octet-stream"]
+                    'Connection': ['keep-alive'],
+                    'Content-Type': ['application/octet-stream']
                 },
             } satisfies HttpTransport;
 
@@ -309,10 +292,10 @@ function buildTransport(
 
         case 'ws':
             return {
-                type: "ws",
+                type: 'ws',
                 path: path?.split('?ed=')[0],
                 max_early_data: earlyData,
-                early_data_header_name: earlyData ? "Sec-WebSocket-Protocol" : undefined,
+                early_data_header_name: earlyData ? 'Sec-WebSocket-Protocol' : undefined,
                 headers: {
                     Host: host
                 }
@@ -320,14 +303,14 @@ function buildTransport(
 
         case 'httpupgrade':
             return {
-                type: "httpupgrade",
+                type: 'httpupgrade',
                 host: host,
                 path: path?.split('?ed=')[0]
             } satisfies HttpupgradeTransport;
 
         case 'grpc':
             return {
-                type: "grpc",
+                type: 'grpc',
                 service_name: serviceName
             } satisfies GrpcTransport;
 

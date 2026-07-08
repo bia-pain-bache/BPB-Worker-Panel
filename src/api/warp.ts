@@ -1,25 +1,15 @@
+import { WarpAccount } from '#types/settings';
+import { getWarpAccounts } from '@settings';
+import { generateKeyPairSync } from 'node:crypto';
+
 interface WarpKeys {
     publicKey: string;
     privateKey: string;
 }
 
-const defaultWarpAccounts: WarpAccount[] = [
-    {
-        privateKey: "sBmQVHEywGAKQ8Ratzo/f5OUCa7MSozZpz1JK2PSVXE=",
-        publicKey: "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=",
-        warpIPv6: "2606:4700:110:8dd8:de5f:9a89:bfac:749c/128",
-        reserved: "59nK"
-    },
-    {
-        privateKey: "OPiD4dePq8652DICknJsTJS4UH0FoWY1ffOZzZhIsUs=",
-        publicKey: "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=",
-        warpIPv6: "2606:4700:110:8912:1225:70c8:1ad7:6ce0/128",
-        reserved: "G/nh"
-    }
-];
-
 export async function fetchWarpAccounts(env: Env): Promise<WarpAccount[]> {
     const warpAccounts: WarpAccount[] = [];
+    const defaultWarpAccounts = getWarpAccounts();
 
     try {
 
@@ -37,7 +27,7 @@ export async function fetchWarpAccounts(env: Env): Promise<WarpAccount[]> {
                 publicKey: config.peers[0].public_key
             });
 
-            if (index === 0) await new Promise(resolve => setTimeout(resolve, 1000));
+            if (index === 0) await new Promise(resolve => setTimeout(resolve, 2000));
         }
 
         await env.kv.put('warpAccounts', JSON.stringify(warpAccounts));
@@ -45,7 +35,7 @@ export async function fetchWarpAccounts(env: Env): Promise<WarpAccount[]> {
 
     } catch (error) {
         console.error(
-            'Failed to fetch new WARP accounts:', 
+            'Failed to fetch new WARP accounts:',
             error instanceof Error ? error.message : String(error)
         );
 
@@ -57,14 +47,14 @@ async function fetchAccount(key: WarpKeys): Promise<any> {
     const response = await fetch('https://api.cloudflareclient.com/v0a4005/reg', {
         method: 'POST',
         headers: {
-            'User-Agent': 'insomnia/8.6.1',
+            'User-Agent': 'insomnia/13.0.2',
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            install_id: "",
-            fcm_token: "",
+            install_id: '',
+            fcm_token: '',
             tos: new Date().toISOString(),
-            type: "Android",
+            type: 'Android',
             model: 'PC',
             locale: 'en_US',
             warp_enabled: true,
@@ -80,23 +70,13 @@ async function fetchAccount(key: WarpKeys): Promise<any> {
 }
 
 async function generateKeyPair(): Promise<WarpKeys> {
-    const keyPair = await crypto.subtle.generateKey(
-        { name: "X25519", namedCurve: "X25519" },
-        true,
-        ["deriveBits"]
-    );
-
-    const pkcs8 = await crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
-    const privateKeyRaw = new Uint8Array(pkcs8).slice(-32);
-
-    const publicKeyRaw = new Uint8Array(
-        await crypto.subtle.exportKey("raw", keyPair.publicKey)
-    );
-
-    const base64Encode = (arr: Uint8Array) => btoa(String.fromCharCode(...arr));
+    const { publicKey, privateKey } = generateKeyPairSync('x25519', {
+        publicKeyEncoding: { type: 'spki', format: 'der' },
+        privateKeyEncoding: { type: 'pkcs8', format: 'der' }
+    });
 
     return {
-        publicKey: base64Encode(publicKeyRaw),
-        privateKey: base64Encode(privateKeyRaw)
+        publicKey: publicKey.subarray(-32).toString('base64'),
+        privateKey: privateKey.subarray(-32).toString('base64')
     };
 }

@@ -1,6 +1,7 @@
 import { connect } from 'cloudflare:sockets';
 import { isIPv4, parseHostPort, resolveDNS } from '@utils';
-import { safeErrorMessage } from '@common';
+import { safeError } from '@common';
+import { getGlobals } from '@settings';
 
 export const WS_READY_STATE_OPEN = 1;
 const WS_READY_STATE_CLOSING = 2;
@@ -30,28 +31,17 @@ export async function handleTCPOutBound(
     }
 
     async function retry() {
-        const {
-            proxyMode,
-            panelIPs,
-            envProxyIPs,
-            defaultProxyIPs,
-            envPrefixes,
-            defaultPrefixes
-        } = globalThis.wsConfig;
-
+        const { proxyIpMode, proxyIPs, prefixes } = getGlobals();
         const getRandomValue = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
-        const parseIPs = (value: string) => value ? value.split(',').map(val => val.trim()).filter(Boolean) : undefined;
 
-        if (proxyMode === 'proxyip') {
+        if (proxyIpMode === 'proxyip') {
             log(`direct connection failed, trying to use Proxy IP for ${addressRemote}`);
-            const proxyIPs = panelIPs?.length ? panelIPs : parseIPs(envProxyIPs) ?? defaultProxyIPs;
             const proxyIP = getRandomValue(proxyIPs);
             const { host, port } = parseHostPort(proxyIP, true);
             addressRemote = host || addressRemote;
             portRemote = port || portRemote;
-        } else if (proxyMode === 'prefix') {
+        } else if (proxyIpMode === 'prefix') {
             log(`direct connection failed, trying to generate dynamic prefix for ${addressRemote}`);
-            const prefixes = panelIPs?.length ? panelIPs : parseIPs(envPrefixes) ?? defaultPrefixes;
             const prefix = getRandomValue(prefixes);
             const dynamicProxyIP = await getDynamicProxyIP(addressRemote, prefix);
 
@@ -71,7 +61,7 @@ export async function handleTCPOutBound(
             remoteSocketToWS(tcpSocket, webSocket, VLResponseHeader, null, log);
         } catch (error) {
             console.error('Retry connection failed:', error);
-            webSocket.close(1011, `Retry connection failed: ${safeErrorMessage(error)}`);
+            webSocket.close(1011, `Retry connection failed: ${safeError(error)}`);
         }
     }
 
@@ -80,7 +70,7 @@ export async function handleTCPOutBound(
         remoteSocketToWS(tcpSocket, webSocket, VLResponseHeader, retry, log);
     } catch (error) {
         console.error(`Connection failed: ${error}`);
-        webSocket.close(1011, `Connection failed: ${safeErrorMessage(error)}`);
+        webSocket.close(1011, `Connection failed: ${safeError(error)}`);
     }
 }
 
@@ -99,7 +89,7 @@ async function remoteSocketToWS(
         async write(chunk, controller) {
             hasIncomingData = true;
             if (webSocket.readyState !== WS_READY_STATE_OPEN) {
-                controller.error("webSocket.readyState is not open, maybe close");
+                controller.error('webSocket.readyState is not open, maybe close');
             }
 
             if (vlHeader) {
@@ -136,20 +126,19 @@ export function makeReadableWebSocketStream(webSocketServer: WebSocket, earlyDat
     let readableStreamCancel = false;
     const stream = new ReadableStream({
         start(controller) {
-            webSocketServer.addEventListener("message", (event) => {
+            webSocketServer.addEventListener('message', (event) => {
                 if (readableStreamCancel) return;
-                // WebSocket binaryType='arraybuffer' ensures event.data is always ArrayBuffer
                 controller.enqueue(event.data);
             });
 
-            webSocketServer.addEventListener("close", () => {
+            webSocketServer.addEventListener('close', () => {
                 safeCloseWebSocket(webSocketServer);
                 if (readableStreamCancel) return;
                 controller.close();
             });
 
-            webSocketServer.addEventListener("error", (err) => {
-                log("webSocketServer has error");
+            webSocketServer.addEventListener('error', (err) => {
+                log('webSocketServer has error');
                 controller.error(err);
             });
 
@@ -194,7 +183,7 @@ export function safeCloseTcpSocket(socket: Socket | null) {
         try {
             socket.close();
         } catch (error) {
-            console.error("Failed to close TCP socket:", error);
+            console.error('Failed to close TCP socket:', error);
         }
     }
 }

@@ -1,25 +1,27 @@
+import { getGlobals } from '@settings';
 import { isValidUUID } from '@common';
 import {
     safeCloseTcpSocket,
     handleTCPOutBound,
     makeReadableWebSocketStream,
     WS_READY_STATE_OPEN
-} from './common';
+} from '@protocols/common';
 
 export async function VlOverWSHandler(request: Request): Promise<Response> {
+    const { vlUUID } = getGlobals();
     const webSocketPair = new WebSocketPair();
     const [client, webSocket] = Object.values(webSocketPair);
     webSocket.accept();
     webSocket.binaryType = 'arraybuffer';
 
-    let address = "";
-    let portWithRandomLog = "";
+    let address = '';
+    let portWithRandomLog = '';
 
     const log = (info: string, event?: string) => {
-        console.log(`[${address}:${portWithRandomLog}] ${info}`, event || "");
+        console.log(`[${address}:${portWithRandomLog}] ${info}`, event || '');
     };
 
-    const earlyDataHeader = request.headers.get("sec-websocket-protocol") || "";
+    const earlyDataHeader = request.headers.get('sec-websocket-protocol') || '';
     const readableWebSocketStream = makeReadableWebSocketStream(webSocket, earlyDataHeader, log);
 
     let remoteSocketWapper: { value: Socket | null } = { value: null };
@@ -39,19 +41,18 @@ export async function VlOverWSHandler(request: Request): Promise<Response> {
                 return;
             }
 
-            const { userID } = globalThis.globalConfig;
             const {
                 hasError,
                 message,
                 portRemote = 443,
-                addressRemote = "",
+                addressRemote = '',
                 rawDataIndex,
                 VLVersion = new Uint8Array([0, 0]),
                 isUDP,
-            } = parseVlHeader(chunk, userID!);
+            } = parseVlHeader(chunk, vlUUID);
 
             address = addressRemote;
-            portWithRandomLog = `${portRemote}--${Math.random()} ${isUDP ? "udp " : "tcp "} `;
+            portWithRandomLog = `${portRemote}--${Math.random()} ${isUDP ? 'udp ' : 'tcp '} `;
 
             if (hasError) {
                 throw new Error(message);
@@ -68,11 +69,11 @@ export async function VlOverWSHandler(request: Request): Promise<Response> {
                     await udpStreamWrite(rawClientData);
                     return;
                 } else {
-                    throw new Error("UDP proxy only enable for DNS which is port 53");
+                    throw new Error('UDP proxy only enable for DNS which is port 53');
                 }
             }
 
-            await handleTCPOutBound(
+            handleTCPOutBound(
                 remoteSocketWapper,
                 addressRemote,
                 portRemote,
@@ -93,7 +94,7 @@ export async function VlOverWSHandler(request: Request): Promise<Response> {
     readableWebSocketStream
         .pipeTo(writableStream)
         .catch(error => {
-            log("readableWebSocketStream pipeTo error", error);
+            log('readableWebSocketStream pipeTo error', error);
             safeCloseTcpSocket(remoteSocketWapper.value);
         });
 
@@ -107,7 +108,7 @@ function parseVlHeader(VLBuffer: ArrayBuffer, userID: string) {
     if (VLBuffer.byteLength < 24) {
         return {
             hasError: true,
-            message: "invalid data",
+            message: 'invalid data',
         };
     }
 
@@ -119,7 +120,7 @@ function parseVlHeader(VLBuffer: ArrayBuffer, userID: string) {
     if (!isValidUser) {
         return {
             hasError: true,
-            message: "invalid user",
+            message: 'invalid user',
         };
     }
 
@@ -146,12 +147,12 @@ function parseVlHeader(VLBuffer: ArrayBuffer, userID: string) {
     const addressType = addressBuffer[0];
     let addressLength = 0;
     let addressValueIndex = addressIndex + 1;
-    let addressValue = "";
+    let addressValue = '';
 
     switch (addressType) {
         case 1:
             addressLength = 4;
-            addressValue = new Uint8Array(VLBuffer.slice(addressValueIndex, addressValueIndex + addressLength)).join(".");
+            addressValue = new Uint8Array(VLBuffer.slice(addressValueIndex, addressValueIndex + addressLength)).join('.');
             break;
 
         case 2:
@@ -169,7 +170,7 @@ function parseVlHeader(VLBuffer: ArrayBuffer, userID: string) {
                 ipv6.push(dataView.getUint16(i * 2).toString(16));
             }
 
-            addressValue = ipv6.join(":");
+            addressValue = ipv6.join(':');
             break;
         }
         default:
@@ -209,16 +210,16 @@ function unsafeStringify(arr: Uint8Array, offset = 0) {
         byteToHex[arr[offset + 1]] +
         byteToHex[arr[offset + 2]] +
         byteToHex[arr[offset + 3]] +
-        "-" +
+        '-' +
         byteToHex[arr[offset + 4]] +
         byteToHex[arr[offset + 5]] +
-        "-" +
+        '-' +
         byteToHex[arr[offset + 6]] +
         byteToHex[arr[offset + 7]] +
-        "-" +
+        '-' +
         byteToHex[arr[offset + 8]] +
         byteToHex[arr[offset + 9]] +
-        "-" +
+        '-' +
         byteToHex[arr[offset + 10]] +
         byteToHex[arr[offset + 11]] +
         byteToHex[arr[offset + 12]] +
@@ -232,7 +233,7 @@ function stringify(arr: Uint8Array, offset = 0) {
     const uuid = unsafeStringify(arr, offset);
 
     if (!isValidUUID(uuid)) {
-        throw TypeError("Stringified UUID is invalid");
+        throw TypeError('Stringified UUID is invalid');
     }
 
     return uuid;
@@ -259,10 +260,10 @@ async function handleUDPOutBound(webSocket: WebSocket, VLResponseHeader: Uint8Ar
         .pipeTo(
             new WritableStream({
                 async write(chunk) {
-                    const resp = await fetch("https://cloudflare-dns.com/dns-query", {
-                        method: "POST",
+                    const resp = await fetch('https://cloudflare-dns.com/dns-query', {
+                        method: 'POST',
                         headers: {
-                            "content-type": "application/dns-message",
+                            'content-type': 'application/dns-message',
                         },
                         body: chunk
                     });
@@ -285,7 +286,7 @@ async function handleUDPOutBound(webSocket: WebSocket, VLResponseHeader: Uint8Ar
             })
         )
         .catch((error) => {
-            log("dns udp has error" + error);
+            log('dns udp has error' + error);
         });
 
     const writer = transformStream.writable.getWriter();

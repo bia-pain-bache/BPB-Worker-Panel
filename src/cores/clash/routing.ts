@@ -1,17 +1,18 @@
 import { RuleProvider } from '#types/clash';
+import { getSettings } from '@settings';
 import { getGeoAssets } from './geo-assets';
-import { isIPv6, isIPv4, accRoutingRules } from '@utils';
+import { isIPv6, isIPv4, accRoutingRules, GeoAsset } from '@utils';
 
 export function buildRoutingRules(isWarp: boolean) {
-    const { blockUDP443 } = globalThis.settings;
+    const { blockUDP443 } = getSettings();
     const geoAssets = getGeoAssets();
     const routingRules = accRoutingRules(geoAssets);
     const rules = [`GEOIP,lan,DIRECT,no-resolve`];
 
     if (!isWarp) {
-        rules.push("NETWORK,udp,REJECT");
+        rules.push('NETWORK,udp,REJECT');
     } else if (blockUDP443) {
-        rules.push("AND,((NETWORK,udp),(DST-PORT,443)),REJECT");
+        rules.push('AND,((NETWORK,udp),(DST-PORT,443)),REJECT');
     }
 
     return [
@@ -24,7 +25,7 @@ export function buildRoutingRules(isWarp: boolean) {
         ...routingRules.bypass.domains.map(domain => `DOMAIN-SUFFIX,${domain},DIRECT`),
         ...routingRules.bypass.geoips.map(geoip => `RULE-SET,${geoip},DIRECT`),
         ...routingRules.bypass.ips.map(ip => buildIpCidrRule(ip, 'DIRECT')),
-        "MATCH,✅ Selector"
+        'MATCH,✅ Selector'
     ];
 }
 
@@ -45,7 +46,7 @@ function addRuleProvider(
 
     const defineProvider = (geo: string, behavior: 'domain' | 'ipcidr', url: string) => {
         ruleProviders[geo] = {
-            type: "http",
+            type: 'http',
             format: format!,
             behavior,
             path: `./ruleset/${geo}.${fileExtension}`,

@@ -27,7 +27,7 @@
 ??? question "Why Fragment configs speed is slow on my ISP?"
     Each ISP has its own prefered Fragment settings. Most are fine with the panel defaults, but these values may work well on yours. You may need to change Fragment profile to `Medium`, `High` or even manually change settings in `Custom` profile to achieve better results. Also MahsaNG is recommended to connect to fragment configs.
 
-??? question "I extracted and used a Proxy IP regarding tutorials, why some sites or applications like X still won't work!"  
+??? question "I extracted and used a Proxy IP according to tutorials, why some sites or applications like X still won't work!"  
     There are many public IPs and some of them might be unstable. You need to test to find a good one.  
 
 ??? question "It worked when I set a proxy IP, but now it's not working!"
@@ -53,7 +53,7 @@
     Cloudflare can't properly handle the UDP traffic. There is currently no effective solution. Use Warp configs instead.  
 
 ??? question "Why won't ChatGPT open?"
-    Because the panel's default proxy IPs are public and many might appear suspicious to ChatGPT. Set a single clean Proxy IP regarding instructions or enable the `Bypass ChatGPT` option in the routing section of the panel.  
+    Because the panel's default proxy IPs are public and many might appear suspicious to ChatGPT. Set a single clean Proxy IP according to instructions or enable the `Bypass ChatGPT` option in the routing section of the panel.  
 
 ??? question "I forgot the panel password. What should I do?"
     Go to your Cloudflare dashboard, find the KV created for Worker or Pages, click view, go to the KV Pairs section. In the table, you’ll see a `pwd` key — the value next to it is your password.  

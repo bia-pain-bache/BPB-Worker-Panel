@@ -1,5 +1,6 @@
-localStorage.getItem('darkMode') === 'enabled' && document.body.classList.add('dark-mode');
-const form = document.getElementById("configForm");
+const proxyForm = document.getElementById('configForm');
+const defaultHttpsPorts = [443, 8443, 2053, 2083, 2087, 2096];
+const defaultHttpPorts = [80, 8080, 8880, 2052, 2082, 2086, 2095];
 const [
     selectElements,
     numInputElements,
@@ -12,77 +13,135 @@ const [
     'input:not([type=file])',
     'textarea',
     'input[type=checkbox]'
-].map(query => form.querySelectorAll(query));
+].map(query => proxyForm.querySelectorAll(query));
 
-const defaultHttpsPorts = [443, 8443, 2053, 2083, 2087, 2096];
-const defaultHttpPorts = [80, 8080, 8880, 2052, 2082, 2086, 2095];
+getUsage();
+initPanel();
+fetchIPInfo();
 
-fetch('/panel/settings')
-    .then(async response => response.json())
-    .then(({ success, status, message, body }) => {
+async function initPanel(settings, tgSettings, subscriptions) {
+    try {
+        if (!settings) {
+            const nocache = Date.now();
+            const res = await fetch(`./panel/settings?nocache=${nocache}`, { cache: 'no-store' });
+            const { success, status, message, body } = await res.json();
 
-        if (status === 401 && !body.isPassSet) {
-            const closeBtn = document.querySelector(".close");
-            openResetPass();
-            closeBtn.style.display = 'none';
+            if (status === 401 && !body.isPassSet) {
+                const closeBtn = document.querySelector('.modal-close');
+                openResetPass();
+                closeBtn.style.visibility = 'hidden';
+            }
+
+            if (!success) {
+                throw new Error(`status ${status} - ${message}`);
+            }
+
+            settings = body.proxySettings;
+            tgSettings = body.telegramSettings;
+            subscriptions = body.subscriptions;
+            checkVersion(settings.panelVersion);
         }
+
+        renderPanel(settings, tgSettings, subscriptions);
+    } catch (error) {
+        console.error('Panel initiation error:', error.message || error);
+    }
+}
+
+async function getUsage() {
+    try {
+        const nocache = Date.now();
+        const res = await fetch(`./panel/usage?nocache=${nocache}`, { cache: 'no-store' });
+        const { success, status, message, body } = await res.json();
 
         if (!success) {
             throw new Error(`status ${status} - ${message}`);
         }
 
-        const { subPath, proxySettings } = body;
-        globalThis.subPath = encodeURIComponent(subPath);
-        initiatePanel(proxySettings);
-    })
-    .catch(error => console.error("Data query error:", error.message || error))
-    .finally(() => {
-        window.onclick = (event) => {
-            const qrModal = document.getElementById('qrModal');
-            const qrcodeContainer = document.getElementById('qrcode-container');
+        const { total, worker } = body;
+        const totalReq = document.getElementById('total-usage');
+        totalReq.textContent = total.toLocaleString('en-US');
+        totalReq.style.fontSize = 'larger';
+        const totalPct = document.getElementById('total-pct');
+        const totalPctVal = Math.ceil(Number(total) / 100000 * 100);
+        totalPct.textContent = totalPctVal;
+        if (totalPctVal > 80) totalPct.style.color = 'var(--color-icon-red)';
 
-            if (event.target == qrModal) {
-                qrModal.style.display = "none";
-                qrcodeContainer.lastElementChild.remove();
-            }
-        }
-
-        document.querySelectorAll(".toggle-password").forEach(toggle => {
-            toggle.addEventListener("click", function () {
-                const input = this.previousElementSibling;
-                const isPassword = input.type === "password";
-                input.type = isPassword ? "text" : "password";
-                this.textContent = isPassword ? "visibility" : "visibility_off";
-            });
-        });
-    });
-
-function initiatePanel(proxySettings) {
-    const {
-        VLConfigs,
-        TRConfigs,
-        ports,
-        xrayUdpNoises
-    } = proxySettings;
-
-    Object.assign(globalThis, {
-        activeProtocols: VLConfigs + TRConfigs,
-        activeTlsPorts: ports.filter(port => defaultHttpsPorts.includes(port)),
-        xrayNoiseCount: xrayUdpNoises.length,
-    });
-
-    populatePanel(proxySettings);
-    renderPortsBlock(ports.map(Number));
-    renderUdpNoiseBlock(xrayUdpNoises);
-    initiateForm();
-    fetchIPInfo();
+        const panelReq = document.getElementById('panel-usage');
+        panelReq.textContent = worker.toLocaleString('en-US');
+        panelReq.style.fontSize = 'larger';
+        const panelPct = document.getElementById('panel-pct');
+        const panelPctVal = Math.ceil(Number(worker) / 100000 * 100);
+        panelPct.textContent = panelPctVal;
+        if (panelPctVal > 80) panelPct.style.color = 'var(--color-icon-red)';
+    } catch (error) {
+        console.error('Failed to get usage from API:', error.message || error);
+    }
 }
 
-function populatePanel(proxySettings) {
-    document.getElementById("doh").textContent = `${window.origin}/dns-query/${decodeURIComponent(globalThis.subPath)}`;
+async function checkVersion(panelVersion) {
+    try {
+        const res = await fetch('https://api.github.com/repos/bia-pain-bache/BPB-Worker-Panel/releases/latest', {
+            headers: {
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+
+        if (!res.ok) {
+            throw new Error(`status ${res.status}`);
+        }
+
+        const release = await res.json();
+        const latest = release.tag_name.slice(1);
+        const updateAvailable = isNewerVersion(latest, panelVersion);
+        if (updateAvailable) {
+            globalThis.latestVersion = latest;
+            globalThis.latestUrl = release.html_url;
+            const upgradeBtn = document.getElementById('updatePanel');
+            upgradeBtn.disabled = false;
+        }
+    } catch (error) {
+        console.error('Get latest version error:', error.message || error);
+    }
+}
+
+function isNewerVersion(latest, current) {
+    const lv = latest.split('.').map(Number);
+    const cv = current.split('.').map(Number);
+
+    for (let i = 0; i < Math.max(lv.length, cv.length); i++) {
+        const l = lv[i] ?? 0;
+        const c = cv[i] ?? 0;
+        if (l > c) return true;
+        if (l < c) return false;
+    }
+
+    return false;
+}
+
+function renderPanel(proxySettings, tgSettings, subscriptions) {
+    const {
+        securePath,
+        ports,
+        xrayUdpNoises,
+    } = proxySettings;
+
+    const path = encodeURIComponent(securePath);
+    if (path !== window.location.pathname.split('/')[1]) {
+        setTimeout(() => {
+            window.location.href = `../${path}/panel`;
+        }, 1000);
+    }
+
+    Object.assign(globalThis, {
+        activeTlsPorts: ports.filter(port => defaultHttpsPorts.includes(port)),
+        xrayNoiseCount: xrayUdpNoises.length
+    });
+
+    document.getElementById('doh').textContent = new URL(`./dns-query`, window.location.href);
     selectElements.forEach(elm => elm.value = proxySettings[elm.id]);
     checkboxElements.forEach(elm => elm.checked = proxySettings[elm.id]);
-    inputElements.forEach(elm => elm.value = proxySettings[elm.id] || "");
+    inputElements.forEach(elm => elm.value = proxySettings[elm.id] || '');
     textareaElements.forEach(elm => {
         const key = elm.id;
         const element = document.getElementById(key);
@@ -91,26 +150,31 @@ function populatePanel(proxySettings) {
         element.style.height = 'auto';
         if (rowsCount) element.rows = rowsCount;
         element.value = value;
-    });
-}
-
-function initiateForm() {
-    const configForm = document.getElementById('configForm');
-    globalThis.initialFormData = new FormData(configForm);
-    enableApplyButton();
-
-    configForm.addEventListener('input', enableApplyButton);
-    configForm.addEventListener('change', enableApplyButton);
-    const textareas = document.querySelectorAll("textarea");
-
-    textareas.forEach(textarea => {
-        textarea.addEventListener('input', function () {
+        elm.addEventListener('input', () => {
             this.style.height = 'auto';
             this.style.height = `${this.scrollHeight}px`;
         });
     });
 
+    renderPortsBlock(ports.map(Number));
+    renderUdpNoiseBlock(xrayUdpNoises);
+    renderSubscriptions(subscriptions);
+    
+    globalThis.initialFormData = new FormData(proxyForm);
+    handleProxyFormChanges();
+    proxyForm.addEventListener('input', handleProxyFormChanges);
+    proxyForm.addEventListener('change', handleProxyFormChanges);
     handleFragmentMode();
+
+    if (tgSettings) {
+        const tgForm = document.getElementById('telegramForm');
+        handleTgFormChanges(tgSettings);
+        tgForm.addEventListener('input', handleTgFormChanges);
+
+        for (const key in tgSettings) {
+            tgForm.elements[key].value = tgSettings[key];
+        }
+    }
 }
 
 function hasFormDataChanged() {
@@ -124,40 +188,36 @@ function hasFormDataChanged() {
     return JSON.stringify(initialFormDataObj) !== JSON.stringify(currentFormDataObj);
 }
 
-function enableApplyButton() {
+function handleProxyFormChanges() {
     const applyButton = document.getElementById('applyButton');
     const isChanged = hasFormDataChanged();
     applyButton.disabled = !isChanged;
     applyButton.classList.toggle('disabled', !isChanged);
 }
 
-function openResetPass() {
-    const resetPassModal = document.getElementById('resetPassModal');
-    resetPassModal.style.display = "block";
-    document.body.style.overflow = "hidden";
-}
+function handleTgFormChanges(settings) {
+    const userId = document.getElementById('telegramUserId');
+    const token = document.getElementById('telegramBotToken');
+    const setupBtn = document.getElementById('setup-telegram');
+    const removeBtn = document.getElementById('remove-telegram');
 
-function closeResetPass() {
-    const resetPassModal = document.getElementById('resetPassModal');
-    resetPassModal.style.display = "none";
-    document.body.style.overflow = "";
-}
+    if (settings) {
+        const { telegramUserId, telegramBotToken } = settings;
+        removeBtn.disabled = !telegramUserId && !telegramBotToken;
+        setupBtn.disabled = true;
 
-function closeQR() {
-    const qrModal = document.getElementById('qrModal');
-    const qrcodeContainer = document.getElementById('qrcode-container');
-    qrModal.style.display = "none";
-    qrcodeContainer.lastElementChild.remove();
-}
+        userId.value = telegramUserId;
+        token.value = telegramBotToken;
 
-function darkModeToggle() {
-    const isDarkMode = document.body.classList.toggle('dark-mode');
-    localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
+        return;
+    }
+
+    setupBtn.disabled = !userId.value.trim() || !token.value.trim();
 }
 
 async function getIpDetails(ip) {
     try {
-        const response = await fetch('/panel/my-ip', { method: 'POST', body: ip });
+        const response = await fetch('./panel/my-ip', { method: 'POST', body: ip });
         const { success, status, message, body } = await response.json();
 
         if (!success) {
@@ -166,13 +226,13 @@ async function getIpDetails(ip) {
 
         return body;
     } catch (error) {
-        console.error("Fetching IP error:", error.message || error)
+        console.error('Fetching IP error:', error.message || error)
     }
 }
 
 async function fetchIPInfo() {
-    const refreshIcon = document.getElementById("refresh-geo-location").querySelector('i');
-    refreshIcon.classList.add('fa-spin');
+    const icons = startWaiting(null, 'refresh-geo-location', '');
+
     const updateUI = (ip = '-', country = '-', countryCode = '-', city = '-', isp = '-', cfIP) => {
         const flag = countryCode !== '-' ? String.fromCodePoint(...[...countryCode].map(c => 0x1F1E6 + c.charCodeAt(0) - 65)) : '';
         const updateContent = (id, content) => document.getElementById(id).textContent = content;
@@ -182,78 +242,84 @@ async function fetchIPInfo() {
         updateContent(cfIP ? 'cf-isp' : 'isp', isp);
     };
 
-    try {
-        const response = await fetch('https://ipv4.geojs.io/v1/ip.json' + '?nocache=' + Date.now(), { cache: "no-store" });
-        
-        if (!response.ok) {
-            const errorMessage = await response.text();
-            throw new Error(`Fetch Other targets IP failed with status ${response.status} at ${response.url} - ${errorMessage}`);
-        }
+    const nocache = Date.now();
+    const othersPromise = fetch(`https://ipv4.geojs.io/v1/ip.json?nocache=${nocache}`, { cache: 'no-store' })
+        .then(async res => {
+            if (!res.ok) throw new Error(`Fetch Other targets IP failed.`);
+            const { ip } = await res.json();
+            const { country, countryCode, city, isp } = await getIpDetails(ip);
+            updateUI(ip, country, countryCode, city, isp);
+        });
 
-        const { ip } = await response.json();
-        const { country, countryCode, city, isp } = await getIpDetails(ip);
-        updateUI(ip, country, countryCode, city, isp);
-        refreshIcon.classList.remove('fa-spin');
-    } catch (error) {
-        console.error("Fetching IP error:", error.message || error)
-    }
+    const cfPromise = fetch(`https://ipv4.icanhazip.com/?nocache=${nocache}`, { cache: 'no-store' })
+        .then(async res => {
+            if (!res.ok) throw new Error(`Fetch Cloudflare targets IP failed.`);
+            const ip = await res.text();
+            const { country, countryCode, city, isp } = await getIpDetails(ip.trim());
+            updateUI(ip, country, countryCode, city, isp, true);
+        });
 
-    try {
-        const response = await fetch('https://ipv4.icanhazip.com/?nocache=' + Date.now(), { cache: "no-store" });
+    const results = await Promise.allSettled([othersPromise, cfPromise]);
+    results.forEach(result => {
+        if (result.status === 'rejected') console.error(result.reason);
+    });
 
-        if (!response.ok) {
-            const errorMessage = await response.text();
-            throw new Error(`Fetch Cloudflare targets IP failed with status ${response.status} at ${response.url} - ${errorMessage}`);
-        }
-
-        const ip = await response.text();
-        const { country, countryCode, city, isp } = await getIpDetails(ip);
-        updateUI(ip, country, countryCode, city, isp, true);
-        refreshIcon.classList.remove('fa-spin');
-    } catch (error) {
-        console.error("Fetching IP error:", error.message || error)
-    }
-}
-
-function downloadWarpConfigs(isAmnezia) {
-    const client = isAmnezia ? "?app=amnezia" : "";
-    window.location.href = "/panel/get-warp-configs" + client;
+    stopWaiting(icons);
 }
 
 function generateSubUrl(path, app, tag, singboxType) {
-    const url = new URL(window.location.href);
-    url.pathname = `/sub/${path}/${globalThis.subPath}`;
-    app && url.searchParams.append('app', app);
-
-    if (tag) {
-        url.hash = `💦 BPB ${tag}`;
-    }
+    const url = new URL(`./sub/${path}`, window.location.href);
+    url.searchParams.append('app', app);
+    url.hash = encodeURIComponent(`💦 BPB ${tag}`);
 
     return singboxType
         ? `sing-box://import-remote-profile?url=${url.href}`
         : url.href;
 }
 
-function subURL(path, app, tag, singboxType) {
-    const url = generateSubUrl(path, app, tag, singboxType);
-    copyToClipboard(url);
+function openQR(data) {
+    const url = new URL(data);
+    const modal = document.getElementById('qrModal');
+    const close = modal.querySelector('.modal-close');
+    const container = document.getElementById('qrcode-container');
+    let qrcodeTitle = document.getElementById('qrcodeTitle');
+    qrcodeTitle.textContent = decodeURIComponent(url.hash).replace('#', '');
+    close.onclick = () => {
+        modal.hidden = true;
+        container.lastElementChild.remove();
+        window.onclick = null;
+    };
+
+    modal.hidden = false;
+    window.onclick = (event) => {
+        if (event.target == modal) {
+            modal.hidden = true;
+            container.lastElementChild.remove();
+        }
+    }
+
+    let qrcodeDiv = document.createElement('div');
+    qrcodeDiv.className = 'qrcode';
+    qrcodeDiv.style.padding = '0.5rem';
+    qrcodeDiv.style.width = 'fit-content';
+    qrcodeDiv.style.backgroundColor = '#ffffff';
+    /* global QRCode */
+    new QRCode(qrcodeDiv, {
+        text: url.href,
+        width: 256,
+        height: 256,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+    });
+
+    container.appendChild(qrcodeDiv);
 }
 
-async function dlURL(path, app) {
-    const url = generateSubUrl(path, app);
-
-    try {
-        const response = await fetch(url);
-        const data = await response.text();
-
-        if (!response.ok) {
-            throw new Error(`status ${response.status} at ${response.url} - ${data}`);
-        }
-
-        downloadJSON(data, "config.json");
-    } catch (error) {
-        console.error("Download error:", error.message || error);
-    }
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text)
+        .then(() => notify('info', 'Copied to clipboard', [text]))
+        .catch(error => console.error('Failed to copy:', error));
 }
 
 function downloadJSON(data, fileName) {
@@ -264,6 +330,37 @@ function downloadJSON(data, fileName) {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+}
+
+async function dlUrl(subUrl) {
+    let url;
+    if (subUrl.protocol === 'sing-box:') {
+        url = subUrl.searchParams.get('url');
+    } else {
+        url = subUrl;
+    }
+
+    try {
+        const response = await fetch(url);
+        const contentType = response.headers.get('content-type') || '';
+
+        if (contentType === 'application/zip') {
+            if (!response.ok) {
+                throw new Error(`status ${response.status} at ${response.url}`);
+            }
+
+            window.location.href = url;
+        } else {
+            const data = await response.text();
+            if (!response.ok) {
+                throw new Error(`status ${response.status} at ${response.url} - ${data}`);
+            }
+
+            downloadJSON(data, 'config.json');
+        }
+    } catch (error) {
+        console.error('Download error:', error.message || error);
+    }
 }
 
 function exportSettings() {
@@ -279,122 +376,50 @@ function importSettings() {
     input.click();
 }
 
-async function uploadSettings(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+async function renewWarpAccounts(btn) {
+    const confirm = await notify('confirm', 'Renew Warp Accounts', ['Are you sure?'])
+    if (!confirm) return;
+    const icons = startWaiting(btn, '', '');
 
     try {
-        const text = await file.text();
-        const data = atob(text);
-        const settings = JSON.parse(data);
-        updateSettings(event, settings);
-        initiatePanel(settings);
-    } catch (err) {
-        console.error('Failed to import settings:', err.message);
-    }
-}
+        const response = await fetch('./panel/update-warp', { method: 'POST', credentials: 'include' });
+        stopWaiting(icons);
 
-function openQR(path, app, tag, title, singboxType) {
-    const qrModal = document.getElementById('qrModal');
-    const qrcodeContainer = document.getElementById('qrcode-container');
-    const url = generateSubUrl(path, app, tag, singboxType);
-    let qrcodeTitle = document.getElementById("qrcodeTitle");
-    qrcodeTitle.textContent = title;
-    qrModal.style.display = "block";
-    let qrcodeDiv = document.createElement("div");
-    qrcodeDiv.className = "qrcode";
-    qrcodeDiv.style.padding = "2px";
-    qrcodeDiv.style.backgroundColor = "#ffffff";
-    /* global QRCode */
-    new QRCode(qrcodeDiv, {
-        text: url,
-        width: 256,
-        height: 256,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-    });
-
-    qrcodeContainer.appendChild(qrcodeDiv);
-}
-
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text)
-        .then(() => alert('✅ Copied to clipboard:\n\n' + text))
-        .catch(error => console.error('Failed to copy:', error));
-}
-
-async function updateWarpConfigs() {
-    const confirmReset = confirm('⚠️ Are you sure?');
-    if (!confirmReset) return;
-    const refreshBtn = document.getElementById('warp-update');
-    document.body.style.cursor = 'wait';
-    refreshBtn.classList.add('fa-spin');
-
-    try {
-        const response = await fetch('/panel/update-warp', { method: 'POST', credentials: 'include' });
         const { success, status, message } = await response.json();
-
-        document.body.style.cursor = 'default';
-        refreshBtn.classList.remove('fa-spin');
-
         if (!success) {
-            alert(
-                '⚠️ An error occured, Please try again!\n' +
-                `⛔ ${message}`
-            );
-
+            notify('error', 'Renew Warp Accounts', ['An error occured, Please try again later.']);
             throw new Error(`status ${status} - ${message}`);
         }
 
-        alert('✅ Warp configs updated successfully!');
+        notify('success', 'Renew Warp Accounts', ['Warp accounts updated successfully!'])
     } catch (error) {
-        console.error("Updating Warp configs error:", error.message || error)
-    }
-}
-
-function handleProtocolChange(event) {
-    if (event.target.checked) {
-        globalThis.activeProtocols++;
-        return true;
-    }
-
-    globalThis.activeProtocols--;
-
-    if (globalThis.activeProtocols === 0) {
-        event.preventDefault();
-        event.target.checked = !event.target.checked;
-        alert("⛔ At least one Protocol should be selected!");
-        globalThis.activeProtocols++;
-        return false;
+        console.error('Updating Warp configs error:', error.message || error)
     }
 }
 
 function handlePortChange(event) {
     const portField = Number(event.target.name);
-
     if (event.target.checked) {
         globalThis.activeTlsPorts.push(portField);
         return true;
     }
 
     globalThis.activeTlsPorts = globalThis.activeTlsPorts.filter(port => port !== portField);
-
     if (globalThis.activeTlsPorts.length === 0) {
         event.preventDefault();
         event.target.checked = !event.target.checked;
-        alert("⛔ At least one TLS port should be selected!");
+        notify('error', 'Port selection', ['At least one TLS port should be selected.']);
         globalThis.activeTlsPorts.push(portField);
         return false;
     }
 }
 
-function handleRiskyRules(event) {
+async function handleRiskyRules(event) {
     if (event.target.checked) {
-        const proceed = confirm(
-            "⛔ v2ray users should set Geo Assets to Chocolate4U and download assets, otherwise configs won't connect.\n\n" +
-            "❓ Proceed?"
-        );
+        const proceed = await notify('confirm', 'Geo asset files', [
+            "v2ray users should set Geo Assets to Chocolate4U and download assets, otherwise configs won't connect.",
+            'Proceed anyway?'
+        ]);
 
         if (!proceed) {
             event.target.checked = false;
@@ -404,13 +429,13 @@ function handleRiskyRules(event) {
 }
 
 function handleFragmentMode() {
-    const fragmentMode = document.getElementById("fragmentMode").value;
+    const fragmentMode = document.getElementById('fragmentMode').value;
     const formDataObj = Object.fromEntries(globalThis.initialFormData.entries());
     const inputs = [
-        "fragmentLengthMin",
-        "fragmentLengthMax",
-        "fragmentIntervalMin",
-        "fragmentIntervalMax"
+        'fragmentLengthMin',
+        'fragmentLengthMax',
+        'fragmentDelayMin',
+        'fragmentDelayMax'
     ];
 
     const configs = {
@@ -424,40 +449,52 @@ function handleFragmentMode() {
     inputs.forEach((id, index) => {
         const elm = document.getElementById(id);
         elm.value = configs[fragmentMode][index];
-        fragmentMode !== "custom"
+        fragmentMode !== 'custom'
             ? elm.setAttribute('readonly', 'true')
             : elm.removeAttribute('readonly');
     });
 }
 
-function resetSettings() {
-    const confirmReset = confirm('⚠️ This will reset all panel settings.\n\n❓ Are you sure?');
-    if (!confirmReset) return;
+async function resetSettings(btn) {
+    const confirm = await notify(
+        'confirm',
+        'Reset panel settings',
+        [
+            'This will reset all settings except:',
+            '+ VLESS UUID',
+            '+ Trojan password',
+            '+ Panel - Subscriptions path\n',
+            'Are you sure?'
+        ]
+    );
 
-    const resetBtn = document.getElementById("refresh-btn");
-    resetBtn.classList.add('fa-spin');
-    const body = { resetSettings: true };
-    document.body.style.cursor = 'wait';
+    if (!confirm) return;
+    const icons = startWaiting(btn, '', '', false);
 
-    fetch('/panel/reset-settings', {
-        method: 'POST',
-        body: JSON.stringify(body),
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' }
-    })
-        .then(response => response.json())
-        .then(({ success, status, message, body }) => {
-            document.body.style.cursor = 'default';
-            resetBtn.classList.remove('fa-spin');
+    try {
+        const res = await fetch('./panel/reset-settings', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' }
+        });
 
-            if (!success) {
-                throw new Error(`status ${status} - ${message}`);
-            }
+        stopWaiting(icons);
 
-            initiatePanel(body);
-            alert('✅ Panel settings reset to default successfully!\n💡 Please update your subscriptions.');
-        })
-        .catch(error => console.error("Reseting settings error:", error.message || error));
+        const { success, status, message, body } = await res.json();
+        if (!success) {
+            throw new Error(`status ${status} - ${message}`);
+        }
+
+        notify(
+            'success',
+            'Reset panel settings',
+            ['Please update your subscriptions.']
+        );
+
+        renderPanel(body);
+    } catch (error) {
+        console.error('Reseting settings error:', error.message || error);
+    }
 }
 
 function updateSettings(event, data) {
@@ -466,517 +503,138 @@ function updateSettings(event, data) {
 
     const validatedForm = validateSettings();
     if (!validatedForm) return false;
+    const form = data ?? validatedForm;
 
-    const form = data ? data : validatedForm;
-    const applyButton = document.getElementById('applyButton');
-    document.body.style.cursor = 'wait';
-    const applyButtonVal = applyButton.value;
-    applyButton.value = '⌛ Loading...';
+    const icons = startWaiting(null, 'applyButton', 'refresh');
 
-    fetch('/panel/update-settings', {
+    fetch('./panel/update-settings', {
         method: 'PUT',
         body: JSON.stringify(form),
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' }
     })
-        .then(response => response.json())
-        .then(({ success, status, message }) => {
-
+        .then(res => res.json())
+        .then(({ success, status, message, body: errors }) => {
             if (status === 401) {
-                alert('⚠️ Session expired! Please login again.');
-                window.location.href = '/login';
+                notify(
+                    'error',
+                    'Apply settings',
+                    ['Session expired! Please login and try again.']
+                );
+                window.location.href = './login';
+            }
+
+            if (!success) {
+                errors.forEach(error => {
+                    notify('error', error.field, error.message);
+                });
+                throw new Error(`status ${status} - ${message}`);
+            }
+
+            notify(
+                'success',
+                'Apply settings',
+                ['Please update your subscriptions.']
+            );
+
+            renderPanel(form);
+        })
+        .catch(error => console.error('Update settings error:', error.message || error))
+        .finally(() => {
+            stopWaiting(icons);
+        });
+}
+
+async function uploadSettings(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    try {
+        const text = await file.text();
+        const data = atob(text);
+        const settings = JSON.parse(data);
+        updateSettings(event, settings);
+        renderPanel(settings);
+    } catch (err) {
+        console.error('Failed to import settings:', err.message);
+    }
+}
+
+function setupTelegramBot() {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const formData = new FormData(event.target);
+    const form = Object.fromEntries(formData.entries());
+
+    const setupBtn = document.getElementById('setup-telegram');
+    const icons = startWaiting(setupBtn, '', 'refresh');
+
+    fetch('./telegram/setup', {
+        method: 'PUT',
+        body: JSON.stringify(form),
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+    })
+        .then(res => res.json())
+        .then(({ success, status, message, body }) => {
+            if (status === 401) {
+                notify(
+                    'error',
+                    'Setup Telegram bot',
+                    ['Session expired! Please login and try again.']
+                );
+                window.location.href = './login';
             }
 
             if (!success) {
                 throw new Error(`status ${status} - ${message}`);
             }
 
-            initiatePanel(form);
-            alert('✅ Settings applied successfully!\n💡 Please update your subscriptions.');
+            handleTgFormChanges(body);
+            notify(
+                'success',
+                'Setup Telegram bot',
+                ['Telegram bot is ready to use.']
+            );
         })
-        .catch(error => console.error("Update settings error:", error.message || error))
+        .catch(error => console.error('Setup Telegram bot error:', error.message || error))
         .finally(() => {
-            document.body.style.cursor = 'default';
-            applyButton.value = applyButtonVal;
+            stopWaiting(icons);
+            setupBtn.disabled = true;
         });
 }
 
-function parseElmValues(id) {
-    return document.getElementById(id).value?.split('\n')
-        .map(value => value.trim())
-        .filter(Boolean) || [];
-}
-
-function getElmValue(id) {
-    return document.getElementById(id).value?.trim();
-}
-
-function isDomain(value) {
-    const domainRegex = /^(?=.{1,253}$)(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)\.)+[a-zA-Z]{2,63}$/;
-    return domainRegex.test(value);
-}
-
-function isIPv4(value) {
-    const ipv4Regex = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/;
-    return ipv4Regex.test(value);
-}
-
-function isIPv4CIDR(value) {
-    const ipv4CidrRegex = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)(?:\/(?:[0-9]|[1-2][0-9]|3[0-2]))?$/;
-    return ipv4CidrRegex.test(value);
-}
-
-function isIPv6(value) {
-    const ipv6Regex = /^\[(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}|:(?::[a-fA-F0-9]{1,4}){1,7})\]$/;
-    return ipv6Regex.test(value);
-}
-
-function isIPv6CIDR(value) {
-    const ipv6CidrRegex = /^(?:(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,7}:|(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}|(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}|(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}|(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}|(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}|[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}|:(?::[a-fA-F0-9]{1,4}){1,7}|::)(?:\/(?:12[0-8]|1[01]?[0-9]|[0-9]?[0-9]))?$/;
-    return ipv6CidrRegex.test(value);
-}
-
-function parseHostPort(input) {
-    const regex = /^(?<host>\[.*?\]|[^:]+)(?::(?<port>\d+))?$/;
-    const match = input.match(regex);
-
-    if (!match) return null;
-
-    return {
-        host: match.groups.host,
-        port: match.groups.port ? +match.groups.port : null
-    };
-}
-
-function isValidHostName(value, isHost) {
-    const hostPort = parseHostPort(value.trim());
-    if (!hostPort) return false;
-    const { host, port } = hostPort;
-    if (port && (port > 65535 || port < 1)) return false;
-    if (isHost && !port) return false;
-
-    return isIPv6(host) || isIPv4(host) || isDomain(host);
-}
-
-function validateRemoteDNS() {
-    let url;
-    const dns = getElmValue("remoteDNS");
-
-    try {
-        url = new URL(dns);
-    } catch (error) {
-        alert("⛔ Invalid DNS, Please enter a URL.");
-        return false;
-    }
-
-    const cloudflareDNS = [
-        '1.1.1.1',
-        '1.0.0.1',
-        '1.1.1.2',
-        '1.0.0.2',
-        '1.1.1.3',
-        '1.0.0.3',
-        '2606:4700:4700::1111',
-        '2606:4700:4700::1001',
-        '2606:4700:4700::1112',
-        '2606:4700:4700::1002',
-        '2606:4700:4700::1113',
-        '2606:4700:4700::1003',
-        'cloudflare-dns.com',
-        'security.cloudflare-dns.com',
-        'family.cloudflare-dns.com',
-        'one.one.one.one',
-        '1dot1dot1dot1'
-    ];
-
-    if (!["tcp:", "https:", "tls:"].includes(url.protocol)) {
-        alert("⛔ Please enter TCP, DoH or DoT servers.");
-        return false;
-    }
-
-    if (cloudflareDNS.includes(url.hostname)) {
-        alert(
-            "⛔ Cloudflare DNS is not allowed for workers.\n" +
-            "💡 Please use other public DNS servers like Google, Adguard..."
-        );
-
-        return false;
-    }
-
-    return true;
-}
-
-function validateSanctionDns() {
-    const dns = getElmValue("antiSanctionDNS");
-    let host;
-
-    try {
-        const url = new URL(dns);
-        host = url.hostname;
-    } catch {
-        host = dns;
-    }
-
-    const isValid = isValidHostName(host, false);
-
-    if (!isValid) {
-        alert(
-            '⛔ Invalid IPs or Domains.\n' +
-            `⚠️ ${host}`
-        );
-
-        return false;
-    }
-
-    return true;
-}
-
-function validateWarpDNS() {
-    const dns = getElmValue("warpRemoteDNS");
-    const isValid = isIPv4(dns);
-
-    if (!isValid) {
-        alert(
-            '⛔ Invalid Warp DNS.\n' +
-            '💡 Please fill in an IPv4 address (UDP DNS).\n\n' +
-            `⚠️ ${dns}`
-        );
-
-        return false;
-    }
-
-    return true;
-}
-
-function validateLocalDNS() {
-    const dns = getElmValue("localDNS");
-    const isValid = isIPv4(dns) || dns === 'localhost';
-
-    if (!isValid) {
-        alert(
-            '⛔ Invalid local DNS.\n' +
-            '💡 Please fill in an IPv4 address or "localhost".\n\n' +
-            `⚠️ ${dns}`
-        );
-
-        return false;
-    }
-
-    return true;
-}
-
-function validateCustomRules() {
-    const invalidDomainIpValues = [
-        'customBypassRules',
-        'customBlockRules'
-    ].flatMap(parseElmValues)
-        .filter(value => !isIPv4CIDR(value) && !isIPv6CIDR(value) && !isDomain(value));
-
-    const invalidDomainValues = parseElmValues('customBypassSanctionRules').filter(value => !isDomain(value));
-
-    if (invalidDomainIpValues.length) {
-        alert(
-            '⛔ Invalid IPs, Domains or IP ranges.\n' +
-            '💡 Please enter each value in a new line.\n\n' +
-            invalidDomainIpValues.map(val => `⚠️ ${val}`).join('\n')
-        );
-
-        return false;
-    }
-
-    if (invalidDomainValues.length) {
-        alert(
-            '⛔ Invalid Domains.\n💡 Please enter each value in a new line.\n\n' +
-            invalidDomainValues.map(val => `⚠️ ${val}`).join('\n')
-        );
-
-        return false;
-    }
-
-    return true;
-}
-
-function validateMultipleHostNames() {
-    const invalidValues = [
-        'cleanIPs',
-        'customCdnAddrs',
-        'customCdnSni',
-        'customCdnHost'
-    ].flatMap(parseElmValues)
-        .filter(value => !isValidHostName(value));
-
-    if (invalidValues.length) {
-        alert(
-            '⛔ Invalid IPs or Domains.\n' +
-            '💡 Please enter each value in a new line.\n\n' +
-            invalidValues.map(ip => `⚠️ ${ip}`).join('\n')
-        );
-
-        return false;
-    }
-
-    return true;
-}
-
-function validateProxyIPs() {
-    const invalidValues = parseElmValues('proxyIPs')
-        .filter(value => !isValidHostName(value));
-
-    if (invalidValues.length) {
-        alert(
-            '⛔ Invalid proxy IPs.\n' +
-            '💡 Please enter each value in a new line.\n\n' +
-            invalidValues.map(ip => `⚠️ ${ip}`).join('\n')
-        );
-
-        return false;
-    }
-
-    return true;
-}
-
-function validateNAT64Prefixes() {
-    const invalidValues = parseElmValues('prefixes')
-        .filter(value => !isIPv6(value));
-
-    if (invalidValues.length) {
-        alert(
-            '⛔ Invalid NAT64 prefix.\n' +
-            '💡 Please enter each prefix in a new line using [].\n\n' +
-            invalidValues.map(ip => `⚠️ ${ip}`).join('\n')
-        );
-
-        return false;
-    }
-
-    return true;
-}
-
-function validateWarpEndpoints() {
-    const invalidEndpoints = parseElmValues('warpEndpoints')
-        .filter(value => !isValidHostName(value, true));
-
-    if (invalidEndpoints.length) {
-        alert(
-            '⛔ Invalid endpoint.\n\n' +
-            invalidEndpoints.map(endpoint => `⚠️ ${endpoint}`).join('\n')
-        );
-
-        return false;
-    }
-
-    return true;
-}
-
-function validateMinMax() {
-    const getValue = (id) => parseInt(getElmValue(id), 10);
-
-    const fields = [
-        ['fragmentLengthMin', 'fragmentLengthMax', 'Fragment Length'],
-        ['fragmentIntervalMin', 'fragmentIntervalMax', 'Fragment Interval'],
-        ['fragmentMaxSplitMin', 'fragmentMaxSplitMax', 'Fragment Max Split'],
-        ['noiseCountMin', 'noiseCountMax', 'Noise Count'],
-        ['noiseSizeMin', 'noiseSizeMax', 'Noise Size'],
-        ['noiseDelayMin', 'noiseDelayMax', 'Noise Delay'],
-        ['amneziaNoiseSizeMin', 'amneziaNoiseSizeMax', 'Amnezia Noise Size']
-    ];
-
-    for (const [minId, maxId, label] of fields) {
-        const min = getValue(minId);
-        const max = getValue(maxId);
-
-        if (min > max) {
-            alert(`⛔ ${label}: Minimum cannot be bigger than Maximum!`);
-            return false;
-        }
-    }
-
-    return true;
-}
-
-function validateChainProxy() {
-    let chainProxy = getElmValue('outProxy');
-    if (!chainProxy) return true;
-    const isVMess = /vmess:\/\/.+$/.test(chainProxy);
-    const isOthers = /(http|socks|socks5|vless|trojan|ss):\/\/[^\s@]+@[^\s:]+:[^\s]+/.test(chainProxy);
-
-    if (!isVMess && !isOthers) {
-        alert(
-            '⛔ Invalid Config!\n' +
-            '💡 Standard formats are:\n\n' +
-            ' + (socks or socks5 or http)://user:pass@server:port\n' +
-            ' + (socks or socks5 or http)://base64@server:port\n' +
-            ' + vless://uuid@server:port...\n' +
-            ' + vmess://base64\n' +
-            ' + trojan://password@server:port...\n' +
-            ' + ss://base64@server:port...'
-        );
-
-        return false;
-    }
-
-    const config = new URL(chainProxy);
-    let { protocol, username } = config;
-    let security = config.searchParams.get('security');
-    let type = config.searchParams.get('type');
-
-    if (isVMess) {
-        const vmConfig = JSON.parse(atob(config.host));
-        username = vmConfig.id;
-        security = vmConfig.tls;
-        type = vmConfig.net;
-    }
-
-    if (['vless:', 'trojan:', 'vmess:'].includes(protocol)) {
-        if (!username) {
-            alert(
-                '⛔ Invalid Config!\n' +
-                '💡 Config URL should contain UUID or Password.'
+function removeTelegramBot(btn) {
+    const icons = startWaiting(btn, '', 'refresh');
+
+    fetch('./telegram/remove', { method: 'POST', credentials: 'include' })
+        .then(res => res.json())
+        .then(({ success, status, message, body }) => {
+            if (status === 401) {
+                notify(
+                    'error',
+                    'Remove Telegram bot',
+                    ['Session expired! Please login and try again.']
+                );
+                window.location.href = './login';
+            }
+
+            if (!success) {
+                throw new Error(`status ${status} - ${message}`);
+            }
+
+            handleTgFormChanges(body);
+            notify(
+                'success',
+                'Remove Telegram bot',
+                ['Telegram bot removed successfully!']
             );
-
-            return false;
-        }
-
-        if (security && !['tls', 'none', 'reality'].includes(security)) {
-            alert(
-                '⛔ Invalid Config!\n' +
-                '💡 VLESS, VMess or Trojan security can be TLS, Reality or None.'
-            );
-
-            return false;
-        }
-
-        if (!['tcp', 'raw', 'ws', 'grpc', 'httpupgrade'].includes(type)) {
-            alert(
-                '⛔ Invalid Config!\n' +
-                '💡 VLESS, VMess or Trojan transmission can be tcp, ws, grpc or httpupgrade.'
-            );
-
-            return false;
-        }
-    }
-
-    return true;
-}
-
-function validateCustomCdn() {
-    const customCdnHost = getElmValue('customCdnHost');
-    const customCdnSni = getElmValue('customCdnSni');
-    const customCdnAddrs = parseElmValues('customCdnAddrs');
-    const isCustomCdn = customCdnAddrs.length || customCdnHost !== '' || customCdnSni !== '';
-
-    if (isCustomCdn && !(customCdnAddrs.length && customCdnHost && customCdnSni)) {
-        alert('⛔ All "Custom" fields should be filled or deleted together!');
-        return false;
-    }
-
-    return true;
-}
-
-function validateKnockerNoise() {
-    const regex = /^(none|quic|random|[0-9A-Fa-f]+)$/;
-    const knockerNoise = getElmValue("knockerNoiseMode");
-
-    if (!regex.test(knockerNoise)) {
-        alert(
-            '⛔ Invalid noise  mode.\n' +
-            '💡 Please use "none", "quic", "random" or a valid hex value.'
-        );
-
-        return false;
-    }
-
-    return true;
-}
-
-function validateXrayNoises(fields) {
-    const [modes, packets, delaysMin, delaysMax] = fields;
-    const base64Regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
-    let submisionError = false;
-
-    modes.forEach((mode, index) => {
-        if (Number(delaysMin[index]) > Number(delaysMax[index])) {
-            alert('⛔ The minimum noise delay should be smaller or equal to maximum!');
-            submisionError = true;
-            return;
-        }
-
-        switch (mode) {
-            case 'base64': {
-                if (!base64Regex.test(packets[index])) {
-                    alert('⛔ The Base64 noise packet is not a valid base64 value!');
-                    submisionError = true;
-                }
-
-                break;
-            }
-            case 'rand': {
-                if (!(/^\d+-\d+$/.test(packets[index]))) {
-                    alert('⛔ The Random noise packet should be a range like 0-10 or 10-30!');
-                    submisionError = true;
-                }
-
-                const [min, max] = packets[index].split("-").map(Number);
-
-                if (min > max) {
-                    alert('⛔ The minimum Random noise packet should be smaller or equal to maximum!');
-                    submisionError = true;
-                }
-
-                break;
-            }
-            case 'hex': {
-                if (!(/^(?=(?:[0-9A-Fa-f]{2})*$)[0-9A-Fa-f]+$/.test(packets[index]))) {
-                    alert(
-                        '⛔ The Hex noise packet is not a valid hex value!\n' +
-                        '💡 It should have even length and consisted of 0-9, a-f and A-F.'
-                    );
-                    submisionError = true;
-                }
-
-                break;
-            }
-            case 'array': {
-                const valid = packets[index]
-                    .split(',')
-                    .every(n => /^\d+$/.test(n) && +n >= 0 && +n <= 255);
-
-                if (!valid) {
-                    alert('⛔ The values should be comma separated numbers between 0-255');
-                    submisionError = true;
-                }
-
-                break;
-            }
-        }
-    });
-
-    return !submisionError;
-}
-
-function validateEchConfig() {
-    const echServerName = getElmValue("echServerName");
-
-    if (echServerName && !isDomain(echServerName)) {
-        alert('⛔ The ECH Server Name should be a domain!');
-        return false;
-    }
-
-    return true;
-}
-
-function validateUpstreamProxy() {
-    const upstreamProxy = getElmValue('upstreamProxy');
-
-    if (upstreamProxy && !isValidHostName(upstreamProxy, true)) {
-        alert(
-            '⛔ Invalid Upstream proxy!\n' +
-            '💡 It can be either IP:Port or Domain:Port'
-        );
-        return false;
-    }
-
-    return true;
+        })
+        .catch(error => console.error('Remove Telegram bot error:', error.message || error))
+        .finally(() => {
+            stopWaiting(icons);
+        });
 }
 
 function validateSettings() {
@@ -990,29 +648,6 @@ function validateSettings() {
         'udpXrayNoiseDelayMax',
         'udpXrayNoiseCount'
     ].map(field => formData.getAll(field));
-
-    const validations = [
-        validateRemoteDNS(),
-        validateSanctionDns(),
-        validateLocalDNS(),
-        validateWarpDNS(),
-        validateMultipleHostNames(),
-        validateProxyIPs(),
-        validateNAT64Prefixes(),
-        validateWarpEndpoints(),
-        validateMinMax(),
-        validateUpstreamProxy(),
-        validateChainProxy(),
-        validateCustomCdn(),
-        validateKnockerNoise(),
-        validateXrayNoises(fields),
-        validateCustomRules(),
-        validateEchConfig()
-    ];
-
-    if (!validations.every(Boolean)) {
-        return false;
-    }
 
     const form = Object.fromEntries(formData.entries());
     const [modes, packets, delaysMin, delaysMax, counts] = fields;
@@ -1061,166 +696,83 @@ function validateSettings() {
 
 function logout(event) {
     event.preventDefault();
-    fetch('/logout', { method: 'GET', credentials: 'same-origin' })
+    fetch('./panel/logout', { method: 'GET', credentials: 'same-origin' })
         .then(response => response.json())
         .then(({ success, status, message }) => {
             if (!success) {
                 throw new Error(`status ${status} - ${message}`);
             }
 
-            window.location.href = '/login';
+            window.location.href = './login';
         })
-        .catch(error => console.error("Logout error:", error.message || error));
+        .catch(error => console.error('Logout error:', error.message || error));
+}
+
+function openResetPass(event) {
+    const modal = document.getElementById('resetPassModal');
+    const close = modal.querySelector('.modal-close');
+    const showHides = modal.querySelectorAll('.show-hide');
+    const title = modal.querySelector('.modal-title');
+    const form = modal.querySelector('.config-form');
+    const username = document.getElementById('usernameContainer');
+    if (!event) {
+        title.textContent = 'Set Password';
+        username.style.display = 'flex';
+        username.setAttribute('required', 'true');
+    }
+
+    close.onclick = () => modal.hidden = true;
+    form.onsubmit = resetPassword;
+    showHides.forEach(elm => {
+        elm.onclick = () => {
+            const input = elm.previousElementSibling;
+            const isPassword = input.type === 'password';
+            input.type = isPassword ? 'text' : 'password';
+            elm.textContent = isPassword ? 'visibility' : 'visibility_off';
+        }
+    });
+
+    modal.hidden = false;
 }
 
 function resetPassword(event) {
     event.preventDefault();
-    const resetPassModal = document.getElementById('resetPassModal');
-    const newPasswordInput = document.getElementById('newPassword');
-    const confirmPasswordInput = document.getElementById('confirmPassword');
+    const username = document.getElementById('username').value.trim();
     const passwordError = document.getElementById('passwordError');
-    const newPassword = newPasswordInput.value;
-    const confirmPassword = confirmPasswordInput.value;
+    const password = document.getElementById('newPassword').value.trim();
+    const confirmPassword = document.getElementById('confirmPassword').value.trim();
 
-    if (newPassword !== confirmPassword) {
-        passwordError.textContent = "Passwords do not match";
+    if (password !== confirmPassword) {
+        passwordError.textContent = 'Passwords do not match';
         return false;
     }
 
-    const hasCapitalLetter = /[A-Z]/.test(newPassword);
-    const hasNumber = /[0-9]/.test(newPassword);
-    const isLongEnough = newPassword.length >= 8;
-
-    if (!(hasCapitalLetter && hasNumber && isLongEnough)) {
-        passwordError.textContent = '⚠️ Password must contain at least one capital letter, one number, and be at least 8 characters long.';
+    const valid = /^(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
+    if (!valid) {
+        passwordError.textContent = 'Must contain at least one capital letter, one number, and be at least 8 characters long.';
         return false;
     }
 
-    fetch('/panel/reset-password', {
+    fetch('./panel/reset-password', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'text/plain'
-        },
-        body: newPassword,
-        credentials: 'same-origin'
+        headers: { 'Content-Type': 'text/plain' },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+            username,
+            password
+        })
     })
         .then(response => response.json())
         .then(({ success, status, message }) => {
             if (!success) {
-                passwordError.textContent = `⚠️ ${message}`;
+                passwordError.textContent = message;
                 throw new Error(`status ${status} - ${message}`);
             }
 
-            alert("✅ Password changed successfully! 👍");
-            window.location.href = '/login';
-
+            notify('success', 'Reset password', ['Password changed successfully!']);
+            window.location.href = './login';
         })
-        .catch(error => console.error("Reset password error:", error.message || error))
-        .finally(() => {
-            resetPassModal.style.display = "none";
-            document.body.style.overflow = "";
-        });
-}
-
-function renderPortsBlock(ports) {
-    let noneTlsPortsBlock = '', tlsPortsBlock = '';
-    const totalPorts = [
-        ...(window.origin.includes('workers.dev') ? defaultHttpPorts : []),
-        ...defaultHttpsPorts
-    ];
-
-    totalPorts.forEach(port => {
-        const isChecked = ports.includes(port) ? 'checked' : '';
-        let clss = '', handler = '';
-
-        if (defaultHttpsPorts.includes(port)) {
-            clss = 'class="https"';
-            handler = 'onclick="handlePortChange(event)"';
-        }
-
-        const portBlock = `
-            <div class="routing">
-                <input type="checkbox" name=${port} ${clss} value="true" ${isChecked} ${handler}>
-                <label>${port}</label>
-            </div>`;
-
-        defaultHttpsPorts.includes(port)
-            ? tlsPortsBlock += portBlock
-            : noneTlsPortsBlock += portBlock;
-    });
-
-    document.getElementById("tls-ports").innerHTML = tlsPortsBlock;
-
-    if (noneTlsPortsBlock) {
-        document.getElementById("non-tls-ports").innerHTML = noneTlsPortsBlock;
-        document.getElementById("none-tls").style.display = 'flex';
-    }
-}
-
-function addUdpNoise(isManual, noiseIndex, udpNoise) {
-    const index = noiseIndex ?? globalThis.xrayNoiseCount;
-    const noise = udpNoise || {
-        type: 'rand',
-        packet: '50-100',
-        delay: '1-5',
-        applyTo: 'ip',
-        count: 5
-    };
-
-    const container = document.createElement('div');
-    container.className = "inner-container";
-    container.id = `udp-noise-${index + 1}`;
-
-    container.innerHTML = `
-        <div class="header-container">
-            <h4>Noise ${index + 1}</h4>
-            <button type="button" class="delete-noise">
-                <span class="material-symbols-rounded">delete</span>
-            </button>      
-        </div>
-        <div class="section">
-            <div class="form-control">
-                <label>😵‍💫 Mode</label>
-                <div>
-                    <select name="udpXrayNoiseMode">
-                        <option value="base64" ${noise.type === 'base64' ? 'selected' : ''}>Base64</option>
-                        <option value="rand" ${noise.type === 'rand' ? 'selected' : ''}>Random</option>
-                        <option value="str" ${noise.type === 'str' ? 'selected' : ''}>String</option>
-                        <option value="hex" ${noise.type === 'hex' ? 'selected' : ''}>Hex</option>
-                        <option value="array" ${noise.type === 'array' ? 'selected' : ''}>Array</option>
-                    </select>
-                </div>
-            </div>
-            <div class="form-control">
-                <label>📦 Packet</label>
-                <div>
-                    <input type="text" name="udpXrayNoisePacket" value="${noise.packet}">
-                </div>
-            </div>
-            <div class="form-control">
-                <label>🎚️ Count</label>
-                <div>
-                    <input type="number" name="udpXrayNoiseCount" value="${noise.count}" min="1" required>
-                </div>
-            </div>
-            <div class="form-control">
-                <label>🕞 Delay</label>
-                <div class="min-max">
-                    <input type="number" name="udpXrayNoiseDelayMin"
-                        value="${noise.delay.split('-')[0]}" min="1" required>
-                    <span> - </span>
-                    <input type="number" name="udpXrayNoiseDelayMax"
-                        value="${noise.delay.split('-')[1]}" min="1" required>
-                </div>
-            </div>
-        </div>`;
-
-    container.querySelector(".delete-noise").addEventListener('click', deleteUdpNoise);
-    container.querySelector("select").addEventListener('change', generateUdpNoise);
-
-    document.getElementById("noises").append(container);
-    if (isManual) enableApplyButton();
-    globalThis.xrayNoiseCount++;
+        .catch(error => console.error('Reset password error:', error.message || error));
 }
 
 function generateUdpNoise(event) {
@@ -1228,7 +780,6 @@ function generateUdpNoise(event) {
         const array = new Uint8Array(Math.ceil(length * 3 / 4));
         crypto.getRandomValues(array);
         let base64 = btoa(String.fromCharCode(...array));
-
         return base64.slice(0, length);
     }
 
@@ -1236,18 +787,16 @@ function generateUdpNoise(event) {
         const array = new Uint8Array(Math.ceil(length / 2));
         crypto.getRandomValues(array);
         let hex = [...array].map(b => b.toString(16).padStart(2, '0')).join('');
-
         return hex.slice(0, length);
     }
 
     const generateRandomString = length => {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         const array = new Uint8Array(length);
-
         return Array.from(crypto.getRandomValues(array), x => chars[x % chars.length]).join('');
     };
 
-    const noisePacket = event.target.closest(".inner-container").querySelector('[name="udpXrayNoisePacket"]');
+    const noisePacket = event.target.closest('.inner-container').querySelector("[name='udpXrayNoisePacket']");
 
     switch (event.target.value) {
         case 'base64':
@@ -1255,7 +804,7 @@ function generateUdpNoise(event) {
             break;
 
         case 'rand':
-            noisePacket.value = "50-100";
+            noisePacket.value = '50-100';
             break;
 
         case 'hex':
@@ -1268,28 +817,332 @@ function generateUdpNoise(event) {
     }
 }
 
-function deleteUdpNoise(event) {
-    if (globalThis.xrayNoiseCount === 1) {
-        alert('⛔ You cannot delete all noises!');
-        return;
+function generateUUID() {
+    const uuid = document.getElementById('vlUUID');
+    uuid.value = crypto.randomUUID();
+    handleProxyFormChanges();
+}
+
+function generateRandomStr() {
+    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@$&*_-+;:,.';
+    const length = Math.floor(Math.random() * (32 - 16 + 1)) + 16;
+
+    return Array.from(crypto.getRandomValues(new Uint8Array(length)))
+        .map(byte => charset[byte % charset.length])
+        .join('');
+}
+
+function generatePassword() {
+    const trPass = document.getElementById('trPass');
+    trPass.value = generateRandomStr();
+    handleProxyFormChanges();
+}
+
+function generatePath() {
+    const securePath = document.getElementById('securePath');
+    securePath.value = generateRandomStr();
+    handleProxyFormChanges();
+}
+
+async function updatePanel(btn) {
+    const confirm = await notify('confirm', 'Update BPB Panel', [
+        `BPB Panel verseion ${globalThis.latestVersion} is now available!`,
+        `Please read <a href='${globalThis.latestUrl}' target='_blank' rel='noopener noreferrer'>Release notes</a> carefully before updating.`,
+        'Are you sure?'
+    ]);
+
+    if (!confirm) return;
+    const icons = startWaiting(btn, '', 'refresh');
+
+    fetch('./panel/update-panel', { method: 'POST' })
+        .then(res => res.json())
+        .then(({ success, status, message }) => {
+            if (!success) throw new Error(`status ${status} - ${message}`);
+            notify('success', 'Update panel', ['Your panel upgraded successfully!']);
+            setTimeout(() => {
+                location.reload();
+            }, 3000);
+        })
+        .catch(error => {
+            stopWaiting(icons);
+            notify('error', 'Update panel', ['Failed to update your BPB Panel, please try again.']);
+            console.error('Update panel error:', error.message || error)
+        });
+}
+
+async function deletePanel(btn) {
+    const confirm = await notify('confirm', 'Delete BPB Panel', [
+        'This will permanently delete your panel from your Cloudflare account',
+        'Are you sure?'
+    ]);
+
+    if (!confirm) return;
+    const icons = startWaiting(btn, '', 'refresh');
+
+    fetch('./panel/delete-panel', { method: 'POST' })
+        .then(res => res.json())
+        .then(({ success, status, message }) => {
+            if (!success) throw new Error(`status ${status} - ${message}`);
+            notify('success', 'Delete panel', ['Your panel deleted successfully!']);
+        })
+        .catch(error => {
+            notify('error', 'Delete panel', ['Failed to delete your BPB Panel, please try again.']);
+            console.error('Delete panel error:', error.message || error)
+        })
+        .finally(() => {
+            stopWaiting(icons);
+        });
+}
+
+function notify(type, title, text) {
+    return new Promise(resolve => {
+        const fragment = document.getElementById('message-template').content.cloneNode(true);
+        const modal = fragment.querySelector('.modal');
+        modal.hidden = false;
+
+        modal.querySelector('.message-title').textContent = title;
+        modal.querySelector('.message-text').innerHTML = text.join('\n');
+
+        const icon = modal.querySelector('.message-icon');
+        const isOk = type === 'success' || type === 'info';
+        const isConfirm = type === 'confirm';
+
+        icon.textContent = isOk ? 'check_circle' : isConfirm ? 'help' : 'error';
+        icon.style.color = isOk ? 'var(--color-icon-green)' : 'var(--color-icon-red)';
+
+        const okBtn = modal.querySelector('.message-ok-btn');
+        const cancelBtn = modal.querySelector('.message-cancel-btn');
+        const closeBtn = modal.querySelector('.modal-close');
+
+        const handle = (value) => {
+            modal.remove();
+            resolve(value);
+        };
+
+        if (type === 'confirm') {
+            cancelBtn.onclick = () => handle(false);
+        } else {
+            cancelBtn.style.display = 'none';
+        }
+
+        if (type === 'info') {
+            okBtn.style.display = 'none';
+        } else {
+            okBtn.onclick = () => handle(true);
+        }
+
+        closeBtn.onclick = () => handle(false)
+        document.body.appendChild(fragment);
+
+        if (type === 'info') {
+            setTimeout(() => {
+                modal.remove();
+                resolve(null);
+            }, 1000);
+
+            return;
+        }
+    });
+}
+
+function startWaiting(button, id, customIcon, cw = true) {
+    document.body.classList.add('is-loading');
+    const btn = button ?? document.getElementById(id);
+    const icon = btn.querySelector('span');
+    const initIcon = icon.textContent;
+    if (customIcon) icon.textContent = customIcon;
+    icon.classList.add(`${cw ? 'cw' : 'ccw'}-spinning`);
+    return { icon, initIcon };
+}
+
+function stopWaiting(icons) {
+    document.body.classList.remove('is-loading');
+    const { icon, initIcon } = icons;
+    icon.classList.remove('cw-spinning');
+    icon.classList.remove('ccw-spinning');
+    if (initIcon !== icon.textContent) icon.textContent = initIcon;
+}
+
+function elm(tag, props = {}, children = []) {
+    const node = document.createElement(tag);
+    Object.assign(node, props);
+    node.append(...[].concat(children));
+    return node;
+}
+
+const createIcon = (text) => elm('span', {
+    className: 'material-symbols-rounded',
+    textContent: text
+});
+
+function createFormControl(labelText) {
+    const control = elm('div', { className: 'form-control' });
+    const label = elm('label', { textContent: labelText });
+    const inputWrapper = elm('div');
+    return elm('div', { className: 'form-control' }, [label, inputWrapper]);
+}
+
+function renderPortsBlock(ports) {
+    let noneTlsPortsBlock = document.createDocumentFragment();
+    let tlsPortsBlock = document.createDocumentFragment();
+
+    const totalPorts = [
+        ...(window.origin.includes('workers.dev') ? defaultHttpPorts : []),
+        ...defaultHttpsPorts
+    ];
+
+    totalPorts.forEach(port => {
+        const isChecked = ports.includes(port);
+        const isHttpsPort = defaultHttpsPorts.includes(port);
+
+        const checkbox = elm('input', {
+            type: 'checkbox',
+            name: String(port),
+            value: 'true',
+            checked: isChecked
+        });
+
+        if (isHttpsPort) {
+            checkbox.className = 'https';
+            checkbox.addEventListener('click', handlePortChange);
+        }
+
+        const label = elm('label', { textContent: String(port) });
+        const wrapper = elm('div', { className: 'checkbox-wrapper' }, [checkbox, label]);
+
+        if (isHttpsPort) {
+            tlsPortsBlock.appendChild(wrapper);
+        } else {
+            noneTlsPortsBlock.appendChild(wrapper);
+        }
+    });
+
+    const tlsContainer = document.getElementById('tls-ports');
+    tlsContainer.innerHTML = '';
+    tlsContainer.appendChild(tlsPortsBlock);
+
+    const nonTlsContainer = document.getElementById('non-tls-ports');
+    if (noneTlsPortsBlock.childElementCount > 0) {
+        nonTlsContainer.innerHTML = '';
+        nonTlsContainer.appendChild(noneTlsPortsBlock);
+        document.getElementById('none-tls').style.display = 'flex';
     }
-
-    const confirmReset = confirm(
-        '⚠️ This will delete the noise.\n\n' +
-        '❓ Are you sure?'
-    );
-
-    if (!confirmReset) return;
-    event.target.closest(".inner-container").remove();
-    enableApplyButton();
-    globalThis.xrayNoiseCount--;
 }
 
 function renderUdpNoiseBlock(xrayUdpNoises) {
-    document.getElementById("noises").innerHTML = '';
+    document.getElementById('noises').innerHTML = '';
     xrayUdpNoises.forEach((noise, index) => {
         addUdpNoise(false, index, noise);
     });
 
     globalThis.xrayNoiseCount = xrayUdpNoises.length;
+}
+
+async function deleteUdpNoise(event) {
+    const confirm = await notify('confirm', 'Delete UDP noise', ['Are you sure?']);
+    if (!confirm) return;
+
+    event.target.closest('.inner-container').remove();
+    handleProxyFormChanges();
+    globalThis.xrayNoiseCount--;
+}
+
+function addUdpNoise(isManual, noiseIndex, udpNoise) {
+    const index = noiseIndex ?? globalThis.xrayNoiseCount;
+    const noise = udpNoise || {
+        type: 'rand',
+        packet: '50-100',
+        delay: '1-5',
+        count: 5
+    };
+
+    const heading = elm('h4', { textContent: `Noise ${index + 1}` });
+    const headerDiv = elm('div', { className: 'header-container' }, heading);
+
+    if (index !== 0) {
+        const deleteBtn = elm('button', {
+            type: 'button',
+            className: 'delete-noise',
+            onclick: deleteUdpNoise
+        }, createIcon('delete'));
+        headerDiv.appendChild(deleteBtn);
+    }
+
+    const modeOptions = [
+        ['base64', 'Base64'],
+        ['rand', 'Random'],
+        ['str', 'String'],
+        ['hex', 'Hex'],
+        ['array', 'Array']
+    ].map(([value, label]) => elm('option', { value, textContent: label, selected: noise.type === value }));
+
+    const modeSelect = elm('select', { name: 'udpXrayNoiseMode', onchange: generateUdpNoise }, modeOptions);
+    const modeControl = createFormControl('Mode');
+    modeControl.querySelector('div').appendChild(modeSelect);
+    const selectWrapper = elm('div', { className: 'select-wrapper' }, [modeControl, createIcon('keyboard_arrow_down')]);
+
+    const packetInput = elm('input', { type: 'text', name: 'udpXrayNoisePacket', value: noise.packet });
+    const packetControl = createFormControl('Packet');
+    packetControl.querySelector('div').appendChild(packetInput);
+
+    const countInput = elm('input', {
+        type: 'number', name: 'udpXrayNoiseCount', value: String(noise.count), min: '1', required: true
+    });
+    const countControl = createFormControl('Count');
+    countControl.querySelector('div').appendChild(countInput);
+
+    const [delayMin, delayMax] = noise.delay.split('-');
+    const delayMinInput = elm('input', { type: 'number', name: 'udpXrayNoiseDelayMin', value: delayMin, min: '1', required: true });
+    const delayMaxInput = elm('input', { type: 'number', name: 'udpXrayNoiseDelayMax', value: delayMax, min: '1', required: true });
+    const minMaxDiv = elm('div', { className: 'min-max' }, [delayMinInput, elm('span', { textContent: ' - ' }), delayMaxInput]);
+    const delayControl = createFormControl('Delay');
+    delayControl.querySelector('div').appendChild(minMaxDiv);
+
+    const section = elm('div', { className: 'section' }, [selectWrapper, packetControl, countControl, delayControl]);
+    const container = elm('div', { className: 'inner-container', id: `udp-noise-${index + 1}` }, [headerDiv, section]);
+
+    document.getElementById('noises').append(container);
+    if (isManual) handleProxyFormChanges();
+    globalThis.xrayNoiseCount++;
+}
+
+function renderSubscriptions(subscriptions) {
+    if (!subscriptions) return;
+    for (const [type, { label, categories }] of Object.entries(subscriptions)) {
+        const help = elm('a', {
+            href: `https://bia-pain-bache.github.io/BPB-Worker-Panel/usage/${type}/`,
+            target: '_blank',
+            title: 'Help'
+        }, createIcon('info'));
+
+        const header = elm('h3', { textContent: label }, help);
+        const summary = elm('summary', {}, header);
+        const section = elm('details', {}, summary);
+        const table = elm('table', {}, categories.map(({ core, clients }) => {
+            const clientSection = elm('td', {}, clients.map(client => {
+                const icon = createIcon('verified');
+                const title = elm('span', { textContent: client });
+                const wrapper = elm('div', {}, [icon, title]);
+                return wrapper;
+            }));
+
+            const isSingBox = core === 'sing-box';
+            const subUrl = generateSubUrl(type, core, label, isSingBox);
+            const ctaSection = elm('td');
+
+            if (core !== 'wireguard') {
+                const qrBtn = elm('button', { title: 'Display QR code', onclick: () => openQR(subUrl) }, createIcon('qr_code'));
+                const copyBtn = elm('button', { title: 'Copy subscription URL', onclick: () => copyToClipboard(subUrl) }, createIcon('content_copy'));
+                ctaSection.append(qrBtn, copyBtn);
+            }
+
+            const dlBtn = elm('button', { title: 'Download config', onclick: () => dlUrl(subUrl) }, createIcon('download'));
+            ctaSection.appendChild(dlBtn);
+            return elm('tr', {}, [clientSection, ctaSection]);
+        }));
+
+        const container = elm('div', { className: 'table-container' }, table);
+        section.appendChild(container);
+        document.getElementById('subscriptions').appendChild(section);
+    };
 }

@@ -5,37 +5,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BPB Panel v__VERSION__</title>
-    <link rel="icon" href="/favicon.ico" />
+    <link id="favicon" rel="icon" type="image/x-icon" href="data:image/x-icon;base64,__ICON__">
     <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=content_copy&display=block" />
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=content_copy,flash_on&display=block" />
     __STYLE__
 </head>
 
 <body>
-    <h1>
-        <img class="icon" src="/favicon.ico" alt="BPB Logo"> BPB Panel <span id="panel-version"
-            style="font-size: smaller;">
-            v__VERSION__
-        </span>
-    </h1>
-    <table id="geo-table">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Proxy IP</th>
-                <th>Country</th>
-                <th>City</th>
-                <th>ISP</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td colspan="5">Loading...</td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="header">
+        <img id="header-logo" src="data:image/x-icon;base64,__ICON__" alt="BPB Logo" width="48" height="48">
+        <h1>
+            BPB Panel
+            <span class="panel-version">
+                v__VERSION__
+            </span>
+        </h1>
+    </div>
 
-    <script type="module" defer>
+    <div class="table-wrapper">
+        <table id="geo-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Proxy IP</th>
+                    <th>Health rate</th>
+                    <th>TCP Latency (ms)</th>
+                    <th>Country</th>
+                    <th>City</th>
+                    <th>ISP</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="5">Loading...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script type="module">
         import { polyfillCountryFlagEmojis } from "https://cdn.skypack.dev/country-flag-emoji-polyfill";
         polyfillCountryFlagEmojis();
     </script>
