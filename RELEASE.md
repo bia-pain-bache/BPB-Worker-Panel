@@ -37,8 +37,6 @@ Also manual deployment and BPB Wizard client deployments do not work on this rel
 
 First time contributors: @javadSharifi @gbcwror @doublepleat
 
-![GitHub Downloads (specific asset, specific tag)](https://img.shields.io/github/downloads/bia-pain-bache/BPB-Worker-Panel/v5.0.0/worker.js)
-
 > [!CAUTION]
 > Please update whatever client you use, specially these ones:
 
