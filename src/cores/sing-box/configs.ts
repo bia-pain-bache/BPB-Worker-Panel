@@ -97,9 +97,9 @@ export async function getSbCustomConfig(isFragment: boolean): Promise<Response> 
 
     for (const domain of domains) {
         const totalPorts = ports.filter(port => !isFragment && domain.endsWith('workers.dev') || isHttps(port));
-        const hosts = await getConfigAddresses(domain, false);
+        const hosts = await getConfigAddresses(domain, isFragment);
         if (upstreamServer && upstreamPort) {
-            ports.unshift(upstreamPort);
+            totalPorts.unshift(upstreamPort);
             hosts.unshift(upstreamServer);
         }
         for (const protocol of protocols) {
