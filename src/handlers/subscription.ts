@@ -1,10 +1,10 @@
 import { getClNormalConfig, getClWarpConfig } from '@cores/clash/configs';
 import { getURLConfigs } from '@cores/common';
 import { getSbCustomConfig, getSbWarpConfig } from '@cores/sing-box/configs';
-import { getWarpConfigs } from '@cores/Wireguard';
 import { getXrCustomConfigs, getXrWarpConfigs } from '@cores/xray/configs';
 import { setSettings, getGlobals } from '@settings';
 import { fallback } from './utils';
+import { getWarpConfigs } from '@cores/wireguard';
 
 export async function handleSubscriptions(request: Request, env: Env): Promise<Response> {
     await setSettings(env);

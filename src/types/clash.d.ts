@@ -170,6 +170,10 @@ export interface AmneziaOpts {
     'jc': number;
     'jmin': number;
     'jmax': number;
+    'H1': 1;
+    'H2': 2;
+    'H3': 3;
+    'H4': 4;
 }
 
 export interface WireguardOutbound extends BaseOutbound {

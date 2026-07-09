@@ -134,7 +134,11 @@ export function buildWarpOutbound(
         'amnezia-wg-option': isPro ? {
             'jc': amneziaNoiseCount,
             'jmin': amneziaNoiseSizeMin,
-            'jmax': amneziaNoiseSizeMax
+            'jmax': amneziaNoiseSizeMax,
+            'H1': 1,
+            'H2': 2,
+            'H3': 3,
+            'H4': 4
         } satisfies AmneziaOpts : undefined
     };
 }
