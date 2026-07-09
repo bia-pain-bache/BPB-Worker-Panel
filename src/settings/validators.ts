@@ -264,8 +264,8 @@ function validateMinMax(form: PanelSettings, errors: ValidationError[]) {
 function validateChainProxy(form: PanelSettings, errors: ValidationError[]) {
     let chainProxy = form.chainProxy;
     if (!chainProxy) return true;
-    const vmRegex = new RegExp(`/${_VM_}:\/\/.+$/`);
-    const othersRegex = new RegExp(`/(http|socks|socks5|${_VL_}|${_TR_}|ss):\/\/[^\s@]+@[^\s:]+:[^\s]+/`);
+    const vmRegex = new RegExp(`${_VM_}:\\/\\/.+$`);
+    const othersRegex = new RegExp(`(http|socks|socks5|${_VL_}|${_TR_}|ss):\\/\\/[^\\s@]+@[^\\s:]+:[^\\s]+`);
     const isVMess = vmRegex.test(chainProxy);
     const isOthers = othersRegex.test(chainProxy);
 
