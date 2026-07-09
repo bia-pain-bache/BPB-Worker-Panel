@@ -27,10 +27,10 @@ export async function updateMainSettings(newSettings: PanelSettings | null): Pro
         if (same) return {};
     }
 
-    const script = await buildScript(false, settings);
-    const { deployType } = getSettings();
-
     try {
+        const script = await buildScript(false, settings);
+        const { deployType } = getSettings();
+        
         if (deployType === 'pages') {
             await deployPages(script);
         } else {

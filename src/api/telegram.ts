@@ -1,5 +1,5 @@
 import { HttpStatus, respond, safeError } from '@common';
-import { getSettings, subscriptions } from '@settings';
+import { getGlobals, getSettings, subscriptions } from '@settings';
 import { getCfWorkerUsage } from './usage';
 import { authenticate } from '@auth';
 import { TelegramBot } from '#types/settings';
@@ -19,16 +19,37 @@ export async function setupTelegramWebhook(request: Request, env: Env): Promise<
         const botToken = telegramBotToken.trim();
         const userID = telegramUserId.trim();
 
-        if (!botToken || !userID) return respond(false, HttpStatus.BAD_REQUEST, 'Missing but info.');
+        if (!botToken || !userID) {
+            return respond(false, HttpStatus.BAD_REQUEST, 'Missing but info.');
+        }
 
-        const { origin, securePath } = getSettings();
-        const webhookUrl = encodeURI(`${origin}/${securePath}/telegram/webhook`);
+        const { securePath } = getGlobals();
+        await setTelegramBot(securePath, botToken);
 
-        const res = await fetch(`https://api.telegram.org/bot${botToken}/setWebhook?url=${webhookUrl}`);
+        const bot: TelegramBot = {
+            telegramBotToken: botToken,
+            telegramUserId: userID
+        };
+
+        await env.kv.put('telegramBot', JSON.stringify(bot));
+        return respond(true, HttpStatus.OK, 'Telegram bot setup completed successfully!', bot);
+    } catch (error) {
+        return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `Error occurred while setting Telegram Bot: ${safeError(error)}`);
+    }
+}
+
+export async function setTelegramBot(path: string, token: string) {
+    const { origin } = getGlobals();
+    const webhookUrl = encodeURI(`${origin}/${path}/telegram/webhook`);
+
+    try {
+        const res = await fetch(`https://api.telegram.org/bot${token}/setWebhook?url=${webhookUrl}`);
         const data: any = await res.json();
-        if (!data.ok) return respond(false, HttpStatus.BAD_REQUEST, data.description || 'Failed to set webhook.');
-
-        await fetch(`https://api.telegram.org/bot${botToken}/setMyCommands`, {
+        if (!data.ok) {
+            throw new Error(data.description || 'Failed to set webhook.');
+        }
+    
+        const commRes = await fetch(`https://api.telegram.org/bot${token}/setMyCommands`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -39,17 +60,13 @@ export async function setupTelegramWebhook(request: Request, env: Env): Promise<
                 ]
             })
         });
-
-        const bot: TelegramBot = {
-            telegramBotToken: botToken,
-            telegramUserId: userID
-        };
-
-        await env.kv.put('telegramBot', JSON.stringify(bot));
-
-        return respond(true, HttpStatus.OK, 'Telegram bot setup completed successfully!', bot);
+    
+        const commData: any = await commRes.json();
+        if (!commData.ok) {
+            throw new Error(commData.description || 'Failed to set bot commands.');
+        }
     } catch (error) {
-        return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, `Error occurred while setting Telegram bot: ${safeError(error)}`);
+        throw new Error(safeError(error));
     }
 }
 

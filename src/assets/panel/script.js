@@ -776,6 +776,8 @@ function resetPassword(event) {
 }
 
 function generateUdpNoise(event) {
+    const noisePacket = event.target.closest('.inner-container').querySelector("[name='udpXrayNoisePacket']");
+    
     const generateRandomBase64 = length => {
         const array = new Uint8Array(Math.ceil(length * 3 / 4));
         crypto.getRandomValues(array);
@@ -790,14 +792,6 @@ function generateUdpNoise(event) {
         return hex.slice(0, length);
     }
 
-    const generateRandomString = length => {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        const array = new Uint8Array(length);
-        return Array.from(crypto.getRandomValues(array), x => chars[x % chars.length]).join('');
-    };
-
-    const noisePacket = event.target.closest('.inner-container').querySelector("[name='udpXrayNoisePacket']");
-
     switch (event.target.value) {
         case 'base64':
             noisePacket.value = generateRandomBase64(64);
@@ -811,9 +805,11 @@ function generateUdpNoise(event) {
             noisePacket.value = generateRandomHex(64);
             break;
 
-        case 'str':
-            noisePacket.value = generateRandomString(64);
+        case 'str': {
+            const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            noisePacket.value = generateRandomStr(charset, 64, 64);
             break;
+        }
     }
 }
 
@@ -823,24 +819,24 @@ function generateUUID() {
     handleProxyFormChanges();
 }
 
-function generateRandomStr() {
-    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@$&*_-+;:,.';
-    const length = Math.floor(Math.random() * (32 - 16 + 1)) + 16;
-
+function generateRandomStr(charset, minLen, maxLen) {
+    const length = Math.floor(Math.random() * (maxLen - minLen + 1)) + minLen;
     return Array.from(crypto.getRandomValues(new Uint8Array(length)))
         .map(byte => charset[byte % charset.length])
         .join('');
 }
 
 function generatePassword() {
+    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@$&*_-+;:,.';
     const trPass = document.getElementById('trPass');
-    trPass.value = generateRandomStr();
+    trPass.value = generateRandomStr(charset, 16, 32);
     handleProxyFormChanges();
 }
 
 function generatePath() {
+    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
     const securePath = document.getElementById('securePath');
-    securePath.value = generateRandomStr();
+    securePath.value = generateRandomStr(charset, 16, 32);
     handleProxyFormChanges();
 }
 

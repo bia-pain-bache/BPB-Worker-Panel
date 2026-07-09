@@ -10,6 +10,7 @@ import { buildScript, updateMainSettings } from '@main';
 import { getGlobals, getMainSettings, subscriptions } from '@settings';
 import { validateSettings } from '@validators';
 import { fallback } from './utils';
+import { setTelegramBot } from '@api/telegram';
 
 export async function handlePanel(request: Request, env: Env): Promise<Response> {
     const { pathname } = getGlobals();
@@ -179,26 +180,25 @@ async function updatePanelSettings(request: Request, env: Env): Promise<Response
 
         const newSettings: PanelSettings = await request.json();
         const errors = validateSettings(newSettings);
-        if (errors) return respond(
-            false,
-            HttpStatus.BAD_REQUEST,
-            'Validation Error',
-            errors
-        );
-
+        if (errors) return respond(false, HttpStatus.BAD_REQUEST, 'Validation Error', errors);
+        
         await Promise.all([
             updateDataset(env, newSettings),
             updateMainSettings(newSettings)
         ]);
+        
+        const { securePath } = getGlobals();
+        if (newSettings.securePath !== securePath) {
+            const bot: TelegramBot | null = await env.kv.get('telegramBot', { type: 'json' });
+            if (bot) {
+                await setTelegramBot(newSettings.securePath, bot.telegramBotToken);
+            }
+        }
 
         return respond(true, HttpStatus.OK, '');
     } catch (error) {
         console.log(error);
-        return respond(
-            false,
-            HttpStatus.INTERNAL_SERVER_ERROR,
-            safeError(error)
-        );
+        return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, safeError(error));
     }
 }
 
