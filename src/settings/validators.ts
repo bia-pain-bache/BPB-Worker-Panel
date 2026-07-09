@@ -323,7 +323,7 @@ function validateChainProxy(form: PanelSettings, errors: ValidationError[]) {
                 field: 'Chain Proxy',
                 message: [
                     'Invalid Config!',
-                    '${_VL_CAP_}, ${_VM_CAP_} or ${_TR_CAP_} transmission can be tcp, ws, grpc or httpupgrade.'
+                    `${_VL_CAP_}, ${_VM_CAP_} or ${_TR_CAP_} transmission can be tcp, ws, grpc or httpupgrade.`
                 ]
             });
         }
@@ -488,7 +488,7 @@ function validateUUID(form: PanelSettings, errors: ValidationError[]) {
 }
 
 function validateTrPass(form: PanelSettings, errors: ValidationError[]) {
-    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+[]{}|;:",.<>?';
+    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@$&*_-+;:,.';
     const pass = form.trPass;
     if (![...pass].every(ch => charset.includes(ch))) {
         errors.push({
