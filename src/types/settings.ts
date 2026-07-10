@@ -72,6 +72,7 @@ export interface KvSettings {
     amneziaNoiseSizeMax: number;
     customSubs: string[];
     customConfigs: string[];
+    remoteSettings: string;
     panelVersion: string;
 }
 
@@ -96,6 +97,28 @@ export interface EmbededSettings {
     deployType?: string;
 }
 
+export interface MainSettings extends Omit<EmbededSettings,
+    | 'accID'
+    | 'apiToken'
+    | 'accEmail'
+    | 'mainDomain'
+> { }
+
+export interface SharedSettings extends
+    Pick<EmbededSettings,
+        | 'proxyIpMode'
+        | 'proxyIPs'
+        | 'prefixes'
+        | 'fallback'
+        | 'dohUrl'
+    >,
+    Omit<KvSettings,
+        | 'remoteSettings'
+        | 'customDomain'
+        | 'panelVersion'
+    > { }
+
+export interface PanelSettings extends KvSettings, MainSettings { };
 export interface ReqSettings {
     httpPorts: number[];
     httpsPorts: number[];
@@ -104,9 +127,6 @@ export interface ReqSettings {
     pathname: string;
     hostname: string;
 }
-
-export interface PanelSettings extends KvSettings, MainSettings { };
-export interface MainSettings extends Omit<EmbededSettings, 'accID' | 'apiToken' | 'mainDomain'> { }
 
 export type LogLevel = 'none' | 'warning' | 'error' | 'info' | 'debug';
 export type FragmentMode = 'custom' | 'low' | 'medium' | 'high';
@@ -156,5 +176,5 @@ interface ClientCategory {
 
 export interface SubsCategory {
     label: 'Normal' | 'Fragment' | 'Raw' | 'Warp' | 'Warp Pro';
-    categories: ClientCategory[]; 
+    categories: ClientCategory[];
 }

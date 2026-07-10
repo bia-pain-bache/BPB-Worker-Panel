@@ -181,12 +181,12 @@ async function updatePanelSettings(request: Request, env: Env): Promise<Response
         const newSettings: PanelSettings = await request.json();
         const errors = validateSettings(newSettings);
         if (errors) return respond(false, HttpStatus.BAD_REQUEST, 'Validation Error', errors);
-        
+
         await Promise.all([
             updateDataset(env, newSettings),
             updateMainSettings(newSettings)
         ]);
-        
+
         const { securePath } = getGlobals();
         if (newSettings.securePath !== securePath) {
             const bot: TelegramBot | null = await env.kv.get('telegramBot', { type: 'json' });

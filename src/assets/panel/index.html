@@ -7,7 +7,7 @@
     <title>BPB Panel v__VERSION__</title>
     <link id="favicon" rel="icon" type="image/x-icon" href="data:image/x-icon;base64,__ICON__">
     <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add_circle,autorenew,cancel,check_circle,clock_loader_40,close,cloud_download,cloud_upload,code_xml,content_copy,dashboard,data_usage,delete,dns,download,error,fingerprint,help,info,key_vertical,keyboard_arrow_down,link,logout,open_in_new,qr_code,refresh,save,settings,settings_backup_restore,share,smart_toy,terminal,tune,upgrade,verified,visibility,visibility_off&display=block" />
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add_circle,autorenew,cancel,check_circle,clock_loader_40,close,cloud_download,cloud_upload,code_xml,content_copy,dashboard,data_usage,delete,dns,download,draft,error,fingerprint,help,info,key_vertical,keyboard_arrow_down,link,logout,open_in_new,qr_code,refresh,save,settings,settings_backup_restore,share,smart_toy,terminal,tune,upgrade,upload,verified,visibility,visibility_off&display=block" />
     __STYLE__
 </head>
 
@@ -832,6 +832,63 @@
                 </div>
             </details>
 
+            <details>
+                <summary>
+                    <h3>Import - Export
+                        <a href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/import-export/"
+                            target="_blank" title="Help">
+                            <span class="material-symbols-rounded">info</span>
+                        </a>
+                    </h3>
+                </summary>
+                <div class="section">
+
+                    <div class="container">
+                        <h4><span class="material-symbols-rounded">link</span>Remote Settings</h4>
+                        <div class="form-control">
+                            <label for="remoteSettings">Remote URL</label>
+                            <div>
+                                <input type="text" id="remoteSettings" name="remoteSettings">
+                            </div>
+                        </div>
+                        <div class="dashboard-action">
+                            <span>Import From Remote</span>
+                            <button type="button" id="fetchSettingsBtn" class="button" onclick="importRemoteSettings(event)">
+                                <span class="material-symbols-rounded">cloud_download</span>
+                                Import
+                            </button>
+                        </div>
+                        <div class="dashboard-action">
+                            <span>Share Your Settings</span>
+                            <button type="button" class="button" onclick="shareSettings()">
+                                <span class="material-symbols-rounded">share</span>
+                                Share
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="container">
+                        <h4><span class="material-symbols-rounded">draft</span>File Settings</h4>
+                        <div class="dashboard-action">
+                            <span>Import From File</span>
+                            <button type="button" class="button" onclick="importFile()">
+                                <span class="material-symbols-rounded">upload</span>
+                                <input type="file" id="fileInput" accept=".dat" style="display: none;"
+                                    onchange="importFileSettings(event)" />
+                                Import
+                            </button>
+                        </div>
+                        <div class="dashboard-action">
+                            <span>Export To File</span>
+                            <button type="button" class="button" onclick="exportFileSettings(event)">
+                                <span class="material-symbols-rounded">download</span>
+                                Export
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </details>
+
             <div id="apply" class="form-control apply">
                 <button type="submit" id="applyButton" class="button disabled" form="configForm">
                     <span class="material-symbols-rounded">
@@ -844,18 +901,6 @@
                     <span class="material-symbols-rounded">
                         settings_backup_restore
                     </span>
-                </button>
-                <button type="button" class="panel-settings" title="Export panel settings" onclick="exportSettings()">
-                    <span class="material-symbols-rounded">
-                        cloud_download
-                    </span>
-                </button>
-                <button type="button" class="panel-settings" title="Import panel settings" onclick="importSettings()">
-                    <span class="material-symbols-rounded">
-                        cloud_upload
-                    </span>
-                    <input type="file" id="fileInput" accept=".dat" style="display: none;"
-                        onchange="uploadSettings(event)" />
                 </button>
             </div>
 

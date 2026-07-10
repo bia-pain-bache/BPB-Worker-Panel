@@ -1,4 +1,4 @@
-import { KvSettings, ReqSettings, EmbededSettings, MainSettings, WarpAccount, SubsCategory, TelegramBot } from '#types/settings';
+import { KvSettings, ReqSettings, EmbededSettings, MainSettings, WarpAccount, SubsCategory, SharedSettings } from '#types/settings';
 import { getDataset } from '@kv';
 
 Object.assign(globalThis, {
@@ -55,8 +55,34 @@ export const getGlobals = (): EmbededSettings & ReqSettings => globalSettings;
 export const getWarpAccounts = (): WarpAccount[] => warpAccounts;
 export const getKvSettings = (): KvSettings => kvSettings;
 export function getMainSettings(): MainSettings {
-    const { accID, apiToken, mainDomain, ...mainSettings } = EMBEDED_SETTINGS;
+    const { accID, accEmail, apiToken, mainDomain, ...mainSettings } = EMBEDED_SETTINGS;
     return mainSettings;
+}
+
+export function getSharedSettings(): SharedSettings {
+    const {
+        remoteSettings,
+        customDomain,
+        panelVersion,
+        ...proxySettings
+    } = kvSettings;
+
+    const { 
+        proxyIpMode, 
+        proxyIPs, 
+        prefixes, 
+        fallback, 
+        dohUrl
+    } = EMBEDED_SETTINGS;
+
+    return {
+        ...proxySettings,
+        proxyIpMode, 
+        proxyIPs, 
+        prefixes, 
+        fallback, 
+        dohUrl 
+    };
 }
 
 export const getSettings = () => ({
@@ -210,5 +236,6 @@ let kvSettings: KvSettings = {
     customBypassRules: [],
     customBlockRules: [],
     customBypassSanctionRules: [],
+    remoteSettings: '',
     panelVersion: VERSION
 };

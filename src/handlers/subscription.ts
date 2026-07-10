@@ -2,9 +2,11 @@ import { getClNormalConfig, getClWarpConfig } from '@cores/clash/configs';
 import { getURLConfigs } from '@cores/common';
 import { getSbCustomConfig, getSbWarpConfig } from '@cores/sing-box/configs';
 import { getXrCustomConfigs, getXrWarpConfigs } from '@cores/xray/configs';
-import { setSettings, getGlobals } from '@settings';
+import { setSettings, getGlobals, getKvSettings, getSharedSettings } from '@settings';
 import { fallback } from './utils';
 import { getWarpConfigs } from '@cores/wireguard';
+import { HttpStatus } from '@common';
+import { SharedSettings } from '#types/settings';
 
 export async function handleSubscriptions(request: Request, env: Env): Promise<Response> {
     await setSettings(env);
@@ -85,7 +87,27 @@ export async function handleSubscriptions(request: Request, env: Env): Promise<R
                     break;
             }
 
+        case 'share-settings':
+            return shareSettings();
+
         default:
             return fallback(request);
     }
+}
+
+async function shareSettings() {
+    const sharedSettings: SharedSettings = getSharedSettings();
+    const body = btoa(JSON.stringify(sharedSettings));
+
+    return new Response(body, {
+        status: HttpStatus.OK,
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET',
+            'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+        }
+    });
 }

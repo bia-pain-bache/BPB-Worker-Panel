@@ -1,9 +1,9 @@
 :root {
+    --color-brand-primary: #3b82f6;
     --color-bg-main: linear-gradient(90deg, #000328, #00458E);
     --color-bg-card: rgba(15, 23, 42, 0.5);
     --color-text-primary: #f1f5f9;
     --color-text-secondary: #aec4e2;
-    --color-secondary: #3498db;
     --color-border: #60a5fa36;
     --color-table-active: rgba(2, 6, 23, 0.5);
 
@@ -121,7 +121,7 @@ td:nth-child(4) {
 }
 
 .material-symbols-rounded {
-    color: var(--color-secondary);
+    color: var(--color-brand-primary);
     cursor: pointer;
     font-variation-settings:
         'FILL' 0,

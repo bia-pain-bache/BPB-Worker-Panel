@@ -159,10 +159,6 @@ h4 {
     text-align: left;
 }
 
-.dashboard-info span:first-of-type {
-    font-weight: 600;
-}
-
 #total-usage,
 #panel-usage {
     width: fit-content;

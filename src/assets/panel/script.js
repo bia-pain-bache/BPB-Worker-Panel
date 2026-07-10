@@ -44,7 +44,7 @@ async function initPanel(settings, tgSettings, subscriptions) {
 
         renderPanel(settings, tgSettings, subscriptions);
     } catch (error) {
-        console.error('Panel initiation error:', error.message || error);
+        console.error('Panel initiation error:', error);
     }
 }
 
@@ -75,33 +75,30 @@ async function getUsage() {
         panelPct.textContent = panelPctVal;
         if (panelPctVal > 80) panelPct.style.color = 'var(--color-icon-red)';
     } catch (error) {
-        console.error('Failed to get usage from API:', error.message || error);
+        console.error('Failed to get usage from API:', error);
     }
 }
 
 async function checkVersion(panelVersion) {
     try {
-        const res = await fetch('https://api.github.com/repos/bia-pain-bache/BPB-Worker-Panel/releases/latest', {
-            headers: {
-                'Accept': 'application/vnd.github.v3+json'
-            }
+        const res = await fetch('https://raw.githubusercontent.com/bia-pain-bache/BPB-Worker-Panel/refs/heads/main/package.json', {
+            cache: 'no-store'
         });
 
         if (!res.ok) {
             throw new Error(`status ${res.status}`);
         }
 
-        const release = await res.json();
-        const latest = release.tag_name.slice(1);
+        const pkg = await res.json();
+        const latest = pkg.version;
         const updateAvailable = isNewerVersion(latest, panelVersion);
         if (updateAvailable) {
             globalThis.latestVersion = latest;
-            globalThis.latestUrl = release.html_url;
             const upgradeBtn = document.getElementById('updatePanel');
             upgradeBtn.disabled = false;
         }
     } catch (error) {
-        console.error('Get latest version error:', error.message || error);
+        console.error('Get latest version error:', error);
     }
 }
 
@@ -124,6 +121,7 @@ function renderPanel(proxySettings, tgSettings, subscriptions) {
         securePath,
         ports,
         xrayUdpNoises,
+        remoteSettings
     } = proxySettings;
 
     const path = encodeURIComponent(securePath);
@@ -139,6 +137,8 @@ function renderPanel(proxySettings, tgSettings, subscriptions) {
     });
 
     document.getElementById('doh').textContent = new URL(`./dns-query`, window.location.href);
+    document.getElementById('fetchSettingsBtn').disabled = !remoteSettings;
+
     selectElements.forEach(elm => elm.value = proxySettings[elm.id]);
     checkboxElements.forEach(elm => elm.checked = proxySettings[elm.id]);
     inputElements.forEach(elm => elm.value = proxySettings[elm.id] || '');
@@ -151,15 +151,15 @@ function renderPanel(proxySettings, tgSettings, subscriptions) {
         if (rowsCount) element.rows = rowsCount;
         element.value = value;
         elm.addEventListener('input', () => {
-            this.style.height = 'auto';
-            this.style.height = `${this.scrollHeight}px`;
+            elm.style.height = 'auto';
+            elm.style.height = `${elm.scrollHeight}px`;
         });
     });
 
     renderPortsBlock(ports.map(Number));
     renderUdpNoiseBlock(xrayUdpNoises);
     renderSubscriptions(subscriptions);
-    
+
     globalThis.initialFormData = new FormData(proxyForm);
     handleProxyFormChanges();
     proxyForm.addEventListener('input', handleProxyFormChanges);
@@ -188,11 +188,10 @@ function hasFormDataChanged() {
     return JSON.stringify(initialFormDataObj) !== JSON.stringify(currentFormDataObj);
 }
 
-function handleProxyFormChanges() {
+function handleProxyFormChanges(force = false) {
     const applyButton = document.getElementById('applyButton');
     const isChanged = hasFormDataChanged();
-    applyButton.disabled = !isChanged;
-    applyButton.classList.toggle('disabled', !isChanged);
+    applyButton.disabled = force ? false : !isChanged;
 }
 
 function handleTgFormChanges(settings) {
@@ -226,7 +225,7 @@ async function getIpDetails(ip) {
 
         return body;
     } catch (error) {
-        console.error('Fetching IP error:', error.message || error)
+        console.error('Fetching IP error:', error)
     }
 }
 
@@ -359,21 +358,107 @@ async function dlUrl(subUrl) {
             downloadJSON(data, 'config.json');
         }
     } catch (error) {
-        console.error('Download error:', error.message || error);
+        console.error('Download error:', error);
     }
 }
 
-function exportSettings() {
-    const form = validateSettings();
-    const data = JSON.stringify(form, null, 4);
-    const encodedData = btoa(data);
-    downloadJSON(encodedData, `BPB-settings.dat`);
+async function exportFileSettings(event) {
+    if (hasFormDataChanged()) {
+        notify('error', 'Export settings', ['Please apply unsaved changes first.']);
+        return;
+    }
+
+    const icons = startWaiting(event.target, '', 'refresh');
+    const url = new URL('./sub/share-settings', window.location.href);
+
+    try {
+        const settings = await fetchSettings(url.href);
+        const data = JSON.stringify(settings);
+        const encodedData = btoa(data);
+        downloadJSON(encodedData, `BPB-settings.dat`);
+    } catch (error) {
+        console.error('Export settings error:', error);
+        notify('error', 'Export settings', ['Failed to export settings file.']);
+    } finally {
+        stopWaiting(icons);
+    }
 }
 
-function importSettings() {
+function importFile() {
     const input = document.getElementById('fileInput');
     input.value = '';
     input.click();
+}
+
+async function importFileSettings(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    try {
+        const text = await file.text();
+        const data = atob(text);
+        const newSettings = JSON.parse(data);
+        const currentSettings = validateSettings();
+        const settings = { ...currentSettings, ...newSettings };
+
+        renderPanel(settings);
+        handleProxyFormChanges(true);
+
+        notify('success', 'Import settings', [
+            'Settings imported successfully!',
+            'Please first REVIEW new settings and then apply, specially routing settings.'
+        ]);
+    } catch (error) {
+        console.error('Import settings error:', error);
+        notify('error', 'Import settings', ['Failed to get settings from file.']);
+    }
+}
+
+async function importRemoteSettings(event) {
+    if (hasFormDataChanged()) {
+        notify('error', 'Import settings', ['Please apply unsaved changes first.']);
+        return;
+    }
+
+    const icons = startWaiting(event.target, '', 'refresh');
+    const remote = document.getElementById('remoteSettings').value.trim();
+    const currentSettings = validateSettings();
+
+    try {
+        const newSettings = await fetchSettings(remote);
+        const settings = { ...currentSettings, ...newSettings };
+
+        renderPanel(settings);
+        handleProxyFormChanges(true);
+
+        notify('success', 'Import settings', [
+            'Settings imported successfully!',
+            'Please first REVIEW new settings and then apply, specially routing settings.'
+        ]);
+    } catch (error) {
+        console.error('Import settings error:', error);
+        notify('error', 'Import settings', ['Failed to get settings from remote.']);
+    } finally {
+        stopWaiting(icons);
+    }
+}
+
+function shareSettings() {
+    const url = new URL('./sub/share-settings', window.location.href);
+    copyToClipboard(url.href);
+}
+
+async function fetchSettings(remoteUrl) {
+    const url = new URL(remoteUrl);
+    const remote = `${url.origin + url.pathname}?nocache=${Date.now()}`;
+
+    const res = await fetch(remote, { cache: 'no-store' });
+    if (!res.ok) {
+        throw new Error(`status ${res.status}`);
+    }
+
+    const data = await res.text();
+    return JSON.parse(atob(data));
 }
 
 async function renewWarpAccounts(btn) {
@@ -383,17 +468,19 @@ async function renewWarpAccounts(btn) {
 
     try {
         const response = await fetch('./panel/update-warp', { method: 'POST', credentials: 'include' });
-        stopWaiting(icons);
-
         const { success, status, message } = await response.json();
+
         if (!success) {
             notify('error', 'Renew Warp Accounts', ['An error occured, Please try again later.']);
             throw new Error(`status ${status} - ${message}`);
         }
 
-        notify('success', 'Renew Warp Accounts', ['Warp accounts updated successfully!'])
+        notify('success', 'Renew Warp Accounts', ['Warp accounts updated successfully!']);
     } catch (error) {
-        console.error('Updating Warp configs error:', error.message || error)
+        console.error('Updating Warp configs error:', error)
+        notify('error', 'Renew Warp Accounts', ['Failed to renew Warp accounts.']);
+    } finally {
+        stopWaiting(icons);
     }
 }
 
@@ -478,8 +565,6 @@ async function resetSettings(btn) {
             headers: { 'Content-Type': 'application/json' }
         });
 
-        stopWaiting(icons);
-
         const { success, status, message, body } = await res.json();
         if (!success) {
             throw new Error(`status ${status} - ${message}`);
@@ -493,7 +578,9 @@ async function resetSettings(btn) {
 
         renderPanel(body);
     } catch (error) {
-        console.error('Reseting settings error:', error.message || error);
+        console.error('Reseting settings error:', error);
+    } finally {
+        stopWaiting(icons);
     }
 }
 
@@ -539,25 +626,8 @@ function updateSettings(event, data) {
 
             renderPanel(form);
         })
-        .catch(error => console.error('Update settings error:', error.message || error))
-        .finally(() => {
-            stopWaiting(icons);
-        });
-}
-
-async function uploadSettings(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    try {
-        const text = await file.text();
-        const data = atob(text);
-        const settings = JSON.parse(data);
-        updateSettings(event, settings);
-        renderPanel(settings);
-    } catch (err) {
-        console.error('Failed to import settings:', err.message);
-    }
+        .catch(error => console.error('Update settings error:', error))
+        .finally(() => stopWaiting(icons));
 }
 
 function setupTelegramBot() {
@@ -598,7 +668,7 @@ function setupTelegramBot() {
                 ['Telegram bot is ready to use.']
             );
         })
-        .catch(error => console.error('Setup Telegram bot error:', error.message || error))
+        .catch(error => console.error('Setup Telegram bot error:', error))
         .finally(() => {
             stopWaiting(icons);
             setupBtn.disabled = true;
@@ -631,10 +701,8 @@ function removeTelegramBot(btn) {
                 ['Telegram bot removed successfully!']
             );
         })
-        .catch(error => console.error('Remove Telegram bot error:', error.message || error))
-        .finally(() => {
-            stopWaiting(icons);
-        });
+        .catch(error => console.error('Remove Telegram bot error:', error))
+        .finally(() => stopWaiting(icons));
 }
 
 function validateSettings() {
@@ -705,7 +773,7 @@ function logout(event) {
 
             window.location.href = './login';
         })
-        .catch(error => console.error('Logout error:', error.message || error));
+        .catch(error => console.error('Logout error:', error));
 }
 
 function openResetPass(event) {
@@ -772,12 +840,12 @@ function resetPassword(event) {
             notify('success', 'Reset password', ['Password changed successfully!']);
             window.location.href = './login';
         })
-        .catch(error => console.error('Reset password error:', error.message || error));
+        .catch(error => console.error('Reset password error:', error));
 }
 
 function generateUdpNoise(event) {
     const noisePacket = event.target.closest('.inner-container').querySelector("[name='udpXrayNoisePacket']");
-    
+
     const generateRandomBase64 = length => {
         const array = new Uint8Array(Math.ceil(length * 3 / 4));
         crypto.getRandomValues(array);
@@ -843,7 +911,7 @@ function generatePath() {
 async function updatePanel(btn) {
     const confirm = await notify('confirm', 'Update BPB Panel', [
         `BPB Panel verseion ${globalThis.latestVersion} is now available!`,
-        `Please read <a href='${globalThis.latestUrl}' target='_blank' rel='noopener noreferrer'>Release notes</a> carefully before updating.`,
+        `Please read <a href='https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/latest' target='_blank' rel='noopener noreferrer'>Release notes</a> carefully before updating.`,
         'Are you sure?'
     ]);
 
@@ -860,10 +928,10 @@ async function updatePanel(btn) {
             }, 3000);
         })
         .catch(error => {
-            stopWaiting(icons);
             notify('error', 'Update panel', ['Failed to update your BPB Panel, please try again.']);
-            console.error('Update panel error:', error.message || error)
-        });
+            console.error('Update panel error:', error)
+        })
+        .finally(() => stopWaiting(icons));
 }
 
 async function deletePanel(btn) {
@@ -883,11 +951,9 @@ async function deletePanel(btn) {
         })
         .catch(error => {
             notify('error', 'Delete panel', ['Failed to delete your BPB Panel, please try again.']);
-            console.error('Delete panel error:', error.message || error)
+            console.error('Delete panel error:', error)
         })
-        .finally(() => {
-            stopWaiting(icons);
-        });
+        .finally(() => stopWaiting(icons));
 }
 
 function notify(type, title, text) {

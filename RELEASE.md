@@ -26,6 +26,8 @@ Also manual deployment and BPB Wizard client deployments do not work on this rel
 - Underlying DoH is added to common settings which is used as your panel `DNS over HTTPS` underlying server.
 - Fallback behaviour is now throwing 404 by default. You can set `Fallback Domain` in Common settings section.
 - single Proxy IP test is added to related page.
+- Updating panel settings from a Remote BPB Panel and sharing settings is added in addition to existing File import and export. You can share or get all of settings except `VLESS UUID`, `Trojan Pass`, `Panel Path` and `Custom Domain` with some another BPB user.
+- Updated Clash, Amnezia Warp Pro settings. This may help connection on some ISPs.
 - The Panel UI has been improved a lot and removed dark/light mode.
 - Solid Data validations execute in backend from now on.
 - Implemented Toasts and message boxes instead of alerts in panel.
@@ -34,6 +36,18 @@ Also manual deployment and BPB Wizard client deployments do not work on this rel
 - Fixed Typos in doc #1349
 - Fixed HTML embedings in script #1344
 - And lots of another subtle bug fixes and improvements...
+
+## 💡 Changes since 5.0.0
+
+- API Token has been changed and v5.0.0 Private Links and old tokens won't work on this.
+- Added Import - Export section to panel with ability to update settings from another BPB panels #1329
+- Updated Amnezia H1-H4 params #1353
+- Resetting Telegram webhook after changing panel path.
+- Changed panel update check endpoint.
+- Fixed sing-box qrcode and subscriptions.
+- Fixed Trojan password validation.
+- Fixed Chain Proxy validation #1352
+- Fixed missing sing-box Upstream Proxy #1354
 
 First time contributors: @javadSharifi @gbcwror @doublepleat
 
