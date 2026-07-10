@@ -68,9 +68,3 @@ This project is aimed to provide a user panel to access FREE, SECURE and PRIVATE
 | **SUB_PATH** |         Subscriptions' URI         |        :x:         |
 | **FALLBACK** |  Fallback domain (VLESS, Trojan)   |        :x:         |
 | **DOH_URL**  |              Core DOH              |        :x:         |
-
----
-
-## Stargazers Over Time
-
-[![Stargazers Over Time](https://starchart.cc/bia-pain-bache/BPB-Worker-Panel.svg?variant=adaptive)](https://starchart.cc/bia-pain-bache/BPB-Worker-Panel)

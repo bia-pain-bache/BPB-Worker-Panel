@@ -86,12 +86,6 @@
 
 ---
 
-## تعداد ستاره‌ها به مرور زمان
-
-[![تعداد ستاره‌ها به مرور زمان](https://starchart.cc/bia-pain-bache/BPB-Worker-Panel.svg?variant=adaptive)](https://starchart.cc/bia-pain-bache/BPB-Worker-Panel)
-
----
-
 ### تشکر ویژه
 
 - نویسنده پروتکل‌های VLESS و Trojan [پروکسی Cloudflare-workers/pages](https://github.com/yonggekkk/Cloudflare-workers-pages-vless)

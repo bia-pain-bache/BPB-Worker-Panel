@@ -68,9 +68,3 @@
 | **SUB_PATH** |     مسیر لینک‌های اشتراک شخصی     |        :x:         |
 | **FALLBACK** | دامنه‌ی پوششی برای VLESS و Trojan |        :x:         |
 | **DOH_URL**  |    DOH برای عملیات داخلی ورکر     |        :x:         |
-
----
-
-## تعداد ستاره‌ها به مرور زمان
-
-[![تعداد ستاره‌ها به مرور زمان](https://starchart.cc/bia-pain-bache/BPB-Worker-Panel.svg?variant=adaptive)](https://starchart.cc/bia-pain-bache/BPB-Worker-Panel)
