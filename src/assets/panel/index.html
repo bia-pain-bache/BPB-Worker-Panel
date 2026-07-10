@@ -581,13 +581,23 @@
                         </div>
                     </div>
                     <div class="form-control">
-                        <label>Warp Accounts</label>
-                        <div>
-                            <button type="button" class="button" onclick="renewWarpAccounts(this)">
-                                <span id="warp-update" class="material-symbols-rounded">autorenew</span>
-                                Renew
-                            </button>
+                        <label for="warpReservedBytes">Reserved Bytes</label>
+                        <div class="select-wrapper">
+                            <select id="warpReservedBytes" name="warpReservedBytes">
+                                <option value="true">Enabled</option>
+                                <option value="false">Disabled</option>
+                            </select>
+                            <span class="material-symbols-rounded">
+                                keyboard_arrow_down
+                            </span>
                         </div>
+                    </div>
+                    <div class="dashboard-action">
+                        <span>Renew Warp Accounts</span>
+                        <button type="button" class="button" onclick="renewWarpAccounts(this)">
+                            <span id="warp-update" class="material-symbols-rounded">autorenew</span>
+                            Renew
+                        </button>
                     </div>
                 </div>
             </details>

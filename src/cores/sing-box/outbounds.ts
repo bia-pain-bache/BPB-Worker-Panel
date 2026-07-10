@@ -105,6 +105,7 @@ export function buildWarpOutbound(
     chain?: string
 ): WireguardEndpoint {
     const { host, port } = parseHostPort(endpoint, false);
+    const { warpReservedBytes } = getSettings();
     const {
         warpIPv6,
         reserved,
@@ -112,7 +113,9 @@ export function buildWarpOutbound(
         privateKey
     } = warpAccount;
 
+    const reservedBytes = warpReservedBytes ? base64ToDecimal(reserved) : [0, 0, 0];
     const address = chain ? '162.159.192.1' : host;
+    
     return {
         tag: remark,
         detour: chain || undefined,
@@ -127,7 +130,7 @@ export function buildWarpOutbound(
                 address,
                 port: chain ? 2408 : port,
                 public_key: publicKey,
-                reserved: base64ToDecimal(reserved),
+                reserved: reservedBytes,
                 allowed_ips: [
                     '0.0.0.0/0',
                     '::/0'

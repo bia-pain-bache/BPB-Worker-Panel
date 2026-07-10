@@ -135,6 +135,7 @@ export async function updateDataset(env: Env, newSettings?: PanelSettings): Prom
             ['warpRemoteDNS'],
             ['warpEndpoints'],
             ['warpBestPingInterval'],
+            ['warpReservedBytes'],
             ['xrayUdpNoises'],
             ['knockerNoiseMode'],
             ['knockerNoiseCountMin'],

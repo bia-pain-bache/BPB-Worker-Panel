@@ -59,6 +59,7 @@ export interface KvSettings {
     warpRemoteDNS: string;
     warpEndpoints: string[];
     warpBestPingInterval: number;
+    warpReservedBytes: boolean;
     xrayUdpNoises: XrUdpNoise[];
     knockerNoiseMode: string;
     knockerNoiseCountMin: number;

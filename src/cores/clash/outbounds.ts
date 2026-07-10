@@ -1,5 +1,5 @@
 import { WarpAccount } from '#types/settings';
-import { isHttps, generateWsPath, parseHostPort, selectSniHost } from '@utils';
+import { isHttps, generateWsPath, parseHostPort, selectSniHost, base64ToDecimal } from '@utils';
 import { getSettings } from '@settings';
 import {
     BaseOutbound,
@@ -103,11 +103,9 @@ export function buildWarpOutbound(
         amneziaNoiseCount,
         amneziaNoiseSizeMin,
         amneziaNoiseSizeMax,
-        enableIPv6
+        enableIPv6,
+        warpReservedBytes
     } = getSettings();
-
-    const { host, port } = parseHostPort(endpoint, false);
-    const ipVersion = enableIPv6 ? 'ipv4-prefer' : 'ipv4';
 
     const {
         warpIPv6,
@@ -116,6 +114,10 @@ export function buildWarpOutbound(
         privateKey
     } = warpAccount;
 
+    const { host, port } = parseHostPort(endpoint, false);
+    const ipVersion = enableIPv6 ? 'ipv4-prefer' : 'ipv4';
+    const reservedBytes = warpReservedBytes ? base64ToDecimal(reserved) : [0, 0, 0];
+    
     return {
         'name': remark,
         'type': 'wireguard',
@@ -127,7 +129,7 @@ export function buildWarpOutbound(
         'port': chain ? 2408 : port,
         'public-key': publicKey,
         'allowed-ips': ['0.0.0.0/0', '::/0'],
-        'reserved': reserved,
+        'reserved': reservedBytes,
         'udp': true,
         'mtu': 1280,
         'dialer-proxy': chain || undefined,

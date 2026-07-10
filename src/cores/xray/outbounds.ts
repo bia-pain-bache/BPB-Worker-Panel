@@ -150,6 +150,9 @@ export function buildWarpOutbound(
     isKnocker: boolean
 ): Outbound {
     const { warpIPv6, reserved, publicKey, privateKey } = warpAccount;
+    const { warpReservedBytes } = getSettings();
+
+    const reservedBytes = warpReservedBytes ? base64ToDecimal(reserved) : [0, 0, 0];
     let wgSettings: WireguardSettings = {
         address: [
             '172.16.0.2/32',
@@ -163,7 +166,7 @@ export function buildWarpOutbound(
                 keepAlive: 5
             }
         ],
-        reserved: base64ToDecimal(reserved),
+        reserved: reservedBytes,
         secretKey: privateKey
     };
 

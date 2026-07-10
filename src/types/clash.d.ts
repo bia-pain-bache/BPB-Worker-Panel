@@ -182,7 +182,7 @@ export interface WireguardOutbound extends BaseOutbound {
     'private-key': string;
     'public-key': string;
     'allowed-ips': string[]
-    'reserved': string;
+    'reserved': number[];
     'udp': true;
     'mtu': 1280;
     'amnezia-wg-option'?: AmneziaOpts;
