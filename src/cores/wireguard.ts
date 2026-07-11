@@ -50,7 +50,7 @@ export async function getWarpConfigs(isPro: boolean): Promise<Response> {
         return new Response(arrayBuffer, {
             headers: {
                 'Content-Type': 'application/zip',
-                'Content-Disposition': `attachment; filename='${_project_}-Warp-${isPro ? 'Pro-' : ''}conf.zip'`,
+                'Content-Disposition': `attachment; filename=${_project_}-Warp-${isPro ? 'Pro-' : ''}conf.zip`,
                 'Cache-Control': 'no-store, no-cache, must-revalidate',
                 'Pragma': 'no-cache'
             },

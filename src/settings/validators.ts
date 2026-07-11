@@ -30,7 +30,8 @@ const validators = [
     validateDoH,
     validatePath,
     validateCustomDomain,
-    validateExtSubs
+    validateExtSubs,
+    validateRemoteSettings
 ];
 
 export function validateSettings(form: PanelSettings | null): ValidationError[] | null {
@@ -558,6 +559,30 @@ function validateExtSubs(form: PanelSettings, errors: ValidationError[]) {
                 'Invalid values are:\n',
                 ...invalids.map(val => `+ ${val}`)
             ]
+        });
+    }
+}
+
+function validateRemoteSettings(form: PanelSettings, errors: ValidationError[]) {
+    let url;
+
+    try {
+        url = new URL(form.remoteSettings);
+    } catch {
+        errors.push({
+            field: 'Remote Settings URL',
+            message: ['Please enter a valid URL.']
+        });
+
+        return;
+    }
+
+    const path = url.pathname.split('/').slice(2).join('/');
+
+    if(path !== 'sub/share-settings') {
+        errors.push({
+            field: 'Remote Settings URL',
+            message: ['This is not a valid BPB remote settings URL']
         });
     }
 }

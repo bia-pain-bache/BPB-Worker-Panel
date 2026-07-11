@@ -136,7 +136,8 @@ function renderPanel(proxySettings, tgSettings, subscriptions) {
         xrayNoiseCount: xrayUdpNoises.length
     });
 
-    document.getElementById('doh').textContent = new URL(`./dns-query`, window.location.href);
+    const dohUrl = new URL(`./dns-query`, window.location.href);
+    document.getElementById('doh').textContent = dohUrl.href;
     document.getElementById('fetchSettingsBtn').disabled = !remoteSettings;
 
     selectElements.forEach(elm => elm.value = proxySettings[elm.id]);
@@ -269,15 +270,18 @@ async function fetchIPInfo() {
 function generateSubUrl(path, app, tag, singboxType) {
     const url = new URL(`./sub/${path}`, window.location.href);
     url.searchParams.append('app', app);
-    url.hash = encodeURIComponent(`💦 BPB ${tag}`);
+    url.hash = `💦 BPB ${tag}`;
 
-    return singboxType
-        ? `sing-box://import-remote-profile?url=${url.href}`
-        : url.href;
+    if(singboxType) {
+        const singUrl = new URL(`sing-box://import-remote-profile?url=${url.href}`);
+        singUrl.searchParams.set('url', url.href);
+        return singUrl;
+    }
+
+    return url;
 }
 
-function openQR(data) {
-    const url = new URL(data);
+function openQR(url) {
     const modal = document.getElementById('qrModal');
     const close = modal.querySelector('.modal-close');
     const container = document.getElementById('qrcode-container');
@@ -315,10 +319,16 @@ function openQR(data) {
     container.appendChild(qrcodeDiv);
 }
 
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text)
-        .then(() => notify('info', 'Copied to clipboard', [text]))
+function copyToClipboard(url) {
+    navigator.clipboard.writeText(url.href)
+        .then(() => notify('info', 'Copied to clipboard', [url.href]))
         .catch(error => console.error('Failed to copy:', error));
+}
+
+function copyDoh() {
+    const doh = document.getElementById('doh').textContent;
+    const url = new URL(doh);
+    copyToClipboard(url);
 }
 
 function downloadJSON(data, fileName) {
@@ -332,27 +342,24 @@ function downloadJSON(data, fileName) {
 }
 
 async function dlUrl(subUrl) {
-    let url;
-    if (subUrl.protocol === 'sing-box:') {
-        url = subUrl.searchParams.get('url');
-    } else {
-        url = subUrl;
-    }
+    const url = subUrl.protocol === 'sing-box:'
+        ? subUrl.searchParams.get('url')
+        : subUrl.href;
 
     try {
-        const response = await fetch(url);
-        const contentType = response.headers.get('content-type') || '';
+        const res = await fetch(url);
+        const contentType = res.headers.get('content-type') || '';
 
         if (contentType === 'application/zip') {
-            if (!response.ok) {
-                throw new Error(`status ${response.status} at ${response.url}`);
+            if (!res.ok) {
+                throw new Error(`status ${res.status} at ${res.url}`);
             }
 
             window.location.href = url;
         } else {
-            const data = await response.text();
-            if (!response.ok) {
-                throw new Error(`status ${response.status} at ${response.url} - ${data}`);
+            const data = await res.text();
+            if (!res.ok) {
+                throw new Error(`status ${res.status} at ${res.url} - ${data}`);
             }
 
             downloadJSON(data, 'config.json');
@@ -445,7 +452,7 @@ async function importRemoteSettings(event) {
 
 function shareSettings() {
     const url = new URL('./sub/share-settings', window.location.href);
-    copyToClipboard(url.href);
+    copyToClipboard(url);
 }
 
 async function fetchSettings(remoteUrl) {
@@ -1189,16 +1196,16 @@ function renderSubscriptions(subscriptions) {
             }));
 
             const isSingBox = core === 'sing-box';
-            const subUrl = generateSubUrl(type, core, label, isSingBox);
+            const url = generateSubUrl(type, core, label, isSingBox);
             const ctaSection = elm('td');
 
             if (core !== 'wireguard') {
-                const qrBtn = elm('button', { title: 'Display QR code', onclick: () => openQR(subUrl) }, createIcon('qr_code'));
-                const copyBtn = elm('button', { title: 'Copy subscription URL', onclick: () => copyToClipboard(subUrl) }, createIcon('content_copy'));
+                const qrBtn = elm('button', { title: 'Display QR code', onclick: () => openQR(url) }, createIcon('qr_code'));
+                const copyBtn = elm('button', { title: 'Copy subscription URL', onclick: () => copyToClipboard(url) }, createIcon('content_copy'));
                 ctaSection.append(qrBtn, copyBtn);
             }
 
-            const dlBtn = elm('button', { title: 'Download config', onclick: () => dlUrl(subUrl) }, createIcon('download'));
+            const dlBtn = elm('button', { title: 'Download config', onclick: () => dlUrl(url) }, createIcon('download'));
             ctaSection.appendChild(dlBtn);
             return elm('tr', {}, [clientSection, ctaSection]);
         }));

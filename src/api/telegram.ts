@@ -40,10 +40,12 @@ export async function setupTelegramWebhook(request: Request, env: Env): Promise<
 
 export async function setTelegramBot(path: string, token: string) {
     const { origin } = getGlobals();
-    const webhookUrl = encodeURI(`${origin}/${path}/telegram/webhook`);
+    const webhookUrl = new URL(`/${path}/telegram/webhook`, origin);
+    const api = new URL(`https://api.telegram.org/bot${token}/setWebhook`);
+    api.searchParams.set('url', webhookUrl.href);
 
     try {
-        const res = await fetch(`https://api.telegram.org/bot${token}/setWebhook?url=${webhookUrl}`);
+        const res = await fetch(api);
         const data: any = await res.json();
         if (!data.ok) {
             throw new Error(data.description || 'Failed to set webhook.');
@@ -177,9 +179,9 @@ async function tgFetch(token: string, method: string, body: any): Promise<any> {
 }
 
 function buildSubUrl(origin: string, path: string, type: string, app: string, label: string): Url {
-    const url = new URL(`/${encodeURIComponent(path)}/sub/${type}`, origin);
+    const url = new URL(`/${path}/sub/${type}`, origin);
     url.searchParams.set('app', app);
-    url.hash = encodeURIComponent(`💦 BPB ${label}`);
+    url.hash = `💦 BPB ${label}`;
 
     const clientBaseUrl = app === 'sing-box' && type !== 'raw' ? `sing-box://import-remote-profile?url=${url.href}` : url.href;
     url.searchParams.set('nocache', Date.now().toString());
@@ -277,11 +279,11 @@ async function handleCallback(cq: TgCallbackQuery, token: string, chatId: number
             const typeKey = data.slice(5);
             const subscription = subscriptions[typeKey];
             if (!subscription) break;
-
             const { securePath } = getSettings();
+
             for (const [index, appInfo] of subscription.categories.entries()) {
                 const { url, noCacheUrl } = buildSubUrl(origin, securePath, typeKey, appInfo.core, subscription.label);
-                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(url)}&size=400x400`;
+                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${url}&size=400x400`;
 
                 const supportedList = appInfo.clients.map(a => `✅ ${a}`).join('\n');
                 const showUrl = appInfo.core === 'wireguard' ? '' : `<code>${url}</code>\n\n`;
