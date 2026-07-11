@@ -6,16 +6,22 @@ import { buildRoutingRules } from './routing';
 import { buildMixedInbound, tun } from './inbounds';
 import { buildDNS } from './dns';
 
+type TagGroup = Record<string, string[]>;
+
 async function buildConfig(
     outbounds: Outbound[],
     endpoints: WireguardEndpoint[],
-    selectorTags: string[],
-    urlTestTags: string[],
-    secondUrlTestTags: string[],
+    TagGroups: TagGroup,
     isWarp: boolean,
     isChain: boolean
 ): Promise<Config> {
     const { logLevel } = getSettings();
+
+    const keys = Object.keys(TagGroups);
+    const selectorTags: string[] = [
+        ...keys,
+        ...keys.flatMap(key => TagGroups[key])
+    ];
 
     const config: Config = {
         log: {
@@ -67,11 +73,12 @@ async function buildConfig(
         }
     };
 
-    const tag = isWarp ? `💦 Warp - Best Ping 🚀` : '💦 Best Ping 🚀';
-    const mainUrlTest = buildUrlTest(tag, urlTestTags, isWarp);
-    config.outbounds.push(mainUrlTest);
-    if (isWarp) config.outbounds.push(buildUrlTest('💦 WoW - Best Ping 🚀', secondUrlTestTags, isWarp));
-    if (isChain) config.outbounds.push(buildUrlTest('💦 🔗 Best Ping 🚀', secondUrlTestTags, isWarp));
+    for (const key of keys) {
+        if (TagGroups[key].length) {
+            const urlTest = buildUrlTest(key, TagGroups[key], isWarp);
+            config.outbounds.push(urlTest);
+        }
+    }
 
     return config;
 }
@@ -89,11 +96,14 @@ export async function getSbCustomConfig(isFragment: boolean): Promise<Response> 
     const isChain = !!chainOutbound;
     const domains = [mainDomain].concatIf(!!customDomain, customDomain);
     const protocols = getProtocols();
-
-    const proxyTags: string[] = [];
-    const chainTags: string[] = [];
     const outbounds: Outbound[] = [];
-    const selectorTags = ['💦 Best Ping 🚀'].concatIf(isChain, '💦 🔗 Best Ping 🚀');
+
+    const tagGroup: TagGroup = {
+        '💦 Best Ping 🚀': [],
+        '💦 🔗 Best Ping 🚀': [],
+        '💦 Best Ping D 🚀': [],
+        '💦 🔗 Best Ping D 🚀': [],
+    };
 
     for (const domain of domains) {
         const totalPorts = ports.filter(port => !isFragment && domain.endsWith('workers.dev') || isHttps(port));
@@ -102,6 +112,7 @@ export async function getSbCustomConfig(isFragment: boolean): Promise<Response> 
             totalPorts.unshift(upstreamPort);
             hosts.unshift(upstreamServer);
         }
+
         for (const protocol of protocols) {
             let protocolIndex = 1;
             for (const port of totalPorts) {
@@ -110,10 +121,13 @@ export async function getSbCustomConfig(isFragment: boolean): Promise<Response> 
 
                     const tag = generateRemark(protocolIndex, port, host, protocol, domain, isFragment, false);
                     const outbound = buildWebsocketOutbound(protocol, tag, host, port, domain, isFragment);
-
                     outbounds.push(outbound);
-                    proxyTags.push(tag);
-                    selectorTags.push(tag);
+                    
+                    if (domain === customDomain) {
+                        tagGroup['💦 Best Ping D 🚀'].push(tag);
+                    } else {
+                        tagGroup['💦 Best Ping 🚀'].push(tag);
+                    }
 
                     if (isChain) {
                         const chainTag = generateRemark(protocolIndex, port, host, protocol, domain, isFragment, true);
@@ -122,8 +136,11 @@ export async function getSbCustomConfig(isFragment: boolean): Promise<Response> 
                         chain.detour = tag;
                         outbounds.push(chain);
 
-                        chainTags.push(chainTag);
-                        selectorTags.push(chainTag);
+                        if (domain === customDomain) {
+                            tagGroup['💦 🔗 Best Ping D 🚀'].push(chainTag);
+                        } else {
+                            tagGroup['💦 🔗 Best Ping 🚀'].push(chainTag);
+                        }
                     }
 
                     protocolIndex++;
@@ -135,9 +152,7 @@ export async function getSbCustomConfig(isFragment: boolean): Promise<Response> 
     const config = await buildConfig(
         outbounds,
         [],
-        selectorTags,
-        proxyTags,
-        chainTags,
+        tagGroup,
         false,
         isChain
     );
@@ -156,23 +171,20 @@ export async function getSbCustomConfig(isFragment: boolean): Promise<Response> 
 export async function getSbWarpConfig(): Promise<Response> {
     const { warpEndpoints } = getSettings();
     const warpAccounts = getWarpAccounts();
-
-    const proxyTags: string[] = [];
-    const chainTags: string[] = [];
     const outbounds: WireguardEndpoint[] = [];
-    const selectorTags = [
-        '💦 Warp - Best Ping 🚀',
-        '💦 WoW - Best Ping 🚀'
-    ];
+
+    const tagGroup: TagGroup = {
+        '💦 Warp - Best Ping 🚀': [],
+        '💦 WoW - Best Ping 🚀': []
+    };
 
     warpEndpoints.forEach((endpoint, index) => {
-        const warpTag = `💦 ${index + 1} - Warp 🇮🇷`;
-        proxyTags.push(warpTag);
+        const warpTag = `💦 ${index + 1}. Warp 🇮🇷`;
+        tagGroup['💦 Warp - Best Ping 🚀'].push(warpTag);
 
-        const wowTag = `💦 ${index + 1} - WoW 🌍`;
-        chainTags.push(wowTag);
+        const wowTag = `💦 ${index + 1}. WoW 🌍`;
+        tagGroup['💦 WoW - Best Ping 🚀'].push(wowTag);
 
-        selectorTags.push(warpTag, wowTag);
         const warpOutbound = buildWarpOutbound(warpAccounts[0], warpTag, endpoint);
         const wowOutbound = buildWarpOutbound(warpAccounts[1], wowTag, endpoint, warpTag);
         outbounds.push(warpOutbound, wowOutbound);
@@ -181,9 +193,7 @@ export async function getSbWarpConfig(): Promise<Response> {
     const config = await buildConfig(
         [],
         outbounds,
-        selectorTags,
-        proxyTags,
-        chainTags,
+        tagGroup,
         true,
         false
     );

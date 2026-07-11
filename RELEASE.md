@@ -46,6 +46,7 @@ Also manual deployment and BPB Wizard client deployments do not work on this rel
 - Made Warp Reserved bytes optional #1236
 - Resetting Telegram webhook after changing panel path.
 - Changed panel update check endpoint.
+- Encapsulated worker domain and Custom Domain configs into separate URL tests #1359
 - Fixed sing-box qrcode and subscriptions.
 - Fixed Trojan password validation.
 - Fixed Chain Proxy validation #1352

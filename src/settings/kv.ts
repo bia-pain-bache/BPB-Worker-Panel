@@ -29,12 +29,12 @@ export async function getDataset(env: Env): Promise<{
             settings = await updateDataset(env);
         }
 
-        let telegramBot: TelegramBot | null = await env.kv.get('telegramBot', {type: 'json'});
-        if(!telegramBot) {
-            telegramBot = {telegramBotToken: '', telegramUserId: ''};
+        let telegramBot: TelegramBot | null = await env.kv.get('telegramBot', { type: 'json' });
+        if (!telegramBot) {
+            telegramBot = { telegramBotToken: '', telegramUserId: '' };
             await env.kv.put('telegramBot', JSON.stringify(telegramBot));
         }
-        
+
         return {
             settings,
             telegramBot,
@@ -64,11 +64,21 @@ export async function updateDataset(env: Env, newSettings?: PanelSettings): Prom
     }
 
     const getParam = async <T extends keyof KvSettings>(
-        field: keyof KvSettings,
+        key: T,
+        cbKey?: T,
         callback?: (value: KvSettings[T]) => any | Promise<any>
     ) => {
-        const value = newSettings?.[field] ?? currentSettings?.[field] ?? kvSettings[field];
-        return callback && value !== currentSettings?.[field] ? await callback(value) : value;
+        const resolve = (k: T) => newSettings?.[k] ?? currentSettings?.[k] ?? kvSettings[k];
+
+        if (callback && cbKey) {
+            const cbValue = resolve(cbKey);
+            if (cbValue !== currentSettings?.[cbKey]) {
+                return callback(cbValue);
+            }
+        }
+
+        const value = newSettings?.[key] ?? currentSettings?.[key] ?? kvSettings[key];
+        return value;
     };
 
     const fields: Array<
@@ -155,7 +165,7 @@ export async function updateDataset(env: Env, newSettings?: PanelSettings): Prom
     try {
         const entries = await Promise.all(
             fields.map(async ([key, callbackKey, callbackFunc]) => {
-                return [key, await getParam(callbackKey ?? key, callbackFunc)];
+                return [key, await getParam(key, callbackKey, callbackFunc)];
             })
         );
 

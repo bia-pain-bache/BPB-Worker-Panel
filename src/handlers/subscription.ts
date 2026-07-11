@@ -102,7 +102,7 @@ async function shareSettings() {
     return new Response(body, {
         status: HttpStatus.OK,
         headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'text/plain; charset=utf-8',
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET',
             'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
