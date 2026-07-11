@@ -421,8 +421,8 @@ a.url {
     cursor: pointer;
     user-select: none;
     color: var(--color-text-muted);
-    background-color: rgb(5 21 49 / 93%);
     padding-left: 5px;
+    text-shadow: none;
 }
 
 div.checkbox-wrapper {

@@ -101,7 +101,6 @@ export async function buildScript(upgradePanel: boolean, settings?: MainSettings
         script = await decompressGzipBase64(SOURCE_CONTENT);
     }
 
-    const buildTimestamp = new Date().toISOString();
     const { accID, accEmail, apiToken, mainDomain } = getGlobals();
     const embededSettings = {
         accID,
@@ -131,9 +130,35 @@ export async function buildScript(upgradePanel: boolean, settings?: MainSettings
         ? embededSettings
         : { ...embededContents, EMBEDED_SETTINGS: embededSettings };
 
-    return `
-        // Build: ${buildTimestamp}
-        // @ts-nocheck
-        Object.assign(globalThis, ${JSON.stringify(embeded)});
-        ${script}`;
+    const buildTimestamp = new Date().toISOString();
+    const padding = paddCode();
+    const worker = [
+        `// ${accEmail}`,
+        `// Build: ${buildTimestamp}`,
+        '// @ts-nocheck',
+        `${padding}Object.assign(globalThis, ${JSON.stringify(embeded)});${script}`
+    ].join('\n');
+
+    return worker;
+}
+
+function paddCode() {
+    const minVars = 50, maxVars = 500;
+    const minFuncs = 50, maxFuncs = 500;
+
+    const varCount = Math.floor(Math.random() * (maxVars - minVars + 1)) + minVars;
+    const funcCount = Math.floor(Math.random() * (maxFuncs - minFuncs + 1)) + minFuncs;
+
+    const paddVars = Array.from({ length: varCount }, (_, i) => {
+        const varName = `__padd_${Math.random().toString(36).substring(2, 10)}_${i}`;
+        const value = Math.floor(Math.random() * 100000);
+        return `let ${varName} = ${value};`;
+    }).join('\n');
+
+    const paddFuncs = Array.from({ length: funcCount }, (_, i) => {
+        const funcName = `__paddFunc_${Math.random().toString(36).substring(2, 10)}_${i}`;
+        return `function ${funcName}() { return ${Math.floor(Math.random() * 1000)}; }`;
+    }).join('\n');
+
+    return `${paddVars}\n${paddFuncs}\n`;
 }

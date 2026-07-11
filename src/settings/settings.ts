@@ -153,7 +153,7 @@ let kvSettings: KvSettings = {
     localDNS: '8.8.8.8',
     antiSanctionDNS: '178.22.122.100',
     fakeDNS: false,
-    enableIPv6: true,
+    enableIPv6: false,
     allowLANConnection: false,
     logLevel: 'warning',
     customDomain: '',
