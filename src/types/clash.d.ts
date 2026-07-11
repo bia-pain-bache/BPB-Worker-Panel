@@ -1,6 +1,6 @@
 type OptionalIntersection<T, U> = T | (T & U);
 export type DnsHosts = Record<string, string[] | string>;
-export type Network = 'tcp' | 'http' | 'ws' | 'httpupgrade' | 'grpc';
+export type Network = 'tcp' | 'http' | 'ws' | 'httpupgrade' | 'grpc' | 'xhttp';
 export type Protocol =
     | 'http'
     | 'socks5'
@@ -96,6 +96,21 @@ export interface HttpOpts {
     };
 }
 
+export interface XhttpOpts {
+    'host': string;
+    'path': string;
+    'mode': string;
+    'x-padding-bytes': string;
+    'reuse-settings'?: {
+        'max-concurrency': string,
+        'max-connections': number;
+        'c-max-reuse-times': number;
+        'h-max-request-times': string;
+        'h-max-reusable-secs': string;
+        'h-keep-alive-period': number;
+    }
+}
+
 export interface BaseOutbound {
     'name': string;
     'type': Protocol;
@@ -131,6 +146,7 @@ export type Transport = {
     'ws-opts'?: WsOpts;
     'http-opts'?: HttpOpts;
     'grpc-opts'?: GrpcOpts;
+    'xhttp-opts'?: XhttpOpts;
 }
 
 export interface HttpOutbound extends BaseOutbound {

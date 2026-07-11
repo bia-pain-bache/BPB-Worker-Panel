@@ -319,7 +319,7 @@ function validateChainProxy(form: PanelSettings, errors: ValidationError[]) {
             });
         }
 
-        if (!type || !['tcp', 'raw', 'ws', 'grpc', 'httpupgrade'].includes(type)) {
+        if (!type || !['tcp', 'raw', 'ws', 'grpc', 'httpupgrade', 'xhttp'].includes(type)) {
             errors.push({
                 field: 'Chain Proxy',
                 message: [
@@ -564,6 +564,7 @@ function validateExtSubs(form: PanelSettings, errors: ValidationError[]) {
 }
 
 function validateRemoteSettings(form: PanelSettings, errors: ValidationError[]) {
+    if(!form.remoteSettings) return;
     let url;
 
     try {

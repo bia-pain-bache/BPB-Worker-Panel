@@ -17,10 +17,10 @@ async function buildConfig(
 ): Promise<Config> {
     const { logLevel } = getSettings();
 
-    const keys = Object.keys(TagGroups);
+    const groups = Object.keys(TagGroups).filter(group => !!TagGroups[group].length);
     const selectorTags: string[] = [
-        ...keys,
-        ...keys.flatMap(key => TagGroups[key])
+        ...groups,
+        ...groups.flatMap(key => TagGroups[key])
     ];
 
     const config: Config = {
@@ -73,9 +73,9 @@ async function buildConfig(
         }
     };
 
-    for (const key of keys) {
-        if (TagGroups[key].length) {
-            const urlTest = buildUrlTest(key, TagGroups[key], isWarp);
+    for (const group of groups) {
+        if (TagGroups[group].length) {
+            const urlTest = buildUrlTest(group, TagGroups[group], isWarp);
             config.outbounds.push(urlTest);
         }
     }

@@ -17,10 +17,10 @@ async function buildConfig(
 ): Promise<Config> {
     const { logLevel, allowLANConnection } = getSettings();
 
-    const keys = Object.keys(TagGroups);
+    const groups = Object.keys(TagGroups).filter(key => !!TagGroups[key].length);
     const selectorTags: string[] = [
-        ...keys,
-        ...keys.flatMap(key => TagGroups[key])
+        ...groups,
+        ...groups.flatMap(key => TagGroups[key])
     ];
 
     const tcpSettings = isWarp ? {} : {
@@ -72,9 +72,9 @@ async function buildConfig(
         }
     };
 
-    for (const key of keys) {
-        if (TagGroups[key].length) {
-            const urlTest = buildUrlTest(key, TagGroups[key], isWarp);
+    for (const group of groups) {
+        if (TagGroups[group].length) {
+            const urlTest = buildUrlTest(group, TagGroups[group], isWarp);
             config['proxy-groups'].push(urlTest);
         }
     }

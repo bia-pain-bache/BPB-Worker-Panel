@@ -28,6 +28,7 @@ Also manual deployment and BPB Wizard client deployments do not work on this rel
 - single Proxy IP test is added to related page.
 - Updating panel settings from a Remote BPB Panel and sharing settings is added in addition to existing File import and export. You can share or get all of settings except `VLESS UUID`, `Trojan Pass`, `Panel Path` and `Custom Domain` with some another BPB user.
 - Updated Clash, Amnezia Warp Pro settings. This may help connection on some ISPs.
+- Chain Proxy now supports  Xhttp for Xray and Clash.
 - Made Warp Reserved bytes optional. Some ISPs flagged reserved bytes.
 - The Panel UI has been improved a lot and removed dark/light mode.
 - Solid Data validations execute in backend from now on.
@@ -42,15 +43,18 @@ Also manual deployment and BPB Wizard client deployments do not work on this rel
 
 - API Token has been changed and v5.0.0 Private Links and old tokens won't work on this.
 - Added Import - Export section to panel with ability to update settings from another BPB panels #1329
+- Added Xhttp transport to Chain Proxy for Xray and Clash.
 - Updated Amnezia H1-H4 params #1353
 - Made Warp Reserved bytes optional #1236
 - Resetting Telegram webhook after changing panel path.
 - Changed panel update check endpoint.
+- Panel UI improvement.
 - Encapsulated worker domain and Custom Domain configs into separate URL tests #1359
 - Fixed sing-box qrcode and subscriptions.
 - Fixed Trojan password validation.
 - Fixed Chain Proxy validation #1352
 - Fixed missing sing-box Upstream Proxy #1354
+- Some other bug fixes.
 
 First time contributors: @javadSharifi @gbcwror @doublepleat
 

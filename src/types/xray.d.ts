@@ -1,6 +1,6 @@
 export type DnsHosts = Record<string, string[] | string>
 export type DomainStrategy = 'UseIP' | 'UseIPv4' | 'UseIPv4v6' | 'UseSystem';
-export type TransportType = 'tcp' | 'raw' | 'ws' | 'httpupgrade' | 'grpc';
+export type TransportType = 'tcp' | 'raw' | 'ws' | 'httpupgrade' | 'grpc' | 'xhttp';
 export type Protocol =
     | 'http'
     | 'socks'
@@ -174,11 +174,32 @@ export interface GrpcSettings {
     serviceName?: string;
 }
 
+export interface XhttpSettings {
+    host?: string;
+    path: string;
+    mode: string;
+    extra?: XhttpExtra;
+}
+
+export interface XhttpExtra {
+    mode: string;
+    xPaddingBytes: string;
+    xmux: {
+        maxConcurrency: string;
+        maxConnections: number;
+        cMaxReuseTimes: number;
+        hMaxRequestTimes: string;
+        hMaxReusableSecs: string;
+        hKeepAlivePeriod: number;
+    }
+}
+
 export type Transport =
     | RawSettings
     | WsSettings
     | HttpupgradeSettings
-    | GrpcSettings;
+    | GrpcSettings
+    | XhttpSettings;
 
 export interface HappyEyeballs {
     tryDelayMs: number;
@@ -226,6 +247,7 @@ export interface StreamSettings {
     wsSettings?: WsSettings;
     httpupgradeSettings?: HttpupgradeSettings;
     grpcSettings?: GrpcSettings;
+    xhttpSettings?: XhttpSettings;
     sockopt?: Sockopt;
     finalmask?: {
         tcp?: TCPMask[];

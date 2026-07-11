@@ -19,8 +19,10 @@ import {
     Network,
     Fingerprint,
     URLTest,
-    ChainOutbound
+    ChainOutbound,
+    XhttpOpts
 } from '#types/clash';
+import { XhttpExtra } from '#types/xray';
 
 function buildOutbound<T>(
     name: string,
@@ -117,7 +119,7 @@ export function buildWarpOutbound(
     const { host, port } = parseHostPort(endpoint, false);
     const ipVersion = enableIPv6 ? 'ipv4-prefer' : 'ipv4';
     const reservedBytes = warpReservedBytes ? base64ToDecimal(reserved) : [0, 0, 0];
-    
+
     return {
         'name': remark,
         'type': 'wireguard',
@@ -269,7 +271,9 @@ function buildTransport(
     path: string = '/',
     host?: string,
     serviceName?: string,
-    earlyData?: number
+    earlyData?: number,
+    mode?: string,
+    extra?: string
 ): Partial<Transport> {
     path = path?.split('?')[0];
 
@@ -322,6 +326,27 @@ function buildTransport(
                 'grpc-opts': {
                     'grpc-service-name': serviceName
                 } satisfies GrpcOpts
+            };
+
+        case 'xhttp':
+            const xhttpExtra: XhttpExtra = JSON.parse(decodeURIComponent(extra ?? '{}'));
+            const { xPaddingBytes, xmux } = xhttpExtra;
+            return {
+                'network': 'xhttp',
+                'xhttp-opts': {
+                    'host': host ?? '',
+                    'path': path,
+                    'mode': mode || 'auto',
+                    'x-padding-bytes': xPaddingBytes ?? '100-1000',
+                    'reuse-settings': {
+                        'max-concurrency': xmux?.maxConcurrency ?? '16-32',
+                        'max-connections': xmux?.maxConnections ?? 0,
+                        'c-max-reuse-times': xmux?.cMaxReuseTimes ?? 0,
+                        'h-max-request-times': xmux?.hMaxRequestTimes ?? '600-900',
+                        'h-max-reusable-secs': xmux?.hMaxReusableSecs ?? '1800-3000',
+                        'h-keep-alive-period': xmux?.hKeepAlivePeriod ?? 0
+                    }
+                } satisfies XhttpOpts
             };
 
         default:

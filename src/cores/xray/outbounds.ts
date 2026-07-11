@@ -31,7 +31,8 @@ import {
     DomainStrategy,
     Transport,
     FinalMask,
-    FragmentPacket
+    FragmentPacket,
+    XhttpSettings
 } from '#types/xray';
 
 function buildOutbound<T>(
@@ -227,7 +228,7 @@ export function buildChainOutbound(): Outbound | undefined {
         sockopt: buildSockopt(false, false, 'UseIPv4', 'proxy')
     };
 
-    const enableMux = !(security === 'reality' || type === 'grpc');
+    const enableMux = !(security === 'reality' || type === 'grpc' || type === 'xhttp');
 
     switch (protocol) {
         case 'http':
@@ -299,7 +300,8 @@ function buildTransport(
     host?: string,
     serviceName?: string,
     mode?: string,
-    authority?: string
+    authority?: string,
+    extra?: string
 ): Record<string, Transport> {
     switch (type) {
         case 'tcp':
@@ -348,6 +350,17 @@ function buildTransport(
                     multiMode: mode === 'multi',
                     serviceName: serviceName
                 } satisfies GrpcSettings
+            };
+
+        case 'xhttp':
+            const xhttpExtra = JSON.parse(decodeURIComponent(extra ?? '{}'));
+            return {
+                xhttpSettings: {
+                    host: host,
+                    path: path,
+                    mode: mode || 'auto',
+                    extra: xhttpExtra
+                } satisfies XhttpSettings
             };
 
         default:
