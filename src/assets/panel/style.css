@@ -51,7 +51,7 @@
 }
 
 body {
-    font-family: Twemoji Country Flags, system-ui;
+    font-family: "Twemoji Country Flags", "Ubuntu", system-ui;
     text-align: center;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -143,7 +143,6 @@ h4 {
 .dashboard-action span {
     color: var(--color-text-secondary);
     gap: var(--space-sm);
-    font-weight: 600;
 }
 
 .dashboard-action .button {
@@ -268,7 +267,6 @@ label {
 
 .form-control label {
     color: var(--color-text-secondary);
-    font-weight: 600;
     display: flex;
     align-items: center;
     flex: 1;
@@ -544,6 +542,7 @@ select {
     width: max-content;
     white-space: nowrap;
     padding: var(--space-md);
+    font-family: inherit;
     font-size: var(--font-size-base);
     font-weight: 600;
     border: 1px solid var(--color-border-accent);
