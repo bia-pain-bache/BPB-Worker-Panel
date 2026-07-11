@@ -183,7 +183,14 @@ function buildSubUrl(origin: string, path: string, type: string, app: string, la
     url.searchParams.set('app', app);
     url.hash = `💦 BPB ${label}`;
 
-    const clientBaseUrl = app === 'sing-box' && type !== 'raw' ? `sing-box://import-remote-profile?url=${url.href}` : url.href;
+    let clientBaseUrl: string = url.href;
+    
+    if(app === 'sing-box' && type !== 'raw') {
+        const singUrl = new URL('sing-box://import-remote-profile');
+        singUrl.searchParams.set('url', url.href);
+        clientBaseUrl = singUrl.href;
+    }
+
     url.searchParams.set('nocache', Date.now().toString());
     const noCache = url.href;
 
@@ -283,7 +290,10 @@ async function handleCallback(cq: TgCallbackQuery, token: string, chatId: number
 
             for (const [index, appInfo] of subscription.categories.entries()) {
                 const { url, noCacheUrl } = buildSubUrl(origin, securePath, typeKey, appInfo.core, subscription.label);
-                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${url}&size=400x400`;
+                
+                const qrUrl = new URL('https://api.qrserver.com/v1/create-qr-code/');
+                qrUrl.searchParams.set('data', url);
+                qrUrl.searchParams.set('size', '400x400');
 
                 const supportedList = appInfo.clients.map(a => `✅ ${a}`).join('\n');
                 const showUrl = appInfo.core === 'wireguard' ? '' : `<code>${url}</code>\n\n`;
@@ -309,7 +319,7 @@ async function handleCallback(cq: TgCallbackQuery, token: string, chatId: number
 
                     await tgFetch(token, 'sendPhoto', {
                         chat_id: chatId,
-                        photo: qrUrl,
+                        photo: qrUrl.href,
                         caption: caption,
                         parse_mode: 'HTML',
                         ...(isLast && !hasDocument && backBtn)

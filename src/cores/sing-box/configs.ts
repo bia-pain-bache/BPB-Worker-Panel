@@ -157,10 +157,12 @@ export async function getSbCustomConfig(isFragment: boolean): Promise<Response> 
         isChain
     );
 
+    const fileName = isFragment ? 'Fragment' : 'Normal';
     return new Response(JSON.stringify(config, null, 4), {
         status: 200,
         headers: {
             'Content-Type': 'application/json',
+            'Content-Disposition': `attachment; filename=${_project_}-${fileName}.json`,
             'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
             'Pragma': 'no-cache',
             'Expires': '0'
@@ -202,6 +204,7 @@ export async function getSbWarpConfig(): Promise<Response> {
         status: 200,
         headers: {
             'Content-Type': 'application/json',
+            'Content-Disposition': `attachment; filename=${_project_}-Warp.json`,
             'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
             'Pragma': 'no-cache',
             'Expires': '0'

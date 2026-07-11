@@ -272,21 +272,22 @@ function generateSubUrl(path, app, tag, singboxType) {
     url.searchParams.append('app', app);
     url.hash = `💦 BPB ${tag}`;
 
-    if(singboxType) {
-        const singUrl = new URL(`sing-box://import-remote-profile?url=${url.href}`);
-        singUrl.searchParams.set('url', url.href);
-        return singUrl;
+    if (singboxType) {
+        return `sing-box://import-remote-profile?url=${url.href}`;
     }
 
-    return url;
+    return url.href;
 }
 
-function openQR(url) {
+function openQR(subUrl) {
+    const url = new URL(subUrl);
     const modal = document.getElementById('qrModal');
     const close = modal.querySelector('.modal-close');
     const container = document.getElementById('qrcode-container');
+
     let qrcodeTitle = document.getElementById('qrcodeTitle');
     qrcodeTitle.textContent = decodeURIComponent(url.hash).replace('#', '');
+
     close.onclick = () => {
         modal.hidden = true;
         container.lastElementChild.remove();
@@ -301,17 +302,13 @@ function openQR(url) {
         }
     }
 
-    let qrcodeDiv = document.createElement('div');
-    qrcodeDiv.className = 'qrcode';
-    qrcodeDiv.style.padding = '0.5rem';
-    qrcodeDiv.style.width = 'fit-content';
-    qrcodeDiv.style.backgroundColor = '#ffffff';
+    const qrcodeDiv = elm('div', { className: 'qrcode' });
     /* global QRCode */
     new QRCode(qrcodeDiv, {
-        text: url.href,
+        text: subUrl,
         width: 256,
         height: 256,
-        colorDark: '#000000',
+        colorDark: '#08244b',
         colorLight: '#ffffff',
         correctLevel: QRCode.CorrectLevel.H
     });
@@ -320,53 +317,19 @@ function openQR(url) {
 }
 
 function copyToClipboard(url) {
-    navigator.clipboard.writeText(url.href)
-        .then(() => notify('info', 'Copied to clipboard', [url.href]))
+    navigator.clipboard.writeText(url)
+        .then(() => notify('info', 'Copied to clipboard', [url]))
         .catch(error => console.error('Failed to copy:', error));
 }
 
 function copyDoh() {
-    const doh = document.getElementById('doh').textContent;
-    const url = new URL(doh);
+    const url = document.getElementById('doh').textContent;
     copyToClipboard(url);
 }
 
-function downloadJSON(data, fileName) {
-    const blob = new Blob([data], { type: 'text/plain' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
-
 async function dlUrl(subUrl) {
-    const url = subUrl.protocol === 'sing-box:'
-        ? subUrl.searchParams.get('url')
-        : subUrl.href;
-
-    try {
-        const res = await fetch(url);
-        const contentType = res.headers.get('content-type') || '';
-
-        if (contentType === 'application/zip') {
-            if (!res.ok) {
-                throw new Error(`status ${res.status} at ${res.url}`);
-            }
-
-            window.location.href = url;
-        } else {
-            const data = await res.text();
-            if (!res.ok) {
-                throw new Error(`status ${res.status} at ${res.url} - ${data}`);
-            }
-
-            downloadJSON(data, 'config.json');
-        }
-    } catch (error) {
-        console.error('Download error:', error);
-    }
+    const url = new URL(subUrl);
+    window.location.href = url.protocol === 'sing-box:' ? url.searchParams.get('url') : subUrl;
 }
 
 async function exportFileSettings(event) {
@@ -377,18 +340,8 @@ async function exportFileSettings(event) {
 
     const icons = startWaiting(event.target, '', 'refresh');
     const url = new URL('./sub/share-settings', window.location.href);
-
-    try {
-        const settings = await fetchSettings(url.href);
-        const data = JSON.stringify(settings);
-        const encodedData = btoa(data);
-        downloadJSON(encodedData, `BPB-settings.dat`);
-    } catch (error) {
-        console.error('Export settings error:', error);
-        notify('error', 'Export settings', ['Failed to export settings file.']);
-    } finally {
-        stopWaiting(icons);
-    }
+    window.location.href = url.href;
+    stopWaiting(icons);
 }
 
 function importFile() {
@@ -413,7 +366,7 @@ async function importFileSettings(event) {
 
         notify('success', 'Import settings', [
             'Settings imported successfully!',
-            'Please first REVIEW new settings and then apply, specially routing settings.'
+            'Please first REVIEW new settings and then apply, specially ROUTING settings.'
         ]);
     } catch (error) {
         console.error('Import settings error:', error);
@@ -440,7 +393,7 @@ async function importRemoteSettings(event) {
 
         notify('success', 'Import settings', [
             'Settings imported successfully!',
-            'Please first REVIEW new settings and then apply, specially routing settings.'
+            'Please first REVIEW new settings and then apply, specially ROUTING settings.'
         ]);
     } catch (error) {
         console.error('Import settings error:', error);

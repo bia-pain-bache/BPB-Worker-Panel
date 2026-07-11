@@ -119,7 +119,8 @@ export async function getURLConfigs() {
     return new Response(configs, {
         status: 200,
         headers: {
-            'Content-Type': 'text/plain;charset=utf-8',
+            'Content-Type': 'text/plain; charset=utf-8',
+            'Content-Disposition': `attachment; filename=${_project_}-Raw.txt`,
             'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
             'Pragma': 'no-cache',
             'Expires': '0',

@@ -103,6 +103,7 @@ async function shareSettings() {
         status: HttpStatus.OK,
         headers: {
             'Content-Type': 'text/plain; charset=utf-8',
+            'Content-Disposition': `attachment; filename=${_project_}-Settings.dat`,
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET',
             'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',

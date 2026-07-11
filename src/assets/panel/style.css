@@ -2,7 +2,7 @@
     --color-bg-main: linear-gradient(90deg, #000328, #00458E);
     --color-bg-card: rgba(15, 23, 42, 0.5);
     --color-bg-input: rgba(2, 6, 23, 0.5);
-    --color-bg-modal: rgb(8 36 75);
+    --color-bg-modal: #08244b;
     --color-bg-btn: #3b82f629;
 
     --color-border-ui: #334155;
@@ -844,6 +844,13 @@ table tr:not(:last-child) {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+}
+
+.qrcode {
+    padding: 0.5rem;
+    width: fit-content;
+    background-color: white;
+    border-radius: var(--radius-ui);
 }
 
 #qrModal>.modal-content {

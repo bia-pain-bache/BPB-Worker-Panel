@@ -330,10 +330,12 @@ export async function getXrCustomConfigs(isFragment: boolean): Promise<Response>
         await addWorkerlessConfigs(configs);
     }
 
+    const fileName = isFragment ? 'Fragment' : 'Normal';
     return new Response(JSON.stringify(configs, null, 4), {
         status: 200,
         headers: {
             'Content-Type': 'application/json',
+            'Content-Disposition': `attachment; filename=${_project_}-${fileName}.json`,
             'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
             'Pragma': 'no-cache',
             'Expires': '0'
@@ -416,10 +418,12 @@ export async function getXrWarpConfigs(
 
     configs.push(warpBestPing, wowBestPing);
 
+    const fileName = isPro ? 'Warp-Pro' : 'Warp';
     return new Response(JSON.stringify(configs, null, 4), {
         status: 200,
         headers: {
             'Content-Type': 'application/json',
+            'Content-Disposition': `attachment; filename=${_project_}-${fileName}.json`,
             'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
             'Pragma': 'no-cache',
             'Expires': '0'

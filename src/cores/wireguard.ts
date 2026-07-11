@@ -47,10 +47,11 @@ export async function getWarpConfigs(isPro: boolean): Promise<Response> {
         const zipBlob = await zip.generateAsync({ type: 'blob' });
         const arrayBuffer = await zipBlob.arrayBuffer();
 
+        const fileName = isPro ? 'Warp-Pro' : 'Warp';
         return new Response(arrayBuffer, {
             headers: {
                 'Content-Type': 'application/zip',
-                'Content-Disposition': `attachment; filename=${_project_}-Warp-${isPro ? 'Pro-' : ''}conf.zip`,
+                'Content-Disposition': `attachment; filename=${_project_}-${fileName}conf.zip`,
                 'Cache-Control': 'no-store, no-cache, must-revalidate',
                 'Pragma': 'no-cache'
             },
