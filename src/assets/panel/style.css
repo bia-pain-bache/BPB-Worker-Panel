@@ -544,7 +544,7 @@ select {
     padding: var(--space-md);
     font-family: inherit;
     font-size: var(--font-size-base);
-    font-weight: 600;
+    font-weight: 500;
     border: 1px solid var(--color-border-accent);
     border-radius: var(--radius-btn);
     color: var(--color-text-btn);
@@ -951,7 +951,7 @@ table tr:not(:last-child) {
 
 .message-title {
     font-size: large;
-    font-weight: 600;
+    font-weight: 500;
 }
 
 .message-icon {

@@ -112,7 +112,7 @@ h2 {
 }
 
 label {
-    font-weight: bold;
+    font-weight: 500;
     color: var(--color-text-secondary);
 }
 
