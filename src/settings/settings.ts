@@ -11,6 +11,7 @@ Object.assign(globalThis, {
     _SS_: atob('c2hhZG93c29ja3M='),
     _V2_: atob('djJyYXk='),
     _project_: atob('QlBC'),
+    _project_SM_: atob('YnBi'),
     _repo_: atob('aHR0cHM6Ly9naXRodWIuY29tL2JpYS1wYWluLWJhY2hlL0JQQi1Xb3JrZXItUGFuZWw='),
     _website_: atob('aHR0cHM6Ly9iaWEtcGFpbi1iYWNoZS5naXRodWIuaW8vQlBCLVdvcmtlci1QYW5lbC8='),
     _public_proxy_ip_: atob('YnBiLnlvdXNlZi5pc2VnYXJvLmNvbQ==')
@@ -145,7 +146,7 @@ export const subscriptions: Record<string, SubsCategory> = {
             { core: 'xray', clients: ['v2rayN(G)', 'Streisand'] },
             { core: 'xray-knocker', clients: ['MahsaNG', 'v2rayN-PRO'] },
             { core: 'clash', clients: ['Clash Meta', 'Clash Verge', 'FlClash', 'Stash'] },
-            { core: 'wireguard', clients: ['Amnezia', 'WG Tunnel'] },
+            { core: 'amnezia', clients: ['Amnezia', 'WG Tunnel'] },
         ]
     }
 };

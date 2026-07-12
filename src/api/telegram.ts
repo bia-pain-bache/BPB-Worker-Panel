@@ -236,16 +236,26 @@ function buildQrUrl(type: string, app: string, label: string): string {
     return qrUrl.href;
 }
 
-function buildDocUrl(type: string, app: string): string {
-    const url = buildSubUrl(type, app);
+function buildDocUrl(type: string, app: string): string | null {
+    if (type === 'raw') return null;
 
+    const url = buildSubUrl(type, app);
     const docUrl = new URL(url);
+
+    const configApp = app.replace('xray-knocker', 'mahsang');
+    const baseType = `${type}-${configApp}`;
+    const isWg = ['wireguard', 'amnezia'].includes(app);
+
+    const configType = isWg ? `${baseType}-conf` : baseType;
+    const ext = isWg ? 'zip' : 'json';
+
+    docUrl.pathname = `${url.pathname}/${_project_SM_}-${configType}.${ext}`;
     docUrl.searchParams.set('nocache', Date.now().toString());
-    
+
     return docUrl.href;
 }
 
-async function handleCallback(cq: TgCallbackQuery, token: string, chatId: number, origin: string): Promise<void> {
+async function handleCallback(cq: TgCallbackQuery, token: string, chatId: number): Promise<void> {
     const data = cq.data || '';
 
     switch (data) {
@@ -311,9 +321,10 @@ async function handleCallback(cq: TgCallbackQuery, token: string, chatId: number
                 const clientUrl = buildClientUrl(typeKey, appInfo.core, subscription.label);
                 const qrUrl = buildQrUrl(typeKey, appInfo.core, subscription.label);
                 const docUrl = buildDocUrl(typeKey, appInfo.core);
+                const wgClient = ['wireguard', 'amnezia'].includes(appInfo.core);
 
                 const supportedList = appInfo.clients.map(a => `✅ ${a}`).join('\n');
-                const showUrl = appInfo.core === 'wireguard' ? '' : `<code>${clientUrl}</code>\n\n`;
+                const showUrl = wgClient ? '' : `<code>${clientUrl}</code>\n\n`;
                 const caption = `💦 <b>BPB ${subscription.label}</b>\n\n${showUrl}<b>Supported apps:</b>\n\n${supportedList}`;
 
                 const isLast = index === subscription.categories.length - 1;
@@ -323,7 +334,7 @@ async function handleCallback(cq: TgCallbackQuery, token: string, chatId: number
                     }
                 };
 
-                if (appInfo.core === 'wireguard') {
+                if (wgClient) {
                     await tgFetch(token, 'sendDocument', {
                         chat_id: chatId,
                         document: docUrl,
@@ -334,15 +345,13 @@ async function handleCallback(cq: TgCallbackQuery, token: string, chatId: number
                 } else {
                     const hasDocument = typeKey !== 'raw';
 
-                    const result = await tgFetch(token, 'sendPhoto', {
+                    await tgFetch(token, 'sendPhoto', {
                         chat_id: chatId,
                         photo: qrUrl,
                         caption: caption,
                         parse_mode: 'HTML',
                         ...(isLast && !hasDocument && backBtn)
                     });
-
-                    console.log(result)
 
                     if (hasDocument) {
                         await tgFetch(token, 'sendDocument', {
@@ -375,7 +384,6 @@ export async function handleTelegramWebhook(request: Request, env: Env): Promise
         const chatId = cq.message?.chat.id;
         if (!chatId) return new Response(null, { status: 200 });
 
-        const origin = new URL(request.url).origin;
         const data = cq.data || '';
 
         if (data === 'main') {
@@ -386,7 +394,7 @@ export async function handleTelegramWebhook(request: Request, env: Env): Promise
                 reply_markup: mainKeyboard()
             });
         } else {
-            await handleCallback(cq, botToken, chatId, origin);
+            await handleCallback(cq, botToken, chatId);
         }
 
         checkCfUsageWarning(botToken, chatId);

@@ -79,7 +79,6 @@ async function updatePanel(request: Request, env: Env): Promise<Response> {
         return respond(false, HttpStatus.METHOD_NOT_ALLOWED, 'Method not allowed.');
     }
 
-
     try {
         const auth = await authenticate(request, env);
         if (!auth) {
@@ -108,7 +107,6 @@ async function deletePanel(request: Request, env: Env): Promise<Response> {
     if (request.method !== 'POST') {
         return respond(false, HttpStatus.METHOD_NOT_ALLOWED, 'Method not allowed.');
     }
-
 
     try {
         const auth = await authenticate(request, env);
@@ -248,7 +246,6 @@ async function getMyIP(request: Request): Promise<Response> {
 
 async function updateWarpConfigs(request: Request, env: Env): Promise<Response> {
     if (request.method !== 'POST') return respond(false, HttpStatus.METHOD_NOT_ALLOWED, 'Method not allowed.');
-
 
     try {
         const auth = await authenticate(request, env);

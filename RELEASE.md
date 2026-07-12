@@ -51,6 +51,7 @@ Also manual deployment and BPB Wizard client deployments do not work on this rel
 - Panel UI improvement.
 - Encapsulated worker domain and Custom Domain configs into separate URL tests #1359
 - Implemented built-in QR code generation for Telegram and panel.
+- Renamed configs filenames and sync Telegram and panel downloads.
 - Fixed sing-box qrcode and subscriptions.
 - Fixed Trojan password validation.
 - Fixed Chain Proxy validation #1352

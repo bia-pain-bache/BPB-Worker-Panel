@@ -4,7 +4,7 @@ import { getSbCustomConfig, getSbWarpConfig } from '@cores/sing-box/configs';
 import { getXrCustomConfigs, getXrWarpConfigs } from '@cores/xray/configs';
 import { setSettings, getGlobals, getKvSettings, getSharedSettings } from '@settings';
 import { fallback } from './utils';
-import { getWarpConfigs } from '@cores/wireguard';
+import { getWireguardConfigs } from '@cores/wireguard';
 import { HttpStatus } from '@common';
 import { SharedSettings } from '#types/settings';
 
@@ -63,7 +63,7 @@ export async function handleSubscriptions(request: Request, env: Env): Promise<R
                     return getClWarpConfig(false);
 
                 case 'wireguard':
-                    return getWarpConfigs(false);
+                    return getWireguardConfigs(false);
 
                 default:
                     break;
@@ -80,8 +80,8 @@ export async function handleSubscriptions(request: Request, env: Env): Promise<R
                 case 'clash':
                     return getClWarpConfig(true);
 
-                case 'wireguard':
-                    return getWarpConfigs(true);
+                case 'amnezia':
+                    return getWireguardConfigs(true);
 
                 default:
                     break;
@@ -103,7 +103,7 @@ async function shareSettings() {
         status: HttpStatus.OK,
         headers: {
             'Content-Type': 'text/plain; charset=utf-8',
-            'Content-Disposition': `attachment; filename=${_project_}-Settings.dat`,
+            'Content-Disposition': `attachment; filename=${_project_SM_}-settings.dat`,
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET',
             'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',

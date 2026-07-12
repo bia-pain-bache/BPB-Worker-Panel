@@ -23,6 +23,7 @@ declare global {
     const _SS_: string;
     const _V2_: string;
     const _project_: string;
+    const _project_SM_: string;
     const _repo_: string;
     const _website_: string;
     const _public_proxy_ip_: string;

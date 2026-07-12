@@ -1162,14 +1162,18 @@ function renderSubscriptions(subscriptions) {
             const url = generateSubUrl(type, core, label, isSingBox);
             const ctaSection = elm('td');
 
-            if (core !== 'wireguard') {
+            const wgCore = ['wireguard', 'amnezia'].includes(core);
+            if (!wgCore) {
                 const qrBtn = elm('button', { title: 'Display QR code', onclick: () => showQRCode(url) }, createIcon('qr_code'));
                 const copyBtn = elm('button', { title: 'Copy subscription URL', onclick: () => copyToClipboard(url) }, createIcon('content_copy'));
                 ctaSection.append(qrBtn, copyBtn);
             }
 
-            const dlBtn = elm('button', { title: 'Download config', onclick: () => dlUrl(url) }, createIcon('download'));
-            ctaSection.appendChild(dlBtn);
+            if(type !== 'raw') {
+                const dlBtn = elm('button', { title: 'Download config', onclick: () => dlUrl(url) }, createIcon('download'));
+                ctaSection.appendChild(dlBtn);
+            }
+
             return elm('tr', {}, [clientSection, ctaSection]);
         }));
 

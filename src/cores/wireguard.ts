@@ -2,7 +2,7 @@ import { HttpStatus, respond, safeError } from '@common';
 import { getSettings, getWarpAccounts } from '@settings';
 import JSZip from 'jszip';
 
-export async function getWarpConfigs(isPro: boolean): Promise<Response> {
+export async function getWireguardConfigs(isPro: boolean): Promise<Response> {
     try {
         const { warpIPv6, publicKey, privateKey } = getWarpAccounts()[0];
         const {
@@ -47,11 +47,11 @@ export async function getWarpConfigs(isPro: boolean): Promise<Response> {
         const zipBlob = await zip.generateAsync({ type: 'blob' });
         const arrayBuffer = await zipBlob.arrayBuffer();
 
-        const fileName = isPro ? 'Warp-Pro' : 'Warp';
+        const fileName = isPro ? 'pro-amnezia' : 'wireguard';
         return new Response(arrayBuffer, {
             headers: {
                 'Content-Type': 'application/zip',
-                'Content-Disposition': `attachment; filename=${_project_}-${fileName}-conf.zip`,
+                'Content-Disposition': `attachment; filename=${_project_SM_}-warp-${fileName}-conf.zip`,
                 'Cache-Control': 'no-store, no-cache, must-revalidate',
                 'Pragma': 'no-cache'
             },
