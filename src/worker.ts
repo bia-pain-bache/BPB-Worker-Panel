@@ -3,6 +3,7 @@ import { renderError } from '@handlers/error';
 import { handleLogin } from '@handlers/login';
 import { handlePanel } from '@handlers/panel';
 import { handleProxyIPs } from '@handlers/proxy-ip';
+import { generateQRCode } from '@handlers/qrcode';
 import { handleSubscriptions } from '@handlers/subscription';
 import { handleTelegram } from '@handlers/telegram';
 import { fallback } from '@handlers/utils';
@@ -35,6 +36,9 @@ export default {
 
 				case `/${securePath}/proxy-ip`:
 					return handleProxyIPs(request, env);
+				
+				case `/${securePath}/qrcode`:
+					return generateQRCode(request);
 					
 				default:
 					return fallback(request);

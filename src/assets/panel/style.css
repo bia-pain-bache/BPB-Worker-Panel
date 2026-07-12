@@ -1,7 +1,7 @@
 :root {
     --color-bg-main: linear-gradient(90deg, #000328, #00458E);
     --color-bg-card: rgba(15, 23, 42, 0.5);
-    --color-bg-input: rgba(2, 6, 23, 0.5);
+    --color-bg-input: #02061780;
     --color-bg-modal: #08244b;
     --color-bg-btn: #3b82f629;
 
@@ -846,9 +846,8 @@ table tr:not(:last-child) {
 }
 
 .qrcode {
-    padding: 0.5rem;
-    width: fit-content;
-    background-color: white;
+    width: 256px;
+    height: 256px;
     border-radius: var(--radius-ui);
 }
 

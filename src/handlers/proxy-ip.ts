@@ -24,7 +24,7 @@ export async function handleProxyIPs(request: Request, env: Env): Promise<Respon
             return getProxyIPsInfo();
 
         case 'proxy-ip/test':
-            return testProxyIP(request);
+            return testProxyIP();
 
         default:
             return fallback(request);
@@ -166,9 +166,10 @@ async function checkProxyIP(address: string): Promise<Omit<Attempt, 'attempt'>> 
     }
 }
 
-async function testProxyIP(request: Request) {
-    const url = new URL(request.url);
-    const target = url.searchParams.get('target') as string;
+async function testProxyIP() {
+    const { searchParams } = getGlobals();
+
+    const target = searchParams.get('target') as string;
     const attemptPromises = Array.from({ length: ATTEMPTS }, (_, i) =>
         checkProxyIP(target).then(res => ({ attempt: i + 1, ...res }))
     );

@@ -50,7 +50,7 @@ export async function setTelegramBot(path: string, token: string) {
         if (!data.ok) {
             throw new Error(data.description || 'Failed to set webhook.');
         }
-    
+
         const commRes = await fetch(`https://api.telegram.org/bot${token}/setMyCommands`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -62,7 +62,7 @@ export async function setTelegramBot(path: string, token: string) {
                 ]
             })
         });
-    
+
         const commData: any = await commRes.json();
         if (!commData.ok) {
             throw new Error(commData.description || 'Failed to set bot commands.');
@@ -133,11 +133,6 @@ interface TgUpdate {
     callback_query?: TgCallbackQuery;
 }
 
-interface Url {
-    url: string;
-    noCacheUrl: string;
-}
-
 function mainKeyboard() {
     return {
         inline_keyboard: [
@@ -178,25 +173,6 @@ async function tgFetch(token: string, method: string, body: any): Promise<any> {
     return res.json();
 }
 
-function buildSubUrl(origin: string, path: string, type: string, app: string, label: string): Url {
-    const url = new URL(`/${path}/sub/${type}`, origin);
-    url.searchParams.set('app', app);
-    url.hash = `💦 BPB ${label}`;
-
-    let clientBaseUrl: string = url.href;
-    
-    if(app === 'sing-box' && type !== 'raw') {
-        const singUrl = new URL('sing-box://import-remote-profile');
-        singUrl.searchParams.set('url', url.href);
-        clientBaseUrl = singUrl.href;
-    }
-
-    url.searchParams.set('nocache', Date.now().toString());
-    const noCache = url.href;
-
-    return { url: clientBaseUrl, noCacheUrl: noCache };
-}
-
 function buildUsageText(totalUsage: number, panelUsage: number): string {
     const panelReqPct = Math.ceil(Number(panelUsage) / 100000 * 100);
     const totalReqPct = Math.ceil(Number(totalUsage) / 100000 * 100);
@@ -223,6 +199,50 @@ function buildUsageText(totalUsage: number, panelUsage: number): string {
     }
 
     return text;
+}
+
+function buildSubUrl(type: string, app: string): URL {
+    const { securePath, origin } = getGlobals();
+
+    const url = new URL(`/${securePath}/sub/${type}`, origin);
+    url.searchParams.set('app', app);
+
+    return url;
+}
+
+function buildClientUrl(type: string, app: string, label: string): string {
+    const url = buildSubUrl(type, app);
+
+    if (app === 'sing-box' && type !== 'raw') {
+        const singUrl = new URL('sing-box://import-remote-profile');
+        singUrl.searchParams.set('url', url.href);
+        singUrl.hash = `💦 ${_project_} ${label}`;
+
+        return singUrl.href;
+    }
+
+    url.hash = `💦 ${_project_} ${label}`;
+    return url.href;
+}
+
+function buildQrUrl(type: string, app: string, label: string): string {
+    const { securePath, origin } = getGlobals();
+    const url = buildClientUrl(type, app, label);
+
+    const qrUrl = new URL(`/${securePath}/qrcode`, origin);
+    qrUrl.searchParams.set('data', url);
+    qrUrl.searchParams.set('nocache', Date.now().toString());
+
+    return qrUrl.href;
+}
+
+function buildDocUrl(type: string, app: string): string {
+    const url = buildSubUrl(type, app);
+
+    const docUrl = new URL(url);
+    docUrl.searchParams.set('nocache', Date.now().toString());
+    
+    return docUrl.href;
 }
 
 async function handleCallback(cq: TgCallbackQuery, token: string, chatId: number, origin: string): Promise<void> {
@@ -286,17 +306,14 @@ async function handleCallback(cq: TgCallbackQuery, token: string, chatId: number
             const typeKey = data.slice(5);
             const subscription = subscriptions[typeKey];
             if (!subscription) break;
-            const { securePath } = getSettings();
 
             for (const [index, appInfo] of subscription.categories.entries()) {
-                const { url, noCacheUrl } = buildSubUrl(origin, securePath, typeKey, appInfo.core, subscription.label);
-                
-                const qrUrl = new URL('https://api.qrserver.com/v1/create-qr-code/');
-                qrUrl.searchParams.set('data', url);
-                qrUrl.searchParams.set('size', '400x400');
+                const clientUrl = buildClientUrl(typeKey, appInfo.core, subscription.label);
+                const qrUrl = buildQrUrl(typeKey, appInfo.core, subscription.label);
+                const docUrl = buildDocUrl(typeKey, appInfo.core);
 
                 const supportedList = appInfo.clients.map(a => `✅ ${a}`).join('\n');
-                const showUrl = appInfo.core === 'wireguard' ? '' : `<code>${url}</code>\n\n`;
+                const showUrl = appInfo.core === 'wireguard' ? '' : `<code>${clientUrl}</code>\n\n`;
                 const caption = `💦 <b>BPB ${subscription.label}</b>\n\n${showUrl}<b>Supported apps:</b>\n\n${supportedList}`;
 
                 const isLast = index === subscription.categories.length - 1;
@@ -309,7 +326,7 @@ async function handleCallback(cq: TgCallbackQuery, token: string, chatId: number
                 if (appInfo.core === 'wireguard') {
                     await tgFetch(token, 'sendDocument', {
                         chat_id: chatId,
-                        document: noCacheUrl,
+                        document: docUrl,
                         caption: caption,
                         parse_mode: 'HTML',
                         ...(isLast && backBtn)
@@ -317,18 +334,20 @@ async function handleCallback(cq: TgCallbackQuery, token: string, chatId: number
                 } else {
                     const hasDocument = typeKey !== 'raw';
 
-                    await tgFetch(token, 'sendPhoto', {
+                    const result = await tgFetch(token, 'sendPhoto', {
                         chat_id: chatId,
-                        photo: qrUrl.href,
+                        photo: qrUrl,
                         caption: caption,
                         parse_mode: 'HTML',
                         ...(isLast && !hasDocument && backBtn)
                     });
 
+                    console.log(result)
+
                     if (hasDocument) {
                         await tgFetch(token, 'sendDocument', {
                             chat_id: chatId,
-                            document: noCacheUrl,
+                            document: docUrl,
                             ...(isLast && backBtn)
                         });
                     }

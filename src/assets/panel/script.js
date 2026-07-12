@@ -279,7 +279,26 @@ function generateSubUrl(path, app, tag, singboxType) {
     return url.href;
 }
 
-function openQR(subUrl) {
+async function generateQRCode(data) {
+    const url = new URL('./qrcode', window.location.href);
+    url.searchParams.set('data', data);
+    url.searchParams.set('nocache', Date.now().toString());
+
+    const res = await fetch(url, { method: 'POST' });
+    if (!res.ok) {
+        throw new Error(`status ${res.status}`);
+    }
+
+    const blob = await res.blob();
+
+    return elm('img', {
+        id: 'qr',
+        className: 'qrcode',
+        src: URL.createObjectURL(blob)
+    });
+}
+
+function showQRCode(subUrl) {
     const url = new URL(subUrl);
     const modal = document.getElementById('qrModal');
     const close = modal.querySelector('.modal-close');
@@ -294,7 +313,6 @@ function openQR(subUrl) {
         window.onclick = null;
     };
 
-    modal.hidden = false;
     window.onclick = (event) => {
         if (event.target == modal) {
             modal.hidden = true;
@@ -302,18 +320,10 @@ function openQR(subUrl) {
         }
     }
 
-    const qrcodeDiv = elm('div', { className: 'qrcode' });
-    /* global QRCode */
-    new QRCode(qrcodeDiv, {
-        text: subUrl,
-        width: 256,
-        height: 256,
-        colorDark: '#08244b',
-        colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.H
+    generateQRCode(subUrl).then(qr => {
+        container.appendChild(qr);
+        modal.hidden = false;
     });
-
-    container.appendChild(qrcodeDiv);
 }
 
 function copyToClipboard(url) {
@@ -1153,7 +1163,7 @@ function renderSubscriptions(subscriptions) {
             const ctaSection = elm('td');
 
             if (core !== 'wireguard') {
-                const qrBtn = elm('button', { title: 'Display QR code', onclick: () => openQR(url) }, createIcon('qr_code'));
+                const qrBtn = elm('button', { title: 'Display QR code', onclick: () => showQRCode(url) }, createIcon('qr_code'));
                 const copyBtn = elm('button', { title: 'Copy subscription URL', onclick: () => copyToClipboard(url) }, createIcon('content_copy'));
                 ctaSection.append(qrBtn, copyBtn);
             }

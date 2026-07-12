@@ -1,10 +1,9 @@
 import { getGlobals } from '@settings';
 
 export async function handleDoH(request: Request): Promise<Response> {
-    const { dohUrl } = getGlobals();
-    const url = new URL(request.url);
+    const { dohUrl, searchParams } = getGlobals();
     const targetURL = new URL(dohUrl);
-    url.searchParams.forEach((value, key) => {
+    searchParams.forEach((value, key) => {
         targetURL.searchParams.set(key, value);
     });
 

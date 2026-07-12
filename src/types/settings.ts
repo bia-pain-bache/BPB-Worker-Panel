@@ -127,6 +127,7 @@ export interface ReqSettings {
     origin: string;
     pathname: string;
     hostname: string;
+    searchParams: URLSearchParams;
 }
 
 export type LogLevel = 'none' | 'warning' | 'error' | 'info' | 'debug';

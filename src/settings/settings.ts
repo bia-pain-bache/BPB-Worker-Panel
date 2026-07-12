@@ -40,6 +40,7 @@ export function init(request: Request, env: Env) {
         httpsPorts: [443, 8443, 2053, 2083, 2087, 2096],
         client: decodeURIComponent(searchParams.get('app') ?? ''),
         origin: origin,
+        searchParams,
         pathname: decodeURIComponent(pathname),
         hostname: hostname
     };
