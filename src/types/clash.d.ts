@@ -167,6 +167,7 @@ export interface ShadowsocksOutbound extends BaseOutbound {
 export type VlessOutbound = BaseOutbound & OptionalIntersection<{
     'uuid': string;
     'flow'?: 'xtls-rprx-vision';
+    'encryption': string;
     'servername'?: string;
     'packet-encoding'?: '';
 }, TLS> & Transport;

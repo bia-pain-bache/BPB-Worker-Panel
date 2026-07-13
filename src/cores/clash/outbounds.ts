@@ -86,7 +86,8 @@ export function buildWebsocketOutbound(
 
     if (protocol === _VL_) return buildOutbound<VlessOutbound>(remark, protocol, address, port, enableIPv6, enableTFO, tls, transport, {
         'uuid': vlUUID,
-        'packet-encoding': ''
+        'packet-encoding': '',
+        'encryption': ''
     });
 
     return buildOutbound<TrojanOutbound>(remark, protocol, address, port, enableIPv6, enableTFO, tls, transport, {
@@ -155,7 +156,8 @@ export function buildChainOutbound(): ChainOutbound | undefined {
             pass, password, method, uuid,
             flow, security, type, sni, fp,
             host, path, alpn, pbk, sid,
-            headerType, serviceName, aid
+            headerType, serviceName, aid,
+            encryption
         }
     } = getSettings();
 
@@ -188,7 +190,8 @@ export function buildChainOutbound(): ChainOutbound | undefined {
         case _VL_:
             return buildOutbound<VlessOutbound>('', _VL_, server, port, false, false, tls, transport, {
                 'uuid': uuid,
-                'flow': flow
+                'flow': flow,
+                'encryption': encryption?.replace('none', '') ?? ''
             });
 
         case _VM_:

@@ -215,7 +215,7 @@ export function buildChainOutbound(): Outbound | undefined {
             flow, security, type, sni, fp,
             host, path, alpn, pbk, sid, spx,
             headerType, serviceName, mode,
-            authority
+            authority, encryption
         }
     } = getSettings();
 
@@ -262,7 +262,7 @@ export function buildChainOutbound(): Outbound | undefined {
                     users: [{
                         id: uuid,
                         flow: flow,
-                        encryption: 'none'
+                        encryption: encryption ?? 'none'
                     }]
                 }]
             }, streamSettings);
