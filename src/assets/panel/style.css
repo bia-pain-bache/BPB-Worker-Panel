@@ -267,12 +267,11 @@ label {
 }
 
 .form-control label,
+.modal-form-control label,
 .form-control>span {
     color: var(--color-text-secondary);
-    display: flex;
     align-items: center;
     flex: 1;
-    gap: 6px;
     text-align: left;
     width: 100%;
 }
@@ -358,12 +357,15 @@ a .material-symbols-rounded {
     color: var(--color-brand-primary);
 }
 
-label .material-symbols-rounded {
+label > .material-symbols-rounded,
+span > .material-symbols-rounded {
     color: var(--color-brand-primary);
     cursor: pointer;
+    padding-left: var(--space-xs);;
 }
 
-label .material-symbols-rounded:hover,
+label > .material-symbols-rounded:hover,
+span > .material-symbols-rounded:hover,
 a .material-symbols-rounded:hover,
 .refresh-geo-location .material-symbols-rounded:hover {
     scale: calc(1.2);
@@ -372,6 +374,7 @@ a .material-symbols-rounded:hover,
 a.url {
     width: unset;
     color: var(--color-brand-primary);
+    text-decoration: none;
 }
 
 .form-control.apply {
@@ -766,6 +769,11 @@ table {
     border: none;
     cursor: pointer;
     color: var(--color-brand-primary);
+}
+
+.add-noise:hover,
+.delete-noise:hover {
+    scale: calc(1.2);
 }
 
 .table-container tbody {

@@ -813,41 +813,28 @@ function resetPassword(event) {
         .catch(error => console.error('Reset password error:', error));
 }
 
-function generateUdpNoise(event) {
-    const noisePacket = event.target.closest('.inner-container').querySelector("[name='udpXrayNoisePacket']");
-
-    const generateRandomBase64 = length => {
-        const array = new Uint8Array(Math.ceil(length * 3 / 4));
-        crypto.getRandomValues(array);
-        let base64 = btoa(String.fromCharCode(...array));
-        return base64.slice(0, length);
-    }
-
-    const generateRandomHex = length => {
-        const array = new Uint8Array(Math.ceil(length / 2));
-        crypto.getRandomValues(array);
-        let hex = [...array].map(b => b.toString(16).padStart(2, '0')).join('');
-        return hex.slice(0, length);
-    }
-
-    switch (event.target.value) {
+function generateUdpNoise(mode, packet) {
+    switch (mode.value) {
         case 'base64':
-            noisePacket.value = generateRandomBase64(64);
+            packet.value = generateRandomBase64(32, 64);
             break;
 
         case 'rand':
-            noisePacket.value = '50-100';
+            packet.value = '50-100';
             break;
 
         case 'hex':
-            noisePacket.value = generateRandomHex(64);
+            packet.value = generateRandomHex(32, 64);
             break;
 
         case 'str': {
             const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-            noisePacket.value = generateRandomStr(charset, 64, 64);
+            packet.value = generateRandomStr(charset, 32, 64);
             break;
         }
+        
+        case 'array': 
+            packet.value = generateRandomArray(32, 64);
     }
 }
 
@@ -862,6 +849,32 @@ function generateRandomStr(charset, minLen, maxLen) {
     return Array.from(crypto.getRandomValues(new Uint8Array(length)))
         .map(byte => charset[byte % charset.length])
         .join('');
+}
+
+function generateRandomArray(minLen, maxLen) {
+    const length = Math.floor(Math.random() * (maxLen - minLen + 1)) + minLen;
+    const array = Array.from({length}, () => Math.floor(Math.random() * 256));
+    const field = array.map(String).join(',');
+
+    return field;
+}
+
+function generateRandomBase64 (minLen, maxLen) {
+    const length = Math.floor(Math.random() * (maxLen - minLen + 1)) + minLen;
+    const array = new Uint8Array(Math.ceil(length * 3 / 4));
+    crypto.getRandomValues(array);
+    let base64 = btoa(String.fromCharCode(...array));
+    
+    return base64.slice(0, length);
+}
+
+function generateRandomHex (minLen, maxLen) {
+    const length = Math.floor(Math.random() * (maxLen - minLen + 1)) + minLen;
+    const array = new Uint8Array(Math.ceil(length / 2));
+    crypto.getRandomValues(array);
+    let hex = [...array].map(b => b.toString(16).padStart(2, '0')).join('');
+    
+    return hex.slice(0, length);
 }
 
 function generatePassword() {
@@ -1007,11 +1020,11 @@ const createIcon = (text) => elm('span', {
     textContent: text
 });
 
-function createFormControl(labelText) {
-    const control = elm('div', { className: 'form-control' });
-    const label = elm('span', { textContent: labelText });
-    const inputWrapper = elm('div');
-    return elm('div', { className: 'form-control' }, [label, inputWrapper]);
+function createFormControl(labelText, action) {
+    const label = elm('span', { textContent: labelText }, action ? createIcon('refresh') : []);
+    const control = elm('div', { className: 'form-control' }, [label, elm('div')]);
+
+    return control;
 }
 
 function renderPortsBlock(ports) {
@@ -1108,16 +1121,19 @@ function addUdpNoise(isManual, noiseIndex, udpNoise) {
         ['array', 'Array']
     ].map(([value, label]) => elm('option', { value, textContent: label, selected: noise.type === value }));
 
-    const modeSelect = elm('select', { name: 'udpXrayNoiseMode', onchange: generateUdpNoise }, modeOptions);
-
+    const modeSelect = elm('select', { name: 'udpXrayNoiseMode' }, modeOptions);
     const modeControl = createFormControl('Mode');
+    
     const selectWrapper = modeControl.querySelector('div');
     selectWrapper.className = 'select-wrapper';
     selectWrapper.append(modeSelect, createIcon('keyboard_arrow_down'))
 
     const packetInput = elm('input', { type: 'text', name: 'udpXrayNoisePacket', value: noise.packet });
-    const packetControl = createFormControl('Packet');
+    const packetControl = createFormControl('Packet', true);
     packetControl.querySelector('div').appendChild(packetInput);
+    const generateBtn = packetControl.querySelector('.material-symbols-rounded');
+    
+    modeSelect.onchange = generateBtn.onclick = () => generateUdpNoise(modeSelect, packetInput);
 
     const countInput = elm('input', {
         type: 'number', name: 'udpXrayNoiseCount', value: String(noise.count), min: '1', required: true

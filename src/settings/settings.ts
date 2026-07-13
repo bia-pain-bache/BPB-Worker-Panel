@@ -201,7 +201,7 @@ let kvSettings: KvSettings = {
     xrayUdpNoises: [{
         type: 'rand',
         packet: '50-100',
-        delay: '1-1',
+        delay: '1-5',
         count: 5
     }],
     knockerNoiseMode: 'quic',

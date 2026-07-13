@@ -30,6 +30,7 @@ Also manual deployment and BPB Wizard client deployments do not work on this rel
 - Updated Clash, Amnezia Warp Pro settings. This may help connection on some ISPs.
 - Chain Proxy now supports Xhttp and VLESS Encryption for Xray and Clash cores.
 - Made Warp Reserved bytes optional. Some ISPs flagged reserved bytes.
+- Optimized Warp Pro noise generation for Xray core.
 - The Panel UI has been improved a lot and removed dark/light mode.
 - Solid Data validations execute in backend from now on.
 - Implemented Toasts and message boxes instead of alerts in panel.
