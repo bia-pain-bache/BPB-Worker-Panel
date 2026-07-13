@@ -30,18 +30,20 @@ async function processHtmlPages() {
         const base = (file) => join(ASSET_PATH, dir, file);
 
         const indexHtml = readFileSync(base('index.html'), 'utf8');
-        let finalHtml = indexHtml.replaceAll('__VERSION__', pkg.version);
+        let html = indexHtml.replaceAll('__VERSION__', pkg.version);
 
         if (dir !== 'error') {
-            const styleCode = readFileSync(base('style.css'), 'utf8');
-            const scriptCode = readFileSync(base('script.js'), 'utf8');
-            const finalScriptCode = await jsMinify(scriptCode);
-            finalHtml = finalHtml
-                .replaceAll('__STYLE__', `<style>${styleCode}</style>`)
-                .replaceAll('__SCRIPT__', finalScriptCode.code);
+            const css = readFileSync(base('style.css'), 'utf8');
+
+            const script = readFileSync(base('script.js'), 'utf8');
+            const { code } = await jsMinify(script);
+
+            html = html
+                .replace('/* CSS_PLACEHOLDER */', css)
+                .replace('/* JS_PLACEHOLDER */', code);
         }
 
-        const minifiedHtml = htmlMinify(finalHtml, {
+        const minifiedHtml = htmlMinify(html, {
             collapseWhitespace: true,
             removeAttributeQuotes: true,
             minifyCSS: true
@@ -76,7 +78,7 @@ async function buildWorker() {
 
     console.log(`${success} Worker built successfuly!`);
 
-    const minified = await jsMinify(code.outputFiles[0].text, {
+    const { code: script } = await jsMinify(code.outputFiles[0].text, {
         module: true,
         output: {
             comments: false
@@ -87,11 +89,10 @@ async function buildWorker() {
         }
     });
 
-    const script = minified.code;
     console.log(`${success} Worker minified successfuly!`);
 
-    const gzipped = gzipSync(script, { level: 9 });
-    const base64Gzip = gzipped.toString("base64");
+    const base64Gzip = gzipSync(script, { level: 9 }).toString("base64");
+
     const embededContents = {
         SOURCE_CONTENT: base64Gzip,
         PANEL_HTML_CONTENT: htmls['panel'],
@@ -101,7 +102,6 @@ async function buildWorker() {
         ICON_CONTENT: faviconBase64
     };
 
-    const buildTimestamp = new Date().toISOString();
     const worker = `Object.assign(globalThis, ${JSON.stringify(embededContents)});${script}`;
 
     mkdirSync(DIST_PATH, { recursive: true });
