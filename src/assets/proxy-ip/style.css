@@ -29,6 +29,7 @@ body.is-loading {
 }
 
 body.is-loading * {
+    /* eslint-disable-next-line css/no-important */
     cursor: wait !important;
     pointer-events: none;
 }
@@ -88,7 +89,7 @@ tbody {
 th,
 td {
     text-align: center;
-    text-wrap: nowrap;
+    white-space: nowrap;
     padding: 10px;
     border-bottom: 1px solid var(--color-border);
     color: var(--color-text-secondary);
@@ -128,4 +129,8 @@ td:nth-child(4) {
         'wght' 400,
         'GRAD' 0,
         'opsz' 24
+}
+
+.material-symbols-rounded:hover {
+    scale: calc(1.2);
 }

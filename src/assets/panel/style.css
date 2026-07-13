@@ -63,6 +63,7 @@ body.is-loading {
 }
 
 body.is-loading * {
+    /* eslint-disable-next-line css/no-important */
     cursor: wait !important;
     pointer-events: none;
 }
@@ -161,7 +162,7 @@ h4 {
 #total-usage,
 #panel-usage {
     width: fit-content;
-    text-wrap-mode: nowrap;
+    white-space: nowrap;
 }
 
 .header-container {
@@ -265,7 +266,8 @@ label {
     display: block;
 }
 
-.form-control label {
+.form-control label,
+.form-control>span {
     color: var(--color-text-secondary);
     display: flex;
     align-items: center;
@@ -281,7 +283,7 @@ div.checkbox-wrapper label {
     text-align: left;
     font-weight: 400;
     font-size: 100%;
-    text-wrap: nowrap;
+    white-space: nowrap;
 }
 
 .proto label {
@@ -302,7 +304,7 @@ div.checkbox-wrapper label {
 
 .value-container .material-symbols-rounded {
     color: var(--color-brand-primary);
-    font-size: var(--font-size-xlg);
+    font-size: var(--font-size-lg);
     cursor: pointer;
 }
 
@@ -335,7 +337,7 @@ div.checkbox-wrapper label {
 }
 
 table button span.material-symbols-rounded {
-    font-size: var(--font-size-xlg);
+    font-size: var(--font-size-lg);
     margin: 0;
     color: var(--color-brand-primary)
 }
@@ -361,6 +363,12 @@ label .material-symbols-rounded {
     cursor: pointer;
 }
 
+label .material-symbols-rounded:hover,
+a .material-symbols-rounded:hover,
+.refresh-geo-location .material-symbols-rounded:hover {
+    scale: calc(1.2);
+}
+
 a.url {
     width: unset;
     color: var(--color-brand-primary);
@@ -383,7 +391,7 @@ a.url {
     width: 100%;
 }
 
-.select-wrapper span {
+.select-wrapper span:last-child {
     position: absolute;
     right: 6px;
     pointer-events: none;
@@ -417,6 +425,10 @@ a.url {
     right: 10px;
     transform: translateY(-50%);
     cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    /* eslint-disable-next-line css/use-baseline */
     user-select: none;
     color: var(--color-text-muted);
     padding-left: 5px;
@@ -481,8 +493,11 @@ textarea:read-only {
 
 textarea {
     font-family: inherit;
+    /* eslint-disable-next-line css/use-baseline */
     scrollbar-color: #ccc transparent;
+    /* eslint-disable-next-line css/use-baseline */
     scrollbar-width: thin;
+    /* eslint-disable-next-line css/use-baseline */
     resize: none;
     max-height: calc(5lh + 10px);
 }
@@ -511,7 +526,7 @@ select {
     width: 100%;
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: var(--space-sm);
 }
 
 .min-max input {
@@ -519,7 +534,7 @@ select {
 }
 
 .ports-block th {
-    text-wrap: nowrap;
+    white-space: nowrap;
     background-color: gray;
 }
 
@@ -612,11 +627,7 @@ table button:focus,
 button.svg-btn:hover,
 button.svg-btn:focus {
     color: var(--color-brand-primary);
-    transform: translateY(-2px);
-}
-
-.header-container button:hover {
-    transform: scale(1.1);
+    scale: calc(1.2);
 }
 
 table button,
@@ -636,6 +647,10 @@ table button:active {
     transform: translateY(1px);
 }
 
+.apply .button {
+    padding: var(--space-lg);
+}
+
 .panel-settings {
     flex: unset;
     border: none;
@@ -647,7 +662,7 @@ table button:active {
 }
 
 .panel-settings:hover {
-    transform: translateY(-2px);
+    scale: calc(1.2);
 }
 
 .panel-settings:disabled {
@@ -655,21 +670,29 @@ table button:active {
     cursor: default;
 }
 
-details {
+.accordion-item {
+    position: relative;
     border-bottom: 1px solid var(--color-border-accent);
 }
 
-#subscriptions details:last-child {
+#subscriptions .accordion-item:last-child,
+#telegramForm .accordion-item:last-child {
     border: none;
 }
 
-#telegramForm details:last-child {
-    border: none;
+.help-icon {
+    position: absolute;
+    top: 1em;
+    right: 0;
+    display: inline-flex;
+    align-items: center;
+    z-index: 1;
+    text-decoration: none;
 }
 
-details h3 {
-    display: flex;
-    justify-content: center;
+.help-icon span,
+.refresh-geo-location span {
+    font-size: var(--font-size-lg);
 }
 
 summary {
@@ -677,10 +700,12 @@ summary {
     font-weight: bold;
     cursor: pointer;
     text-align: left;
-    text-wrap: nowrap;
+    white-space: nowrap;
 }
 
-summary::marker {
+/* eslint-disable-next-line css/use-baseline */
+summary::marker,
+summary::-webkit-details-marker {
     font-size: 1.3rem;
     color: var(--color-brand-primary);
 }
@@ -693,13 +718,7 @@ summary h3 {
     display: inline-flex;
     align-items: center;
     padding-left: var(--space-xs);
-}
-
-summary h3 a {
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
+    margin: 1em 0;
 }
 
 .footer-container {
@@ -766,7 +785,7 @@ table tr:not(:last-child) {
 }
 
 .table-container tr td:first-child {
-    text-wrap: nowrap;
+    white-space: nowrap;
 }
 
 .table-container tr td:nth-child(2) {
@@ -784,7 +803,7 @@ table tr:not(:last-child) {
 
 .my-ip th,
 .my-ip td {
-    text-wrap: nowrap;
+    white-space: nowrap;
     padding: 10px;
     border-bottom: inherit;
 }
@@ -868,7 +887,7 @@ table tr:not(:last-child) {
     left: 50%;
     transform: translateX(-50%);
     font-weight: bold;
-    text-wrap-mode: nowrap;
+    white-space: nowrap;
     font-size: large;
 }
 
@@ -918,7 +937,7 @@ table tr:not(:last-child) {
 }
 
 .output {
-    text-wrap-mode: nowrap;
+    white-space: nowrap;
 }
 
 .output-container {

@@ -128,6 +128,7 @@ label {
     right: 10px;
     transform: translateY(-50%);
     cursor: pointer;
+    /* eslint-disable-next-line css/use-baseline */
     user-select: none;
     color: darkgray;
 }

@@ -183,7 +183,7 @@ function buildUsageText(totalUsage: number, panelUsage: number): string {
         `━━━━━━━━━━━━━━━━`,
         `📅 Today: ${today}`,
         '',
-        '🔵 <b>BPB requests</b>',
+        `🔵 <b>${_project_} requests</b>`,
         `${panelUsage} / 100,000 (${panelReqPct}%)`,
         '',
         '🔵 <b>Total requests</b>',
@@ -325,7 +325,7 @@ async function handleCallback(cq: TgCallbackQuery, token: string, chatId: number
 
                 const supportedList = appInfo.clients.map(a => `✅ ${a}`).join('\n');
                 const showUrl = wgClient ? '' : `<code>${clientUrl}</code>\n\n`;
-                const caption = `💦 <b>BPB ${subscription.label}</b>\n\n${showUrl}<b>Supported apps:</b>\n\n${supportedList}`;
+                const caption = `💦 <b>${_project_} ${subscription.label}</b>\n\n${showUrl}<b>Supported apps:</b>\n\n${supportedList}`;
 
                 const isLast = index === subscription.categories.length - 1;
                 const backBtn = {
@@ -389,7 +389,7 @@ export async function handleTelegramWebhook(request: Request, env: Env): Promise
         if (data === 'main') {
             await tgFetch(botToken, 'sendMessage', {
                 chat_id: chatId,
-                text: '🤖 <b>BPB Panel Bot</b>\n\nChoose an option:',
+                text: `🤖 <b>${_project_} Panel Bot</b>\n\nChoose an option:`,
                 parse_mode: 'HTML',
                 reply_markup: mainKeyboard()
             });
@@ -431,7 +431,7 @@ export async function handleTelegramWebhook(request: Request, env: Env): Promise
             default:
                 await tgFetch(botToken, 'sendMessage', {
                     chat_id: chatId,
-                    text: '🤖 <b>BPB Panel Bot</b>\n\nChoose an option:',
+                    text: `🤖 <b>${_project_} Panel Bot</b>\n\nChoose an option:`,
                     parse_mode: 'HTML',
                     reply_markup: mainKeyboard()
                 });

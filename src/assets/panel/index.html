@@ -42,6 +42,7 @@
 
     <div class="container form-container">
         <h2><span class="material-symbols-rounded">dashboard</span>Admin</h2>
+
         <div class="container section">
             <h3>
                 <span class="material-symbols-rounded">clock_loader_40</span>
@@ -49,84 +50,87 @@
             </h3>
             <div class="dashboard-info">
                 <span><span class="material-symbols-rounded">data_usage</span>BPB</span>
-                <span><b id="panel-usage"></b> ~ <span id="panel-pct"></span>%</span>
+                <span><b id="panel-usage"></b> | <span id="panel-pct"></span>%</span>
             </div>
             <div class="dashboard-info">
                 <span><span class="material-symbols-rounded">data_usage</span>Total</span>
-                <span><b id="total-usage"></b> ~ <span id="total-pct"></span>%</span>
+                <span><b id="total-usage"></b> | <span id="total-pct"></span>%</span>
             </div>
         </div>
 
-        <details>
-            <summary>
-                <h3>Settings
-                    <a href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/admin-settings/"
-                        target="_blank" title="Help">
-                        <span class="material-symbols-rounded">info</span>
-                    </a>
-                </h3>
-            </summary>
-            <div class="section">
-                <div class="dashboard-action">
-                    <span>Update Panel</span>
-                    <button id="updatePanel" class="button" onclick="updatePanel(this)" disabled>
-                        <span class="material-symbols-rounded">upgrade</span>
-                        Update
-                    </button>
-                </div>
-                <div class="dashboard-action">
-                    <span>Reset Password</span>
-                    <button id="openResetPass" class="button" onclick="openResetPass(event)">
-                        <span class="material-symbols-rounded">key_vertical</span>
-                        Reset
-                    </button>
-                </div>
-                <div class="dashboard-action">
-                    <span>Delete Panel</span>
-                    <button id="deletePanel" class="button delete" onclick="deletePanel(this)">
-                        <span class="material-symbols-rounded">delete</span>
-                        Delete
-                    </button>
-                </div>
-            </div>
-        </details>
-
-        <form id="telegramForm" class="configForm" onsubmit="setupTelegramBot(event)">
+        <div class="accordion-item">
             <details>
                 <summary>
-                    <h3>Telegram Bot
-                        <a href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/telegram-bot/"
-                            target="_blank" title="Help">
-                            <span class="material-symbols-rounded">info</span>
-                        </a>
-                    </h3>
+                    <h3>Settings</h3>
                 </summary>
                 <div class="section">
-                    <div class="form-control">
-                        <label for="telegramBotToken">Telegram Bot Token</label>
-                        <div>
-                            <input type="text" id="telegramBotToken" name="telegramBotToken">
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="telegramUserId">Telegram User ID</label>
-                        <div>
-                            <input type="text" id="telegramUserId" name="telegramUserId">
-                        </div>
-                    </div>
-                    <div id="apply" class="form-control apply">
-                        <button type="submit" id="setup-telegram" class="button" form="telegramForm" disabled>
-                            <span class="material-symbols-rounded">smart_toy</span>
-                            Setup
+                    <div class="dashboard-action">
+                        <span>Update Panel</span>
+                        <button id="updatePanel" class="button" onclick="updatePanel(this)" disabled>
+                            <span class="material-symbols-rounded">upgrade</span>
+                            Update
                         </button>
-                        <button type="button" id="remove-telegram" class="button delete"
-                            onclick="removeTelegramBot(this)" disabled>
+                    </div>
+                    <div class="dashboard-action">
+                        <span>Reset Password</span>
+                        <button id="openResetPass" class="button" onclick="openResetPass(event)">
+                            <span class="material-symbols-rounded">key_vertical</span>
+                            Reset
+                        </button>
+                    </div>
+                    <div class="dashboard-action">
+                        <span>Delete Panel</span>
+                        <button id="deletePanel" class="button delete" onclick="deletePanel(this)">
                             <span class="material-symbols-rounded">delete</span>
-                            Remove
+                            Delete
                         </button>
                     </div>
                 </div>
             </details>
+            <a class="help-icon" href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/admin-settings/"
+                target="_blank" title="Help">
+                <span class="material-symbols-rounded">info</span>
+            </a>
+        </div>
+
+        <form id="telegramForm" class="configForm" onsubmit="setupTelegramBot(event)">
+            <div class="accordion-item">
+                <details>
+                    <summary>
+                        <h3>Telegram Bot</h3>
+                    </summary>
+                    <div class="section">
+                        <div class="form-control">
+                            <label for="telegramBotToken">Telegram Bot Token</label>
+                            <div>
+                                <input type="text" id="telegramBotToken" name="telegramBotToken">
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label for="telegramUserId">Telegram User ID</label>
+                            <div>
+                                <input type="text" id="telegramUserId" name="telegramUserId">
+                            </div>
+                        </div>
+                        <div id="apply" class="form-control apply">
+                            <button type="submit" id="setup-telegram" class="button" form="telegramForm" disabled>
+                                <span class="material-symbols-rounded">smart_toy</span>
+                                Setup
+                            </button>
+                            <button type="button" id="remove-telegram" class="button delete"
+                                onclick="removeTelegramBot(this)" disabled>
+                                <span class="material-symbols-rounded">delete</span>
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+                </details>
+                <a class="help-icon"
+                    href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/telegram-bot/" target="_blank"
+                    title="Help">
+                    <span class="material-symbols-rounded">info</span>
+                </a>
+            </div>
         </form>
 
     </div>
@@ -135,775 +139,790 @@
         <h2><span class="material-symbols-rounded">settings</span>Proxy Settings</h2>
         <form id="configForm" class="configForm" onsubmit="updateSettings(event)">
 
-            <details>
-                <summary>
-                    <h3>Common
-                        <a href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/common/"
-                            target="_blank" title="Help">
-                            <span class="material-symbols-rounded">info</span>
-                        </a>
-                    </h3>
-                </summary>
-                <div class="section">
-                    <div class="form-control">
-                        <label for="localDNS">Local DNS</label>
-                        <div>
-                            <input type="text" id="localDNS" name="localDNS" required>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="antiSanctionDNS">Anti Sanction DNS</label>
-                        <div>
-                            <input type="text" id="antiSanctionDNS" name="antiSanctionDNS" required>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="fakeDNS">Fake DNS</label>
-                        <div class="select-wrapper">
-                            <select id="fakeDNS" name="fakeDNS">
-                                <option value="true">Enabled</option>
-                                <option value="false">Disabled</option>
-                            </select>
-                            <span class="material-symbols-rounded">
-                                keyboard_arrow_down
-                            </span>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="enableIPv6">IPv6</label>
-                        <div class="select-wrapper">
-                            <select id="enableIPv6" name="enableIPv6">
-                                <option value="true">Enabled</option>
-                                <option value="false">Disabled</option>
-                            </select>
-                            <span class="material-symbols-rounded">
-                                keyboard_arrow_down
-                            </span>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="allowLANConnection">Allow connections from LAN</label>
-                        <div class="select-wrapper">
-                            <select id="allowLANConnection" name="allowLANConnection">
-                                <option value="true">Enabled</option>
-                                <option value="false">Disabled</option>
-                            </select>
-                            <span class="material-symbols-rounded">
-                                keyboard_arrow_down
-                            </span>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="logLevel">Log Level</label>
-                        <div class="select-wrapper">
-                            <select id="logLevel" name="logLevel">
-                                <option value="none">Disabled</option>
-                                <option value="warning">Warning</option>
-                                <option value="error">Error</option>
-                                <option value="info">Info</option>
-                                <option value="debug">Debug</option>
-                            </select>
-                            <span class="material-symbols-rounded">
-                                keyboard_arrow_down
-                            </span>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="customDomain">Custom Domain</label>
-                        <div>
-                            <input type="text" id="customDomain" name="customDomain">
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="dohUrl">Underlying DoH</label>
-                        <div>
-                            <input type="text" id="dohUrl" name="dohUrl">
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="securePath">
-                            Panel - Subscriptions Path
-                            <span class="material-symbols-rounded" onclick="generatePath()">
-                                refresh
-                            </span>
-                        </label>
-                        <div>
-                            <input type="text" id="securePath" name="securePath" required>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="fallback">Fallback Domain</label>
-                        <div>
-                            <input type="text" id="fallback" name="fallback">
-                        </div>
-                    </div>
-                </div>
-            </details>
-
-            <details>
-                <summary>
-                    <h3>VLESS - Trojan
-                        <a href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/vless-trojan/"
-                            target="_blank" title="Help">
-                            <span class="material-symbols-rounded">info</span>
-                        </a>
-                    </h3>
-                </summary>
-                <div class="section">
-                    <div class="form-control">
-                        <label for="protocols">Protocols</label>
-                        <div class="select-wrapper">
-                            <select id="protocols" name="protocols">
-                                <option value="vless,trojan">VLESS & Trojan</option>
-                                <option value="vless">VLESS</option>
-                                <option value="trojan">Trojan</option>
-                            </select>
-                            <span class="material-symbols-rounded">
-                                keyboard_arrow_down
-                            </span>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="vlUUID">
-                            VLESS UUID
-                            <span class="material-symbols-rounded" onclick="generateUUID()">
-                                refresh
-                            </span>
-                        </label>
-                        <div>
-                            <input type="text" id="vlUUID" name="vlUUID" required>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="trPass">
-                            Trojan Password
-                            <span class="material-symbols-rounded" onclick="generatePassword()">
-                                refresh
-                            </span>
-                        </label>
-                        <div>
-                            <input type="text" id="trPass" name="trPass" required>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="remoteDNS">Remote DNS</label>
-                        <div>
-                            <input type="text" id="remoteDNS" name="remoteDNS" required>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="upstreamProxy">Upstream TCP Proxy</label>
-                        <div>
-                            <input type="text" id="upstreamProxy" name="upstreamProxy">
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="chainProxy">Chain Proxy</label>
-                        <div>
-                            <input type="text" id="chainProxy" name="chainProxy">
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="cleanIPs">
-                            Clean IPs - Domains
-                            <a class="url" href="https://github.com/bia-pain-bache/Cloudflare-Clean-IP-Scanner"
-                                title="Scanner" target="_blank" rel="noopener noreferrer">
-                                <span class="material-symbols-rounded">open_in_new</span>
-                            </a>
-                        </label>
-                        <div>
-                            <textarea id="cleanIPs" name="cleanIPs" rows="1"></textarea>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label>TLS Ports</label>
-                        <div>
-                            <div id="tls-ports" class="checkbox-container inner-container"></div>
-                        </div>
-                    </div>
-                    <div id="none-tls" class="form-control" style="display: none;">
-                        <label>non-TLS Ports</label>
-                        <div>
-                            <div id="non-tls-ports" class="checkbox-container inner-container"></div>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="fingerprint">Fingerprint</label>
-                        <div class="select-wrapper">
-                            <select id="fingerprint" name="fingerprint">
-                                <option value="chrome">chrome</option>
-                                <option value="firefox">firefox</option>
-                                <option value="safari">safari</option>
-                                <option value="ios">ios</option>
-                                <option value="android">android</option>
-                                <option value="edge">edge</option>
-                                <option value="360">360</option>
-                                <option value="qq">qq</option>
-                                <option value="random">random</option>
-                                <option value="randomized">randomized</option>
-                            </select>
-                            <span class="material-symbols-rounded">
-                                keyboard_arrow_down
-                            </span>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="bestPingInterval">Best Ping Interval</label>
-                        <div>
-                            <input type="number" id="bestPingInterval" name="bestPingInterval" min="10" max="90">
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="enableTFO">TCP Fast Open</label>
-                        <div class="select-wrapper">
-                            <select id="enableTFO" name="enableTFO">
-                                <option value="true">Enabled</option>
-                                <option value="false">Disabled</option>
-                            </select>
-                            <span class="material-symbols-rounded">
-                                keyboard_arrow_down
-                            </span>
-                        </div>
-                    </div>
-                    <div class="container">
-                        <div class="section">
-                            <h4><span class="material-symbols-rounded">tune</span> Proxy IP</h4>
-                            <div class="form-control">
-                                <label for="proxyIpMode">Mode</label>
-                                <div class="select-wrapper">
-                                    <select id="proxyIpMode" name="proxyIpMode">
-                                        <option value="proxyip">Proxy IP</option>
-                                        <option value="prefix">NAT64</option>
-                                    </select>
-                                    <span class="material-symbols-rounded">
-                                        keyboard_arrow_down
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="form-control">
-                                <label for="proxyIPs">
-                                    Proxy IPs - Domains
-                                    <a class="url" href="./proxy-ip" title="Proxy IPs" target="_blank"
-                                        rel="noopener noreferrer">
-                                        <span class="material-symbols-rounded">open_in_new</span>
-                                    </a>
-                                </label>
-                                <div>
-                                    <textarea id="proxyIPs" name="proxyIPs" rows="1"></textarea>
-                                </div>
-                            </div>
-                            <div class="form-control">
-                                <label for="prefixes">
-                                    NAT64 Prefixes
-                                    <a class="url"
-                                        href="https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/docs/NAT64Prefixes.md"
-                                        title="NAT64 prefixes" target="_blank" rel="noopener noreferrer">
-                                        <span class="material-symbols-rounded">open_in_new</span>
-                                    </a>
-                                </label>
-                                <div>
-                                    <textarea id="prefixes" name="prefixes" rows="1"></textarea>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="container">
-                        <div class="section">
-                            <h4><span class="material-symbols-rounded">tune</span> ECH</h4>
-                            <div class="form-control">
-                                <label for="enableECH">ECH</label>
-                                <div class="select-wrapper">
-                                    <select id="enableECH" name="enableECH">
-                                        <option value="true">Enabled</option>
-                                        <option value="false">Disabled</option>
-                                    </select>
-                                    <span class="material-symbols-rounded">
-                                        keyboard_arrow_down
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="form-control">
-                                <label for="echServerName">ECH Server Name</label>
-                                <div>
-                                    <input type="text" id="echServerName" name="echServerName">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="container">
-                        <div class="section">
-                            <h4><span class="material-symbols-rounded">tune</span> Custom CDN</h4>
-                            <div class="form-control">
-                                <label for="customCdnAddrs">Addresses</label>
-                                <div>
-                                    <textarea id="customCdnAddrs" name="customCdnAddrs" rows="1"></textarea>
-                                </div>
-                            </div>
-                            <div class="form-control">
-                                <label for="customCdnHost">Host</label>
-                                <div>
-                                    <input type="text" id="customCdnHost" name="customCdnHost">
-                                </div>
-                            </div>
-                            <div class="form-control">
-                                <label for="customCdnSni">SNI</label>
-                                <div>
-                                    <input type="text" id="customCdnSni" name="customCdnSni">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </details>
-
-            <details>
-                <summary>
-                    <h3>Xray Fragment
-                        <a href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/fragment/"
-                            target="_blank" title="Help">
-                            <span class="material-symbols-rounded">info</span>
-                        </a>
-                    </h3>
-                </summary>
-                <div class="section">
-                    <div class="form-control">
-                        <label for="fragmentMode">Mode</label>
-                        <div class="select-wrapper">
-                            <select id="fragmentMode" name="fragmentMode" onchange="handleFragmentMode()">
-                                <option value="custom">Custom</option>
-                                <option value="low">Low</option>
-                                <option value="medium">Medium</option>
-                                <option value="high">High</option>
-                                <option value="severe">Severe</option>
-                            </select>
-                            <span class="material-symbols-rounded">
-                                keyboard_arrow_down
-                            </span>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="fragmentPackets">Packets</label>
-                        <div class="select-wrapper">
-                            <select id="fragmentPackets" name="fragmentPackets">
-                                <option value="tlshello">tlshello</option>
-                                <option value="1-1">1-1</option>
-                                <option value="1-2">1-2</option>
-                                <option value="1-3">1-3</option>
-                                <option value="1-5">1-5</option>
-                            </select>
-                            <span class="material-symbols-rounded">
-                                keyboard_arrow_down
-                            </span>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="fragmentLengthMin">Length</label>
-                        <div class="min-max">
-                            <input type="number" id="fragmentLengthMin" name="fragmentLengthMin" min="1" required>
-                            <span>-</span>
-                            <input type="number" id="fragmentLengthMax" name="fragmentLengthMax" max="500" required>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="fragmentDelayMin">Delay</label>
-                        <div class="min-max">
-                            <input type="number" id="fragmentDelayMin" name="fragmentDelayMin" min="1" max="30"
-                                required>
-                            <span>-</span>
-                            <input type="number" id="fragmentDelayMax" name="fragmentDelayMax" min="1" max="30"
-                                required>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="fragmentMaxSplitMin">Max Split</label>
-                        <div class="min-max">
-                            <input type="number" id="fragmentMaxSplitMin" name="fragmentMaxSplitMin" min="2">
-                            <span>-</span>
-                            <input type="number" id="fragmentMaxSplitMax" name="fragmentMaxSplitMax" min="2">
-                        </div>
-                    </div>
-                </div>
-            </details>
-
-            <details>
-                <summary>
-                    <h3>External Raw Configs
-                        <a href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/external-configs/"
-                            target="_blank" title="Help">
-                            <span class="material-symbols-rounded">info</span>
-                        </a>
-                    </h3>
-                </summary>
-                <div class="section">
-                    <div class="form-control">
-                        <label for="customSubs">Subscriptions</label>
-                        <div>
-                            <textarea id="customSubs" name="customSubs" rows="1" wrap="off"></textarea>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="customConfigs">Single Configs</label>
-                        <div>
-                            <textarea id="customConfigs" name="customConfigs" rows="1" wrap="off"></textarea>
-                        </div>
-                    </div>
-                </div>
-            </details>
-
-            <details>
-                <summary>
-                    <h3>Warp General
-                        <a href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/warp/" target="_blank"
-                            title="Help">
-                            <span class="material-symbols-rounded">info</span>
-                        </a>
-                    </h3>
-                </summary>
-                <div class="section">
-                    <div class="form-control">
-                        <label for="warpRemoteDNS">Remote DNS</label>
-                        <div>
-                            <input type="text" id="warpRemoteDNS" name="warpRemoteDNS" required>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="warpEndpoints">
-                            Endpoints
-                            <a class="url" href="https://github.com/bia-pain-bache/BPB-Warp-Scanner" title="Scanner"
-                                target="_blank" rel="noopener noreferrer">
-                                <span class="material-symbols-rounded">open_in_new</span>
-                            </a>
-                        </label>
-                        <div>
-                            <textarea id="warpEndpoints" name="warpEndpoints" rows="1" required></textarea>
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="warpBestPingInterval">Best Ping Interval</label>
-                        <div>
-                            <input type="number" id="warpBestPingInterval" name="warpBestPingInterval" min="10"
-                                max="90">
-                        </div>
-                    </div>
-                    <div class="form-control">
-                        <label for="warpReservedBytes">Reserved Bytes</label>
-                        <div class="select-wrapper">
-                            <select id="warpReservedBytes" name="warpReservedBytes">
-                                <option value="true">Enabled</option>
-                                <option value="false">Disabled</option>
-                            </select>
-                            <span class="material-symbols-rounded">
-                                keyboard_arrow_down
-                            </span>
-                        </div>
-                    </div>
-                    <div class="dashboard-action">
-                        <span>Renew Warp Accounts</span>
-                        <button type="button" class="button" onclick="renewWarpAccounts(this)">
-                            <span id="warp-update" class="material-symbols-rounded">autorenew</span>
-                            Renew
-                        </button>
-                    </div>
-                </div>
-            </details>
-
-            <details>
-                <summary>
-                    <h3>Warp PRO
-                        <a href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/warp-pro/"
-                            target="_blank" title="Help">
-                            <span class="material-symbols-rounded">info</span>
-                        </a>
-                    </h3>
-                </summary>
-                <div class="section">
-                    <div class="container">
-                        <div class="section">
-                            <h4><span class="material-symbols-rounded">tune</span> MahsaNG Noise</h4>
-                            <div class="form-control">
-                                <label for="knockerNoiseMode">Mode</label>
-                                <div>
-                                    <input type="text" id="knockerNoiseMode" name="knockerNoiseMode"
-                                        title="Fill in 'none', 'quic', 'random', or any HEX string like 'ee0000000108aaaa'"
-                                        required>
-                                </div>
-                            </div>
-                            <div class="form-control">
-                                <label for="knockerNoiseCountMin">Count</label>
-                                <div class="min-max">
-                                    <input type="number" id="knockerNoiseCountMin" name="knockerNoiseCountMin" min="1"
-                                        required>
-                                    <span>-</span>
-                                    <input type="number" id="knockerNoiseCountMax" name="knockerNoiseCountMax" min="1"
-                                        required>
-                                </div>
-                            </div>
-                            <div class="form-control">
-                                <label for="knockerNoiseSizeMin">Size</label>
-                                <div class="min-max">
-                                    <input type="number" id="knockerNoiseSizeMin" name="knockerNoiseSizeMin" min="1"
-                                        required>
-                                    <span>-</span>
-                                    <input type="number" id="knockerNoiseSizeMax" name="knockerNoiseSizeMax" min="1"
-                                        required>
-                                </div>
-                            </div>
-                            <div class="form-control">
-                                <label for="knockerNoiseDelayMin">Delay</label>
-                                <div class="min-max">
-                                    <input type="number" id="knockerNoiseDelayMin" name="knockerNoiseDelayMin" min="1"
-                                        required>
-                                    <span>-</span>
-                                    <input type="number" id="knockerNoiseDelayMax" name="knockerNoiseDelayMax" min="1"
-                                        required>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="container">
-                        <div class="section">
-                            <h4><span class="material-symbols-rounded">tune</span> Clash - Amnezia Noise</h4>
-                            <div class="form-control">
-                                <label for="amneziaNoiseCount">Count</label>
-                                <div>
-                                    <input type="number" id="amneziaNoiseCount" name="amneziaNoiseCount" min="1"
-                                        required>
-                                </div>
-                            </div>
-                            <div class="form-control">
-                                <label for="amneziaNoiseSizeMin">Size</label>
-                                <div class="min-max">
-                                    <input type="number" id="amneziaNoiseSizeMin" name="amneziaNoiseSizeMin" min="1"
-                                        required>
-                                    <span>-</span>
-                                    <input type="number" id="amneziaNoiseSizeMax" name="amneziaNoiseSizeMax" min="1"
-                                        required>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="udp-noise-container" class="container">
-                        <div class="header-container">
-                            <h4><span class="material-symbols-rounded">tune</span> v2ray Noise</h4>
-                            <button type="button" class="add-noise" onclick="addUdpNoise(true)">
-                                <span class="material-symbols-rounded">add_circle</span>
-                            </button>
-                        </div>
-                        <div id="noises" class="section"></div>
-                    </div>
-                </div>
-            </details>
-
-            <details>
-                <summary>
-                    <h3>Routing Rules
-                        <a href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/routing-rules/"
-                            target="_blank" title="Help">
-                            <span class="material-symbols-rounded">info</span>
-                        </a>
-                    </h3>
-                </summary>
-                <div class="section">
-                    <div class="container">
-                        <h4><span class="material-symbols-rounded">tune</span> Preset Rules</h4>
+            <div class="accordion-item">
+                <details>
+                    <summary>
+                        <h3>Common</h3>
+                    </summary>
+                    <div class="section">
                         <div class="form-control">
-                            <label>Bypass rules</label>
+                            <label for="localDNS">Local DNS</label>
                             <div>
-                                <div id="bypass-rules" class="checkbox-container inner-container">
-                                    <div class="checkbox-wrapper">
-                                        <input type="checkbox" id="bypassIran" name="bypassIran" value="true">
-                                        <label for="bypassIran">Iran</label>
-                                    </div>
-                                    <div class="checkbox-wrapper">
-                                        <input type="checkbox" id="bypassChina" name="bypassChina" value="true">
-                                        <label for="bypassChina">China</label>
-                                    </div>
-                                    <div class="checkbox-wrapper">
-                                        <input type="checkbox" id="bypassRussia" name="bypassRussia" value="true">
-                                        <label for="bypassRussia">Russia</label>
-                                    </div>
-                                </div>
+                                <input type="text" id="localDNS" name="localDNS" required>
                             </div>
                         </div>
                         <div class="form-control">
-                            <label>Block rules</label>
+                            <label for="antiSanctionDNS">Anti Sanction DNS</label>
                             <div>
-                                <div id="block-rules" class="checkbox-container inner-container">
-                                    <div class="checkbox-wrapper">
-                                        <input type="checkbox" id="blockAds" name="blockAds" value="true">
-                                        <label for="blockAds">Ads.</label>
+                                <input type="text" id="antiSanctionDNS" name="antiSanctionDNS" required>
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label for="fakeDNS">Fake DNS</label>
+                            <div class="select-wrapper">
+                                <select id="fakeDNS" name="fakeDNS">
+                                    <option value="true">Enabled</option>
+                                    <option value="false">Disabled</option>
+                                </select>
+                                <span class="material-symbols-rounded">
+                                    keyboard_arrow_down
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label for="enableIPv6">IPv6</label>
+                            <div class="select-wrapper">
+                                <select id="enableIPv6" name="enableIPv6">
+                                    <option value="true">Enabled</option>
+                                    <option value="false">Disabled</option>
+                                </select>
+                                <span class="material-symbols-rounded">
+                                    keyboard_arrow_down
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label for="allowLANConnection">Allow connections from LAN</label>
+                            <div class="select-wrapper">
+                                <select id="allowLANConnection" name="allowLANConnection">
+                                    <option value="true">Enabled</option>
+                                    <option value="false">Disabled</option>
+                                </select>
+                                <span class="material-symbols-rounded">
+                                    keyboard_arrow_down
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label for="logLevel">Log Level</label>
+                            <div class="select-wrapper">
+                                <select id="logLevel" name="logLevel">
+                                    <option value="none">Disabled</option>
+                                    <option value="warning">Warning</option>
+                                    <option value="error">Error</option>
+                                    <option value="info">Info</option>
+                                    <option value="debug">Debug</option>
+                                </select>
+                                <span class="material-symbols-rounded">
+                                    keyboard_arrow_down
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label for="customDomain">Custom Domain</label>
+                            <div>
+                                <input type="text" id="customDomain" name="customDomain">
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label for="dohUrl">Underlying DoH</label>
+                            <div>
+                                <input type="text" id="dohUrl" name="dohUrl">
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label for="securePath">
+                                Panel - Subscriptions Path
+                                <span class="material-symbols-rounded" onclick="generatePath()">
+                                    refresh
+                                </span>
+                            </label>
+                            <div>
+                                <input type="text" id="securePath" name="securePath" required>
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label for="fallback">Fallback Domain</label>
+                            <div>
+                                <input type="text" id="fallback" name="fallback">
+                            </div>
+                        </div>
+                    </div>
+                </details>
+                <a class="help-icon" href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/common/"
+                    target="_blank" title="Help">
+                    <span class="material-symbols-rounded">info</span>
+                </a>
+            </div>
+
+            <div class="accordion-item">
+                <details>
+                    <summary>
+                        <h3>VLESS - Trojan</h3>
+                    </summary>
+                    <div class="section">
+                        <div class="form-control">
+                            <label for="protocols">Protocols</label>
+                            <div class="select-wrapper">
+                                <select id="protocols" name="protocols">
+                                    <option value="vless,trojan">VLESS & Trojan</option>
+                                    <option value="vless">VLESS</option>
+                                    <option value="trojan">Trojan</option>
+                                </select>
+                                <span class="material-symbols-rounded">
+                                    keyboard_arrow_down
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label for="vlUUID">
+                                VLESS UUID
+                                <span class="material-symbols-rounded" onclick="generateUUID()">
+                                    refresh
+                                </span>
+                            </label>
+                            <div>
+                                <input type="text" id="vlUUID" name="vlUUID" required>
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label for="trPass">
+                                Trojan Password
+                                <span class="material-symbols-rounded" onclick="generatePassword()">
+                                    refresh
+                                </span>
+                            </label>
+                            <div>
+                                <input type="text" id="trPass" name="trPass" required>
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label for="remoteDNS">Remote DNS</label>
+                            <div>
+                                <input type="text" id="remoteDNS" name="remoteDNS" required>
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label for="upstreamProxy">Upstream TCP Proxy</label>
+                            <div>
+                                <input type="text" id="upstreamProxy" name="upstreamProxy">
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label for="chainProxy">Chain Proxy</label>
+                            <div>
+                                <input type="text" id="chainProxy" name="chainProxy">
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label for="cleanIPs">
+                                Clean IPs - Domains
+                                <a class="url" href="https://github.com/bia-pain-bache/Cloudflare-Clean-IP-Scanner"
+                                    title="Scanner" target="_blank" rel="noopener noreferrer">
+                                    <span class="material-symbols-rounded">open_in_new</span>
+                                </a>
+                            </label>
+                            <div>
+                                <textarea id="cleanIPs" name="cleanIPs" rows="1"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <span>TLS Ports</span>
+                            <div>
+                                <div id="tls-ports" class="checkbox-container inner-container"></div>
+                            </div>
+                        </div>
+                        <div id="none-tls" class="form-control" style="display: none;">
+                            <span>non-TLS Ports</span>
+                            <div>
+                                <div id="non-tls-ports" class="checkbox-container inner-container"></div>
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label for="fingerprint">Fingerprint</label>
+                            <div class="select-wrapper">
+                                <select id="fingerprint" name="fingerprint">
+                                    <option value="chrome">chrome</option>
+                                    <option value="firefox">firefox</option>
+                                    <option value="safari">safari</option>
+                                    <option value="ios">ios</option>
+                                    <option value="android">android</option>
+                                    <option value="edge">edge</option>
+                                    <option value="360">360</option>
+                                    <option value="qq">qq</option>
+                                    <option value="random">random</option>
+                                    <option value="randomized">randomized</option>
+                                </select>
+                                <span class="material-symbols-rounded">
+                                    keyboard_arrow_down
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label for="bestPingInterval">Best Ping Interval</label>
+                            <div>
+                                <input type="number" id="bestPingInterval" name="bestPingInterval" min="10" max="90">
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label for="enableTFO">TCP Fast Open</label>
+                            <div class="select-wrapper">
+                                <select id="enableTFO" name="enableTFO">
+                                    <option value="true">Enabled</option>
+                                    <option value="false">Disabled</option>
+                                </select>
+                                <span class="material-symbols-rounded">
+                                    keyboard_arrow_down
+                                </span>
+                            </div>
+                        </div>
+                        <div class="container">
+                            <div class="section">
+                                <h4><span class="material-symbols-rounded">tune</span> Proxy IP</h4>
+                                <div class="form-control">
+                                    <label for="proxyIpMode">Mode</label>
+                                    <div class="select-wrapper">
+                                        <select id="proxyIpMode" name="proxyIpMode">
+                                            <option value="proxyip">Proxy IP</option>
+                                            <option value="prefix">NAT64</option>
+                                        </select>
+                                        <span class="material-symbols-rounded">
+                                            keyboard_arrow_down
+                                        </span>
                                     </div>
-                                    <div class="checkbox-wrapper">
-                                        <input type="checkbox" id="blockPorn" name="blockPorn" value="true">
-                                        <label for="blockPorn">Porn</label>
+                                </div>
+                                <div class="form-control">
+                                    <label for="proxyIPs">
+                                        Proxy IPs - Domains
+                                        <a class="url" href="./proxy-ip" title="Proxy IPs" target="_blank"
+                                            rel="noopener noreferrer">
+                                            <span class="material-symbols-rounded">open_in_new</span>
+                                        </a>
+                                    </label>
+                                    <div>
+                                        <textarea id="proxyIPs" name="proxyIPs" rows="1"></textarea>
                                     </div>
-                                    <div class="checkbox-wrapper">
-                                        <input type="checkbox" id="blockUDP443" name="blockUDP443" value="true">
-                                        <label for="blockUDP443">QUIC</label>
+                                </div>
+                                <div class="form-control">
+                                    <label for="prefixes">
+                                        NAT64 Prefixes
+                                        <a class="url"
+                                            href="https://github.com/bia-pain-bache/BPB-Worker-Panel/blob/main/docs/NAT64Prefixes.md"
+                                            title="NAT64 prefixes" target="_blank" rel="noopener noreferrer">
+                                            <span class="material-symbols-rounded">open_in_new</span>
+                                        </a>
+                                    </label>
+                                    <div>
+                                        <textarea id="prefixes" name="prefixes" rows="1"></textarea>
                                     </div>
-                                    <div class="checkbox-wrapper">
-                                        <input type="checkbox" id="blockMalware" name="blockMalware" value="true"
-                                            onchange="handleRiskyRules(event)">
-                                        <label for="blockMalware">Malware</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="container">
+                            <div class="section">
+                                <h4><span class="material-symbols-rounded">tune</span> ECH</h4>
+                                <div class="form-control">
+                                    <label for="enableECH">ECH</label>
+                                    <div class="select-wrapper">
+                                        <select id="enableECH" name="enableECH">
+                                            <option value="true">Enabled</option>
+                                            <option value="false">Disabled</option>
+                                        </select>
+                                        <span class="material-symbols-rounded">
+                                            keyboard_arrow_down
+                                        </span>
                                     </div>
-                                    <div class="checkbox-wrapper">
-                                        <input type="checkbox" id="blockPhishing" name="blockPhishing" value="true"
-                                            onchange="handleRiskyRules(event)">
-                                        <label for="blockPhishing">Phishing</label>
+                                </div>
+                                <div class="form-control">
+                                    <label for="echServerName">ECH Server Name</label>
+                                    <div>
+                                        <input type="text" id="echServerName" name="echServerName">
                                     </div>
-                                    <div class="checkbox-wrapper">
-                                        <input type="checkbox" id="blockCryptominers" name="blockCryptominers"
-                                            value="true" onchange="handleRiskyRules(event)">
-                                        <label for="blockCryptominers">Cryptominers</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="container">
+                            <div class="section">
+                                <h4><span class="material-symbols-rounded">tune</span> Custom CDN</h4>
+                                <div class="form-control">
+                                    <label for="customCdnAddrs">Addresses</label>
+                                    <div>
+                                        <textarea id="customCdnAddrs" name="customCdnAddrs" rows="1"></textarea>
+                                    </div>
+                                </div>
+                                <div class="form-control">
+                                    <label for="customCdnHost">Host</label>
+                                    <div>
+                                        <input type="text" id="customCdnHost" name="customCdnHost">
+                                    </div>
+                                </div>
+                                <div class="form-control">
+                                    <label for="customCdnSni">SNI</label>
+                                    <div>
+                                        <input type="text" id="customCdnSni" name="customCdnSni">
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="container">
-                        <h4><span class="material-symbols-rounded">tune</span> Custom Rules</h4>
+                </details>
+                <a class="help-icon"
+                    href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/vless-trojan/" target="_blank"
+                    title="Help">
+                    <span class="material-symbols-rounded">info</span>
+                </a>
+            </div>
+
+            <div class="accordion-item">
+                <details>
+                    <summary>
+                        <h3>Xray Fragment</h3>
+                    </summary>
+                    <div class="section">
                         <div class="form-control">
-                            <label for="customBypassRules">Bypass IPs - Domains</label>
-                            <div>
-                                <textarea id="customBypassRules" name="customBypassRules" rows="1"></textarea>
+                            <label for="fragmentMode">Mode</label>
+                            <div class="select-wrapper">
+                                <select id="fragmentMode" name="fragmentMode" onchange="handleFragmentMode()">
+                                    <option value="custom">Custom</option>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="severe">Severe</option>
+                                </select>
+                                <span class="material-symbols-rounded">
+                                    keyboard_arrow_down
+                                </span>
                             </div>
                         </div>
                         <div class="form-control">
-                            <label for="customBlockRules">Block IPs - Domains</label>
-                            <div>
-                                <textarea id="customBlockRules" name="customBlockRules" rows="1"></textarea>
+                            <label for="fragmentPackets">Packets</label>
+                            <div class="select-wrapper">
+                                <select id="fragmentPackets" name="fragmentPackets">
+                                    <option value="tlshello">tlshello</option>
+                                    <option value="1-1">1-1</option>
+                                    <option value="1-2">1-2</option>
+                                    <option value="1-3">1-3</option>
+                                    <option value="1-5">1-5</option>
+                                </select>
+                                <span class="material-symbols-rounded">
+                                    keyboard_arrow_down
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label for="fragmentLengthMin">Length</label>
+                            <div class="min-max">
+                                <input type="number" id="fragmentLengthMin" name="fragmentLengthMin" min="1" required>
+                                <span>-</span>
+                                <input type="number" id="fragmentLengthMax" name="fragmentLengthMax" max="500" required>
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label for="fragmentDelayMin">Delay</label>
+                            <div class="min-max">
+                                <input type="number" id="fragmentDelayMin" name="fragmentDelayMin" min="1" max="30"
+                                    required>
+                                <span>-</span>
+                                <input type="number" id="fragmentDelayMax" name="fragmentDelayMax" min="1" max="30"
+                                    required>
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label for="fragmentMaxSplitMin">Max Split</label>
+                            <div class="min-max">
+                                <input type="number" id="fragmentMaxSplitMin" name="fragmentMaxSplitMin" min="2">
+                                <span>-</span>
+                                <input type="number" id="fragmentMaxSplitMax" name="fragmentMaxSplitMax" min="2">
                             </div>
                         </div>
                     </div>
-                    <div class="container">
-                        <h4><span class="material-symbols-rounded">tune</span> Sanction Rules</h4>
+                </details>
+                <a class="help-icon" href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/fragment/"
+                    target="_blank" title="Help">
+                    <span class="material-symbols-rounded">info</span>
+                </a>
+            </div>
+
+            <div class="accordion-item">
+                <details>
+                    <summary>
+                        <h3>External Raw Configs</h3>
+                    </summary>
+                    <div class="section">
                         <div class="form-control">
-                            <label>Bypass rules</label>
+                            <label for="customSubs">Subscriptions</label>
                             <div>
-                                <div id="bypass-sanction-rules" class="checkbox-container inner-container">
-                                    <div class="checkbox-wrapper">
-                                        <input type="checkbox" id="bypassOpenAi" name="bypassOpenAi" value="true">
-                                        <label for="bypassOpenAi">ChatGPT</label>
-                                    </div>
-                                    <div class="checkbox-wrapper">
-                                        <input type="checkbox" id="bypassGoogleAi" name="bypassGoogleAi" value="true">
-                                        <label for="bypassGoogleAi">Google AIs</label>
-                                    </div>
-                                    <div class="checkbox-wrapper">
-                                        <input type="checkbox" id="bypassMicrosoft" name="bypassMicrosoft" value="true">
-                                        <label for="bypassMicrosoft">Microsoft</label>
-                                    </div>
-                                    <div class="checkbox-wrapper">
-                                        <input type="checkbox" id="bypassOracle" name="bypassOracle" value="true">
-                                        <label for="bypassOracle">Oracle</label>
-                                    </div>
-                                    <div class="checkbox-wrapper">
-                                        <input type="checkbox" id="bypassDocker" name="bypassDocker" value="true">
-                                        <label for="bypassDocker">Docker</label>
-                                    </div>
-                                    <div class="checkbox-wrapper">
-                                        <input type="checkbox" id="bypassAdobe" name="bypassAdobe" value="true">
-                                        <label for="bypassAdobe">Adobe</label>
-                                    </div>
-                                    <div class="checkbox-wrapper">
-                                        <input type="checkbox" id="bypassEpicGames" name="bypassEpicGames" value="true">
-                                        <label for="bypassEpicGames">Epic Games</label>
-                                    </div>
-                                    <div class="checkbox-wrapper">
-                                        <input type="checkbox" id="bypassIntel" name="bypassIntel" value="true">
-                                        <label for="bypassIntel">Intel</label>
-                                    </div>
-                                    <div class="checkbox-wrapper">
-                                        <input type="checkbox" id="bypassAmd" name="bypassAmd" value="true">
-                                        <label for="bypassAmd">AMD</label>
-                                    </div>
-                                    <div class="checkbox-wrapper">
-                                        <input type="checkbox" id="bypassNvidia" name="bypassNvidia" value="true">
-                                        <label for="bypassNvidia">Nvidia</label>
-                                    </div>
-                                    <div class="checkbox-wrapper">
-                                        <input type="checkbox" id="bypassAsus" name="bypassAsus" value="true">
-                                        <label for="bypassAsus">Asus</label>
-                                    </div>
-                                    <div class="checkbox-wrapper">
-                                        <input type="checkbox" id="bypassHp" name="bypassHp" value="true">
-                                        <label for="bypassHp">HP</label>
-                                    </div>
-                                    <div class="checkbox-wrapper">
-                                        <input type="checkbox" id="bypassLenovo" name="bypassLenovo" value="true">
-                                        <label for="bypassLenovo">Lenovo</label>
-                                    </div>
-                                </div>
+                                <textarea id="customSubs" name="customSubs" rows="1" wrap="off"></textarea>
                             </div>
                         </div>
                         <div class="form-control">
-                            <label for="customBypassSanctionRules">Bypass Domains</label>
+                            <label for="customConfigs">Single Configs</label>
                             <div>
-                                <textarea id="customBypassSanctionRules" name="customBypassSanctionRules"
-                                    rows="1"></textarea>
+                                <textarea id="customConfigs" name="customConfigs" rows="1" wrap="off"></textarea>
                             </div>
                         </div>
                     </div>
-                </div>
-            </details>
+                </details>
+                <a class="help-icon"
+                    href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/external-configs/"
+                    target="_blank" title="Help">
+                    <span class="material-symbols-rounded">info</span>
+                </a>
+            </div>
 
-            <details>
-                <summary>
-                    <h3>Import - Export
-                        <a href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/import-export/"
-                            target="_blank" title="Help">
-                            <span class="material-symbols-rounded">info</span>
-                        </a>
-                    </h3>
-                </summary>
-                <div class="section">
-
-                    <div class="container">
-                        <h4><span class="material-symbols-rounded">link</span>Remote Settings</h4>
+            <div class="accordion-item">
+                <details>
+                    <summary>
+                        <h3>Warp General</h3>
+                    </summary>
+                    <div class="section">
                         <div class="form-control">
-                            <label for="remoteSettings">Remote URL</label>
+                            <label for="warpRemoteDNS">Remote DNS</label>
                             <div>
-                                <input type="text" id="remoteSettings" name="remoteSettings">
+                                <input type="text" id="warpRemoteDNS" name="warpRemoteDNS" required>
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label for="warpEndpoints">
+                                Endpoints
+                                <a class="url" href="https://github.com/bia-pain-bache/BPB-Warp-Scanner" title="Scanner"
+                                    target="_blank" rel="noopener noreferrer">
+                                    <span class="material-symbols-rounded">open_in_new</span>
+                                </a>
+                            </label>
+                            <div>
+                                <textarea id="warpEndpoints" name="warpEndpoints" rows="1" required></textarea>
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label for="warpBestPingInterval">Best Ping Interval</label>
+                            <div>
+                                <input type="number" id="warpBestPingInterval" name="warpBestPingInterval" min="10"
+                                    max="90">
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label for="warpReservedBytes">Reserved Bytes</label>
+                            <div class="select-wrapper">
+                                <select id="warpReservedBytes" name="warpReservedBytes">
+                                    <option value="true">Enabled</option>
+                                    <option value="false">Disabled</option>
+                                </select>
+                                <span class="material-symbols-rounded">
+                                    keyboard_arrow_down
+                                </span>
                             </div>
                         </div>
                         <div class="dashboard-action">
-                            <span>Import Remote</span>
-                            <button type="button" id="fetchSettingsBtn" class="button"
-                                onclick="importRemoteSettings(event)">
-                                <span class="material-symbols-rounded">cloud_download</span>
-                                Import
-                            </button>
-                        </div>
-                        <div class="dashboard-action">
-                            <span>Share Yours</span>
-                            <button type="button" class="button" onclick="shareSettings()">
-                                <span class="material-symbols-rounded">share</span>
-                                Share
+                            <span>Renew Warp Accounts</span>
+                            <button type="button" class="button" onclick="renewWarpAccounts(this)">
+                                <span id="warp-update" class="material-symbols-rounded">autorenew</span>
+                                Renew
                             </button>
                         </div>
                     </div>
+                </details>
+                <a class="help-icon" href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/warp/"
+                    target="_blank" title="Help">
+                    <span class="material-symbols-rounded">info</span>
+                </a>
+            </div>
 
-                    <div class="container">
-                        <h4><span class="material-symbols-rounded">draft</span>File Settings</h4>
-                        <div class="dashboard-action">
-                            <span>Import File</span>
-                            <button type="button" class="button" onclick="importFile()">
-                                <span class="material-symbols-rounded">upload</span>
-                                <input type="file" id="fileInput" accept=".dat" style="display: none;"
-                                    onchange="importFileSettings(event)" />
-                                Import
-                            </button>
+            <div class="accordion-item">
+                <details>
+                    <summary>
+                        <h3>Warp PRO</h3>
+                    </summary>
+                    <div class="section">
+                        <div class="container">
+                            <div class="section">
+                                <h4><span class="material-symbols-rounded">tune</span> MahsaNG Noise</h4>
+                                <div class="form-control">
+                                    <label for="knockerNoiseMode">Mode</label>
+                                    <div>
+                                        <input type="text" id="knockerNoiseMode" name="knockerNoiseMode"
+                                            title="Fill in 'none', 'quic', 'random', or any HEX string like 'ee0000000108aaaa'"
+                                            required>
+                                    </div>
+                                </div>
+                                <div class="form-control">
+                                    <label for="knockerNoiseCountMin">Count</label>
+                                    <div class="min-max">
+                                        <input type="number" id="knockerNoiseCountMin" name="knockerNoiseCountMin"
+                                            min="1" required>
+                                        <span>-</span>
+                                        <input type="number" id="knockerNoiseCountMax" name="knockerNoiseCountMax"
+                                            min="1" required>
+                                    </div>
+                                </div>
+                                <div class="form-control">
+                                    <label for="knockerNoiseSizeMin">Size</label>
+                                    <div class="min-max">
+                                        <input type="number" id="knockerNoiseSizeMin" name="knockerNoiseSizeMin" min="1"
+                                            required>
+                                        <span>-</span>
+                                        <input type="number" id="knockerNoiseSizeMax" name="knockerNoiseSizeMax" min="1"
+                                            required>
+                                    </div>
+                                </div>
+                                <div class="form-control">
+                                    <label for="knockerNoiseDelayMin">Delay</label>
+                                    <div class="min-max">
+                                        <input type="number" id="knockerNoiseDelayMin" name="knockerNoiseDelayMin"
+                                            min="1" required>
+                                        <span>-</span>
+                                        <input type="number" id="knockerNoiseDelayMax" name="knockerNoiseDelayMax"
+                                            min="1" required>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="dashboard-action">
-                            <span>Export File</span>
-                            <button type="button" class="button" onclick="exportFileSettings(event)">
-                                <span class="material-symbols-rounded">download</span>
-                                Export
-                            </button>
+                        <div class="container">
+                            <div class="section">
+                                <h4><span class="material-symbols-rounded">tune</span> Clash - Amnezia Noise</h4>
+                                <div class="form-control">
+                                    <label for="amneziaNoiseCount">Count</label>
+                                    <div>
+                                        <input type="number" id="amneziaNoiseCount" name="amneziaNoiseCount" min="1"
+                                            required>
+                                    </div>
+                                </div>
+                                <div class="form-control">
+                                    <label for="amneziaNoiseSizeMin">Size</label>
+                                    <div class="min-max">
+                                        <input type="number" id="amneziaNoiseSizeMin" name="amneziaNoiseSizeMin" min="1"
+                                            required>
+                                        <span>-</span>
+                                        <input type="number" id="amneziaNoiseSizeMax" name="amneziaNoiseSizeMax" min="1"
+                                            required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="udp-noise-container" class="container">
+                            <div class="header-container">
+                                <h4><span class="material-symbols-rounded">tune</span> v2ray Noise</h4>
+                                <button type="button" class="add-noise" onclick="addUdpNoise(true)">
+                                    <span class="material-symbols-rounded">add_circle</span>
+                                </button>
+                            </div>
+                            <div id="noises" class="section"></div>
                         </div>
                     </div>
-                </div>
-            </details>
+                </details>
+                <a class="help-icon" href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/warp-pro/"
+                    target="_blank" title="Help">
+                    <span class="material-symbols-rounded">info</span>
+                </a>
+            </div>
+
+            <div class="accordion-item">
+                <details>
+                    <summary>
+                        <h3>Routing Rules</h3>
+                    </summary>
+                    <div class="section">
+                        <div class="container">
+                            <h4><span class="material-symbols-rounded">tune</span> Preset Rules</h4>
+                            <div class="form-control">
+                                <span>Bypass rules</span>
+                                <div>
+                                    <div id="bypass-rules" class="checkbox-container inner-container">
+                                        <div class="checkbox-wrapper">
+                                            <input type="checkbox" id="bypassIran" name="bypassIran" value="true">
+                                            <label for="bypassIran">Iran</label>
+                                        </div>
+                                        <div class="checkbox-wrapper">
+                                            <input type="checkbox" id="bypassChina" name="bypassChina" value="true">
+                                            <label for="bypassChina">China</label>
+                                        </div>
+                                        <div class="checkbox-wrapper">
+                                            <input type="checkbox" id="bypassRussia" name="bypassRussia" value="true">
+                                            <label for="bypassRussia">Russia</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-control">
+                                <span>Block rules</span>
+                                <div>
+                                    <div id="block-rules" class="checkbox-container inner-container">
+                                        <div class="checkbox-wrapper">
+                                            <input type="checkbox" id="blockAds" name="blockAds" value="true">
+                                            <label for="blockAds">Ads.</label>
+                                        </div>
+                                        <div class="checkbox-wrapper">
+                                            <input type="checkbox" id="blockPorn" name="blockPorn" value="true">
+                                            <label for="blockPorn">Porn</label>
+                                        </div>
+                                        <div class="checkbox-wrapper">
+                                            <input type="checkbox" id="blockUDP443" name="blockUDP443" value="true">
+                                            <label for="blockUDP443">QUIC</label>
+                                        </div>
+                                        <div class="checkbox-wrapper">
+                                            <input type="checkbox" id="blockMalware" name="blockMalware" value="true"
+                                                onchange="handleRiskyRules(event)">
+                                            <label for="blockMalware">Malware</label>
+                                        </div>
+                                        <div class="checkbox-wrapper">
+                                            <input type="checkbox" id="blockPhishing" name="blockPhishing" value="true"
+                                                onchange="handleRiskyRules(event)">
+                                            <label for="blockPhishing">Phishing</label>
+                                        </div>
+                                        <div class="checkbox-wrapper">
+                                            <input type="checkbox" id="blockCryptominers" name="blockCryptominers"
+                                                value="true" onchange="handleRiskyRules(event)">
+                                            <label for="blockCryptominers">Cryptominers</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="container">
+                            <h4><span class="material-symbols-rounded">tune</span> Custom Rules</h4>
+                            <div class="form-control">
+                                <label for="customBypassRules">Bypass IPs - Domains</label>
+                                <div>
+                                    <textarea id="customBypassRules" name="customBypassRules" rows="1"></textarea>
+                                </div>
+                            </div>
+                            <div class="form-control">
+                                <label for="customBlockRules">Block IPs - Domains</label>
+                                <div>
+                                    <textarea id="customBlockRules" name="customBlockRules" rows="1"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="container">
+                            <h4><span class="material-symbols-rounded">tune</span> Sanction Rules</h4>
+                            <div class="form-control">
+                                <span>Bypass rules</span>
+                                <div>
+                                    <div id="bypass-sanction-rules" class="checkbox-container inner-container">
+                                        <div class="checkbox-wrapper">
+                                            <input type="checkbox" id="bypassOpenAi" name="bypassOpenAi" value="true">
+                                            <label for="bypassOpenAi">ChatGPT</label>
+                                        </div>
+                                        <div class="checkbox-wrapper">
+                                            <input type="checkbox" id="bypassGoogleAi" name="bypassGoogleAi"
+                                                value="true">
+                                            <label for="bypassGoogleAi">Google AIs</label>
+                                        </div>
+                                        <div class="checkbox-wrapper">
+                                            <input type="checkbox" id="bypassMicrosoft" name="bypassMicrosoft"
+                                                value="true">
+                                            <label for="bypassMicrosoft">Microsoft</label>
+                                        </div>
+                                        <div class="checkbox-wrapper">
+                                            <input type="checkbox" id="bypassOracle" name="bypassOracle" value="true">
+                                            <label for="bypassOracle">Oracle</label>
+                                        </div>
+                                        <div class="checkbox-wrapper">
+                                            <input type="checkbox" id="bypassDocker" name="bypassDocker" value="true">
+                                            <label for="bypassDocker">Docker</label>
+                                        </div>
+                                        <div class="checkbox-wrapper">
+                                            <input type="checkbox" id="bypassAdobe" name="bypassAdobe" value="true">
+                                            <label for="bypassAdobe">Adobe</label>
+                                        </div>
+                                        <div class="checkbox-wrapper">
+                                            <input type="checkbox" id="bypassEpicGames" name="bypassEpicGames"
+                                                value="true">
+                                            <label for="bypassEpicGames">Epic Games</label>
+                                        </div>
+                                        <div class="checkbox-wrapper">
+                                            <input type="checkbox" id="bypassIntel" name="bypassIntel" value="true">
+                                            <label for="bypassIntel">Intel</label>
+                                        </div>
+                                        <div class="checkbox-wrapper">
+                                            <input type="checkbox" id="bypassAmd" name="bypassAmd" value="true">
+                                            <label for="bypassAmd">AMD</label>
+                                        </div>
+                                        <div class="checkbox-wrapper">
+                                            <input type="checkbox" id="bypassNvidia" name="bypassNvidia" value="true">
+                                            <label for="bypassNvidia">Nvidia</label>
+                                        </div>
+                                        <div class="checkbox-wrapper">
+                                            <input type="checkbox" id="bypassAsus" name="bypassAsus" value="true">
+                                            <label for="bypassAsus">Asus</label>
+                                        </div>
+                                        <div class="checkbox-wrapper">
+                                            <input type="checkbox" id="bypassHp" name="bypassHp" value="true">
+                                            <label for="bypassHp">HP</label>
+                                        </div>
+                                        <div class="checkbox-wrapper">
+                                            <input type="checkbox" id="bypassLenovo" name="bypassLenovo" value="true">
+                                            <label for="bypassLenovo">Lenovo</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-control">
+                                <label for="customBypassSanctionRules">Bypass Domains</label>
+                                <div>
+                                    <textarea id="customBypassSanctionRules" name="customBypassSanctionRules"
+                                        rows="1"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+                <a class="help-icon"
+                    href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/routing-rules/"
+                    target="_blank" title="Help">
+                    <span class="material-symbols-rounded">info</span>
+                </a>
+            </div>
+
+            <div class="accordion-item">
+                <details>
+                    <summary>
+                        <h3>Import - Export</h3>
+                    </summary>
+                    <div class="section">
+
+                        <div class="container">
+                            <h4><span class="material-symbols-rounded">link</span>Remote Settings</h4>
+                            <div class="form-control">
+                                <label for="remoteSettings">Remote URL</label>
+                                <div>
+                                    <input type="text" id="remoteSettings" name="remoteSettings">
+                                </div>
+                            </div>
+                            <div class="dashboard-action">
+                                <span>Import Remote</span>
+                                <button type="button" id="fetchSettingsBtn" class="button"
+                                    onclick="importRemoteSettings(event)">
+                                    <span class="material-symbols-rounded">cloud_download</span>
+                                    Import
+                                </button>
+                            </div>
+                            <div class="dashboard-action">
+                                <span>Share Yours</span>
+                                <button type="button" class="button" onclick="shareSettings()">
+                                    <span class="material-symbols-rounded">share</span>
+                                    Share
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="container">
+                            <h4><span class="material-symbols-rounded">draft</span>File Settings</h4>
+                            <div class="dashboard-action">
+                                <span>Import File</span>
+                                <button type="button" class="button" onclick="importFile()">
+                                    <span class="material-symbols-rounded">upload</span>
+                                    <input type="file" id="fileInput" accept=".dat" style="display: none;"
+                                        onchange="importFileSettings(event)" />
+                                    Import
+                                </button>
+                            </div>
+                            <div class="dashboard-action">
+                                <span>Export File</span>
+                                <button type="button" class="button" onclick="exportFileSettings(event)">
+                                    <span class="material-symbols-rounded">download</span>
+                                    Export
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+                <a class="help-icon"
+                    href="https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/import-export/"
+                    target="_blank" title="Help">
+                    <span class="material-symbols-rounded">info</span>
+                </a>
+            </div>
 
             <div id="apply" class="form-control apply">
                 <button type="submit" id="applyButton" class="button disabled" form="configForm">
@@ -975,6 +994,7 @@
     </template>
 
     <div class="form-container container">
+
         <div id="resetPassModal" class="modal" hidden>
             <div class="modal-content">
                 <div class="modal-header">
@@ -987,7 +1007,7 @@
                     <div class="section">
                         <div id="usernameContainer" class="modal-form-control" style="display: none;">
                             <label for="username">Cloudflare Email</label>
-                            <input type="text" id="username" name="username" autocomplete>
+                            <input type="text" id="username" name="username" autocomplete="on">
                         </div>
                         <div class="modal-form-control">
                             <label for="newPassword">New Password</label>

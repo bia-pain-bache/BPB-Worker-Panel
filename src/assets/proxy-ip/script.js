@@ -43,6 +43,7 @@ async function loadGeoData() {
             const cityCell = elm('td', { textContent: item.city || '-' });
             const ispCell = elm('td', { textContent: item.isp || '-' });
 
+            copyIcon.addEventListener('click', () => copyToClipboard(item.ip));
             testIcon.addEventListener('click', () => testIp(item.ip, healthRateCell, avgLatencyCell));
             const row = elm('tr', {}, [indexCell, ipCell, healthRateCell, avgLatencyCell, countryCell, cityCell, ispCell]);
             tableBody.appendChild(row);

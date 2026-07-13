@@ -237,7 +237,7 @@ async function fetchIPInfo() {
         const flag = countryCode !== '-' ? String.fromCodePoint(...[...countryCode].map(c => 0x1F1E6 + c.charCodeAt(0) - 65)) : '';
         const updateContent = (id, content) => document.getElementById(id).textContent = content;
         updateContent(cfIP ? 'cf-ip' : 'ip', ip);
-        updateContent(cfIP ? 'cf-country' : 'country', `${country} ${flag}`);
+        updateContent(cfIP ? 'cf-country' : 'country', `${flag} ${country}`);
         updateContent(cfIP ? 'cf-city' : 'city', city);
         updateContent(cfIP ? 'cf-isp' : 'isp', isp);
     };
@@ -1009,7 +1009,7 @@ const createIcon = (text) => elm('span', {
 
 function createFormControl(labelText) {
     const control = elm('div', { className: 'form-control' });
-    const label = elm('label', { textContent: labelText });
+    const label = elm('span', { textContent: labelText });
     const inputWrapper = elm('div');
     return elm('div', { className: 'form-control' }, [label, inputWrapper]);
 }
@@ -1039,7 +1039,7 @@ function renderPortsBlock(ports) {
             checkbox.addEventListener('click', handlePortChange);
         }
 
-        const label = elm('label', { textContent: String(port) });
+        const label = elm('span', { textContent: String(port) });
         const wrapper = elm('div', { className: 'checkbox-wrapper' }, [checkbox, label]);
 
         if (isHttpsPort) {
@@ -1109,9 +1109,11 @@ function addUdpNoise(isManual, noiseIndex, udpNoise) {
     ].map(([value, label]) => elm('option', { value, textContent: label, selected: noise.type === value }));
 
     const modeSelect = elm('select', { name: 'udpXrayNoiseMode', onchange: generateUdpNoise }, modeOptions);
+
     const modeControl = createFormControl('Mode');
-    modeControl.querySelector('div').appendChild(modeSelect);
-    const selectWrapper = elm('div', { className: 'select-wrapper' }, [modeControl, createIcon('keyboard_arrow_down')]);
+    const selectWrapper = modeControl.querySelector('div');
+    selectWrapper.className = 'select-wrapper';
+    selectWrapper.append(modeSelect, createIcon('keyboard_arrow_down'))
 
     const packetInput = elm('input', { type: 'text', name: 'udpXrayNoisePacket', value: noise.packet });
     const packetControl = createFormControl('Packet');
@@ -1130,7 +1132,7 @@ function addUdpNoise(isManual, noiseIndex, udpNoise) {
     const delayControl = createFormControl('Delay');
     delayControl.querySelector('div').appendChild(minMaxDiv);
 
-    const section = elm('div', { className: 'section' }, [selectWrapper, packetControl, countControl, delayControl]);
+    const section = elm('div', { className: 'section' }, [modeControl, packetControl, countControl, delayControl]);
     const container = elm('div', { className: 'inner-container', id: `udp-noise-${index + 1}` }, [headerDiv, section]);
 
     document.getElementById('noises').append(container);
@@ -1142,12 +1144,13 @@ function renderSubscriptions(subscriptions) {
     if (!subscriptions) return;
     for (const [type, { label, categories }] of Object.entries(subscriptions)) {
         const help = elm('a', {
+            className: 'help-icon',
             href: `https://bia-pain-bache.github.io/BPB-Worker-Panel/usage/${type}/`,
             target: '_blank',
             title: 'Help'
         }, createIcon('info'));
 
-        const header = elm('h3', { textContent: label }, help);
+        const header = elm('h3', { textContent: label });
         const summary = elm('summary', {}, header);
         const section = elm('details', {}, summary);
         const table = elm('table', {}, categories.map(({ core, clients }) => {
@@ -1169,7 +1172,7 @@ function renderSubscriptions(subscriptions) {
                 ctaSection.append(qrBtn, copyBtn);
             }
 
-            if(type !== 'raw') {
+            if (type !== 'raw') {
                 const dlBtn = elm('button', { title: 'Download config', onclick: () => dlUrl(url) }, createIcon('download'));
                 ctaSection.appendChild(dlBtn);
             }
@@ -1179,6 +1182,7 @@ function renderSubscriptions(subscriptions) {
 
         const container = elm('div', { className: 'table-container' }, table);
         section.appendChild(container);
-        document.getElementById('subscriptions').appendChild(section);
+        const item = elm('div', { className: 'accordion-item' }, [section, help]);
+        document.getElementById('subscriptions').appendChild(item);
     };
 }
