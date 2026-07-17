@@ -294,6 +294,7 @@ div.checkbox-wrapper label {
     vertical-align: middle;
     display: inline-block;
     text-shadow: var(--shadow-icon);
+    transition: scale 200ms ease;
     font-variation-settings:
         'FILL' 0,
         'wght' 400,
@@ -357,18 +358,22 @@ a .material-symbols-rounded {
     color: var(--color-brand-primary);
 }
 
-label > .material-symbols-rounded,
-span > .material-symbols-rounded {
+label>.material-symbols-rounded,
+span>.material-symbols-rounded {
     color: var(--color-brand-primary);
     cursor: pointer;
-    padding-left: var(--space-xs);;
+    padding-left: var(--space-xs);
+    ;
 }
 
-label > .material-symbols-rounded:hover,
-span > .material-symbols-rounded:hover,
+label>.material-symbols-rounded:hover,
+span>.material-symbols-rounded:hover,
 a .material-symbols-rounded:hover,
+table button .material-symbols-rounded:hover,
+.svg-btn .material-symbols-rounded:hover,
 .refresh-geo-location .material-symbols-rounded:hover {
-    scale: calc(1.2);
+    scale: 1.2;
+    color: var(--color-brand-hover);
 }
 
 a.url {
@@ -625,14 +630,6 @@ select {
     box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
 }
 
-table button:hover,
-table button:focus,
-button.svg-btn:hover,
-button.svg-btn:focus {
-    color: var(--color-brand-primary);
-    scale: calc(1.2);
-}
-
 table button,
 .svg-btn {
     margin-top: auto;
@@ -644,6 +641,7 @@ table button,
     background-color: unset;
     cursor: pointer;
     padding: 0;
+    transition: scale 200ms ease;
 }
 
 table button:active {
@@ -662,10 +660,12 @@ table button:active {
     margin: 0;
     background: none;
     color: var(--color-brand-primary);
+    transition: scale 200ms ease;
 }
 
 .panel-settings:hover {
-    scale: calc(1.2);
+    scale: 1.2;
+    color: var(--color-brand-hover);
 }
 
 .panel-settings:disabled {
@@ -755,25 +755,20 @@ table {
     overflow-x: auto;
 }
 
-.add-noise {
-    background: none;
-    margin: 0;
-    border: none;
-    cursor: pointer;
-    color: var(--color-brand-primary);
-}
-
+.add-noise,
 .delete-noise {
     background: none;
     margin: 0;
     border: none;
     cursor: pointer;
     color: var(--color-brand-primary);
+    transition: scale 200ms ease;
 }
 
 .add-noise:hover,
 .delete-noise:hover {
-    scale: calc(1.2);
+    scale: 1.2;
+    color: var(--color-brand-hover);
 }
 
 .table-container tbody {
@@ -802,25 +797,36 @@ table tr:not(:last-child) {
     width: fit-content;
 }
 
-.my-ip {
+.info-table {
     border-radius: var(--radius-ui);
     border: 1px solid var(--color-border-accent);
     background: color-mix(in srgb, var(--color-bg-card), #000328 8%);
     overflow-x: auto;
+    text-align: left;
 }
 
-.my-ip th,
-.my-ip td {
+.info-table th,
+.info-table td {
     white-space: nowrap;
     padding: 10px;
     border-bottom: inherit;
 }
 
-.my-ip td:first-child,
-.my-ip th {
+.info-table th {
+    background-color: var(--color-bg-input);
+    color: var(--color-text-primary);
+    font-weight: 500;
+}
+
+.info-table td:first-child {
     background-color: var(--color-bg-input);
     color: var(--color-text-secondary);
-    font-weight: bold;
+    font-weight: normal;
+}
+
+.info-table td:last-child {
+    display: flex;
+    justify-content: space-between;
 }
 
 .table-container th,

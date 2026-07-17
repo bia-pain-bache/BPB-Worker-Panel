@@ -23,15 +23,16 @@ Also manual deployment and BPB Wizard client deployments do not work on this rel
 > You cannot reach your panel by just adding /panel to your worker domain anymore. The new entry is like https://xxxx.workers.dev/SECURE_PATH/panel, which the path is a random generated secure path by wizard. You can change it in panel later if you wish, panel will redirect you to new URL.
 > So please don't forget to save your panel URL after online wizard finished the job.
 
-- Underlying DoH is added to common settings which is used as your panel `DNS over HTTPS` underlying server.
-- Fallback behaviour is now throwing 404 by default. You can set `Fallback Domain` in Common settings section.
-- single Proxy IP test is added to related page.
+- `Underlying DoH` is added to common settings which is used as your panel `DNS over HTTPS` underlying server.
+- `Fallback` behaviour is now throwing 404 by default. You can set `Fallback Domain` in Common settings section.
+- single `Proxy IP test` is added to related page.
 - Updating panel settings from a Remote BPB Panel and sharing settings is added in addition to existing File import and export. You can share or get all of settings except `VLESS UUID`, `Trojan Pass`, `Panel Path` and `Custom Domain` with some another BPB user.
 - Updated Clash, Amnezia Warp Pro settings. This may help connection on some ISPs.
-- Chain Proxy now supports Xhttp and VLESS Encryption for Xray and Clash cores.
-- Made Warp Reserved bytes optional. Some ISPs flagged reserved bytes.
+- Chain Proxy now supports `Xhttp` and `VLESS Encryption` for Xray and Clash cores.
+- Made Warp `Reserved bytes` optional. Some ISPs flagged reserved bytes.
 - Optimized Warp Pro noise generation for Xray core.
 - The Panel UI has been improved a lot and removed dark/light mode.
+- `Supported Clients` section added to panel including download from sources.
 - Solid Data validations execute in backend from now on.
 - Implemented Toasts and message boxes instead of alerts in panel.
 - The whole project is restructured for maintainability purposes.
@@ -43,13 +44,13 @@ Also manual deployment and BPB Wizard client deployments do not work on this rel
 ## 💡 Changes since 5.0.0
 
 - API Token has been changed and v5.0.0 Private Links and old tokens won't work on this.
-- Added Import - Export section to panel with ability to update settings from another BPB panels #1329
-- Added Xhttp transport and VLESS Encryption support to Chain Proxies for Xray and Clash.
-- Updated Amnezia H1-H4 params #1353
-- Made Warp Reserved bytes optional #1236
+- Added `Import - Export` section to panel with ability to update settings from another BPB panels #1329
+- Added `Xhttp` transport and `VLESS Encryption` support to Chain Proxies for Xray and Clash.
+- Updated `Amnezia` H1-H4 params #1353
+- Made Warp `Reserved bytes` optional #1236
 - Resetting Telegram webhook after changing panel path.
 - Changed panel update check endpoint.
-- Panel UI improvement.
+- Panel UI improvement, added `Supported Clients` section to panel with download links.
 - Encapsulated worker domain and Custom Domain configs into separate URL tests #1359
 - Implemented built-in QR code generation for Telegram and panel.
 - Renamed configs filenames and sync Telegram and panel downloads.
@@ -61,7 +62,7 @@ Also manual deployment and BPB Wizard client deployments do not work on this rel
 
 First time contributors: @javadSharifi @gbcwror @doublepleat
 
-![GitHub Downloads (specific asset, specific tag)](https://img.shields.io/github/downloads/bia-pain-bache/BPB-Worker-Panel/v5.1.0/worker.js)
+![GitHub Downloads (specific asset, specific tag)](https://img.shields.io/github/downloads/bia-pain-bache/BPB-Worker-Panel/v5.1.1/worker.js)
 
 > [!CAUTION]
 > Please update whatever client you use, specially these ones:

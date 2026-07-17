@@ -128,7 +128,7 @@ export const subscriptions: Record<string, SubsCategory> = {
         label: 'Raw',
         categories: [
             { core: 'xray', clients: ['v2rayN(G)', 'MahsaNG', 'Shadowrocket', 'Streisand', 'PassWall'] },
-            { core: 'sing-box', clients: ['husi', 'Nekobox', 'Nekoray', 'Hiddify', 'Karing'] },
+            { core: 'sing-box', clients: ['husi', 'NekoBox', 'Hiddify', 'Karing'] },
         ]
     },
     'warp': {

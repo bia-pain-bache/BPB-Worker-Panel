@@ -267,12 +267,12 @@ async function fetchIPInfo() {
     stopWaiting(icons);
 }
 
-function generateSubUrl(path, app, tag, singboxType) {
-    const url = new URL(`./sub/${path}`, window.location.href);
-    url.searchParams.append('app', app);
+function generateSubUrl(type, core, tag) {
+    const url = new URL(`./sub/${type}`, window.location.href);
+    url.searchParams.append('app', core);
     url.hash = `💦 BPB ${tag}`;
 
-    if (singboxType) {
+    if (core === 'sing-box' && type !== 'raw') {
         return `sing-box://import-remote-profile?url=${url.href}`;
     }
 
@@ -832,8 +832,8 @@ function generateUdpNoise(mode, packet) {
             packet.value = generateRandomStr(charset, 32, 64);
             break;
         }
-        
-        case 'array': 
+
+        case 'array':
             packet.value = generateRandomArray(32, 64);
     }
 }
@@ -853,27 +853,27 @@ function generateRandomStr(charset, minLen, maxLen) {
 
 function generateRandomArray(minLen, maxLen) {
     const length = Math.floor(Math.random() * (maxLen - minLen + 1)) + minLen;
-    const array = Array.from({length}, () => Math.floor(Math.random() * 256));
+    const array = Array.from({ length }, () => Math.floor(Math.random() * 256));
     const field = array.map(String).join(',');
 
     return field;
 }
 
-function generateRandomBase64 (minLen, maxLen) {
+function generateRandomBase64(minLen, maxLen) {
     const length = Math.floor(Math.random() * (maxLen - minLen + 1)) + minLen;
     const array = new Uint8Array(Math.ceil(length * 3 / 4));
     crypto.getRandomValues(array);
     let base64 = btoa(String.fromCharCode(...array));
-    
+
     return base64.slice(0, length);
 }
 
-function generateRandomHex (minLen, maxLen) {
+function generateRandomHex(minLen, maxLen) {
     const length = Math.floor(Math.random() * (maxLen - minLen + 1)) + minLen;
     const array = new Uint8Array(Math.ceil(length / 2));
     crypto.getRandomValues(array);
     let hex = [...array].map(b => b.toString(16).padStart(2, '0')).join('');
-    
+
     return hex.slice(0, length);
 }
 
@@ -1123,7 +1123,7 @@ function addUdpNoise(isManual, noiseIndex, udpNoise) {
 
     const modeSelect = elm('select', { name: 'udpXrayNoiseMode' }, modeOptions);
     const modeControl = createFormControl('Mode');
-    
+
     const selectWrapper = modeControl.querySelector('div');
     selectWrapper.className = 'select-wrapper';
     selectWrapper.append(modeSelect, createIcon('keyboard_arrow_down'))
@@ -1132,7 +1132,7 @@ function addUdpNoise(isManual, noiseIndex, udpNoise) {
     const packetControl = createFormControl('Packet', true);
     packetControl.querySelector('div').appendChild(packetInput);
     const generateBtn = packetControl.querySelector('.material-symbols-rounded');
-    
+
     modeSelect.onchange = generateBtn.onclick = () => generateUdpNoise(modeSelect, packetInput);
 
     const countInput = elm('input', {
@@ -1177,8 +1177,7 @@ function renderSubscriptions(subscriptions) {
                 return wrapper;
             }));
 
-            const isSingBox = core === 'sing-box';
-            const url = generateSubUrl(type, core, label, isSingBox);
+            const url = generateSubUrl(type, core, label);
             const ctaSection = elm('td');
 
             const wgCore = ['wireguard', 'amnezia'].includes(core);
