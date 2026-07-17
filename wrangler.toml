@@ -1,0 +1,6 @@
+name = "bpb-panel"
+main = "dist/worker.js"
+compatibility_date = "2026-07-17"
+
+[build]
+command = "npm run build"
