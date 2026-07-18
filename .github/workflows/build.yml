@@ -5,14 +5,12 @@ permissions:
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 */1 * * *'
+  push:
+    branches:
+      - main
 
 jobs:
   build:
-    if: |
-      github.event_name == 'workflow_dispatch' || 
-      (github.event_name == 'schedule' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
 
     steps:
@@ -36,7 +34,7 @@ jobs:
 
       - name: Type check
         run: npm run check
-        
+
       - name: Build project
         run: npm run build
 
@@ -48,7 +46,7 @@ jobs:
           r="${r//'%'/'%25'}"                               
           r="${r//$'\n'/'%0A'}"                             
           r="${r//$'\r'/'%0D'}"                             
-          echo "RELEASE_BODY=$r" >> $GITHUB_OUTPUT          
+          echo "RELEASE_BODY=$r" >> $GITHUB_OUTPUT
 
       - name: Upload Release Assets
         uses: svenstaro/upload-release-action@v2
