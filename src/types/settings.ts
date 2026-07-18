@@ -180,3 +180,12 @@ export interface SubsCategory {
     label: 'Normal' | 'Fragment' | 'Raw' | 'Warp' | 'Warp Pro';
     categories: ClientCategory[];
 }
+
+export type Subscription = Record<string, SubsCategory>;
+
+export interface Client {
+    name: string;
+    minVer: string;
+    source: string;
+    b64Url: string;
+}

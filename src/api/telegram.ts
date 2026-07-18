@@ -1,5 +1,5 @@
 import { HttpStatus, respond, safeError } from '@common';
-import { getGlobals, getSettings, subscriptions } from '@settings';
+import { clients, getGlobals, subscriptions } from '@settings';
 import { getCfWorkerUsage } from './usage';
 import { authenticate } from '@auth';
 import { TelegramBot } from '#types/settings';
@@ -58,6 +58,7 @@ export async function setTelegramBot(path: string, token: string) {
                 commands: [
                     { command: 'start', description: '🤖 Show welcome menu' },
                     { command: 'config', description: '🔗 Get configs' },
+                    { command: 'clients', description: '📱 Get supported clients' },
                     { command: 'usage', description: '📊 Monitor usage' },
                 ]
             })
@@ -137,19 +138,21 @@ function mainKeyboard() {
     return {
         inline_keyboard: [
             [{ text: '🔗 Get Config', callback_data: 'sub' }],
-            [{ text: '📊 Usage', callback_data: 'usage' }]
+            [{ text: '📱 Supported Clients', callback_data: 'clients' }],
+            [{ text: '📊 Usage', callback_data: 'usage' }],
         ]
     };
 }
 
-function typeKeyboard(prefix: string) {
+function subKeyboard() {
+    const subs = Object.entries(subscriptions).map(([type, category]) => [{
+        text: `🔗 ${category.label}`,
+        callback_data: `sub_${type}`
+    }]);
+
     return {
         inline_keyboard: [
-            [{ text: '🔗 Normal', callback_data: `${prefix}_normal` }],
-            [{ text: '🔗 Fragment', callback_data: `${prefix}_fragment` }],
-            [{ text: '🔗 Raw (Not recommended)', callback_data: `${prefix}_raw` }],
-            [{ text: '🔗 Warp', callback_data: `${prefix}_warp` }],
-            [{ text: '🔗 Warp Pro', callback_data: `${prefix}_warp-pro` }],
+            ...subs,
             [{ text: '◀️ Back', callback_data: 'main' }]
         ]
     };
@@ -159,6 +162,20 @@ function usageKeyboard() {
     return {
         inline_keyboard: [
             [{ text: '🔄 Refresh', callback_data: 'usage_refresh' }],
+            [{ text: '◀️ Back', callback_data: 'main' }]
+        ]
+    };
+}
+
+function clientsKeyboard() {
+    const suppClients = clients.map(client => [{
+        text: `🟢 ${client.name}`,
+        callback_data: `client_${client.name}`
+    }]);
+
+    return {
+        inline_keyboard: [
+            ...suppClients,
             [{ text: '◀️ Back', callback_data: 'main' }]
         ]
     };
@@ -264,7 +281,16 @@ async function handleCallback(cq: TgCallbackQuery, token: string, chatId: number
                 chat_id: chatId,
                 text: '🔗 <b>Get Config</b>\n\nChoose a config type:',
                 parse_mode: 'HTML',
-                reply_markup: typeKeyboard('type')
+                reply_markup: subKeyboard()
+            });
+            break;
+
+        case 'clients':
+            await tgFetch(token, 'sendMessage', {
+                chat_id: chatId,
+                text: '📱 <b>Supported clients</b>\n\nChoose a client:',
+                parse_mode: 'HTML',
+                reply_markup: clientsKeyboard()
             });
             break;
 
@@ -312,57 +338,80 @@ async function handleCallback(cq: TgCallbackQuery, token: string, chatId: number
             break;
 
         default:
-            if (!data.startsWith('type_')) break;
-            const typeKey = data.slice(5);
-            const subscription = subscriptions[typeKey];
-            if (!subscription) break;
+            const typeKey = data.split('_')[1];
+            if (data.startsWith('sub_')) {
+                const subscription = subscriptions[typeKey];
+                if (!subscription) break;
 
-            for (const [index, appInfo] of subscription.categories.entries()) {
-                const clientUrl = buildClientUrl(typeKey, appInfo.core, subscription.label);
-                const qrUrl = buildQrUrl(typeKey, appInfo.core, subscription.label);
-                const docUrl = buildDocUrl(typeKey, appInfo.core);
-                const wgClient = ['wireguard', 'amnezia'].includes(appInfo.core);
+                for (const [index, appInfo] of subscription.categories.entries()) {
+                    const clientUrl = buildClientUrl(typeKey, appInfo.core, subscription.label);
+                    const qrUrl = buildQrUrl(typeKey, appInfo.core, subscription.label);
+                    const docUrl = buildDocUrl(typeKey, appInfo.core);
+                    const wgClient = ['wireguard', 'amnezia'].includes(appInfo.core);
 
-                const supportedList = appInfo.clients.map(a => `✅ ${a}`).join('\n');
-                const showUrl = wgClient ? '' : `<code>${clientUrl}</code>\n\n`;
-                const caption = `💦 <b>${_project_} ${subscription.label}</b>\n\n${showUrl}<b>Supported apps:</b>\n\n${supportedList}`;
+                    const supportedList = appInfo.clients.map(a => `✅ ${a}`).join('\n');
+                    const showUrl = wgClient ? '' : `<code>${clientUrl}</code>\n\n`;
+                    const caption = `💦 <b>${_project_} ${subscription.label}</b>\n\n${showUrl}<b>Supported apps:</b>\n\n${supportedList}`;
 
-                const isLast = index === subscription.categories.length - 1;
-                const backBtn = {
-                    reply_markup: {
-                        inline_keyboard: [[{ text: '◀️ Back', callback_data: 'sub' }]]
-                    }
-                };
+                    const isLast = index === subscription.categories.length - 1;
+                    const backBtn = {
+                        reply_markup: {
+                            inline_keyboard: [[{ text: '◀️ Back', callback_data: 'sub' }]]
+                        }
+                    };
 
-                if (wgClient) {
-                    await tgFetch(token, 'sendDocument', {
-                        chat_id: chatId,
-                        document: docUrl,
-                        caption: caption,
-                        parse_mode: 'HTML',
-                        ...(isLast && backBtn)
-                    });
-                } else {
-                    const hasDocument = typeKey !== 'raw';
-
-                    await tgFetch(token, 'sendPhoto', {
-                        chat_id: chatId,
-                        photo: qrUrl,
-                        caption: caption,
-                        parse_mode: 'HTML',
-                        ...(isLast && !hasDocument && backBtn)
-                    });
-
-                    if (hasDocument) {
+                    if (wgClient) {
                         await tgFetch(token, 'sendDocument', {
                             chat_id: chatId,
                             document: docUrl,
+                            caption: caption,
+                            parse_mode: 'HTML',
                             ...(isLast && backBtn)
                         });
+                    } else {
+                        const hasDocument = typeKey !== 'raw';
+
+                        await tgFetch(token, 'sendPhoto', {
+                            chat_id: chatId,
+                            photo: qrUrl,
+                            caption: caption,
+                            parse_mode: 'HTML',
+                            ...(isLast && !hasDocument && backBtn)
+                        });
+
+                        if (hasDocument) {
+                            await tgFetch(token, 'sendDocument', {
+                                chat_id: chatId,
+                                document: docUrl,
+                                ...(isLast && backBtn)
+                            });
+                        }
                     }
                 }
             }
-            break;
+
+            if (data.startsWith('client_')) {
+                const client = clients.find(cli => cli.name === typeKey);
+                if (!client) break;
+                let text = [
+                    `✅ <b>${client.name}</b>`,
+                    `━━━━━━━━━━━━━━━━`,
+                    `📍 <b>Minimum requirement:</b> ${client.minVer}`,
+                    `🏚️ <b>Download source:</b> ${client.source}`,
+                    '',
+                    `📥 <a href=\"${atob(client.b64Url)}\"><b>Get latest version</b></a>`,
+                    ''
+                ].join('\n');
+
+                await tgFetch(token, 'sendMessage', {
+                    chat_id: chatId,
+                    text: text,
+                    parse_mode: 'HTML',
+                    reply_markup: {
+                        inline_keyboard: [[{ text: '◀️ Back', callback_data: 'clients' }]]
+                    }
+                });
+            }
     }
 }
 
@@ -419,12 +468,21 @@ export async function handleTelegramWebhook(request: Request, env: Env): Promise
                 });
                 break;
 
+            case '/clients':
+                await tgFetch(botToken, 'sendMessage', {
+                    chat_id: chatId,
+                    text: '📱 <b>Supported clients</b>\n\nChoose a client:',
+                    parse_mode: 'HTML',
+                    reply_markup: clientsKeyboard()
+                });
+                break;
+
             case '/config':
                 await tgFetch(botToken, 'sendMessage', {
                     chat_id: chatId,
                     text: '🔗 <b>Get Config</b>\n\nChoose a configuration type:',
                     parse_mode: 'HTML',
-                    reply_markup: typeKeyboard('type')
+                    reply_markup: subKeyboard()
                 });
                 break;
 

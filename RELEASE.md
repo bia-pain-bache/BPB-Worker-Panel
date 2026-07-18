@@ -32,7 +32,7 @@ Also manual deployment and BPB Wizard client deployments do not work on this rel
 - Made Warp `Reserved bytes` optional. Some ISPs flagged reserved bytes.
 - Optimized Warp Pro noise generation for Xray core.
 - The Panel UI has been improved a lot and removed dark/light mode.
-- `Supported Clients` section added to panel including download from sources.
+- `Supported Clients` section added to Panel and Telegram including download latest version from sources.
 - Solid Data validations execute in backend from now on.
 - Implemented Toasts and message boxes instead of alerts in panel.
 - The whole project is restructured for maintainability purposes.
@@ -50,7 +50,7 @@ Also manual deployment and BPB Wizard client deployments do not work on this rel
 - Made Warp `Reserved bytes` optional #1236
 - Resetting Telegram webhook after changing panel path.
 - Changed panel update check endpoint.
-- Panel UI improvement, added `Supported Clients` section to panel with download links.
+- Panel UI improvement, added `Supported Clients` section to Panel and Telegram with download links.
 - Encapsulated worker domain and Custom Domain configs into separate URL tests #1359
 - Implemented built-in QR code generation for Telegram and panel.
 - Renamed configs filenames and sync Telegram and panel downloads.

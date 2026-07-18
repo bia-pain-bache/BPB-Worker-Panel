@@ -1,5 +1,14 @@
-import { KvSettings, ReqSettings, EmbededSettings, MainSettings, WarpAccount, SubsCategory, SharedSettings } from '#types/settings';
 import { getDataset } from '@kv';
+import {
+    KvSettings,
+    ReqSettings,
+    EmbededSettings,
+    MainSettings,
+    WarpAccount,
+    SharedSettings,
+    Client,
+    Subscription
+} from '#types/settings';
 
 Object.assign(globalThis, {
     _VL_: atob('dmxlc3M='),
@@ -69,21 +78,21 @@ export function getSharedSettings(): SharedSettings {
         ...proxySettings
     } = kvSettings;
 
-    const { 
-        proxyIpMode, 
-        proxyIPs, 
-        prefixes, 
-        fallback, 
+    const {
+        proxyIpMode,
+        proxyIPs,
+        prefixes,
+        fallback,
         dohUrl
     } = EMBEDED_SETTINGS;
 
     return {
         ...proxySettings,
-        proxyIpMode, 
-        proxyIPs, 
-        prefixes, 
-        fallback, 
-        dohUrl 
+        proxyIpMode,
+        proxyIPs,
+        prefixes,
+        fallback,
+        dohUrl
     };
 }
 
@@ -108,11 +117,11 @@ let warpAccounts: WarpAccount[] = [
     }
 ];
 
-export const subscriptions: Record<string, SubsCategory> = {
+export const subscriptions: Subscription = {
     'normal': {
         label: 'Normal',
         categories: [
-            { core: 'xray', clients: ['v2rayN(G)', 'MahsaNG', 'Streisand'] },
+            { core: 'xray', clients: [`${_V2_}N(G)`, 'MahsaNG', 'Streisand'] },
             { core: 'sing-box', clients: ['sing-box', 'husi'] },
             { core: 'clash', clients: ['Clash Meta', 'Clash Verge', 'FlClash', 'Stash'] },
         ]
@@ -120,21 +129,21 @@ export const subscriptions: Record<string, SubsCategory> = {
     'fragment': {
         label: 'Fragment',
         categories: [
-            { core: 'xray', clients: ['v2rayN(G)', 'MahsaNG', 'Streisand'] },
+            { core: 'xray', clients: [`${_V2_}N(G)`, 'MahsaNG', 'Streisand'] },
             { core: 'sing-box', clients: ['sing-box', 'husi'] },
         ]
     },
     'raw': {
         label: 'Raw',
         categories: [
-            { core: 'xray', clients: ['v2rayN(G)', 'MahsaNG', 'Shadowrocket', 'Streisand', 'PassWall'] },
+            { core: 'xray', clients: [`${_V2_}N(G)`, 'MahsaNG', 'Shadowrocket', 'Streisand', 'PassWall'] },
             { core: 'sing-box', clients: ['husi', 'NekoBox', 'Hiddify', 'Karing'] },
         ]
     },
     'warp': {
         label: 'Warp',
         categories: [
-            { core: 'xray', clients: ['v2rayN(G)', 'Streisand'] },
+            { core: 'xray', clients: [`${_V2_}N(G)`, 'Streisand'] },
             { core: 'sing-box', clients: ['sing-box', 'husi'] },
             { core: 'clash', clients: ['Clash Meta', 'Clash Verge', 'FlClash', 'Stash'] },
             { core: 'wireguard', clients: ['Wireguard'] },
@@ -143,13 +152,30 @@ export const subscriptions: Record<string, SubsCategory> = {
     'warp-pro': {
         label: 'Warp Pro',
         categories: [
-            { core: 'xray', clients: ['v2rayN(G)', 'Streisand'] },
+            { core: 'xray', clients: [`${_V2_}N(G)`, 'Streisand'] },
             { core: 'xray-knocker', clients: ['MahsaNG', 'v2rayN-PRO'] },
             { core: 'clash', clients: ['Clash Meta', 'Clash Verge', 'FlClash', 'Stash'] },
             { core: 'amnezia', clients: ['Amnezia', 'WG Tunnel'] },
         ]
     }
 };
+
+export const clients: Client[] = [
+    { name: `${_V2_}NG`, minVer: '2.2.3', source: 'Github', b64Url: 'aHR0cHM6Ly9naXRodWIuY29tLzJkdXN0L3YycmF5TkcvcmVsZWFzZXMvbGF0ZXN0' },
+    { name: `${_V2_}N`, minVer: '7.22.5', source: 'Github', b64Url: 'aHR0cHM6Ly9naXRodWIuY29tLzJkdXN0L3YycmF5Ti9yZWxlYXNlcy9sYXRlc3Q=' },
+    { name: 'MahsaNG', minVer: '17', source: 'Google Play', b64Url: 'aHR0cHM6Ly9wbGF5Lmdvb2dsZS5jb20vc3RvcmUvYXBwcy9kZXRhaWxzP2lkPWNvbS5NYWhzYU5ldC5NYWhzYU5HJmhsPWVu' },
+    { name: 'Streisand', minVer: '1.6.71', source: 'App Store', b64Url: 'aHR0cHM6Ly9hcHBzLmFwcGxlLmNvbS91cy9hcHAvc3RyZWlzYW5kL2lkNjQ1MDUzNDA2NA==' },
+    { name: 'sing-box', minVer: '1.12.0', source: 'Github', b64Url: 'aHR0cHM6Ly9naXRodWIuY29tL1NhZ2VyTmV0L3NpbmctYm94L3JlbGVhc2VzL2xhdGVzdA==' },
+    { name: 'husi', minVer: '1.3.2', source: 'Codeberg', b64Url: 'aHR0cHM6Ly9jb2RlYmVyZy5vcmcveGNoYWNoYTIwLXBvbHkxMzA1L2h1c2kvcmVsZWFzZXMvbGF0ZXN0' },
+    { name: 'NekoBox', minVer: '1.3.2', source: 'Github', b64Url: 'aHR0cHM6Ly9naXRodWIuY29tL01hdHN1cmlkYXlvL05la29Cb3hGb3JBbmRyb2lkL3JlbGVhc2VzL2xhdGVzdA==' },
+    { name: 'Clash Meta', minVer: '2.11.31', source: 'Github', b64Url: 'aHR0cHM6Ly9naXRodWIuY29tL01ldGFDdWJlWC9DbGFzaE1ldGFGb3JBbmRyb2lkL3JlbGVhc2VzL2xhdGVzdA==' },
+    { name: 'Clash verge rev', minVer: '2.5.1', source: 'Github', b64Url: 'aHR0cHM6Ly9naXRodWIuY29tL2NsYXNoLXZlcmdlLXJldi9jbGFzaC12ZXJnZS1yZXYvcmVsZWFzZXMvbGF0ZXN0' },
+    { name: 'FlClash', minVer: '0.8.94', source: 'Github', b64Url: 'aHR0cHM6Ly9naXRodWIuY29tL2NoZW4wODIwOS9GbENsYXNoL3JlbGVhc2VzL2xhdGVzdA==' },
+    { name: 'Stash', minVer: '3.4.1', source: 'App Store', b64Url: 'aHR0cHM6Ly9hcHBzLmFwcGxlLmNvbS91cy9hcHAvc3Rhc2gtcnVsZS1iYXNlZC1wcm94eS9pZDE1OTYwNjMzNDk=' },
+    { name: 'Amnezia', minVer: '4.8.21.0', source: 'Github', b64Url: 'aHR0cHM6Ly9naXRodWIuY29tL2FtbmV6aWEtdnBuL2FtbmV6aWEtY2xpZW50L3JlbGVhc2VzL2xhdGVzdA==' },
+    { name: 'Wireguard', minVer: 'Stable', source: 'Official Website', b64Url: 'aHR0cHM6Ly93d3cud2lyZWd1YXJkLmNvbS9pbnN0YWxsLw==' },
+    { name: 'WG Tunnel', minVer: '5.1.0', source: 'Github', b64Url: 'aHR0cHM6Ly9naXRodWIuY29tL3dndHVubmVsL2FuZHJvaWQvcmVsZWFzZXMvbGF0ZXN0' },
+];
 
 let kvSettings: KvSettings = {
     localDNS: '8.8.8.8',

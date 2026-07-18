@@ -1,6 +1,6 @@
-const proxyForm = document.getElementById('configForm');
 const defaultHttpsPorts = [443, 8443, 2053, 2083, 2087, 2096];
 const defaultHttpPorts = [80, 8080, 8880, 2052, 2082, 2086, 2095];
+const proxyForm = document.getElementById('configForm');
 const [
     selectElements,
     numInputElements,
@@ -19,7 +19,7 @@ getUsage();
 initPanel();
 fetchIPInfo();
 
-async function initPanel(settings, tgSettings, subscriptions) {
+async function initPanel(settings, tgSettings, subscriptions, clients) {
     try {
         if (!settings) {
             const nocache = Date.now();
@@ -39,10 +39,11 @@ async function initPanel(settings, tgSettings, subscriptions) {
             settings = body.proxySettings;
             tgSettings = body.telegramSettings;
             subscriptions = body.subscriptions;
+            clients = body.clients;
             checkVersion(settings.panelVersion);
         }
 
-        renderPanel(settings, tgSettings, subscriptions);
+        renderPanel(settings, tgSettings, subscriptions, clients);
     } catch (error) {
         console.error('Panel initiation error:', error);
     }
@@ -116,7 +117,7 @@ function isNewerVersion(latest, current) {
     return false;
 }
 
-function renderPanel(proxySettings, tgSettings, subscriptions) {
+function renderPanel(proxySettings, tgSettings, subscriptions, clients) {
     const {
         securePath,
         ports,
@@ -130,11 +131,6 @@ function renderPanel(proxySettings, tgSettings, subscriptions) {
             window.location.href = `../${path}/panel`;
         }, 1000);
     }
-
-    Object.assign(globalThis, {
-        activeTlsPorts: ports.filter(port => defaultHttpsPorts.includes(port)),
-        xrayNoiseCount: xrayUdpNoises.length
-    });
 
     const dohUrl = new URL(`./dns-query`, window.location.href);
     document.getElementById('doh').textContent = dohUrl.href;
@@ -157,9 +153,10 @@ function renderPanel(proxySettings, tgSettings, subscriptions) {
         });
     });
 
-    renderPortsBlock(ports.map(Number));
-    renderUdpNoiseBlock(xrayUdpNoises);
+    renderPorts(ports.map(Number));
+    renderNoises(xrayUdpNoises);
     renderSubscriptions(subscriptions);
+    renderClients(clients);
 
     globalThis.initialFormData = new FormData(proxyForm);
     handleProxyFormChanges();
@@ -451,23 +448,6 @@ async function renewWarpAccounts(btn) {
         notify('error', 'Renew Warp Accounts', ['Failed to renew Warp accounts.']);
     } finally {
         stopWaiting(icons);
-    }
-}
-
-function handlePortChange(event) {
-    const portField = Number(event.target.name);
-    if (event.target.checked) {
-        globalThis.activeTlsPorts.push(portField);
-        return true;
-    }
-
-    globalThis.activeTlsPorts = globalThis.activeTlsPorts.filter(port => port !== portField);
-    if (globalThis.activeTlsPorts.length === 0) {
-        event.preventDefault();
-        event.target.checked = !event.target.checked;
-        notify('error', 'Port selection', ['At least one TLS port should be selected.']);
-        globalThis.activeTlsPorts.push(portField);
-        return false;
     }
 }
 
@@ -813,45 +793,42 @@ function resetPassword(event) {
         .catch(error => console.error('Reset password error:', error));
 }
 
-function generateUdpNoise(mode, packet) {
+function genNoisePacket(mode, packet) {
     switch (mode.value) {
         case 'base64':
-            packet.value = generateRandomBase64(32, 64);
+            packet.value = randBase64(32, 64);
             break;
-
         case 'rand':
             packet.value = '50-100';
             break;
-
         case 'hex':
-            packet.value = generateRandomHex(32, 64);
+            packet.value = randHex(32, 64);
             break;
-
+        case 'array':
+            packet.value = randArray(32, 64);
+            break;
         case 'str': {
             const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-            packet.value = generateRandomStr(charset, 32, 64);
-            break;
+            packet.value = randString(charset, 32, 64);
         }
-
-        case 'array':
-            packet.value = generateRandomArray(32, 64);
     }
+
+    handleProxyFormChanges();
 }
 
-function generateUUID() {
+function randUUID() {
     const uuid = document.getElementById('vlUUID');
     uuid.value = crypto.randomUUID();
     handleProxyFormChanges();
 }
 
-function generateRandomStr(charset, minLen, maxLen) {
-    const length = Math.floor(Math.random() * (maxLen - minLen + 1)) + minLen;
-    return Array.from(crypto.getRandomValues(new Uint8Array(length)))
+function randString(charset, minLen, maxLen) {
+    return [...randBytes(minLen, maxLen)]
         .map(byte => charset[byte % charset.length])
         .join('');
 }
 
-function generateRandomArray(minLen, maxLen) {
+function randArray(minLen, maxLen) {
     const length = Math.floor(Math.random() * (maxLen - minLen + 1)) + minLen;
     const array = Array.from({ length }, () => Math.floor(Math.random() * 256));
     const field = array.map(String).join(',');
@@ -859,35 +836,35 @@ function generateRandomArray(minLen, maxLen) {
     return field;
 }
 
-function generateRandomBase64(minLen, maxLen) {
-    const length = Math.floor(Math.random() * (maxLen - minLen + 1)) + minLen;
-    const array = new Uint8Array(Math.ceil(length * 3 / 4));
+function randBytes(minBytes, maxBytes) {
+    const bytes = Math.floor(Math.random() * (maxBytes - minBytes + 1)) + minBytes;
+    const array = new Uint8Array(bytes);
     crypto.getRandomValues(array);
-    let base64 = btoa(String.fromCharCode(...array));
 
-    return base64.slice(0, length);
+    return array;
 }
 
-function generateRandomHex(minLen, maxLen) {
-    const length = Math.floor(Math.random() * (maxLen - minLen + 1)) + minLen;
-    const array = new Uint8Array(Math.ceil(length / 2));
-    crypto.getRandomValues(array);
-    let hex = [...array].map(b => b.toString(16).padStart(2, '0')).join('');
-
-    return hex.slice(0, length);
+function randHex(minBytes, maxBytes) {
+    return [...randBytes(minBytes, maxBytes)]
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
 }
 
-function generatePassword() {
+function randBase64(minBytes, maxBytes) {
+    return btoa(String.fromCharCode(...randBytes(minBytes, maxBytes)));
+}
+
+function randPassword() {
     const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@$&*_-+;:,.';
     const trPass = document.getElementById('trPass');
-    trPass.value = generateRandomStr(charset, 16, 32);
+    trPass.value = randString(charset, 16, 32);
     handleProxyFormChanges();
 }
 
-function generatePath() {
+function randPath() {
     const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
     const securePath = document.getElementById('securePath');
-    securePath.value = generateRandomStr(charset, 16, 32);
+    securePath.value = randString(charset, 16, 32);
     handleProxyFormChanges();
 }
 
@@ -1027,73 +1004,19 @@ function createFormControl(labelText, action) {
     return control;
 }
 
-function renderPortsBlock(ports) {
-    let noneTlsPortsBlock = document.createDocumentFragment();
-    let tlsPortsBlock = document.createDocumentFragment();
-
-    const totalPorts = [
-        ...(window.origin.includes('workers.dev') ? defaultHttpPorts : []),
-        ...defaultHttpsPorts
-    ];
-
-    totalPorts.forEach(port => {
-        const isChecked = ports.includes(port);
-        const isHttpsPort = defaultHttpsPorts.includes(port);
-
-        const checkbox = elm('input', {
-            type: 'checkbox',
-            name: String(port),
-            value: 'true',
-            checked: isChecked
-        });
-
-        if (isHttpsPort) {
-            checkbox.className = 'https';
-            checkbox.addEventListener('click', handlePortChange);
-        }
-
-        const label = elm('span', { textContent: String(port) });
-        const wrapper = elm('div', { className: 'checkbox-wrapper' }, [checkbox, label]);
-
-        if (isHttpsPort) {
-            tlsPortsBlock.appendChild(wrapper);
-        } else {
-            noneTlsPortsBlock.appendChild(wrapper);
-        }
-    });
-
-    const tlsContainer = document.getElementById('tls-ports');
-    tlsContainer.innerHTML = '';
-    tlsContainer.appendChild(tlsPortsBlock);
-
-    const nonTlsContainer = document.getElementById('non-tls-ports');
-    if (noneTlsPortsBlock.childElementCount > 0) {
-        nonTlsContainer.innerHTML = '';
-        nonTlsContainer.appendChild(noneTlsPortsBlock);
-        document.getElementById('none-tls').style.display = 'flex';
-    }
-}
-
-function renderUdpNoiseBlock(xrayUdpNoises) {
-    document.getElementById('noises').innerHTML = '';
-    xrayUdpNoises.forEach((noise, index) => {
-        addUdpNoise(false, index, noise);
-    });
-
-    globalThis.xrayNoiseCount = xrayUdpNoises.length;
-}
-
-async function deleteUdpNoise(event) {
+async function deleteNoise(event) {
     const confirm = await notify('confirm', 'Delete UDP noise', ['Are you sure?']);
     if (!confirm) return;
 
     event.target.closest('.inner-container').remove();
     handleProxyFormChanges();
-    globalThis.xrayNoiseCount--;
 }
 
-function addUdpNoise(isManual, noiseIndex, udpNoise) {
-    const index = noiseIndex ?? globalThis.xrayNoiseCount;
+function addNoise(isManual, noiseIndex, udpNoise) {
+    const index = noiseIndex
+        ? noiseIndex
+        : document.getElementById('noises').childElementCount;
+
     const noise = udpNoise || {
         type: 'rand',
         packet: '50-100',
@@ -1108,7 +1031,7 @@ function addUdpNoise(isManual, noiseIndex, udpNoise) {
         const deleteBtn = elm('button', {
             type: 'button',
             className: 'delete-noise',
-            onclick: deleteUdpNoise
+            onclick: deleteNoise
         }, createIcon('delete'));
         headerDiv.appendChild(deleteBtn);
     }
@@ -1133,7 +1056,7 @@ function addUdpNoise(isManual, noiseIndex, udpNoise) {
     packetControl.querySelector('div').appendChild(packetInput);
     const generateBtn = packetControl.querySelector('.material-symbols-rounded');
 
-    modeSelect.onchange = generateBtn.onclick = () => generateUdpNoise(modeSelect, packetInput);
+    modeSelect.onchange = generateBtn.onclick = () => genNoisePacket(modeSelect, packetInput);
 
     const countInput = elm('input', {
         type: 'number', name: 'udpXrayNoiseCount', value: String(noise.count), min: '1', required: true
@@ -1149,11 +1072,59 @@ function addUdpNoise(isManual, noiseIndex, udpNoise) {
     delayControl.querySelector('div').appendChild(minMaxDiv);
 
     const section = elm('div', { className: 'section' }, [modeControl, packetControl, countControl, delayControl]);
-    const container = elm('div', { className: 'inner-container', id: `udp-noise-${index + 1}` }, [headerDiv, section]);
+    const container = elm('div', { className: 'inner-container' }, [headerDiv, section]);
 
     document.getElementById('noises').append(container);
-    if (isManual) handleProxyFormChanges();
-    globalThis.xrayNoiseCount++;
+    if (isManual) handleProxyFormChanges(true);
+}
+
+function renderPorts(ports) {
+    let noneTlsPortsBlock = document.createDocumentFragment();
+    let tlsPortsBlock = document.createDocumentFragment();
+
+    const totalPorts = [
+        ...(window.origin.includes('workers.dev') ? defaultHttpPorts : []),
+        ...defaultHttpsPorts
+    ];
+
+    totalPorts.forEach(port => {
+        const isChecked = ports.includes(port);
+        const isHttpsPort = defaultHttpsPorts.includes(port);
+
+        const checkbox = elm('input', {
+            type: 'checkbox',
+            name: String(port),
+            value: 'true',
+            checked: isChecked
+        });
+
+        const label = elm('span', { textContent: String(port) });
+        const wrapper = elm('div', { className: 'checkbox-wrapper' }, [checkbox, label]);
+
+        if (isHttpsPort) {
+            tlsPortsBlock.appendChild(wrapper);
+        } else {
+            noneTlsPortsBlock.appendChild(wrapper);
+        }
+    });
+
+    const tlsContainer = document.getElementById('tls-ports');
+    tlsContainer.innerHTML = '';
+    tlsContainer.appendChild(tlsPortsBlock);
+
+    const nonTlsContainer = document.getElementById('non-tls-ports');
+    if (noneTlsPortsBlock.childElementCount > 0) {
+        nonTlsContainer.innerHTML = '';
+        nonTlsContainer.appendChild(noneTlsPortsBlock);
+        document.getElementById('none-tls').style.display = 'flex';
+    }
+}
+
+function renderNoises(xrayUdpNoises) {
+    document.getElementById('noises').innerHTML = '';
+    xrayUdpNoises.forEach((noise, index) => {
+        addNoise(false, index, noise);
+    });
 }
 
 function renderSubscriptions(subscriptions) {
@@ -1200,4 +1171,24 @@ function renderSubscriptions(subscriptions) {
         const item = elm('div', { className: 'accordion-item' }, [section, help]);
         document.getElementById('subscriptions').appendChild(item);
     };
+}
+
+function renderClients(clients) {
+    if (!clients) return;
+    clients.forEach(client => {
+        const name = elm('td', { scope: 'col', textContent: client.name });
+        const minVer = elm('td', { scope: 'col', textContent: client.minVer });
+
+        const source = elm('span', { textContent: client.source });
+        const dlBtn = elm('a', {
+            href: atob(client.b64Url),
+            target: '_blank',
+            rel: 'noopener noreferrer'
+        }, createIcon('download'));
+        const download = elm('td', {}, [source, dlBtn]);
+
+        const row = elm('tr', {}, [name, minVer, download])
+
+        document.getElementById('supported-clients').appendChild(row);
+    });
 }

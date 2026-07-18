@@ -1,6 +1,7 @@
 import { PanelSettings } from '#types/settings';
-import { isDomain, isIPv4, isIPv4CIDR, isIPv6, isIPv6CIDR, isValidUrl } from '@utils';
+import { isBase64, isDomain, isHex, isIPv4, isIPv4CIDR, isIPv6, isIPv6CIDR, isValidUrl } from '@utils';
 import { isValidUUID } from '@common';
+import { getGlobals } from '@settings';
 
 export interface ValidationError {
     field: string;
@@ -8,6 +9,7 @@ export interface ValidationError {
 }
 
 const validators = [
+    validatePorts,
     validateRemoteDNS,
     validateSanctionDns,
     validateLocalDNS,
@@ -398,8 +400,7 @@ function validateXrayNoises(form: PanelSettings, errors: ValidationError[]) {
 
         switch (type) {
             case 'base64': {
-                const regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
-                if (!regex.test(packet)) {
+                if (!isBase64(packet)) {
                     errors.push({
                         field: 'Xray Noise Packet',
                         message: ['The packet is not a valid base64 value!']
@@ -427,8 +428,7 @@ function validateXrayNoises(form: PanelSettings, errors: ValidationError[]) {
                 break;
             }
             case 'hex': {
-                const regex = /^(?=(?:[0-9A-Fa-f]{2})*$)[0-9A-Fa-f]+$/;
-                if (!regex.test(packet)) {
+                if (!isHex(packet)) {
                     errors.push({
                         field: 'Xray Noise Packet',
                         message: [
@@ -564,7 +564,7 @@ function validateExtSubs(form: PanelSettings, errors: ValidationError[]) {
 }
 
 function validateRemoteSettings(form: PanelSettings, errors: ValidationError[]) {
-    if(!form.remoteSettings) return;
+    if (!form.remoteSettings) return;
     let url;
 
     try {
@@ -580,10 +580,22 @@ function validateRemoteSettings(form: PanelSettings, errors: ValidationError[]) 
 
     const path = url.pathname.split('/').slice(2).join('/');
 
-    if(path !== 'sub/share-settings') {
+    if (path !== 'sub/share-settings') {
         errors.push({
             field: 'Remote Settings URL',
             message: ['This is not a valid BPB remote settings URL']
+        });
+    }
+}
+
+function validatePorts(form: PanelSettings, errors: ValidationError[]) {
+    const { httpsPorts } = getGlobals();
+    const tlsPorts = form.ports.filter(port => httpsPorts.includes(port));
+    
+    if (!tlsPorts.length) {
+        errors.push({
+            field: 'Ports',
+            message: ['At least one TLS port should be selected.']
         });
     }
 }

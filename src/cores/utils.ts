@@ -178,6 +178,10 @@ export function isBase64(str: string): boolean {
     return /^[A-Za-z0-9+/=\r\n]+$/.test(str);
 }
 
+export function isHex(str: string): boolean {
+    return /^(?=(?:[0-9A-Fa-f]{2})*$)[0-9A-Fa-f]+$/.test(str);
+}
+
 export function getDomain(url: string) {
     try {
         const newUrl = new URL(url);
