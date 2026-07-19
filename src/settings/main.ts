@@ -30,7 +30,7 @@ export async function updateMainSettings(newSettings: PanelSettings | null): Pro
     try {
         const script = await buildScript(false, settings);
         const { deployType } = getSettings();
-        
+
         if (deployType === 'pages') {
             await deployPages(script);
         } else {
@@ -127,7 +127,7 @@ export async function buildScript(upgradePanel: boolean, settings?: MainSettings
     };
 
     const embeded = upgradePanel
-        ? embededSettings
+        ? { EMBEDED_SETTINGS: embededSettings }
         : { ...embededContents, EMBEDED_SETTINGS: embededSettings };
 
     const buildTimestamp = new Date().toISOString();
