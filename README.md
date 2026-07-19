@@ -42,7 +42,7 @@ This project is aimed to provide a user panel to access FREE, SECURE, PRIVATE pr
 
 ## Getting started
 
-- [Installation methods](https://bia-pain-bache.github.io/BPB-Worker-Panel/installation/wizard/)
+- [Installation methods](https://bia-pain-bache.github.io/BPB-Worker-Panel/wizard/)
 - [Configuration](https://bia-pain-bache.github.io/BPB-Worker-Panel/configuration/)
 - [How to use](https://bia-pain-bache.github.io/BPB-Worker-Panel/usage/)
 - [FAQ](https://bia-pain-bache.github.io/BPB-Worker-Panel/faq/)
