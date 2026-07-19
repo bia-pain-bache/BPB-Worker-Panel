@@ -3,8 +3,8 @@
 To simplify the setup process and prevent user mistakes during installation, the [BPB Wizard](https://github.com/bia-pain-bache/BPB-Wizard) project was launched which provides online and CLI installations. It supports both Workers and Pages methods and just takes a few seconds to install panel!
 
 <p align="center" style="display:flex; align-items: flex-start; justify-content: center; gap: 20px;">
-  <img src="../../assets/images/wizard-web.jpg" width="400" alt="wizard-web" />
-  <img src="../../assets/images/wizard-cli.jpg" width="400" alt="wizard-cli" />
+  <img src="/BPB-Worker-Panel/images/wizard-web.jpg" width="400" alt="wizard-web" />
+  <img src="/BPB-Worker-Panel/images/wizard-cli.jpg" width="400" alt="wizard-cli" />
 </p>
 
 ## 1. Cloudflare account
