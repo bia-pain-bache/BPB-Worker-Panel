@@ -3,8 +3,8 @@
 برای ساده‌تر کردن فرآیند راه‌اندازی و جلوگیری از اشتباهات کاربرها، پروژه [BPB Wizard](https://github.com/bia-pain-bache/BPB-Wizard) در دو نسخه تحت وب و ترمینال برای سیستم‌عامل‌های مختلف راه‌اندازی شده. این ابزار از هر دو روش Workers و Pages پشتیبانی می‌کنه و فقط چند ثانیه زمان می‌بره تا پنل رو نصب کنه.
 
 <p align="center" style="display:flex; align-items: flex-start; justify-content: center; gap: 20px;">
-  <img src="/images/wizard-web.jpg" width="400" alt="wizard-web" />
-  <img src="/images/wizard-cli.jpg" width="400" alt="wizard-cli" />
+  <img src="../../assets/images/wizard-web.jpg" width="400" alt="wizard-web" />
+  <img src="../../assets/images/wizard-cli.jpg" width="400" alt="wizard-cli" />
 </p>
 
 ## ۱. حساب Cloudflare
