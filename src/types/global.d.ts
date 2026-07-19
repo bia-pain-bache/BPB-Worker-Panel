@@ -4,6 +4,8 @@ declare global {
     interface Env {
         readonly CF_PAGES: string;
         readonly kv: KVNamespace;
+        readonly UUID?: string;
+        readonly TR_PASS?: string;
     }
 
     const SOURCE_CONTENT: string;
@@ -25,6 +27,7 @@ declare global {
     const _project_: string;
     const _project_SM_: string;
     const _repo_: string;
+    const _wizard_repo_: string;
     const _website_: string;
     const _public_proxy_ip_: string;
 

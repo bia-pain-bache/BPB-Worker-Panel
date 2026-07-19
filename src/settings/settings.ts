@@ -22,11 +22,16 @@ Object.assign(globalThis, {
     _project_: atob('QlBC'),
     _project_SM_: atob('YnBi'),
     _repo_: atob('aHR0cHM6Ly9naXRodWIuY29tL2JpYS1wYWluLWJhY2hlL0JQQi1Xb3JrZXItUGFuZWw='),
+    _wizard_repo_: atob('aHR0cHM6Ly9naXRodWIuY29tL2JpYS1wYWluLWJhY2hlL0JQQi1XaXphcmQ='),
     _website_: atob('aHR0cHM6Ly9iaWEtcGFpbi1iYWNoZS5naXRodWIuaW8vQlBCLVdvcmtlci1QYW5lbC8='),
-    _public_proxy_ip_: atob('YnBiLnlvdXNlZi5pc2VnYXJvLmNvbQ==')
+    _public_proxy_ip_: atob('YnBiLnlvdXNlZi5pc2VnYXJvLmNvbQ=='),
 });
 
 export function init(request: Request, env: Env) {
+    if(env.UUID || env.TR_PASS || typeof EMBEDED_SETTINGS === 'undefined') {
+        throw new Error(`BPB Panel v5 can only be installed using <a href="${_wizard_repo_}/secrets" target="_blank">BPB Wizard v3</a> or later.`);
+    }
+    
     const { pathname, origin, searchParams, hostname } = new URL(request.url);
     globalSettings = {
         accID: EMBEDED_SETTINGS.accID,
