@@ -70,4 +70,20 @@
 
     [:octicons-arrow-right-24: شروع](doh.md)
 
+- :material-playlist-check:{ .lg .middle } **IP من**
+
+    ---
+
+    برای چک کردن IP پروکسی بعد از اتصال و تاثیر Proxy IP.
+
+    [:octicons-arrow-right-24: شروع](my-ip.md)
+
+- :material-playlist-check:{ .lg .middle } **برنامه‌های پشتیبانی‌شده**
+
+    ---
+
+    چهت مشاهده حداقل نسخه‌های مورد تایید و دانلود آخرین نسخه برنامه‌ها.
+
+    [:octicons-arrow-right-24: شروع](supported-clients.md)
+
 </div>

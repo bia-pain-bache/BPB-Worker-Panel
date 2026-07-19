@@ -69,4 +69,20 @@ First, update your client to the latest version or refer to the table below. The
 
     [:octicons-arrow-right-24: Getting started](doh.md)
 
+- :material-playlist-check:{ .lg .middle } **My IP**
+
+    ---
+
+    Check your IP with and without Proxy IP.
+
+    [:octicons-arrow-right-24: Getting started](my-ip.md)
+
+- :material-playlist-check:{ .lg .middle } **Supported Clients**
+
+    ---
+
+    Check minimum requirements and download latest versions.
+
+    [:octicons-arrow-right-24: Getting started](supported-clients.md)
+
 </div>
