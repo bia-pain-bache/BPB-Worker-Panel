@@ -1,7 +1,5 @@
 # :material-cog-outline:{ .md .middle } قوانین مسیریابی یا Routing Rules
 
-![Routing Rules](../images/routing-rules.jpg)
-
 ## قوانین از پیش تعریف‌شده
 
 با استفاده از قوانین مسیریابی از پیش تعریف‌شده، می‌تونید این تنظیمات رو برای کانفیگ‌ها اعمال کنید:

@@ -21,20 +21,22 @@
     tcp://8.8.8.8  
     ```
 
-??? question "Why configs connect in v2rayNG and not Streisand for example?"
+??? question "Why configs connect using v2rayNG and not Streisand for example?"
     BPB tries adapting new cores' features ASAP, meanwhile some developers just upgrade cores to the latest version regardless of full features adaption and optimizations. So you should communicate such issues with their own developers.
 
 ??? question "Why Fragment configs speed is slow on my ISP?"
     Each ISP has its own prefered Fragment settings. Most are fine with the panel defaults, but these values may work well on yours. You may need to change Fragment profile to `Medium`, `High` or even manually change settings in `Custom` profile to achieve better results. Also MahsaNG is recommended to connect to fragment configs.
 
-??? question "I extracted and used a Proxy IP according to tutorials, why some sites or applications like X still won't work!"  
-    There are many public IPs and some of them might be unstable. You need to test to find a good one.  
+??? question "Why some websites or applications like X and ChatGPT are not working well?"  
+    There are many public porxy IPs and some of them might be unstable. You need to test to find a good one from panel.
+
+    Also disable IPv6 if your ISP does not provide it.  
 
 ??? question "It worked when I set a proxy IP, but now it's not working!"
     If you use a single IP, it may stop working after some time and many sites won’t open. You need to redo the steps. Preferably, if you're not doing anything that needs a static IP, just use the panel default and don't use a single proxy IP.  
 
 ??? question "Why do I get an error when I go to the `panel/` address?"
-    Follow the installation guide or use **Wizard**; KV, UUID or Trojan password are not properly configured.  
+    You can only install BPB using BPB Wizard and save panel address immediately. If you lost it install another one.  
 
 ??? question "I deployed it but Cloudflare returns error 1101!"
     Your Cloudflare account has likely been flagged. Create a new Cloudflare account with an official email like Gmail and. Also, make sure the project name doesn't include the word "bpb".  
@@ -46,29 +48,23 @@
 ??? question "Why I can't see non-TLS ports in panel?"
     To use non-TLS configs, you must deploy via Workers method and without a custom domain.  
 
-??? question "Why doesn’t the Best Fragment config connect or work properly?"
+??? question "Why doesn’t the Smart Fragment config connect or work properly?"
     Turn off `Prefer IPv6` in settings.  
 
 ??? question "Why don't Telegram calls or Clubhouse work?"
-    Cloudflare can't properly handle the UDP traffic. There is currently no effective solution. Use Warp configs instead.  
-
-??? question "Why won't ChatGPT open?"
-    Because the panel's default proxy IPs are public and many might appear suspicious to ChatGPT. Set a single clean Proxy IP according to instructions or enable the `Bypass ChatGPT` option in the routing section of the panel.  
+    Cloudflare can't properly handle the UDP traffic. There is currently no effective solution. Use Warp configs instead.
 
 ??? question "I forgot the panel password. What should I do?"
     Go to your Cloudflare dashboard, find the KV created for Worker or Pages, click view, go to the KV Pairs section. In the table, you’ll see a `pwd` key — the value next to it is your password.  
 
-??? question "What happens if I don’t change the UUID and Trojan password?"
-    From version 2.7.7 onward, setting these two parameters is mandatory and the panel won’t run without them.  
-
-??? question "I used the Pages upload method but I get a 404."
-    Cloudflare takes about 4–5 minutes to register Pages domains. Give it time, refresh, and it should work.  
+??? question "I used the Pages method but I get a 404."
+    Cloudflare takes a few seconds to register Pages domains. Give it time, refresh, and it should work.  
 
 ??? question "Why doesn’t the panel show the Block Ads checkbox?"
     Extensions like `uBlock`, `AdGuard` or even some browsers with built-in ad-block settings, can hide it. Disable them for the panel.
 
 ??? question "Why wizard is detected as Virus in windows?"
-    The wizard app lacks `Code signing certificate` and has to download worker.js on you PC, customize it and deploy to Cloudflare which is a suspicious behaviour to Anti Viruses, known as Trojan/Downloader. So you have to temporarily disable Windows defender or any other Anti Virus program.
+    The wizard app lacks `Code signing certificate` and this is common across Go applications known as False Positive. So you have to temporarily disable Windows defender or any other Anti Virus program.
 
 ??? question "Why v2rayN cannot ping test configs?"
     Right now v2rayN is experiencing some issues with custom configs and BPB panel configs are all custom. No worries, just enable config and use it. You also have Best Ping config in all subscriptions which connects to best IP automatically, so you don't need to test all configs everytime.

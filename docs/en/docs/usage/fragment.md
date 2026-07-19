@@ -1,7 +1,5 @@
 # :material-playlist-check:{ .md .middle } Fragment subscription
 
-![Fragment subscription](../images/fragment-sub.jpg)
-
 !!! tip "**Benefits of Fragment configs**"
     - Maintains connectivity even if the Custom Domain or Worker domain is blocked by the ISP.
     - Enhances stability and speed across all ISPs, particularly those experiencing disruptions with Cloudflare.

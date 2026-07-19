@@ -1,7 +1,5 @@
 # :material-playlist-check:{ .md .middle } Raw subscription
 
-![Raw subscription](../images/raw-sub.jpg)
-
 The **Normal** subscription is strongly recommended over this subscription, as it automatically applies all panel settings without requiring manual configuration. Note that almost all of panel settings are not applied to this subscription and must be configured manually in the client.
 
 !!! warning
@@ -18,3 +16,5 @@ The **Normal** subscription is strongly recommended over this subscription, as i
     ```title="TCP"
     tcp://8.8.8.8  
     ```
+!!! warning
+    Disable Mux on v2ray clients.

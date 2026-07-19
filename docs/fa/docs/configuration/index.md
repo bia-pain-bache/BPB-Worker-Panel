@@ -8,6 +8,22 @@
 
 <div class="grid cards" markdown> 
 
+- :material-cog-outline:{ .lg .middle } __تنظیمات مدیریت__
+
+    ---
+
+    بروزرسانی یا حذف پنل و تغییر رمز عبور.
+
+    [:octicons-arrow-right-24: شروع](admin.md)
+
+- :material-cog-outline:{ .lg .middle } __بات تلگرام__
+
+    ---
+
+    اضافه کردن بات تلگرام به پنل.
+
+    [:octicons-arrow-right-24: شروع](telegram-bot.md)
+
 - :material-cog-outline:{ .lg .middle } __تنظیمات مشترک یا Common__
 
     ---
@@ -63,5 +79,13 @@
     قوانین مسیریابی رو برای دور زدن وب‌سایت‌های محلی، بلاک تبلیغات، بلاک محتوای ناخواسته و غیره اضافه کنید.
 
     [:octicons-arrow-right-24: شروع](routing-rules.md)
+
+- :material-cog-outline:{ .lg .middle } __بارگذاری و به اشتراک‌گذاری تنظیمات__
+
+    ---
+
+    بارگذاری و به اشتراک‌گذاری تنظیمات از طریق فایل و لینک.
+
+    [:octicons-arrow-right-24: شروع](import-export.md)
 
 </div>

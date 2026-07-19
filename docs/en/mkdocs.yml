@@ -76,12 +76,11 @@ plugins:
 
 nav:
   - Home: index.md
-  - Installation:
-    - Wizard: installation/wizard.md
-    - Manual - Pages: installation/pages-manual.md
-    - Manual - Workers: installation/workers-manual.md
+  - Installation: wizard.md
   - Configuration:
     - configuration/index.md
+    - Admin: configuration/admin.md
+    - Telegram Bot: configuration/telegram-bot.md
     - Common: configuration/common.md
     - VLESS - Trojan: configuration/vless-trojan.md 
     - Fragment: configuration/fragment.md
@@ -89,6 +88,7 @@ nav:
     - Warp General: configuration/warp.md
     - Warp PRO: configuration/warp-pro.md
     - Routing rules: configuration/routing-rules.md
+    - Import - Export: configuration/import-export.md
   - Usage:
     - usage/index.md
     - Normal: usage/normal.md

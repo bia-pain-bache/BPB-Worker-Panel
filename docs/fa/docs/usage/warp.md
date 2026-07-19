@@ -1,7 +1,5 @@
 # :material-playlist-check:{ .md .middle } اشتراک‌ Warp
 
-![Warp subscriptions](../images/warp-sub.jpg)
-
 این اشتراک شامل موارد زیره:
 
 * کانفیگ **Warp** با IPهای نود از IPهای Cloudflare منطقه شما.

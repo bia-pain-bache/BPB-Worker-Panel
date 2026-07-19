@@ -2,19 +2,21 @@
 
 قبل از هر چیز برنامه خودتون رو به آخرین نسخه بروزرسانی کنید و یا به جدول زیر مراجعه کنید. اینها برنامه‌های تست شده و معتبر برای استفاده از BPB هستن و پشتیبانی میشن، میتونید با مسئولیت خودتون از برنامه‌های دیگه استفاده کنید.
 
-|       Client        |      Version      | پشتیبانی از Fragment | پشتیبانی از Warp Pro |
-| :-----------------: | :---------------: | :------------------: | :------------------: |
-|     **v2rayNG**     | 1.10.11 یا بالاتر |   :material-check:   |   :material-check:   |
-|     **MahsaNG**     |   14 یا بالاتر    |   :material-check:   |   :material-check:   |
-|     **v2rayN**      | 7.14.6 یا بالاتر  |   :material-check:   |   :material-check:   |
-|   **v2rayN-PRO**    |   1.9 یا بالاتر   |   :material-check:   |   :material-check:   |
-|    **Sing-box**     | 1.11.2 یا بالاتر  |   :material-close:   |   :material-close:   |
-|    **Streisand**    | 1.6.60 یا بالاتر  |   :material-check:   |   :material-check:   |
-|   **Clash Meta**    |                   |   :material-close:   |   :material-check:   |
-| **Clash Verge Rev** |                   |   :material-close:   |   :material-check:   |
-|     **FLClash**     |                   |   :material-close:   |   :material-check:   |
-|   **AmneziaVPN**    |                   |   :material-close:   |   :material-check:   |
-|    **WG Tunnel**    |                   |   :material-close:   |   :material-check:   |
+|       برنامه        | حداقل نسخه | پشتیبانی از Fragment | پشتیبانی از Warp Pro |
+| :-----------------: | :--------: | :------------------: | :------------------: |
+|     **v2rayNG**     |   2.2.3    |  :heavy_check_mark:  |  :heavy_check_mark:  |
+|     **MahsaNG**     |     16     |  :heavy_check_mark:  |  :heavy_check_mark:  |
+|     **v2rayN**      |   7.22.5   |  :heavy_check_mark:  |  :heavy_check_mark:  |
+|    **Streisand**    |   1.6.71   |  :heavy_check_mark:  |  :heavy_check_mark:  |
+|    **Sing-box**     |   1.12.0   |  :heavy_check_mark:  |         :x:          |
+|      **husi**       |   1.3.2    |  :heavy_check_mark:  |         :x:          |
+|   **Clash Meta**    |            |         :x:          |  :heavy_check_mark:  |
+| **Clash Verge Rev** |            |         :x:          |  :heavy_check_mark:  |
+|     **FLClash**     |            |         :x:          |  :heavy_check_mark:  |
+|    **Wireguard**    |            |         :x:          |         :x:          |
+|   **AmneziaVPN**    |            |         :x:          |  :heavy_check_mark:  |
+|    **WG Tunnel**    |            |         :x:          |  :heavy_check_mark:  |
+
 
 از طرف دیگه، اشتراک‌های **Warp** و **Warp Pro** که کانفیگ‌های **WireGuard** ارائه می‌دن، نیاز به اسکن Endpoints دارن. می‌تونید به [این راهنما](../configuration/warp.md) مراجعه کنید تا یاد بگیرید چطور Endpoint رو اسکن کنید.
 

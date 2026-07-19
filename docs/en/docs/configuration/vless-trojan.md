@@ -1,6 +1,12 @@
 # :material-cog-outline:{ .md .middle } VLESS and Trojan settings
 
-![VLESS and Trojan settings](../images/vless-trojan-settings.jpg)
+## VLESS UUID
+
+The UUID is used for VLESS configs. Changing it will disconnect all of users.
+
+## Trojan Password
+
+This is used for Trojan connection. Changing it will disconnect all of users.
 
 ## Remote DNS
 
@@ -94,17 +100,6 @@ By default, **Best** configs test every 30 seconds to identify the optimal confi
 
 If your device supports TCP Fast Open and your ISP does not interfere with TFO, you can enable the feature to enhance your connections. Please note that Linux users have to enable TFO before activating this feature.
 
-## ECH (Encrypted Client Hello)
-
-As you may know there are several techniques to obfuscate connection SNI to bypass firewall. Fragment hides SNI, Custom domain changes SNI and finally ECH can change SNI to Cloudflare default ECH domain. The problem is that Cloudflare uses a default domain named `cloudflare-ech.com` for all CDN and Worker domains, so the blockage is easy for ISPs. This option will not be activated on `Fragment` subscription.
-
-### ECH Server Name
-
-If you leave this field empty, the ECH config will be queried from your worker domain. however, if your worker domain is blocked, you can use another domains which have enabled ECH on Cloudflare CDN. To check this, visit [here](https://dns.google/query?name=&rr_type=HTTPS&ecs=) and resolve your desired domain, you should see an `ech` value in `Answer` field.
-
-!!! warning
-    Please note that `ECH Server Name` option is available in Xray for a while, however sing-box supports this feature from 1.13.0 and Clash supports it from v1.19.20. So if your client doesn't meet these versions, please leave it empty.
-
 ## Proxy IP
 
 ### Mode
@@ -118,7 +113,7 @@ You can change the Proxy IP via the panel by applying the change and updating th
 !!! note
     Changing the Proxy IP via the panel requires updating the subscription if the IP stops working. This can disrupt donated configs, as users without an active subscription cannot update them. Use this method only for personal usage. Other methods don’t require subscription updates.
 
-You can check available Proxy IPs by clicking the icon beside this field in panel or visiting `/proxy-ip` in browser, which lists IPs by region and ISP.
+You can check available Proxy IPs by clicking the icon beside this field in panel or visiting `/proxy-ip` in browser, which lists IPs by region and ISP and you can test tcp latency (from worker to ip).
 
 !!! info
     To use multiple Proxy IPs, fill in them below each other.
@@ -134,6 +129,17 @@ You can find available NAT64 Prefixes [in here](https://github.com/bia-pain-bach
 
 !!! info
     To use multiple Prefixes, fill them in below each other.
+
+## ECH (Encrypted Client Hello)
+
+As you may know there are several techniques to obfuscate connection SNI to bypass firewall. Fragment hides SNI, Custom domain changes SNI and finally ECH can change SNI to Cloudflare default ECH domain. The problem is that Cloudflare uses a default domain named `cloudflare-ech.com` for all CDN and Worker domains, so the blockage is easy for ISPs. This option will not be activated on `Fragment` subscription.
+
+### ECH Server Name
+
+If you leave this field empty, the ECH config will be queried from your worker domain. however, if your worker domain is blocked, you can use another domains which have enabled ECH on Cloudflare CDN. To check this, visit [here](https://dns.google/query?name=&rr_type=HTTPS&ecs=) and resolve your desired domain, you should see an `ech` value in `Answer` field.
+
+!!! warning
+    Please note that `ECH Server Name` option is available in Xray for a while, however sing-box supports this feature from 1.13.0 and Clash supports it from v1.19.20. So if your client doesn't meet these versions, please leave it empty.
 
 ## Custom CDN
 

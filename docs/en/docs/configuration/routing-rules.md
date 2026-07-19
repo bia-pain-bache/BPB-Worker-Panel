@@ -1,7 +1,5 @@
 # :material-cog-outline:{ .md .middle } Routing Rules
 
-![Routing Rules](../images/routing-rules.jpg)
-
 ## Predefined rules
 
 Using predefined routing rules, you can apply these settings to configs:

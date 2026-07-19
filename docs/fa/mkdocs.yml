@@ -76,12 +76,11 @@ plugins:
 
 nav:
   - خانه: index.md
-  - راه‌اندازی:
-    - خودکار: installation/wizard.md
-    - Pages دستی: installation/pages-manual.md
-    - Workers دستی: installation/workers-manual.md
+  - راه‌اندازی: wizard.md
   - راهنمای تنظیمات:
     - configuration/index.md
+    - تنظیمات Admin: configuration/admin.md
+    - بات تلگرام: configuration/telegram-bot.md
     - تنظیمات مشترک یا Common: configuration/common.md 
     - پروتکل‌های VLESS و Trojan: configuration/vless-trojan.md 
     - تنظیمات Fragment: configuration/fragment.md
@@ -89,6 +88,7 @@ nav:
     - تنظیمات عمومی Warp: configuration/warp.md
     - تنظیمات Warp PRO: configuration/warp-pro.md
     - قوانین مسیریابی یا Routing Rules: configuration/routing-rules.md
+    - بارگذاری و به اشتراک‌گذاری تنظیمات: configuration/import-export.md
   - نحوه‌ی استفاده: 
     - usage/index.md
     - اشتراک Normal: usage/normal.md

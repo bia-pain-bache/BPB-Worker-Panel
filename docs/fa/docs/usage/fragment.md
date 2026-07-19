@@ -1,7 +1,5 @@
 # :material-playlist-check:{ .md .middle } اشتراک Fragment
 
-![Fragment subscription](../images/fragment-sub.jpg)
-
 !!! tip "**مزایای کانفیگ‌های Fragment**"
     - حتی اگه دامنه اختصاصی یا دامنه Worker توسط ISP فیلتر بشه، بازم وصل می‌شه.
     - پایداری و سرعت رو برای همه اپراتورها، به‌خصوص اونایی که با Cloudflare مشکل دارن، بهبود می‌ده.

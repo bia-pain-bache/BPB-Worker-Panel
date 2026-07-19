@@ -2,8 +2,6 @@
 
 This section applies exclusively to the **Warp Pro** subscription, as detailed [here](../usage/warp-pro.md).  
 
-![Warp Pro settings](../images/warp-pro-settings.jpg)
-
 ## Definitions
 
 Several common terms are used across all implementations of Warp noise (fake packets). Most cores, including **Xray**, **Xray Knocker**, and **Amnezia**, share at least two parameters:
