@@ -79,7 +79,7 @@ nav:
   - راه‌اندازی: wizard.md
   - راهنمای تنظیمات:
     - configuration/index.md
-    - تنظیمات Admin: configuration/admin.md
+    - تنظیمات Admin: configuration/admin-settings.md
     - بات تلگرام: configuration/telegram-bot.md
     - تنظیمات مشترک یا Common: configuration/common.md 
     - پروتکل‌های VLESS و Trojan: configuration/vless-trojan.md 

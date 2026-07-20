@@ -79,7 +79,7 @@ nav:
   - Installation: wizard.md
   - Configuration:
     - configuration/index.md
-    - Admin: configuration/admin.md
+    - Admin: configuration/admin-settings.md
     - Telegram Bot: configuration/telegram-bot.md
     - Common: configuration/common.md
     - VLESS - Trojan: configuration/vless-trojan.md 

@@ -14,7 +14,7 @@
 
     Update panel, Delete panel or reset panel password.
 
-    [:octicons-arrow-right-24: Getting started](admin.md)
+    [:octicons-arrow-right-24: Getting started](admin-settings.md)
 
 - :material-cog-outline:{ .lg .middle } __Telegram Bot__
 

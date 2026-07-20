@@ -14,7 +14,7 @@
 
     بروزرسانی یا حذف پنل و تغییر رمز عبور.
 
-    [:octicons-arrow-right-24: شروع](admin.md)
+    [:octicons-arrow-right-24: شروع](admin-settings.md)
 
 - :material-cog-outline:{ .lg .middle } __بات تلگرام__
 
