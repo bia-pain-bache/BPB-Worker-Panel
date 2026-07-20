@@ -1,0 +1,8 @@
+name = "bpb-panel"
+main = "dist/worker.js"
+compatibility_date = "2026-07-20"
+
+workers_dev = true
+
+[observability]
+enabled = true
