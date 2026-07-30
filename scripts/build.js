@@ -77,7 +77,16 @@ async function buildWorker() {
     });
 
     console.log(`${success} Worker built successfuly!`);
+    // 新增：输出源码版（未压缩）
+    mkdirSync(DIST_PATH, { recursive: true });
+    writeFileSync(
+        join(DIST_PATH, 'worker.source.js'),
+        code.outputFiles[0].text,
+        'utf8'
+    );
 
+    console.log(`${success} Worker source exported!`);
+    
     const { code: script } = await jsMinify(code.outputFiles[0].text, {
         module: true,
         output: {
@@ -104,14 +113,13 @@ async function buildWorker() {
 
     const worker = `Object.assign(globalThis, ${JSON.stringify(embededContents)});${script}`;
 
-    mkdirSync(DIST_PATH, { recursive: true });
-    writeFileSync('./dist/worker.js', worker, 'utf8');
-
+    writeFileSync(
+        join(DIST_PATH, 'worker.js'),
+        worker,
+        'utf8'
+    );
     console.log(`${success} Done!`);
 }
 
-buildWorker().catch(err => {
-    console.error(`${failure} Build failed:`, err);
-    process.exit(1);
-});
+);
 
