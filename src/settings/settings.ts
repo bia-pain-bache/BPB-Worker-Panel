@@ -165,6 +165,221 @@ export const subscriptions: Subscription = {
     }
 };
 
+/**
+ * One-click import strategy per client app, per device OS.
+ *
+ * Central source of truth shared by the panel and (in future) the Telegram
+ * bot. Two independent facts are recorded per client:
+ *
+ * 1. platforms - the OSes the app actually ships on. If the visitor's
+ *    device is not in this list the app cannot be installed here at all, so
+ *    the panel only copies the link (and says why) instead of firing a dead
+ *    scheme.
+ * 2. How to import on the OSes it does run on:
+ *    - schemes[os] - a URL scheme that OS build registers with the system.
+ *      An empty string means "this build has no working deep link" and falls
+ *      back to copy. {url} is the plain subscription URL, {enc} its
+ *      percent-encoded form, {b64} its base64, and {name} the encoded name.
+ *    - scheme - shorthand for "same scheme on every listed platform".
+ *    - fileImport - the app has no scheme; instead download the config
+ *      archive and let the user open a config file from it.
+ *
+ * A client with a platform but no scheme and no fileImport falls back to
+ * copy, which is correct for apps that only accept a pasted URL (v2rayN).
+ *
+ * What may be handed to a scheme depends on the row body:
+ * - uriList marks importers that can parse a plain base64 URI list (the
+ *   body of the raw rows).
+ * - profile marks importers that consume the structured profile served by
+ *   the normal/fragment/warp/warp-pro rows (xray JSON, sing-box JSON or
+ *   Clash YAML for their own core).
+ * A scheme is only fired when the app is known to parse the body the row
+ * will serve. husi, for example, is a sing-box client whose feed parser
+ * only reads URI lists; it therefore receives the raw endpoint even when
+ * listed on a JSON row, and never a JSON body.
+ *
+ * Scheme collisions: several apps register the same scheme (Hiddify claims
+ * v2rayng/clashmeta/sing-box everywhere it runs; FlClash registers
+ * clashmeta too; MahsaNG shares v2rayng with its upstream). The OS may pick
+ * a co-installed app, which can still import the same link - the browser
+ * copies the plain link first, so nothing is lost. A scheme alias is only
+ * used where it is actually exclusive (husi, karing, stash, flclash,
+ * clash-verge, sn, sub, streisand).
+ *
+ * Every entry below was verified against the app's own source (Android
+ * manifests, Info.plist / tauri.conf.json / runtime protocol registration)
+ * or its store listing.
+ */
+type ClientOSType = 'android' | 'ios' | 'windows' | 'linux' | 'macos';
+
+interface ClientLinkStrategy {
+    platforms: ClientOSType[];
+    schemes?: Partial<Record<ClientOSType, string>>;
+    scheme?: string;
+    fileImport?: boolean;
+    uriList?: boolean;
+    profile?: boolean;
+}
+
+const ANDROID_ONLY: ClientOSType[] = ['android'];
+const DESKTOP: ClientOSType[] = ['windows', 'linux', 'macos'];
+const APPLE: ClientOSType[] = ['ios', 'macos'];
+const EVERY_OS: ClientOSType[] = ['android', 'ios', 'windows', 'linux', 'macos'];
+
+export const clientLinks: Record<string, ClientLinkStrategy> = {
+    // Xray-core Android client. AndroidManifest registers scheme v2rayng
+    // with host install-sub, so the subscription imports in one tap. Its
+    // importer base64-decodes the body and parses it line by line, so it
+    // handles the raw URI-list rows as well as the Xray profile rows.
+    // Note: Hiddify's manifest also claims v2rayng (Android/Windows/Linux),
+    // so a co-installed Hiddify may grab the tap - the scheme is not
+    // exclusive, but either app importing the same link is acceptable.
+    'v2rayNG': {
+        platforms: ANDROID_ONLY,
+        scheme: 'v2rayng://install-sub?url={enc}',
+        uriList: true,
+        profile: true
+    },
+    // A v2rayNG fork - same package-level intent filter, same scheme, and
+    // subject to the same Hiddify interception note as v2rayNG.
+    'MahsaNG': {
+        platforms: ANDROID_ONLY,
+        scheme: 'v2rayng://install-sub?url={enc}',
+        uriList: true,
+        profile: true
+    },
+    // Desktop Xray GUI (Windows/Linux/macOS). Its v2rayn:// constant is an
+    // internal export format only - the app never registers an OS protocol
+    // handler, so there is nothing to fire. Copy the URL for pasting.
+    'v2rayN': { platforms: DESKTOP },
+    // Desktop Xray-knocker (Warp Pro) build of the same app.
+    'v2rayN-PRO': { platforms: DESKTOP },
+
+    // iOS/iPadOS only (no Mac build on its App Store listing). Its URL
+    // scheme handler imports a remote subscription via
+    // streisand://import/<url>.
+    'Streisand': {
+        platforms: ['ios'],
+        scheme: 'streisand://import/{url}',
+        profile: true
+    },
+    // iOS/iPadOS + Apple silicon Macs. sub:// takes the base64 of the
+    // subscription URL itself, and its importer reads a base64 URI list.
+    'Shadowrocket': {
+        platforms: APPLE,
+        scheme: 'sub://{b64}',
+        uriList: true
+    },
+    // OpenWrt router package - configured from the router's web UI, not
+    // from a phone or desktop app, so there is never a scheme to fire.
+    'PassWall': { platforms: [] },
+
+    // Multi-platform sing-box GUI. Registers hiddify/v2ray/v2rayn/v2rayng/
+    // clash/clashmeta/sing-box on Android and macOS, and writes the same
+    // handlers into the Windows registry and Linux desktop mime types at
+    // first run. Its hiddify://install-config handler honors a name param
+    // (falls back to the link fragment).
+    'Hiddify': {
+        platforms: EVERY_OS,
+        scheme: 'hiddify://install-config?url={enc}&name={name}',
+        uriList: true,
+        profile: true
+    },
+
+    // sing-box official clients: SFA (Android), SFI (iOS), SFM (macOS) all
+    // register sing-box://import-remote-profile. The scheme is also claimed
+    // by Hiddify (and Karing on desktop), so a co-installed app may take
+    // the tap and import the same link.
+    'sing-box': {
+        platforms: ['android', 'ios', 'macos'],
+        scheme: 'sing-box://import-remote-profile?url={url}',
+        profile: true
+    },
+    // Android sing-box client. Use its husi://subscription scheme and pass
+    // name explicitly: its parser prefers the name query param and would
+    // otherwise fall back to "Subscription #<epoch millis>" (it never reads
+    // the URL fragment). Its feed parser only splits per-line proxy URIs,
+    // so it is served the raw endpoint even on JSON rows; profile is
+    // intentionally left unset so it never receives a JSON body.
+    'husi': {
+        platforms: ANDROID_ONLY,
+        scheme: 'husi://subscription?url={enc}&name={name}',
+        uriList: true
+    },
+    // Android sing-box client. Its sibling NekoRay shares the sn:// scheme,
+    // and it also registers clash://install-config (contested by Clash
+    // Meta, Hiddify and FlClash), so sn://subscription is the narrowest
+    // link it has. importSubscription() reads url and name from it; pass
+    // name explicitly because, like husi, it never reads the fragment.
+    'NekoBox': {
+        platforms: ANDROID_ONLY,
+        scheme: 'sn://subscription?url={enc}&name={name}',
+        uriList: true
+    },
+    // Flutter sing-box GUI. On Android/iOS/macOS it registers its own
+    // karing scheme and its handler accepts install-config plus a name
+    // param. Windows and Linux builds ship without any protocol
+    // registration (verified: empty Inno [Registry] section, no
+    // x-scheme-handler in the deb packaging), so those OSes fall back.
+    'Karing': {
+        platforms: ['android', 'ios', 'windows', 'linux', 'macos'],
+        schemes: { windows: '', linux: '' },
+        scheme: 'karing://install-config?url={enc}&name={name}',
+        uriList: true,
+        profile: true
+    },
+
+    // Clash Meta for Android - manifest registers clash/clashmeta with host
+    // install-config. clashmeta is NOT exclusive: FlClash registers it on
+    // Android/macOS/Windows and Hiddify on every OS, so a co-installed app
+    // may take the tap (and can import the same link).
+    'Clash Meta': {
+        platforms: ANDROID_ONLY,
+        scheme: 'clashmeta://install-config?url={enc}',
+        profile: true
+    },
+    // Tauri desktop app; tauri.conf.json declares desktop schemes
+    // ["clash", "clash-verge"]; scheme.rs accepts url and name params
+    // (Linux also registers via xdg-mime at first run).
+    'Clash Verge': {
+        platforms: DESKTOP,
+        scheme: 'clash-verge://install-config?url={enc}&name={name}',
+        profile: true
+    },
+    'Clash verge rev': {
+        platforms: DESKTOP,
+        scheme: 'clash-verge://install-config?url={enc}&name={name}',
+        profile: true
+    },
+    // Flutter ClashMeta GUI on Android + desktop (no iOS build). Registers
+    // clash/clashmeta/flclash in its manifest, macOS Info.plist and Windows
+    // registry at runtime; use the exclusive flclash alias so a
+    // co-installed Clash app cannot intercept the tap (it also claims
+    // clashmeta, see above). Linux builds ship no scheme registration.
+    'FlClash': {
+        platforms: ['android', 'windows', 'linux', 'macos'],
+        schemes: { linux: '' },
+        scheme: 'flclash://install-config?url={enc}',
+        profile: true
+    },
+    // iOS/iPadOS/tvOS/macOS Clash client. Its FAQ lists both
+    // stash://install-config?url= and the shared clash:// form; use the
+    // exclusive one so a co-installed Clash client cannot intercept it.
+    'Stash': {
+        platforms: APPLE,
+        scheme: 'stash://install-config?url={enc}',
+        profile: true
+    },
+
+    // WireGuard-family: no remote-subscription scheme on any OS. The sub
+    // endpoint serves a ZIP archive of .conf files (one per warp endpoint),
+    // so the one-click downloads the archive and the user opens a .conf in
+    // the app - not a literal single-file import.
+    'Wireguard': { platforms: EVERY_OS, fileImport: true },
+    'WG Tunnel': { platforms: ANDROID_ONLY, fileImport: true },
+    'Amnezia': { platforms: EVERY_OS, fileImport: true },
+};
+
 export const clients: Client[] = [
     { name: `${_V2_}NG`, minVer: '2.2.3', source: 'Github', b64Url: 'aHR0cHM6Ly9naXRodWIuY29tLzJkdXN0L3YycmF5TkcvcmVsZWFzZXMvbGF0ZXN0' },
     { name: `${_V2_}N`, minVer: '7.22.5', source: 'Github', b64Url: 'aHR0cHM6Ly9naXRodWIuY29tLzJkdXN0L3YycmF5Ti9yZWxlYXNlcy9sYXRlc3Q=' },

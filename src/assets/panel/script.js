@@ -19,7 +19,7 @@ getUsage();
 initPanel();
 fetchIPInfo();
 
-async function initPanel(settings, tgSettings, subscriptions, clients) {
+async function initPanel(settings, tgSettings, subscriptions, clients, clientLinks) {
     try {
         if (!settings) {
             const nocache = Date.now();
@@ -40,10 +40,11 @@ async function initPanel(settings, tgSettings, subscriptions, clients) {
             tgSettings = body.telegramSettings;
             subscriptions = body.subscriptions;
             clients = body.clients;
+            clientLinks = body.clientLinks;
             checkVersion(settings.panelVersion);
         }
 
-        renderPanel(settings, tgSettings, subscriptions, clients);
+        renderPanel(settings, tgSettings, subscriptions, clients, clientLinks);
     } catch (error) {
         console.error('Panel initiation error:', error);
     }
@@ -117,7 +118,8 @@ function isNewerVersion(latest, current) {
     return false;
 }
 
-function renderPanel(proxySettings, tgSettings, subscriptions, clients) {
+function renderPanel(proxySettings, tgSettings, subscriptions, clients, clientLinks) {
+    if (clientLinks) globalThis.clientLinkMap = clientLinks;
     const {
         securePath,
         ports,
@@ -276,6 +278,194 @@ function generateSubUrl(type, core, tag) {
     return url.href;
 }
 
+// Detect the user's OS so we can build the right one-tap link for this device.
+let currentOS = detectOS();
+
+function detectOS() {
+    const ua = navigator.userAgent || '';
+    if (/android/i.test(ua)) return 'android';
+    if (/ipad|iphone|ipod/i.test(ua)) return 'ios';
+
+    // iPadOS 13+ hides the "iPad" token in desktop-class browsing and
+    // impersonates a Macintosh; iPads still report multi-touch and no
+    // MacBook/iMac does, so a Mac-class UA with touch points means iPad.
+    if ((/mac os x|macintosh/i.test(ua)) && navigator.maxTouchPoints > 1) return 'ios';
+
+    if (/mac os x|macintosh/i.test(ua)) return 'macos';
+    if (/windows/i.test(ua)) return 'windows';
+    if (/linux|cros/i.test(ua)) return 'linux';
+    return 'windows'; // safest default keeps the copy fallback available
+}
+
+// Human-readable OS names for the "this app isn't available here" message.
+const OS_LABELS = {
+    android: 'Android',
+    ios: 'iOS',
+    windows: 'Windows',
+    linux: 'Linux',
+    macos: 'macOS'
+};
+
+// Resolve the strategy for a displayed client name. The map is keyed by the
+// canonical app names, but a subscription row can show a combined label —
+// `v2rayN(G)` covers two separate apps: v2rayNG on Android and v2rayN on
+// desktop. Pick the one that exists on this device, so the row behaves as
+// that app would; if neither matches, fall back to the desktop entry so the
+// unavailable-here message still names a real app.
+function resolveClientLink(client, os) {
+    const map = globalThis.clientLinkMap;
+    if (!map) return undefined;
+
+    if (client === 'v2rayN(G)' || client === 'v2rayNG(G)') {
+        const mobile = map['v2rayNG'];
+        const desktop = map['v2rayN'];
+        if (mobile && mobile.platforms?.includes(os)) return mobile;
+        return desktop || mobile;
+    }
+
+    return map[client];
+}
+
+// Canonical app name for toasts/UI when the row label is a composite
+// (v2rayN(G) → v2rayNG on Android, v2rayN on desktop).
+function resolveClientName(client, os) {
+    if (client === 'v2rayN(G)' || client === 'v2rayNG(G)') {
+        const map = globalThis.clientLinkMap;
+        if (map?.['v2rayNG']?.platforms?.includes(os)) return 'v2rayNG';
+        return 'v2rayN';
+    }
+    return client;
+}
+
+// btoa requires a Latin1 string. URL.href is normally already percent-encoded
+// ASCII, but if any engine leaves raw Unicode in the string we fall back to a
+// UTF-8 → binary path so Shadowrocket's sub://{b64} import cannot throw.
+function toBase64(str) {
+    try {
+        return btoa(str);
+    } catch {
+        return btoa(unescape(encodeURIComponent(str)));
+    }
+}
+
+// Build the one-click action for a client app on the current device.
+//
+// Returns one of:
+//   { action: 'scheme',      url }  — fire the app's URL scheme; it imports.
+//   { action: 'download',    url }  — download the config for the app to open.
+//   { action: 'copy',        url }  — app runs here but only accepts a paste.
+//   { action: 'unavailable', url, platforms } — app doesn't run on this OS.
+function buildClientLink(os, type, core, client, label) {
+    const strategy = resolveClientLink(client, os);
+
+    // Plain HTTP(S) subscription URL that the client can fetch directly.
+    // Importers that read a name use the {name} template placeholder; the
+    // rest title the group from the URL's #fragment.
+    // husi only parses URI-list feeds, so even on a JSON-profile row its
+    // one-click (and its copy fallback) must point at the raw endpoint.
+    const subType = type !== 'raw' && strategy?.uriList && !strategy?.profile ? 'raw' : type;
+    const subUrl = new URL(`./sub/${subType}`, window.location.href);
+    subUrl.searchParams.append('app', core);
+    subUrl.hash = `\u{1F4A6} BPB ${label}`;
+    const plainUrl = subUrl.href;
+
+    // Unknown client, or one with no build for this device: there is no app
+    // here to hand the subscription to, so copying is the only honest action.
+    if (!strategy) return { action: 'copy', url: plainUrl, plain: plainUrl };
+    if (!strategy.platforms?.includes(os)) {
+        return { action: 'unavailable', url: plainUrl, plain: plainUrl, platforms: strategy.platforms || [] };
+    }
+
+    // The app is installed-able here. Prefer its own import mechanism.
+    // raw rows serve a base64 URI list; the other rows serve a structured
+    // profile (xray JSON, sing-box JSON, Clash YAML). A scheme is only fired
+    // for a body the app is known to parse: uriList for raw rows, profile
+    // for the structured rows. An empty per-OS scheme entry
+    // (schemes[os] = '') means that build registers no working deep link,
+    // so the panel copies instead of firing a dead scheme.
+    const template = strategy.schemes?.[os] ?? strategy.scheme;
+    const canImport = subType === 'raw' ? strategy.uriList : strategy.profile;
+    if (template && canImport) {
+        // Most clients title the subscription from the URL's #fragment.
+        // Those that instead read a name= query param get {name}, without
+        // which they fall back to a generated placeholder like a timestamp.
+        const url = template
+            .replaceAll('{enc}', encodeURIComponent(plainUrl))
+            .replaceAll('{b64}', toBase64(plainUrl))
+            .replaceAll('{url}', plainUrl)
+            .replaceAll('{name}', encodeURIComponent(`\u{1F4A6} BPB ${label}`));
+
+        return { action: 'scheme', url, plain: plainUrl };
+    }
+
+    // WireGuard-family endpoints serve a ZIP archive of .conf files, not a
+    // single importable config - still the closest thing to one tap.
+    if (strategy.fileImport) return { action: 'download', url: plainUrl, plain: plainUrl, archive: true };
+
+    return { action: 'copy', url: plainUrl, plain: plainUrl };
+}
+
+// One-click: add the current subscription to the given client app on this device.
+function oneClickAdd(client, type, core, label) {
+    const { action, url, plain, platforms } = buildClientLink(currentOS, type, core, client, label);
+    // Composite row labels (v2rayN(G)) resolve to the real app name for toasts.
+    const name = resolveClientName(client, currentOS);
+
+    if (action === 'download') {
+        // Notify first: a location-based download can race the toast away
+        // before the user sees the "unpack the ZIP" instructions.
+        notify('info', 'Add to ' + name, [
+            'Downloading the config archive.',
+            'Unpack the ZIP and open one of the .conf files with ' + name + ' to import it.'
+        ]);
+        dlUrl(url);
+        return;
+    }
+
+    if (action === 'scheme') {
+        // Put the plain subscription URL - not the scheme - on the clipboard
+        // first: if the app is not installed (or another app with the same
+        // scheme claims the tap), the user still has the link to paste.
+        copyToClipboard(plain ?? url);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        notify('info', 'Add to ' + name, [
+            name + ' should open and import the subscription.',
+            'If another installed app opened instead, it can import the same link; otherwise paste the copied link into ' + name + '.'
+        ]);
+        return;
+    }
+
+    copyToClipboard(url);
+
+    if (action === 'unavailable') {
+        // The app has no build for this device, so there is no scheme to fire
+        // and nothing useful to open - say so instead of failing silently.
+        const where = (platforms || []).map(os => OS_LABELS[os] || os).join(', ');
+        notify('info', 'Add to ' + name, [
+            'Subscription link copied to your clipboard.',
+            where
+                ? name + ' runs on ' + where + ' - open this link there.'
+                : name + ' is not available on this device.'
+        ]);
+        return;
+    }
+
+    // The app runs here but has no import scheme (v2rayN, for instance):
+    // opening the sub endpoint in a browser would only download the config,
+    // so we deliberately do not open it - the user pastes the link instead.
+    notify('info', 'Add to ' + name, [
+        'Subscription link copied to your clipboard.',
+        'Paste it into ' + name + ' to import the subscription.'
+    ]);
+}
+
 async function generateQRCode(data) {
     const url = new URL('./qrcode', window.location.href);
     url.searchParams.set('data', data);
@@ -323,10 +513,39 @@ function showQRCode(subUrl) {
     });
 }
 
-function copyToClipboard(url) {
-    navigator.clipboard.writeText(url)
-        .then(() => notify('info', 'Copied to clipboard', [url]))
-        .catch(error => console.error('Failed to copy:', error));
+function copyToClipboard(text) {
+    const done = () => notify('info', 'Copied to clipboard', [text]);
+    const fail = (error) => console.error('Failed to copy:', error);
+
+    // Prefer the async Clipboard API; fall back to execCommand for non-secure
+    // contexts (or older browsers) where navigator.clipboard is unavailable.
+    if (navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(() => {
+            if (!fallbackCopy(text)) fail(new Error('clipboard write failed'));
+            else done();
+        });
+        return;
+    }
+
+    if (!fallbackCopy(text)) fail(new Error('clipboard unavailable'));
+    else done();
+}
+
+function fallbackCopy(text) {
+    try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand('copy');
+        ta.remove();
+        return ok;
+    } catch {
+        return false;
+    }
 }
 
 function copyDoh() {
@@ -334,9 +553,20 @@ function copyDoh() {
     copyToClipboard(url);
 }
 
-async function dlUrl(subUrl) {
+// Trigger a same-origin download without navigating the panel away. A hidden
+// <a download> keeps the SPA mounted; Content-Disposition on the response
+// still supplies the real filename for ZIP/JSON configs.
+function dlUrl(subUrl) {
     const url = new URL(subUrl);
-    window.location.href = url.protocol === 'sing-box:' ? url.searchParams.get('url') : subUrl;
+    const href = url.protocol === 'sing-box:' ? url.searchParams.get('url') : String(subUrl);
+    const a = document.createElement('a');
+    a.href = href;
+    a.download = '';
+    a.rel = 'noopener';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
 }
 
 async function exportFileSettings(event) {
@@ -1144,7 +1374,15 @@ function renderSubscriptions(subscriptions) {
             const clientSection = elm('td', {}, clients.map(client => {
                 const icon = createIcon('verified');
                 const title = elm('span', { textContent: client });
-                const wrapper = elm('div', {}, [icon, title]);
+                const addBtn = elm('button', {
+                    type: 'button',
+                    title: `Add to ${client}`,
+                    ariaLabel: `Add to ${client}`,
+                    className: 'client-add',
+                    onclick: () => oneClickAdd(client, type, core, label)
+                }, createIcon('add_circle'));
+                const wrapper = elm('div', {}, [icon, title, addBtn]);
+
                 return wrapper;
             }));
 

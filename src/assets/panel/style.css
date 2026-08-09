@@ -775,6 +775,23 @@ table {
     color: var(--color-brand-hover);
 }
 
+.client-add {
+    background: none;
+    margin: 0;
+    margin-left: 4px;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    color: var(--color-brand-primary);
+    font-size: 16px;
+    transition: scale 200ms ease;
+}
+
+.client-add:hover {
+    scale: 1.2;
+    color: var(--color-brand-hover);
+}
+
 .table-container tbody {
     display: flex;
     flex-direction: column;

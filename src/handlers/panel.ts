@@ -7,7 +7,7 @@ import { resetPassword, logout, authenticate } from '@auth';
 import { decompressGzipBase64, respond, HttpStatus, safeError } from '@common';
 import { getDataset, updateDataset } from '@kv';
 import { buildScript, updateMainSettings } from '@main';
-import { getGlobals, getMainSettings, subscriptions, clients } from '@settings';
+import { getGlobals, getMainSettings, subscriptions, clients, clientLinks } from '@settings';
 import { validateSettings } from '@validators';
 import { fallback } from './utils';
 import { setTelegramBot } from '@api/telegram';
@@ -147,6 +147,7 @@ async function getPanelSettings(request: Request, env: Env): Promise<Response> {
             telegramSettings: telegramBot,
             subscriptions,
             clients,
+            clientLinks,
             isPassSet
         };
 
