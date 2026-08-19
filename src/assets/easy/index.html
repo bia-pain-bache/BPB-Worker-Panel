@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اتصال آسان به اینترنت آزاد | BPB Panel</title>
+    <link id="favicon" rel="icon" type="image/x-icon" href="data:image/x-icon;base64,__ICON__">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=check_circle,content_copy,qr_code,download,bolt,shield,speed,phone_android,phone_iphone,laptop_windows,laptop_mac,open_in_new,help,settings,language,public,refresh,expand_more,arrow_back,info,wifi,sensors,done_all,vpn_key,share,close&display=block" rel="stylesheet" />
+    <style>/* CSS_PLACEHOLDER */</style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-content container">
+            <div class="brand">
+                <img id="header-logo" src="data:image/x-icon;base64,__ICON__" alt="BPB Logo" width="40" height="40">
+                <div>
+                    <h1 class="brand-title">اتصال آسان به اینترنت آزاد</h1>
+                    <span class="brand-subtitle">دریافت سریع و بدون دردسر فیلترشکن</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="./panel" class="btn btn-outline" title="ورود به پنل مدیریت پیشرفته">
+                    <span class="material-symbols-rounded">settings</span>
+                    <span class="desktop-only">پنل پیشرفته ادمین</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container main-content">
+        <!-- Hero Welcome -->
+        <div class="welcome-card">
+            <div class="welcome-badge">
+                <span class="material-symbols-rounded">bolt</span>
+                آموزش ۳ مرحله‌ای اتصال فوق‌سریع
+            </div>
+            <h2 class="welcome-title">فقط در ۳ مرحله به اینترنت آزاد متصل شوید!</h2>
+            <p class="welcome-desc">بدون نیاز به تنظیمات پیچیده؛ دستگاه خود را انتخاب کنید، لینک را کپی کنید و برنامه را روشن کنید.</p>
+        </div>
+
+        <!-- Step 1: Select Platform / App -->
+        <section class="step-card">
+            <div class="step-header">
+                <div class="step-number">۱</div>
+                <div class="step-info">
+                    <h3>گام اول: دستگاه خود را انتخاب و برنامه آن را نصب کنید</h3>
+                    <p>روی سیستم‌عامل دستگاه خود بزنید و یکی از برنامه‌های پیشنهادی را نصب کنید:</p>
+                </div>
+            </div>
+
+            <!-- Platform Selector Tabs -->
+            <div class="platform-tabs" id="platformTabs">
+                <button class="platform-tab active" data-platform="android">
+                    <span class="material-symbols-rounded">phone_android</span>
+                    <span>اندروید</span>
+                </button>
+                <button class="platform-tab" data-platform="ios">
+                    <span class="material-symbols-rounded">phone_iphone</span>
+                    <span>آیفون / آیپد</span>
+                </button>
+                <button class="platform-tab" data-platform="windows">
+                    <span class="material-symbols-rounded">laptop_windows</span>
+                    <span>ویندوز</span>
+                </button>
+                <button class="platform-tab" data-platform="mac">
+                    <span class="material-symbols-rounded">laptop_mac</span>
+                    <span>مک</span>
+                </button>
+            </div>
+
+            <!-- App Recommendations per Platform -->
+            <div class="apps-container" id="appsContainer">
+                <!-- Dynamically populated via JS -->
+            </div>
+        </section>
+
+        <!-- Step 2: Get Connection Link -->
+        <section class="step-card highlight-card">
+            <div class="step-header">
+                <div class="step-number">۲</div>
+                <div class="step-info">
+                    <h3>گام دوم: دریافت لینک اتصال (سابسکریپشن)</h3>
+                    <p>با زدن روی یکی از دکمه‌های زیر، کانفیگ خود را مستقیماً دریافت کنید:</p>
+                </div>
+            </div>
+
+            <!-- Mode Selector (Simple Persian) -->
+            <div class="mode-selection-wrapper">
+                <label class="mode-label">حالت اتصال را انتخاب کنید (پیشنهادی: هوشمند):</label>
+                <div class="mode-buttons" id="modeButtons">
+                    <button class="mode-btn active" data-mode="normal">
+                        <span class="material-symbols-rounded">speed</span>
+                        <div class="mode-text">
+                            <span class="mode-title">⚡ هوشمند و پرسرعت</span>
+                            <span class="mode-subtitle">بهترین حالت برای مصارف روزمره و وب‌گردی</span>
+                        </div>
+                    </button>
+                    <button class="mode-btn" data-mode="fragment">
+                        <span class="material-symbols-rounded">shield</span>
+                        <div class="mode-text">
+                            <span class="mode-title">🛡️ ضد فیلتر قوی (فرگمنت)</span>
+                            <span class="mode-subtitle">مخصوص همراه اول، ایرانسل و زمان‌های اختلال</span>
+                        </div>
+                    </button>
+                    <button class="mode-btn" data-mode="warp">
+                        <span class="material-symbols-rounded">bolt</span>
+                        <div class="mode-text">
+                            <span class="mode-title">🚀 وارپ پلاس (آی‌پی تمیز)</span>
+                            <span class="mode-subtitle">عبور از تحریم و پایداری بالا با IP تمیز</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Primary Action Buttons -->
+            <div class="primary-actions">
+                <button class="btn btn-primary btn-large pulse" id="copySubBtn">
+                    <span class="material-symbols-rounded">content_copy</span>
+                    <span>کپی لینک اتصال (پیشنهادی)</span>
+                </button>
+
+                <button class="btn btn-secondary btn-large" id="directImportBtn">
+                    <span class="material-symbols-rounded">open_in_new</span>
+                    <span>افزودن مستقیم به برنامه (با ۱ کلیک)</span>
+                </button>
+
+                <button class="btn btn-outline-dark btn-large" id="showQrBtn">
+                    <span class="material-symbols-rounded">qr_code</span>
+                    <span>اسکن بارکد (QR Code)</span>
+                </button>
+            </div>
+
+            <!-- Subscription Link Preview -->
+            <div class="link-preview-box">
+                <span class="preview-label">آدرس لینک اتصال شما:</span>
+                <div class="link-input-group">
+                    <input type="text" id="subUrlInput" readonly value="در حال بارگذاری...">
+                    <button class="btn btn-sm btn-icon" id="copyInputBtn" title="کپی آدرس">
+                        <span class="material-symbols-rounded">content_copy</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 3: Quick Visual Tutorial -->
+        <section class="step-card">
+            <div class="step-header">
+                <div class="step-number">۳</div>
+                <div class="step-info">
+                    <h3>گام سوم: اتصال در برنامه (کمتر از ۵ ثانیه)</h3>
+                    <p>راهنمای نحوه اتصال در اپلیکیشن انتخابی شما:</p>
+                </div>
+            </div>
+
+            <div class="guide-steps" id="guideSteps">
+                <div class="guide-item">
+                    <div class="guide-icon">📥</div>
+                    <div class="guide-content">
+                        <h4>۱. وارد کردن لینک در برنامه</h4>
+                        <p id="guideStep1Text">برنامه را باز کرده، دکمه «+» یا «Import from clipboard» را بزنید (یا از دکمه «افزودن مستقیم» استفاده کنید).</p>
+                    </div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-icon">🔄</div>
+                    <div class="guide-content">
+                        <h4>۲. به‌روزرسانی لیست (Update)</h4>
+                        <p id="guideStep2Text">در منوی سه‌نقطه یا بخش Subscription، گزینه «Update subscription» را لمس کنید تا جدیدترین سرورها دریافت شوند.</p>
+                    </div>
+                </div>
+                <div class="guide-item">
+                    <div class="guide-icon">🚀</div>
+                    <div class="guide-content">
+                        <h4>۳. روشن کردن و اتصال!</h4>
+                        <p id="guideStep3Text">یکی از کانفیگ‌ها را انتخاب کرده و دکمه اتصال (دایره بزرگ / کلید Connect) را روشن کنید. اینترنت شما آزاد شد!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Live Connection & IP Status Tester -->
+        <section class="step-card tools-card">
+            <div class="tools-header">
+                <span class="material-symbols-rounded">public</span>
+                <h3>بررسی وضعیت اتصال و اینترنت شما</h3>
+            </div>
+            <p class="tools-desc">آیا مطمئن نیستید فیلترشکن شما متصل است؟ روی دکمه زیر کلیک کنید تا وضعیت IP و اینترنت شما بررسی شود:</p>
+
+            <div class="ip-check-box">
+                <div class="ip-info-row">
+                    <span class="ip-label">وضعیت اتصال:</span>
+                    <span class="ip-value" id="connectionStatus">در انتظار بررسی...</span>
+                </div>
+                <div class="ip-info-row">
+                    <span class="ip-label">آی‌پی فعلی شما:</span>
+                    <span class="ip-value" id="userIp">---</span>
+                </div>
+                <div class="ip-info-row">
+                    <span class="ip-label">کشور و اپراتور (ISP):</span>
+                    <span class="ip-value" id="userLocation">---</span>
+                </div>
+                <button class="btn btn-outline" id="checkIpBtn">
+                    <span class="material-symbols-rounded">refresh</span>
+                    <span>بررسی مجدد وضعیت اتصال</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Troubleshooting FAQ Accordion -->
+        <section class="step-card faq-card">
+            <div class="tools-header">
+                <span class="material-symbols-rounded">help</span>
+                <h3>پرسش‌های متداول و حل مشکل (اگر وصل نشدید)</h3>
+            </div>
+
+            <details class="faq-item">
+                <summary>
+                    <span>❓ اگر اینترنت وصل نشد یا قطع شد چه کنم؟</span>
+                    <span class="material-symbols-rounded expand-icon">expand_more</span>
+                </summary>
+                <div class="faq-answer">
+                    <ol>
+                        <li>در گام دوم حالت اتصال را روی <strong>«🛡️ ضد فیلتر قوی (فرگمنت)»</strong> یا <strong>«وارپ پلاس»</strong> قرار دهید و دوباره لینک را کپی کنید.</li>
+                        <li>در داخل برنامه گزینه Update Subscriptions را بزنید.</li>
+                        <li>یک‌بار حالت پرواز گوشی را روشن و خاموش کنید تا IP اینترنت شما رفرش شود.</li>
+                    </ol>
+                </div>
+            </details>
+
+            <details class="faq-item">
+                <summary>
+                    <span>❓ آیا هر چند وقت یک‌بار باید لینک را آپدیت کنم؟</span>
+                    <span class="material-symbols-rounded expand-icon">expand_more</span>
+                </summary>
+                <div class="faq-answer">
+                    <p>لینک‌های این پنل خودکار (سابسکریپشن) هستند؛ هر زمان حس کردید سرعت افت کرده، کافیست در برنامه خود گزینه «Update Subscription» را لمس کنید تا سرورهای سالم و پرسرعت جدید دریافت شوند.</p>
+                </div>
+            </details>
+
+            <details class="faq-item">
+                <summary>
+                    <span>❓ بهترین برنامه برای گوشی من کدام است؟</span>
+                    <span class="material-symbols-rounded expand-icon">expand_more</span>
+                </summary>
+                <div class="faq-answer">
+                    <p>برای <strong>اندروید</strong> برنامه <code>v2rayNG</code> و <code>Sing-box</code>، برای <strong>آیفون</strong> برنامه <code>Streisand</code> و <code>V2Box</code>، و برای <strong>ویندوز</strong> برنامه <code>v2rayN</code> بهترین عملکرد و ساده‌ترین محیط کاربری را دارند.</p>
+                </div>
+            </details>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer container">
+        <p>پنل اختصاصی BPB • طراحی شده برای سهولت دسترسی همه اقشار جامعه به اینترنت آزاد 🕊️</p>
+    </footer>
+
+    <!-- QR Code Modal -->
+    <div id="qrModal" class="modal" hidden>
+        <div class="modal-backdrop" id="qrModalBackdrop"></div>
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title">اسکن بارکد اتصال (QR Code)</h3>
+                <button class="btn-close" id="closeQrModalBtn" title="بستن">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-desc">دوربین برنامه وی‌پی‌ان گوشی خود را باز کرده و بارکد زیر را اسکن کنید:</p>
+                <div id="qrcodeContainer" class="qrcode-wrapper">
+                    <div class="loader-spinner"></div>
+                </div>
+                <button class="btn btn-primary btn-block" id="modalCopyBtn">
+                    <span class="material-symbols-rounded">content_copy</span>
+                    <span>کپی لینک اتصال</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast" hidden>
+        <span class="material-symbols-rounded toast-icon">check_circle</span>
+        <span class="toast-message" id="toastMessage">لینک کپی شد!</span>
+    </div>
+
+    <script>/* JS_PLACEHOLDER */</script>
+</body>
+
+</html>

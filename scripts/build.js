@@ -99,6 +99,7 @@ async function buildWorker() {
         LOGIN_HTML_CONTENT: htmls['login'],
         ERROR_HTML_CONTENT: htmls['error'],
         PROXY_IP_HTML_CONTENT: htmls['proxy-ip'],
+        EASY_HTML_CONTENT: htmls['easy'],
         ICON_CONTENT: faviconBase64
     };
 
