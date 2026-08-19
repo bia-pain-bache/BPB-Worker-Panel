@@ -123,6 +123,7 @@ export async function buildScript(upgradePanel: boolean, settings?: MainSettings
         LOGIN_HTML_CONTENT,
         ERROR_HTML_CONTENT,
         PROXY_IP_HTML_CONTENT,
+        EASY_HTML_CONTENT,
         ICON_CONTENT
     };
 

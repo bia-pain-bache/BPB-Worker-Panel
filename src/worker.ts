@@ -1,4 +1,5 @@
 import { handleDoH } from '@handlers/doh';
+import { handleEasy } from '@handlers/easy';
 import { renderError } from '@handlers/error';
 import { handleLogin } from '@handlers/login';
 import { handlePanel } from '@handlers/panel';
@@ -24,6 +25,11 @@ export default {
 
 				case `/${securePath}/login`:
 					return handleLogin(request, env);
+
+				case `/${securePath}/easy`:
+				case `/${securePath}/quick`:
+				case `/${securePath}/connect`:
+					return handleEasy(request, env);
 
 				case `/${securePath}/sub`:
 					return handleSubscriptions(request, env);
