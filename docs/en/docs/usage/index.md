@@ -2,19 +2,20 @@
 
 First, update your client to the latest version or refer to the table below. These are the tested and verified clients officially supported by the BPB project. You may use other clients at your own risk.
 
-|       Client        |      Version      | Fragment support | Warp Pro support |
-| :-----------------: | :---------------: | :--------------: | :--------------: |
-|     **v2rayNG**     | 1.10.11 or higher | :material-check: | :material-check: |
-|     **MahsaNG**     |   14 or higher    | :material-check: | :material-check: |
-|     **v2rayN**      | 7.14.6 or higher  | :material-check: | :material-check: |
-|   **v2rayN-PRO**    |   1.9 or higher   | :material-check: | :material-check: |
-|    **Sing-box**     | 1.12.0 or higher  | :material-check: | :material-close: |
-|    **Streisand**    | 1.6.60 or higher  | :material-check: | :material-check: |
-|   **Clash Meta**    |                   | :material-close: | :material-check: |
-| **Clash Verge Rev** |                   | :material-close: | :material-check: |
-|     **FLClash**     |                   | :material-close: | :material-check: |
-|   **AmneziaVPN**    |                   | :material-close: | :material-check: |
-|    **WG Tunnel**    |                   | :material-close: | :material-check: |
+|       Client        | Minimum version |  Fragment support  |  Warp Pro support  |
+| :-----------------: | :-------------: | :----------------: | :----------------: |
+|     **v2rayNG**     |      2.2.3      | :heavy_check_mark: | :heavy_check_mark: |
+|     **MahsaNG**     |       16        | :heavy_check_mark: | :heavy_check_mark: |
+|     **v2rayN**      |     7.22.5      | :heavy_check_mark: | :heavy_check_mark: |
+|    **Streisand**    |     1.6.71      | :heavy_check_mark: | :heavy_check_mark: |
+|    **Sing-box**     |     1.12.0      | :heavy_check_mark: |        :x:         |
+|      **husi**       |      1.3.2      | :heavy_check_mark: |        :x:         |
+|   **Clash Meta**    |                 |        :x:         | :heavy_check_mark: |
+| **Clash Verge Rev** |                 |        :x:         | :heavy_check_mark: |
+|     **FLClash**     |                 |        :x:         | :heavy_check_mark: |
+|    **Wireguard**    |                 |        :x:         |        :x:         |
+|   **AmneziaVPN**    |                 |        :x:         | :heavy_check_mark: |
+|    **WG Tunnel**    |                 |        :x:         | :heavy_check_mark: |
 
 **Warp** and **Warp Pro** subscriptions which provide **WireGuard** configs, need scanning some endpoints first. You can refer to [this guide](../configuration/warp.md) to learn how to scan some endpoints.
 
@@ -67,5 +68,21 @@ First, update your client to the latest version or refer to the table below. The
     Set DoH in your browser or use in DNS based clients like Intra.
 
     [:octicons-arrow-right-24: Getting started](doh.md)
+
+- :material-playlist-check:{ .lg .middle } **My IP**
+
+    ---
+
+    Check your IP with and without Proxy IP.
+
+    [:octicons-arrow-right-24: Getting started](my-ip.md)
+
+- :material-playlist-check:{ .lg .middle } **Supported Clients**
+
+    ---
+
+    Check minimum requirements and download latest versions.
+
+    [:octicons-arrow-right-24: Getting started](supported-clients.md)
 
 </div>

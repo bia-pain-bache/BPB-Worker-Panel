@@ -5,13 +5,8 @@ import { build } from 'esbuild';
 import { globSync } from 'glob';
 import { minify as jsMinify } from 'terser';
 import { minify as htmlMinify } from 'html-minifier';
-import JSZip from "jszip";
-import obfs from 'javascript-obfuscator';
 import pkg from '../package.json' with { type: 'json' };
 import { gzipSync } from 'zlib';
-
-const env = process.env.NODE_ENV || 'mangle';
-const mangleMode = env === 'mangle';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = pathDirname(__filename);
@@ -26,8 +21,6 @@ const reset = '\x1b[0m';
 const success = `${green}✔${reset}`;
 const failure = `${red}✗${reset}`;
 
-const version = pkg.version;
-
 async function processHtmlPages() {
     const indexFiles = globSync('**/index.html', { cwd: ASSET_PATH });
     const result = {};
@@ -37,134 +30,82 @@ async function processHtmlPages() {
         const base = (file) => join(ASSET_PATH, dir, file);
 
         const indexHtml = readFileSync(base('index.html'), 'utf8');
-        let finalHtml = indexHtml.replaceAll('__VERSION__', version);
+        let html = indexHtml.replaceAll('__VERSION__', pkg.version);
 
         if (dir !== 'error') {
-            const styleCode = readFileSync(base('style.css'), 'utf8');
-            const scriptCode = readFileSync(base('script.js'), 'utf8');
-            const finalScriptCode = await jsMinify(scriptCode);
-            finalHtml = finalHtml
-                .replaceAll('__STYLE__', `<style>${styleCode}</style>`)
-                .replaceAll('__SCRIPT__', finalScriptCode.code);
+            const css = readFileSync(base('style.css'), 'utf8');
+
+            const script = readFileSync(base('script.js'), 'utf8');
+            const { code } = await jsMinify(script);
+
+            html = html
+                .replace('/* CSS_PLACEHOLDER */', css)
+                .replace('/* JS_PLACEHOLDER */', code);
         }
 
-        const minifiedHtml = htmlMinify(finalHtml, {
+        const minifiedHtml = htmlMinify(html, {
             collapseWhitespace: true,
             removeAttributeQuotes: true,
             minifyCSS: true
         });
 
-        const compressed = gzipSync(minifiedHtml);
-        const htmlBase64 = compressed.toString('base64');
-        result[dir] = JSON.stringify(htmlBase64);
+        const compressed = gzipSync(minifiedHtml, { level: 9 });
+        result[dir] = compressed.toString('base64');
     }
 
     console.log(`${success} Assets bundled successfuly!`);
     return result;
 }
 
-function generateJunkCode() {
-    const minVars = 50, maxVars = 500;
-    const minFuncs = 50, maxFuncs = 500;
-
-    const varCount = Math.floor(Math.random() * (maxVars - minVars + 1)) + minVars;
-    const funcCount = Math.floor(Math.random() * (maxFuncs - minFuncs + 1)) + minFuncs;
-
-    const junkVars = Array.from({ length: varCount }, (_, i) => {
-        const varName = `__junk_${Math.random().toString(36).substring(2, 10)}_${i}`;
-        const value = Math.floor(Math.random() * 100000);
-        return `let ${varName} = ${value};`;
-    }).join('\n');
-
-    const junkFuncs = Array.from({ length: funcCount }, (_, i) => {
-        const funcName = `__junkFunc_${Math.random().toString(36).substring(2, 10)}_${i}`;
-        return `function ${funcName}() { return ${Math.floor(Math.random() * 1000)}; }`;
-    }).join('\n');
-
-    return `${junkVars}\n${junkFuncs}\n`;
-}
-
 async function buildWorker() {
-
     const htmls = await processHtmlPages();
-    const faviconBuffer = readFileSync('./src/assets/favicon.ico');
-    const faviconBase64 = faviconBuffer.toString('base64');
+    const faviconBase64 = readFileSync('./src/assets/favicon.ico').toString('base64');
 
     const code = await build({
         entryPoints: [join(__dirname, '../src/worker.ts')],
         bundle: true,
         format: 'esm',
         write: false,
-        external: ['cloudflare:sockets'],
+        external: [
+            'cloudflare:sockets',
+            'node:crypto'
+        ],
         platform: 'browser',
         target: 'esnext',
         loader: { '.ts': 'ts' },
-        define: {
-            __PANEL_HTML_CONTENT__: htmls['panel'] ?? '""',
-            __LOGIN_HTML_CONTENT__: htmls['login'] ?? '""',
-            __ERROR_HTML_CONTENT__: htmls['error'] ?? '""',
-            __SECRETS_HTML_CONTENT__: htmls['secrets'] ?? '""',
-            __PROXY_IP_HTML_CONTENT__: htmls['proxy-ip'] ?? '""',
-            __ICON__: JSON.stringify(faviconBase64),
-            __VERSION__: JSON.stringify(version)
-        }
+        define: { VERSION: `"${pkg.version}"` }
     });
 
     console.log(`${success} Worker built successfuly!`);
 
-    const minifyCode = async (code) => {
-        const minified = await jsMinify(code, {
-            module: true,
-            output: {
-                comments: false
-            },
-            compress: {
-                dead_code: false,
-                unused: false
-            }
-        });
+    const { code: script } = await jsMinify(code.outputFiles[0].text, {
+        module: true,
+        output: {
+            comments: false
+        },
+        compress: {
+            dead_code: false,
+            unused: false
+        }
+    });
 
-        console.log(`${success} Worker minified successfuly!`);
-        return minified;
-    }
+    console.log(`${success} Worker minified successfuly!`);
 
-    let finalCode;
+    const base64Gzip = gzipSync(script, { level: 9 }).toString("base64");
 
-    if (mangleMode) {
-        const junkCode = generateJunkCode();
-        const minifiedCode = await minifyCode(junkCode + code.outputFiles[0].text);
-        finalCode = minifiedCode.code;
-    } else {
-        const minifiedCode = await minifyCode(code.outputFiles[0].text);
-        const obfuscationResult = obfs.obfuscate(minifiedCode.code, {
-            stringArrayThreshold: 1,
-            stringArrayEncoding: [
-                "rc4"
-            ],
-            numbersToExpressions: true,
-            transformObjectKeys: true,
-            renameGlobals: true,
-            deadCodeInjection: true,
-            deadCodeInjectionThreshold: 0.2,
-            target: "browser"
-        });
+    const embededContents = {
+        SOURCE_CONTENT: base64Gzip,
+        PANEL_HTML_CONTENT: htmls['panel'],
+        LOGIN_HTML_CONTENT: htmls['login'],
+        ERROR_HTML_CONTENT: htmls['error'],
+        PROXY_IP_HTML_CONTENT: htmls['proxy-ip'],
+        ICON_CONTENT: faviconBase64
+    };
 
-        console.log(`${success} Worker obfuscated successfuly!`);
-        finalCode = obfuscationResult.getObfuscatedCode();
-    }
+    const worker = `Object.assign(globalThis, ${JSON.stringify(embededContents)});${script}`;
 
-    const buildTimestamp = new Date().toISOString();
-    const buildInfo = `// Build: ${buildTimestamp}\n`;
-    const worker = `${buildInfo}// @ts-nocheck\n${finalCode}`;
     mkdirSync(DIST_PATH, { recursive: true });
     writeFileSync('./dist/worker.js', worker, 'utf8');
-
-    const zip = new JSZip();
-    zip.file('_worker.js', worker);
-    zip.generateAsync({
-        type: 'nodebuffer',
-        compression: 'DEFLATE'
-    }).then(nodebuffer => writeFileSync('./dist/worker.zip', nodebuffer));
 
     console.log(`${success} Done!`);
 }

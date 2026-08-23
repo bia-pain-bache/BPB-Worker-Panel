@@ -1,20 +1,20 @@
-import { DokodemoDoorInbound, MixedInbound } from "#types/xray";
+import { DokodemoDoorInbound, MixedInbound } from '#types/xray';
 
 export function buildMixedInbound(
     allowLANConnection: boolean,
     sniffQuic: boolean,
     sniffFakeDNS: boolean
 ): MixedInbound {
-    const destOverride: Array<"http" | "tls" | "quic" | "fakedns"> = ["http", "tls"]
-        .concatIf(sniffQuic, "quic")
-        .concatIf(sniffFakeDNS, "fakedns");
+    const destOverride: Array<'http' | 'tls' | 'quic' | 'fakedns'> = ['http', 'tls']
+        .concatIf(sniffQuic, 'quic')
+        .concatIf(sniffFakeDNS, 'fakedns');
 
     return {
-        listen: allowLANConnection ? "0.0.0.0" : "127.0.0.1",
+        listen: allowLANConnection ? '0.0.0.0' : '127.0.0.1',
         port: 10808,
-        protocol: "mixed",
+        protocol: 'mixed',
         settings: {
-            auth: "noauth",
+            auth: 'noauth',
             udp: true
         },
         sniffing: {
@@ -22,40 +22,40 @@ export function buildMixedInbound(
             enabled: true,
             routeOnly: true
         },
-        tag: "mixed-in"
+        tag: 'mixed-in'
     };
 }
 
 // export function buildTunInbound(sniffQuic: boolean, sniffFakeDNS: boolean): TunInbound {
-//     const destOverride: Array<"http" | "tls" | "quic" | "fakedns"> = ["http", "tls"]
-//         .concatIf(sniffQuic, "quic")
-//         .concatIf(sniffFakeDNS, "fakedns");
+//     const destOverride: Array<'http' | 'tls' | 'quic' | 'fakedns'> = ['http', 'tls']
+//         .concatIf(sniffQuic, 'quic')
+//         .concatIf(sniffFakeDNS, 'fakedns');
 
 //     return {
-//         protocol: "tun",
+//         protocol: 'tun',
 //         settings: {
 //             mtu: 1500,
-//             name: "xray0"
+//             name: 'xray0'
 //         },
 //         sniffing: {
 //             destOverride,
 //             enabled: true,
 //             routeOnly: true
 //         },
-//         tag: "tun"
+//         tag: 'tun'
 //     };
 // }
 
 export function buildDokodemoInbound(allowLANConnection: boolean): DokodemoDoorInbound {
     return {
-        listen: allowLANConnection ? "0.0.0.0" : "127.0.0.1",
+        listen: allowLANConnection ? '0.0.0.0' : '127.0.0.1',
         port: 10853,
-        protocol: "dokodemo-door",
+        protocol: 'dokodemo-door',
         settings: {
-            address: "1.1.1.1",
-            network: "tcp,udp",
+            address: '1.1.1.1',
+            network: 'tcp,udp',
             port: 53
         },
-        tag: "dns-in"
+        tag: 'dns-in'
     };
 }

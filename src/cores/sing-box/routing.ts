@@ -1,40 +1,40 @@
-import { getGeoAssets } from './geo-assets';
-import { accRoutingRules } from '@utils';
 import { Route, RoutingRule, RuleSet } from '#types/sing-box';
+import { getGeoAssets } from './geo-assets';
+import { accRoutingRules, GeoAsset } from '@utils';
+import { getSettings } from '@settings';
 
 export function buildRoutingRules(isWarp: boolean): Route {
-    const { blockUDP443 } = globalThis.settings;
-
+    const { blockUDP443 } = getSettings();
     const rules: RoutingRule[] = [
         {
-            ip_cidr: "172.19.0.2",
-            action: "hijack-dns"
+            ip_cidr: '172.19.0.2',
+            action: 'hijack-dns'
         },
         {
-            clash_mode: "Direct",
-            outbound: "direct"
+            clash_mode: 'Direct',
+            outbound: 'direct'
         },
         {
-            clash_mode: "Global",
-            outbound: "✅ Selector"
+            clash_mode: 'Global',
+            outbound: '✅ Selector'
         },
         {
-            action: "sniff"
+            action: 'sniff'
         },
         {
-            protocol: "dns",
-            action: "hijack-dns"
+            protocol: 'dns',
+            action: 'hijack-dns'
         },
         {
             ip_is_private: true,
-            outbound: "direct"
+            outbound: 'direct'
         }
     ];
 
     if (!isWarp) {
-        addRoutingRule(rules, 'reject', undefined, undefined, undefined, undefined, "udp");
+        addRoutingRule(rules, 'reject', undefined, undefined, undefined, undefined, 'udp');
     } else if (blockUDP443) {
-        addRoutingRule(rules, 'reject', undefined, undefined, undefined, undefined, "udp", "quic", 443);
+        addRoutingRule(rules, 'reject', undefined, undefined, undefined, undefined, 'udp', 'quic', 443);
     }
 
     const geoAssets = getGeoAssets();
@@ -85,7 +85,7 @@ export function buildRoutingRules(isWarp: boolean): Route {
         rules,
         rule_set: ruleSets.omitEmpty(),
         auto_detect_interface: true,
-        final: "✅ Selector"
+        final: '✅ Selector'
     };
 }
 
@@ -96,8 +96,8 @@ function addRoutingRule(
     ip?: string[],
     geosite?: string[],
     geoip?: string[],
-    network?: "tcp" | "udp",
-    protocol?: "http" | "tls" | "quic" | "dns",
+    network?: 'tcp' | 'udp',
+    protocol?: 'http' | 'tls' | 'quic' | 'dns',
     port?: number
 ) {
     rules.push({
@@ -116,11 +116,11 @@ function addRuleSets(ruleSets: RuleSet[], geoAsset: GeoAsset) {
     const { geosite, geositeURL, geoip, geoipURL } = geoAsset;
 
     const addRuleSet = (geo: string, url: string) => ruleSets.push({
-        type: "remote",
+        type: 'remote',
         tag: geo,
-        format: "binary",
+        format: 'binary',
         url,
-        download_detour: "direct"
+        download_detour: 'direct'
     });
 
     if (geosite && geositeURL) addRuleSet(geosite, geositeURL);

@@ -1,6 +1,7 @@
-import { getGeoAssets } from './geo-assets';
 import type { DNS, DnsServer, DnsHosts } from '#types/xray';
+import { getGeoAssets } from './geo-assets';
 import { resolveDNS, isDomain, getDomain, accDnsRules } from '@utils';
+import { getSettings } from '@settings';
 
 export async function buildDNS(
     outboundAddrs: string[],
@@ -18,7 +19,7 @@ export async function buildDNS(
         remoteDnsHost,
         enableIPv6,
         fakeDNS
-    } = globalThis.settings;
+    } = getSettings();
 
     const hosts: DnsHosts = {};
     const servers: DnsServer[] = [];
@@ -43,7 +44,7 @@ export async function buildDNS(
         skipFallback = false;
     }
 
-    const remoteDnsServer = buildDnsServer(finalRemoteDNS, undefined, undefined, undefined, undefined, "remote-dns");
+    const remoteDnsServer = buildDnsServer(finalRemoteDNS, undefined, undefined, undefined, undefined, 'remote-dns');
     servers.push(remoteDnsServer);
 
     const geoAssets = getGeoAssets();
@@ -76,7 +77,7 @@ export async function buildDNS(
     if (sanctionDomains.length) {
         const sanctionDnsServer = buildDnsServer(antiSanctionDNS, sanctionDomains, undefined, skipFallback, true);
         servers.push(sanctionDnsServer);
-        
+
         const { host, isHostDomain } = getDomain(antiSanctionDNS);
         if (isHostDomain) bypassDomains.push(`full:${host}`);
     }
@@ -91,8 +92,8 @@ export async function buildDNS(
 
     if (fakeDNS || isWorkerLess) {
         const fakeDNSServer = fakeDnsDomains.length
-            ? buildDnsServer("fakedns", fakeDnsDomains, undefined, false, undefined)
-            : "fakedns";
+            ? buildDnsServer('fakedns', fakeDnsDomains, undefined, false, undefined)
+            : 'fakedns';
 
         servers.unshift(fakeDNSServer);
     }
@@ -100,8 +101,8 @@ export async function buildDNS(
     return {
         hosts: hosts.omitEmpty(),
         servers,
-        queryStrategy: isWarp && !enableIPv6 ? "UseIPv4" : "UseIP",
-        tag: "dns"
+        queryStrategy: isWarp && !enableIPv6 ? 'UseIPv4' : 'UseIP',
+        tag: 'dns'
     };
 }
 

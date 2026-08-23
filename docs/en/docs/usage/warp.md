@@ -1,7 +1,5 @@
 # :material-playlist-check:{ .md .middle } Warp subscriptions
 
-![Warp subscriptions](../images/warp-sub.jpg)
-
 This subscription includes:
 
 - A **Warp** config, with node IPs from your region’s Cloudflare IPs.

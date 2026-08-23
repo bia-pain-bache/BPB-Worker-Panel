@@ -10,7 +10,7 @@ export enum HttpStatus {
 
 export function base64EncodeUtf8(str: string): string {
     const bytes = new TextEncoder().encode(str);
-    const binary = Array.from(bytes, b => String.fromCharCode(b)).join("");
+    const binary = Array.from(bytes, b => String.fromCharCode(b)).join('');
     return btoa(binary);
 }
 
@@ -18,6 +18,24 @@ export function base64DecodeUtf8(base64: string) {
     return new TextDecoder().decode(
         Uint8Array.from(atob(base64), c => c.charCodeAt(0))
     );
+}
+
+export async function decompressGzipBase64(base64: string): Promise<string> {
+    const binaryStr = atob(base64);
+    const bytes = new Uint8Array(binaryStr.length);
+
+    for (let i = 0; i < binaryStr.length; i++) {
+        bytes[i] = binaryStr.charCodeAt(i);
+    }
+
+    return await new Response(
+        new ReadableStream({
+            start(c) {
+                c.enqueue(bytes);
+                c.close();
+            }
+        }).pipeThrough(new DecompressionStream('gzip'))
+    ).text();
 }
 
 export function isValidUUID(uuid: string): boolean {
@@ -47,7 +65,7 @@ export function respond(
     return new Response(JSON.stringify(responseBody), { status, headers });
 }
 
-export function safeErrorMessage(error: any): string {
+export function safeError(error: any): string {
     return error instanceof Error ? error.message : String(error);
 }
 

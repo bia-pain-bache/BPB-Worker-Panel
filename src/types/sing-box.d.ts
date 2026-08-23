@@ -1,28 +1,28 @@
-export type TransportType = "tcp" | "ws" | "httpupgrade" | "grpc";
-export type ResolveStrategy = "ipv4_only" | "prefer_ipv4";
+export type TransportType = 'tcp' | 'ws' | 'httpupgrade' | 'grpc';
+export type ResolveStrategy = 'ipv4_only' | 'prefer_ipv4';
 export type Protocol =
-    | "http"
-    | "socks"
-    | "shadowsocks"
-    | "vless"
-    | "trojan"
-    | "vmess"
-    | "wireguard"
-    | "selector"
-    | "urltest"
-    | "direct";
+    | 'http'
+    | 'socks'
+    | 'shadowsocks'
+    | 'vless'
+    | 'trojan'
+    | 'vmess'
+    | 'wireguard'
+    | 'selector'
+    | 'urltest'
+    | 'direct';
 
 export type Fingerprint =
-    | "chrome"
-    | "firefox"
-    | "safari"
-    | "ios"
-    | "android"
-    | "edge"
-    | "360"
-    | "qq"
-    | "random"
-    | "randomized";
+    | 'chrome'
+    | 'firefox'
+    | 'safari'
+    | 'ios'
+    | 'android'
+    | 'edge'
+    | '360'
+    | 'qq'
+    | 'random'
+    | 'randomized';
 
 export interface DnsServer {
     type: string;
@@ -39,17 +39,17 @@ export interface DnsServer {
 }
 
 export interface DnsRule {
-    type?: "logical";
-    clash_mode?: "Global" | "Direct";
-    mode?: "and";
+    type?: 'logical';
+    clash_mode?: 'Global' | 'Direct';
+    mode?: 'and';
     rules?: { rule_set: string | string[]; }[];
     rule_set?: string[] | string;
     domain?: string[];
     domain_suffix?: string[];
     ip_accept_any?: true;
     inbound?: string;
-    query_type?: Array<"A" | "AAAA" | "HTTPS">;
-    action?: "route" | "reject";
+    query_type?: Array<'A' | 'AAAA' | 'HTTPS'>;
+    action?: 'route' | 'reject';
     server?: string;
 }
 
@@ -61,18 +61,18 @@ export interface DNS {
 }
 
 export interface TunInbound {
-    type: "tun";
-    tag: "tun-in";
+    type: 'tun';
+    tag: 'tun-in';
     address: string[];
     mtu: 9000;
     auto_route: true;
     strict_route: true;
-    stack: "mixed";
+    stack: 'mixed';
 }
 
 export interface MixedInbound {
-    type: "mixed";
-    tag: "mixed-in";
+    type: 'mixed';
+    tag: 'mixed-in';
     listen: string;
     listen_port: 2080;
 }
@@ -82,18 +82,18 @@ export interface RoutingRule {
     domain_suffix?: string[];
     ip_cidr?: string[] | string;
     ip_is_private?: true;
-    network?: "tcp" | "udp";
-    protocol?: "http" | "tls" | "quic" | "dns";
+    network?: 'tcp' | 'udp';
+    protocol?: 'http' | 'tls' | 'quic' | 'dns';
     port?: number;
-    clash_mode?: "Global" | "Direct";
-    action?: "route" | "reject" | "hijack-dns" | "sniff";
+    clash_mode?: 'Global' | 'Direct';
+    action?: 'route' | 'reject' | 'hijack-dns' | 'sniff';
     outbound?: string;
 }
 
 export interface RuleSet {
-    type: "remote";
+    type: 'remote';
     tag: string;
-    format: "binary";
+    format: 'binary';
     url: string;
     download_detour: string;
 }
@@ -127,31 +127,31 @@ export interface TLS {
 }
 
 export interface HttpTransport {
-    type: "http";
+    type: 'http';
     host?: string[];
     path: string;
-    method: "GET";
+    method: 'GET';
     headers: Record<string, string[]>
 }
 
 export interface WsTransport {
-    type: "ws";
+    type: 'ws';
     path: string;
     headers?: {
         Host?: string;
     };
     max_early_data?: number;
-    early_data_header_name?: "Sec-WebSocket-Protocol";
+    early_data_header_name?: 'Sec-WebSocket-Protocol';
 }
 
 export interface HttpupgradeTransport {
-    type: "httpupgrade";
+    type: 'httpupgrade';
     host?: string;
     path: string;
 }
 
 export interface GrpcTransport {
-    type: "grpc";
+    type: 'grpc';
     service_name?: string;
 }
 
@@ -174,8 +174,8 @@ export interface BaseOutbound {
 export interface SocksOutbound extends BaseOutbound {
     username?: string;
     password?: string;
-    version: "5";
-    network: "tcp";
+    version: '5';
+    network: 'tcp';
 }
 
 export interface HttpOutbound extends BaseOutbound {
@@ -186,44 +186,44 @@ export interface HttpOutbound extends BaseOutbound {
 export interface ShadowsocksOutbound extends BaseOutbound {
     password: string;
     method: string;
-    network: "tcp";
+    network: 'tcp';
 }
 
 export interface TrojanOutbound extends BaseOutbound {
     password: string;
-    network: "tcp";
+    network: 'tcp';
     tls?: TLS;
     transport?: Transport
 }
 
 export interface VlessOutbound extends BaseOutbound {
     uuid: string;
-    flow?: "xtls-rprx-vision";
-    packet_encoding?: "";
-    network: "tcp";
+    flow?: 'xtls-rprx-vision';
+    packet_encoding?: '';
+    network: 'tcp';
     tls?: TLS;
     transport?: Transport
 }
 
 export interface VmessOutbound extends BaseOutbound {
     uuid: string;
-    security: "auto";
+    security: 'auto';
     alter_id: number;
-    packet_encoding?: "";
-    network: "tcp";
+    packet_encoding?: '';
+    network: 'tcp';
     tls?: TLS;
     transport?: Transport
 }
 
 export interface Selector {
-    type: "selector";
+    type: 'selector';
     tag: string;
     outbounds: string[];
     interrupt_exist_connections: false;
 }
 
 export interface URLTest {
-    type: "urltest";
+    type: 'urltest';
     tag: string;
     outbounds: string[];
     url: string;
@@ -250,15 +250,15 @@ interface Peer {
     public_key: string;
     reserved: number[];
     allowed_ips: [
-        "0.0.0.0/0",
-        "::/0"
+        '0.0.0.0/0',
+        '::/0'
     ];
     persistent_keepalive_interval: number;
 }
 
 export interface WireguardEndpoint {
     tag: string;
-    type: "wireguard";
+    type: 'wireguard';
     address: string[];
     mtu: 1280;
     peers: Peer[];
@@ -269,7 +269,7 @@ export interface WireguardEndpoint {
 
 interface Log {
     disabled: boolean;
-    level?: "warn" | "error" | "debug" | "info";
+    level?: 'warn' | 'error' | 'debug' | 'info';
     timestamp: true;
 }
 
@@ -289,10 +289,10 @@ interface Experimental {
     };
     clash_api: {
         external_controller: string;
-        external_ui: "ui";
-        default_mode: "Rule";
+        external_ui: 'ui';
+        default_mode: 'Rule';
         external_ui_download_url: string;
-        external_ui_download_detour: "direct";
+        external_ui_download_detour: 'direct';
     };
 }
 

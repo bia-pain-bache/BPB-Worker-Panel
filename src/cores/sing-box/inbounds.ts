@@ -1,21 +1,23 @@
-import { MixedInbound, TunInbound } from "#types/sing-box";
+import { MixedInbound, TunInbound } from '#types/sing-box';
+import { getSettings } from '@settings';
 
 export const tun: TunInbound = {
-    type: "tun",
-    tag: "tun-in",
-    address: ["172.19.0.1/28"],
+    type: 'tun',
+    tag: 'tun-in',
+    address: ['172.19.0.1/28'],
     mtu: 9000,
     auto_route: true,
     strict_route: true,
-    stack: "mixed"
+    stack: 'mixed'
 }
 
 export function buildMixedInbound(): MixedInbound {
-    const { allowLANConnection } = globalThis.settings;
+    const { allowLANConnection } = getSettings();
+
     return {
-        type: "mixed",
-        tag: "mixed-in",
-        listen: allowLANConnection ? "0.0.0.0" : "127.0.0.1",
+        type: 'mixed',
+        tag: 'mixed-in',
+        listen: allowLANConnection ? '0.0.0.0' : '127.0.0.1',
         listen_port: 2080
     };
 }

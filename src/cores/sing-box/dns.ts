@@ -1,6 +1,7 @@
 import { getGeoAssets } from './geo-assets';
 import { DNS, DnsRule, DnsServer } from '#types/sing-box';
 import { getDomain, accDnsRules } from '@utils';
+import { getSettings } from '@settings';
 
 export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<DNS> {
     const {
@@ -13,48 +14,49 @@ export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<DNS> 
         fakeDNS,
         enableECH,
         echServerName
-    } = globalThis.settings;
+    } = getSettings();
 
     const url = new URL(remoteDNS);
     const protocol = url.protocol.replace(':', '');
     const servers: DnsServer[] = [
         {
-            type: isWarp ? "udp" : protocol,
+            type: isWarp ? 'udp' : protocol,
             server: isWarp ? warpRemoteDNS : remoteDnsHost.host,
-            detour: isWarp ? "💦 Warp - Best Ping 🚀" : isChain ? "💦 Best Ping 🚀" : "✅ Selector",
-            tag: "dns-remote"
+            detour: isWarp ? '💦 Warp - Best Ping 🚀' : isChain ? '💦 Best Ping 🚀' : '✅ Selector',
+            tag: 'dns-remote'
         }
     ];
 
     if (localDNS === 'localhost') {
-        addDnsServer(servers, "local", "dns-direct", undefined, undefined, undefined);
+        addDnsServer(servers, 'local', 'dns-direct', undefined, undefined, undefined);
     } else {
-        addDnsServer(servers, "udp", "dns-direct", localDNS, undefined, undefined);
+        addDnsServer(servers, 'udp', 'dns-direct', localDNS, undefined, undefined);
     }
 
     const rules: DnsRule[] = [
         {
-            clash_mode: "Direct",
-            server: "dns-direct"
+            clash_mode: 'Direct',
+            server: 'dns-direct'
         },
         {
-            clash_mode: "Global",
-            server: "dns-remote"
+            clash_mode: 'Global',
+            server: 'dns-remote'
         }
     ];
 
     if (enableECH) {
-        const { hostName } = globalThis.httpConfig;
-        addDnsRule(rules, 'dns-direct', undefined, undefined, undefined, [echServerName || hostName], ["HTTPS"]);
+        const { mainDomain, customDomain } = getSettings();
+        const echServerNames = echServerName ? [echServerName] : [mainDomain].concatIf(!!customDomain, customDomain);
+        addDnsRule(rules, 'dns-direct', undefined, undefined, undefined, echServerNames, ['HTTPS']);
     }
 
     if (remoteDnsHost.isDomain && !isWarp) {
         const { ipv4, ipv6, host } = remoteDnsHost;
         const predefined = ipv4.concatIf(enableIPv6, ipv6);
-        addDnsServer(servers, "hosts", "hosts", undefined, undefined, undefined, host, predefined);
+        addDnsServer(servers, 'hosts', 'hosts', undefined, undefined, undefined, host, predefined);
         rules.unshift({
             ip_accept_any: true,
-            server: "hosts"
+            server: 'hosts'
         });
     }
 
@@ -72,7 +74,7 @@ export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<DNS> 
             'reject',
             undefined,
             dnsRules.block.geosites,
-            undefined, 
+            undefined,
             dnsRules.block.domains
         );
     }
@@ -82,7 +84,7 @@ export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<DNS> 
             rules,
             'dns-direct',
             undefined,
-            [geosite], 
+            [geosite],
             geoip,
             undefined
         );
@@ -121,33 +123,33 @@ export async function buildDNS(isWarp: boolean, isChain: boolean): Promise<DNS> 
         );
 
         if (dnsHost.isHostDomain) {
-            addDnsServer(servers, "https", "dns-anti-sanction", dnsHost.host, undefined, "dns-direct");
+            addDnsServer(servers, 'https', 'dns-anti-sanction', dnsHost.host, undefined, 'dns-direct');
         } else {
-            addDnsServer(servers, "udp", "dns-anti-sanction", antiSanctionDNS, undefined, undefined);
+            addDnsServer(servers, 'udp', 'dns-anti-sanction', antiSanctionDNS, undefined, undefined);
         }
     }
 
     if (fakeDNS) {
         addDnsServer(
             servers,
-            "fakeip",
-            "dns-fake",
+            'fakeip',
+            'dns-fake',
             undefined,
             undefined,
             undefined,
             undefined,
             undefined,
-            "198.18.0.0/15",
-            enableIPv6 ? "fc00::/18" : undefined
+            '198.18.0.0/15',
+            enableIPv6 ? 'fc00::/18' : undefined
         );
 
-        addDnsRule(rules, "dns-fake", "tun-in", undefined, undefined, undefined, ["A", "AAAA"]);
+        addDnsRule(rules, 'dns-fake', 'tun-in', undefined, undefined, undefined, ['A', 'AAAA']);
     }
 
     return {
         servers,
         rules,
-        strategy: enableIPv6 ? "prefer_ipv4" : "ipv4_only",
+        strategy: enableIPv6 ? 'prefer_ipv4' : 'ipv4_only',
         independent_cache: true
     }
 }
@@ -170,7 +172,7 @@ function addDnsServer(
         detour,
         domain_resolver: domain_resolver ? {
             server: domain_resolver,
-            strategy: "ipv4_only"
+            strategy: 'ipv4_only'
         } : undefined,
         predefined: host ? { [host]: predefined } : undefined,
         inet4_range,
@@ -186,7 +188,7 @@ function addDnsRule(
     geosite?: string[],
     geoip?: string,
     domain?: string[],
-    query_type?: Array<"A" | "AAAA" | "HTTPS">
+    query_type?: Array<'A' | 'AAAA' | 'HTTPS'>
 ) {
     const isPair = geosite && geoip;
     rules.push({
@@ -194,7 +196,7 @@ function addDnsRule(
         type: isPair ? 'logical' : undefined,
         mode: isPair ? 'and' : undefined,
         rules: isPair ? [
-            { rule_set: geosite }, 
+            { rule_set: geosite },
             { rule_set: geoip }
         ] : undefined,
         rule_set: geosite?.length && !geoip ? geosite : undefined,

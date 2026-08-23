@@ -1,7 +1,5 @@
 # :material-playlist-check:{ .md .middle } Normal subscription
 
-![Normal subscription](../images/normal-sub.jpg)
-
 This subscription applies all optimal VLESS and Trojan settings, DNS servers, routing rules etc., minimizing user errors. It also includes a **Best Ping** config.
 
 ???+ question "What is the **Best Ping** config?"

@@ -1,6 +1,7 @@
 import { getGeoAssets } from './geo-assets';
 import { DNS, DnsHosts, FakeDNS } from '#types/clash';
 import { isDomain, getDomain, accDnsRules } from '@utils';
+import { getSettings } from '@settings';
 
 export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean): Promise<DNS> {
     const {
@@ -8,25 +9,25 @@ export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean
         remoteDNS,
         warpRemoteDNS,
         antiSanctionDNS,
-        outProxyParams,
+        chainProxyParams,
         remoteDnsHost,
         enableIPv6,
         fakeDNS,
         allowLANConnection
-    } = globalThis.settings;
+    } = getSettings();
 
     const finalLocalDNS = localDNS === 'localhost' ? 'system' : `${localDNS}#DIRECT`;
-    const proSign = isPro ? "Pro " : "";
+    const proSign = isPro ? 'Pro ' : '';
     const remoteDnsDetour = isWarp
         ? `💦 Warp ${proSign}- Best Ping 🚀`
-        : isChain ? "💦 Best Ping 🚀" : "✅ Selector";
+        : isChain ? '💦 Best Ping 🚀' : '✅ Selector';
 
     const finalRemoteDNS = `${isWarp ? warpRemoteDNS : remoteDNS}#${remoteDnsDetour}`;
     const hosts: DnsHosts = {};
     const nameserverPolicy: Record<string, string> = {};
 
     if (isChain && !isWarp) {
-        const { server } = outProxyParams;
+        const { server } = chainProxyParams;
         if (isDomain(server)) nameserverPolicy[server] = finalRemoteDNS;
     }
 
@@ -43,7 +44,7 @@ export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean
         ...dnsRules.block.domains.map(domain => `+.${domain}`)
     ];
 
-    blockDomains.forEach(value => hosts[value] = "rcode://refused");
+    blockDomains.forEach(value => hosts[value] = 'rcode://refused');
 
     const sanctionDomains = [
         ...dnsRules.bypass.antiSanctionDNS.geosites.map(geosite => `rule-set:${geosite}`),
@@ -63,32 +64,32 @@ export async function buildDNS(isChain: boolean, isWarp: boolean, isPro: boolean
     }
 
     bypassDomains.forEach(value => nameserverPolicy[value] = finalLocalDNS);
-    const listen = `${allowLANConnection ? "0.0.0.0" : "127.0.0.1"}:1053`;
-    let enhancedMode: "redir-host" | "fake-ip" = "redir-host";
+    const listen = `${allowLANConnection ? '0.0.0.0' : '127.0.0.1'}:1053`;
+    let enhancedMode: 'redir-host' | 'fake-ip' = 'redir-host';
     let fakeDnsSettings: Partial<FakeDNS> = {};
     
     if (fakeDNS) {
-        enhancedMode = "fake-ip";
+        enhancedMode = 'fake-ip';
         fakeDnsSettings = {
-            "fake-ip-range": "198.18.0.1/16",
-            "fake-ip-filter-mode": "blacklist",
-            "fake-ip-filter": ["+.lan", "+.local"]
+            'fake-ip-range': '198.18.0.1/16',
+            'fake-ip-filter-mode': 'blacklist',
+            'fake-ip-filter': ['+.lan', '+.local']
         };
     }
 
     const dns: DNS = {
-        "enable": true,
-        "respect-rules": true,
-        "use-system-hosts": false,
-        "listen": listen,
-        "ipv6": enableIPv6,
-        "hosts": hosts.omitEmpty(),
-        "nameserver": [finalRemoteDNS],
-        "proxy-server-nameserver": [finalLocalDNS],
-        "direct-nameserver": [finalLocalDNS],
-        "direct-nameserver-follow-policy": true,
-        "nameserver-policy": nameserverPolicy.omitEmpty(),
-        "enhanced-mode": enhancedMode,
+        'enable': true,
+        'respect-rules': true,
+        'use-system-hosts': false,
+        'listen': listen,
+        'ipv6': enableIPv6,
+        'hosts': hosts.omitEmpty(),
+        'nameserver': [finalRemoteDNS],
+        'proxy-server-nameserver': [finalLocalDNS],
+        'direct-nameserver': [finalLocalDNS],
+        'direct-nameserver-follow-policy': true,
+        'nameserver-policy': nameserverPolicy.omitEmpty(),
+        'enhanced-mode': enhancedMode,
         ...fakeDnsSettings
     };
 

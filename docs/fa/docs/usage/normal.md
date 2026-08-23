@@ -1,7 +1,5 @@
 # :material-playlist-check:{ .md .middle } اشتراک Normal
 
-![Normal subscription](../images/normal-sub.jpg)
-
 این اشتراک به‌صورت خودکار تنظیمات بهینه VLESS و Trojan، سرورهای DNS، قوانین مسیریابی و غیره رو اعمال می‌کنه تا خطاهای کاربر به حداقل برسه. همچنین شامل یه کانفیگ **Best Ping** هم می‌شه.
 
 ???+ question "کانفیگ **Best Ping** چیه؟"
