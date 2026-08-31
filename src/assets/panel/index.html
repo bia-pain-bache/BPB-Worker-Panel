@@ -987,64 +987,63 @@
         </div>
     </template>
 
-    <div class="form-container container">
-
-        <div id="resetPassModal" class="modal" hidden>
-            <div class="modal-content">
-                <div class="modal-header">
-                    <span class="modal-title">Reset Password</span>
-                    <span id="closeResetPass" class="material-symbols-rounded modal-close">
-                        close
-                    </span>
-                </div>
-                <form class="config-form">
-                    <div class="section">
-                        <div id="usernameContainer" class="modal-form-control" style="display: none;">
-                            <label for="username">Cloudflare Email</label>
-                            <input type="text" id="username" name="username" autocomplete="on">
-                        </div>
-                        <div class="modal-form-control">
-                            <label for="newPassword">New Password</label>
-                            <div class="password-wrapper">
-                                <input type="password" id="newPassword" name="newPassword" required>
-                                <span class="material-symbols-rounded show-hide">
-                                    visibility_off
-                                </span>
-                            </div>
-                        </div>
-                        <div class="modal-form-control">
-                            <label for="confirmPassword">Confirm Password</label>
-                            <div class="password-wrapper">
-                                <input type="password" id="confirmPassword" name="confirmPassword" required>
-                                <span class="material-symbols-rounded show-hide">
-                                    visibility_off
-                                </span>
-                            </div>
+    <div id="resetPassModal" class="modal" hidden>
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">Reset Password</span>
+                <span id="closeResetPass" class="material-symbols-rounded modal-close">
+                    close
+                </span>
+            </div>
+            <form class="config-form">
+                <div class="section">
+                    <div id="usernameContainer" class="modal-form-control" style="display: none;">
+                        <label for="username">Cloudflare Email</label>
+                        <input type="text" id="username" name="username" autocomplete="on">
+                    </div>
+                    <div class="modal-form-control">
+                        <label for="newPassword">New Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="newPassword" name="newPassword" required>
+                            <span class="material-symbols-rounded show-hide">
+                                visibility_off
+                            </span>
                         </div>
                     </div>
-                    <div id="passwordError" class="password-error"></div>
-                    <button id="changePasswordBtn" type="submit" class="button">
-                        <span class="material-symbols-rounded">
-                            save
-                        </span>
-                        Save
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <div id="qrModal" class="modal" hidden>
-            <div class="modal-content">
-                <div class="modal-header">
-                    <span id="qrcodeTitle" class="modal-title"></span>
-                    <span class="material-symbols-rounded modal-close">
-                        close
-                    </span>
+                    <div class="modal-form-control">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="confirmPassword" name="confirmPassword" required>
+                            <span class="material-symbols-rounded show-hide">
+                                visibility_off
+                            </span>
+                        </div>
+                    </div>
                 </div>
-                <div id="qrcode-container"></div>
-            </div>
+                <div id="passwordError" class="password-error"></div>
+                <button id="changePasswordBtn" type="submit" class="button">
+                    <span class="material-symbols-rounded">
+                        save
+                    </span>
+                    Save
+                </button>
+            </form>
         </div>
+    </div>
 
+    <div id="qrModal" class="modal" hidden>
+        <div class="modal-content">
+            <div class="modal-header">
+                <span id="qrcodeTitle" class="modal-title"></span>
+                <span class="material-symbols-rounded modal-close">
+                    close
+                </span>
+            </div>
+            <div id="qrcode-container"></div>
+        </div>
+    </div>
+
+    <div class="form-container container">
         <div>
             <div class="header-container">
                 <h2><span class="material-symbols-rounded">fingerprint</span> My IP</h2>
