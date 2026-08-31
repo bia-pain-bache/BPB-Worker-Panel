@@ -13,11 +13,16 @@
         rel="stylesheet">
     <style>
         :root {
-            --color-bg-main: linear-gradient(90deg, #000328, #00458E);
-            --color-text-primary: #f1f5f9;
-            --color-text-secondary: #aec4e2;
-            --shadow-header: 0.125rem 0.125rem 0.25rem #000328;
+            --color-bg-main: radial-gradient(circle at 20% 20%, rgba(239, 68, 68, 0.15) 0%, transparent 40%),
+                             radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+                             linear-gradient(135deg, #020617 0%, #150912 50%, #030712 100%);
+            --color-text-primary: #f8fafc;
+            --color-text-secondary: #cbd5e1;
+            --color-brand-hover: #60a5fa;
+            --color-border-accent: rgba(239, 68, 68, 0.25);
+            --shadow-header: 0 2px 10px rgba(0, 0, 0, 0.5);
             --space-sm: 0.5rem;
+            --radius-card: 1.5rem;
         }
 
         body,
@@ -28,13 +33,36 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: "Ubuntu", system-ui;
+            font-family: "Twemoji Country Flags", "Ubuntu", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             color: var(--color-text-secondary);
             background: var(--color-bg-main);
             text-align: center;
-            text-align: center;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+        }
+
+        #error-container {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--color-border-accent);
+            border-radius: var(--radius-card);
+            padding: 2.5rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(239, 68, 68, 0.15);
+            max-width: 90%;
+            width: 480px;
+            animation: errorPop 0.45s cubic-bezier(0.34, 1.4, 0.64, 1) forwards;
+        }
+
+        @keyframes errorPop {
+            0% {
+                opacity: 0;
+                transform: scale(0.92) translateY(10px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
         }
 
         h1 {
@@ -42,23 +70,47 @@
             text-shadow: var(--shadow-header);
             display: flex;
             justify-content: center;
-            align-items: stretch;
+            align-items: center;
             gap: var(--space-sm);
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0 0 1.5rem 0;
         }
 
         .header {
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: 0.75rem;
         }
 
-        .icon {
-            height: 2.5rem;
+        #header-logo {
+            filter: drop-shadow(0 4px 12px rgba(239, 68, 68, 0.35));
         }
 
         .panel-version {
             align-self: flex-start;
-            font-size: large;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(99, 102, 241, 0.2));
+            border: 1px solid var(--color-border-accent);
+            padding: 2px 8px;
+            border-radius: 9999px;
+            color: var(--color-brand-hover);
+        }
+
+        h2 {
+            color: #f87171;
+            font-size: 1.3rem;
+            margin: 1rem 0 0.5rem 0;
+        }
+
+        p {
+            margin: 0.5rem 0 0 0;
+            line-height: 1.5;
+            color: var(--color-text-secondary);
+            font-size: 0.95rem;
+            word-break: break-word;
         }
     </style>
 </head>
