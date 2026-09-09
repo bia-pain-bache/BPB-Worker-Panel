@@ -1,0 +1,136 @@
+:root {
+    --color-brand-primary: #3b82f6;
+    --color-bg-main: linear-gradient(90deg, #000328, #00458E);
+    --color-bg-card: rgba(15, 23, 42, 0.5);
+    --color-text-primary: #f1f5f9;
+    --color-text-secondary: #aec4e2;
+    --color-border: #60a5fa36;
+    --color-table-active: rgba(2, 6, 23, 0.5);
+
+    --shadow-header: 0.125rem 0.125rem 0.25rem #000328;
+    --shadow-table: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 2px 6px rgba(0, 0, 0, 0.06), 0 12px 30px rgba(0, 0, 0, 0.08);
+    
+    --space-sm: 0.5rem;
+    --space-md: 0.85rem;
+
+    --radius-ui: 0.75rem;
+}
+
+body {
+    font-family: "Twemoji Country Flags", "Ubuntu", system-ui;
+    text-align: center;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: var(--color-bg-main);
+}
+
+body.is-loading {
+    cursor: wait;
+}
+
+body.is-loading * {
+    /* eslint-disable-next-line css/no-important */
+    cursor: wait !important;
+    pointer-events: none;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+h1 {
+    color: var(--color-text-primary);
+    text-shadow: var(--shadow-header);
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    gap: var(--space-sm);
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon {
+    height: 2.5rem;
+}
+
+.panel-version {
+    align-self: flex-start;
+    font-size: large;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    width: 100%;
+    text-align: center;
+    padding: var(--space-md);
+}
+
+table {
+    display: inline-table;
+    border: 1px solid var(--color-border);
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: var(--radius-ui);
+    overflow: hidden;
+    background: color-mix(in srgb, var(--color-bg-card), #000328 8%);
+    box-shadow: var(--shadow-table);
+}
+
+tbody {
+    color: var(--color-bg-card);
+}
+
+th,
+td {
+    text-align: center;
+    white-space: nowrap;
+    padding: 10px;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+}
+
+td:first-child,
+th {
+    background-color: var(--color-table-active);
+    font-weight: bold;
+    color: var(--color-text-primary);
+}
+
+td:first-child {
+    color: var(--color-text-secondary);
+}
+
+td:nth-child(2) {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--color-text-primary);
+    justify-content: space-between;
+}
+
+td:nth-child(3),
+td:nth-child(4) {
+    color: var(--color-text-primary);
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+
+.material-symbols-rounded {
+    color: var(--color-brand-primary);
+    cursor: pointer;
+    font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+}
+
+.material-symbols-rounded:hover {
+    scale: calc(1.2);
+}
