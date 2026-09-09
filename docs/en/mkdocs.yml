@@ -1,0 +1,102 @@
+site_name: BPB Panel
+site_url: https://bia-pain-bache.github.io
+repo_url: https://github.com/bia-pain-bache/BPB-Worker-Panel
+copyright: Copyright &copy; BPB
+
+use_directory_urls: true
+site_dir: ../../site
+extra_css:
+  - stylesheet/extra.css
+extra_javascript:
+  - scripts/lang-switch.js
+
+theme:
+  name: material
+  custom_dir: ../assets
+  logo: favicon.ico
+  favicon: favicon.ico
+  direction: ltr
+  language: en
+  font:
+    text: Vazirmatn
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default 
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.instant
+    - navigation.indexes
+    - navigation.top
+    - content.code.copy
+    - toc.integrate
+    - navigation.tracking
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - attr_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - md_in_html
+
+extra:
+  alternate:
+    - name: فارسی
+      lang: fa
+      link: /BPB-Worker-Panel/fa/
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/bia-pain-bache/BPB-Worker-Panel
+      name: Source code
+
+plugins:
+  - search
+
+nav:
+  - Home: index.md
+  - Installation: wizard.md
+  - Configuration:
+    - configuration/index.md
+    - Admin: configuration/admin-settings.md
+    - Telegram Bot: configuration/telegram-bot.md
+    - Common: configuration/common.md
+    - VLESS - Trojan: configuration/vless-trojan.md 
+    - Fragment: configuration/fragment.md
+    - External Raw Configs: configuration/external-configs.md
+    - Warp General: configuration/warp.md
+    - Warp PRO: configuration/warp-pro.md
+    - Routing rules: configuration/routing-rules.md
+    - Import - Export: configuration/import-export.md
+  - Usage:
+    - usage/index.md
+    - Normal: usage/normal.md
+    - Fragment: usage/fragment.md
+    - Raw: usage/raw.md
+    - Warp: usage/warp.md
+    - Warp PRO: usage/warp-pro.md
+    - DoH: usage/doh.md
+    - My IP: usage/my-ip.md
+    - Supported Clients: usage/supported-clients.md
+  - FAQ: faq.md
