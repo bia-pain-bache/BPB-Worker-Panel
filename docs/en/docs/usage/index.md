@@ -1,0 +1,88 @@
+# :material-lan-connect:{ .md .middle } How to use
+
+First, update your client to the latest version or refer to the table below. These are the tested and verified clients officially supported by the BPB project. You may use other clients at your own risk.
+
+|       Client        | Minimum version |  Fragment support  |  Warp Pro support  |
+| :-----------------: | :-------------: | :----------------: | :----------------: |
+|     **v2rayNG**     |      2.2.3      | :heavy_check_mark: | :heavy_check_mark: |
+|     **MahsaNG**     |       16        | :heavy_check_mark: | :heavy_check_mark: |
+|     **v2rayN**      |     7.22.5      | :heavy_check_mark: | :heavy_check_mark: |
+|    **Streisand**    |     1.6.71      | :heavy_check_mark: | :heavy_check_mark: |
+|    **Sing-box**     |     1.12.0      | :heavy_check_mark: |        :x:         |
+|      **husi**       |      1.3.2      | :heavy_check_mark: |        :x:         |
+|   **Clash Meta**    |                 |        :x:         | :heavy_check_mark: |
+| **Clash Verge Rev** |                 |        :x:         | :heavy_check_mark: |
+|     **FLClash**     |                 |        :x:         | :heavy_check_mark: |
+|    **Wireguard**    |                 |        :x:         |        :x:         |
+|   **AmneziaVPN**    |                 |        :x:         | :heavy_check_mark: |
+|    **WG Tunnel**    |                 |        :x:         | :heavy_check_mark: |
+
+**Warp** and **Warp Pro** subscriptions which provide **WireGuard** configs, need scanning some endpoints first. You can refer to [this guide](../configuration/warp.md) to learn how to scan some endpoints.
+
+<div class="grid cards" markdown>
+
+- :material-playlist-check:{ .lg .middle } **Normal**
+
+    ---
+
+    Connect to **VLESS** and **Trojan** configs with fully bundled configurations, no need to configure manually.
+
+    [:octicons-arrow-right-24: Getting started](normal.md)
+
+- :material-playlist-check:{ .lg .middle } **Fragment**
+
+    ---
+
+    Connect even if your domain is blocked with fully bundled configurations.
+
+    [:octicons-arrow-right-24: Getting started](fragment.md)
+
+- :material-playlist-check:{ .lg .middle } **Raw**
+
+    ---
+
+    Connect to Raw **VLESS** and **Trojan** configs which don't include panel settings.
+
+    [:octicons-arrow-right-24: Getting started](raw.md)
+
+- :material-playlist-check:{ .lg .middle } **Warp**
+
+    ---
+
+    Connect to Cloudflare Warp servers after scanning some endpoints.
+
+    [:octicons-arrow-right-24: Getting started](warp.md)
+
+- :material-playlist-check:{ .lg .middle } **Warp Pro**
+
+    ---
+
+    Connect to Cloudflare Warp even if Warp is blocked in your region.
+
+    [:octicons-arrow-right-24: Getting started](warp-pro.md)
+
+- :material-playlist-check:{ .lg .middle } **DNS over HTTPS**
+
+    ---
+
+    Set DoH in your browser or use in DNS based clients like Intra.
+
+    [:octicons-arrow-right-24: Getting started](doh.md)
+
+- :material-playlist-check:{ .lg .middle } **My IP**
+
+    ---
+
+    Check your IP with and without Proxy IP.
+
+    [:octicons-arrow-right-24: Getting started](my-ip.md)
+
+- :material-playlist-check:{ .lg .middle } **Supported Clients**
+
+    ---
+
+    Check minimum requirements and download latest versions.
+
+    [:octicons-arrow-right-24: Getting started](supported-clients.md)
+
+</div>
