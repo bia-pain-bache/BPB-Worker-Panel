@@ -1,0 +1,91 @@
+# :material-cog-outline:{ .md .middle } راهنمای تنظیمات
+
+!!! tip "نکته"
+    نگران تنظیمات اشتباه نباشید. کنار دکمه `Apply Settings` یه دکمه `Reset Settings` هست که پنل رو به تنظیمات پیش‌فرض برمی‌گردونه.
+
+!!! info "راهنمایی"
+    بعد از هر تغییری، باید اشتراک‌هاتون رو به‌روزرسانی کنید.
+
+<div class="grid cards" markdown> 
+
+- :material-cog-outline:{ .lg .middle } __تنظیمات مدیریت__
+
+    ---
+
+    بروزرسانی یا حذف پنل و تغییر رمز عبور.
+
+    [:octicons-arrow-right-24: شروع](admin-settings.md)
+
+- :material-cog-outline:{ .lg .middle } __بات تلگرام__
+
+    ---
+
+    اضافه کردن بات تلگرام به پنل.
+
+    [:octicons-arrow-right-24: شروع](telegram-bot.md)
+
+- :material-cog-outline:{ .lg .middle } __تنظیمات مشترک یا Common__
+
+    ---
+
+    شامل تنظیمات عمومی که برای همه پروتکل‌ها و لینکای اشتراک، مشترک هستن.
+
+    [:octicons-arrow-right-24: شروع](common.md)
+
+- :material-cog-outline:{ .lg .middle } __پروتکل‌های VLESS و Trojan__
+
+    ---
+
+    تنظیمات عمومی VLESS و Trojan مثل سرورهای DNS، Clean IPs، پورت‌ها و غیره رو پیکربندی کنید.
+
+    [:octicons-arrow-right-24: شروع](vless-trojan.md)
+
+- :material-cog-outline:{ .lg .middle } __تنظیمات Fragment__
+
+    ---
+
+    تنظیمات Fragment رو برای رفع اختلالات اپراتور یا رفع فیلتر دامنه پیکربندی کنید.
+
+    [:octicons-arrow-right-24: شروع](fragment.md)
+
+- :material-cog-outline:{ .lg .middle } __اضافه کردن کانفیگ‌های شخصی__
+
+    ---
+
+    اضافه کردن لینک اشتراک و کانفیگ‌های شخصی جهت اضافه شدن به لسنک اشتراک Raw.
+
+    [:octicons-arrow-right-24: شروع](external-configs.md)
+
+- :material-cog-outline:{ .lg .middle } __تنظیمات عمومی Warp__
+
+    ---
+
+    تنظیمات عمومی Warp برای اشتراک‌های __Warp__ و __Warp PRO__، شامل Endpointها، اسکنر، IPv6 و غیره.
+
+    [:octicons-arrow-right-24: شروع](warp.md)
+
+- :material-cog-outline:{ .lg .middle } __تنظیمات Warp PRO__
+
+    ---
+
+    تنظیمات PRO برای رفع فیلتر Warp توسط اپراتور شما.
+
+    [:octicons-arrow-right-24: شروع](warp-pro.md)
+
+- :material-cog-outline:{ .lg .middle } __قوانین مسیریابی یا Routing Rules__
+
+    ---
+
+    قوانین مسیریابی رو برای دور زدن وب‌سایت‌های محلی، بلاک تبلیغات، بلاک محتوای ناخواسته و غیره اضافه کنید.
+
+    [:octicons-arrow-right-24: شروع](routing-rules.md)
+
+- :material-cog-outline:{ .lg .middle } __بارگذاری و به اشتراک‌گذاری تنظیمات__
+
+    ---
+
+    بارگذاری و به اشتراک‌گذاری تنظیمات از طریق فایل و لینک.
+
+    [:octicons-arrow-right-24: شروع](import-export.md)
+
+</div>
