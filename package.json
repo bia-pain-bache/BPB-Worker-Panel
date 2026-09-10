@@ -1,0 +1,11 @@
+{
+  "name": "zavali-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node --check worker.js"
+  },
+  "devDependencies": {
+    "wrangler": "latest"
+  }
+}
