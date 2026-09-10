@@ -1,0 +1,12 @@
+{
+  "name": "zavali-worker",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node --check worker.js",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "latest"
+  }
+}
