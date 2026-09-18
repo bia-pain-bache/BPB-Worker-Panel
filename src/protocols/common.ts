@@ -17,6 +17,8 @@ export async function handleTCPOutBound(
 ) {
     async function connectAndWrite(address: string, port: number): Promise<Socket> {
         // if (/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(address)) address = `${atob('d3d3Lg==')}${address}${atob('LnNzbGlwLmlv')}`;
+        // connect() joins hostname and port into "host:port", so an IPv6 literal must be wrapped in []
+        if (address.includes(':') && !address.startsWith('[')) address = `[${address}]`;
         const tcpSocket = connect({
             hostname: address,
             port: port,
