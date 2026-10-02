@@ -1,0 +1,27 @@
+[env.production]
+name = "bpb-panel-prod"
+route = "https://your-domain.com/*"
+zone_id = "YOUR_ZONE_ID"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "bpb-users-prod"
+database_id = "YOUR_PROD_DATABASE_ID"
+
+[[env.production.kv_namespaces]]
+binding = "kv"
+id = "YOUR_PROD_KV_ID"
+
+[env.staging]
+name = "bpb-panel-staging"
+route = "https://staging.your-domain.com/*"
+zone_id = "YOUR_ZONE_ID"
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "bpb-users-staging"
+database_id = "YOUR_STAGING_DATABASE_ID"
+
+[[env.staging.kv_namespaces]]
+binding = "kv"
+id = "YOUR_STAGING_KV_ID"

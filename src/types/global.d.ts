@@ -1,9 +1,8 @@
-import { EmbededSettings } from './settings';
-
 declare global {
     interface Env {
         readonly CF_PAGES: string;
         readonly kv: KVNamespace;
+        readonly DB?: D1Database;
         readonly UUID?: string;
         readonly TR_PASS?: string;
     }

@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    uuid TEXT NOT NULL,
+    uri TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    status INTEGER NOT NULL DEFAULT 1
+);
