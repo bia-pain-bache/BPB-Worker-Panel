@@ -23,7 +23,8 @@ export type Fingerprint =
     | '360'
     | 'qq'
     | 'random'
-    | 'randomized';
+    | 'randomized'
+    | 'unsafe';
 
 export type DnsServer = {
     address: string;
@@ -126,6 +127,7 @@ export interface TlsSettings {
     serverName: string;
     fingerprint: Fingerprint;
     alpn?: string[];
+    cipherSuites?: string;
     echConfigList?: string;
 }
 
@@ -212,8 +214,10 @@ type TCPMask = {
     type: 'fragment';
     settings: {
         packets: 'tlshello' | '1-1' | '1-2' | '1-3' | '1-5';
-        length: string;
-        delay: string;
+        length?: string;
+        delay?: string;
+        lengths?: string[];
+        delays?: string[];
         maxSplit?: string;
     };
 };

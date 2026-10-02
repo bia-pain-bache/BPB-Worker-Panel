@@ -96,6 +96,8 @@ export function buildWebsocketOutbound(
         vlUUID,
         trPass,
         fingerprint,
+        alpn,
+        cipherSuites,
         enableTFO,
         enableECH,
         echServerName,
@@ -107,9 +109,10 @@ export function buildWebsocketOutbound(
     const tlsSettings = isTLS ? buildTlsSettings(
         sni,
         fingerprint,
-        'http/1.1',
+        alpn,
         enableECH && !isFragment,
         echServerName || undefined,
+        cipherSuites || undefined,
     ) : undefined;
 
     const streamSettings: StreamSettings = {
@@ -392,7 +395,8 @@ function buildTlsSettings(
     fingerprint: Fingerprint,
     alpn: string,
     enableECH: boolean,
-    echServerName?: string
+    echServerName?: string,
+    cipherSuites?: string
 ): TlsSettings {
     const { localDNS } = getSettings();
     const echQueryDNS = localDNS === 'localhost' ? '8.8.8.8' : localDNS
@@ -401,6 +405,7 @@ function buildTlsSettings(
         serverName,
         fingerprint: fingerprint,
         alpn: alpn?.split(','),
+        cipherSuites: cipherSuites || undefined,
         echConfigList: enableECH
             ? echServerName
                 ? `${echServerName}+udp://${echQueryDNS}`
@@ -461,29 +466,46 @@ function buildFinalMask(
         fragmentDelayMax,
         fragmentMaxSplitMin,
         fragmentMaxSplitMax,
-        xrayUdpNoises
+        xrayUdpNoises,
+        finalMask
     } = getSettings();
 
-    return {
-        tcp: isFragment ? [
-            {
-                type: 'fragment',
-                settings: {
-                    packets: fragPacket || fragmentPackets,
-                    length: fragLength || toRange(fragmentLengthMin, fragmentLengthMax) as string,
-                    delay: fragDelay || toRange(fragmentDelayMin, fragmentDelayMax) as string,
-                    maxSplit: toRange(fragmentMaxSplitMin, fragmentMaxSplitMax)
-                }
+    const legacyTcp = isFragment ? [
+        {
+            type: 'fragment',
+            settings: {
+                packets: fragPacket || fragmentPackets,
+                length: fragLength || toRange(fragmentLengthMin, fragmentLengthMax) as string,
+                delay: fragDelay || toRange(fragmentDelayMin, fragmentDelayMax) as string,
+                maxSplit: toRange(fragmentMaxSplitMin, fragmentMaxSplitMax)
             }
-        ] : undefined,
-        udp: isUdpNoise ? [
-            {
-                type: 'noise',
-                settings: {
-                    reset: '30-60',
-                    noise: buildUDPNoises(xrayUdpNoises)
-                }
+        }
+    ] : undefined;
+
+    const legacyUdp = isUdpNoise ? [
+        {
+            type: 'noise',
+            settings: {
+                reset: '30-60',
+                noise: buildUDPNoises(xrayUdpNoises)
             }
-        ] : undefined
+        }
+    ] : undefined;
+
+    // Custom FinalMask raw JSON (e.g. PattN dual-fragment) overrides generated values
+    if (finalMask) {
+        try {
+            const parsed = JSON.parse(finalMask) as FinalMask;
+            const tcp = isFragment ? (parsed?.tcp ?? legacyTcp) : undefined;
+            const udp = isUdpNoise ? (parsed?.udp ?? legacyUdp) : undefined;
+            if (tcp || udp) return { tcp, udp } as FinalMask;
+        } catch {
+            // Invalid JSON, fall back to generated values
+        }
     }
+
+    return {
+        tcp: legacyTcp,
+        udp: legacyUdp
+    } as FinalMask
 }

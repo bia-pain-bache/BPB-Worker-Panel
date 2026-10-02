@@ -339,6 +339,7 @@
                                     <option value="qq">qq</option>
                                     <option value="random">random</option>
                                     <option value="randomized">randomized</option>
+                                    <option value="unsafe">unsafe</option>
                                 </select>
                                 <span class="material-symbols-rounded">
                                     keyboard_arrow_down
@@ -349,6 +350,19 @@
                             <label for="bestPingInterval">Best Ping Interval</label>
                             <div>
                                 <input type="number" id="bestPingInterval" name="bestPingInterval" min="10" max="90">
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label for="alpn">ALPN</label>
+                            <div>
+                                <input type="text" id="alpn" name="alpn" placeholder="http/1.1">
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label for="cipherSuites">Cipher Suites</label>
+                            <div>
+                                <input type="text" id="cipherSuites" name="cipherSuites" wrap="off"
+                                    placeholder="TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:...">
                             </div>
                         </div>
                         <div class="form-control">
@@ -518,6 +532,13 @@
                                 <input type="number" id="fragmentMaxSplitMin" name="fragmentMaxSplitMin" min="2">
                                 <span>-</span>
                                 <input type="number" id="fragmentMaxSplitMax" name="fragmentMaxSplitMax" min="2">
+                            </div>
+                        </div>
+                        <div class="form-control">
+                            <label for="finalMask">FinalMask Raw JSON</label>
+                            <div>
+                                <textarea id="finalMask" name="finalMask" rows="3" wrap="off"
+                                    placeholder='{"tcp":[{"type":"fragment","settings":{...}}]}'></textarea>
                             </div>
                         </div>
                     </div>

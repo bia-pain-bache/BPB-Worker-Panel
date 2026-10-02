@@ -22,7 +22,8 @@ export type Fingerprint =
     | '360'
     | 'qq'
     | 'random'
-    | 'randomized';
+    | 'randomized'
+    | 'unsafe';
 
 export interface DnsServer {
     type: string;
@@ -111,6 +112,7 @@ export interface TLS {
     record_fragment?: boolean;
     insecure: boolean;
     alpn?: string[];
+    cipher_suites?: string[];
     utls: {
         enabled: boolean;
         fingerprint?: Fingerprint;

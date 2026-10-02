@@ -60,6 +60,7 @@ export function buildWebsocketOutbound(
         vlUUID,
         trPass,
         fingerprint,
+        alpn,
         enableTFO,
         enableIPv6,
         enableECH,
@@ -78,7 +79,7 @@ export function buildWebsocketOutbound(
         sni,
         enableECH,
         echServerName || undefined,
-        'http/1.1',
+        alpn,
         fingerprint
     ) : {};
 
@@ -241,10 +242,12 @@ function buildTLS(
     shortID?: string
 ): Partial<TLS> {
     if (!['tls', 'reality'].includes(security)) return {};
+    // "unsafe" is an Xray-only fingerprint; omit it for Clash/Mihomo compatibility
+    const fp = fingerprint === 'unsafe' ? undefined : fingerprint === 'randomized' ? 'random' : fingerprint;
     const common: TLS = {
         'tls': true,
         [protocol === _TR_ ? 'sni' : 'servername']: sni,
-        'client-fingerprint': fingerprint === 'randomized' ? 'random' : fingerprint,
+        'client-fingerprint': fp,
         'skip-cert-verify': allowInsecure
     };
 

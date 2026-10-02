@@ -20,7 +20,8 @@ export type Fingerprint =
     | '360'
     | 'qq'
     | 'random'
-    | 'randomized';
+    | 'randomized'
+    | 'unsafe';
 
 export interface FakeDNS {
     'fake-ip-range': string;

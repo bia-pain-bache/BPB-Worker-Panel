@@ -142,6 +142,15 @@ function renderPanel(proxySettings, tgSettings, subscriptions, clients) {
     textareaElements.forEach(elm => {
         const key = elm.id;
         const element = document.getElementById(key);
+        if (key === 'finalMask') {
+            element.value = proxySettings[key] || '';
+            element.rows = 3;
+            elm.addEventListener('input', () => {
+                elm.style.height = 'auto';
+                elm.style.height = `${elm.scrollHeight}px`;
+            });
+            return;
+        }
         const value = proxySettings[key]?.join('\r\n');
         const rowsCount = proxySettings[key].length;
         element.style.height = 'auto';
@@ -705,6 +714,10 @@ function validateSettings() {
 
     textareaElements.forEach(elm => {
         const key = elm.id;
+        if (key === 'finalMask') {
+            form[key] = (form[key] || '').trim();
+            return;
+        }
         const value = form[key];
         form[key] = value?.split('\n').map(val => val.trim()).filter(Boolean) || [];
     });

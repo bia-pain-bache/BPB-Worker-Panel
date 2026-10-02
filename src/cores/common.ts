@@ -13,6 +13,9 @@ import {
 export async function getURLConfigs() {
     const {
         fingerprint,
+        alpn,
+        cipherSuites,
+        finalMask,
         ports,
         chainProxy,
         remoteDNS,
@@ -58,7 +61,17 @@ export async function getURLConfigs() {
         if (isTLS) {
             config.searchParams.append('sni', sni);
             config.searchParams.append('fp', fingerprint);
-            config.searchParams.append('alpn', 'http/1.1');
+            config.searchParams.append('alpn', alpn || 'http/1.1');
+            // PattN extensions: cipher suites (cs) and FinalMask raw JSON (fm)
+            if (cipherSuites) config.searchParams.append('cs', cipherSuites);
+            if (finalMask) {
+                try {
+                    const fm = JSON.stringify(JSON.parse(finalMask));
+                    config.searchParams.append('fm', fm);
+                } catch {
+                    // Invalid FinalMask JSON, skip it
+                }
+            }
         }
 
         return config.href;

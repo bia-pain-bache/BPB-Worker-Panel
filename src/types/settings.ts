@@ -20,6 +20,9 @@ export interface KvSettings {
     protocols: string;
     ports: number[];
     fingerprint: Fingerprint;
+    alpn: string;
+    cipherSuites: string;
+    finalMask: string;
     enableTFO: boolean;
     fragmentMode: FragmentMode;
     fragmentLengthMin: number;
@@ -143,7 +146,8 @@ export type Fingerprint =
     | '360'
     | 'qq'
     | 'random'
-    | 'randomized';
+    | 'randomized'
+    | 'unsafe';
 
 export interface UpstreamProxy {
     upstreamServer?: string;

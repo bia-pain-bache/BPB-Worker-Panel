@@ -56,6 +56,7 @@
 |     **v2rayNG**     |   2.2.3    |  :heavy_check_mark:  |  :heavy_check_mark:  |
 |     **MahsaNG**     |     16     |  :heavy_check_mark:  |  :heavy_check_mark:  |
 |     **v2rayN**      |   7.22.5   |  :heavy_check_mark:  |  :heavy_check_mark:  |
+|      **PattN**      |   7.25.2   |  :heavy_check_mark:  |  :heavy_check_mark:  |
 |    **Streisand**    |   1.6.71   |  :heavy_check_mark:  |  :heavy_check_mark:  |
 |    **Sing-box**     |   1.12.0   |  :heavy_check_mark:  |         :x:          |
 |      **husi**       |   1.3.2    |  :heavy_check_mark:  |         :x:          |

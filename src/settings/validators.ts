@@ -1,6 +1,6 @@
 import { PanelSettings } from '#types/settings';
 import { isBase64, isDomain, isHex, isIPv4, isIPv4CIDR, isIPv6, isIPv6CIDR, isValidUrl } from '@utils';
-import { isValidUUID } from '@common';
+import { isValidUUID, safeError } from '@common';
 import { getGlobals } from '@settings';
 
 export interface ValidationError {
@@ -33,7 +33,10 @@ const validators = [
     validatePath,
     validateCustomDomain,
     validateExtSubs,
-    validateRemoteSettings
+    validateRemoteSettings,
+    validateAlpn,
+    validateCipherSuites,
+    validateFinalMask
 ];
 
 export function validateSettings(form: PanelSettings | null): ValidationError[] | null {
@@ -596,6 +599,78 @@ function validatePorts(form: PanelSettings, errors: ValidationError[]) {
         errors.push({
             field: 'Ports',
             message: ['At least one TLS port should be selected.']
+        });
+    }
+}
+
+function validateAlpn(form: PanelSettings, errors: ValidationError[]) {
+    const alpn = (form.alpn || '').trim();
+    if (!alpn) {
+        errors.push({
+            field: 'ALPN',
+            message: ['ALPN cannot be empty, e.g. http/1.1']
+        });
+
+        return;
+    }
+
+    const allowed = ['h2', 'http/1.1'];
+    const invalids = alpn.split(',').map(value => value.trim()).filter(value => !allowed.includes(value));
+    if (invalids.length) {
+        errors.push({
+            field: 'ALPN',
+            message: [
+                'Invalid ALPN values.',
+                'Allowed values are h2 and http/1.1, comma separated.',
+                'Invalid values are:\n',
+                ...invalids.map(val => `+ ${val}`)
+            ]
+        });
+    }
+}
+
+function validateCipherSuites(form: PanelSettings, errors: ValidationError[]) {
+    const cipherSuites = (form.cipherSuites || '').trim();
+    if (!cipherSuites) return;
+
+    const invalids = cipherSuites
+        .split(/[:,]/)
+        .map(value => value.trim())
+        .filter(value => !/^TLS_[A-Z0-9_]+$/.test(value));
+
+    if (invalids.length) {
+        errors.push({
+            field: 'Cipher Suites',
+            message: [
+                'Invalid cipher suite names.',
+                'Use colon separated TLS names like TLS_AES_128_GCM_SHA256.',
+                'Invalid values are:\n',
+                ...invalids.map(val => `+ ${val}`)
+            ]
+        });
+    }
+}
+
+function validateFinalMask(form: PanelSettings, errors: ValidationError[]) {
+    const finalMask = (form.finalMask || '').trim();
+    if (!finalMask) return;
+
+    try {
+        const parsed = JSON.parse(finalMask);
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+            throw new Error('FinalMask should be a JSON object.');
+        }
+
+        for (const key of ['tcp', 'udp']) {
+            const masks = (parsed as Record<string, unknown>)[key];
+            if (masks !== undefined && !Array.isArray(masks)) {
+                throw new Error(`FinalMask "${key}" should be an array.`);
+            }
+        }
+    } catch (error) {
+        errors.push({
+            field: 'FinalMask Raw JSON',
+            message: [`Invalid JSON: ${safeError(error)}`]
         });
     }
 }

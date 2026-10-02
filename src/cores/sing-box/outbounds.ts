@@ -66,6 +66,8 @@ export function buildWebsocketOutbound(
         vlUUID,
         trPass,
         fingerprint,
+        alpn,
+        cipherSuites,
         enableTFO,
         enableECH,
         echServerName,
@@ -82,8 +84,11 @@ export function buildWebsocketOutbound(
             sni,
             enableECH && !isFragment,
             echServerName || undefined,
-            'http/1.1',
-            fingerprint
+            alpn,
+            fingerprint,
+            undefined,
+            undefined,
+            cipherSuites || undefined
         ) : undefined;
 
     if (protocol === _VL_) return buildOutbound<VlessOutbound>(remark, protocol, address, port, enableTFO, {
@@ -236,10 +241,17 @@ function buildTLS(
     alpn?: string,
     fingerprint?: Fingerprint,
     publicKey?: string,
-    shortID?: string
+    shortID?: string,
+    cipherSuites?: string
 ): TLS | undefined {
     if (!['tls', 'reality'].includes(security)) return undefined;
     const tlsAlpns = alpn?.split(',').filter(value => value !== 'h2');
+    // "unsafe" is an Xray-only fingerprint; sing-box uTLS rejects it, so fall back to plain TLS
+    const isUnsafe = fingerprint === 'unsafe';
+    const cipherSuitesList = cipherSuites
+        ?.split(/[:,]/)
+        .map(value => value.trim())
+        .filter(Boolean);
 
     const tls: TLS = {
         enabled: true,
@@ -247,9 +259,10 @@ function buildTLS(
         record_fragment: isFragment,
         insecure: allowInsecure,
         alpn: tlsAlpns,
+        cipher_suites: cipherSuitesList?.length ? cipherSuitesList : undefined,
         utls: {
-            enabled: !!fingerprint,
-            fingerprint: fingerprint
+            enabled: !!fingerprint && !isUnsafe,
+            fingerprint: isUnsafe ? undefined : fingerprint
         },
         ech: enableECH ? {
             enabled: true,
