@@ -14,34 +14,34 @@ export default {
 	async fetch(request: Request, env: Env) {
 		try {
 			init(request, env);
-			if (request.headers.get('Upgrade') === 'websocket') return handleWebsocket(request);
+			if (request.headers.get('Upgrade') === 'websocket') return await handleWebsocket(request);
 			const { securePath, pathname } = getGlobals();
 			const path = pathname.split('/').splice(0, 3).join('/');
 
 			switch (path) {
 				case `/${securePath}/panel`:
-					return handlePanel(request, env);
+					return await handlePanel(request, env);
 
 				case `/${securePath}/login`:
-					return handleLogin(request, env);
+					return await handleLogin(request, env);
 
 				case `/${securePath}/sub`:
-					return handleSubscriptions(request, env);
+					return await handleSubscriptions(request, env);
 
 				case `/${securePath}/telegram`:
-					return handleTelegram(request, env);
+					return await handleTelegram(request, env);
 
 				case `/${securePath}/dns-query`:
-					return handleDoH(request);
+					return await handleDoH(request);
 
 				case `/${securePath}/proxy-ip`:
-					return handleProxyIPs(request, env);
+					return await handleProxyIPs(request, env);
 				
 				case `/${securePath}/qrcode`:
-					return generateQRCode(request);
+					return await generateQRCode(request);
 					
 				default:
-					return fallback(request);
+					return await fallback(request);
 			}
 		} catch (error) {
 			return renderError(error);

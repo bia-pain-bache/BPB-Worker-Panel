@@ -11,13 +11,13 @@ export async function handleWebsocket(request: Request): Promise<Response> {
     try {
         switch (protocol) {
             case 'vl':
-                return VlOverWSHandler(request);
+                return await VlOverWSHandler(request);
 
             case 'tr':
-                return TrOverWSHandler(request);
+                return await TrOverWSHandler(request);
 
             default:
-                return fallback(request);
+                return await fallback(request);
         }
     } catch (error) {
         return new Response('Bad Request', { status: HttpStatus.BAD_REQUEST });

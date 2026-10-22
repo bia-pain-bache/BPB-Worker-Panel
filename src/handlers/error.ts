@@ -1,4 +1,4 @@
-import { decompressGzipBase64, safeError } from '@common';
+import { decompressGzipBase64, HttpStatus, safeError } from '@common';
 
 export async function renderError(error: any): Promise<Response> {
     const str = await decompressGzipBase64(ERROR_HTML_CONTENT);
@@ -7,6 +7,7 @@ export async function renderError(error: any): Promise<Response> {
         .replaceAll('__ICON__', ICON_CONTENT);
 
     return new Response(html, {
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
         headers: { 'Content-Type': 'text/html; charset=utf-8' }
     });
 }
