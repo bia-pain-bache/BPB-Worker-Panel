@@ -1,14 +1,10 @@
 import { safeError } from '@common';
 import { getGlobals } from '@settings';
+import { buildWorkerMetadata } from '@api/worker-metadata';
 
 export async function deployWorkers(script: string) {
     const { accID, apiToken, mainDomain } = getGlobals();
-    const metadata = {
-        main_module: 'worker.js',
-        keep_bindings: ['kv_namespace'],
-        compatibility_date: new Date().toISOString().split('T')[0],
-        compatibility_flags: ['nodejs_compat']
-    };
+    const metadata = buildWorkerMetadata(new Date().toISOString().split('T')[0]);
     const uploadForm = new FormData();
     uploadForm.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
     uploadForm.append('worker.js', new Blob([script], { type: 'application/javascript+module' }), 'worker.js');

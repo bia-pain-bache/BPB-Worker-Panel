@@ -7,6 +7,7 @@
 	"type": "module",
 	"scripts": {
 		"check": "tsc --noEmit",
+		"test": "node --test scripts/test-worker-metadata.js",
 		"build": "node scripts/build.js",
 		"build-dev": "node scripts/build-dev.js"
 	},

@@ -6,6 +6,7 @@
 !src/**
 !scripts/
 !scripts/build.js
+!scripts/test-worker-metadata.js
 !.github/
 !.github/**
 !README_fa.md
