@@ -1196,9 +1196,17 @@ function renderClients(clients) {
 
 
 
+function setTwpControlsDisabled(disabled) {
+    ['twp-test-btn', 'twp-reset-btn'].forEach(id => {
+        const button = document.getElementById(id);
+        if (button) button.disabled = disabled;
+    });
+}
+
 async function loadTelegramProxyLink() {
     const el = document.getElementById('twp-link');
     if (!el) return;
+    setTwpControlsDisabled(false);
     setTwpStatus('');
     try {
         const res = await fetch('./panel/telegram-proxy/link?nocache=' + Date.now(), { credentials: 'include', cache: 'no-store' });
@@ -1206,6 +1214,7 @@ async function loadTelegramProxyLink() {
         if (data.success && data.body && data.body.connectionUrl) {
             el.textContent = data.body.connectionUrl;
         } else if (data.body && data.body.unavailable) {
+            setTwpControlsDisabled(true);
             el.textContent = data.message || 'Unavailable on this deployment';
         } else {
             el.textContent = data.message || 'Secret not configured — use Reset Secret';

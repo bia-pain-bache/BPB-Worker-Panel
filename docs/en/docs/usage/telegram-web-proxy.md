@@ -8,7 +8,7 @@ BPB includes an independent **Telegram Web Proxy** option for connecting to Tele
 ## Connect Telegram
 
 1. Deploy a BPB Worker build that includes Telegram Web Proxy and sign in to the panel.
-2. Find **Telegram Web Proxy** near the top of the panel, immediately above **DNS over HTTPS**.
+2. Find **Telegram Web Proxy** below **Subscriptions** and above **DNS over HTTPS**.
 3. Copy or open the connection link shown in that section. The panel obtains this link for the authenticated administrator; you do not need to generate it manually.
 4. Open the link on a device with Telegram installed and follow Telegram's prompt to add the proxy.
 5. Enable the added proxy in Telegram and check that messages load.
@@ -19,7 +19,7 @@ The link uses Telegram's official `t.me/webproxy` format and contains the Worker
 
 Select **Test** in the Telegram Web Proxy panel section. The panel reports only the final result:
 
-- **موفق** — the server-side checks completed successfully.
+- **Success** — the server-side checks completed successfully.
 - **Error 21xx** — one of the checks failed. The code helps identify the failing area; see the table below.
 
 The test checks the authenticated request, Worker availability, the `SESSIONS` Durable Object binding, the configured `PROXY_SECRET`, Durable Object initialization, and an outbound TCP connection to a Telegram data-center endpoint on port `443`.
@@ -43,7 +43,7 @@ The previous link contains the old secret and should no longer be used. Replace 
 | `2121` | The Durable Object health/initialization check failed. Check the `SESSIONS` binding and its migration. |
 | `2122` | The Worker could not establish the diagnostic TCP connection to a Telegram data-center endpoint on port `443`. |
 | `2198` | Cloudflare rejected the secret reset. Check the server-side Cloudflare account configuration and token permissions. |
-| `2199` | A network or unexpected error occurred while resetting the secret. |
+| `2199` | A network or unexpected error occurred while processing the request. |
 
 These codes identify the stage reported by the panel; they are diagnostic hints, not a complete analysis of every possible client-side failure.
 

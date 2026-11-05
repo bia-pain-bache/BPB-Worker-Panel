@@ -1093,3 +1093,19 @@ table tr:not(:last-child) {
     font-size: 1.15rem;
     color: #16a34a;
 }
+
+
+/* Keep long Telegram Web Proxy links readable on narrow screens. */
+#telegram-proxy-section .output-container {
+    flex: 1;
+    min-width: 0;
+}
+
+#telegram-proxy-section .twp-output {
+    display: block;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    text-align: left;
+    line-height: 1.5;
+}
