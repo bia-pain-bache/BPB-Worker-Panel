@@ -941,7 +941,7 @@
     </div>
 
     <div class="form-container container" id="telegram-proxy-section">
-        <h2><span class="material-symbols-rounded">send</span> Telegram Web Proxy</h2>
+        <h2><span class="material-symbols-rounded">hub</span> Telegram Web Proxy</h2>
         <div class="value-container">
             <div class="output-container">
                 <span id="twp-link" class="output">—</span>
@@ -950,16 +950,10 @@
                 <span class="material-symbols-rounded">content_copy</span>
             </button>
         </div>
-        <div class="form-control apply" style="margin-top:0.75rem;gap:0.5rem;display:flex;flex-wrap:wrap;align-items:center">
-            <button type="button" id="twp-test-btn" class="button" style="padding:0.35rem 0.75rem;font-size:0.85em" onclick="testTelegramProxy(this)">
-                <span class="material-symbols-rounded" style="font-size:1.1em">health_and_safety</span>
-                Test
-            </button>
-            <button type="button" id="twp-reset-btn" class="button delete" style="padding:0.35rem 0.75rem;font-size:0.85em" onclick="resetTelegramProxySecret(this)">
-                <span class="material-symbols-rounded" style="font-size:1.1em">restart_alt</span>
-                Reset Secret
-            </button>
-            <span id="twp-status" style="font-size:0.9em;opacity:0.9"></span>
+        <div class="twp-actions">
+            <button type="button" id="twp-test-btn" class="button twp-btn" onclick="testTelegramProxy(this)">Test</button>
+            <button type="button" id="twp-reset-btn" class="button delete twp-btn" onclick="resetTelegramProxySecret(this)">Reset Secret</button>
+            <span id="twp-status" class="twp-status" aria-live="polite"></span>
         </div>
     </div>
 

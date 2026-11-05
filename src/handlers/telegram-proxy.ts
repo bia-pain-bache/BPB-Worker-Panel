@@ -11,6 +11,17 @@ const SECRET_HEX_RE = /^(?:[0-9a-f]{32}|dd[0-9a-f]{32})$/;
 const TELEGRAM_DC = '149.154.167.51';
 const TCP_TIMEOUT_MS = 4000;
 
+/** Stable panel error codes for docs mapping later. */
+export const TWP_ERROR = {
+    UNAUTHORIZED: 2101,
+    UNAVAILABLE: 2110,
+    SECRET_INVALID: 2120,
+    DO_HEALTH: 2121,
+    TCP_TELEGRAM: 2122,
+    RESET_FAILED: 2198,
+    NETWORK: 2199
+} as const;
+
 function sanitizeCloudflareError(error: unknown): string {
     const raw = safeError(error);
     return raw
@@ -48,10 +59,6 @@ async function probeTcp(hostname: string, port: number, timeoutMs: number): Prom
     }
 }
 
-/**
- * Authenticated: return permanent connection URL built from env.PROXY_SECRET.
- * Secret is only sent inside the authenticated panel response.
- */
 export async function getTelegramProxyLink(request: Request, env: Env): Promise<Response> {
     if (request.method !== 'GET') {
         return respond(false, HttpStatus.METHOD_NOT_ALLOWED, 'Method not allowed.', null, NO_STORE);
@@ -63,14 +70,16 @@ export async function getTelegramProxyLink(request: Request, env: Env): Promise<
     const { deployType, hostname, mainDomain } = getGlobals();
     if (deployType === 'pages' || !env.SESSIONS) {
         return respond(true, HttpStatus.OK, 'Telegram Web Proxy is only available on Workers.', {
-            unavailable: true
+            unavailable: true,
+            code: TWP_ERROR.UNAVAILABLE
         }, NO_STORE);
     }
 
     const secret = env.PROXY_SECRET;
     if (!secret || !SECRET_HEX_RE.test(String(secret))) {
         return respond(true, HttpStatus.OK, 'Secret not configured — use Reset Secret', {
-            connectionUrl: null
+            connectionUrl: null,
+            code: TWP_ERROR.SECRET_INVALID
         }, NO_STORE);
     }
 
@@ -80,23 +89,25 @@ export async function getTelegramProxyLink(request: Request, env: Env): Promise<
     }, NO_STORE);
 }
 
-/** Authenticated diagnostics — response only exposes overall ok/fail. */
 export async function testTelegramProxy(request: Request, env: Env): Promise<Response> {
     if (request.method !== 'POST') {
         return respond(false, HttpStatus.METHOD_NOT_ALLOWED, 'Method not allowed.', null, NO_STORE);
     }
     if (!(await authenticate(request, env))) {
-        return respond(false, HttpStatus.UNAUTHORIZED, 'Unauthorized or expired session.', null, NO_STORE);
+        return respond(false, HttpStatus.UNAUTHORIZED, 'Unauthorized or expired session.', {
+            overall: 'fail',
+            code: TWP_ERROR.UNAUTHORIZED
+        }, NO_STORE);
     }
 
     const { deployType } = getGlobals();
     if (deployType === 'pages' || !env.SESSIONS) {
-        return respond(true, HttpStatus.OK, 'خطا', { overall: 'fail' }, NO_STORE);
+        return respond(true, HttpStatus.OK, 'خطا', { overall: 'fail', code: TWP_ERROR.UNAVAILABLE }, NO_STORE);
     }
 
     const secret = env.PROXY_SECRET;
     if (!secret || !SECRET_HEX_RE.test(String(secret))) {
-        return respond(true, HttpStatus.OK, 'خطا', { overall: 'fail' }, NO_STORE);
+        return respond(true, HttpStatus.OK, 'خطا', { overall: 'fail', code: TWP_ERROR.SECRET_INVALID }, NO_STORE);
     }
 
     try {
@@ -108,15 +119,15 @@ export async function testTelegramProxy(request: Request, env: Env): Promise<Res
             body: '{}'
         });
         if (!(res.ok || res.status === 204)) {
-            return respond(true, HttpStatus.OK, 'خطا', { overall: 'fail' }, NO_STORE);
+            return respond(true, HttpStatus.OK, 'خطا', { overall: 'fail', code: TWP_ERROR.DO_HEALTH }, NO_STORE);
         }
     } catch {
-        return respond(true, HttpStatus.OK, 'خطا', { overall: 'fail' }, NO_STORE);
+        return respond(true, HttpStatus.OK, 'خطا', { overall: 'fail', code: TWP_ERROR.DO_HEALTH }, NO_STORE);
     }
 
     const tcpOk = await probeTcp(TELEGRAM_DC, 443, TCP_TIMEOUT_MS);
     if (!tcpOk) {
-        return respond(true, HttpStatus.OK, 'خطا', { overall: 'fail' }, NO_STORE);
+        return respond(true, HttpStatus.OK, 'خطا', { overall: 'fail', code: TWP_ERROR.TCP_TELEGRAM }, NO_STORE);
     }
 
     return respond(true, HttpStatus.OK, 'موفق', { overall: 'ok' }, NO_STORE);
@@ -127,14 +138,20 @@ export async function resetTelegramProxySecret(request: Request, env: Env): Prom
         return respond(false, HttpStatus.METHOD_NOT_ALLOWED, 'Method not allowed.', null, NO_STORE);
     }
     if (!(await authenticate(request, env))) {
-        return respond(false, HttpStatus.UNAUTHORIZED, 'Unauthorized or expired session.', null, NO_STORE);
+        return respond(false, HttpStatus.UNAUTHORIZED, 'Unauthorized or expired session.', {
+            code: TWP_ERROR.UNAUTHORIZED
+        }, NO_STORE);
     }
     const { deployType, accID, apiToken, mainDomain, hostname } = getGlobals();
     if (deployType === 'pages') {
-        return respond(false, HttpStatus.BAD_REQUEST, 'Only available on Workers.', null, NO_STORE);
+        return respond(false, HttpStatus.BAD_REQUEST, 'Only available on Workers.', {
+            code: TWP_ERROR.UNAVAILABLE
+        }, NO_STORE);
     }
     if (!accID || !apiToken || !mainDomain) {
-        return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, 'Missing server-side account configuration.', null, NO_STORE);
+        return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, 'Missing server-side account configuration.', {
+            code: TWP_ERROR.RESET_FAILED
+        }, NO_STORE);
     }
     const scriptName = mainDomain.split('.')[0];
     const newSecret = generateProxySecret();
@@ -152,12 +169,16 @@ export async function resetTelegramProxySecret(request: Request, env: Env): Prom
         try { data = await res.json(); } catch { data = null; }
         if (!res.ok || !data?.success) {
             const msg = data?.errors?.[0]?.message || `Cloudflare API rejected secret update (HTTP ${res.status})`;
-            return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, sanitizeCloudflareError(msg), null, NO_STORE);
+            return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, sanitizeCloudflareError(msg), {
+                code: TWP_ERROR.RESET_FAILED
+            }, NO_STORE);
         }
         return respond(true, HttpStatus.OK, 'موفق', {
             connectionUrl: buildConnectionUrl(workerHost, newSecret)
         }, NO_STORE);
     } catch (error) {
-        return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, sanitizeCloudflareError(error), null, NO_STORE);
+        return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, sanitizeCloudflareError(error), {
+            code: TWP_ERROR.NETWORK
+        }, NO_STORE);
     }
 }
