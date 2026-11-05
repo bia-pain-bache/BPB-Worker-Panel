@@ -1,6 +1,6 @@
 # :material-telegram:{ .md .middle } پروکسی وب تلگرام (Telegram Web Proxy)
 
-در BPB یک قابلیت مستقل به نام **Telegram Web Proxy** اضافه شده که اتصال تلگرام را از طریق یک Relay مبتنی بر WebSocket روی Cloudflare Worker برقرار می‌کند. این قابلیت با Telegram Bot، پروتکل‌های VLESS و Trojan و لینک‌های اشتراک BPB متفاوت است.
+در BPB یک قابلیت مستقل به نام **Telegram Web Proxy** اضافه شده که اتصال تلگرام را از طریق یک Relay مبتنی بر WebSocket روی Cloudflare Worker برقرار می‌کند. این قابلیت با Telegram Bot، پروتکل‌های VLESS و Trojan و لینک‌های اشتراک BPB متفاوت است و یک MTProto Proxy خام و مستقل نیست.
 
 !!! warning "فقط Workers"
     این قابلیت به Durable Object کلادفلر نیاز دارد و فقط روی **Cloudflare Workers** قابل استفاده است. در استقرار Cloudflare Pages پشتیبانی نمی‌شود.
