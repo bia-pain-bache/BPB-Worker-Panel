@@ -35,11 +35,13 @@
 - **تبدیل شدن به گره**: قابلیت به اشتراک‌گذاری تنظیمات پنل با دیگر کاربران BPB.
 - **تجمیع پروکسی**: قابلیت تجمیع پروکسی‌های شخصی با کانفیگ‌های BPB و تحویل در یک لینک اشتراک.
 - **Telegram Web Proxy**: امکان اتصال مستقل تلگرام از طریق یک Web Proxy روی Cloudflare Worker.
+- **Telegram Web Proxy**: امکان اتصال مستقل تلگرام از طریق یک Web Proxy روی Cloudflare Worker.
 
 ## محدودیت‌ها
 
 - **اتصال UDP**: پروتکل‌های VLESS و Trojan روی Workerها نمی‌تونن UDP رو به‌خوبی پشتیبانی کنن، برای همین به‌صورت پیش‌فرض غیرفعاله (این روی امکاناتی مثل تماس تصویری تلگرام تأثیر می‌ذاره). DNSهای UDP هم پشتیبانی نمی‌شن. به جاش DoH فعاله که امن‌تره.
 - **محدودیت تعداد درخواست**: هر Worker برای VLESS و Trojan روزانه 100 هزار درخواست پشتیبانی می‌کنه، که برای 2-3 نفر کافیه. برای اتصال نامحدود می‌تونید از کانفیگ‌های Warp استفاده کنید.
+- **محدودیت Telegram Web Proxy**: این قابلیت به Durable Object نیاز داره و فقط روی Cloudflare Workers فعاله، نه Pages. همچنین یک تونل عمومی UDP نیست و تماس صوتی/تصویری تلگرام را ارائه نمی‌دهد.
 - **محدودیت Telegram Web Proxy**: این قابلیت به Durable Object نیاز داره و فقط روی Cloudflare Workers فعاله، نه Pages. همچنین یک تونل عمومی UDP نیست و تماس صوتی/تصویری تلگرام را ارائه نمی‌دهد.
 
 ## شروع به کار
@@ -77,5 +79,7 @@
 - توسعه‌دهنده پروژه [پروکسی Cloudflare-workers/pages](https://github.com/yonggekkk/Cloudflare-workers-pages-vless)
 - توسعه‌دهنده پروژه CF-vless [3Kmfi6HP](https://github.com/3Kmfi6HP/EDtunnel)
 - توسعه‌دهنده پروژه IP ترجیحی کلادفلر [badafans](https://github.com/badafans/Cloudflare-IP-SpeedTest)، [XIU2](https://github.com/XIU2/CloudflareSpeedTest)
+- پیاده‌سازی Telegram Web Proxy: [MHDLabs/TWP-CF](https://github.com/MHDLabs/TWP-CF)
+- مرجع ایده‌های استقرار و مبهم‌سازی کد روی Cloudflare: [Jasaz](https://github.com/itsyebekhe/jasaz)
 - پیاده‌سازی Telegram Web Proxy: [MHDLabs/TWP-CF](https://github.com/MHDLabs/TWP-CF)
 - مرجع ایده‌های استقرار و مبهم‌سازی کد روی Cloudflare: [Jasaz](https://github.com/itsyebekhe/jasaz)
