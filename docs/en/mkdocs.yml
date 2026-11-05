@@ -96,6 +96,7 @@ nav:
     - Raw: usage/raw.md
     - Warp: usage/warp.md
     - Warp PRO: usage/warp-pro.md
+    - Telegram Web Proxy: usage/telegram-web-proxy.md
     - DoH: usage/doh.md
     - My IP: usage/my-ip.md
     - Supported Clients: usage/supported-clients.md
