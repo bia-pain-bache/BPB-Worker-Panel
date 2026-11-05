@@ -137,6 +137,26 @@
             </div>
         </form>
 
+
+        <div class="accordion-item" id="telegram-proxy-section">
+            <details open>
+                <summary><h3>Telegram Web Proxy</h3></summary>
+                <div class="section">
+                    <p class="form-control" style="opacity:.85;font-size:.9em">Workers only. Test diagnostics without exposing the secret. Reset shows the new link once.</p>
+                    <div id="twp-diagnostics" class="form-control" style="display:none"></div>
+                    <div id="twp-reset-result" class="form-control" style="display:none"></div>
+                    <div class="form-control apply">
+                        <button type="button" id="twp-test-btn" class="button" onclick="testTelegramProxy(this)">
+                            <span class="material-symbols-rounded">health_and_safety</span> Test
+                        </button>
+                        <button type="button" id="twp-reset-btn" class="button delete" onclick="resetTelegramProxySecret(this)">
+                            <span class="material-symbols-rounded">key_vertical</span> Reset Secret
+                        </button>
+                    </div>
+                </div>
+            </details>
+        </div>
+
     </div>
 
     <div class="form-container container">

@@ -1192,3 +1192,64 @@ function renderClients(clients) {
         document.getElementById('supported-clients').appendChild(row);
     });
 }
+
+async function testTelegramProxy(btn) {
+    if (btn.disabled) return;
+    btn.disabled = true;
+    const box = document.getElementById('twp-diagnostics');
+    const resetBox = document.getElementById('twp-reset-result');
+    if (resetBox) { resetBox.style.display = 'none'; resetBox.textContent = ''; }
+    box.style.display = 'block';
+    box.textContent = 'Running diagnostics…';
+    try {
+        const res = await fetch('./panel/telegram-proxy/test', { method: 'POST', credentials: 'include', cache: 'no-store' });
+        const data = await res.json();
+        if (!data.success && res.status === 401) { box.textContent = 'Unauthorized — log in again.'; return; }
+        const checks = (data.body && data.body.checks) || [];
+        if (!checks.length) { box.textContent = data.message || 'No diagnostics.'; return; }
+        box.innerHTML = checks.map(c => {
+            const icon = c.status === 'ok' ? '✅' : c.status === 'fail' ? '❌' : c.status === 'unavailable' ? '⚠️' : '⏭️';
+            return `<div><strong>${icon} ${c.id}</strong>: ${escapeHtml(c.detail||'')}</div>`;
+        }).join('') + `<div style="margin-top:.5em"><strong>Overall:</strong> ${escapeHtml(String(data.body.overall||''))}</div>`;
+    } catch (e) { box.textContent = 'Request failed.'; }
+    finally { btn.disabled = false; }
+}
+async function resetTelegramProxySecret(btn) {
+    if (btn.disabled) return;
+    if (!confirm('Generate a NEW Telegram Web Proxy secret? Existing links will stop working.')) return;
+    btn.disabled = true;
+    const testBtn = document.getElementById('twp-test-btn');
+    if (testBtn) testBtn.disabled = true;
+    const box = document.getElementById('twp-reset-result');
+    const diag = document.getElementById('twp-diagnostics');
+    if (diag) { diag.style.display = 'none'; diag.textContent = ''; }
+    box.style.display = 'block';
+    box.textContent = 'Updating secret…';
+    try {
+        const res = await fetch('./panel/telegram-proxy/reset-secret', { method: 'POST', credentials: 'include', cache: 'no-store' });
+        const data = await res.json();
+        if (!data.success) { box.textContent = data.message || 'Reset failed.'; return; }
+        const url = data.body && data.body.connectionUrl;
+        if (!url) { box.textContent = 'No connection URL returned.'; return; }
+        box.innerHTML = '';
+        const note = document.createElement('p');
+        note.textContent = 'New connection link (shown once). Copy it now.';
+        box.appendChild(note);
+        const input = document.createElement('input');
+        input.type = 'text'; input.readOnly = true; input.value = url; input.style.width = '100%'; input.id = 'twp-once-url';
+        box.appendChild(input);
+        const copyBtn = document.createElement('button');
+        copyBtn.type = 'button'; copyBtn.className = 'button'; copyBtn.textContent = 'Copy';
+        copyBtn.onclick = async () => { try { await navigator.clipboard.writeText(input.value); copyBtn.textContent = 'Copied'; } catch { input.select(); document.execCommand('copy'); copyBtn.textContent = 'Copied'; } };
+        box.appendChild(copyBtn);
+        const dismiss = document.createElement('button');
+        dismiss.type = 'button'; dismiss.className = 'button'; dismiss.textContent = 'Dismiss';
+        dismiss.onclick = () => { input.value = ''; box.innerHTML = ''; box.style.display = 'none'; };
+        box.appendChild(dismiss);
+        window.addEventListener('pagehide', () => { input.value = ''; box.innerHTML = ''; }, { once: true });
+    } catch (e) { box.textContent = 'Request failed.'; }
+    finally { btn.disabled = false; if (testBtn) testBtn.disabled = false; }
+}
+function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
