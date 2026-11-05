@@ -71,3 +71,15 @@
 
 ??? question "Why sing-box throws error while importing subscription?"
     BPB only supports sing-box 1.12.0 or higher
+
+??? question "Is Telegram Web Proxy available on Cloudflare Pages?"
+    No. Telegram Web Proxy requires a Durable Object and is available only on Cloudflare Workers.
+
+??? question "Does Telegram Web Proxy support Telegram voice and video calls?"
+    No. This feature relays Telegram Web Proxy traffic over the Worker and is not a general-purpose UDP tunnel. Use a suitable Warp connection for UDP-dependent features.
+
+??? question "Is Telegram Web Proxy available on Cloudflare Pages?"
+    No. Telegram Web Proxy requires a Durable Object and is available only on Cloudflare Workers.
+
+??? question "Does Telegram Web Proxy support Telegram voice and video calls?"
+    No. This feature relays Telegram Web Proxy traffic over the Worker and is not a general-purpose UDP tunnel. Use a suitable Warp connection for UDP-dependent features.

@@ -62,6 +62,22 @@
 
     [:octicons-arrow-right-24: شروع](warp-pro.md)
 
+- :material-telegram:{ .lg .middle } **Telegram Web Proxy**
+
+    ---
+
+    اتصال تلگرام از طریق Web Proxy روی Cloudflare Worker.
+
+    [:octicons-arrow-right-24: شروع](telegram-web-proxy.md)
+
+- :material-telegram:{ .lg .middle } **Telegram Web Proxy**
+
+    ---
+
+    اتصال تلگرام از طریق Web Proxy روی Cloudflare Worker.
+
+    [:octicons-arrow-right-24: شروع](telegram-web-proxy.md)
+
 - :material-playlist-check:{ .lg .middle } **DNS over HTTPS**
 
     ---

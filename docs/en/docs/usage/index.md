@@ -61,6 +61,14 @@ First, update your client to the latest version or refer to the table below. The
 
     [:octicons-arrow-right-24: Getting started](warp-pro.md)
 
+- :material-telegram:{ .lg .middle } **Telegram Web Proxy**
+
+    ---
+
+    Connect Telegram through the Web Proxy endpoint on your Cloudflare Worker.
+
+    [:octicons-arrow-right-24: Getting started](telegram-web-proxy.md)
+
 - :material-playlist-check:{ .lg .middle } **DNS over HTTPS**
 
     ---
