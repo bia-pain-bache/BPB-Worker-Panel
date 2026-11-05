@@ -1228,32 +1228,40 @@ function setTwpStatus(kind, text) {
     if (!status) return;
     status.classList.remove('is-ok', 'is-err');
     status.innerHTML = '';
-    if (!kind || !text) {
-        status.textContent = '';
-        return;
-    }
+    status.textContent = '';
+    if (!kind) return;
     if (kind === 'ok') {
         status.classList.add('is-ok');
         status.innerHTML = '<span class="material-symbols-rounded twp-check">check_circle</span><span>موفق</span>';
         return;
     }
     if (kind === 'loading') {
-        status.textContent = text;
+        status.textContent = text || '…';
         return;
     }
     status.classList.add('is-err');
-    status.textContent = text;
+    status.textContent = text || 'Error 2199';
 }
 
 async function testTelegramProxy(btn) {
-    if (btn.disabled) return;
+    if (!btn || btn.disabled) return;
     btn.disabled = true;
     setTwpStatus('loading', '…');
     try {
-        const res = await fetch('./panel/telegram-proxy/test', { method: 'POST', credentials: 'include', cache: 'no-store' });
-        const data = await res.json();
-        if (!data.success && res.status === 401) {
+        const res = await fetch('./panel/telegram-proxy/test', {
+            method: 'POST',
+            credentials: 'same-origin',
+            cache: 'no-store',
+            headers: { 'Accept': 'application/json' }
+        });
+        let data = null;
+        try { data = await res.json(); } catch (_) { data = null; }
+        if (res.status === 401 || (data && data.success === false && data.status === 401)) {
             setTwpStatus('err', 'Error 2101');
+            return;
+        }
+        if (!data) {
+            setTwpStatus('err', 'Error 2199');
             return;
         }
         const overall = data.body && data.body.overall;
@@ -1271,7 +1279,7 @@ async function testTelegramProxy(btn) {
 }
 
 async function resetTelegramProxySecret(btn) {
-    if (btn.disabled) return;
+    if (!btn || btn.disabled) return;
     if (!confirm('Generate a NEW Telegram Web Proxy secret? Existing links will stop working.')) return;
     btn.disabled = true;
     const testBtn = document.getElementById('twp-test-btn');
@@ -1279,10 +1287,16 @@ async function resetTelegramProxySecret(btn) {
     const linkEl = document.getElementById('twp-link');
     setTwpStatus('loading', '…');
     try {
-        const res = await fetch('./panel/telegram-proxy/reset-secret', { method: 'POST', credentials: 'include', cache: 'no-store' });
-        const data = await res.json();
-        if (!data.success) {
-            const code = (data.body && data.body.code) || (res.status === 401 ? 2101 : 2198);
+        const res = await fetch('./panel/telegram-proxy/reset-secret', {
+            method: 'POST',
+            credentials: 'same-origin',
+            cache: 'no-store',
+            headers: { 'Accept': 'application/json' }
+        });
+        let data = null;
+        try { data = await res.json(); } catch (_) { data = null; }
+        if (!data || !data.success) {
+            const code = (data && data.body && data.body.code) || (res.status === 401 ? 2101 : 2198);
             setTwpStatus('err', 'Error ' + code);
             return;
         }

@@ -55,7 +55,7 @@ export class RelaySession {
     if (this.closed) return new Response("session closed", { status: 404 });
     if (url.pathname === "/internal/init" && request.method === "POST") {
       if (!this.initialized) {
-        await this.ctx.storage.put({ expiresAt: Date.now() + 10 * 60 * 1000 });
+        await this.ctx.storage.put("expiresAt", Date.now() + 10 * 60 * 1000);
         this.initialized = true;
       }
       return new Response(null, { status: 204 });

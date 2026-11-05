@@ -9,9 +9,8 @@ const NO_STORE = {
 };
 const SECRET_HEX_RE = /^(?:[0-9a-f]{32}|dd[0-9a-f]{32})$/;
 const TELEGRAM_DC = '149.154.167.51';
-const TCP_TIMEOUT_MS = 4000;
+const TCP_TIMEOUT_MS = 5000;
 
-/** Stable panel error codes for docs mapping later. */
 export const TWP_ERROR = {
     UNAUTHORIZED: 2101,
     UNAVAILABLE: 2110,
@@ -101,7 +100,7 @@ export async function testTelegramProxy(request: Request, env: Env): Promise<Res
     }
 
     const { deployType } = getGlobals();
-    if (deployType === 'pages' || !env.SESSIONS) {
+    if (deployType === 'pages' || !env.SESSIONS || typeof env.SESSIONS.get !== 'function') {
         return respond(true, HttpStatus.OK, 'خطا', { overall: 'fail', code: TWP_ERROR.UNAVAILABLE }, NO_STORE);
     }
 
@@ -110,6 +109,7 @@ export async function testTelegramProxy(request: Request, env: Env): Promise<Res
         return respond(true, HttpStatus.OK, 'خطا', { overall: 'fail', code: TWP_ERROR.SECRET_INVALID }, NO_STORE);
     }
 
+    // Durable Object reachability
     try {
         const id = env.SESSIONS.idFromName('__bpb_twp_health__');
         const stub = env.SESSIONS.get(id);
