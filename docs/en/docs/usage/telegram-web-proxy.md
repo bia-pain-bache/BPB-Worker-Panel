@@ -1,6 +1,6 @@
 # :material-telegram:{ .md .middle } Telegram Web Proxy
 
-BPB includes an independent **Telegram Web Proxy** option for connecting to Telegram through a WebSocket-based relay running on your Cloudflare Worker. It is separate from Telegram Bot, VLESS, Trojan, and BPB subscription links.
+BPB includes an independent **Telegram Web Proxy** option for connecting to Telegram through a WebSocket-based relay running on your Cloudflare Worker. It is separate from Telegram Bot, VLESS, Trojan, and BPB subscription links. It is not a standalone raw MTProto proxy.
 
 !!! warning "Workers only"
     Telegram Web Proxy requires a Cloudflare Durable Object and is available on **Cloudflare Workers** deployments. It is not available on Cloudflare Pages.
