@@ -1232,7 +1232,7 @@ function setTwpStatus(kind, text) {
     if (!kind) return;
     if (kind === 'ok') {
         status.classList.add('is-ok');
-        status.innerHTML = '<span class="material-symbols-rounded twp-check">check_circle</span><span>موفق</span>';
+        status.innerHTML = '<span class="material-symbols-rounded twp-check">check_circle</span><span>Success</span>';
         return;
     }
     if (kind === 'loading') {
