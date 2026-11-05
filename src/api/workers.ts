@@ -1,6 +1,16 @@
 import { safeError } from '@common';
 import { getGlobals } from '@settings';
 
+/**
+ * Cloudflare Script Upload metadata for BPB Workers.
+ *
+ * Anti-1101 rules (aligned with successful jasaz-style deploys):
+ * - Always set main_module for ESM bundles (minified export may be `export{` without space).
+ * - Keep Durable Object class export name WebProxySession stable.
+ * - Apply new_sqlite_classes only on first enable; later updates use old_tag/new_tag only.
+ * - Prefer dynamic import('cloudflare:sockets') in app code so static import is not required
+ *   after the Object.assign(globalThis, …) preamble in the built worker.
+ */
 export function buildWorkerUploadMetadata(options: {
     applySqliteMigration?: boolean;
     existingMigrationTag?: string | null;
@@ -21,13 +31,16 @@ export function buildWorkerUploadMetadata(options: {
         metadata.migrations = { new_tag: 'v1-twp', new_sqlite_classes: ['WebProxySession'] };
     } else if (existingMigrationTag) {
         metadata.migrations = { old_tag: existingMigrationTag, new_tag: existingMigrationTag };
+    } else {
+        // Subsequent panel update-panel deploys: do not re-create SQLite class.
+        metadata.migrations = { old_tag: 'v1-twp', new_tag: 'v1-twp' };
     }
     return metadata;
 }
 
 export async function deployWorkers(script: string) {
     const { accID, apiToken, mainDomain } = getGlobals();
-    const metadata = buildWorkerUploadMetadata({ applySqliteMigration: false });
+    const metadata = buildWorkerUploadMetadata({ existingMigrationTag: 'v1-twp' });
     const uploadForm = new FormData();
     uploadForm.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
     uploadForm.append('worker.js', new Blob([script], { type: 'application/javascript+module' }), 'worker.js');
@@ -66,7 +79,10 @@ export async function setWorkerDomain(domain: string) {
     try {
         const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accID}/workers/domains`, {
             method: 'PUT',
-            headers: { 'Authorization': `Bearer ${apiToken}`, 'Content-Type': 'application/json' },
+            headers: {
+                'Authorization': `Bearer ${apiToken}`,
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ hostname: domain, service: scriptName })
         });
         const data: any = await res.json();

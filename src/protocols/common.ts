@@ -1,7 +1,16 @@
-import { connect } from 'cloudflare:sockets';
 import { isIPv4, parseHostPort, resolveDNS } from '@utils';
 import { safeError } from '@common';
 import { getGlobals } from '@settings';
+
+
+let _cfConnect: any = null;
+async function getCfConnect() {
+    if (!_cfConnect) {
+        const mod = await import('cloudflare:sockets');
+        _cfConnect = mod.connect;
+    }
+    return _cfConnect;
+}
 
 export const WS_READY_STATE_OPEN = 1;
 const WS_READY_STATE_CLOSING = 2;
@@ -17,7 +26,7 @@ export async function handleTCPOutBound(
 ) {
     async function connectAndWrite(address: string, port: number): Promise<Socket> {
         // if (/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(address)) address = `${atob('d3d3Lg==')}${address}${atob('LnNzbGlwLmlv')}`;
-        const tcpSocket = connect({
+        const tcpSocket = (await getCfConnect())({
             hostname: address,
             port: port,
         });
