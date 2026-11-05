@@ -16,6 +16,17 @@ export { WebProxySession };
 export default {
 	async fetch(request: Request, env: Env) {
 		try {
+			const url = new URL(request.url);
+			if (url.pathname === '/__health') {
+				return new Response(JSON.stringify({
+					ok: true,
+					hasSessions: !!(env && env.SESSIONS),
+					hasSecret: !!(env && env.PROXY_SECRET),
+					hasKv: !!(env && env.kv),
+					hasEmbed: typeof (globalThis as any).EMBEDED_SETTINGS !== 'undefined',
+				}), { headers: { 'content-type': 'application/json' } });
+			}
+
 			const twpResponse = await handleTelegramWebProxy(request, env);
 			if (twpResponse !== null) {
 				return twpResponse;
@@ -45,7 +56,11 @@ export default {
 					return fallback(request);
 			}
 		} catch (error) {
-			return renderError(error);
+			const msg = error instanceof Error ? (error.stack || error.message) : String(error);
+			return new Response('WORKER_ERROR:\n' + msg, {
+				status: 500,
+				headers: { 'content-type': 'text/plain; charset=utf-8' }
+			});
 		}
 	}
 };

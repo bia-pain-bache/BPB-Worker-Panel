@@ -1,6 +1,7 @@
 // @ts-nocheck
 
-import { connect } from "cloudflare:sockets";
+// cloudflare:sockets is loaded dynamically to keep the Worker module valid
+// after Object.assign(globalThis, ...) preamble (static import after statements breaks ESM).
 import { RelaySession } from "./session";
 import { FRAME, encodeFrame, parseFrames, clampInt } from "./protocol";
 import { bridgePage } from "./bridge";
@@ -18,7 +19,9 @@ export async function handleTelegramWebProxy(request, env) {
 }
 
 export class WebProxySession extends RelaySession {
-  constructor(ctx, env) { super(ctx, env, connect); }
+  constructor(ctx, env) {
+    super(ctx, env, null);
+  }
 }
 
 async function route(request, env) {

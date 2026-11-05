@@ -221,7 +221,9 @@ export class RelaySession {
       this.active(stream);
       clearTimeout(stream.handshakeTimer); stream.handshakeTimer = null;
       const started = this.diagnostics ? Date.now() : 0;
-      const socket = this.connect({ hostname: TELEGRAM_DCS[Math.abs(client.dcId)], port: 443 }, { allowHalfOpen: false });
+      const connectFn = this.connect || (await import("cloudflare:sockets")).connect;
+      this.connect = connectFn;
+      const socket = connectFn({ hostname: TELEGRAM_DCS[Math.abs(client.dcId)], port: 443 }, { allowHalfOpen: false });
       stream.socket = socket; // Track before awaiting: CLOSE must cancel in-flight dials.
       Promise.resolve(socket.closed).catch(() => {});
       await waitFor(socket.opened, stream.abort.signal, LIMITS.connectTimeout, "connect timeout");
