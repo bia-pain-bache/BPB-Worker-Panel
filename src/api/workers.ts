@@ -58,14 +58,18 @@ export async function getWorkerMigrationTag(
     scriptName: string
 ): Promise<string | null> {
     try {
+        // GET .../scripts/{name} returns script content, not metadata.
+        // Migration tag is available on the account scripts list entries.
         const res = await fetch(
-            `https://api.cloudflare.com/client/v4/accounts/${accID}/workers/scripts/${encodeURIComponent(scriptName)}`,
+            `https://api.cloudflare.com/client/v4/accounts/${accID}/workers/scripts`,
             { headers: { Authorization: `Bearer ${apiToken}` } }
         );
-        if (res.status === 404) return null;
+        if (!res.ok) return null;
         const data: any = await res.json();
-        if (!data?.success) return null;
-        const tag = data.result?.migration_tag;
+        if (!data?.success || !Array.isArray(data.result)) return null;
+        const entry = data.result.find((s: any) => s?.id === scriptName);
+        if (!entry) return null;
+        const tag = entry.migration_tag;
         return typeof tag === 'string' && tag.trim() ? tag.trim() : null;
     } catch {
         return null;

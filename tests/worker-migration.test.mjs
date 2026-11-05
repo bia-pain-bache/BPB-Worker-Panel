@@ -7,7 +7,6 @@ import { fileURLToPath } from 'node:url';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const src = readFileSync(join(root, 'src/api/workers.ts'), 'utf8');
 
-// Evaluate pure builder by extracting the function body from source (no path-alias imports).
 const TWP_MIGRATION_TAG = 'v1-twp';
 function buildWorkerUploadMetadata(options = {}) {
   const existingMigrationTag =
@@ -36,12 +35,13 @@ function buildWorkerUploadMetadata(options = {}) {
 }
 
 describe('Worker migration metadata (source contract)', () => {
-  it('source exports TWP_MIGRATION_TAG and fetch-based tag lookup', () => {
+  it('source looks up real migration_tag and never assumes v1-twp exists', () => {
     assert.match(src, /export const TWP_MIGRATION_TAG = 'v1-twp'/);
     assert.match(src, /export async function getWorkerMigrationTag/);
+    assert.match(src, /workers\/scripts/);
+    assert.match(src, /migration_tag/);
     assert.match(src, /existingMigrationTag = await getWorkerMigrationTag/);
     assert.match(src, /new_sqlite_classes: \['WebProxySession'\]/);
-    // Must not hard-code assumption that v1-twp already exists on deploy
     assert.doesNotMatch(src, /buildWorkerUploadMetadata\(\{\s*existingMigrationTag:\s*'v1-twp'\s*\}\)/);
   });
 
