@@ -26,12 +26,14 @@ This project is aimed to provide a user panel to access FREE, SECURE, PRIVATE pr
 10. **Password-protected panel:** Provides secure and private panel with full authentication.
 11. **Fully customizable:** Supports setting up clean IPs-domains, Proxy IPs, DNS servers, choosing ports and protocols, Warp endpoints and more.
 12. **Node ability:** Can share settings and proxies across other BPB users.
-13. **Proxy aggregation:** Supports aggregating another proxies into BPB proxies and deliver in a single subscription
+13. **Proxy aggregation:** Supports aggregating another proxies into BPB proxies and deliver in a single subscription.
+14. **Telegram Web Proxy:** Provides an independent Telegram Web Proxy connection through a Cloudflare Worker.
 
 ## Limitations
 
 1. **UDP transport**: VLESS and Trojan protocols on workers do not handle **UDP** properly, so it is disabled by default (affecting features like Telegram video calls), UDP DNS is also unsupported. DoH is enabled by default for enhanced security.
 2. **Request limit**: each worker supports 100K requests per day for VLESS and Trojan, suitable for 2-3 users. You can use limitless Warp configs.
+3. **Telegram Web Proxy**: Requires Cloudflare Workers and Durable Objects; Pages deployments are not supported. It is not a general-purpose UDP tunnel.
 
 ## Getting started
 
