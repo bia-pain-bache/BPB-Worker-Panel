@@ -6,6 +6,8 @@
         "types": ["@cloudflare/workers-types", "node"],
         "moduleResolution": "bundler",
         "strict": true,
+        "allowJs": true,
+        "checkJs": false,
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
         "skipLibCheck": true,

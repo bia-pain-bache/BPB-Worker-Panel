@@ -100,7 +100,7 @@ async function updatePanel(request: Request, env: Env): Promise<Response> {
         if (deployType === 'pages') {
             await deployPages(script);
         } else {
-            await deployWorkers(script);
+            await deployWorkers(script, env);
         }
 
         return respond(true, HttpStatus.OK);
@@ -193,7 +193,7 @@ async function updatePanelSettings(request: Request, env: Env): Promise<Response
 
         await Promise.all([
             updateDataset(env, newSettings),
-            updateMainSettings(newSettings)
+            updateMainSettings(newSettings, env)
         ]);
 
         const { securePath } = getGlobals();
@@ -224,7 +224,7 @@ async function resetPanelSettings(request: Request, env: Env): Promise<Response>
 
         const [kvSettings, mainSettings] = await Promise.all([
             updateDataset(env),
-            updateMainSettings(null)
+            updateMainSettings(null, env)
         ]);
 
         return respond(true, HttpStatus.OK, '', { ...kvSettings, ...mainSettings });

@@ -55,9 +55,15 @@ The Worker integration uses:
 - The `SESSIONS` Durable Object namespace binding.
 - SQLite-backed Durable Object storage.
 - The `v1-twp` migration tag for the initial SQLite class creation.
-- `PROXY_SECRET` as a Cloudflare Worker secret binding.
 
-The initial SQLite migration must be applied once when enabling the feature on a new Worker. Later updates must preserve the existing migration state rather than trying to create the SQLite class again. Do not place the proxy secret in the repository, panel HTML, client-side JavaScript, or logs.
+- `PROXY_SECRET` as a Cloudflare Worker secret binding (used in the Telegram connection link).
+- `SESSION_SIGNING_SECRET` as a separate Cloudflare Worker secret for bootstrap/session token signatures. It must never appear in connection URLs.
+
+The initial SQLite migration for `WebProxySession` is applied once when the class is first introduced. BPB records successful introduction in Worker KV so later panel updates preserve the existing Cloudflare migration tag and do not re-apply `new_sqlite_classes`. An existing non-TWP migration tag is upgraded by chaining a new tag that adds the SQLite class exactly once.
+
+Bootstrap tokens are signed, time-limited, and consumed at most once (atomic Durable Object ledger). Sessions use Durable Object alarms for unconnected and idle expiration.
+
+Do not place either secret in the repository, panel HTML, client-side JavaScript, or logs.
 
 ## Scope and limitations
 

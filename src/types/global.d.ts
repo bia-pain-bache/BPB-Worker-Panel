@@ -8,8 +8,11 @@ declare global {
         readonly TR_PASS?: string;
         readonly SESSIONS?: DurableObjectNamespace;
         readonly PROXY_SECRET?: string;
+        readonly SESSION_SIGNING_SECRET?: string;
         readonly PUBLIC_HOSTNAME?: string;
         readonly SESSION_TTL_SECONDS?: string;
+        readonly SESSION_IDLE_SECONDS?: string;
+        readonly MAX_SESSIONS_PER_WINDOW?: string;
         readonly MAX_STREAMS?: string;
         readonly DIAGNOSTICS?: string;
     }

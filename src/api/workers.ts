@@ -1,87 +1,231 @@
 import { safeError } from '@common';
 import { getGlobals } from '@settings';
 
-/** Tag applied the first time Telegram Web Proxy SQLite DO is enabled. */
+/** Tag suffix used when first introducing the WebProxySession SQLite class. */
 export const TWP_MIGRATION_TAG = 'v1-twp';
+export const TWP_CLASS_NAME = 'WebProxySession';
+/** KV key recording that WebProxySession SQLite migration was applied for this installation. */
+export const TWP_MIGRATION_KV_KEY = 'twp_sqlite_migration';
+
+export type TwpMigrationRecord = {
+    className: string;
+    tag: string;
+    appliedAt: string;
+};
+
+export type MigrationDecision =
+    | {
+            kind: 'first_intro';
+            migrations: { new_tag: string; new_sqlite_classes: string[] };
+      }
+    | {
+            kind: 'add_twp_to_existing';
+            migrations: { old_tag: string; new_tag: string; new_sqlite_classes: string[] };
+      }
+    | {
+            kind: 'preserve';
+            migrations: { old_tag: string; new_tag: string };
+      };
 
 /**
- * Build Cloudflare Script Upload metadata for BPB Workers.
+ * Decide Durable Object migration metadata for Telegram Web Proxy.
  *
- * Migration rules:
- * - No existing tag → first introduction: new_tag + new_sqlite_classes.
- * - Existing tag present → preserve it (old_tag = new_tag = existing); never re-apply new_sqlite_classes.
- * - Never assume TWP_MIGRATION_TAG already exists on the Worker.
+ * Important: an existing Cloudflare migration_tag does NOT imply WebProxySession was migrated.
+ * We only skip new_sqlite_classes when a persistent project record (KV) says TWP was applied
+ * for this installation, or when the CF tag already ends with / equals TWP_MIGRATION_TAG
+ * AND the KV record confirms it (preferred). If CF has a tag but KV has no TWP record,
+ * we introduce WebProxySession with old_tag = current tag and a new tag.
  */
-export function buildWorkerUploadMetadata(options: {
-    existingMigrationTag?: string | null;
-} = {}): Record<string, unknown> {
-    const existingMigrationTag =
-        options.existingMigrationTag === undefined ? null : options.existingMigrationTag;
+export function decideTwMigration(input: {
+    cfMigrationTag: string | null | undefined;
+    twpMigrationRecord: TwpMigrationRecord | null | undefined;
+}): MigrationDecision {
+    const cfTag = typeof input.cfMigrationTag === 'string' ? input.cfMigrationTag.trim() : '';
+    const record = input.twpMigrationRecord;
+    const recorded =
+        record &&
+        record.className === TWP_CLASS_NAME &&
+        typeof record.tag === 'string' &&
+        record.tag.trim().length > 0
+            ? record.tag.trim()
+            : null;
 
-    const metadata: Record<string, unknown> = {
+    // TWP already recorded as migrated — never re-apply new_sqlite_classes.
+    if (recorded) {
+        const preserve = cfTag || recorded;
+        return {
+            kind: 'preserve',
+            migrations: { old_tag: preserve, new_tag: preserve }
+        };
+    }
+
+    // No CF migration history — brand-new Worker (or never migrated DOs).
+    if (!cfTag) {
+        return {
+            kind: 'first_intro',
+            migrations: {
+                new_tag: TWP_MIGRATION_TAG,
+                new_sqlite_classes: [TWP_CLASS_NAME]
+            }
+        };
+    }
+
+    // Existing DO migration history, but TWP class not yet recorded → add SQLite class.
+    const newTag = `${cfTag}+${TWP_MIGRATION_TAG}`;
+    return {
+        kind: 'add_twp_to_existing',
+        migrations: {
+            old_tag: cfTag,
+            new_tag: newTag,
+            new_sqlite_classes: [TWP_CLASS_NAME]
+        }
+    };
+}
+
+export function buildWorkerUploadMetadata(options: {
+    cfMigrationTag?: string | null;
+    twpMigrationRecord?: TwpMigrationRecord | null;
+} = {}): Record<string, unknown> {
+    const decision = decideTwMigration({
+        cfMigrationTag: options.cfMigrationTag ?? null,
+        twpMigrationRecord: options.twpMigrationRecord ?? null
+    });
+
+    return {
         main_module: 'worker.js',
         keep_bindings: ['kv_namespace', 'durable_object_namespace', 'secret_text'],
         compatibility_date: new Date().toISOString().split('T')[0],
         compatibility_flags: ['nodejs_compat'],
-        bindings: [{
-            type: 'durable_object_namespace',
-            name: 'SESSIONS',
-            class_name: 'WebProxySession'
-        }]
+        bindings: [
+            {
+                type: 'durable_object_namespace',
+                name: 'SESSIONS',
+                class_name: TWP_CLASS_NAME
+            }
+        ],
+        migrations: decision.migrations
     };
+}
 
-    const tag = typeof existingMigrationTag === 'string' ? existingMigrationTag.trim() : '';
-    if (!tag) {
-        // First time this Worker receives the SQLite Durable Object class.
-        metadata.migrations = {
-            new_tag: TWP_MIGRATION_TAG,
-            new_sqlite_classes: ['WebProxySession']
-        };
-    } else {
-        // Subsequent updates: keep the real tag Cloudflare already has.
-        metadata.migrations = {
-            old_tag: tag,
-            new_tag: tag
-        };
+export class WorkerScriptsApiError extends Error {
+    constructor(
+        message: string,
+        readonly status: number,
+        readonly code?: string
+    ) {
+        super(message);
+        this.name = 'WorkerScriptsApiError';
     }
-
-    return metadata;
 }
 
 /**
- * Read the Durable Object migration tag currently applied to a Worker script.
- * Returns null when the script is missing or has no migration_tag yet.
+ * List Worker scripts with pagination. Throws on auth/API failures (never silent null).
+ */
+export async function listWorkerScripts(
+    accID: string,
+    apiToken: string
+): Promise<Array<{ id: string; migration_tag?: string }>> {
+    const results: Array<{ id: string; migration_tag?: string }> = [];
+    let page = 1;
+    const perPage = 100;
+
+    for (;;) {
+        const url = new URL(`https://api.cloudflare.com/client/v4/accounts/${accID}/workers/scripts`);
+        url.searchParams.set('page', String(page));
+        url.searchParams.set('per_page', String(perPage));
+
+        const res = await fetch(url.toString(), {
+            headers: { Authorization: `Bearer ${apiToken}` }
+        });
+
+        if (res.status === 401 || res.status === 403) {
+            throw new WorkerScriptsApiError('Cloudflare API authentication failed while listing Workers.', res.status);
+        }
+        if (res.status === 429) {
+            throw new WorkerScriptsApiError('Cloudflare API rate limited while listing Workers.', res.status);
+        }
+        if (res.status >= 500) {
+            throw new WorkerScriptsApiError(`Cloudflare API server error (${res.status}) while listing Workers.`, res.status);
+        }
+        if (!res.ok) {
+            throw new WorkerScriptsApiError(`Cloudflare API error (${res.status}) while listing Workers.`, res.status);
+        }
+
+        const data: any = await res.json();
+        if (!data?.success || !Array.isArray(data.result)) {
+            throw new WorkerScriptsApiError('Unexpected Cloudflare scripts list response.', res.status, 'invalid_response');
+        }
+
+        for (const item of data.result) {
+            if (item && typeof item.id === 'string') {
+                results.push({
+                    id: item.id,
+                    migration_tag: typeof item.migration_tag === 'string' ? item.migration_tag : undefined
+                });
+            }
+        }
+
+        const totalPages = Number(data.result_info?.total_pages || page);
+        if (page >= totalPages || data.result.length < perPage) break;
+        page += 1;
+        if (page > 100) break; // safety
+    }
+
+    return results;
+}
+
+/**
+ * Read the Durable Object migration tag for a Worker.
+ * - null: Worker not found (does not exist yet) OR exists with no migration_tag.
+ * - throws: API/auth/ambiguous failures.
  */
 export async function getWorkerMigrationTag(
     accID: string,
     apiToken: string,
     scriptName: string
-): Promise<string | null> {
+): Promise<{ exists: boolean; migrationTag: string | null }> {
+    const scripts = await listWorkerScripts(accID, apiToken);
+    const entry = scripts.find((s) => s.id === scriptName);
+    if (!entry) {
+        return { exists: false, migrationTag: null };
+    }
+    const tag = entry.migration_tag && entry.migration_tag.trim() ? entry.migration_tag.trim() : null;
+    return { exists: true, migrationTag: tag };
+}
+
+export async function readTwpMigrationRecord(env: { kv: KVNamespace }): Promise<TwpMigrationRecord | null> {
     try {
-        // GET .../scripts/{name} returns script content, not metadata.
-        // Migration tag is available on the account scripts list entries.
-        const res = await fetch(
-            `https://api.cloudflare.com/client/v4/accounts/${accID}/workers/scripts`,
-            { headers: { Authorization: `Bearer ${apiToken}` } }
-        );
-        if (!res.ok) return null;
-        const data: any = await res.json();
-        if (!data?.success || !Array.isArray(data.result)) return null;
-        const entry = data.result.find((s: any) => s?.id === scriptName);
-        if (!entry) return null;
-        const tag = entry.migration_tag;
-        return typeof tag === 'string' && tag.trim() ? tag.trim() : null;
+        const value = await env.kv.get(TWP_MIGRATION_KV_KEY, 'json');
+        if (!value || typeof value !== 'object') return null;
+        const rec = value as TwpMigrationRecord;
+        if (rec.className !== TWP_CLASS_NAME || typeof rec.tag !== 'string' || !rec.tag.trim()) return null;
+        return rec;
     } catch {
         return null;
     }
 }
 
-export async function deployWorkers(script: string) {
+export async function writeTwpMigrationRecord(
+    env: { kv: KVNamespace },
+    tag: string
+): Promise<void> {
+    const record: TwpMigrationRecord = {
+        className: TWP_CLASS_NAME,
+        tag,
+        appliedAt: new Date().toISOString()
+    };
+    await env.kv.put(TWP_MIGRATION_KV_KEY, JSON.stringify(record));
+}
+
+export async function deployWorkers(script: string, env?: { kv: KVNamespace }) {
     const { accID, apiToken, mainDomain } = getGlobals();
     const scriptName = mainDomain.split('.')[0];
 
-    const existingMigrationTag = await getWorkerMigrationTag(accID, apiToken, scriptName);
-    const metadata = buildWorkerUploadMetadata({ existingMigrationTag });
+    const { migrationTag: cfMigrationTag } = await getWorkerMigrationTag(accID, apiToken, scriptName);
+    const twpMigrationRecord = env?.kv ? await readTwpMigrationRecord(env) : null;
+
+    const decision = decideTwMigration({ cfMigrationTag, twpMigrationRecord });
+    const metadata = buildWorkerUploadMetadata({ cfMigrationTag, twpMigrationRecord });
 
     const uploadForm = new FormData();
     uploadForm.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
@@ -97,7 +241,16 @@ export async function deployWorkers(script: string) {
             }
         );
         const data: any = await res.json();
-        if (!data.success) throw new Error(data?.errors?.[0]?.message);
+        if (!data.success) throw new Error(data?.errors?.[0]?.message || `Upload failed (${res.status})`);
+
+        // Persist TWP migration record after successful introduce/add so retries are idempotent.
+        if (env?.kv && (decision.kind === 'first_intro' || decision.kind === 'add_twp_to_existing')) {
+            const appliedTag =
+                decision.kind === 'first_intro'
+                    ? decision.migrations.new_tag
+                    : decision.migrations.new_tag;
+            await writeTwpMigrationRecord(env, appliedTag);
+        }
     } catch (error) {
         throw new Error(`Failed to deploy worker: ${safeError(error)}`);
     }

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import { TELEGRAM_DCS, parseProxySecret, acceptClientHandshake, createTelegramHandshake } from "./mtproxy";
 import { FRAME, HEADER_SIZE, INITIAL_WINDOW, DATA_CHUNK, MAX_WS_MESSAGE, encodeFrame, parseFrames, clampInt, u32 } from "./protocol";
 
@@ -52,11 +50,37 @@ export class RelaySession {
 
   async fetch(request) {
     const url = new URL(request.url);
+
+    if (url.pathname === "/internal/bootstrap-consume" && request.method === "POST") {
+      return this.ctx.blockConcurrencyWhile(async () => {
+        let jti = "";
+        try {
+          const body = await request.json();
+          jti = typeof body?.jti === "string" ? body.jti : "";
+        } catch {
+          return new Response("bad request", { status: 400 });
+        }
+        if (!jti || jti.length > 128) return new Response("bad request", { status: 400 });
+        const key = "boot:" + jti;
+        if (await this.ctx.storage.get(key)) return new Response("already used", { status: 409 });
+        await this.ctx.storage.put(key, Date.now());
+        const expires = Date.now() + 24 * 60 * 60 * 1000;
+        await this.ctx.storage.put("bootexp:" + jti, expires);
+        const alarm = await this.ctx.storage.getAlarm();
+        if (alarm === null || alarm > expires) await this.ctx.storage.setAlarm(expires);
+        return new Response(null, { status: 204 });
+      });
+    }
+
     if (this.closed) return new Response("session closed", { status: 404 });
     if (url.pathname === "/internal/init" && request.method === "POST") {
       if (!this.initialized) {
-        await this.ctx.storage.put("expiresAt", Date.now() + 10 * 60 * 1000);
+        const ttlMs = (Number.parseInt(this.env.SESSION_TTL_SECONDS, 10) || 300) * 1000;
+        const expiresAt = Date.now() + Math.min(600000, Math.max(30000, ttlMs));
+        await this.ctx.storage.put("expiresAt", expiresAt);
+        await this.ctx.storage.setAlarm(expiresAt);
         this.initialized = true;
+        this.lifecycle = "waiting_connection";
       }
       return new Response(null, { status: 204 });
     }
@@ -71,8 +95,13 @@ export class RelaySession {
       const client = pair[0], server = pair[1];
       server.accept();
       this.ws = server;
+      this.lifecycle = "connected";
       this.trace("websocket_accepted");
-      server.addEventListener("message", (event) => this.enqueueMessage(event.data));
+      this.scheduleIdleAlarm(true);
+      server.addEventListener("message", (event) => {
+        this.touchActivity();
+        this.enqueueMessage(event.data);
+      });
       server.addEventListener("close", (event) => {
         this.trace("websocket_closed", { code: event.code, clean: event.wasClean });
         this.shutdown("websocket_close");
@@ -87,6 +116,42 @@ export class RelaySession {
       return new Response(null, { status: 204 });
     }
     return new Response("not found", { status: 404 });
+  }
+
+
+  async alarm() {
+    const now = Date.now();
+    const expiresAt = await this.ctx.storage.get("expiresAt");
+    if (typeof expiresAt === "number" && expiresAt <= now) {
+      this.lifecycle = "expired";
+      this.shutdown("alarm_expired");
+      await this.ctx.storage.deleteAll();
+      return;
+    }
+    const all = await this.ctx.storage.list({ prefix: "bootexp:" });
+    for (const [key, exp] of all) {
+      if (typeof exp === "number" && exp <= now) {
+        const jti = key.slice("bootexp:".length);
+        await this.ctx.storage.delete(key);
+        await this.ctx.storage.delete("boot:" + jti);
+      }
+    }
+  }
+
+  touchActivity() {
+    this.lastActivityAt = Date.now();
+    this.lifecycle = "active";
+    if (Date.now() - (this.lastAlarmWriteAt || 0) > 30000) {
+      this.ctx.waitUntil(this.scheduleIdleAlarm(false));
+    }
+  }
+
+  async scheduleIdleAlarm(force) {
+    const idleSec = Number.parseInt(this.env.SESSION_IDLE_SECONDS, 10);
+    const idleMs = (Number.isFinite(idleSec) ? Math.min(7200, Math.max(60, idleSec)) : 900) * 1000;
+    if (!force && Date.now() - (this.lastAlarmWriteAt || 0) < 30000) return;
+    await this.ctx.storage.setAlarm(Date.now() + idleMs);
+    this.lastAlarmWriteAt = Date.now();
   }
 
   enqueueMessage(data) {

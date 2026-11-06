@@ -5,7 +5,7 @@ import { getGlobals, getMainSettings, getSettings } from '@settings';
 import { createCNAME, listZones } from '@api/dns';
 import { decompressGzipBase64, safeError } from '@common';
 
-export async function updateMainSettings(newSettings: PanelSettings | null): Promise<Partial<EmbededSettings>> {
+export async function updateMainSettings(newSettings: PanelSettings | null, env?: { kv: KVNamespace }): Promise<Partial<EmbededSettings>> {
     const { accID, accEmail, apiToken, mainDomain, vlUUID, trPass, securePath } = getGlobals();
     const settings: EmbededSettings = {
         accID,
@@ -34,7 +34,7 @@ export async function updateMainSettings(newSettings: PanelSettings | null): Pro
         if (deployType === 'pages') {
             await deployPages(script);
         } else {
-            await deployWorkers(script);
+            await deployWorkers(script, env);
         }
 
         return settings;

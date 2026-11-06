@@ -1,8 +1,7 @@
-// @ts-nocheck
 
 import { MAX_WS_MESSAGE } from "./protocol";
 
-export function bridgePage(host, bootstrap) {
+export function bridgePage(host: string, bootstrap: string) {
   const scriptNonce = randomNonce();
   const config = JSON.stringify({ origin: `https://${host}`, bootstrap, batchLimit: MAX_WS_MESSAGE, maxPendingItems: 1024, connectTimeout: 15000 });
   const html = `<!doctype html>

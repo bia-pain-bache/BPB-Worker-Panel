@@ -44,17 +44,22 @@ function buildConnectionUrl(host: string, secret: string): string {
 }
 
 async function probeTcp(hostname: string, port: number, timeoutMs: number): Promise<boolean> {
+    let socket: { opened: Promise<void>; close: () => void } | null = null;
+    let timer: ReturnType<typeof setTimeout> | null = null;
     try {
         const { connect } = await import('cloudflare:sockets');
-        const socket = connect({ hostname, port });
-        const result = await Promise.race([
-            socket.opened.then(() => true),
-            new Promise<boolean>((resolve) => setTimeout(() => resolve(false), timeoutMs))
-        ]);
-        try { socket.close(); } catch { /* ignore */ }
-        return result;
+        socket = connect({ hostname, port }) as any;
+        const opened = socket!.opened.then(() => true as const);
+        const timed = new Promise<false>((resolve) => {
+            timer = setTimeout(() => resolve(false), timeoutMs);
+        });
+        const ok = await Promise.race([opened, timed]);
+        return ok === true;
     } catch {
         return false;
+    } finally {
+        if (timer) clearTimeout(timer);
+        try { socket?.close(); } catch { /* ignore */ }
     }
 }
 
@@ -155,30 +160,44 @@ export async function resetTelegramProxySecret(request: Request, env: Env): Prom
     }
     const scriptName = mainDomain.split('.')[0];
     const newSecret = generateProxySecret();
+    const newSigning = generateProxySecret() + generateProxySecret(); // 64 hex
     const workerHost = hostname || mainDomain;
-    try {
-        const res = await fetch(
-            `https://api.cloudflare.com/client/v4/accounts/${accID}/workers/scripts/${encodeURIComponent(scriptName)}/secrets`,
-            {
-                method: 'PUT',
-                headers: { Authorization: `Bearer ${apiToken}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: 'PROXY_SECRET', text: newSecret, type: 'secret_text' })
+
+    async function putSecret(name: string, text: string): Promise<{ ok: boolean; message?: string }> {
+        try {
+            const res = await fetch(
+                `https://api.cloudflare.com/client/v4/accounts/${accID}/workers/scripts/${encodeURIComponent(scriptName)}/secrets`,
+                {
+                    method: 'PUT',
+                    headers: { Authorization: `Bearer ${apiToken}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, text, type: 'secret_text' })
+                }
+            );
+            let data: any = null;
+            try { data = await res.json(); } catch { data = null; }
+            if (!res.ok || !data?.success) {
+                return { ok: false, message: data?.errors?.[0]?.message || `HTTP ${res.status}` };
             }
-        );
-        let data: any = null;
-        try { data = await res.json(); } catch { data = null; }
-        if (!res.ok || !data?.success) {
-            const msg = data?.errors?.[0]?.message || `Cloudflare API rejected secret update (HTTP ${res.status})`;
-            return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, sanitizeCloudflareError(msg), {
-                code: TWP_ERROR.RESET_FAILED
-            }, NO_STORE);
+            return { ok: true };
+        } catch (error) {
+            return { ok: false, message: sanitizeCloudflareError(error) };
         }
-        return respond(true, HttpStatus.OK, 'موفق', {
-            connectionUrl: buildConnectionUrl(workerHost, newSecret)
-        }, NO_STORE);
-    } catch (error) {
-        return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, sanitizeCloudflareError(error), {
-            code: TWP_ERROR.NETWORK
+    }
+
+    const proxyResult = await putSecret('PROXY_SECRET', newSecret);
+    if (!proxyResult.ok) {
+        return respond(false, HttpStatus.INTERNAL_SERVER_ERROR, sanitizeCloudflareError(proxyResult.message || 'PROXY_SECRET update failed'), {
+            code: TWP_ERROR.RESET_FAILED
         }, NO_STORE);
     }
+    const signResult = await putSecret('SESSION_SIGNING_SECRET', newSigning);
+    if (!signResult.ok) {
+        // Partial update: PROXY_SECRET rotated but signing secret failed — do not return a connection link.
+        return respond(false, HttpStatus.INTERNAL_SERVER_ERROR,
+            'PROXY_SECRET was updated but SESSION_SIGNING_SECRET failed. Retry Reset Secret. ' + sanitizeCloudflareError(signResult.message || ''),
+            { code: TWP_ERROR.RESET_FAILED, partial: true }, NO_STORE);
+    }
+    return respond(true, HttpStatus.OK, 'Success', {
+        connectionUrl: buildConnectionUrl(workerHost, newSecret)
+    }, NO_STORE);
 }
