@@ -8,7 +8,7 @@ import { pathToFileURL } from 'node:url';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
 const migrationUrl = pathToFileURL(join(root, 'src/api/worker-migration.ts')).href;
 
 // Load production module with TypeScript stripping (Node 22+).

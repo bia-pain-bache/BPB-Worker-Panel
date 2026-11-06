@@ -4,7 +4,7 @@ import { pathToFileURL } from 'node:url';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
 const {
 	FRAME,
 	HEADER_SIZE,

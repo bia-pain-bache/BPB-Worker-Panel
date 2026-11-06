@@ -1,5 +1,5 @@
-import { TELEGRAM_DCS, parseProxySecret, acceptClientHandshake, createTelegramHandshake } from "./mtproxy";
-import { FRAME, HEADER_SIZE, INITIAL_WINDOW, DATA_CHUNK, MAX_WS_MESSAGE, encodeFrame, parseFrames, clampInt, u32 } from "./protocol";
+import { TELEGRAM_DCS, parseProxySecret, acceptClientHandshake, createTelegramHandshake } from "./mtproxy.ts";
+import { FRAME, HEADER_SIZE, INITIAL_WINDOW, DATA_CHUNK, MAX_WS_MESSAGE, encodeFrame, parseFrames, clampInt, u32 } from "./protocol.ts";
 
 // Bounds include frame headers and an allowance for each retained queue item.
 export const LIMITS = Object.freeze({
@@ -20,10 +20,12 @@ export const LIMITS = Object.freeze({
 // The Workers entrypoint supplies cloudflare:sockets.connect. Keeping the
 // transport injectable lets tests exercise real framing/crypto with fake I/O.
 export class RelaySession {
-  constructor(ctx, env, connect) {
+  constructor(ctx, env, connect, options = {}) {
     this.ctx = ctx;
     this.env = env;
     this.connect = connect;
+    /** Optional injectable clock for deterministic tests. */
+    this.now = typeof options.now === "function" ? options.now : () => Date.now();
     this.initialized = false;
     this.closed = false;
     this.ws = null;
@@ -74,7 +76,7 @@ export class RelaySession {
         // Sliding window rate limit for bootstrap consumption / session admission.
         const maxPerWindow = clampInt(this.env.MAX_SESSIONS_PER_WINDOW, 1, 500, 60);
         const windowMs = 60_000;
-        const now = Date.now();
+        const now = this.now();
         const windowStart = now - windowMs;
         const rlKey = "rl:bootstrap";
         let stamps = await this.ctx.storage.get(rlKey);
@@ -96,17 +98,57 @@ export class RelaySession {
       });
     }
 
+
+    // Atomic concurrent capacity: reserve / release active session slots on the ledger DO.
+    if (url.pathname === "/internal/capacity-reserve" && request.method === "POST") {
+      return this.ctx.blockConcurrencyWhile(async () => {
+        let sessionId = "";
+        try {
+          const body = await request.json();
+          sessionId = typeof body?.sessionId === "string" ? body.sessionId : "";
+        } catch {
+          return new Response("bad request", { status: 400 });
+        }
+        if (!sessionId || sessionId.length > 128) return new Response("bad request", { status: 400 });
+        const maxActive = clampInt(this.env.MAX_ACTIVE_SESSIONS, 1, 2000, 128);
+        const activeKey = "active:" + sessionId;
+        if (await this.ctx.storage.get(activeKey)) {
+          return new Response(null, { status: 204 }); // already reserved
+        }
+        const all = await this.ctx.storage.list({ prefix: "active:" });
+        if (all.size >= maxActive) {
+          return new Response("capacity full", { status: 429 });
+        }
+        // Store reservation timestamp; stale entries cleaned by alarm (max session lifetime).
+        const maxSessionMs = 6 * 60 * 60 * 1000; // 6h absolute ceiling
+        await this.ctx.storage.put(activeKey, this.now() + maxSessionMs);
+        return new Response(null, { status: 204 });
+      });
+    }
+    if (url.pathname === "/internal/capacity-release" && request.method === "POST") {
+      return this.ctx.blockConcurrencyWhile(async () => {
+        let sessionId = "";
+        try {
+          const body = await request.json();
+          sessionId = typeof body?.sessionId === "string" ? body.sessionId : "";
+        } catch {
+          return new Response("bad request", { status: 400 });
+        }
+        if (!sessionId) return new Response("bad request", { status: 400 });
+        await this.ctx.storage.delete("active:" + sessionId);
+        return new Response(null, { status: 204 });
+      });
+    }
+
     if (this.closed) return new Response("session closed", { status: 404 });
     if (url.pathname === "/internal/init" && request.method === "POST") {
       if (!this.initialized) {
         const ttlMs = (Number.parseInt(this.env.SESSION_TTL_SECONDS, 10) || 300) * 1000;
-        const unconnectedExpiresAt = Date.now() + Math.min(600000, Math.max(30000, ttlMs));
+        const unconnectedExpiresAt = this.now() + Math.min(600000, Math.max(30000, ttlMs));
         this.unconnectedExpiresAt = unconnectedExpiresAt;
         this.lifecycle = "waiting_connection";
-        await this.ctx.storage.put({
-          lifecycle: this.lifecycle,
-          unconnectedExpiresAt,
-        });
+        await this.ctx.storage.put("lifecycle", this.lifecycle);
+        await this.ctx.storage.put("unconnectedExpiresAt", unconnectedExpiresAt);
         await this.ctx.storage.setAlarm(unconnectedExpiresAt);
         this.initialized = true;
       }
@@ -114,13 +156,21 @@ export class RelaySession {
     }
     if (url.pathname === "/internal/ws" && request.headers.get("Upgrade")?.toLowerCase() === "websocket") {
       if (!this.initialized) {
-        const stored = await this.ctx.storage.get(["lifecycle", "unconnectedExpiresAt", "idleExpiresAt"]);
+        // Stale concurrent-capacity reservations (absolute ceiling).
+    const activeAll = await this.ctx.storage.list({ prefix: "active:" });
+    for (const [key, exp] of activeAll) {
+      if (typeof exp === "number" && exp <= now) {
+        await this.ctx.storage.delete(key);
+      }
+    }
+
+    const stored = await this.ctx.storage.get(["lifecycle", "unconnectedExpiresAt", "idleExpiresAt"]);
         const lifecycle = stored.get("lifecycle");
         const unconnectedExpiresAt = stored.get("unconnectedExpiresAt");
         if (this.closed || lifecycle === "closed" || lifecycle === "expired") {
           return new Response("unknown session", { status: 404 });
         }
-        if (typeof unconnectedExpiresAt === "number" && unconnectedExpiresAt < Date.now() && lifecycle === "waiting_connection") {
+        if (typeof unconnectedExpiresAt === "number" && unconnectedExpiresAt < this.now() && lifecycle === "waiting_connection") {
           return new Response("unknown session", { status: 404 });
         }
         this.unconnectedExpiresAt = typeof unconnectedExpiresAt === "number" ? unconnectedExpiresAt : 0;
@@ -134,7 +184,7 @@ export class RelaySession {
       server.accept();
       this.ws = server;
       this.lifecycle = "connected";
-      this.lastActivityAt = Date.now();
+      this.lastActivityAt = this.now();
       // Unconnected TTL no longer applies once the client has connected.
       await this.ctx.storage.delete("unconnectedExpiresAt");
       this.unconnectedExpiresAt = 0;
@@ -162,7 +212,7 @@ export class RelaySession {
 
 
   async alarm() {
-    const now = Date.now();
+    const now = this.now();
     // Bootstrap ledger cleanup (dedicated DO id __twp_bootstrap_ledger__).
     const all = await this.ctx.storage.list({ prefix: "bootexp:" });
     let earliestBoot = null;
@@ -185,7 +235,9 @@ export class RelaySession {
     if (typeof unconnectedExpiresAt === "number") this.unconnectedExpiresAt = unconnectedExpiresAt;
     if (typeof idleExpiresAt === "number") this.idleExpiresAt = idleExpiresAt;
 
-    const waiting = this.lifecycle === "waiting_connection" || this.lifecycle === "created";
+    // Only an explicitly waiting_connection session is subject to unconnected TTL.
+    // Ledger DO instances stay at lifecycle "created" and must not be expired here.
+    const waiting = this.lifecycle === "waiting_connection";
     const connected = this.lifecycle === "connected" || this.lifecycle === "active" || this.lifecycle === "idle";
 
     if (waiting && typeof unconnectedExpiresAt === "number" && unconnectedExpiresAt <= now) {
@@ -217,9 +269,9 @@ export class RelaySession {
   }
 
   touchActivity() {
-    this.lastActivityAt = Date.now();
+    this.lastActivityAt = this.now();
     this.lifecycle = "active";
-    if (Date.now() - (this.lastAlarmWriteAt || 0) > 30000) {
+    if (this.now() - (this.lastAlarmWriteAt || 0) > 30000) {
       this.ctx.waitUntil(this.scheduleIdleAlarm(false));
     }
   }
@@ -227,18 +279,16 @@ export class RelaySession {
   async scheduleIdleAlarm(force) {
     const idleSec = Number.parseInt(this.env.SESSION_IDLE_SECONDS, 10);
     const idleMs = (Number.isFinite(idleSec) ? Math.min(7200, Math.max(60, idleSec)) : 900) * 1000;
-    if (!force && Date.now() - (this.lastAlarmWriteAt || 0) < 30000) return;
-    const idleExpiresAt = Date.now() + idleMs;
+    if (!force && this.now() - (this.lastAlarmWriteAt || 0) < 30000) return;
+    const idleExpiresAt = this.now() + idleMs;
     this.idleExpiresAt = idleExpiresAt;
     this.lifecycle = this.lifecycle === "connected" || this.lifecycle === "active" || this.lifecycle === "idle"
       ? "active"
       : this.lifecycle;
-    await this.ctx.storage.put({
-      lifecycle: this.lifecycle,
-      idleExpiresAt,
-    });
+    await this.ctx.storage.put("lifecycle", this.lifecycle);
+    await this.ctx.storage.put("idleExpiresAt", idleExpiresAt);
     await this.ctx.storage.setAlarm(idleExpiresAt);
-    this.lastAlarmWriteAt = Date.now();
+    this.lastAlarmWriteAt = this.now();
   }
 
   enqueueMessage(data) {
@@ -539,7 +589,7 @@ export class RelaySession {
     // Do not let a later isolate resurrect a deleted/failed session.
     this.ctx.waitUntil(
       Promise.resolve(
-        this.ctx.storage.put({ lifecycle: this.lifecycle }).then(() =>
+        this.ctx.storage.put("lifecycle", this.lifecycle).then(() =>
           this.ctx.storage.delete(["unconnectedExpiresAt", "idleExpiresAt", "expiresAt"])
         )
       ).catch(() => {})

@@ -55,6 +55,7 @@ async function route(request: Request, env: TwpEnv): Promise<Response | null> {
 			if (!(await verifySessionToken(env, expectedHost, token))) return camouflage();
 			const stub = env.SESSIONS!.get(env.SESSIONS!.idFromName(token!));
 			await stub.fetch('https://session/internal/close', { method: 'POST' });
+			await releaseSessionCapacity(env, token!);
 			return new Response(null, { status: 204, headers: noStore() });
 		}
 		if (request.method !== 'POST' || !isBinary(request.headers.get('Content-Type'))) return camouflage();
@@ -73,9 +74,15 @@ async function route(request: Request, env: TwpEnv): Promise<Response | null> {
 		if (!consumed) return camouflage();
 
 		const sessionToken = await createSessionToken(env, expectedHost);
+		const reserved = await reserveSessionCapacity(env, sessionToken);
+		if (!reserved) return camouflage();
+
 		const stub = env.SESSIONS!.get(env.SESSIONS!.idFromName(sessionToken));
 		const initRes = await stub.fetch('https://session/internal/init', { method: 'POST' });
-		if (!initRes.ok) return camouflage();
+		if (!initRes.ok) {
+			await releaseSessionCapacity(env, sessionToken);
+			return camouflage();
+		}
 		return new Response(Uint8Array.from(encodeFrame(FRAME.HELLO, 0, new Uint8Array([1]))), {
 			status: 200,
 			headers: {

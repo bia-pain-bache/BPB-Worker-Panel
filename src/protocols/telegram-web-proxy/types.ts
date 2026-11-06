@@ -35,9 +35,13 @@ export interface TwpEnv {
     SESSION_IDLE_SECONDS?: string;
     MAX_STREAMS?: string;
     MAX_SESSIONS_PER_WINDOW?: string;
+    /** Max simultaneously active Sessions (capacity). Default 128. */
+    MAX_ACTIVE_SESSIONS?: string;
     DIAGNOSTICS?: string;
 }
 
 export const DEFAULT_SESSION_TTL_SECONDS = 300;
 export const DEFAULT_SESSION_IDLE_SECONDS = 900;
 export const DEFAULT_MAX_STREAMS = 64;
+export const DEFAULT_MAX_ACTIVE_SESSIONS = 128;
+export const DEFAULT_MAX_SESSIONS_PER_WINDOW = 60;
