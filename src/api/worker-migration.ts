@@ -69,6 +69,16 @@ export function decideTwMigration(input: {
 		};
 	}
 
+	// Legacy: Cloudflare tag already carries a TWP marker (from earlier PR builds)
+	// but KV record is missing. Treat as installed and preserve — never re-send
+	// new_sqlite_classes. Callers should finalize the KV record after upload.
+	if (cfTag && (cfTag === TWP_MIGRATION_TAG || cfTag.includes(TWP_MIGRATION_TAG))) {
+		return {
+			kind: 'preserve',
+			migrations: { old_tag: cfTag, new_tag: cfTag }
+		};
+	}
+
 	// No CF migration history — brand-new Worker (or never migrated DOs).
 	if (!cfTag) {
 		return {

@@ -143,4 +143,23 @@ describe('decideTwMigration (production)', () => {
 		assert.equal(second.kind, 'preserve');
 		assert.deepEqual(first.migrations, second.migrations);
 	});
+
+	it('legacy CF tag containing v1-twp without KV: preserve (do not re-apply)', () => {
+		const d = decideTwMigration({
+			cfMigrationTag: 'legacy-v0+v1-twp',
+			twpMigrationRecord: null,
+		});
+		assert.equal(d.kind, 'preserve');
+		assert.equal(d.migrations.old_tag, 'legacy-v0+v1-twp');
+		assert.equal(d.migrations.new_sqlite_classes, undefined);
+	});
+
+	it('exact historical TWP_MIGRATION_TAG without KV: preserve', () => {
+		const d = decideTwMigration({
+			cfMigrationTag: TWP_MIGRATION_TAG,
+			twpMigrationRecord: null,
+		});
+		assert.equal(d.kind, 'preserve');
+		assert.equal(d.migrations.old_tag, TWP_MIGRATION_TAG);
+	});
 });

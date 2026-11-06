@@ -113,6 +113,9 @@ export async function testTelegramProxy(request: Request, env: Env): Promise<Res
     if (!secret || !SECRET_HEX_RE.test(String(secret))) {
         return respond(true, HttpStatus.OK, 'خطا', { overall: 'fail', code: TWP_ERROR.SECRET_INVALID }, NO_STORE);
     }
+    if (!env.SESSION_SIGNING_SECRET || String(env.SESSION_SIGNING_SECRET).length < 32) {
+        return respond(true, HttpStatus.OK, 'خطا', { overall: 'fail', code: TWP_ERROR.SECRET_INVALID }, NO_STORE);
+    }
 
     // Durable Object reachability
     try {

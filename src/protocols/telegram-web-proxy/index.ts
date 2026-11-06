@@ -63,16 +63,19 @@ async function route(request: Request, env: TwpEnv): Promise<Response | null> {
 		const jti = await verifyBootstrap(env, bootstrap);
 		if (!jti) return camouflage();
 
+		// Validate Hello BEFORE consuming the one-time bootstrap token so a
+		// malformed request cannot burn a valid jti.
+		const hello = await readHello(request);
+		if (!isHello(hello)) return camouflage();
+
 		// Atomic one-time consumption via Durable Object concurrency block.
 		const consumed = await consumeBootstrapOnce(env, jti);
 		if (!consumed) return camouflage();
 
-		const hello = await readHello(request);
-		if (!isHello(hello)) return camouflage();
-
 		const sessionToken = await createSessionToken(env, expectedHost);
 		const stub = env.SESSIONS!.get(env.SESSIONS!.idFromName(sessionToken));
-		await stub.fetch('https://session/internal/init', { method: 'POST' });
+		const initRes = await stub.fetch('https://session/internal/init', { method: 'POST' });
+		if (!initRes.ok) return camouflage();
 		return new Response(Uint8Array.from(encodeFrame(FRAME.HELLO, 0, new Uint8Array([1]))), {
 			status: 200,
 			headers: {
@@ -146,9 +149,11 @@ async function verifyBootstrap(env: TwpEnv, token: string): Promise<string | nul
 	if (!constantTimeEqual(signature, expected)) return null;
 	try {
 		const data = JSON.parse(new TextDecoder().decode(base64urlDecode(payload))) as BootstrapPayload;
-		if (data.pur !== 'bootstrap' || typeof data.jti !== 'string' || !data.jti || typeof data.exp !== 'number') {
+		if (data.pur !== 'bootstrap' || typeof data.jti !== 'string' || typeof data.exp !== 'number') {
 			return null;
 		}
+		if (!Number.isFinite(data.exp) || !Number.isInteger(data.exp)) return null;
+		if (!/^[A-Za-z0-9_-]{8,128}$/.test(data.jti)) return null;
 		if (data.exp < Math.floor(Date.now() / 1000)) return null;
 		return data.jti;
 	} catch {

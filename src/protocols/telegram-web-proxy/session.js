@@ -42,6 +42,14 @@ export class RelaySession {
     this.downlinkItems = 0;
     this.downlinkWaiters = new Set();
     this.secret = null;
+    /** @type {'created'|'waiting_connection'|'connected'|'active'|'idle'|'closing'|'closed'|'expired'} */
+    this.lifecycle = "created";
+    this.lastActivityAt = 0;
+    this.lastAlarmWriteAt = 0;
+    /** Wall-clock deadline while waiting for the first WebSocket (persisted). */
+    this.unconnectedExpiresAt = 0;
+    /** Wall-clock idle deadline after connect (persisted). */
+    this.idleExpiresAt = 0;
   }
 
   trace(event, details = {}) {
@@ -60,11 +68,27 @@ export class RelaySession {
         } catch {
           return new Response("bad request", { status: 400 });
         }
-        if (!jti || jti.length > 128) return new Response("bad request", { status: 400 });
+        if (!jti || jti.length > 128 || !/^[A-Za-z0-9_-]{8,128}$/.test(jti)) {
+          return new Response("bad request", { status: 400 });
+        }
+        // Sliding window rate limit for bootstrap consumption / session admission.
+        const maxPerWindow = clampInt(this.env.MAX_SESSIONS_PER_WINDOW, 1, 500, 60);
+        const windowMs = 60_000;
+        const now = Date.now();
+        const windowStart = now - windowMs;
+        const rlKey = "rl:bootstrap";
+        let stamps = await this.ctx.storage.get(rlKey);
+        if (!Array.isArray(stamps)) stamps = [];
+        stamps = stamps.filter((t) => typeof t === "number" && t > windowStart);
+        if (stamps.length >= maxPerWindow) {
+          return new Response("rate limited", { status: 429 });
+        }
         const key = "boot:" + jti;
         if (await this.ctx.storage.get(key)) return new Response("already used", { status: 409 });
-        await this.ctx.storage.put(key, Date.now());
-        const expires = Date.now() + 24 * 60 * 60 * 1000;
+        stamps.push(now);
+        await this.ctx.storage.put(rlKey, stamps);
+        await this.ctx.storage.put(key, now);
+        const expires = now + 24 * 60 * 60 * 1000;
         await this.ctx.storage.put("bootexp:" + jti, expires);
         const alarm = await this.ctx.storage.getAlarm();
         if (alarm === null || alarm > expires) await this.ctx.storage.setAlarm(expires);
@@ -76,18 +100,32 @@ export class RelaySession {
     if (url.pathname === "/internal/init" && request.method === "POST") {
       if (!this.initialized) {
         const ttlMs = (Number.parseInt(this.env.SESSION_TTL_SECONDS, 10) || 300) * 1000;
-        const expiresAt = Date.now() + Math.min(600000, Math.max(30000, ttlMs));
-        await this.ctx.storage.put("expiresAt", expiresAt);
-        await this.ctx.storage.setAlarm(expiresAt);
-        this.initialized = true;
+        const unconnectedExpiresAt = Date.now() + Math.min(600000, Math.max(30000, ttlMs));
+        this.unconnectedExpiresAt = unconnectedExpiresAt;
         this.lifecycle = "waiting_connection";
+        await this.ctx.storage.put({
+          lifecycle: this.lifecycle,
+          unconnectedExpiresAt,
+        });
+        await this.ctx.storage.setAlarm(unconnectedExpiresAt);
+        this.initialized = true;
       }
       return new Response(null, { status: 204 });
     }
     if (url.pathname === "/internal/ws" && request.headers.get("Upgrade")?.toLowerCase() === "websocket") {
       if (!this.initialized) {
-        const expiresAt = await this.ctx.storage.get("expiresAt");
-        if (this.closed || !expiresAt || expiresAt < Date.now()) return new Response("unknown session", { status: 404 });
+        const stored = await this.ctx.storage.get(["lifecycle", "unconnectedExpiresAt", "idleExpiresAt"]);
+        const lifecycle = stored.get("lifecycle");
+        const unconnectedExpiresAt = stored.get("unconnectedExpiresAt");
+        if (this.closed || lifecycle === "closed" || lifecycle === "expired") {
+          return new Response("unknown session", { status: 404 });
+        }
+        if (typeof unconnectedExpiresAt === "number" && unconnectedExpiresAt < Date.now() && lifecycle === "waiting_connection") {
+          return new Response("unknown session", { status: 404 });
+        }
+        this.unconnectedExpiresAt = typeof unconnectedExpiresAt === "number" ? unconnectedExpiresAt : 0;
+        this.idleExpiresAt = typeof stored.get("idleExpiresAt") === "number" ? stored.get("idleExpiresAt") : 0;
+        this.lifecycle = typeof lifecycle === "string" ? lifecycle : "waiting_connection";
         this.initialized = true;
       }
       if (this.ws) return new Response("already connected", { status: 409 });
@@ -96,8 +134,12 @@ export class RelaySession {
       server.accept();
       this.ws = server;
       this.lifecycle = "connected";
+      this.lastActivityAt = Date.now();
+      // Unconnected TTL no longer applies once the client has connected.
+      await this.ctx.storage.delete("unconnectedExpiresAt");
+      this.unconnectedExpiresAt = 0;
       this.trace("websocket_accepted");
-      this.scheduleIdleAlarm(true);
+      await this.scheduleIdleAlarm(true);
       server.addEventListener("message", (event) => {
         this.touchActivity();
         this.enqueueMessage(event.data);
@@ -121,20 +163,56 @@ export class RelaySession {
 
   async alarm() {
     const now = Date.now();
-    const expiresAt = await this.ctx.storage.get("expiresAt");
-    if (typeof expiresAt === "number" && expiresAt <= now) {
-      this.lifecycle = "expired";
-      this.shutdown("alarm_expired");
-      await this.ctx.storage.deleteAll();
-      return;
-    }
+    // Bootstrap ledger cleanup (dedicated DO id __twp_bootstrap_ledger__).
     const all = await this.ctx.storage.list({ prefix: "bootexp:" });
+    let earliestBoot = null;
     for (const [key, exp] of all) {
       if (typeof exp === "number" && exp <= now) {
         const jti = key.slice("bootexp:".length);
         await this.ctx.storage.delete(key);
         await this.ctx.storage.delete("boot:" + jti);
+      } else if (typeof exp === "number") {
+        if (earliestBoot === null || exp < earliestBoot) earliestBoot = exp;
       }
+    }
+
+    const stored = await this.ctx.storage.get(["lifecycle", "unconnectedExpiresAt", "idleExpiresAt"]);
+    const lifecycle = stored.get("lifecycle");
+    const unconnectedExpiresAt = stored.get("unconnectedExpiresAt");
+    const idleExpiresAt = stored.get("idleExpiresAt");
+
+    if (typeof lifecycle === "string") this.lifecycle = lifecycle;
+    if (typeof unconnectedExpiresAt === "number") this.unconnectedExpiresAt = unconnectedExpiresAt;
+    if (typeof idleExpiresAt === "number") this.idleExpiresAt = idleExpiresAt;
+
+    const waiting = this.lifecycle === "waiting_connection" || this.lifecycle === "created";
+    const connected = this.lifecycle === "connected" || this.lifecycle === "active" || this.lifecycle === "idle";
+
+    if (waiting && typeof unconnectedExpiresAt === "number" && unconnectedExpiresAt <= now) {
+      this.lifecycle = "expired";
+      this.shutdown("unconnected_ttl_expired");
+      await this.ctx.storage.deleteAll();
+      return;
+    }
+    if (connected && typeof idleExpiresAt === "number" && idleExpiresAt <= now) {
+      this.lifecycle = "expired";
+      this.shutdown("idle_ttl_expired");
+      await this.ctx.storage.deleteAll();
+      return;
+    }
+
+    // Re-arm the earliest relevant deadline (session TTL or remaining bootstrap records).
+    let next = earliestBoot;
+    if (waiting && typeof unconnectedExpiresAt === "number" && unconnectedExpiresAt > now) {
+      next = next === null ? unconnectedExpiresAt : Math.min(next, unconnectedExpiresAt);
+    }
+    if (connected && typeof idleExpiresAt === "number" && idleExpiresAt > now) {
+      next = next === null ? idleExpiresAt : Math.min(next, idleExpiresAt);
+    }
+    if (next !== null) {
+      await this.ctx.storage.setAlarm(next);
+    } else {
+      try { await this.ctx.storage.deleteAlarm(); } catch { /* ignore */ }
     }
   }
 
@@ -150,7 +228,16 @@ export class RelaySession {
     const idleSec = Number.parseInt(this.env.SESSION_IDLE_SECONDS, 10);
     const idleMs = (Number.isFinite(idleSec) ? Math.min(7200, Math.max(60, idleSec)) : 900) * 1000;
     if (!force && Date.now() - (this.lastAlarmWriteAt || 0) < 30000) return;
-    await this.ctx.storage.setAlarm(Date.now() + idleMs);
+    const idleExpiresAt = Date.now() + idleMs;
+    this.idleExpiresAt = idleExpiresAt;
+    this.lifecycle = this.lifecycle === "connected" || this.lifecycle === "active" || this.lifecycle === "idle"
+      ? "active"
+      : this.lifecycle;
+    await this.ctx.storage.put({
+      lifecycle: this.lifecycle,
+      idleExpiresAt,
+    });
+    await this.ctx.storage.setAlarm(idleExpiresAt);
     this.lastAlarmWriteAt = Date.now();
   }
 
@@ -448,8 +535,15 @@ export class RelaySession {
     this.wakeDownlink();
     try { this.ws?.close(1000, "session closed"); } catch {}
     this.ws = null;
+    this.lifecycle = this.lifecycle === "expired" ? "expired" : "closed";
     // Do not let a later isolate resurrect a deleted/failed session.
-    this.ctx.waitUntil(Promise.resolve(this.ctx.storage.delete("expiresAt")).catch(() => {}));
+    this.ctx.waitUntil(
+      Promise.resolve(
+        this.ctx.storage.put({ lifecycle: this.lifecycle }).then(() =>
+          this.ctx.storage.delete(["unconnectedExpiresAt", "idleExpiresAt", "expiresAt"])
+        )
+      ).catch(() => {})
+    );
   }
 }
 

@@ -106,15 +106,18 @@ export async function getWorkerMigrationTag(
 }
 
 export async function readTwpMigrationRecord(env: { kv: KVNamespace }): Promise<TwpMigrationRecord | null> {
-    try {
-        const value = await env.kv.get(TWP_MIGRATION_KV_KEY, 'json');
-        if (!value || typeof value !== 'object') return null;
-        const rec = value as TwpMigrationRecord;
-        if (rec.className !== TWP_CLASS_NAME || typeof rec.tag !== 'string' || !rec.tag.trim()) return null;
-        return rec;
-    } catch {
-        return null;
+    // A missing key is null. A storage/API failure must throw so deploy does not
+    // treat "KV unavailable" as "TWP never installed" and re-apply new_sqlite_classes.
+    const value = await env.kv.get(TWP_MIGRATION_KV_KEY, 'json');
+    if (value === null || value === undefined) return null;
+    if (typeof value !== 'object') {
+        throw new Error('TWP migration KV record is corrupt (not an object). Manual recovery required.');
     }
+    const rec = value as TwpMigrationRecord;
+    if (rec.className !== TWP_CLASS_NAME || typeof rec.tag !== 'string' || !rec.tag.trim()) {
+        throw new Error('TWP migration KV record is invalid. Manual recovery required.');
+    }
+    return rec;
 }
 
 export async function writeTwpMigrationRecord(
@@ -139,6 +142,25 @@ export async function deployWorkers(script: string, env?: { kv: KVNamespace }) {
     const decision = decideTwMigration({ cfMigrationTag, twpMigrationRecord });
     const metadata = buildWorkerUploadMetadata({ cfMigrationTag, twpMigrationRecord });
 
+    const expectedNewTag =
+        decision.kind === 'first_intro' || decision.kind === 'add_twp_to_existing'
+            ? decision.migrations.new_tag
+            : decision.migrations.new_tag;
+
+    // Recovery: CF already shows the expected TWP tag (interrupted prior deploy)
+    // but KV was never finalized. Finalize KV without re-sending new_sqlite_classes.
+    if (
+        env?.kv &&
+        !twpMigrationRecord &&
+        cfMigrationTag &&
+        (cfMigrationTag === expectedNewTag ||
+            cfMigrationTag === TWP_MIGRATION_TAG ||
+            cfMigrationTag.includes(TWP_MIGRATION_TAG)) &&
+        decision.kind === 'preserve'
+    ) {
+        await writeTwpMigrationRecord(env, cfMigrationTag);
+    }
+
     const uploadForm = new FormData();
     uploadForm.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
     uploadForm.append('worker.js', new Blob([script], { type: 'application/javascript+module' }), 'worker.js');
@@ -155,13 +177,20 @@ export async function deployWorkers(script: string, env?: { kv: KVNamespace }) {
         const data: any = await res.json();
         if (!data.success) throw new Error(data?.errors?.[0]?.message || `Upload failed (${res.status})`);
 
-        // Persist TWP migration record after successful introduce/add so retries are idempotent.
+        // Verify live CF migration tag when we expected a tag change, then finalize KV.
         if (env?.kv && (decision.kind === 'first_intro' || decision.kind === 'add_twp_to_existing')) {
-            const appliedTag =
-                decision.kind === 'first_intro'
-                    ? decision.migrations.new_tag
-                    : decision.migrations.new_tag;
-            await writeTwpMigrationRecord(env, appliedTag);
+            const { migrationTag: postTag } = await getWorkerMigrationTag(accID, apiToken, scriptName);
+            const appliedTag = expectedNewTag;
+            if (postTag && postTag !== appliedTag && !postTag.includes(TWP_MIGRATION_TAG)) {
+                throw new Error(
+                    `Migration verification failed: expected tag containing ${TWP_MIGRATION_TAG}, got ${postTag}. Recovery required.`
+                );
+            }
+            await writeTwpMigrationRecord(env, postTag || appliedTag);
+        } else if (env?.kv && decision.kind === 'preserve' && !twpMigrationRecord) {
+            // Legacy CF-only install: ensure KV is present after a successful upload.
+            const tag = cfMigrationTag || expectedNewTag;
+            if (tag) await writeTwpMigrationRecord(env, tag);
         }
     } catch (error) {
         throw new Error(`Failed to deploy worker: ${safeError(error)}`);
