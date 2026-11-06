@@ -14,3 +14,5 @@
 !NAT64Prefixes.md
 !docs
 !docs/**
+!tests/
+!tests/**

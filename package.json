@@ -9,7 +9,7 @@
 		"check": "tsc --noEmit",
 		"build": "node scripts/build.js",
 		"build-dev": "node scripts/build-dev.js",
-		"test": "node --test tests/*.test.mjs"
+		"test": "node --experimental-strip-types --test tests/*.test.mjs"
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20260603.1",
