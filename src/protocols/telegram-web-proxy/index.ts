@@ -1,6 +1,6 @@
 // cloudflare:sockets is loaded dynamically inside RelaySession to keep the Worker module valid
 // after Object.assign(globalThis, ...) preamble (static import after statements breaks ESM).
-import { RelaySession } from './session.js';
+import { RelaySession } from './session';
 import { FRAME, encodeFrame, parseFrames, clampInt } from './protocol';
 import { bridgePage } from './bridge';
 import type { BootstrapPayload, TwpEnv } from './types';

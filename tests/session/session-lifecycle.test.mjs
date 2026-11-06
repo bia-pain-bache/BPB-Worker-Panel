@@ -8,7 +8,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
 const require = createRequire(import.meta.url);
 
 // Load session.js via dynamic import (ESM)
-const sessionMod = await import(join(root, 'src/protocols/telegram-web-proxy/session.js'));
+const sessionMod = await import(join(root, 'src/protocols/telegram-web-proxy/session.ts'));
 const { RelaySession } = sessionMod;
 
 /** Minimal Durable Object storage + alarm fake. */

@@ -1,5 +1,38 @@
 import { TELEGRAM_DCS, parseProxySecret, acceptClientHandshake, createTelegramHandshake } from "./mtproxy.ts";
 import { FRAME, HEADER_SIZE, INITIAL_WINDOW, DATA_CHUNK, MAX_WS_MESSAGE, encodeFrame, parseFrames, clampInt, u32 } from "./protocol.ts";
+import type { TwpEnv, SessionLifecycle } from "./types.ts";
+
+type ConnectFn = (opts: { hostname: string; port: number }) => {
+  opened: Promise<void>;
+  readable: ReadableStream<Uint8Array>;
+  writable: WritableStream<Uint8Array>;
+  close: () => void;
+};
+
+type SessionOptions = {
+  now?: () => number;
+};
+
+type StreamState = {
+  id: number;
+  receiveWindow: number;
+  sendWindow: number;
+  uplinkQueue: Uint8Array[];
+  uplinkBytes: number;
+  uplinkItems: number;
+  closed: boolean;
+  socket?: {
+    opened: Promise<void>;
+    readable: ReadableStream<Uint8Array>;
+    writable: WritableStream<Uint8Array>;
+    close: () => void;
+  };
+  writer?: WritableStreamDefaultWriter<Uint8Array>;
+  reader?: ReadableStreamDefaultReader<Uint8Array>;
+  abort?: AbortController;
+  writeChain?: Promise<unknown>;
+};
+
 
 // Bounds include frame headers and an allowance for each retained queue item.
 export const LIMITS = Object.freeze({
@@ -20,7 +53,35 @@ export const LIMITS = Object.freeze({
 // The Workers entrypoint supplies cloudflare:sockets.connect. Keeping the
 // transport injectable lets tests exercise real framing/crypto with fake I/O.
 export class RelaySession {
-  constructor(ctx, env, connect, options = {}) {
+  ctx: DurableObjectState;
+  env: TwpEnv;
+  connect: ConnectFn | null;
+  now: () => number;
+  initialized: boolean;
+  closed: boolean;
+  ws: WebSocket | null;
+  streams: Map<number, StreamState>;
+  closedIds: Set<number>;
+  maxStreams: number;
+  diagnostics: boolean;
+  traceId: string | null;
+  messageCount: number;
+  messageChain: Promise<unknown>;
+  ingressBytes: number;
+  ingressItems: number;
+  uplinkBytes: number;
+  uplinkItems: number;
+  downlinkBytes: number;
+  downlinkItems: number;
+  downlinkWaiters: Set<() => void>;
+  secret: Uint8Array | null;
+  lifecycle: SessionLifecycle;
+  lastActivityAt: number;
+  lastAlarmWriteAt: number;
+  unconnectedExpiresAt: number;
+  idleExpiresAt: number;
+
+  constructor(ctx: DurableObjectState, env: TwpEnv, connect: ConnectFn | null, options: SessionOptions = {}) {
     this.ctx = ctx;
     this.env = env;
     this.connect = connect;
