@@ -940,6 +940,23 @@
         <h2><span class="material-symbols-rounded">link</span> Subscriptions</h2>
     </div>
 
+    <div class="form-container container" id="telegram-proxy-section">
+        <h2>Telegram Web Proxy</h2>
+        <div class="value-container">
+            <div class="output-container">
+                <span id="twp-link" class="output twp-output">—</span>
+            </div>
+            <button class="svg-btn" type="button" title="Copy" aria-label="Copy Telegram Web Proxy link" onclick="copyTwpLink()">
+                <span class="material-symbols-rounded">content_copy</span>
+            </button>
+        </div>
+        <div class="twp-actions">
+            <button type="button" id="twp-test-btn" class="button twp-btn" onclick="testTelegramProxy(this)">Test</button>
+            <button type="button" id="twp-reset-btn" class="button delete twp-btn" onclick="resetTelegramProxySecret(this)">Reset Secret</button>
+            <span id="twp-status" class="twp-status" aria-live="polite"></span>
+        </div>
+    </div>
+
     <div class="form-container container">
         <h2><span class="material-symbols-rounded">dns</span> DNS over HTTPS</h2>
         <div class="value-container">

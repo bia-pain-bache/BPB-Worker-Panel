@@ -134,6 +134,7 @@ function renderPanel(proxySettings, tgSettings, subscriptions, clients) {
 
     const dohUrl = new URL(`./dns-query`, window.location.href);
     document.getElementById('doh').textContent = dohUrl.href;
+    loadTelegramProxyLink();
     document.getElementById('fetchSettingsBtn').disabled = !remoteSettings;
 
     selectElements.forEach(elm => elm.value = proxySettings[elm.id]);
@@ -1191,4 +1192,130 @@ function renderClients(clients) {
 
         document.getElementById('supported-clients').appendChild(row);
     });
+}
+
+
+
+function setTwpControlsDisabled(disabled) {
+    ['twp-test-btn', 'twp-reset-btn'].forEach(id => {
+        const button = document.getElementById(id);
+        if (button) button.disabled = disabled;
+    });
+}
+
+async function loadTelegramProxyLink() {
+    const el = document.getElementById('twp-link');
+    if (!el) return;
+    setTwpControlsDisabled(false);
+    setTwpStatus('');
+    try {
+        const res = await fetch('./panel/telegram-proxy/link?nocache=' + Date.now(), { credentials: 'include', cache: 'no-store' });
+        const data = await res.json();
+        if (data.success && data.body && data.body.connectionUrl) {
+            el.textContent = data.body.connectionUrl;
+        } else if (data.body && data.body.unavailable) {
+            setTwpControlsDisabled(true);
+            el.textContent = data.message || 'Unavailable on this deployment';
+        } else {
+            el.textContent = data.message || 'Secret not configured — use Reset Secret';
+        }
+    } catch (e) {
+        el.textContent = 'Unable to load link';
+    }
+}
+
+function copyTwpLink() {
+    const text = document.getElementById('twp-link')?.textContent?.trim();
+    if (!text || text === '—' || text.startsWith('Unable') || text.startsWith('Secret') || text.startsWith('Unavailable')) {
+        return;
+    }
+    copyToClipboard(text);
+}
+
+function setTwpStatus(kind, text) {
+    const status = document.getElementById('twp-status');
+    if (!status) return;
+    status.classList.remove('is-ok', 'is-err');
+    status.innerHTML = '';
+    status.textContent = '';
+    if (!kind) return;
+    if (kind === 'ok') {
+        status.classList.add('is-ok');
+        status.innerHTML = '<span class="material-symbols-rounded twp-check">check_circle</span><span>Success</span>';
+        return;
+    }
+    if (kind === 'loading') {
+        status.textContent = text || '…';
+        return;
+    }
+    status.classList.add('is-err');
+    status.textContent = text || 'Error 2199';
+}
+
+async function testTelegramProxy(btn) {
+    if (!btn || btn.disabled) return;
+    btn.disabled = true;
+    setTwpStatus('loading', '…');
+    try {
+        const res = await fetch('./panel/telegram-proxy/test', {
+            method: 'POST',
+            credentials: 'same-origin',
+            cache: 'no-store',
+            headers: { 'Accept': 'application/json' }
+        });
+        let data = null;
+        try { data = await res.json(); } catch (_) { data = null; }
+        if (res.status === 401 || (data && data.success === false && data.status === 401)) {
+            setTwpStatus('err', 'Error 2101');
+            return;
+        }
+        if (!data) {
+            setTwpStatus('err', 'Error 2199');
+            return;
+        }
+        const overall = data.body && data.body.overall;
+        const code = data.body && data.body.code;
+        if (overall === 'ok') {
+            setTwpStatus('ok');
+        } else {
+            setTwpStatus('err', code ? ('Error ' + code) : 'Error 2199');
+        }
+    } catch (e) {
+        setTwpStatus('err', 'Error 2199');
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+async function resetTelegramProxySecret(btn) {
+    if (!btn || btn.disabled) return;
+    if (!confirm('Generate a NEW Telegram Web Proxy secret? Existing links will stop working.')) return;
+    btn.disabled = true;
+    const testBtn = document.getElementById('twp-test-btn');
+    if (testBtn) testBtn.disabled = true;
+    const linkEl = document.getElementById('twp-link');
+    setTwpStatus('loading', '…');
+    try {
+        const res = await fetch('./panel/telegram-proxy/reset-secret', {
+            method: 'POST',
+            credentials: 'same-origin',
+            cache: 'no-store',
+            headers: { 'Accept': 'application/json' }
+        });
+        let data = null;
+        try { data = await res.json(); } catch (_) { data = null; }
+        if (!data || !data.success) {
+            const code = (data && data.body && data.body.code) || (res.status === 401 ? 2101 : 2198);
+            setTwpStatus('err', 'Error ' + code);
+            return;
+        }
+        const url = data.body && data.body.connectionUrl;
+        if (url && linkEl) linkEl.textContent = url;
+        setTwpStatus('ok');
+    } catch (e) {
+        setTwpStatus('err', 'Error 2199');
+    } finally {
+        btn.disabled = false;
+        if (testBtn) testBtn.disabled = false;
+    }
 }

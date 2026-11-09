@@ -11,6 +11,7 @@ import { getGlobals, getMainSettings, subscriptions, clients } from '@settings';
 import { validateSettings } from '@validators';
 import { fallback } from './utils';
 import { setTelegramBot } from '@api/telegram';
+import { testTelegramProxy, resetTelegramProxySecret, getTelegramProxyLink } from './telegram-proxy';
 
 export async function handlePanel(request: Request, env: Env): Promise<Response> {
     const { pathname } = getGlobals();
@@ -50,6 +51,15 @@ export async function handlePanel(request: Request, env: Env): Promise<Response>
 
         case 'panel/logout':
             return logout();
+
+        case 'panel/telegram-proxy/test':
+            return testTelegramProxy(request, env);
+
+        case 'panel/telegram-proxy/reset-secret':
+            return resetTelegramProxySecret(request, env);
+
+        case 'panel/telegram-proxy/link':
+            return getTelegramProxyLink(request, env);
 
         default:
             return fallback(request);
