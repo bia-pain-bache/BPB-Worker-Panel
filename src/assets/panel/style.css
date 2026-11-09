@@ -1058,3 +1058,54 @@ table tr:not(:last-child) {
         width: 30%;
     }
 }
+
+/* Telegram Web Proxy */
+.twp-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.65rem;
+}
+.button.twp-btn {
+    padding: 0.4rem 0.9rem;
+    font-size: 0.85rem;
+    line-height: 1.2;
+    min-height: auto;
+}
+.twp-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.9rem;
+    margin-inline-start: 0.25rem;
+}
+.twp-status.is-ok {
+    color: #16a34a;
+    font-weight: 600;
+}
+.twp-status.is-err {
+    color: #dc2626;
+    font-weight: 600;
+}
+.twp-status .twp-check {
+    font-variation-settings: 'FILL' 1;
+    font-size: 1.15rem;
+    color: #16a34a;
+}
+
+
+/* Keep long Telegram Web Proxy links readable on narrow screens. */
+#telegram-proxy-section .output-container {
+    flex: 1;
+    min-width: 0;
+}
+
+#telegram-proxy-section .twp-output {
+    display: block;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    text-align: left;
+    line-height: 1.5;
+}

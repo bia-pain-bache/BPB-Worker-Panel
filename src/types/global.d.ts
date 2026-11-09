@@ -6,6 +6,12 @@ declare global {
         readonly kv: KVNamespace;
         readonly UUID?: string;
         readonly TR_PASS?: string;
+        readonly SESSIONS?: DurableObjectNamespace;
+        readonly PROXY_SECRET?: string;
+        readonly PUBLIC_HOSTNAME?: string;
+        readonly SESSION_TTL_SECONDS?: string;
+        readonly MAX_STREAMS?: string;
+        readonly DIAGNOSTICS?: string;
     }
 
     const SOURCE_CONTENT: string;

@@ -3,7 +3,12 @@ import { authenticate } from '@auth';
 import { resolveDNS } from '@cores/utils';
 import { getGlobals } from '@settings';
 import { fallback } from './utils';
-import { connect } from 'cloudflare:sockets';
+
+
+async function getCfConnect() {
+    const mod = await import('cloudflare:sockets');
+    return mod.connect;
+}
 
 export async function handleProxyIPs(request: Request, env: Env): Promise<Response> {
     const { pathname } = getGlobals();
@@ -133,7 +138,7 @@ async function checkProxyIP(address: string): Promise<Omit<Attempt, 'attempt'>> 
     );
 
     try {
-        const socket = connect({ hostname: address, port: 443 });
+        const socket = (await getCfConnect())({ hostname: address, port: 443 });
         const writer = socket.writable.getWriter();
         const req = `GET ${TEST_PATH} HTTP/1.1\r\nHost: ${DEFAULT_SNI}\r\nConnection: close\r\n\r\n`;
 

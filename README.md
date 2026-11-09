@@ -34,11 +34,13 @@ This project is aimed to provide a user panel to access FREE, SECURE, PRIVATE pr
 11. **Fully customizable:** Supports setting up clean IPs-domains, Proxy IPs, DNS servers, choosing ports and protocols, Warp endpoints and more.
 12. **Node ability:** Can share settings and proxies across other BPB users.
 13. **Proxy aggregation:** Supports aggregating another proxies into BPB proxies and deliver in a single subscription.
+14. **Telegram Web Proxy:** Adds an independent Telegram Web Proxy connection through a Cloudflare Worker.
 
 ## Limitations
 
 1. **UDP transport**: VLESS and Trojan protocols on workers do not handle **UDP** properly, so it is disabled by default (affecting features like Telegram video calls), UDP DNS is also unsupported. DoH is enabled by default for enhanced security.
 2. **Request limit**: each worker supports 100K requests per day for VLESS and Trojan, suitable for 2-3 users. You can use limitless Warp configs.
+3. **Telegram Web Proxy deployment**: Telegram Web Proxy requires a Cloudflare Worker with Durable Objects and is not available on Pages. It is not a general-purpose UDP tunnel; Telegram voice/video calls are not provided by this feature.
 
 ## Getting started
 
@@ -71,3 +73,5 @@ This project is aimed to provide a user panel to access FREE, SECURE, PRIVATE pr
 - VLESS, Trojan [Cloudflare-workers/pages proxy script](https://github.com/yonggekkk/Cloudflare-workers-pages-vless) by [yonggekkk](https://github.com/yonggekkk)
 - CF-vless code author [3Kmfi6HP](https://github.com/3Kmfi6HP/EDtunnel)
 - CF preferred IP program author [badafans](https://github.com/badafans/Cloudflare-IP-SpeedTest), [XIU2](https://github.com/XIU2/CloudflareSpeedTest)
+- Telegram Web Proxy implementation: [MHDLabs/TWP-CF](https://github.com/MHDLabs/TWP-CF)
+- Cloudflare deployment and obfuscation workflow reference: [Jasaz](https://github.com/itsyebekhe/jasaz)
